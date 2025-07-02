@@ -4,7 +4,10 @@ import axios from 'axios';
 // 引入router
 import router from '@/router/index.js'
 // 获取token
-// import { getToken } from './token/index.js';
+import {GET_TOKEN ,REMOVE_TOKEN} from "@/utils/Auth.js";
+// 引入ElMessage
+import { ElMessage } from 'element-plus'
+
 // 创建axios
 const request = axios.create({
     baseURL: 'http://localhost:5050/',
@@ -19,39 +22,37 @@ const request = axios.create({
 request.interceptors.request.use(
     (config) => {
         // 在请求头添加token, 判断是否需要发送token
-        // if(getToken("daocaoToken")) {
-        //     config.headers['Daocao-Authorization'] = getToken("daocaoToken");
-        // }
+        if(GET_TOKEN()) {
+            config.headers['Authorization'] = GET_TOKEN();
+        }
         return config;
     },
     (error) => {
-        return Promise.reject(error);
+    return Promise.reject(error);
 })
 
 // 配置响应拦截器
 request.interceptors.response.use((response) => {
-    // 判断响应码，后端返回的数据  code ，data，msg
-    let {msg,code} = response.data
-    if(code == null) {
+    // console.log('response=====>',response)
+    let {code,msg} = response.data
+    if(code == 200) {
         return response;
-    }else if(code == 200) {
-        return response;
-    }else if(code == 500) {
+    }else{
+        // 响应失败的处理 401
         ElMessage.error(msg);
-    }else if(code == 401) {
-        ElMessage.error('没有操作权限！');
-    }else if(code == 403) {
-        ElMessage.error('登录过期！');
-        // 需要重新登陆，跳转到登录页面，清除pinia中的数据，sessionStorage中
-        // window.sessionStorage.clear();
+    }
+    return Promise.reject(response.data);
+},(error) => {
+    // console.log('error=====>',error)
+    let {status,data} = error.response;
+    if(status === 401){
+        // 401 代表token过期，需要重新登录
+        ElMessage.error(data.msg);
+        // 清除useStore数据和localStorage中的jwt
+        REMOVE_TOKEN();
+        // 需要重新登陆，跳转到登录页面
         router.push('/login');
     }
-    return Promise.reject(msg);
-},(error) => {
-    // 出现异常
-    ElMessage.error('error=====>',error);
-    window.sessionStorage.clear();
-    router.push('/login');
     return Promise.reject(error);
 })
 

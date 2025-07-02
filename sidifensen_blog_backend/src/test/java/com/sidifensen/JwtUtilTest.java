@@ -26,7 +26,7 @@ public class JwtUtilTest {
         Integer id = 1;
         String userName = "sidifensen";
         String nickName = "斯蒂芬森";
-        String email = "sidifensen@163.com";
+        String email = "123456@qq.com";
         Integer sex = 0;
         String introduction = "斯蒂芬森的个人博客";
         String avatar = "https://www.sidifensen.com/avatar.jpg";
@@ -40,7 +40,7 @@ public class JwtUtilTest {
         Integer id = 1;
         String userName = "sidifensen";
         String nickName = "斯蒂芬森";
-        String email = "sidifensen@163.com";
+        String email = "123456@qq.com";
         Integer sex = 0;
         String introduction = "斯蒂芬森的个人博客";
         String avatar = "https://www.sidifensen.com/avatar.jpg";
@@ -57,7 +57,7 @@ public class JwtUtilTest {
         Integer id = 1;
         String userName = "sidifensen";
         String nickName = "斯蒂芬森";
-        String email = "sidifensen@163.com";
+        String email = "123456@qq.com";
         Integer sex = 0;
         String introduction = "斯蒂芬森的个人博客";
         String avatar = "https://www.sidifensen.com/avatar.jpg";
@@ -101,7 +101,7 @@ public class JwtUtilTest {
         Integer id = 1;
         String userName = "sidifensen";
         String nickName = "斯蒂芬森";
-        String email = "sidifensen@163.com";
+        String email = "123456@qq.com";
         Integer sex = 0;
         String introduction = "斯蒂芬森的个人博客";
         String avatar = "https://www.sidifensen.com/avatar.jpg";
@@ -126,6 +126,29 @@ public class JwtUtilTest {
         String string = jwtUtil.parseToken(token);
         System.out.println(string);
 
+    }
+
+
+    @Test
+    public void testJWTValidate() {
+        Integer id = 1;
+        String userName = "sidifensen";
+        String nickName = "斯蒂芬森";
+        String email = "123456@qq.com";
+        Integer sex = 0;
+        String introduction = "斯蒂芬森的个人博客";
+        String avatar = "https://www.sidifensen.com/avatar.jpg";
+        UserDto userDto = new UserDto(id, userName, nickName, email, sex, introduction, avatar);
+
+        Map<String, Object> map = BeanUtil.beanToMap(userDto);
+
+        String token = JWT.create()
+                .setExpiresAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 30))
+                .addPayloads(map)
+                .setSigner(JWTSignerUtil.createSigner("HS256", "sidifensen666".getBytes()))
+                .sign();
+
+        System.out.println(token);
     }
 
 }

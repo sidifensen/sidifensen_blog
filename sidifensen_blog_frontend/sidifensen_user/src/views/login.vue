@@ -31,8 +31,8 @@
         <el-divider>其他登录方式</el-divider>
         <!-- 其他的登录方式 -->
         <div class="other_login">
-          <svg-icon name="gitee" width="35px" height="35px" color="#4E86F1"/>
-          <svg-icon name="github" width="35px" height="35px" color="#4E86F1"/>
+          <svg-icon name="gitee" width="35px" height="35px" color="#4E86F1" />
+          <svg-icon name="github" width="35px" height="35px" color="#4E86F1" />
         </div>
       </el-form>
     </div>
@@ -41,12 +41,13 @@
 
 <script setup>
 import { ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import { login } from "@/api/user";
-import { jwtDecode } from "jwt-decode";
 import { SET_TOKEN } from "@/utils/Auth";
-
+import { ElMessage } from "element-plus";
 const router = useRouter();
+
+const formDataRef = ref(null);
 
 const formData = ref({
   username: "",
@@ -55,18 +56,23 @@ const formData = ref({
 });
 
 const rules = ref({
-  username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
+  username: [{ required: true, message: "请输入用户名/邮箱", trigger: "blur" }],
   password: [{ required: true, message: "请输入密码", trigger: "blur" }],
 });
 
 const handleLogin = () => {
-  console.log(formData.value);
-  login(formData.value).then(res => {
-    const jwt = jwtDecode(res.data.data);
-    console.log(jwt);
-    SET_TOKEN(jwt, formData.value.rememberMe);
-    router.push("/");
-  })
+  formDataRef.value.validate((valid) => {
+    if (!valid) {
+      ElMessage.error("请输入用户名和密码");
+      return;
+    }else{
+      login(formData.value).then((res) => {
+        ElMessage.success("登录成功");
+        SET_TOKEN(res.data.data);
+        router.push("/");
+      });
+    }
+  });
 };
 </script>
 
