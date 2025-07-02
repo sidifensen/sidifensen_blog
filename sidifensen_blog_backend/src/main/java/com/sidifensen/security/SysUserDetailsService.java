@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sidifensen.domain.entity.*;
 import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
 import com.sidifensen.domain.enums.RoleEnum;
+import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.*;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +49,10 @@ public class SysUserDetailsService implements UserDetailsService {
         SysUser sysUser = loginByUsernameOrEmail(username);
 
         if(sysUser == null){
-            throw new BadCredentialsException("用户不存在");
+            throw new BlogException("该用户不存在");
+            // throw new UsernameNotFoundException("该用户不存在");
+            // 如果用UsernameNotFoundException会被AbstractUserDetailsAuthenticationProvider的authenticate拦截，
+            // 包装成BadCredentialsException, 返回"用户名或密码错误"的错误信息
         }
 
         return handleLogin(sysUser);
@@ -67,11 +71,6 @@ public class SysUserDetailsService implements UserDetailsService {
 
     // 处理登录
     public LoginUser handleLogin(SysUser sysUser){
-
-        if (sysUser.getStatus() == 1){
-            throw new BadCredentialsException("用户已被禁用");
-        }
-
         // 根据账号查询用户
         LambdaQueryWrapper<SysUserRole> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysUserRole::getUserId, sysUser.getId());

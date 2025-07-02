@@ -1,5 +1,6 @@
 package com.sidifensen.domain.result;
 
+import com.alibaba.fastjson2.JSON;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -30,7 +31,23 @@ public class Result<T> implements Serializable {
     public static <T> Result<T> error(String msg) {
         Result result = new Result();
         result.msg = msg;
-        result.code = 403;
+        result.code = 400;// 400代表请求参数错误
         return result;
     }
+
+    // 返回未认证的结果
+    public static <T> Result<T> unauthorized(String msg) {
+        Result result = new Result();
+        result.msg = msg;
+        result.code = 401;// 401代表未认证
+        return result;
+    }
+
+    // 将Result对象转换为JSON字符串
+    public String toJson() {
+        return JSON.toJSONString(this);
+    }
+
+
+
 }

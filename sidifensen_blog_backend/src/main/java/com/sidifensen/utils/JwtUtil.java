@@ -26,20 +26,18 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class JwtUtil {
 
-    @Value("${spring.security.jwt.secret:sidifensen}")
+    @Value("${spring.security.jwt.secret}")
     private String secret;
-
-    @Value("${spring.security.jwt.expire:1}")
-    private int expire;
 
     /**
      * 生成token
      * @param userDto
      * @return
      */
-    public String createToken(UserDto userDto) {
+    public String createToken(UserDto userDto,boolean isRememberMe) {
         String token = JWT.create()
-                .setExpiresAt(new Date(System.currentTimeMillis() + expire * 24 * 60 * 60 * 1000))
+                // 设置过期时间 rememberMe为true时，token有效期为7天，否则为1天
+                .setExpiresAt(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(isRememberMe? 7 : 1)))
                 .addPayloads(BeanUtil.beanToMap(userDto))
                 .setSigner(JWTSignerUtil.createSigner("HS256", secret.getBytes()))
                 .sign();
@@ -47,19 +45,21 @@ public class JwtUtil {
     }
 
     /**
-     * 解析token
+     * 解析并验证token
      * @param token
      * @return
      */
     public String parseToken(String token) {
+        // 验证token
         if (!JWTUtil.verify(token, secret.getBytes())) {
-            throw new BlogException("token验证失败");
+            return null;
         }
+        // 解析token
         JWT jwt = JWTUtil.parseToken(token);
         // 判断是否过期
         long exp = Long.parseLong(jwt.getPayload().getClaim("exp").toString());
         if (System.currentTimeMillis() > exp * 1000) {
-            throw new BlogException("token已过期");
+            return null;
         }
         String user = jwt.getPayload().toString();
         return user;

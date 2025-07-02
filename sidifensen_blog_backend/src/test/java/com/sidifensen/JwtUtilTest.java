@@ -31,7 +31,7 @@ public class JwtUtilTest {
         String introduction = "斯蒂芬森的个人博客";
         String avatar = "https://www.sidifensen.com/avatar.jpg";
         UserDto userDto = new UserDto(id, userName, nickName, email, sex, introduction, avatar);
-        String token = jwtUtil.createToken(userDto);
+        String token = jwtUtil.createToken(userDto,false);
         System.out.println("token: " + token);
     }
 
@@ -45,7 +45,7 @@ public class JwtUtilTest {
         String introduction = "斯蒂芬森的个人博客";
         String avatar = "https://www.sidifensen.com/avatar.jpg";
         UserDto userDto = new UserDto(id, userName, nickName, email, sex, introduction, avatar);
-        String token = jwtUtil.createToken(userDto);
+        String token = jwtUtil.createToken(userDto,false);
 
         String user = jwtUtil.parseToken(token);
         System.out.println("user: " + user);

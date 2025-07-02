@@ -4,7 +4,6 @@ spring:
   security:
     jwt:
       secret: sidifensen # jwt 密钥
-      expire: 7 # jwt 的有效时间（天）
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/sidifensen_blog

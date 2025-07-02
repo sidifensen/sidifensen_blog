@@ -1,5 +1,5 @@
 import {ElMessage} from "element-plus";
-// import useUserStore from "@/store/modules/user.js";
+import useUserStore from "@/stores/userStore.js";
 
 // 获取token 
 export const GET_TOKEN = () => {
@@ -17,13 +17,12 @@ export const GET_TOKEN = () => {
 };
 
 // 设置token 
-export const SET_TOKEN = (token, expire, remember) => {
-    // const userStore = useUserStore();
-    const authObject = {token, expire};
-    const str = JSON.stringify(authObject);
+export const SET_TOKEN = (jwt, remember) => {
+    const userStore = useUserStore();
+    const token = JSON.stringify(jwt);
     // 是否记住密码(记住密码token存localStorage,否则存sessionStorage) 
-    remember ? localStorage.setItem("sidifensen_blog_jwt", str) : sessionStorage.setItem("sidifensen_blog_jwt", str);
-    userStore.token = token;
+    remember ? localStorage.setItem("sidifensen_blog_jwt", token) : sessionStorage.setItem("sidifensen_blog_jwt", token);
+    userStore.user = jwt;
 };
 
 // 移除token 

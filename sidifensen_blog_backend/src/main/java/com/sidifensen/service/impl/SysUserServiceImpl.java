@@ -61,7 +61,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         // 将用户信息转换为UserDto
         UserDto userDto = BeanUtil.copyProperties(loginUser.getSysUser(), UserDto.class);
         // 创建token,此处的token时由UUID编码而成JWT字符串
-        String token = jwtUtil.createToken(userDto);
+        String token = jwtUtil.createToken(userDto, loginDto.getRememberMe());
         return token;
     }
 

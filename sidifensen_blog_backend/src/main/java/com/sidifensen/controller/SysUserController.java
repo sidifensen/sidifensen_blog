@@ -20,7 +20,7 @@ public class SysUserController {
     @Resource
     private ISysUserService sysUserService;
 
-    @PostMapping("login")
+    @PostMapping("/login")
     public Result login(@RequestBody LoginDto loginDto) {
         String jwt = sysUserService.login(loginDto);
         return Result.success(jwt);

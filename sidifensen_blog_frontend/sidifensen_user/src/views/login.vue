@@ -45,6 +45,9 @@ import { useRoute, useRouter } from "vue-router";
 import { login } from "@/api/user";
 import { jwtDecode } from "jwt-decode";
 import { SET_TOKEN } from "@/utils/Auth";
+
+const router = useRouter();
+
 const formData = ref({
   username: "",
   password: "",
@@ -59,10 +62,9 @@ const rules = ref({
 const handleLogin = () => {
   console.log(formData.value);
   login(formData.value).then(res => {
-    console.log(res);
-    const decoded = jwtDecode(res.data.data);
-    console.log(decoded);
-    SET_TOKEN(res.data.data);
+    const jwt = jwtDecode(res.data.data);
+    console.log(jwt);
+    SET_TOKEN(jwt, formData.value.rememberMe);
     router.push("/");
   })
 };

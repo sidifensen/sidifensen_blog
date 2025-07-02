@@ -1,12 +1,12 @@
 package com.sidifensen.security;
 
+
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -36,8 +36,6 @@ public class SecurityConfiguration {
                 .anyRequest().authenticated());
         // 禁用 csrf
         http.csrf(AbstractHttpConfigurer::disable);
-        // 开启form认证
-//        http.formLogin(Customizer.withDefaults());
         // 配置跨域
         http.cors(cors -> cors.configurationSource(configurationSource()));
         // 添加JWT过滤器
