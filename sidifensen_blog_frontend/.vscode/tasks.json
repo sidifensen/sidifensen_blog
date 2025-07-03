@@ -1,0 +1,14 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "build",
+			"path": "sidifensen_user",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "npm: build - sidifensen_user",
+			"detail": "vite build"
+		}
+	]
+}

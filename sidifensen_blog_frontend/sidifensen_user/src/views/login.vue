@@ -78,18 +78,18 @@ const handleLogin = () => {
 
 <style lang="scss" scoped>
 .login_container {
-  background: url("../assets/img/bg.jpg") no-repeat center center / cover;
-  height: 100vh;
   display: flex;
   justify-content: flex-end;
+  height: 100vh;
+  background: url("../assets/img/bg.jpg") no-repeat center center / cover;
   .login_form {
-    width: 400px;
-    padding: 10px;
-    background-color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    width: 400px;
+    padding: 10px;
+    background-color: #fff;
     .rememberMe {
       display: flex;
       justify-content: space-between;
@@ -97,13 +97,13 @@ const handleLogin = () => {
   }
   @media (max-width: 600px) {
     .login_form {
-      width: 100%;
-      height: 100vh;
-      padding: 10px;
       display: flex;
       justify-content: center;
       align-items: center;
       flex-direction: column;
+      width: 100%;
+      height: 100vh;
+      padding: 10px;
     }
   }
   .other_login {
