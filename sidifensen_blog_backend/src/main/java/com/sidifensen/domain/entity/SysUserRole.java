@@ -27,7 +27,6 @@ public class SysUserRole implements Serializable {
     /**
      * 主键id
      */
-    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
     /**

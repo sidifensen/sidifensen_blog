@@ -27,7 +27,6 @@ public class SysMenu implements Serializable {
     /**
      * 菜单id
      */
-    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
     /**

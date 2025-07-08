@@ -32,8 +32,8 @@ CREATE TABLE `sys_menu`  (
   `permission` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '权限标识',
   `icon` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '图标',
   `status` tinyint NULL DEFAULT 0 COMMENT '状态 0-正常 1-禁用',
-  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NULL DEFAULT NULL COMMENT '更新时间',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
   `is_deleted` tinyint NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
@@ -41,7 +41,7 @@ CREATE TABLE `sys_menu`  (
 -- ----------------------------
 -- Records of sys_menu
 -- ----------------------------
-INSERT INTO `sys_menu` VALUES (1, 0, '首页', 0, 0, '/index', 'index', 'index', 'home', 0, '2025-06-28 22:31:52', NULL, 0);
+INSERT INTO `sys_menu` VALUES (1, 0, '首页', 0, 0, '/index', 'index', 'index', 'home', 0, '2025-06-28 22:31:52', '2025-06-28 22:30:22', 0);
 
 -- ----------------------------
 -- Table structure for sys_role
@@ -54,8 +54,8 @@ CREATE TABLE `sys_role`  (
   `description` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '角色描述',
   `sort` int NULL DEFAULT 0 COMMENT '排序',
   `status` tinyint NULL DEFAULT 0 COMMENT '状态 0-正常 1-禁用',
-  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NULL DEFAULT NULL COMMENT '更新时间',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_time` datetime NOT NULL  COMMENT '更新时间',
   `is_deleted` tinyint NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
@@ -63,7 +63,7 @@ CREATE TABLE `sys_role`  (
 -- ----------------------------
 -- Records of sys_role
 -- ----------------------------
-INSERT INTO `sys_role` VALUES (1, 'admin', '超级管理员', NULL, 0, 0, '2025-06-28 22:31:00', NULL, 0);
+INSERT INTO `sys_role` VALUES (1, 'admin', '超级管理员', NULL, 0, 0, '2025-06-28 22:31:00', '2025-06-28 22:30:22', 0);
 
 -- ----------------------------
 -- Table structure for sys_role_menu
@@ -99,8 +99,8 @@ CREATE TABLE `sys_user`  (
   `register_ip` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '注册ip',
   `login_type` tinyint NULL DEFAULT 0 COMMENT '登录方式 0-用户名/邮箱登录 1-第三方登录',
   `login_ip` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '登录ip',
-  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NULL DEFAULT NULL COMMENT '更新时间',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
   `is_deleted` tinyint NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
@@ -108,7 +108,7 @@ CREATE TABLE `sys_user`  (
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO `sys_user` VALUES (1, 'sidifensen', '$2a$10$XqlrDmPYn2z12dh2IIscm.TdbXvQXD2lVJEc08j5vLM.QP8NUG/P2', '斯蒂芬森', '123456@qq.com', 0, 'helloworld', 'https://www.sidifensen.com/avatar.jpg', 0, 0, NULL, 0, NULL, '2025-06-28 22:30:22', NULL, 0);
+INSERT INTO `sys_user` VALUES (1, 'sidifensen', '$2a$10$XqlrDmPYn2z12dh2IIscm.TdbXvQXD2lVJEc08j5vLM.QP8NUG/P2', '斯蒂芬森', '123456@qq.com', 0, 'helloworld', 'https://www.sidifensen.com/avatar.jpg', 0, 0, NULL, 0, NULL, '2025-06-28 22:30:22', '2025-06-28 22:30:22', 0);
 
 -- ----------------------------
 -- Table structure for sys_user_role

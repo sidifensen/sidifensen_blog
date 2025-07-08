@@ -1,6 +1,7 @@
 package com.sidifensen.service;
 
 import com.sidifensen.domain.dto.LoginDto;
+import com.sidifensen.domain.dto.RegisterDto;
 import com.sidifensen.domain.entity.SysUser;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,4 +21,6 @@ public interface ISysUserService extends IService<SysUser> {
      * @param loginDto 登录信息
      */
     String login(LoginDto loginDto);
+
+    boolean register(RegisterDto registerDto);
 }

@@ -31,7 +31,6 @@ public class SysUser implements Serializable {
     /**
      * 用户id
      */
-    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
     /**
@@ -93,6 +92,11 @@ public class SysUser implements Serializable {
      * 登录ip
      */
     private String loginIp;
+
+    /**
+     * 登录时间
+     */
+    private LocalDateTime loginTime;
 
     /**
      * 创建时间

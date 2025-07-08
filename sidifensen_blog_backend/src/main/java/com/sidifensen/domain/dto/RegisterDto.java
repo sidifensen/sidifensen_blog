@@ -5,12 +5,11 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-public class LoginDto implements Serializable {
+public class RegisterDto implements Serializable {
 
     private String username;
     private String password;
-    private Boolean rememberMe;
-    private String checkCodeKey;
-    private String checkCode;
+    private String email;
+    private String emailCode;
 
 }

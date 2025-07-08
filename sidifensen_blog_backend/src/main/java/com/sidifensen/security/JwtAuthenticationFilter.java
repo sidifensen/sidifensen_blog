@@ -2,6 +2,8 @@ package com.sidifensen.security;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONUtil;
+import com.sidifensen.domain.constants.BlogConstants;
+import com.sidifensen.domain.constants.SecurityConstants;
 import com.sidifensen.domain.dto.UserDto;
 import com.sidifensen.domain.entity.LoginUser;
 import com.sidifensen.domain.entity.SysUser;
@@ -41,22 +43,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 如果是登录接口，则直接放行
-        if ("/user/login".equals(request.getRequestURI())) {
-            filterChain.doFilter(request, response);
-            return;
+        // 如果是不需要登录的接口，则直接放行
+        for (String url : SecurityConstants.No_Auth_Urls) {
+            if (request.getRequestURI().equals(url)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
         }
         // 从请求头中获取jwt
         String jwt = request.getHeader("Authorization");
         if (ObjectUtil.isEmpty(jwt)){
-            WebUtil.Unauthorized(response, Result.unauthorized("请登录").toJson());
+            //请先登录
+            WebUtil.Unauthorized(response, Result.unauthorized(BlogConstants.LoginRequired).toJson());
             return;
         }
         if (ObjectUtil.isNotEmpty(jwt)){
             // 解析并验证jwt
             String user = jwtUtil.parseToken(jwt);
             if (ObjectUtil.isEmpty(user)) {
-                WebUtil.Unauthorized(response, Result.unauthorized("登录已过期，请重新登录").toJson());
+                //登录过期
+                WebUtil.Unauthorized(response, Result.unauthorized(BlogConstants.LoginExpired).toJson());
                 return;
             }
             // 将json字符串转换为UserDto对象
@@ -72,8 +78,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
                 // 将用户信息存储到SecurityContext中，SecurityContext存储到SecurityContextHolder中
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                filterChain.doFilter(request, response);
             }
         }
+        filterChain.doFilter(request, response);
     }
 }

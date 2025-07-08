@@ -10,7 +10,7 @@ public enum RegisterOrLoginTypeEnum {
     /**
      * 邮箱或用户名登录
      */
-    EMAIL(0, "邮箱登录", "email"),
+    EMAIL(0, "邮箱或用户名登录", "email"),
     /**
      * Gitee
      */

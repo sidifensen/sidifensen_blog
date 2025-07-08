@@ -1,12 +1,15 @@
 package com.sidifensen.security;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.entity.*;
 import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
 import com.sidifensen.domain.enums.RoleEnum;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.*;
+import com.sidifensen.utils.IpUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -15,6 +18,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,23 +43,31 @@ public class SysUserDetailsService implements UserDetailsService {
     @Resource
     private SysRoleMenuMapper sysRoleMenuMapper;
 
+    @Resource
+    private IpUtil ipUtil;
+
 
     /**
      * 根据用户名查询用户信息
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // TODO 判断登录类型 账号/邮箱登录 或者 第三方登录
+        // TODO 通过请求头 判断登录类型 账号/邮箱登录 或者 第三方登录
 
         // 根据用户名或邮箱登录
         SysUser sysUser = loginByUsernameOrEmail(username);
 
         if(sysUser == null){
-            throw new BlogException("该用户不存在");
+            throw new BlogException(BlogConstants.NotFoundUser);
             // throw new UsernameNotFoundException("该用户不存在");
             // 如果用UsernameNotFoundException会被AbstractUserDetailsAuthenticationProvider的authenticate拦截，
-            // 包装成BadCredentialsException, 返回"用户名或密码错误"的错误信息
+            // 并且包装成BadCredentialsException, 返回"用户名或密码错误"的错误信息
         }
+
+        sysUser.setLoginType(RegisterOrLoginTypeEnum.EMAIL.getRegisterType());
+        sysUser.setLoginTime(LocalDateTime.now());
+        sysUser.setLoginIp(ipUtil.getIpAddr());
+        sysUserMapper.updateById(sysUser);
 
         return handleLogin(sysUser);
     }

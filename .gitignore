@@ -10,3 +10,5 @@ target
 .project
 logs
 job
+/src/main/resources/application.yaml
+/src/test/

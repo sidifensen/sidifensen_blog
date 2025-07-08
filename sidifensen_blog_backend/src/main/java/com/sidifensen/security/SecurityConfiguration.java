@@ -1,6 +1,7 @@
 package com.sidifensen.security;
 
 
+import com.sidifensen.domain.constants.SecurityConstants;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +33,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // 设置认证管理器
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/user/login").permitAll()
+                .requestMatchers(SecurityConstants.No_Auth_Urls).permitAll()
                 .anyRequest().authenticated());
         // 禁用 csrf
         http.csrf(AbstractHttpConfigurer::disable);

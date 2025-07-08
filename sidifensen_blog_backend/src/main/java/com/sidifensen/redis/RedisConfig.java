@@ -1,4 +1,4 @@
-package com.sidifensen.config;
+package com.sidifensen.redis;
 
 
 import org.springframework.context.annotation.Bean;

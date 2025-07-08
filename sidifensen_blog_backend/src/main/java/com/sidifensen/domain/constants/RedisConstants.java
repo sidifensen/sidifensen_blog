@@ -6,5 +6,7 @@ package com.sidifensen.domain.constants;
  */
 public class RedisConstants {
 
-    public static final String REDIS_KEY_PREFIX = "sidifensen_blog_";
+    public static final String RedisKeyPrefix = "sidifensen:blog:";
+
+    public static final String CheckCode = RedisKeyPrefix + "checkcode:";
 }
