@@ -123,9 +123,9 @@ public class RedisUtils {
      * @return true成功 false 失败
      */
 
-    public boolean set(String key, Object value, long time,TimeUnit tiemtype) {
+    public boolean set(String key, Object value, long time,TimeUnit timeUnit) {
         if (time > 0) {
-            redisTemplate.opsForValue().set(key, value, time, tiemtype);
+            redisTemplate.opsForValue().set(key, value, time, timeUnit);
         } else {
             this.set(key, value);
         }

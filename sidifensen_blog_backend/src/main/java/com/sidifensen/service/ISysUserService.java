@@ -1,5 +1,6 @@
 package com.sidifensen.service;
 
+import com.sidifensen.domain.dto.EmailDto;
 import com.sidifensen.domain.dto.LoginDto;
 import com.sidifensen.domain.dto.RegisterDto;
 import com.sidifensen.domain.entity.SysUser;
@@ -22,5 +23,15 @@ public interface ISysUserService extends IService<SysUser> {
      */
     String login(LoginDto loginDto);
 
-    boolean register(RegisterDto registerDto);
+    /**
+     * 注册
+     * @param registerDto 注册信息
+     */
+    void register(RegisterDto registerDto);
+
+    /**
+     * 发送注册邮件验证码
+     * @param emailDto 邮箱信息
+     */
+    void registerEmailCheckCode(EmailDto emailDto);
 }

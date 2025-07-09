@@ -1,23 +1,21 @@
 package com.sidifensen.controller;
 
 
-import com.sidifensen.domain.constants.BlogConstants;
+import com.sidifensen.domain.dto.EmailDto;
 import com.sidifensen.domain.dto.LoginDto;
 import com.sidifensen.domain.dto.RegisterDto;
 import com.sidifensen.domain.result.Result;
-import com.sidifensen.exception.BlogException;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.ISysUserService;
 import com.wf.captcha.ArithmeticCaptcha;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- *  前端控制器
  * @author sidifensen
  * @since 2025-06-29
  */
@@ -32,15 +30,15 @@ public class SysUserController {
     private RedisComponent redisComponent;
 
     @PostMapping("/login")
-    public Result login(@RequestBody LoginDto loginDto) {
+    public Result login(@RequestBody @Valid LoginDto loginDto) {
         String jwt = sysUserService.login(loginDto);
         return Result.success(jwt);
     }
 
     @PostMapping("/register")
-    public Result register(@RequestBody RegisterDto registerDto){
-        boolean register = sysUserService.register(registerDto);
-        return Result.success(register);
+    public Result register(@RequestBody @Valid RegisterDto registerDto){
+        sysUserService.register(registerDto);
+        return Result.success();
     }
 
     @GetMapping("/checkCode")
@@ -57,6 +55,16 @@ public class SysUserController {
         result.put("checkCodeKey", checkCodeKey);
         return Result.success(result);
     }
+
+    /**
+     * 邮件发送
+     */
+    @PostMapping("/sendEmail")
+    public Result sendEmail(@RequestBody @Valid EmailDto emailDto){
+        sysUserService.registerEmailCheckCode(emailDto);
+        return Result.success();
+    }
+
 
     @GetMapping("info")
     public Result info() {

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎注册</title>
+    <style>
+        .container{
+            img{
+                border-radius: 50%;
+            }
+            text-align: center;
+            .checkCode{
+                font-size: 20px;
+                color: #666;
+                .code{
+                    font-size: 30px;
+                    color: #530e95;
+                    text-shadow: 1px 1px 1px #ccc;
+                }
+            }
+            a{
+                text-decoration: none;
+                color: #409eff;
+            }
+            .gitee{
+                margin-top: 20px;
+            }
+            .github{
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div>
+    <div class="container">
+        <div class="avatar">
+            <img src="https://foruda.gitee.com/avatar/1752080025136627357/14919133_sidifensen_1752080025.png!avatar200" alt="头像">
+        </div>
+        <div class="title">
+            <h2>欢迎注册斯蒂芬森的博客</h2>
+            <div>一个开源免费的个人博客网站</div>
+        </div>
+        <div class="checkCode" style="margin-top: 20px;">
+            您的邮件验证码为：<span th:text="${checkCode}" class="code">123456</span>
+        </div>
+        <div class="content" style="margin-top: 20px;">
+            验证码有效期为5分钟，为了您的帐号安全，请勿将验证码泄露给他人。
+        </div>
+        <div class="button" style="margin-top: 20px;">
+            <div class="goto"><a href="www.sidifensen.com">-->立即前往博客网站</a></div>
+            <div class="gitee"><a href="https://gitee.com/sidifensen/sidifensen_blog">-->项目gitee主页</a></div>
+            <div class="github"><a href="https://github.com/sidifensen/sidifensen_blog">-->项目github主页</a></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

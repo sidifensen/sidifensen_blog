@@ -6,7 +6,9 @@ package com.sidifensen.domain.constants;
  */
 public class RedisConstants {
 
-    public static final String RedisKeyPrefix = "sidifensen:blog:";
+    public static final String RedisKeyPrefix = "sidifensen_blog:";
 
-    public static final String CheckCode = RedisKeyPrefix + "checkcode:";
+    public static final String CheckCode = RedisKeyPrefix + "CheckCode:";
+
+    public static final String EmailCheckCode = RedisKeyPrefix + "EmailCheckCode:";
 }

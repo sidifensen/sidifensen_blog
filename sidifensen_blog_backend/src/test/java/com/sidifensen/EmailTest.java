@@ -1,5 +1,9 @@
 package com.sidifensen;
 
+import cn.hutool.core.date.DateTime;
+import com.sidifensen.redis.RedisComponent;
+import com.sidifensen.utils.EmailUtil;
+import jakarta.annotation.Resource;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +18,14 @@ import org.springframework.mail.javamail.MimeMessageHelper;
  */
 @SpringBootTest
 public class EmailTest {
-    @Autowired
-    JavaMailSender javaMailSender;
+    @Resource
+    private JavaMailSender javaMailSender;
+
+    @Resource
+    private EmailUtil emailUtil;
+
+    @Resource
+    private RedisComponent redisComponent;
 
     @Test
     public void test() throws Exception {
@@ -37,5 +47,21 @@ public class EmailTest {
 
         // 发送
         javaMailSender.send(message);
+    }
+
+    @Test
+    public void test2()  {
+        System.out.println("开始发送邮件：" + new DateTime());//开始发送邮件：2025-07-09 17:10:30
+        emailUtil.sendEmail("sidifensen@163.com", "Hello", "Hello <strong> World</strong>！");
+        System.out.println("结束发送邮件：" + new DateTime());//结束发送邮件：2025-07-09 17:10:40
+    }
+
+    @Test
+    public void test3() {
+        emailUtil.sendEmail("sidifensen@163.com", "测试邮件", "这是一封测试邮件");
+    }
+    @Test
+    public void test4() {
+        redisComponent.saveEmailCheckCode("sidifensen@163.com", "123456");
     }
 }

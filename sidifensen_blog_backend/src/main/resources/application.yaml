@@ -15,12 +15,6 @@ spring:
       port: 6379
       database: 0
       timeout: 10s
-      lettuce:
-        pool:
-          min-idle: 0 # 连接池中的最小空闲连接
-          max-idle: 8 # 连接池中的最大空闲连接
-          max-active: 8 # 连接池的最大数据库连接数
-          max-wait: -1ms # #连接池最大阻塞等待时间（使用负值表示没有限制）
   mail:
     host: smtp.qq.com
     port: 465
@@ -35,4 +29,17 @@ spring:
             required: true # 要求使用TLS协议
           ssl:
             enable: true # 开启SSL协议
-        debug: true
+#        debug: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+      simple:
+        retry:
+          enabled: true #是否开启消费者重试
+          max-attempts: 3 #最大重试次数
+          initial-interval: 6000 #重试间隔时间（单位毫秒）
+          multiplier: 2 #间隔时间乘子，间隔时间*乘子=下一次的间隔时间，最大不能超过设置的最大间隔时间
+          max-interval: 10000 #重试最大时间间隔（单位毫秒）
