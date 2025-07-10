@@ -1,6 +1,7 @@
 package com.sidifensen;
 
 import cn.hutool.core.date.DateTime;
+import com.sidifensen.domain.enums.MailEnum;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.utils.EmailUtil;
 import jakarta.annotation.Resource;
@@ -10,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+
+import java.util.Map;
 
 
 /**
@@ -23,9 +26,6 @@ public class EmailTest {
 
     @Resource
     private EmailUtil emailUtil;
-
-    @Resource
-    private RedisComponent redisComponent;
 
     @Test
     public void test() throws Exception {
@@ -61,7 +61,27 @@ public class EmailTest {
         emailUtil.sendEmail("sidifensen@163.com", "测试邮件", "这是一封测试邮件");
     }
     @Test
-    public void test4() {
-        redisComponent.saveEmailCheckCode("sidifensen@163.com", "123456");
+    public void testQQMail() {
+        emailUtil.sendHtmlMail("1848221808@qq.com", MailEnum.REGISTER.getSubject(), MailEnum.REGISTER.getTemplateName(), Map.of("checkCode", 123456));
+    }
+    @Test
+    public void test163Mail() {
+        emailUtil.sendHtmlMail("sidifensen@163.com", MailEnum.REGISTER.getSubject(), MailEnum.REGISTER.getTemplateName(), Map.of("checkCode", 123456));
+    }
+    @Test
+    public void testGMail() {
+        emailUtil.sendHtmlMail("sidifensen16@gmail.com", MailEnum.REGISTER.getSubject(), MailEnum.REGISTER.getTemplateName(), Map.of("checkCode", 123456));
+    }
+
+//    @Test
+//    public void testOutlook() {
+//        emailUtil.sendHtmlMail("outlook_e4c1e56080f8e76c@outlook.com", MailEnum.REGISTER.getSubject(), MailEnum.REGISTER.getTemplateName(), Map.of("checkCode", 123456));
+//    }
+
+
+    @Test
+    public void testResetPassword() {
+        emailUtil.sendHtmlMail("sidifensen@163.com", MailEnum.RESET.getSubject(), MailEnum.RESET.getTemplateName(), Map.of("checkCode", 123456));
+
     }
 }

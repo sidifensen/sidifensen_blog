@@ -34,12 +34,17 @@ public class RedisComponent {
     }
 
     // 保存邮箱验证码
-    public void saveEmailCheckCode(String email, String checkCode) {
-        redisUtils.set(RedisConstants.EmailCheckCode + email, checkCode, 5, TimeUnit.MINUTES);
+    public void saveEmailCheckCode(String email, String type, String checkCode) {
+        redisUtils.set(RedisConstants.EmailCheckCode + type + ":" + email, checkCode, 5, TimeUnit.MINUTES);
     }
 
     // 获取邮箱验证码
-    public String getEmailCheckCode(String email) {
-        return (String) redisUtils.get(RedisConstants.EmailCheckCode + email);
+    public String getEmailCheckCode(String email,String type) {
+        return (String) redisUtils.get(RedisConstants.EmailCheckCode + type + ":" + email);
+    }
+
+    // 清除邮箱验证码
+    public void cleanEmailCheckCode(String email,String type) {
+        redisUtils.del(RedisConstants.EmailCheckCode + type + ":" + email);
     }
 }

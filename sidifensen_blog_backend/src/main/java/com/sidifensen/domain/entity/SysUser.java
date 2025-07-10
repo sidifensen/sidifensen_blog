@@ -31,7 +31,7 @@ public class SysUser implements Serializable {
     /**
      * 用户id
      */
-    private Integer id;
+    private Long id;
 
     /**
      * 用户名

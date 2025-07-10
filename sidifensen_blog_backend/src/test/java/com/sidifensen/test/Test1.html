@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>按钮动画测试</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .container a {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 10px;
+            background-color: #409eff;
+            background-image: linear-gradient(to right, #409eff 0%, #69c0ff 50%, #00ccff 100%);
+            background-size: 200% 100%;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
+            margin: 10px;
+        }
+
+        .container a:hover {
+            cursor: pointer;
+            animation: moveBackground 1s linear infinite;
+            box-shadow: 1px 5px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes moveBackground {
+            0% {
+                background-position: 0% 50%;
+            }
+            100% {
+                background-position: 100% 50%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="#">立即前往博客网站</a>
+    <a href="#">项目 Gitee 主页</a>
+    <a href="#">项目 GitHub 主页</a>
+</div>
+</body>
+</html>

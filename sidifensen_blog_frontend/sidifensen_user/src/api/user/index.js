@@ -35,6 +35,24 @@ export function sendEmail(data){
   })
 }
 
+// 重置密码时校验邮箱验证码
+export function verifyReset(data){
+  return request({
+    url: '/user/verifyReset',
+    method: 'post',
+    data: data
+  })
+}
+
+// 重置密码时校验邮箱验证码
+export function resetPassword(data){
+  return request({
+    url: '/user/resetPassword',
+    method: 'post',
+    data: data
+  })
+}
+
 // 获取用户信息
 export function info(){
   return request({

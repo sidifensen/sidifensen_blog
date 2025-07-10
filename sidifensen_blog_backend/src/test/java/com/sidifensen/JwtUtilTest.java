@@ -1,19 +1,19 @@
 package com.sidifensen;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.convert.NumberWithFormat;
 import cn.hutool.jwt.JWT;
 import cn.hutool.jwt.JWTUtil;
 import cn.hutool.jwt.signers.JWTSignerUtil;
-import com.sidifensen.domain.dto.UserDto;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.utils.JwtUtil;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootTest
 public class JwtUtilTest {
@@ -21,7 +21,7 @@ public class JwtUtilTest {
     @Resource
     private JwtUtil jwtUtil;
 
-    Integer id = 1;
+    Long id = 1L;
     String userName = "sidifensen";
 //    String nickName = "斯蒂芬森";
 //    String email = "123456@qq.com";
@@ -29,32 +29,32 @@ public class JwtUtilTest {
 //    String introduction = "斯蒂芬森的个人博客";
 //    String avatar = "https://www.sidifensen.com/avatar.jpg";
 //    UserDto userDto = new UserDto(id, userName, nickName, email, sex, introduction, avatar);
-    UserDto userDto = new UserDto(id,userName);
+//    UserDto userDto = new UserDto(id,userName);
 
     @Test
     public void testCreateToken() {
 
-        String token = jwtUtil.createToken(userDto,false);
+        String token = jwtUtil.createToken(id,false);
         System.out.println("token: " + token);
     }
 
     @Test
     public void testParseToken() {
-        String token = jwtUtil.createToken(userDto,false);
+        String token = jwtUtil.createToken(id,false);
 
-        String user = jwtUtil.parseToken(token);
-        System.out.println("user: " + user);
+        Long id = jwtUtil.parseToken(token);
+        System.out.println("userId: " + id);
 
     }
 
     @Test
     public void testJWTExpire(){
 
-        Map<String, Object> map = BeanUtil.beanToMap(userDto);
+//        Map<String, Object> map = BeanUtil.beanToMap(userDto);
 
         String token = JWT.create()
                 .setExpiresAt(new Date(System.currentTimeMillis() + 1000 * 1))
-                .addPayloads(map)
+                .addPayloads(Map.of("id",id))
                 .setSigner(JWTSignerUtil.createSigner("HS256", "sidifensen".getBytes()))
                 .sign();
 
@@ -85,11 +85,11 @@ public class JwtUtilTest {
 
     @Test
     public void testJWT(){
-        Map<String, Object> map = BeanUtil.beanToMap(userDto);
+//        Map<String, Object> map = BeanUtil.beanToMap(userDto);
 
         String token = JWT.create()
                 .setExpiresAt(new Date(System.currentTimeMillis() + 1000 * 1))
-                .addPayloads(map)
+                .addPayloads(Map.of("id",id))
                 .setSigner(JWTSignerUtil.createSigner("HS256", "sidifensen".getBytes()))
                 .sign();
 
@@ -101,32 +101,40 @@ public class JwtUtilTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        String string = jwtUtil.parseToken(token);
-        System.out.println(string);
+        Long id = jwtUtil.parseToken(token);
+        System.out.println(id);
 
     }
 
 
     @Test
     public void testJWTValidate() {
-        Map<String, Object> map = BeanUtil.beanToMap(userDto);
+//        Map<String, Object> map = BeanUtil.beanToMap(userDto);
 
         String token = JWT.create()
-                .setExpiresAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 30))
-                .addPayloads(map)
-                .setSigner(JWTSignerUtil.createSigner("HS256", "sidifensen666".getBytes()))
+                .setExpiresAt(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(7)))
+                .addPayloads(Map.of("id",id))
+                .setSigner(JWTSignerUtil.createSigner("HS256", "sidifensen".getBytes()))
                 .sign();
 
         System.out.println(token);
+        Date date = new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(7));
+        System.out.println(date.getTime());
+        LocalDateTime localDateTime = LocalDateTime.now();
+        System.out.println(localDateTime);
+        boolean verify = JWTUtil.verify(token, "sidifensen".getBytes());
+        System.out.println("verify: " + verify);
+        Long id = jwtUtil.parseToken(token);
+        System.out.println(id);
     }
 
     @Test
     public void testNewJWT() {
-        Map<String, Object> map = BeanUtil.beanToMap(userDto);
+//        Map<String, Object> map = BeanUtil.beanToMap(userDto);
 
         String token = JWT.create()
                 .setExpiresAt(new Date(System.currentTimeMillis() + 1000 * 1))
-                .addPayloads(map)
+                .addPayloads(Map.of("id",id))
                 .setSigner(JWTSignerUtil.createSigner("HS256", "sidifensen".getBytes()))
                 .sign();
 

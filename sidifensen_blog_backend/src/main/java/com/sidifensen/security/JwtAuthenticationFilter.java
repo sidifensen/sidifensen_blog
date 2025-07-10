@@ -1,10 +1,8 @@
 package com.sidifensen.security;
 
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.json.JSONUtil;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.SecurityConstants;
-import com.sidifensen.domain.dto.UserDto;
 import com.sidifensen.domain.entity.LoginUser;
 import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.result.Result;
@@ -17,7 +15,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -59,16 +56,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         if (ObjectUtil.isNotEmpty(jwt)){
             // 解析并验证jwt
-            String user = jwtUtil.parseToken(jwt);
-            if (ObjectUtil.isEmpty(user)) {
+            Long id = jwtUtil.parseToken(jwt);
+            if (ObjectUtil.isEmpty(id)) {
                 //登录过期
                 WebUtil.Unauthorized(response, Result.unauthorized(BlogConstants.LoginExpired).toJson());
                 return;
             }
-            // 将json字符串转换为UserDto对象
-            UserDto userDto = JSONUtil.toBean(user, UserDto.class);
             // 根据id查询用户信息
-            SysUser sysUser = sysUserMapper.selectById(userDto.getId());
+            SysUser sysUser = sysUserMapper.selectById(id);
             // 将SysUser转换为LoginUser
             LoginUser loginUser = new LoginUser(sysUser);
             // 判断是否为null

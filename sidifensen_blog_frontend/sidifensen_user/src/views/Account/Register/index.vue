@@ -23,27 +23,23 @@
       </el-input>
     </el-form-item>
     <el-form-item prop="email">
-      <el-input v-model="formData.email" type="email" placeholder="电子邮件地址">
+      <el-input v-model="formData.email" type="email" placeholder="邮箱">
         <template #prefix>
           <el-icon><Message /></el-icon>
         </template>
       </el-input>
     </el-form-item>
-    <el-form-item prop="code">
-      <el-row :gutter="10" style="width: 100%">
-        <el-col :span="17">
-          <el-input v-model="formData.emailCheckCode" maxlength="6" placeholder="请输入验证码">
-            <template #prefix>
-              <el-icon><EditPen /></el-icon>
-            </template>
-          </el-input>
-        </el-col>
-        <el-col :span="5">
-          <el-button type="success" :disabled="!isEmailValid || coldTime != 0" @click="sendEmailBtn">
-            {{ coldTime > 0 ? `请稍后 ${coldTime} 秒` : "获取验证码" }}
-          </el-button>
-        </el-col>
-      </el-row>
+    <el-form-item prop="checkCode">
+      <div class="check-code-panel">
+        <el-input v-model="formData.emailCheckCode" maxlength="6" placeholder="请输入验证码">
+          <template #prefix>
+            <el-icon><EditPen /></el-icon>
+          </template>
+        </el-input>
+        <el-button class="checkCode" type="success" :disabled="!isEmailValid || waitTime != 0" @click="sendEmailBtn">
+          {{ coldTime > 0 ? `请稍后 ${waitTime} 秒` : "获取验证码" }}
+        </el-button>
+      </div>
     </el-form-item>
     <el-button type="danger" style="margin-top: 30px; width: 90%" plain @click="registerBtn">立即注册</el-button>
     <div style="margin-top: 20px">
@@ -105,7 +101,7 @@ const rules = {
   password_repeat: [{ validator: validatePassword, trigger: ["blur", "change"] }],
   email: [
     { required: true, message: "请输入邮件地址", trigger: "blur" },
-    { type: "email", message: "请输入合法的电子邮件地址", trigger: ["blur", "change"] },
+    { type: "email", message: "请输入合法的邮箱", trigger: ["blur", "change"] },
   ],
   emailCheckCode: [{ required: true, message: "请输入获取的验证码", trigger: "blur" }],
 };
@@ -119,25 +115,19 @@ function sendEmailBtn() {
       email: formData.value.email,
       type: "register",
     });
-    console.log("提交的数据:", EmailDto.value);
     coldTime.value = 60;
-    sendEmail(EmailDto.value).then((res) => {
-      if (res.data.code === 200) {
-        ElMessage.success(`验证码已发送到邮箱：${formData.value.email}，请注意查收`);
-        const intervalId = setInterval(() => {
-          if (coldTime.value === 0) {
-            clearInterval(intervalId);
-          } else {
-            coldTime.value--;
-          }
-        }, 1000);
-      } else {
-        ElMessage.warning(res.data.msg);
-        coldTime.value = 0;
-      }
+    sendEmail(EmailDto.value).then(() => {
+      ElMessage.success(`验证码已发送到邮箱：${formData.value.email}，请注意查收`);
+      const interval = setInterval(() => {
+        if (waitTime.value === 0) {
+          clearInterval(interval);
+        } else {
+          waitTime.value--;
+        }
+      }, 1000);
     });
   } else {
-    ElMessage.warning("请输入正确的电子邮件");
+    ElMessage.warning("请输入正确的邮箱");
   }
 }
 
@@ -145,21 +135,27 @@ function registerBtn() {
   formDataRef.value.validate((valid) => {
     if (valid) {
       // 去掉password_repeat字段
-      const RegisterDto = {...formData.value };
+      const RegisterDto = { ...formData.value };
       delete RegisterDto.password_repeat;
-      console.log("提交的数据:", RegisterDto);
-      register(RegisterDto).then((res) => {
-        ElMessage.success("注册成功，欢迎加入我们");
-        router.push("/login");
-      }).catch((error) => {
-        console.log(error);
-        // ElMessage.warning(error.response.data.msg);
-      });
+      register(RegisterDto)
+        .then(() => {
+          ElMessage.success("注册成功，欢迎进入博客");
+          router.push("/login");
+        })
     } else {
-      ElMessage.warning("请完整填写注册表单内容");
+      ElMessage.warning("请完整填写注册内容");
     }
   });
 }
 </script>
 
-<style scoped></style>
+<style lang="scss" scoped>
+.check-code-panel {
+  display: flex;
+  width: 100%;
+  .checkCode {
+    margin-left: 10px;
+    width: 110px;
+  }
+}
+</style>

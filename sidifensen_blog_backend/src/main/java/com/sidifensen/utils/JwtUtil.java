@@ -1,24 +1,13 @@
 package com.sidifensen.utils;
 
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.json.JSONUtil;
+import cn.hutool.core.convert.NumberWithFormat;
 import cn.hutool.jwt.JWT;
 import cn.hutool.jwt.JWTUtil;
-import cn.hutool.jwt.JWTValidator;
-import cn.hutool.jwt.signers.JWTSigner;
 import cn.hutool.jwt.signers.JWTSignerUtil;
-import com.sidifensen.domain.constants.RedisConstants;
-import com.sidifensen.domain.dto.UserDto;
-import com.sidifensen.domain.entity.LoginUser;
-import com.sidifensen.domain.entity.SysUser;
-import com.sidifensen.exception.BlogException;
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 
-import java.security.SignatureException;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -31,14 +20,15 @@ public class JwtUtil {
 
     /**
      * 生成token
-     * @param userDto
+     * @param id 用户id
+     * @param isRememberMe 是否记住我
      * @return
      */
-    public String createToken(UserDto userDto,boolean isRememberMe) {
+    public String createToken(Long id,boolean isRememberMe) {
         String token = JWT.create()
                 // 设置过期时间 rememberMe为true时，token有效期为7天，否则为1天
                 .setExpiresAt(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(isRememberMe? 7 : 1)))
-                .addPayloads(BeanUtil.beanToMap(userDto))
+                .addPayloads(Map.of("id",id))
                 .setSigner(JWTSignerUtil.createSigner("HS256", secret.getBytes()))
                 .sign();
         return token;
@@ -49,7 +39,7 @@ public class JwtUtil {
      * @param token
      * @return
      */
-    public String parseToken(String token) {
+    public Long parseToken(String token) {
         // 验证token
         if (!JWTUtil.verify(token, secret.getBytes())) {
             return null;
@@ -61,8 +51,17 @@ public class JwtUtil {
         if (System.currentTimeMillis() > exp * 1000) {
             return null;
         }
-        String user = jwt.getPayload().toString();
-        return user;
+
+        Object claim = jwt.getPayload().getClaim("id");
+        if (claim instanceof NumberWithFormat) {
+            Number number = (Number) ((NumberWithFormat) claim).getNumber();
+            return number.longValue(); //  安全转换为 Long
+        }
+
+        if (claim instanceof Number) {
+            return ((Number) claim).longValue(); // 兜底处理普通 Number 类型
+        }
+        return null;
     }
 
 

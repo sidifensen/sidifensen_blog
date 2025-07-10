@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎注册</title>
+    <style type="text/css">
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            /*background: url("https://cn.bing.com/th?id=OHR.BahamaBlues_ZH-CN8134624828_1080x1920.jpg") no-repeat center center / cover;*/
+            background: url("https://bing.img.run/1920x1080.php") no-repeat center center / cover;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .container {
+            text-align: center;
+
+            img {
+                border-radius: 50%;
+            }
+
+            .checkCode {
+                font-size: 20px;
+                color: black;
+
+                .code {
+                    font-size: 30px;
+                    color: #5f17a3;
+                    text-shadow: 1px 2px 1px rgba(0, 0, 0, 0.1);
+                }
+            }
+
+            a {
+                text-decoration: none;
+                color: white;
+            }
+
+            .button {
+                display: flex;
+                align-items: center;
+                flex-direction: column;
+            }
+
+            .goto,
+            .gitee,
+            .github {
+                display: block;
+                margin-top: 5px;;
+                width: 300px;
+                padding: 10px;
+                border-radius: 10px;
+                background-color: #409eff;
+                color: white;
+                font-size: 16px;
+                transition: all 0.5s ease;
+                box-shadow: -3px 8px 10px rgba(0, 0, 0, 0.1);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 5px;
+
+                svg {
+                    width: 32px;
+                    height: 32px;
+                }
+            }
+
+            .gitee,
+            .github {
+                padding-right: 20px;
+            }
+
+            .goto:hover,
+            .gitee:hover,
+            .github:hover {
+                cursor: pointer;
+                background-image: linear-gradient(to right, #409eff, #69c0ff, #00ccff, #98c0e6);
+                background-size: 200% 100%;
+                box-shadow: -4px 15px 20px rgba(0, 0, 0, 0.2);
+            }
+        }
+    </style>
+</head>
+<body>
+<div>
+    <div class="container">
+        <div class="avatar" style="margin-top: 50px;">
+            <img src="https://foruda.gitee.com/avatar/1752080025136627357/14919133_sidifensen_1752080025.png!avatar200"
+                 alt="头像">
+        </div>
+        <div class="title">
+            <h2>欢迎注册斯蒂芬森的博客</h2>
+            <h3>一个开源免费的个人博客网站</h3>
+        </div>
+        <div class="checkCode" style="margin-top: 20px;">
+            您的注册验证码为：<span th:text="${checkCode}" class="code">123456</span>
+        </div>
+        <div class="content" style="margin-top: 15px;">
+            验证码有效期为5分钟，为了您的帐号安全，请勿将验证码泄露给他人。
+        </div>
+        <div class="button" style="margin-top: 10px;">
+            <a href="www.sidifensen.com" class="goto">立即前往博客网站</a>
+            <br>
+            <a href="https://gitee.com/sidifensen/sidifensen_blog" class="gitee">
+                <!--                <svg t="1752123420781" class="icon" viewBox="0 0 1024 1024" version="1.1"-->
+                <!--                     xmlns="http://www.w3.org/2000/svg" p-id="2838" id="mx_n_1752123420782" width="32" height="32">-->
+                <!--                    <path d="M512 1024C229.2224 1024 0 794.7776 0 512S229.2224 0 512 0s512 229.2224 512 512-229.2224 512-512 512z m259.1488-568.8832H480.4096a25.2928 25.2928 0 0 0-25.2928 25.2928l-0.0256 63.2064c0 13.952 11.3152 25.2928 25.2672 25.2928h177.024c13.9776 0 25.2928 11.3152 25.2928 25.2672v12.6464a75.8528 75.8528 0 0 1-75.8528 75.8528H366.592a25.2928 25.2928 0 0 1-25.2672-25.2928v-240.1792a75.8528 75.8528 0 0 1 75.8272-75.8528h353.9456a25.2928 25.2928 0 0 0 25.2672-25.2928l0.0768-63.2064a25.2928 25.2928 0 0 0-25.2672-25.2928H417.152a189.6192 189.6192 0 0 0-189.6192 189.6448v353.9456c0 13.9776 11.3152 25.2928 25.2928 25.2928h372.9408a170.6496 170.6496 0 0 0 170.6496-170.6496v-145.408a25.2928 25.2928 0 0 0-25.2928-25.2672z"-->
+                <!--                          fill="#C71D23" p-id="2839"></path>-->
+                <!--                </svg>-->
+                <img src="data:image/svg+xml;charset=utf-8;base64,ICAgICAgICAgICAgICAgIDxzdmcgdD0iMTc1MjEyMzQyMDc4MSIgY2xhc3M9Imljb24iIHZpZXdCb3g9IjAgMCAxMDI0IDEwMjQiIHZlcnNpb249IjEuMSIKICAgICAgICAgICAgICAgICAgICAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBwLWlkPSIyODM4IiBpZD0ibXhfbl8xNzUyMTIzNDIwNzgyIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik01MTIgMTAyNEMyMjkuMjIyNCAxMDI0IDAgNzk0Ljc3NzYgMCA1MTJTMjI5LjIyMjQgMCA1MTIgMHM1MTIgMjI5LjIyMjQgNTEyIDUxMi0yMjkuMjIyNCA1MTItNTEyIDUxMnogbTI1OS4xNDg4LTU2OC44ODMySDQ4MC40MDk2YTI1LjI5MjggMjUuMjkyOCAwIDAgMC0yNS4yOTI4IDI1LjI5MjhsLTAuMDI1NiA2My4yMDY0YzAgMTMuOTUyIDExLjMxNTIgMjUuMjkyOCAyNS4yNjcyIDI1LjI5MjhoMTc3LjAyNGMxMy45Nzc2IDAgMjUuMjkyOCAxMS4zMTUyIDI1LjI5MjggMjUuMjY3MnYxMi42NDY0YTc1Ljg1MjggNzUuODUyOCAwIDAgMS03NS44NTI4IDc1Ljg1MjhIMzY2LjU5MmEyNS4yOTI4IDI1LjI5MjggMCAwIDEtMjUuMjY3Mi0yNS4yOTI4di0yNDAuMTc5MmE3NS44NTI4IDc1Ljg1MjggMCAwIDEgNzUuODI3Mi03NS44NTI4aDM1My45NDU2YTI1LjI5MjggMjUuMjkyOCAwIDAgMCAyNS4yNjcyLTI1LjI5MjhsMC4wNzY4LTYzLjIwNjRhMjUuMjkyOCAyNS4yOTI4IDAgMCAwLTI1LjI2NzItMjUuMjkyOEg0MTcuMTUyYTE4OS42MTkyIDE4OS42MTkyIDAgMCAwLTE4OS42MTkyIDE4OS42NDQ4djM1My45NDU2YzAgMTMuOTc3NiAxMS4zMTUyIDI1LjI5MjggMjUuMjkyOCAyNS4yOTI4aDM3Mi45NDA4YTE3MC42NDk2IDE3MC42NDk2IDAgMCAwIDE3MC42NDk2LTE3MC42NDk2di0xNDUuNDA4YTI1LjI5MjggMjUuMjkyOCAwIDAgMC0yNS4yOTI4LTI1LjI2NzJ6IgogICAgICAgICAgICAgICAgICAgICAgICAgIGZpbGw9IiNDNzFEMjMiIHAtaWQ9IjI4MzkiPjwvcGF0aD4KICAgICAgICAgICAgICAgIDwvc3ZnPg=="
+                     alt="gitee">
+                gitee主页
+            </a>
+            <br>
+            <a href="https://github.com/sidifensen/sidifensen_blog" class="github">
+                <!--                <svg t="1752123104139" class="icon" viewBox="0 0 1024 1024" version="1.1"-->
+                <!--                     xmlns="http://www.w3.org/2000/svg" p-id="2690" width="32" height="32">-->
+                <!--                    <path d="M512 42.666667A464.64 464.64 0 0 0 42.666667 502.186667 460.373333 460.373333 0 0 0 363.52 938.666667c23.466667 4.266667 32-9.813333 32-22.186667v-78.08c-130.56 27.733333-158.293333-61.44-158.293333-61.44a122.026667 122.026667 0 0 0-52.053334-67.413333c-42.666667-28.16 3.413333-27.733333 3.413334-27.733334a98.56 98.56 0 0 1 71.68 47.36 101.12 101.12 0 0 0 136.533333 37.973334 99.413333 99.413333 0 0 1 29.866667-61.44c-104.106667-11.52-213.333333-50.773333-213.333334-226.986667a177.066667 177.066667 0 0 1 47.36-124.16 161.28 161.28 0 0 1 4.693334-121.173333s39.68-12.373333 128 46.933333a455.68 455.68 0 0 1 234.666666 0c89.6-59.306667 128-46.933333 128-46.933333a161.28 161.28 0 0 1 4.693334 121.173333A177.066667 177.066667 0 0 1 810.666667 477.866667c0 176.64-110.08 215.466667-213.333334 226.986666a106.666667 106.666667 0 0 1 32 85.333334v125.866666c0 14.933333 8.533333 26.88 32 22.186667A460.8 460.8 0 0 0 981.333333 502.186667 464.64 464.64 0 0 0 512 42.666667"-->
+                <!--                          fill="#231F20" p-id="2691"></path>-->
+                <!--                </svg>-->
+                <img src="data:image/svg+xml;charset=utf-8;base64,ICAgICAgICAgICAgICAgIDxzdmcgdD0iMTc1MjEyMzEwNDEzOSIgY2xhc3M9Imljb24iIHZpZXdCb3g9IjAgMCAxMDI0IDEwMjQiIHZlcnNpb249IjEuMSIKICAgICAgICAgICAgICAgICAgICAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBwLWlkPSIyNjkwIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik01MTIgNDIuNjY2NjY3QTQ2NC42NCA0NjQuNjQgMCAwIDAgNDIuNjY2NjY3IDUwMi4xODY2NjcgNDYwLjM3MzMzMyA0NjAuMzczMzMzIDAgMCAwIDM2My41MiA5MzguNjY2NjY3YzIzLjQ2NjY2NyA0LjI2NjY2NyAzMi05LjgxMzMzMyAzMi0yMi4xODY2Njd2LTc4LjA4Yy0xMzAuNTYgMjcuNzMzMzMzLTE1OC4yOTMzMzMtNjEuNDQtMTU4LjI5MzMzMy02MS40NGExMjIuMDI2NjY3IDEyMi4wMjY2NjcgMCAwIDAtNTIuMDUzMzM0LTY3LjQxMzMzM2MtNDIuNjY2NjY3LTI4LjE2IDMuNDEzMzMzLTI3LjczMzMzMyAzLjQxMzMzNC0yNy43MzMzMzRhOTguNTYgOTguNTYgMCAwIDEgNzEuNjggNDcuMzYgMTAxLjEyIDEwMS4xMiAwIDAgMCAxMzYuNTMzMzMzIDM3Ljk3MzMzNCA5OS40MTMzMzMgOTkuNDEzMzMzIDAgMCAxIDI5Ljg2NjY2Ny02MS40NGMtMTA0LjEwNjY2Ny0xMS41Mi0yMTMuMzMzMzMzLTUwLjc3MzMzMy0yMTMuMzMzMzM0LTIyNi45ODY2NjdhMTc3LjA2NjY2NyAxNzcuMDY2NjY3IDAgMCAxIDQ3LjM2LTEyNC4xNiAxNjEuMjggMTYxLjI4IDAgMCAxIDQuNjkzMzM0LTEyMS4xNzMzMzNzMzkuNjgtMTIuMzczMzMzIDEyOCA0Ni45MzMzMzNhNDU1LjY4IDQ1NS42OCAwIDAgMSAyMzQuNjY2NjY2IDBjODkuNi01OS4zMDY2NjcgMTI4LTQ2LjkzMzMzMyAxMjgtNDYuOTMzMzMzYTE2MS4yOCAxNjEuMjggMCAwIDEgNC42OTMzMzQgMTIxLjE3MzMzM0ExNzcuMDY2NjY3IDE3Ny4wNjY2NjcgMCAwIDEgODEwLjY2NjY2NyA0NzcuODY2NjY3YzAgMTc2LjY0LTExMC4wOCAyMTUuNDY2NjY3LTIxMy4zMzMzMzQgMjI2Ljk4NjY2NmExMDYuNjY2NjY3IDEwNi42NjY2NjcgMCAwIDEgMzIgODUuMzMzMzM0djEyNS44NjY2NjZjMCAxNC45MzMzMzMgOC41MzMzMzMgMjYuODggMzIgMjIuMTg2NjY3QTQ2MC44IDQ2MC44IDAgMCAwIDk4MS4zMzMzMzMgNTAyLjE4NjY2NyA0NjQuNjQgNDY0LjY0IDAgMCAwIDUxMiA0Mi42NjY2NjciCiAgICAgICAgICAgICAgICAgICAgICAgICAgZmlsbD0iIzIzMUYyMCIgcC1pZD0iMjY5MSI+PC9wYXRoPgogICAgICAgICAgICAgICAgPC9zdmc+"
+                     alt="github">
+                github主页
+            </a>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

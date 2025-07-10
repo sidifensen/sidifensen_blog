@@ -29,7 +29,7 @@ spring:
             required: true # 要求使用TLS协议
           ssl:
             enable: true # 开启SSL协议
-#        debug: true
+#        debug: true # 调试模式
   rabbitmq:
     host: localhost
     port: 5672

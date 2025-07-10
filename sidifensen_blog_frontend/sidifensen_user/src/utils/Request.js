@@ -38,13 +38,13 @@ request.interceptors.response.use((response) => {
     if(code == 200) {
         return response;
     }else{
-        // 响应失败的处理 401
+        // 响应失败的处理 401 400
         ElMessage.error(msg);
     }
     return Promise.reject(response.data);
 },(error) => {
     console.log('error=====>',error)
-    let {status,data} = error.response;
+    // let {status,data} = error.response;
     // if(status === 401){
     //     // 401 代表token过期，需要重新登录
     //     ElMessage.error(data.msg);

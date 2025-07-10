@@ -1,13 +1,10 @@
 package com.sidifensen.domain.dto;
 
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.io.Serializable;
-
 @Data
-public class LoginDto implements Serializable {
+public class LoginDto{
 
     //用户名或邮箱
     @NotNull(message = "用户名或邮箱不能为空")

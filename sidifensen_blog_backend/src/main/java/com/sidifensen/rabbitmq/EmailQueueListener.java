@@ -30,14 +30,16 @@ public class EmailQueueListener {
             key = RabbitMQConstants.Email_Routing_Key,
             value = @Queue(RabbitMQConstants.Email_Queue)))
     public void receiveEmail(Map<String, Object> message) {
-        log.info("收到邮件发送请求：{}", message);
+        log.info("消费者接收到rabbitmq邮件发送请求：{}", message);
         String email = (String) message.get("email");
         String checkCode = (String) message.get("checkCode");
         String type = (String) message.get("type");
 
         if (type.equals(MailEnum.REGISTER.getType())) {
             emailUtil.sendHtmlMail(email, MailEnum.REGISTER.getSubject(), MailEnum.REGISTER.getTemplateName(), Map.of("checkCode", checkCode));
+        }else if (type.equals(MailEnum.RESET.getType())) {
+            emailUtil.sendHtmlMail(email, MailEnum.RESET.getSubject(), MailEnum.RESET.getTemplateName(), Map.of("checkCode", checkCode));
         }
-        log.info("{}邮件发送成功", email);
+        log.info("成功发送邮箱给{}", email);
     }
 }
