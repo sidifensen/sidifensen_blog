@@ -13,3 +13,7 @@ register.html  qq网页版不显示背景图片
 </table>
 
 谷歌邮箱不支持display的flex样式,如 display: flex; align-items: center; justify-content: center;
+
+7/11
+@NotEmpty可以判null和 字符串、集合（Collection）、Map、数组等是否为空。而@NotNull只能判null
+

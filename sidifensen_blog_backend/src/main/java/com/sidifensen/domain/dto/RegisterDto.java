@@ -1,6 +1,7 @@
 package com.sidifensen.domain.dto;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
@@ -19,7 +20,7 @@ public class RegisterDto {
 
     // 邮箱
     @Email
-    @Length(min = 4)
+    @NotEmpty(message = "邮箱不能为空")
     private String email;
 
     // 邮箱验证码

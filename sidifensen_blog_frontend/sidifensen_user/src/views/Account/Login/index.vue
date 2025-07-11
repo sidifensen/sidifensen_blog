@@ -22,17 +22,17 @@
             <el-icon><EditPen /></el-icon>
           </template>
         </el-input>
-        <img class="check-code" :src="checkCodeInfo.checkCodeBase64" alt="" @click="changeCheckCode()" />
+        <img class="check-code" :src="checkCodeInfo.checkCodeBase64" alt="验证码" @click="changeCheckCode()" />
       </div>
     </el-form-item>
     <div class="rememberMe">
       <el-checkbox v-model="formData.rememberMe">记住密码</el-checkbox>
-      <el-button class="forgetPassword" type="text" @click="router.push('/reset')">忘记密码</el-button>
+      <el-button class="forgetPassword" type="primary" link @click="router.push('/reset')">忘记密码</el-button>
     </div>
-    <el-button style="width: 90%" type="primary" plain @click="loginBtn">登录</el-button>
+    <el-button style="margin-bottom: 20px;" type="primary" plain @click="loginBtn">登录</el-button>
     <!-- 分割线 -->
     <el-divider>没有账号</el-divider>
-    <el-button style="width: 90%" type="success" plain @click="router.push('/register')">注册</el-button>
+    <el-button type="success" plain @click="router.push('/register')">注册</el-button>
     <!-- 分割线 -->
     <el-divider>其他登录方式</el-divider>
     <!-- 其他的登录方式 -->
@@ -67,6 +67,7 @@ const rules = ref({
   checkCode: [{ required: true, message: "请输入验证码", trigger: "blur" }],
 });
 
+// 登录按钮
 const loginBtn = () => {
   formDataRef.value.validate((valid) => {
     if (!valid) {
@@ -89,12 +90,15 @@ const loginBtn = () => {
 };
 
 const checkCodeInfo = ref({});
+// 刷新验证码
 const changeCheckCode = async () => {
   await checkCode().then((res) => {
     checkCodeInfo.value = res.data.data;
     formData.value.checkCodeKey = res.data.data.checkCodeKey;
   });
 };
+
+// 页面加载完成后刷新验证码
 onMounted(() => {
   changeCheckCode();
 });
@@ -104,7 +108,9 @@ onMounted(() => {
 .check-code-panel {
   display: flex;
   width: 100%;
-  img {
+  .check-code {
+    width: 100px;
+    height: 32px;
     margin-left: 10px;
     cursor: pointer;
     border: 2px solid #dcdfe6;

@@ -166,6 +166,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     public void resetPassword(ResetPasswordDto resetPasswordDto) {
         // 如果新密码与老密码相同
         SysUser sysUser = sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getEmail, resetPasswordDto.getEmail()));
+        if (ObjectUtil.isNull(sysUser)) {
+            throw new BlogException(BlogConstants.NotFoundEmail); // 邮箱不存在
+        }
         if (passwordEncoder.matches(resetPasswordDto.getPassword(), sysUser.getPassword())) { // security的密码加密器对比密码用matches方法
             throw new BlogException(BlogConstants.NewPasswordSameAsOld); // 新密码不能与原密码相同
         }

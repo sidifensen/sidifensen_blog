@@ -1,6 +1,7 @@
 package com.sidifensen.domain.dto;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
@@ -13,6 +14,7 @@ public class EmailDto {
 
     // 邮箱
     @Email
+    @NotEmpty(message = "邮箱不能为空")
     private String email;
 
     // 发送邮箱的类型

@@ -4,17 +4,36 @@
     <div class="welcome_title">
       <div>欢迎来到斯蒂芬森的博客</div>
       <div>在这里，你可以找到我喜欢的文章，分享自己的想法，与志同道合的朋友交流。</div>
+      <motion.div
+        :transition="transition"
+      />
     </div>
     <div class="right_panel">
-      <router-view></router-view>
+      <router-view v-slot="{ Component }">
+        <transition name="scale" mode="out-in">
+          <component :is="Component"/>
+        </transition>
+      </router-view>
     </div>
   </div>
 </template>
 
 <script>
+const transition = {
+  duration: 0.8,
+  delay: 0.5,
+  ease: [0, 0.71, 0.2, 1.01],
+}
 </script>
 
 <style lang="scss" scoped>
+:deep(.el-form) {
+  //将样式穿透到子组件
+  width: 420px;
+}
+:deep(.is-plain) {
+  width: 70%;
+}
 .login_container {
   display: flex;
   height: 100vh;
@@ -41,8 +60,7 @@
     align-items: center;
     flex-direction: column;
     text-align: center;
-    width: 400px;
-    padding: 10px;
+    width: 500px;
     background-color: #fff;
   }
   @media screen and (max-width: 600px) {
@@ -54,4 +72,7 @@
     }
   }
 }
+
+
+
 </style>
