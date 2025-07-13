@@ -1,5 +1,6 @@
 package com.sidifensen.utils;
 
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -12,9 +13,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class RedisUtils {
+public class RedisUtil {
 
-    @Autowired
+    @Resource
     private RedisTemplate<String,Object> redisTemplate;
 
     /**

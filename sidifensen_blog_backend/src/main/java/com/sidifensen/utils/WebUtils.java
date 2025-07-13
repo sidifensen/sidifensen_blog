@@ -7,55 +7,47 @@ import java.io.PrintWriter;
 
 /**
  * Web 工具类
+ * 用于给前端返回不同状态码和信息
  */
 public class WebUtil {
+
     /**
-     * 将字符串渲染到客户端
-     *
-     * @param response 渲染对象
-     * @param string 待渲染的字符串
+     * 成功
+     * @param response 响应对象
+     * @param msg      成功信息
      * @return null
      */
-    public static String renderString(HttpServletResponse response, String string) {
-        try
-        {
+    public static void success(HttpServletResponse response, String msg) {
+        try {
             response.setStatus(200);
             response.setContentType("application/json");
             response.setCharacterEncoding("utf-8");
             PrintWriter writer = response.getWriter();
-            writer.println(string);
+            writer.println(msg);
             writer.flush();
             writer.close();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
     }
 
     /**
-     * 将字符串渲染到客户端
-     *
-     * @param response 渲染对象
-     * @param string 待渲染的字符串
+     * 未授权
+     * @param response 响应对象
+     * @param msg      错误信息
      * @return null
      */
-    public static String Unauthorized(HttpServletResponse response, String string) {
-        try
-        {
+    public static void Unauthorized(HttpServletResponse response, String msg) {
+        try {
             response.setStatus(401);
             response.setContentType("application/json");
             response.setCharacterEncoding("utf-8");
             PrintWriter writer = response.getWriter();
-            writer.println(string);
+            writer.println(msg);
             writer.flush();
             writer.close();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
     }
 }
