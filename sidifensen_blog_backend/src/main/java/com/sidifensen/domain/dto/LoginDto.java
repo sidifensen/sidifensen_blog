@@ -14,7 +14,7 @@ public class LoginDto{
     @NotEmpty(message = "密码不能为空")
     private String password;
     //记住我
-    @NotEmpty(message = "记住我不能为空")
+    @NotNull(message = "记住我不能为空")
     private Boolean rememberMe;
     //验证码key
     @NotEmpty(message = "验证码key不能为空")

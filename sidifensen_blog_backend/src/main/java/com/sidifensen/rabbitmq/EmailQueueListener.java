@@ -2,7 +2,7 @@ package com.sidifensen.rabbitmq;
 
 import com.sidifensen.domain.constants.RabbitMQConstants;
 import com.sidifensen.domain.enums.MailEnum;
-import com.sidifensen.utils.EmailUtil;
+import com.sidifensen.utils.EmailUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.Exchange;
@@ -23,7 +23,7 @@ import java.util.Map;
 public class EmailQueueListener {
 
     @Resource
-    private EmailUtil emailUtil;
+    private EmailUtils emailUtils;
 
     @RabbitListener(bindings = @QueueBinding(
             exchange = @Exchange(RabbitMQConstants.Email_Exchange),
@@ -36,9 +36,9 @@ public class EmailQueueListener {
         String type = (String) message.get("type");
 
         if (type.equals(MailEnum.REGISTER.getType())) {
-            emailUtil.sendHtmlMail(email, MailEnum.REGISTER.getSubject(), MailEnum.REGISTER.getTemplateName(), Map.of("checkCode", checkCode));
+            emailUtils.sendHtmlMail(email, MailEnum.REGISTER.getSubject(), MailEnum.REGISTER.getTemplateName(), Map.of("checkCode", checkCode));
         }else if (type.equals(MailEnum.RESET.getType())) {
-            emailUtil.sendHtmlMail(email, MailEnum.RESET.getSubject(), MailEnum.RESET.getTemplateName(), Map.of("checkCode", checkCode));
+            emailUtils.sendHtmlMail(email, MailEnum.RESET.getSubject(), MailEnum.RESET.getTemplateName(), Map.of("checkCode", checkCode));
         }
         log.info("成功发送邮箱给{}", email);
     }

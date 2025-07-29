@@ -2,12 +2,10 @@ package com.sidifensen;
 
 import cn.hutool.core.date.DateTime;
 import com.sidifensen.domain.enums.MailEnum;
-import com.sidifensen.redis.RedisComponent;
-import com.sidifensen.utils.EmailUtil;
+import com.sidifensen.utils.EmailUtils;
 import jakarta.annotation.Resource;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -25,7 +23,7 @@ public class EmailTest {
     private JavaMailSender javaMailSender;
 
     @Resource
-    private EmailUtil emailUtil;
+    private EmailUtils emailUtil;
 
     @Test
     public void test() throws Exception {

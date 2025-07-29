@@ -9,7 +9,7 @@ import java.io.PrintWriter;
  * Web 工具类
  * 用于给前端返回不同状态码和信息
  */
-public class WebUtil {
+public class WebUtils {
 
     /**
      * 成功

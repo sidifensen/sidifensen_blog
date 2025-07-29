@@ -3,7 +3,6 @@ package com.sidifensen.utils;
 import cn.hutool.core.util.StrUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Component;
  * @author sidifensen
  */
 @Component
-public class IpUtil {
+public class IpUtils {
 
     @Resource
     private HttpServletRequest request;

@@ -1,17 +1,15 @@
 <template>
+  <Header></Header>
   <div class="login_container">
     <div class="left_panel"></div>
     <div class="welcome_title">
       <div>欢迎来到斯蒂芬森的博客</div>
       <div>在这里，你可以找到我喜欢的文章，分享自己的想法，与志同道合的朋友交流。</div>
-      <motion.div
-        :transition="transition"
-      />
     </div>
     <div class="right_panel">
       <router-view v-slot="{ Component }">
-        <transition name="scale" mode="out-in">
-          <component :is="Component"/>
+        <transition name="slide" mode="out-in">
+          <component :is="Component" />
         </transition>
       </router-view>
     </div>
@@ -19,11 +17,7 @@
 </template>
 
 <script>
-const transition = {
-  duration: 0.8,
-  delay: 0.5,
-  ease: [0, 0.71, 0.2, 1.01],
-}
+
 </script>
 
 <style lang="scss" scoped>
@@ -36,7 +30,7 @@ const transition = {
 }
 .login_container {
   display: flex;
-  height: 100vh;
+  height: calc(100vh - 40px);
   .left_panel {
     flex: 1;
     background: url("@/assets/img/bg.jpg") no-repeat center center / cover;
@@ -61,7 +55,7 @@ const transition = {
     flex-direction: column;
     text-align: center;
     width: 500px;
-    background-color: #fff;
+    background-color: var(--el-bg-color);
   }
   @media screen and (max-width: 600px) {
     .left_panel {
@@ -72,7 +66,5 @@ const transition = {
     }
   }
 }
-
-
 
 </style>

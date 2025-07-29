@@ -13,12 +13,19 @@ a {
     box-sizing: border-box;
 }
 
-// 定义进入和离开的动画效果
+// el-dropdown 去掉黑框
+.el-tooltip__trigger:focus-visible {
+  outline: unset;
+} 
+
+// -enter-active 和 -leave-active 定义进入和离开的动画效果
+// -enter-from 和 -leave-to定义进入和离开的状态
+
+// 淡入淡出动画
 .fade-enter-active,
 .fade-leave-active { 
   transition: opacity 0.3s ease;
 }
-// 定义进入和离开的状态
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
@@ -33,22 +40,4 @@ a {
 .scale-leave-to {
   opacity: 0;
   transform: scale(0.9);
-}
-
-/*
-  进入和离开动画可以使用不同
-  持续时间和速度曲线。
-*/
-.slide-fade-enter-active {
-  transition: all 0.3s ease-out;
-}
-
-.slide-fade-leave-active {
-  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  transform: translateX(20px);
-  opacity: 0;
 }

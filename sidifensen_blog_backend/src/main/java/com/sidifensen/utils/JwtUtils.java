@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class JwtUtil {
+public class JwtUtils {
 
     @Value("${spring.security.jwt.secret}")
     private String secret;

@@ -43,3 +43,8 @@ spring:
           initial-interval: 6000 #重试间隔时间（单位毫秒）
           multiplier: 2 #间隔时间乘子，间隔时间*乘子=下一次的间隔时间，最大不能超过设置的最大间隔时间
           max-interval: 10000 #重试最大时间间隔（单位毫秒）
+minio: # minio 配置
+  endpoint: http://localhost:9000
+  accessKey: minio
+  secretKey: minio123456
+  bucketName: sidifensen-blog

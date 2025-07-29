@@ -38,7 +38,7 @@
     <!-- 其他的登录方式 -->
     <div class="other-login">
       <svg-icon name="gitee" width="35px" height="35px" color="#4E86F1" cursor="pointer" />
-      <svg-icon name="github" width="35px" height="35px" color="#4E86F1" cursor="pointer" />
+      <svg-icon name="github" width="36px" height="36px" color="#4E86F1" cursor="pointer" />
     </div>
   </el-form>
 </template>
@@ -46,13 +46,15 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { login, checkCode } from "@/api/user";
-import { SET_TOKEN } from "@/utils/Auth";
+import { login, checkCode, info } from "@/api/user";
+import { SetJwt } from "@/utils/auth";
 import { ElMessage } from "element-plus";
+import { useUserStore } from "@/stores/userStore.js";
+
+const userStore = useUserStore();
+
 const router = useRouter();
-
 const formDataRef = ref(null);
-
 const formData = ref({
   username: "",
   password: "",
@@ -78,7 +80,10 @@ const loginBtn = () => {
         .then((res) => {
           ElMessage.success("登录成功");
           //将jwt存储到localStorage
-          SET_TOKEN(res.data.data);
+          SetJwt(res.data.data);
+          info().then((res) => {
+            userStore.user = res.data.data;
+          })
           router.push("/");
         })
         .catch(() => {

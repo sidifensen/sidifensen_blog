@@ -7,8 +7,8 @@ import com.sidifensen.domain.entity.LoginUser;
 import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.mapper.SysUserMapper;
-import com.sidifensen.utils.JwtUtil;
-import com.sidifensen.utils.WebUtil;
+import com.sidifensen.utils.JwtUtils;
+import com.sidifensen.utils.WebUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -33,7 +33,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Resource
-    private JwtUtil jwtUtil;
+    private JwtUtils jwtUtils;
 
     @Resource
     private SysUserMapper sysUserMapper;
@@ -51,15 +51,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String jwt = request.getHeader("Authorization");
         if (ObjectUtil.isEmpty(jwt)){
             //请先登录
-            WebUtil.Unauthorized(response, Result.unauthorized(BlogConstants.LoginRequired).toJson());
+            WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.LoginRequired).toJson());
             return;
         }
         if (ObjectUtil.isNotEmpty(jwt)){
             // 解析并验证jwt
-            Long id = jwtUtil.parseToken(jwt);
+            Long id = jwtUtils.parseToken(jwt);
             if (ObjectUtil.isEmpty(id)) {
                 //登录过期
-                WebUtil.Unauthorized(response, Result.unauthorized(BlogConstants.LoginExpired).toJson());
+                WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.LoginExpired).toJson());
                 return;
             }
             // 根据id查询用户信息

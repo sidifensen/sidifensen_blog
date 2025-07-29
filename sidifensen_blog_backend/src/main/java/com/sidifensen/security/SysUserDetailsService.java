@@ -1,7 +1,6 @@
 package com.sidifensen.security;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.LocalDateTimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.entity.*;
@@ -9,18 +8,15 @@ import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
 import com.sidifensen.domain.enums.RoleEnum;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.*;
-import com.sidifensen.utils.IpUtil;
+import com.sidifensen.utils.IpUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,7 +40,7 @@ public class SysUserDetailsService implements UserDetailsService {
     private SysRoleMenuMapper sysRoleMenuMapper;
 
     @Resource
-    private IpUtil ipUtil;
+    private IpUtils ipUtils;
 
 
     /**
@@ -66,7 +62,7 @@ public class SysUserDetailsService implements UserDetailsService {
 
         sysUser.setLoginType(RegisterOrLoginTypeEnum.EMAIL.getRegisterType());
         sysUser.setLoginTime(LocalDateTime.now());
-        sysUser.setLoginIp(ipUtil.getIpAddr());
+        sysUser.setLoginIp(ipUtils.getIpAddr());
         sysUserMapper.updateById(sysUser);
 
         return handleLogin(sysUser);

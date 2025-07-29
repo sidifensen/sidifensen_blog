@@ -1,46 +1,30 @@
 package com.sidifensen.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.RabbitMQConstants;
 import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.entity.*;
-import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
-import com.sidifensen.domain.enums.RoleEnum;
-import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.UserVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.*;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.ISysUserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.sidifensen.utils.JwtUtil;
-import com.sidifensen.utils.SecurityUtil;
+import com.sidifensen.utils.JwtUtils;
+import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -58,7 +42,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     private AuthenticationManager authenticationManager;
 
     @Resource
-    private JwtUtil jwtUtil;
+    private JwtUtils jwtUtils;
 
     @Resource
     private SysUserMapper sysUserMapper;
@@ -72,9 +56,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     // Spring Security的密码加密器
     @Resource
     private PasswordEncoder passwordEncoder;
-
-    @Resource
-    private SecurityUtil securityUtil;
 
     @Override
     public String login(LoginDto loginDto) {
@@ -90,7 +71,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             // 获取用户信息，返回的就是UserDetails
             LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
             // 创建token,此处的token时由UUID编码而成JWT字符串
-            String token = jwtUtil.createToken(loginUser.getSysUser().getId(), loginDto.getRememberMe());
+            String token = jwtUtils.createToken(loginUser.getSysUser().getId(), loginDto.getRememberMe());
             return token;
         } finally {
             redisComponent.cleanCheckCode(loginDto.getCheckCodeKey());
@@ -181,7 +162,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Override
     public UserVo info() {
-        Long userId = securityUtil.getUserId();
+        Long userId = SecurityUtils.getUserId();
         SysUser sysUser = sysUserMapper.selectById(userId);
         UserVo userVo = BeanUtil.copyProperties(sysUser, UserVo.class);
         return userVo;

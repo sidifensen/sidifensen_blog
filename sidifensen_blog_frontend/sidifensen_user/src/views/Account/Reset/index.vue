@@ -1,6 +1,7 @@
 <template>
   <div>
-    <el-steps style="margin: 0 auto;" align-center :active="step" finish-status="success">
+    <h2>重置密码</h2>
+    <el-steps style="margin: 0 auto; margin-bottom: 10px;" align-center :active="step" finish-status="success">
       <el-step title="验证邮箱" />
       <el-step title="重置密码" />
     </el-steps>
@@ -44,7 +45,7 @@
         </el-form-item>
         <el-button type="primary" plain @click="resetPasswordBtn">重置密码</el-button>
       </el-form>
-      <div style="width: 380px; margin-bottom: 168px; font-size: 22px; color: #409eff" v-if="step == 2">重置密码成功,{{ jumpTime }}秒后跳转到登录页面</div>
+      <div style="width: 380px; margin-bottom: 232px; font-size: 22px; color: #409eff" v-if="step == 2">重置密码成功,{{ jumpTime }}秒后跳转到登录页面</div>
     </div>
     <el-button class="login" type="info" @click="router.push('/login')">返回登录</el-button>
   </div>
@@ -166,11 +167,10 @@ const resetPasswordBtn = () => {
 
 <style lang="scss" scoped>
 .el-form{
-  margin-bottom: 65px;
+  margin-bottom: 127px;
 }
 .el-steps {
   width: 400px;
-  margin-bottom: 10px;  
 }
 .reset {
   display: flex;

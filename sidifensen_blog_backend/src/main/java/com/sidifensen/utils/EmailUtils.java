@@ -20,7 +20,7 @@ import java.util.Map;
  */
 @Component
 @Slf4j
-public class EmailUtil {
+public class EmailUtils {
 
     @Resource
     private JavaMailSender javaMailSender;

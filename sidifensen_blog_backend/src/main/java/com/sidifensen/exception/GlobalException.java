@@ -38,9 +38,17 @@ public class GlobalException {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     Object handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        log.error("参数校验异常：" + e.getMessage());
+        log.error("参数校验异常:{}({})", e.getMessage(), e.getStackTrace());
         BindingResult bindingResult = e.getBindingResult();// 获取参数绑定结果
         String errorMsg = bindingResult.getFieldError().getDefaultMessage(); // 获取参数校验错误信息
         return Result.error(errorMsg == null? "参数校验异常" : errorMsg);
     }
+
+    @ExceptionHandler(FileUploadException.class)
+    Object handlerFileUploadException(FileUploadException e){
+        log.error("文件上传异常:{}({})", e.getMessage(), e.getStackTrace());
+        String bindingResult = e.getMessage();
+        return Result.success(bindingResult);
+    }
+
 }

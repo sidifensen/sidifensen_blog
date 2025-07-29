@@ -1,11 +1,10 @@
 package com.sidifensen;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.jwt.JWT;
 import cn.hutool.jwt.JWTUtil;
 import cn.hutool.jwt.signers.JWTSignerUtil;
 import com.sidifensen.exception.BlogException;
-import com.sidifensen.utils.JwtUtil;
+import com.sidifensen.utils.JwtUtils;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,10 +15,10 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @SpringBootTest
-public class JwtUtilTest {
+public class JwtUtilsTest {
 
     @Resource
-    private JwtUtil jwtUtil;
+    private JwtUtils jwtUtils;
 
     Long id = 1L;
     String userName = "sidifensen";
@@ -34,15 +33,15 @@ public class JwtUtilTest {
     @Test
     public void testCreateToken() {
 
-        String token = jwtUtil.createToken(id,false);
+        String token = jwtUtils.createToken(id,false);
         System.out.println("token: " + token);
     }
 
     @Test
     public void testParseToken() {
-        String token = jwtUtil.createToken(id,false);
+        String token = jwtUtils.createToken(id,false);
 
-        Long id = jwtUtil.parseToken(token);
+        Long id = jwtUtils.parseToken(token);
         System.out.println("userId: " + id);
 
     }
@@ -101,7 +100,7 @@ public class JwtUtilTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        Long id = jwtUtil.parseToken(token);
+        Long id = jwtUtils.parseToken(token);
         System.out.println(id);
 
     }
@@ -124,7 +123,7 @@ public class JwtUtilTest {
         System.out.println(localDateTime);
         boolean verify = JWTUtil.verify(token, "sidifensen".getBytes());
         System.out.println("verify: " + verify);
-        Long id = jwtUtil.parseToken(token);
+        Long id = jwtUtils.parseToken(token);
         System.out.println(id);
     }
 
