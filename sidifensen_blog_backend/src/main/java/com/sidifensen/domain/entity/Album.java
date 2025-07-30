@@ -16,65 +16,45 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author sidifensen
- * @since 2025-06-29
+ * @since 2025-07-30
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("sys_menu")
-public class SysMenu implements Serializable {
+@TableName("album")
+public class Album implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * 菜单id
+     * 相册id
      */
-    private Integer id;
+    private Long id;
 
     /**
-     * 父级id
+     * 用户id
      */
-    private Integer parentId;
+    private Long userId;
 
     /**
-     * 菜单标题
+     * 相册名称
      */
-    private String title;
+    private String name;
 
     /**
-     * 排序
+     * 相册描述
      */
-    private Integer sort;
+    private String description;
 
     /**
-     * 类型 0-目录 1-菜单 2-按钮
+     * 相册封面
      */
-    private Integer type;
+    private String coverUrl;
 
     /**
-     * 路径
+     * 展示状态 0-公开 1-私有
      */
-    private String path;
-
-    /**
-     * 组件路径
-     */
-    private String componentPath;
-
-    /**
-     * 权限标识
-     */
-    private String permission;
-
-    /**
-     * 图标
-     */
-    private String icon;
-
-    /**
-     * 状态 0-正常 1-禁用
-     */
-    private Integer status;
+    private Integer showStatus;
 
     /**
      * 创建时间

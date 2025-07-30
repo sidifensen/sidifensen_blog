@@ -1,6 +1,13 @@
 server:
   port: 5050
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB # 文件上传最大大小
+      max-request-size: 10MB # 请求体最大大小
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss # Date 日期格式化
+    time-zone: GMT+8
   security:
     jwt:
       secret: sidifensen # jwt 密钥
@@ -48,3 +55,6 @@ minio: # minio 配置
   accessKey: minio
   secretKey: minio123456
   bucketName: sidifensen-blog
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 打印sql日志到控制台

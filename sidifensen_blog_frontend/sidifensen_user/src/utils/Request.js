@@ -36,6 +36,9 @@ request.interceptors.response.use((response) => {
     // console.log('response=====>',response)
     let {code,msg} = response.data
     if(code == 200) {
+        if(msg){
+            ElMessage.success(msg);
+        }
         return response;
     }else{
         // 响应失败的处理 401 400

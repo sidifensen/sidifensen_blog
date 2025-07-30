@@ -1,11 +1,13 @@
 package com.sidifensen;
 
+import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @MapperScan("com.sidifensen.mapper")
+@Slf4j
 public class Main {
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(Main.class);
@@ -22,5 +24,8 @@ public class Main {
         ));
 
         app.run(args);
+
+        // 添加项目启动成功提示
+        log.info("\u001B[32m" + "项目启动成功!" + "\u001B[0m"); // 绿色字体显示
     }
 }

@@ -64,6 +64,47 @@ public class FileUploadUtils {
         throw new FileUploadException("上传文件类型错误");
     }
 
+    /**
+     * 根据用户自定义的文件目录名上传文件到指定文件夹
+     *
+     * @param uploadEnum 文件枚举
+     * @param file       文件
+     * @param dirName    文件目录
+     * @return 上传后的文件地址
+     * @throws Exception 异常
+     */
+    public String upload(UploadEnum uploadEnum, MultipartFile file, String dirName) throws Exception {
+        // 验证文件大小
+        if (verifyTheFileSize(file.getSize(), uploadEnum.getLimitSize()))
+            throw new FileUploadException("上传文件超过限制大小:" + uploadEnum.getLimitSize() + "MB");
+
+        if (isFormatFile(file.getOriginalFilename(), uploadEnum.getFormat())) {
+            InputStream stream = file.getInputStream();
+            String name = UUID.randomUUID().toString().replace("-","");
+            String originalFilename = file.getOriginalFilename();
+            String fileExtension = null;
+            if (originalFilename != null) {
+                fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+            }
+
+            // 构建用户自定义的目录路径
+            String dir = uploadEnum.getDir() + "/" + dirName + "/";
+
+            PutObjectArgs args = PutObjectArgs.builder()
+                    .bucket(bucketName)
+                    .headers(Map.of("Content-Type", Objects.requireNonNull(file.getContentType())))
+                    .object(dir + name + "." + fileExtension)
+                    .stream(stream, file.getSize(), -1)
+                    .build();
+            client.putObject(args);
+            return endpoint + "/" + bucketName + "/" + dir + name + "." + fileExtension;
+        }
+
+        log.error("--------------------上传文件格式不正确--------------------");
+        throw new FileUploadException("上传文件类型错误");
+    }
+
+
     public Boolean verifyTheFileSize(Long fileSize, Double limitSize) {
         // 转为相同大小格式
         double formatFileSize = convertFileSizeToMB(fileSize);

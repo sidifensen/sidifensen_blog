@@ -56,7 +56,7 @@ public class SysUserController {
     @PostMapping("/login")
     public Result login(@RequestBody @Valid LoginDto loginDto) {
         String jwt = sysUserService.login(loginDto);
-        return Result.success(jwt);
+        return Result.success(jwt, "登录成功");
     }
 
     /**
@@ -106,6 +106,17 @@ public class SysUserController {
     public Result info() {
         UserVo userVo = sysUserService.info();
         return Result.success(userVo);
+    }
+
+    /**
+     * 删除用户
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/{id}")
+    public Result delete(@PathVariable Long id) {
+        sysUserService.deleteUser(id);
+        return Result.success("用户删除成功");
     }
 
 }

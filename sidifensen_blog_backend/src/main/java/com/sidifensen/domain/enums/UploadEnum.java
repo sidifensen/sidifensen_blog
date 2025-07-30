@@ -14,6 +14,9 @@ import java.util.List;
 @AllArgsConstructor
 public enum UploadEnum {
 
+    // 相册图片
+    ALBUM("album","相册图片",List.of("jpg", "jpeg", "png", "gif", "webp"), 3.0),
+
     // 文章封面
     ARTICLE_COVER("article/articleCover/","文章封面",List.of("jpg", "jpeg", "png", "webp"), 0.3),
 

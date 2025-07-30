@@ -27,6 +27,23 @@ public class Result<T> implements Serializable {
         return result;
     }
 
+    // 带数据和提示消息的返回成功的结果
+    public static <T> Result<T> success(T object, String msg) {
+        Result<T> result = new Result<T>();
+        result.data = object;
+        result.code = 200;
+        result.msg = msg;
+        return result;
+    }
+
+    // 带提示消息的返回成功的结果
+    public static Result<String> successMsg(String msg) {
+        Result<String> result = new Result<>();
+        result.code = 200;
+        result.data = msg;
+        return result;
+    }
+
     // 返回错误的结果
     public static <T> Result<T> error(String msg) {
         Result result = new Result();

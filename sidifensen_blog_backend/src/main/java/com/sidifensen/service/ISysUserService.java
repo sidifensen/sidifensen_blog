@@ -51,4 +51,6 @@ public interface ISysUserService extends IService<SysUser> {
      */
     UserVo info();
 
+    // 删除用户
+    void deleteUser(Long id);
 }

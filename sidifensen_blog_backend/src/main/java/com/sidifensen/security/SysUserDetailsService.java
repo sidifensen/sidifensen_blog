@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,7 +62,7 @@ public class SysUserDetailsService implements UserDetailsService {
         }
 
         sysUser.setLoginType(RegisterOrLoginTypeEnum.EMAIL.getRegisterType());
-        sysUser.setLoginTime(LocalDateTime.now());
+        sysUser.setLoginTime(new Date());
         sysUser.setLoginIp(ipUtils.getIpAddr());
         sysUserMapper.updateById(sysUser);
 

@@ -8,6 +8,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 /**
  * 全局异常处理
@@ -47,8 +48,13 @@ public class GlobalException {
     @ExceptionHandler(FileUploadException.class)
     Object handlerFileUploadException(FileUploadException e){
         log.error("文件上传异常:{}({})", e.getMessage(), e.getStackTrace());
-        String bindingResult = e.getMessage();
-        return Result.success(bindingResult);
+        return Result.success(e.getMessage());
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    Object handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+        log.error("文件上传大小超出系统限制：{}({})", e.getMessage(), e.getStackTrace());
+        return Result.error("文件上传大小超出系统限制");
     }
 
 }

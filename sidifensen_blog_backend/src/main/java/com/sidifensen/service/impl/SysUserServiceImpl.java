@@ -168,5 +168,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return userVo;
     }
 
+    // 删除用户
+    @Override
+    public void deleteUser(Long id) {
+        sysUserMapper.deleteById(id);
+        // TODO 删除用户相关信息
+    }
+
 
 }
