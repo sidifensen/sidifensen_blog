@@ -2,17 +2,18 @@ package com.sidifensen.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.dto.AlbumDto;
+import com.sidifensen.domain.dto.PhotoDto;
 import com.sidifensen.domain.entity.Album;
+import com.sidifensen.domain.entity.Photo;
 import com.sidifensen.domain.enums.ShowStatusEnum;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.AlbumMapper;
+import com.sidifensen.mapper.PhotoMapper;
 import com.sidifensen.service.IAlbumService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
-import org.checkerframework.checker.units.qual.C;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,6 +32,9 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     @Resource
     private AlbumMapper albumMapper;
 
+    @Resource
+    private PhotoMapper photoMapper;
+
     // 查询相册
     @Override
     public AlbumDto getAlbum(Long albumId) {
@@ -40,6 +44,11 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         }
         AlbumDto albumDto = new AlbumDto();
         BeanUtil.copyProperties(album, albumDto);
+        // 把album_id为albumId的全部照片查询出来
+        List<Photo> photos = photoMapper.selectList(new LambdaQueryWrapper<Photo>().eq(Photo::getAlbumId, albumId));
+        // 把List<Photo>转为List<PhotoDto>
+        List<PhotoDto> photoDtos = BeanUtil.copyToList(photos, PhotoDto.class);
+        albumDto.setPhotos(photoDtos);
         return albumDto;
     }
 
@@ -47,7 +56,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     @Override
     public void createAlbum(AlbumDto albumDto) {
         Album album = new Album();
-        albumDto.setUserId(SecurityUtils.getUserId());
+        album.setUserId(SecurityUtils.getUserId());
         album.setName(albumDto.getName());
         if (albumDto.getDescription()!= null) {
             album.setDescription(albumDto.getDescription());
@@ -101,9 +110,19 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         return albumDtos;
     }
 
+    // 查询所有用户的相册
+    @Override
+    public List<AlbumDto> listAllAlbum() {
+        LambdaQueryWrapper<Album> eq = new LambdaQueryWrapper<Album>().eq(Album::getShowStatus, ShowStatusEnum.PUBLIC.getCode());
+        List<Album> albums = this.list(eq);
+        // 把List<Album>转为List<AlbumDto>
+        List<AlbumDto> albumDtos = BeanUtil.copyToList(albums, AlbumDto.class);
+        return albumDtos;
+    }
+
     // 修改相册展示状态
     @Override
-    public void showStatus(AlbumDto albumDto) {
+    public void changeShowStatus(AlbumDto albumDto) {
         Album album = this.getById(albumDto.getId()).setShowStatus(albumDto.getShowStatus());
         this.updateById(album);
     }

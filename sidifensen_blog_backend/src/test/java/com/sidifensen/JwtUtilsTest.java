@@ -20,7 +20,7 @@ public class JwtUtilsTest {
     @Resource
     private JwtUtils jwtUtils;
 
-    Long id = 1L;
+    Integer id = 1;
     String userName = "sidifensen";
 //    String nickName = "斯蒂芬森";
 //    String email = "123456@qq.com";

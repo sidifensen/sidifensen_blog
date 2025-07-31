@@ -1,20 +1,14 @@
 package com.sidifensen.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-
-import java.time.LocalDateTime;
-import java.io.Serializable;
-import java.util.Date;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
+import java.io.Serializable;
+import java.util.Date;
+
 /**
- * <p>
- * 
- * </p>
- *
  * @author sidifensen
  * @since 2025-07-30
  */
@@ -29,12 +23,13 @@ public class Photo implements Serializable {
     /**
      * 图片id
      */
-    private Long id;
+    @TableId(type = IdType.AUTO)
+    private Integer id;
 
     /**
      * 用户id
      */
-    private Long userId;
+    private Integer userId;
 
     /**
      * 图片url
@@ -44,7 +39,7 @@ public class Photo implements Serializable {
     /**
      * 相册id
      */
-    private Long albumId;
+    private Integer albumId;
 
     /**
      * 展示状态 0-公开 1-私有

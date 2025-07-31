@@ -1,7 +1,7 @@
 package com.sidifensen.mapper;
 
-import com.sidifensen.domain.entity.SysMenu;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.sidifensen.domain.entity.SysMenu;
 
 /**
  * <p>

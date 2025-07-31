@@ -3,16 +3,21 @@ package com.sidifensen.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.RabbitMQConstants;
 import com.sidifensen.domain.dto.*;
-import com.sidifensen.domain.entity.*;
+import com.sidifensen.domain.entity.Album;
+import com.sidifensen.domain.entity.LoginUser;
+import com.sidifensen.domain.entity.Photo;
+import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.vo.UserVo;
 import com.sidifensen.exception.BlogException;
-import com.sidifensen.mapper.*;
+import com.sidifensen.mapper.AlbumMapper;
+import com.sidifensen.mapper.PhotoMapper;
+import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.ISysUserService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.utils.JwtUtils;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
@@ -25,6 +30,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * <p>
@@ -56,6 +63,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     // Spring Security的密码加密器
     @Resource
     private PasswordEncoder passwordEncoder;
+
+    @Resource
+    private AlbumMapper albumMapper;
+
+    @Resource
+    private PhotoMapper photoMapper;
 
     @Override
     public String login(LoginDto loginDto) {
@@ -133,7 +146,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         sendEmail.put("checkCode", checkCode);
         sendEmail.put("type", emailDto.getType());
         rabbitTemplate.convertAndSend(RabbitMQConstants.Email_Exchange, RabbitMQConstants.Email_Routing_Key, sendEmail);
-        log.info("生产者向rabbitmq邮件发送请求：{}", emailDto);
+        log.info("生产者向rabbitmq发送请求：{}", emailDto);
     }
 
     @Override
@@ -162,17 +175,30 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Override
     public UserVo info() {
-        Long userId = SecurityUtils.getUserId();
+        Integer userId = SecurityUtils.getUserId();
         SysUser sysUser = sysUserMapper.selectById(userId);
         UserVo userVo = BeanUtil.copyProperties(sysUser, UserVo.class);
         return userVo;
     }
 
+
+    ExecutorService executorService = Executors.newFixedThreadPool(10);
+
     // 删除用户
     @Override
     public void deleteUser(Long id) {
         sysUserMapper.deleteById(id);
-        // TODO 删除用户相关信息
+        // TODO 异步删除用户相关信息
+        executorService.submit(() -> {
+            try {
+                // 删除用户相册
+                albumMapper.delete(new LambdaQueryWrapper<Album>().eq(Album::getUserId, id));
+                // 删除用户照片
+                photoMapper.delete(new LambdaQueryWrapper<Photo>().eq(Photo::getUserId, id));
+            } catch (Exception e) {
+                log.error("异步删除用户相关数据失败，用户ID: {}", id, e);
+            }
+        });
     }
 
 

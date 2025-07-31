@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
@@ -88,7 +89,7 @@ public class FileUploadUtils {
             }
 
             // 构建用户自定义的目录路径
-            String dir = uploadEnum.getDir() + "/" + dirName + "/";
+            String dir = uploadEnum.getDir() + dirName ;
 
             PutObjectArgs args = PutObjectArgs.builder()
                     .bucket(bucketName)
@@ -188,27 +189,22 @@ public class FileUploadUtils {
      * @param dir      文件目录
      * @return 是否成功, 成功：true, 失败：false
      */
-    public boolean deleteFile(String dir, String fileName) {
-        try {
-            String objectName = dir + fileName; // 构建完整对象名
-            if (!isFileExist(dir, fileName)) {
-                log.error("文件 {} 不存在", fileName);
-                return false;
-            }
-            // 执行删除操作
-            client.removeObject(
-                    RemoveObjectArgs.builder()
-                            .bucket(bucketName)
-                            .object(objectName)
-                            .build()
-            );
-
-            log.info("文件 {} 已成功从 MinIO 中删除", objectName);
-            return true;
-        } catch (Exception e) {
-            log.error("删除 MinIO 文件 {} 失败: {}", fileName, e.getMessage());
-            return false;
+    public boolean deleteFile(String dir, String fileName) throws Exception {
+        String objectName = dir + fileName; // 构建完整对象名
+        if (!isFileExist(dir, fileName)) {
+            log.error("文件 {} 不存在", objectName);
+            throw new FileUploadException("文件不存在");
         }
+        // 执行删除操作
+        client.removeObject(
+                RemoveObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(objectName)
+                        .build()
+        );
+
+        log.info("文件 {} 已成功从 MinIO 中删除", objectName);
+        return true;
     }
 
     /**
@@ -250,7 +246,7 @@ public class FileUploadUtils {
             } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException |
                      InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException |
                      XmlParserException e) {
-                log.error("判断文件是否存在出现错误", e);
+                log.error("判断文件是否存在出现错误,{}, 文件名：{}, 目录：{}", e.getMessage(), fileName, dir);
             }
             if (item != null && item.objectName().equals(dir + fileName)) {
                 return true;

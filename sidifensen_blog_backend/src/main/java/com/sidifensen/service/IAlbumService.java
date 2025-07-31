@@ -1,8 +1,8 @@
 package com.sidifensen.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.AlbumDto;
 import com.sidifensen.domain.entity.Album;
-import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
 
@@ -31,10 +31,12 @@ public interface IAlbumService extends IService<Album> {
     // 查询用户所有的相册
     List<AlbumDto> listAlbum();
 
+    // 查询所有用户的相册
+    List<AlbumDto> listAllAlbum();
+
     // 修改相册展示状态
-    void showStatus(AlbumDto albumDto);
+    void changeShowStatus(AlbumDto albumDto);
 
     // 修改相册封面
     void changeCover(AlbumDto albumDto);
-
 }

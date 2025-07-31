@@ -1,17 +1,14 @@
 package com.sidifensen.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
-import java.time.LocalDateTime;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-import lombok.experimental.Accessors;
 
 /**
  * <p>
@@ -32,7 +29,8 @@ public class SysUser implements Serializable {
     /**
      * 用户id
      */
-    private Long id;
+    @TableId(type = IdType.AUTO)
+    private Integer id;
 
     /**
      * 用户名

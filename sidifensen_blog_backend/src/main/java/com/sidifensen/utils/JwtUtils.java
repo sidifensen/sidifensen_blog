@@ -7,7 +7,6 @@ import cn.hutool.jwt.signers.JWTSignerUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +23,7 @@ public class JwtUtils {
      * @param isRememberMe 是否记住我
      * @return
      */
-    public String createToken(Long id,boolean isRememberMe) {
+    public String createToken(Integer id,boolean isRememberMe) {
         String token = JWT.create()
                 // 设置过期时间 rememberMe为true时，token有效期为7天，否则为1天
                 .setExpiresAt(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(isRememberMe? 7 : 1)))

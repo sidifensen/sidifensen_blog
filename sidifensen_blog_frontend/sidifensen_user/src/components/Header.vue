@@ -2,13 +2,17 @@
   <el-menu :default-active="activeIndex" class="el-menu" mode="horizontal" @select="handleSelect" :ellipsis="false">
     <router-link class="logo" to="/"><el-text size="large">斯蒂芬森的博客</el-text></router-link>
     <el-menu-item index="1">
-      <el-icon><HomeFilled /></el-icon>首页
+      <router-link to="/">
+        <el-icon><HomeFilled /></el-icon>首页
+      </router-link>
     </el-menu-item>
     <el-menu-item index="2">
       <el-icon><Message /></el-icon>文章
     </el-menu-item>
     <el-menu-item index="3">
-      <el-icon><Picture /></el-icon>相册
+      <router-link to="/album">
+        <el-icon><Picture /></el-icon>相册
+      </router-link>
     </el-menu-item>
     <el-sub-menu index="4">
       <template #title>
@@ -52,7 +56,7 @@
         </span>
         <el-dropdown>
           <span>
-            <el-avatar style="margin-left: 10px; margin-right: 20px" :size="40" :src="img" />
+            <el-avatar style="margin-left: 10px; margin-right: 20px" :size="40" :src="user.avatar" />
           </span>
           <template #dropdown>
             <el-dropdown-menu>
@@ -78,8 +82,7 @@ import { storeToRefs } from "pinia";
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
 
-import img from "@/assets/img/avatar.jpg";
-import { RemoveJwt } from "@/utils/auth";
+import { RemoveJwt } from "@/utils/Auth";
 import { info } from "@/api/user";
 // info()
 
@@ -125,7 +128,6 @@ const logout = () => {
     }
   }
 }
-
 
 .el-dropdown {
   border: none;

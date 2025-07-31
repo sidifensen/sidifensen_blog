@@ -7,6 +7,35 @@ const router = createRouter({
       path: "/",
       name: "index",
       component: () => import("@/views/Layout/index.vue"),
+      meta: {
+        title: "主页",
+      },
+      children: [
+        {
+          path: "/",
+          name: "Home",
+          component: () => import("@/views/Home/index.vue"),
+          meta: {
+            title: "首页",
+          },
+        },
+        {
+          path: "/album",
+          name: "Album",
+          component: () => import("@/views/Album/index.vue"),
+          meta: {
+            title: "相册列表",
+          },
+        },
+        {
+          path: "/album/:albumId",
+          name: "AlbumDetail",
+          component: () => import("@/views/Album/AlbumDetail.vue"),
+          meta: {
+            title: "相册详情",
+          },
+        },
+      ],
     },
     {
       path: "/account",

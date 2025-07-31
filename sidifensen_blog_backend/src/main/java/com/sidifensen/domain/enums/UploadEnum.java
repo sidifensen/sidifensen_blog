@@ -1,7 +1,6 @@
 package com.sidifensen.domain.enums;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 
 import java.util.List;
@@ -15,7 +14,7 @@ import java.util.List;
 public enum UploadEnum {
 
     // 相册图片
-    ALBUM("album","相册图片",List.of("jpg", "jpeg", "png", "gif", "webp"), 3.0),
+    ALBUM("album/","相册图片",List.of("jpg", "jpeg", "png", "gif", "webp"), 5.0),
 
     // 文章封面
     ARTICLE_COVER("article/articleCover/","文章封面",List.of("jpg", "jpeg", "png", "webp"), 0.3),

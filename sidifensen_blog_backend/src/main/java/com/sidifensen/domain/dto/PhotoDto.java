@@ -6,23 +6,19 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
- * <p>
- * 相册 DTO
- * </p>
  *
  * @author sidifensen
  * @since 2025-07-30
  */
 @Data
-public class AlbumDto implements Serializable {
+public class PhotoDto implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * 相册id
+     * 图片id
      */
     private Integer id;
 
@@ -32,37 +28,32 @@ public class AlbumDto implements Serializable {
     private Integer userId;
 
     /**
-     * 相册名称
+     * 图片url
      */
-    private String name;
+    private String url;
 
     /**
-     * 相册描述
+     * 相册id
      */
-    private String description;
-
-    /**
-     * 相册封面
-     */
-    private String coverUrl;
+    private Integer albumId;
 
     /**
      * 展示状态 0-公开 1-私有
      */
-    //展示状态只能为0或1
     @Min(value = 0, message = "展示状态错误")
     @Max(value = 1, message = "展示状态错误")
     private Integer showStatus;
 
     /**
+     * 审核状态 0-待审核 1-审核通过 2-审核未通过
+     */
+    @Min(value = 0, message = "审核状态错误")
+    @Max(value = 2, message = "审核状态错误")
+    private Integer examineStatus;
+
+    /**
      * 创建时间
      */
     private Date createTime;
-
-
-    /**
-     * 相册照片列表
-     */
-    private List<PhotoDto> photos;
 
 }

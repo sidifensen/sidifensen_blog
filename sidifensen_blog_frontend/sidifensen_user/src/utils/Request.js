@@ -4,7 +4,7 @@ import axios from 'axios';
 // 引入router
 import router from '@/router/index.js'
 // 获取token
-import {GetJwt,RemoveJwt} from "@/utils/auth.js";
+import {GetJwt,RemoveJwt} from "@/utils/Auth.js";
 // 引入ElMessage
 import { ElMessage } from 'element-plus'
 

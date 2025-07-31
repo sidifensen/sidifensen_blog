@@ -6,7 +6,6 @@ import com.sidifensen.utils.RedisUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
-
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 

@@ -12,14 +12,15 @@ public class SecurityUtils {
 
     /**
      * 从Spring Security的上下文中获取当前登录用户id
+     *
      * @return 用户id
      */
-    public static Long getUserId() {
+    public static Integer getUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof LoginUser user) {
             return user.getSysUser().getId();
         }
-        return 0L; // 如果无法获取用户ID，返回默认值
+        return 0; // 如果无法获取用户ID，返回默认值
     }
 
 }

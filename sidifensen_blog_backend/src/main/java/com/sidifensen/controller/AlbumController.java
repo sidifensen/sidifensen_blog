@@ -2,10 +2,8 @@ package com.sidifensen.controller;
 
 
 import com.sidifensen.domain.dto.AlbumDto;
-import com.sidifensen.domain.entity.Album;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.service.IAlbumService;
-import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -61,7 +59,7 @@ public class AlbumController {
      * @param albumId
      * @return
      */
-    @DeleteMapping("/delete/{albumId}")
+    @DeleteMapping("/{albumId}")
     public Result<String> deleteAlbum(@PathVariable("albumId") Long albumId) {
         albumService.deleteAlbum(albumId);
         return Result.successMsg("相册删除成功");
@@ -78,13 +76,22 @@ public class AlbumController {
     }
 
     /**
+     * 查看所有用户的相册
+     */
+    @GetMapping("/listAll")
+    public Result<Object> listAllAlbum() {
+        List<AlbumDto> albumDtos = albumService.listAllAlbum();
+        return Result.success(albumDtos);
+    }
+
+    /**
      * 修改相册展示状态
      * @param albumDto
      * @return
      */
-    @PutMapping("/showStatus")
-    public Result<String> showStatus(@RequestBody @Valid AlbumDto albumDto) {
-        albumService.showStatus(albumDto);
+    @PutMapping("/changeShowStatus")
+    public Result<String> changeShowStatus(@RequestBody @Valid AlbumDto albumDto) {
+        albumService.changeShowStatus(albumDto);
         return Result.successMsg("相册展示状态修改成功");
     }
 
@@ -93,7 +100,7 @@ public class AlbumController {
      * @param albumDto
      * @return
      */
-    @PutMapping("/cover")
+    @PutMapping("/changeCover")
     public Result<String> changeCover(@RequestBody @Valid AlbumDto albumDto) {
         albumService.changeCover(albumDto);
         return Result.successMsg("相册封面更换成功");

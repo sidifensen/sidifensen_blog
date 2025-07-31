@@ -1,28 +1,22 @@
 package com.sidifensen.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sidifensen.domain.dto.PhotoDto;
 import com.sidifensen.domain.entity.Album;
 import com.sidifensen.domain.entity.Photo;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.enums.ShowStatusEnum;
 import com.sidifensen.domain.enums.UploadEnum;
-import com.sidifensen.domain.result.Result;
-import com.sidifensen.exception.FileUploadException;
+import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.AlbumMapper;
 import com.sidifensen.mapper.PhotoMapper;
 import com.sidifensen.service.IPhotoService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.utils.FileUploadUtils;
 import com.sidifensen.utils.SecurityUtils;
-import io.minio.errors.MinioException;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * <p>
@@ -46,10 +40,11 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
 
     // 上传图片
     @Override
-    public void upload(MultipartFile file, Long albumId) throws Exception {
+    public void upload(MultipartFile file, Integer albumId) throws Exception {
         // 拼接userId/albumId作为目录名
-        String dirName = SecurityUtils.getUserId() + "/" + albumId;
+        String dirName = SecurityUtils.getUserId() + "/" + albumId + "/";
         String url = fileUploadUtils.upload(UploadEnum.ALBUM, file, dirName);
+
         // 保存图片信息到数据库
         Photo photo = new Photo();
         photo.setUserId(SecurityUtils.getUserId());
@@ -64,5 +59,32 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         updateWrapper.eq(Album::getId, albumId);
         updateWrapper.set(Album::getCoverUrl, url);
         albumMapper.update(null, updateWrapper);
+
+        // 异步发送信息给管理员审核
+
+    }
+
+    // 修改照片的展示状态
+    @Override
+    public void changeShowStatus(PhotoDto photoDto) {
+        Photo photo = new Photo();
+        photo.setId(photoDto.getId());
+        photo.setShowStatus(photoDto.getShowStatus());
+        photoMapper.updateById(photo);
+    }
+
+    // 删除照片
+    @Override
+    public void delete(Long photoId) throws Exception {
+        Photo photo = photoMapper.selectById(photoId);
+        if (photo == null){
+            throw new BlogException("照片不存在");
+        }
+        String fileName = fileUploadUtils.getFileName(photo.getUrl());
+        String dirName = UploadEnum.ALBUM.getDir() + SecurityUtils.getUserId() + "/" + photo.getAlbumId() + "/";
+        // 删除照片信息
+        photoMapper.deleteById(photoId);
+        // 删除照片对应的文件
+        fileUploadUtils.deleteFile(dirName, fileName);
     }
 }

@@ -47,7 +47,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { login, checkCode, info } from "@/api/user";
-import { SetJwt } from "@/utils/auth";
+import { SetJwt } from "@/utils/Auth";
 import { ElMessage } from "element-plus";
 import { useUserStore } from "@/stores/userStore.js";
 

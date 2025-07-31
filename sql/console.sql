@@ -1,6 +1,6 @@
 create table sys_user
 (
-    id            bigint primary key comment '用户id',
+    id            int primary key auto_increment comment '用户id',
     username      varchar(30)  not null comment '用户名',
     password      varchar(100) not null comment '密码',
     nickname      varchar(30)  not null comment '昵称',
@@ -94,7 +94,7 @@ VALUES (1, 1, 1);
 
 create table photo
 (
-    id             bigint primary key comment '图片id',
+    id             int primary key auto_increment comment '图片id',
     user_id        bigint            not null comment '用户id',
     url            varchar(255)      not null comment '图片url',
     album_id       bigint            not null comment '相册id',
@@ -109,7 +109,7 @@ create table photo
 
 create table album
 (
-    id          bigint primary key comment '相册id',
+    id          int primary key auto_increment comment '相册id',
     user_id     bigint      not null comment '用户id',
     name        varchar(50) not null comment '相册名称',
     description varchar(200) comment '相册描述',

@@ -1,7 +1,7 @@
 package com.sidifensen.service;
 
-import com.sidifensen.domain.entity.SysUserRole;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.sidifensen.domain.entity.SysUserRole;
 
 /**
  * <p>

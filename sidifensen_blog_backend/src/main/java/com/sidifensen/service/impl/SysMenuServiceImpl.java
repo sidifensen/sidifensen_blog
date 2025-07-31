@@ -1,9 +1,9 @@
 package com.sidifensen.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.entity.SysMenu;
 import com.sidifensen.mapper.SysMenuMapper;
 import com.sidifensen.service.ISysMenuService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 /**
