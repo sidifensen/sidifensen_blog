@@ -15,4 +15,7 @@ public class BlogConstants {
     public static final String LoginRequired = "请先登录";
     public static final String LoginExpired = "登录已过期，请重新登录";
     public static final String NewPasswordSameAsOld = "新密码不能与原密码相同";
+    public static final String NotFoundAlbum = "相册不存在";
+    public static final String CannotDeleteOtherUserAlbum = "不能删除别人的相册";
+    public static final String NotFoundPhoto = "照片不存在";
 }

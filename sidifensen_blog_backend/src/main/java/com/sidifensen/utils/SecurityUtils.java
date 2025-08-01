@@ -20,7 +20,7 @@ public class SecurityUtils {
         if (authentication != null && authentication.getPrincipal() instanceof LoginUser user) {
             return user.getSysUser().getId();
         }
-        return 0; // 如果无法获取用户ID，返回默认值
+        return 0;
     }
 
 }

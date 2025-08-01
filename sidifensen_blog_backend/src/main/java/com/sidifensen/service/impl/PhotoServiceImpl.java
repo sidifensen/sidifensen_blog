@@ -2,6 +2,7 @@ package com.sidifensen.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.PhotoDto;
 import com.sidifensen.domain.entity.Album;
 import com.sidifensen.domain.entity.Photo;
@@ -17,6 +18,9 @@ import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>
@@ -60,7 +64,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         updateWrapper.set(Album::getCoverUrl, url);
         albumMapper.update(null, updateWrapper);
 
-        // 异步发送信息给管理员审核
+        // TODO 异步发送信息给管理员审核
 
     }
 
@@ -75,10 +79,10 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
 
     // 删除照片
     @Override
-    public void delete(Long photoId) throws Exception {
+    public void delete(Integer photoId) throws Exception {
         Photo photo = photoMapper.selectById(photoId);
         if (photo == null){
-            throw new BlogException("照片不存在");
+            throw new BlogException(BlogConstants.NotFoundPhoto);
         }
         String fileName = fileUploadUtils.getFileName(photo.getUrl());
         String dirName = UploadEnum.ALBUM.getDir() + SecurityUtils.getUserId() + "/" + photo.getAlbumId() + "/";
@@ -87,4 +91,33 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         // 删除照片对应的文件
         fileUploadUtils.deleteFile(dirName, fileName);
     }
+
+    // 批量删除照片
+    @Override
+    public void batchDelete(List<Integer> photoIds) throws Exception {
+        // 查询要删除的照片信息
+        List<Photo> photos = photoMapper.selectBatchIds(photoIds);
+        if (photos == null || photos.isEmpty()) {
+            throw new BlogException(BlogConstants.NotFoundPhoto);
+        }
+        
+        // 收集要删除的文件路径信息
+        List<String> filePaths = new ArrayList<>();
+        String baseDir = UploadEnum.ALBUM.getDir() + SecurityUtils.getUserId() + "/";
+        
+        // 构建所有要删除的文件完整路径
+        for (Photo photo : photos) {
+            String dirName = baseDir + photo.getAlbumId() + "/";
+            String fileName = fileUploadUtils.getFileName(photo.getUrl());
+            String fullPath = dirName + fileName;
+            filePaths.add(fullPath);
+        }
+        
+        // 批量删除照片信息
+        photoMapper.deleteBatchIds(photoIds);
+        
+        // 批量删除文件
+        fileUploadUtils.deleteFiles(filePaths);
+    }
+
 }

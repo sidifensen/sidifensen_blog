@@ -5,6 +5,8 @@ import com.sidifensen.domain.dto.PhotoDto;
 import com.sidifensen.domain.entity.Photo;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 /**
  * <p>
  *  服务类
@@ -22,6 +24,9 @@ public interface IPhotoService extends IService<Photo> {
     void changeShowStatus(PhotoDto photoDto);
 
     // 删除图片
-    void delete(Long photoId) throws Exception;
+    void delete(Integer photoId) throws Exception;
+
+    // 批量删除图片
+    void batchDelete(List<Integer> photoIds) throws Exception;
 
 }

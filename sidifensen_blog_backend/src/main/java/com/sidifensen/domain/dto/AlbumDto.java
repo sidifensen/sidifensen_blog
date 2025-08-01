@@ -47,7 +47,7 @@ public class AlbumDto implements Serializable {
     private String coverUrl;
 
     /**
-     * 展示状态 0-公开 1-私有
+     * 展示状态 0-公开 1-私密
      */
     //展示状态只能为0或1
     @Min(value = 0, message = "展示状态错误")

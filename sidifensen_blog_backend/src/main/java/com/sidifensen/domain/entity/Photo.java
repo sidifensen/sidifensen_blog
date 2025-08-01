@@ -42,7 +42,7 @@ public class Photo implements Serializable {
     private Integer albumId;
 
     /**
-     * 展示状态 0-公开 1-私有
+     * 展示状态 0-公开 1-私密
      */
     private Integer showStatus;
 

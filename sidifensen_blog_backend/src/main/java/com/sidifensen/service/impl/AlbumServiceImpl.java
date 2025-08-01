@@ -3,6 +3,7 @@ package com.sidifensen.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.AlbumDto;
 import com.sidifensen.domain.dto.PhotoDto;
 import com.sidifensen.domain.entity.Album;
@@ -40,7 +41,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     public AlbumDto getAlbum(Long albumId) {
         Album album = this.getById(albumId);
         if (album == null) {
-            throw new BlogException("相册不存在");
+            throw new BlogException(BlogConstants.NotFoundAlbum);
         }
         AlbumDto albumDto = new AlbumDto();
         BeanUtil.copyProperties(album, albumDto);
@@ -84,9 +85,14 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     // 删除相册
     @Override
     public void deleteAlbum(Long albumId) {
+        Integer userId = SecurityUtils.getUserId();
+        Album album = albumMapper.selectById(albumId);
+        if ( userId!= album.getUserId() ){
+            throw new BlogException(BlogConstants.CannotDeleteOtherUserAlbum);
+        }
         int i = albumMapper.deleteById(albumId);
         if (i == 0) {
-            throw new BlogException("相册不存在");
+            throw new BlogException(BlogConstants.NotFoundAlbum);
         }
     }
 
@@ -123,7 +129,11 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     // 修改相册展示状态
     @Override
     public void changeShowStatus(AlbumDto albumDto) {
-        Album album = this.getById(albumDto.getId()).setShowStatus(albumDto.getShowStatus());
+        Album album = this.getById(albumDto.getId());
+        if (album == null) {
+            throw new BlogException(BlogConstants.NotFoundAlbum);
+        }
+        album.setShowStatus(albumDto.getShowStatus());
         this.updateById(album);
     }
 

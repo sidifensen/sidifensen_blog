@@ -51,7 +51,7 @@ public class Album implements Serializable {
     private String coverUrl;
 
     /**
-     * 展示状态 0-公开 1-私有
+     * 展示状态 0-公开 1-私密
      */
     private Integer showStatus;
 

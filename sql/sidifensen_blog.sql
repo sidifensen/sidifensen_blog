@@ -11,7 +11,7 @@
  Target Server Version : 80039 (8.0.39)
  File Encoding         : 65001
 
- Date: 01/08/2025 01:21:38
+ Date: 02/08/2025 02:27:08
 */
 
 SET NAMES utf8mb4;
@@ -24,29 +24,34 @@ DROP TABLE IF EXISTS `album`;
 CREATE TABLE `album`  (
   `id` int NOT NULL AUTO_INCREMENT COMMENT '相册id',
   `user_id` bigint NOT NULL COMMENT '用户id',
-  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '相册名称',
-  `description` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '相册描述',
+  `name` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '相册名称',
+  `description` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '相册描述',
   `cover_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '相册封面',
-  `show_status` tinyint NOT NULL DEFAULT 0 COMMENT '展示状态 0-公开 1-私有',
+  `show_status` tinyint NOT NULL DEFAULT 0 COMMENT '展示状态 0-公开 1-私密',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_time` datetime NOT NULL COMMENT '更新时间',
   `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_show_status`(`show_status` ASC) USING BTREE,
   INDEX `idx_user_status_create_time`(`user_id` ASC, `show_status` ASC, `create_time` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 14 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of album
 -- ----------------------------
-INSERT INTO `album` VALUES (1, 1, '相册1', '123', 'http://localhost:9000/sidifensen-blog/album/1/1/9c572780bf984a2ea164fb1839d8af19.jpg', 0, '2025-07-31 17:44:39', '2025-07-31 17:44:39', 0);
+INSERT INTO `album` VALUES (1, 1, '相册1', '12345678901234567890', 'http://localhost:9000/sidifensen-blog/album/1/1/91a991c81a4e46e7842d252b6c3896f9.gif', 0, '2025-07-31 17:44:39', '2025-07-31 17:44:39', 0);
 INSERT INTO `album` VALUES (2, 1, '相册2', '666', 'http://localhost:9000/sidifensen-blog/album/1/2/174b731ae4a7475db099ab49ed995754.jpg', 0, '2025-07-31 19:57:12', '2025-07-31 19:57:12', 0);
 INSERT INTO `album` VALUES (3, 1, '相册3', '111', 'http://localhost:9000/sidifensen-blog/album/1/3/4f11703b962f432b89e2f839b3b26a5e.jpg', 0, '2025-07-31 20:44:13', '2025-07-31 20:44:13', 0);
 INSERT INTO `album` VALUES (4, 1, '相册4', '12', 'http://localhost:9000/sidifensen-blog/album/1/4/3087004dab7b4d51925553a66ff7c9b2.jpg', 0, '2025-07-31 20:44:20', '2025-07-31 20:44:20', 0);
 INSERT INTO `album` VALUES (5, 1, '相册5', '1232131', 'http://localhost:9000/sidifensen-blog/album/1/5/02d59846d9784884905f21782f4d49da.jpg', 0, '2025-07-31 20:44:28', '2025-07-31 20:44:28', 0);
-INSERT INTO `album` VALUES (6, 1, '相册6', '123', 'http://localhost:9000/sidifensen-blog/album/1/6/d81c8d3b69ee4aa1a25fb59b2277c163.jpg', 1, '2025-07-31 20:44:40', '2025-07-31 20:44:40', 0);
-INSERT INTO `album` VALUES (7, 1, '相册7', '6', 'http://localhost:9000/sidifensen-blog/album/1/7/89b3af6ad3f140bf8179db329a4aef55.jpg', 1, '2025-07-31 20:44:47', '2025-07-31 20:44:47', 0);
+INSERT INTO `album` VALUES (6, 1, '相册6', '123', 'http://localhost:9000/sidifensen-blog/album/1/6/d81c8d3b69ee4aa1a25fb59b2277c163.jpg', 0, '2025-07-31 20:44:40', '2025-07-31 20:44:40', 0);
+INSERT INTO `album` VALUES (7, 1, '相册7', '6', 'http://localhost:9000/sidifensen-blog/album/1/7/89b3af6ad3f140bf8179db329a4aef55.jpg', 0, '2025-07-31 20:44:47', '2025-07-31 20:44:47', 0);
 INSERT INTO `album` VALUES (8, 2, '相册11', '11', 'http://localhost:9000/sidifensen-blog/album/2/8/155268c3f32048f0abd621be7d8095e9.jpg', 0, '2025-07-31 20:57:24', '2025-07-31 20:57:24', 0);
+INSERT INTO `album` VALUES (9, 1, '相册8', '123', 'http://localhost:9000/sidifensen-blog/album/1/9/089a4b94f7434c12ada38ffd2a3b8b82.jpg', 0, '2025-08-01 02:19:38', '2025-08-01 02:19:38', 0);
+INSERT INTO `album` VALUES (10, 1, '相册9', '123', 'http://localhost:9000/sidifensen-blog/album/1/10/e888d72f6fa44818be6ad425eaeebd43.jpg', 0, '2025-08-01 02:19:57', '2025-08-01 02:19:57', 0);
+INSERT INTO `album` VALUES (11, 1, '相册10', '123', 'http://localhost:9000/sidifensen-blog/album/1/11/65b66f8c11234f1b951e056132271d04.jpg', 0, '2025-08-01 02:20:16', '2025-08-01 02:20:16', 0);
+INSERT INTO `album` VALUES (12, 1, '相册11', '123', 'http://localhost:9000/sidifensen-blog/album/1/12/d9586c1d84ba418ba36a6b54deb4f613.jpg', 0, '2025-08-01 02:20:47', '2025-08-01 02:20:47', 0);
+INSERT INTO `album` VALUES (13, 1, '相册12', '123', 'http://localhost:9000/sidifensen-blog/album/1/13/ae03c29e909440df9c323b0f9481238f.jpg', 0, '2025-08-01 02:21:07', '2025-08-01 02:21:07', 0);
 
 -- ----------------------------
 -- Table structure for photo
@@ -57,7 +62,7 @@ CREATE TABLE `photo`  (
   `user_id` bigint NOT NULL COMMENT '用户id',
   `url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '图片url',
   `album_id` bigint NOT NULL COMMENT '相册id',
-  `show_status` tinyint NOT NULL DEFAULT 0 COMMENT '展示状态 0-公开 1-私有',
+  `show_status` tinyint NOT NULL DEFAULT 0 COMMENT '展示状态 0-公开 1-私密',
   `examine_status` tinyint NOT NULL DEFAULT 0 COMMENT '审核状态 0-待审核 1-审核通过 2-审核未通过',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_time` datetime NOT NULL COMMENT '更新时间',
@@ -65,12 +70,12 @@ CREATE TABLE `photo`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_examine_status`(`examine_status` ASC) USING BTREE,
   INDEX `idx_photo_user_album_status_create_time`(`user_id` ASC, `album_id` ASC, `show_status` ASC, `examine_status` ASC, `create_time` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 23 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 32 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of photo
 -- ----------------------------
-INSERT INTO `photo` VALUES (1, 1, 'http://localhost:9000/sidifensen-blog/album/1/1/cd182c86e10a41e1949aeb61e47cdaee.jpg', 1, 0, 0, '2025-07-31 17:45:10', '2025-07-31 20:53:11', 0);
+INSERT INTO `photo` VALUES (1, 1, 'http://localhost:9000/sidifensen-blog/album/1/1/cd182c86e10a41e1949aeb61e47cdaee.jpg', 1, 1, 0, '2025-07-31 17:45:10', '2025-07-31 20:53:11', 0);
 INSERT INTO `photo` VALUES (2, 1, 'http://localhost:9000/sidifensen-blog/album/1/1/374cc0a6432e42d08adeebb4d5407350.jpg', 1, 0, 0, '2025-07-31 17:48:08', '2025-07-31 19:56:49', 0);
 INSERT INTO `photo` VALUES (3, 1, 'http://localhost:9000/sidifensen-blog/album/1/2/0e0926b8b5da436d99e29374132a14fa.jpg', 2, 0, 0, '2025-07-31 20:10:18', '2025-07-31 20:10:18', 0);
 INSERT INTO `photo` VALUES (4, 1, 'http://localhost:9000/sidifensen-blog/album/1/2/174b731ae4a7475db099ab49ed995754.jpg', 2, 0, 0, '2025-07-31 20:12:53', '2025-07-31 20:12:53', 0);
@@ -92,6 +97,15 @@ INSERT INTO `photo` VALUES (19, 1, 'http://localhost:9000/sidifensen-blog/album/
 INSERT INTO `photo` VALUES (20, 1, 'http://localhost:9000/sidifensen-blog/album/1/1/6b345bb942bf4125b63d19dfd26ab1c1.jpg', 1, 0, 0, '2025-07-31 23:25:46', '2025-07-31 23:25:46', 0);
 INSERT INTO `photo` VALUES (21, 1, 'http://localhost:9000/sidifensen-blog/album/1/1/0d4099dddcb24749a0ec6340ddbcb060.jpg', 1, 0, 0, '2025-08-01 01:17:56', '2025-08-01 01:17:56', 0);
 INSERT INTO `photo` VALUES (22, 1, 'http://localhost:9000/sidifensen-blog/album/1/1/9c572780bf984a2ea164fb1839d8af19.jpg', 1, 0, 0, '2025-08-01 01:17:56', '2025-08-01 01:17:56', 0);
+INSERT INTO `photo` VALUES (23, 1, 'http://localhost:9000/sidifensen-blog/album/1/9/089a4b94f7434c12ada38ffd2a3b8b82.jpg', 9, 0, 0, '2025-08-01 02:19:47', '2025-08-01 02:19:47', 0);
+INSERT INTO `photo` VALUES (24, 1, 'http://localhost:9000/sidifensen-blog/album/1/10/e888d72f6fa44818be6ad425eaeebd43.jpg', 10, 0, 0, '2025-08-01 02:20:07', '2025-08-01 02:20:07', 0);
+INSERT INTO `photo` VALUES (25, 1, 'http://localhost:9000/sidifensen-blog/album/1/11/65b66f8c11234f1b951e056132271d04.jpg', 11, 0, 0, '2025-08-01 02:20:31', '2025-08-01 02:20:31', 0);
+INSERT INTO `photo` VALUES (26, 1, 'http://localhost:9000/sidifensen-blog/album/1/12/d9586c1d84ba418ba36a6b54deb4f613.jpg', 12, 0, 0, '2025-08-01 02:20:57', '2025-08-01 02:20:57', 0);
+INSERT INTO `photo` VALUES (27, 1, 'http://localhost:9000/sidifensen-blog/album/1/13/ae03c29e909440df9c323b0f9481238f.jpg', 13, 0, 0, '2025-08-01 02:21:16', '2025-08-01 02:21:16', 0);
+INSERT INTO `photo` VALUES (28, 1, 'http://localhost:9000/sidifensen-blog/album/1/1/04682bd7f51b4143baff1999ba6cc322.jpg', 1, 0, 0, '2025-08-01 22:56:13', '2025-08-01 22:56:13', 0);
+INSERT INTO `photo` VALUES (29, 1, 'http://localhost:9000/sidifensen-blog/album/1/1/c3704347ffe641ed9bf894899a03412b.jpg', 1, 0, 0, '2025-08-01 22:56:18', '2025-08-01 22:56:18', 0);
+INSERT INTO `photo` VALUES (30, 1, 'http://localhost:9000/sidifensen-blog/album/1/1/fb3f86fcb45e4f3498bbd5c7c692ab63.jpg', 1, 0, 0, '2025-08-01 22:56:31', '2025-08-01 22:56:31', 0);
+INSERT INTO `photo` VALUES (31, 1, 'http://localhost:9000/sidifensen-blog/album/1/1/91a991c81a4e46e7842d252b6c3896f9.gif', 1, 0, 0, '2025-08-02 01:36:30', '2025-08-02 01:36:30', 0);
 
 -- ----------------------------
 -- Table structure for sys_menu

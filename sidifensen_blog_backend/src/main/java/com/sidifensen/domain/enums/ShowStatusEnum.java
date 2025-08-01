@@ -8,7 +8,7 @@ import lombok.Getter;
 public enum ShowStatusEnum {
 
     PUBLIC(0, "公开"),
-    PRIVATE(1, "私有");
+    PRIVATE(1, "私密");
 
     private final Integer code;
     private final String description;
