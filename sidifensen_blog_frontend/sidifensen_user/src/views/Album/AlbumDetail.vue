@@ -362,6 +362,9 @@ onMounted(() => {
     display: flex;
     gap: 5px;
     align-items: center;
+    :deep(.el-button) { 
+      margin: 0;
+    }
   }
 }
 

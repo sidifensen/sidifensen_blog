@@ -3,11 +3,9 @@ package com.sidifensen.service.impl;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
-import com.sidifensen.domain.dto.PhotoDto;
 import com.sidifensen.domain.entity.Album;
 import com.sidifensen.domain.entity.Photo;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
-import com.sidifensen.domain.enums.ShowStatusEnum;
 import com.sidifensen.domain.enums.UploadEnum;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.AlbumMapper;
@@ -54,7 +52,6 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         photo.setUserId(SecurityUtils.getUserId());
         photo.setUrl(url);
         photo.setAlbumId(albumId);
-        photo.setShowStatus(ShowStatusEnum.PUBLIC.getCode());
         photo.setExamineStatus(ExamineStatusEnum.UNEXAMINED.getCode());
         photoMapper.insert(photo);
 
@@ -66,15 +63,6 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
 
         // TODO 异步发送信息给管理员审核
 
-    }
-
-    // 修改照片的展示状态
-    @Override
-    public void changeShowStatus(PhotoDto photoDto) {
-        Photo photo = new Photo();
-        photo.setId(photoDto.getId());
-        photo.setShowStatus(photoDto.getShowStatus());
-        photoMapper.updateById(photo);
     }
 
     // 删除照片

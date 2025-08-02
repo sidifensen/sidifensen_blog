@@ -8,10 +8,12 @@ import com.sidifensen.domain.dto.AlbumDto;
 import com.sidifensen.domain.dto.PhotoDto;
 import com.sidifensen.domain.entity.Album;
 import com.sidifensen.domain.entity.Photo;
+import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.enums.ShowStatusEnum;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.AlbumMapper;
 import com.sidifensen.mapper.PhotoMapper;
+import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.IAlbumService;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
@@ -21,7 +23,7 @@ import java.util.List;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author sidifensen
@@ -35,6 +37,9 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
 
     @Resource
     private PhotoMapper photoMapper;
+
+    @Resource
+    private SysUserMapper sysUserMapper;
 
     // 查询相册
     @Override
@@ -59,7 +64,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         Album album = new Album();
         album.setUserId(SecurityUtils.getUserId());
         album.setName(albumDto.getName());
-        if (albumDto.getDescription()!= null) {
+        if (albumDto.getDescription() != null) {
             album.setDescription(albumDto.getDescription());
         }
         album.setShowStatus(ShowStatusEnum.PUBLIC.getCode());
@@ -72,13 +77,20 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         albumDto.setUserId(SecurityUtils.getUserId());
         Album album = this.getById(albumDto.getId());
         album.setName(albumDto.getName());
-        if (albumDto.getDescription()!= null) {
+
+        Integer userId = SecurityUtils.getUserId();
+        if (userId != album.getUserId()) {
+            throw new BlogException(BlogConstants.CannotDeleteOtherUserAlbum);
+        }
+        if (albumDto.getDescription() != null) {
             album.setDescription(albumDto.getDescription());
         }
-        if (albumDto.getCoverUrl()!= null) {
+        if (albumDto.getCoverUrl() != null) {
             album.setCoverUrl(albumDto.getCoverUrl());
         }
-        album.setShowStatus(albumDto.getShowStatus());
+        if (albumDto.getShowStatus() != null) {
+            album.setShowStatus(albumDto.getShowStatus());
+        }
         this.updateById(album);
     }
 
@@ -87,7 +99,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     public void deleteAlbum(Long albumId) {
         Integer userId = SecurityUtils.getUserId();
         Album album = albumMapper.selectById(albumId);
-        if ( userId!= album.getUserId() ){
+        if (userId != album.getUserId()) {
             throw new BlogException(BlogConstants.CannotDeleteOtherUserAlbum);
         }
         int i = albumMapper.deleteById(albumId);
@@ -101,6 +113,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     public List<AlbumDto> listAlbum() {
         LambdaQueryWrapper<Album> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Album::getUserId, SecurityUtils.getUserId());
+        queryWrapper.eq(Album::getShowStatus, ShowStatusEnum.PUBLIC.getCode());
         List<Album> albums = this.list(queryWrapper);
         // 把List<Album>转为List<AlbumDto>
         List<AlbumDto> albumDtos = albums.stream().map(album -> {
@@ -122,14 +135,24 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         LambdaQueryWrapper<Album> eq = new LambdaQueryWrapper<Album>().eq(Album::getShowStatus, ShowStatusEnum.PUBLIC.getCode());
         List<Album> albums = this.list(eq);
         // 把List<Album>转为List<AlbumDto>
-        List<AlbumDto> albumDtos = BeanUtil.copyToList(albums, AlbumDto.class);
+        List<AlbumDto> albumDtos = albums.stream().map(album -> {
+            AlbumDto albumDto = new AlbumDto();
+            BeanUtil.copyProperties(album, albumDto);
+            SysUser sysUser = sysUserMapper.selectById(album.getUserId());
+            albumDto.setUserName(sysUser.getUsername());
+            return albumDto;
+        }).toList();
         return albumDtos;
     }
 
     // 修改相册展示状态
     @Override
     public void changeShowStatus(AlbumDto albumDto) {
+        Integer userId = SecurityUtils.getUserId();
         Album album = this.getById(albumDto.getId());
+        if (userId != album.getUserId()) {
+            throw new BlogException(BlogConstants.CannotDeleteOtherUserAlbum);
+        }
         if (album == null) {
             throw new BlogException(BlogConstants.NotFoundAlbum);
         }
@@ -140,7 +163,12 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     // 修改相册封面
     @Override
     public void changeCover(AlbumDto albumDto) {
-        Album album = this.getById(albumDto.getId()).setCoverUrl(albumDto.getCoverUrl());
+        Album album = this.getById(albumDto.getId());
+        Integer userId = SecurityUtils.getUserId();
+        if (userId != album.getUserId()) {
+            throw new BlogException(BlogConstants.CannotDeleteOtherUserAlbum);
+        }
+        album.setCoverUrl(albumDto.getCoverUrl());
         this.updateById(album);
     }
 }

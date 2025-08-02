@@ -41,10 +41,6 @@ public class Photo implements Serializable {
      */
     private Integer albumId;
 
-    /**
-     * 展示状态 0-公开 1-私密
-     */
-    private Integer showStatus;
 
     /**
      * 审核状态 0-待审核 1-审核通过 2-审核未通过

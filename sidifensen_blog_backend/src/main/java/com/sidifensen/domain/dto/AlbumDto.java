@@ -65,4 +65,9 @@ public class AlbumDto implements Serializable {
      */
     private List<PhotoDto> photos;
 
+    /**
+     * 用户名
+     */
+    private String userName;
+
 }

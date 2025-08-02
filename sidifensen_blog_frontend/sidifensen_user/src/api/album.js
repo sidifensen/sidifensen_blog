@@ -42,6 +42,14 @@ export function listAlbum() {
   })
 }
 
+// 查看所有用户的相册
+export function listAllAlbum() {
+  return request({
+    url: '/album/listAll',
+    method: 'get'
+  })
+}
+
 // 修改相册展示状态
 export function changeShowStatus(data) {
   return request({

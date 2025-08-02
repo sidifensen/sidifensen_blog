@@ -1,29 +1,29 @@
 body {
-    margin: 0px;
-    padding: 0px;
-    font-size: 14px;
+  margin: 0px;
+  padding: 0px;
+  font-size: 14px;
 }
 //超链接去掉下划线
 a {
-    text-decoration: none;
-    color: #333;
+  text-decoration: none;
+  color: #333;
 }
 
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 // el-dropdown 去掉黑框
 .el-tooltip__trigger:focus-visible {
   outline: unset;
-} 
+}
 
 // -enter-active 和 -leave-active 定义进入和离开的动画效果
 // -enter-from 和 -leave-to定义进入和离开的状态
 
 // 淡入淡出动画
 .fade-enter-active,
-.fade-leave-active { 
+.fade-leave-active {
   transition: opacity 0.3s ease;
 }
 .fade-enter-from,

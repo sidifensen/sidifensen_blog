@@ -1,11 +1,9 @@
 package com.sidifensen.controller;
 
 
-import com.sidifensen.domain.dto.PhotoDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.service.IPhotoService;
 import jakarta.annotation.Resource;
-import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,15 +28,6 @@ public class PhotoController {
                                  @RequestParam("albumId") Integer albumId) throws Exception {
         photoService.upload(file, albumId);
         return Result.successMsg("上传成功");
-    }
-
-    /**
-     * 修改照片的展示状态
-     */
-    @PutMapping("/changeShowStatus")
-    public Result<Object> changeShowStatus(@RequestBody @Valid PhotoDto photoDto) {
-         photoService.changeShowStatus(photoDto);
-         return Result.success();
     }
 
     /**

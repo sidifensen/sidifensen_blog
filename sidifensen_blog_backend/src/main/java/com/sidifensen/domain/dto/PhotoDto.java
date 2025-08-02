@@ -38,13 +38,6 @@ public class PhotoDto implements Serializable {
     private Integer albumId;
 
     /**
-     * 展示状态 0-公开 1-私密
-     */
-    @Min(value = 0, message = "展示状态错误")
-    @Max(value = 1, message = "展示状态错误")
-    private Integer showStatus;
-
-    /**
      * 审核状态 0-待审核 1-审核通过 2-审核未通过
      */
     @Min(value = 0, message = "审核状态错误")

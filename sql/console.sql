@@ -1,12 +1,12 @@
 create table sys_user
 (
     id            int primary key auto_increment comment '用户id',
-    username      varchar(30)  not null comment '用户名',
+    username      varchar(10)  not null comment '用户名',
     password      varchar(100) not null comment '密码',
-    nickname      varchar(30)  not null comment '昵称',
+    nickname      varchar(10)  not null comment '昵称',
     email         varchar(50)  not null comment '邮箱',
     sex           tinyint               default 0 comment '性别 0-男 1-女',
-    introduction  varchar(100) comment '简介',
+    introduction  varchar(50) comment '简介',
     avatar        varchar(255) comment '头像',
     status        tinyint      not null default 0 comment '状态 0-正常 1-禁用',
     register_type tinyint               default 0 comment '注册方式 0-用户名/邮箱注册 1-第三方注册',
@@ -23,9 +23,9 @@ create table sys_user
 create table sys_role
 (
     id          int primary key auto_increment comment '角色id',
-    role        varchar(30) not null comment '角色',
-    name        varchar(30) not null comment '角色名称',
-    description varchar(100) comment '角色描述',
+    role        varchar(10) not null comment '角色',
+    name        varchar(10) not null comment '角色名称',
+    description varchar(20) comment '角色描述',
     sort        int                  default 0 comment '  排序',
     status      tinyint     not null default 0 comment '状态 0-正常 1-禁用',
     create_time datetime    not null comment '创建时间',
@@ -111,8 +111,8 @@ create table album
 (
     id          int primary key auto_increment comment '相册id',
     user_id     bigint      not null comment '用户id',
-    name        varchar(50) not null comment '相册名称',
-    description varchar(200) comment '相册描述',
+    name        varchar(10) not null comment '相册名称',
+    description varchar(20) comment '相册描述',
     cover_url   varchar(255) comment '相册封面',
     show_status tinyint              default 0 not null comment '展示状态 0-公开 1-私密',
     create_time datetime    not null comment '创建时间',

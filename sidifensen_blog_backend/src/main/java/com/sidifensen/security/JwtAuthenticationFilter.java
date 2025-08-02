@@ -51,6 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String jwt = request.getHeader("Authorization");
         if (ObjectUtil.isEmpty(jwt)){
             //请先登录
+            log.error("用户访问接口{},提示:请先登录", request.getRequestURI());
             WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.LoginRequired).toJson());
             return;
         }
@@ -59,6 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Long id = jwtUtils.parseToken(jwt);
             if (ObjectUtil.isEmpty(id)) {
                 //登录过期
+                log.error("用户访问接口{},提示:登录过期", request.getRequestURI());
                 WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.LoginExpired).toJson());
                 return;
             }

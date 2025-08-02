@@ -20,11 +20,19 @@ const router = createRouter({
           },
         },
         {
-          path: "/album",
-          name: "Album",
-          component: () => import("@/views/Album/index.vue"),
+          path: "/albumSquare",
+          name: "AlbumSquare",
+          component: () => import("@/views/Album/AlbumSquare.vue"),
           meta: {
-            title: "相册列表",
+            title: "相册广场",
+          },
+        },
+        {
+          path: "/myAlbum",
+          name: "MyAlbum",
+          component: () => import("@/views/Album/MyAlbum.vue"),
+          meta: {
+            title: "我的相册",
           },
         },
         {

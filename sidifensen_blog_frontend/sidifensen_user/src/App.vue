@@ -7,5 +7,8 @@ import { RouterView } from 'vue-router'
   <RouterView />
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
+#app {
+  padding-top: 60px;
+}
 </style>
