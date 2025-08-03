@@ -3,10 +3,17 @@
     <el-card shadow="hover" class="main-card">
       <template #header>
         <div class="card-header">
-          <el-text size="large">我的相册</el-text>
+          <el-text class="title" size="large">我的相册</el-text>
+          <div>
+            <el-button type="primary" @click="toAlbumSquare" class="album-square-btn">
+              <el-icon style="margin-right: 2px"><HomeFilled /></el-icon>相册广场
+            </el-button>
+            <el-button type="primary" @click="handleCreateAlbum" class="create-btn">
+              <el-icon style="margin-right: 2px"><DocumentAdd /></el-icon>新建相册
+            </el-button>
+          </div>
         </div>
       </template>
-      <el-button type="primary" @click="handleCreateAlbum" class="create-btn">新建相册</el-button>
 
       <div class="album-grid" v-loading="loading">
         <div v-for="album in albumList" :key="album.id" class="album-card">
@@ -19,7 +26,7 @@
         </div>
       </div>
 
-      <el-dialog v-model="dialogVisible" :title="'新建相册'" width="500px">
+      <el-dialog v-model="dialogVisible" :title="'新建相册'">
         <el-form :model="albumForm" label-width="80px">
           <el-form-item label="相册名称">
             <el-input v-model="albumForm.name" />
@@ -50,6 +57,10 @@ const loading = ref(false);
 const albumList = ref([]);
 const dialogVisible = ref(false);
 const albumForm = ref({ name: "", description: "", coverUrl: "" });
+
+const toAlbumSquare = () => {
+  router.push({ name: "AlbumSquare" });
+};
 
 // 获取相册列表
 const getAlbumList = async () => {
@@ -127,21 +138,6 @@ const handleDeleteAlbum = async (albumId) => {
     });
 };
 
-// 修改相册展示状态
-const handleChangeShowStatus = async (album) => {
-  try {
-    const AlbumDto = {
-      id: album.id,
-      showStatus: album.showStatus === 1 ? 0 : 1,
-    };
-    await changeShowStatus(AlbumDto);
-    ElMessage.success("修改展示状态成功");
-    getAlbumList(); // 刷新相册列表
-  } catch (error) {
-    ElMessage.error("修改展示状态失败");
-  }
-};
-
 // 页面加载时获取相册列表
 onMounted(() => {
   getAlbumList();
@@ -151,18 +147,106 @@ onMounted(() => {
 <style lang="scss" scoped>
 .album-container {
   .main-card {
-    margin-bottom: 20px;
+    :deep(.el-card__header) {
+      padding: 10px;
+    }
     /* 相册列表头部 */
-    
     .card-header {
       display: flex;
-      justify-content: space-between;
+      @media screen and (max-width: 640px) {
+        justify-content: space-between;
+      }
       align-items: center;
-    }
+      .title {
+        font-size: 18px !important;
+        font-weight: 600;
+        background: linear-gradient(135deg, #3d92eb, #10b981);
+        -webkit-background-clip: text; // 背景被裁剪为文本前景色 非标准属性
+        -webkit-text-fill-color: transparent; // 文字颜色透明
+        background-clip: text; // 背景被裁剪为文本前景色 标准属性
+        margin-right: 10px;
+      }
 
-    /* 新建相册按钮 */
-    .create-btn {
-      margin-bottom: 20px;
+      /* 相册广场按钮 */
+      .album-square-btn {
+        position: relative;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 30px;
+        border: none;
+        background: linear-gradient(135deg, #3d92eb, #6f42c1);
+        color: white;
+        box-shadow: 0 4px 15px rgba(61, 146, 235, 0.3);
+        transition: all 0.3s ease;
+        overflow: hidden;
+
+        // 滑动光效
+        &::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: -100%; // 初始位置放在按钮左边
+          width: 100%;
+          height: 100%;
+          // 从左到右的白色半透明光效渐变
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+          transition: 0.5s;
+        }
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(61, 146, 235, 0.4);
+
+          &::before {
+            // 光效从左到右
+            left: 100%;
+          }
+        }
+
+        // 按下后归位
+        &:active {
+          transform: translateY(0);
+        }
+      }
+
+      /* 新建相册按钮 */
+      .create-btn {
+        background: linear-gradient(135deg, #3d92eb, #10b981);
+        border: none;
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 30px;
+        box-shadow: 0 4px 15px rgba(61, 146, 235, 0.3);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+
+        &::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+          transition: 0.5s;
+        }
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(61, 146, 235, 0.4);
+
+          &::before {
+            left: 100%;
+          }
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
     }
 
     /* 相册列表 */
@@ -170,7 +254,6 @@ onMounted(() => {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 24px;
-      margin-top: 20px;
       .album-card {
         border-radius: 8px;
         overflow: hidden;
@@ -221,6 +304,14 @@ onMounted(() => {
             }
           }
         }
+      }
+    }
+
+    /* 新建相册弹窗 */
+    :deep(.el-dialog) {
+      width: 30vw;
+      @media screen and (max-width: 870px) {
+        width: 70vw;
       }
     }
   }

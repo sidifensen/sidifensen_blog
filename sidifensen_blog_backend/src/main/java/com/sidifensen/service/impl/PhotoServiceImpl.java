@@ -83,15 +83,23 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     // 批量删除照片
     @Override
     public void batchDelete(List<Integer> photoIds) throws Exception {
+        Integer userId = SecurityUtils.getUserId();
         // 查询要删除的照片信息
         List<Photo> photos = photoMapper.selectBatchIds(photoIds);
         if (photos == null || photos.isEmpty()) {
             throw new BlogException(BlogConstants.NotFoundPhoto);
         }
+
+        // 在photos中对比每一张图片的userId是否与当前登录用户一致，如果不一致则抛出异常
+        for (Photo photo : photos) {
+            if (photo.getUserId() != userId){
+                throw new BlogException(BlogConstants.CannotHandleOtherUserPhoto);
+            }
+        }
         
         // 收集要删除的文件路径信息
         List<String> filePaths = new ArrayList<>();
-        String baseDir = UploadEnum.ALBUM.getDir() + SecurityUtils.getUserId() + "/";
+        String baseDir = UploadEnum.ALBUM.getDir() + userId + "/";
         
         // 构建所有要删除的文件完整路径
         for (Photo photo : photos) {

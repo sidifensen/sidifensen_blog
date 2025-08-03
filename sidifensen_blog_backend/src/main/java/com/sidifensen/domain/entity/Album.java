@@ -41,11 +41,6 @@ public class Album implements Serializable {
     private String name;
 
     /**
-     * 相册描述
-     */
-    private String description;
-
-    /**
      * 相册封面
      */
     private String coverUrl;

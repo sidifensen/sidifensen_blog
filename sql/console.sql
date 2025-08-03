@@ -96,15 +96,14 @@ create table photo
 (
     id             int primary key auto_increment comment '图片id',
     user_id        bigint            not null comment '用户id',
-    url            varchar(255)      not null comment '图片url',
+    url            varchar(400)      not null comment '图片url',
     album_id       bigint            not null comment '相册id',
-    show_status    tinyint default 0 not null comment '展示状态 0-公开 1-私密',
     examine_status tinyint default 0 not null comment '审核状态 0-待审核 1-审核通过 2-审核未通过',
     create_time    datetime          not null comment '创建时间',
     update_time    datetime          not null comment '更新时间',
     is_deleted     tinyint           not null default 0 comment '是否删除 0-未删除 1-已删除',
     index idx_examine_status (examine_status),
-    index idx_photo_user_album_status_create_time (user_id, album_id, show_status, examine_status, create_time)
+    index idx_photo_user_album_status_create_time (user_id, album_id, examine_status, create_time)
 );
 
 create table album
@@ -112,8 +111,7 @@ create table album
     id          int primary key auto_increment comment '相册id',
     user_id     bigint      not null comment '用户id',
     name        varchar(10) not null comment '相册名称',
-    description varchar(20) comment '相册描述',
-    cover_url   varchar(255) comment '相册封面',
+    cover_url   varchar(400) comment '相册封面',
     show_status tinyint              default 0 not null comment '展示状态 0-公开 1-私密',
     create_time datetime    not null comment '创建时间',
     update_time datetime    not null comment '更新时间',

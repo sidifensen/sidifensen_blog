@@ -64,9 +64,6 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         Album album = new Album();
         album.setUserId(SecurityUtils.getUserId());
         album.setName(albumDto.getName());
-        if (albumDto.getDescription() != null) {
-            album.setDescription(albumDto.getDescription());
-        }
         album.setShowStatus(ShowStatusEnum.PUBLIC.getCode());
         this.save(album);
     }
@@ -80,10 +77,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
 
         Integer userId = SecurityUtils.getUserId();
         if (userId != album.getUserId()) {
-            throw new BlogException(BlogConstants.CannotDeleteOtherUserAlbum);
-        }
-        if (albumDto.getDescription() != null) {
-            album.setDescription(albumDto.getDescription());
+            throw new BlogException(BlogConstants.CannotHandleOtherUserAlbum);
         }
         if (albumDto.getCoverUrl() != null) {
             album.setCoverUrl(albumDto.getCoverUrl());
@@ -100,7 +94,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         Integer userId = SecurityUtils.getUserId();
         Album album = albumMapper.selectById(albumId);
         if (userId != album.getUserId()) {
-            throw new BlogException(BlogConstants.CannotDeleteOtherUserAlbum);
+            throw new BlogException(BlogConstants.CannotHandleOtherUserAlbum);
         }
         int i = albumMapper.deleteById(albumId);
         if (i == 0) {
@@ -113,14 +107,12 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     public List<AlbumDto> listAlbum() {
         LambdaQueryWrapper<Album> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Album::getUserId, SecurityUtils.getUserId());
-        queryWrapper.eq(Album::getShowStatus, ShowStatusEnum.PUBLIC.getCode());
         List<Album> albums = this.list(queryWrapper);
         // 把List<Album>转为List<AlbumDto>
         List<AlbumDto> albumDtos = albums.stream().map(album -> {
             AlbumDto albumDto = new AlbumDto();
             albumDto.setId(album.getId());
             albumDto.setName(album.getName());
-            albumDto.setDescription(album.getDescription());
             albumDto.setCoverUrl(album.getCoverUrl());
             albumDto.setShowStatus(album.getShowStatus());
             albumDto.setCreateTime(album.getCreateTime());
@@ -139,7 +131,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
             AlbumDto albumDto = new AlbumDto();
             BeanUtil.copyProperties(album, albumDto);
             SysUser sysUser = sysUserMapper.selectById(album.getUserId());
-            albumDto.setUserName(sysUser.getUsername());
+            albumDto.setUserName(sysUser.getNickname());
             return albumDto;
         }).toList();
         return albumDtos;
@@ -151,7 +143,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         Integer userId = SecurityUtils.getUserId();
         Album album = this.getById(albumDto.getId());
         if (userId != album.getUserId()) {
-            throw new BlogException(BlogConstants.CannotDeleteOtherUserAlbum);
+            throw new BlogException(BlogConstants.CannotHandleOtherUserAlbum);
         }
         if (album == null) {
             throw new BlogException(BlogConstants.NotFoundAlbum);
@@ -166,7 +158,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         Album album = this.getById(albumDto.getId());
         Integer userId = SecurityUtils.getUserId();
         if (userId != album.getUserId()) {
-            throw new BlogException(BlogConstants.CannotDeleteOtherUserAlbum);
+            throw new BlogException(BlogConstants.CannotHandleOtherUserAlbum);
         }
         album.setCoverUrl(albumDto.getCoverUrl());
         this.updateById(album);

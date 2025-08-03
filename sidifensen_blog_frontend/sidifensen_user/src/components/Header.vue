@@ -5,7 +5,7 @@
       <svg-icon name="menu" width="50px" height="50px" cursor="pointer" />
     </div>
 
-    <router-link class="logo" to="/"><el-text size="large">斯蒂芬森的博客</el-text></router-link>
+    <router-link class="logo" to="/"><el-text size="large" class="logo-text">斯蒂芬森的博客</el-text></router-link>
     <el-menu-item index="1" class="menu-item">
       <router-link to="/">
         <el-icon><House /></el-icon>
@@ -205,7 +205,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
-.el-menu {
+.pc-menu {
   height: 60px;
   width: 100%;
   padding: 0 10px 0 10px;
@@ -228,10 +228,47 @@ onBeforeUnmount(() => {
     margin-right: 10px;
     font-weight: bold;
     white-space: nowrap;
+
+    /* Logo文字 */
+    .logo-text {
+      font-size: 26px !important;
+      font-weight: 800;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      color: #3d92eb;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      letter-spacing: 1px;
+      position: relative;
+      transition: all 0.3s ease;
+
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #3d92eb, #6f42c1);
+        border-radius: 3px;
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 0.3s ease;
+      }
+
+      &:hover {
+        color: #6f42c1;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+
+        &::after {
+          transform: scaleX(1);
+          transform-origin: left;
+        }
+      }
+    }
   }
 
   .menu-item {
     .menu-text {
+      font-size: 18px;
       margin-left: 5px;
     }
   }
@@ -251,9 +288,21 @@ onBeforeUnmount(() => {
       display: flex;
       align-items: center;
       .nickname {
+        font-size: 18px !important;
+        font-weight: 600;
+        color: #6f42c1;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
         margin-left: 10px;
         margin-right: 10px;
-        @media (max-width: 930px) {
+        transition: all 0.3s ease;
+
+        &:hover {
+          color: #8a6cdd;
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+          transform: translateY(-2px);
+        }
+
+        @media (max-width: 1314px) {
           margin-left: 0;
           display: none;
         }
@@ -274,7 +323,7 @@ onBeforeUnmount(() => {
   }
   // 移动端菜单按钮
   .mobile-menu-button {
-    margin-right: 10px;
+    // margin-right: 10px;
     display: none;
     cursor: pointer;
   }
@@ -292,9 +341,10 @@ onBeforeUnmount(() => {
   display: flex;
   .mobile-menu {
     width: 150px;
-    height: 100vh;
+    // position: absolute;// top: 60px;// height: calc(100vh - 60px); //菜单在顶部，向下滑出
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: flex-start; // 菜单项水平左对齐
     background-color: var(--el-bg-color);
     .el-menu-item {
@@ -334,7 +384,7 @@ onBeforeUnmount(() => {
 }
 
 // 响应式设计 - 平板及以下尺寸
-@media (max-width: 1130px) {
+@media (max-width: 1270px) {
   .pc-menu {
     .menu-item {
       .menu-text {
@@ -345,7 +395,7 @@ onBeforeUnmount(() => {
 }
 
 // 响应式设计 - 移动端
-@media (max-width: 768px) {
+@media (max-width: 870px) {
   .pc-menu {
     .menu-item {
       display: none; // 隐藏PC端菜单
@@ -353,7 +403,19 @@ onBeforeUnmount(() => {
     .mobile-menu-button {
       display: block; // 显示移动端菜单按钮
     }
-    .user-info {
+    .logo {
+      margin-right: 0;
+      .logo-text {
+        font-size: 20px !important;
+      }
+    }
+    .right {
+      .search {
+        margin-right: 5px;
+      }
+      .login {
+        margin-left: 0;
+      }
     }
   }
 }

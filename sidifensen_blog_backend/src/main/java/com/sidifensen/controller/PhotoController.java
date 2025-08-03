@@ -24,19 +24,19 @@ public class PhotoController {
      * 上传照片到相册
      */
     @PostMapping("/upload")
-    public Result<String> upload(@RequestParam("file") MultipartFile file,
+    public Result<Object> upload(@RequestParam("file") MultipartFile file,
                                  @RequestParam("albumId") Integer albumId) throws Exception {
         photoService.upload(file, albumId);
-        return Result.successMsg("上传成功");
+        return Result.success();
     }
 
     /**
      * 删除照片
      */
-    @DeleteMapping("/{photoId}")
-    public Result<String> delete(@PathVariable("photoId") Integer photoId) throws Exception {
+    @DeleteMapping("/delete/{photoId}")
+    public Result<Object> delete(@PathVariable("photoId") Integer photoId) throws Exception {
         photoService.delete(photoId);
-        return Result.successMsg("删除成功");
+        return Result.success();
     }
 
     /**
