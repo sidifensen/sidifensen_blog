@@ -119,4 +119,17 @@ public class SysUserController {
         return Result.success("用户删除成功");
     }
 
+    // 管理端
+
+    /**
+     * 管理端登录
+     * @param AdminLoginDto
+     * @return
+     */
+    @PostMapping("/adminLogin")
+    public Result adminLogin(@RequestBody @Valid AdminLoginDto AdminLoginDto) {
+        String jwt = sysUserService.adminLogin(AdminLoginDto);
+        return Result.success(jwt, "登录成功");
+    }
+
 }

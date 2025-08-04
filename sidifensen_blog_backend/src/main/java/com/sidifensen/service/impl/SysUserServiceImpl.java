@@ -202,4 +202,19 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     }
 
 
+    // 管理员登录
+    @Override
+    public String adminLogin(AdminLoginDto adminLoginDto) {
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(adminLoginDto.getUsername(), adminLoginDto.getPassword());
+        // 调用loadUserByUsername方法
+        Authentication authenticate = authenticationManager.authenticate(authentication);
+        // 获取用户信息，返回的就是UserDetails
+        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
+        // 创建token,此处的token时由UUID编码而成JWT字符串
+        String token = jwtUtils.createToken(loginUser.getSysUser().getId(), adminLoginDto.getRememberMe());
+        return token;
+    }
+
+
 }

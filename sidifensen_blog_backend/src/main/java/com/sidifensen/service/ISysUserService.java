@@ -53,4 +53,9 @@ public interface ISysUserService extends IService<SysUser> {
 
     // 删除用户
     void deleteUser(Long id);
+
+    // 管理端
+
+    // 管理员登录
+    String adminLogin(AdminLoginDto adminLoginDto);
 }

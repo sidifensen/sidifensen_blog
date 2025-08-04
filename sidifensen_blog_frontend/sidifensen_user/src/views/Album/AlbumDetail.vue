@@ -581,6 +581,7 @@ const getExamineStatusClass = (status) => {
 
 <style lang="scss" scoped>
 .card {
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   :deep(.el-button) {
     margin: 0;
   }

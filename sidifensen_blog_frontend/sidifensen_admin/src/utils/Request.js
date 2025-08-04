@@ -59,7 +59,7 @@ request.interceptors.response.use(
       // 清除useStore数据和localStorage中的jwt
       RemoveJwt();
       // 需要重新登陆，跳转到登录页面
-      router.push("/account");
+      router.push("/login");
     }
     return Promise.reject(error);
   }

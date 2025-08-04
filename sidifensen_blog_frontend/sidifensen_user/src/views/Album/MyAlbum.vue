@@ -153,10 +153,10 @@ onMounted(() => {
     /* 相册列表头部 */
     .card-header {
       display: flex;
+      align-items: center;
       @media screen and (max-width: 640px) {
         justify-content: space-between;
       }
-      align-items: center;
       .title {
         font-size: 18px !important;
         font-weight: 600;
