@@ -6,9 +6,14 @@
           <el-button class="my-album-btn" @click="goBack">
             <el-icon><ArrowLeftBold /></el-icon>
           </el-button>
-          <el-text class="title" type="primary" size="large">{{ albumForm.name }}</el-text>
+          <div class="album-name-container">
+            <el-text class="title" type="primary" size="large">{{ albumForm.name }}</el-text>
+          </div>
+          <div class="user-name-container" v-if="albumForm.userName">
+            <el-text class="user-name" type="secondary"> <span class="at-symbol">@</span>{{ albumForm.userName }} </el-text>
+          </div>
         </div>
-        <div class="header-actions">
+        <div class="header-actions" v-if="isAlbumOwner">
           <el-button class="upload-photo-btn" type="primary" @click="handleUploadPhoto">
             <el-icon style="margin-right: 2px"><UploadFilled /></el-icon>上传图片
           </el-button>
@@ -25,7 +30,7 @@
             size="large"
             inline-prompt />
         </div>
-        <div class="header-select">
+        <div class="header-select" v-if="isAlbumOwner">
           <el-button class="select-btn" style="margin-right: 10px" type="info" @click="toggleSelectMode">{{ isSelectMode ? "取消选择" : "选择图片" }}</el-button>
           <el-button class="delete-btn" style="margin-right: 10px" v-show="selectedPhotos.length > 0" type="danger" @click="handleBatchDelete">
             <el-icon><Delete /></el-icon>删除 ({{ selectedPhotos.length }})
@@ -147,11 +152,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
+// 显式引入FileReader和Image
+const { FileReader, Image } = window;
 import { useRoute, useRouter } from "vue-router";
 import { getAlbum, updateAlbum, deleteAlbum, changeShowStatus, changeCover } from "@/api/album";
-import { uploadPhoto, deletePhoto, batchDeletePhoto } from "@/api/photo";
+import { uploadPhoto, batchDeletePhoto } from "@/api/photo";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useUserStore } from "@/stores/userStore";
+import { storeToRefs } from "pinia";
 
 // 显式引入 URL 对象
 const { URL } = window;
@@ -159,28 +168,25 @@ const { URL } = window;
 const route = useRoute();
 const router = useRouter();
 const loading = ref(false);
-const uploadLoading = ref(false);
-const editLoading = ref(false);
-
-const photoList = ref([]);
-const groupedPhotos = ref({}); // 按日期分组的照片
-const fileList = ref([]);
-
-const uploadDialogVisible = ref(false);
-const editDialogVisible = ref(false);
 
 const albumId = Number(route.params.albumId);
-
 const albumForm = ref({
   id: albumId, //相册id从路径中获取
   name: "",
   coverUrl: "",
   showStatus: 0,
   createTime: "",
+  userId: "", // 相册所属用户ID
+  userName: "", // 用户名称
 });
 const switchShowStatus = ref(albumForm.value.showStatus === 0 ? true : false);
 
-// 获取相册图片列表
+const userStore = useUserStore();
+const { user } = storeToRefs(userStore);
+
+// 照片列表
+const photoList = ref([]);
+// 获取相册的照片
 const getPhotoList = async () => {
   loading.value = true;
   try {
@@ -189,6 +195,8 @@ const getPhotoList = async () => {
     albumForm.value.showStatus = res.data.data.showStatus || 0;
     albumForm.value.name = res.data.data.name || "";
     albumForm.value.coverUrl = res.data.data.coverUrl || "";
+    albumForm.value.userName = res.data.data.userName || "";
+    albumForm.value.userId = res.data.data.userId || ""; // 获取相册所属用户ID
     groupPhotosByDate(); // 按日期分组
   } catch (error) {
     ElMessage.error("获取相册图片失败");
@@ -196,6 +204,21 @@ const getPhotoList = async () => {
     loading.value = false;
   }
 };
+
+onMounted(() => {
+  getPhotoList();
+  // 获取相册图片列表
+});
+
+// 判断是否为相册所有者
+const isAlbumOwner = computed(() => {
+  const currentUserId = user.value.id;
+  const albumUserId = albumForm.value.userId;
+  return currentUserId && albumUserId && currentUserId === albumUserId;
+});
+
+// 按日期分组的照片
+const groupedPhotos = ref({});
 
 // 按日期分组照片
 const groupPhotosByDate = () => {
@@ -219,7 +242,9 @@ const groupPhotosByDate = () => {
 
 // 图片工具栏下载按钮
 const download = (number) => {
-  const url = photoList.value[number].url; // 图片url
+  // 获取所有图片URL列表
+  const allUrls = getAllPhotoUrls();
+  const url = allUrls[number]; // 使用预览列表中的URL
   const suffix = url.slice(url.lastIndexOf(".")); // 文件格式
   const filename = Date.now() + suffix; // 时间戳文件名
   fetch(url)
@@ -292,6 +317,11 @@ const handleBatchDelete = () => {
     });
 };
 
+// 上传图片对话框
+const uploadDialogVisible = ref(false);
+// 上传图片列表
+const fileList = ref([]);
+
 // 上传图片
 const handleUploadPhoto = () => {
   fileList.value = [];
@@ -303,6 +333,46 @@ const handleFileChange = (file, fileListData) => {
   fileList.value = fileListData;
 };
 
+// 图片压缩函数 - 保持原始尺寸，仅质量压缩
+const compressImage = (file, quality = 0.3) => {
+  return new Promise((resolve) => {
+    // 读取文件
+    const reader = new FileReader();
+    // 将文件读取为base64编码的url
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target.result;
+      img.onload = () => {
+        // 使用原始尺寸
+        const width = img.width;
+        const height = img.height;
+
+        // 创建Canvas进行压缩
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+
+        // 获取Canvas 2D绘图上下文
+        const ctx = canvas.getContext("2d");
+        // 使用drawImage将图片绘制到Canvas上
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // 转换为Blob
+        canvas.toBlob(
+          (blob) => {
+            resolve(new File([blob], file.name, { type: file.type }));
+          },
+          file.type,
+          quality
+        );
+      };
+    };
+  });
+};
+
+// 上传图片加载
+const uploadLoading = ref(false);
 // 提交上传
 const submitUpload = async () => {
   if (fileList.value.length === 0) {
@@ -311,8 +381,15 @@ const submitUpload = async () => {
   }
   uploadLoading.value = true;
   try {
-    const uploadPromises = fileList.value.map((file) => {
-      return uploadPhoto(file.raw, albumForm.value.id);
+    // 压缩图片
+    const compressedFiles = [];
+    for (const file of fileList.value) {
+      const compressedFile = await compressImage(file.raw);
+      compressedFiles.push(compressedFile);
+    }
+
+    const uploadPromises = compressedFiles.map((file) => {
+      return uploadPhoto(file, albumForm.value.id);
     });
     await Promise.all(uploadPromises); // 等待图片列表上传完成
     ElMessage.success("图片上传成功");
@@ -325,6 +402,10 @@ const submitUpload = async () => {
   }
 };
 
+// 编辑相册对话框
+const editDialogVisible = ref(false);
+// 编辑相册加载
+const editLoading = ref(false);
 // 编辑相册
 const handleEditAlbum = () => {
   editDialogVisible.value = true;
@@ -402,11 +483,13 @@ const handleChangeCover = async () => {
       return;
     }
     const photos = res.data.data.photos;
+    console.log(photos);
     if (!photos || photos.length === 0) {
       ElMessage.warning("该相册暂无图片，请先上传图片");
       return;
     }
-    coverDialogPhotos.value = photos; // 赋值相册图片列表
+    // 反转图片列表顺序
+    coverDialogPhotos.value = [...photos].reverse();
     selectedCoverUrl.value = ""; // 重置选择的封面
     coverDialogVisible.value = true; // 打开选择封面对话框
   } catch (error) {
@@ -441,11 +524,6 @@ const confirmCoverChange = async () => {
 const goBack = () => {
   router.push({ name: "MyAlbum" });
 };
-
-// 页面加载完成后获取相册图片列表
-onMounted(() => {
-  getPhotoList();
-});
 
 // 获取所有图片的URL列表用于预览
 const getAllPhotoUrls = () => {
@@ -514,9 +592,71 @@ const getExamineStatusClass = (status) => {
   /* 头部第一行 */
   .header-title {
     display: flex;
-    // justify-content: space-between;
+    flex-wrap: wrap;
     align-items: center;
+    width: 100%;
     /* 返回我的相册按钮 */
+    .my-album-btn {
+      margin-right: 15px;
+    }
+
+    .album-name-container {
+      display: flex;
+      align-items: center;
+      flex: 1;
+
+      .title {
+        margin-right: 10px;
+      }
+    }
+
+    .user-name-container {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      margin-top: 5px;
+
+      .user-name {
+        display: inline-flex;
+        align-items: center;
+        background-color: #f0f2f5;
+        padding: 2px 8px;
+        border-radius: 12px;
+        margin-left: 70px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #606266;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background-color: #e4e7ed;
+          color: #4096ff;
+        }
+
+        .at-symbol {
+          color: #4096ff;
+          margin-right: 2px;
+        }
+      }
+    }
+
+    @media screen and (max-width: 550px) {
+      flex-direction: column;
+      align-items: flex-start;
+
+      .album-name-container {
+        width: 100%;
+        margin: 10px 0 5px 0;
+      }
+
+      .user-name-container {
+        width: 100%;
+        justify-content: flex-start;
+        .user-name {
+          margin-left: 10px;
+        }
+      }
+    }
     .my-album-btn {
       background: linear-gradient(135deg, #3d92eb, #1097b9);
       border: none;

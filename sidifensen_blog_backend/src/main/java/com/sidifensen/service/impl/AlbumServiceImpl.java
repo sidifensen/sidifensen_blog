@@ -55,6 +55,8 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         // 把List<Photo>转为List<PhotoDto>
         List<PhotoDto> photoDtos = BeanUtil.copyToList(photos, PhotoDto.class);
         albumDto.setPhotos(photoDtos);
+        SysUser sysUser = sysUserMapper.selectById(album.getUserId());
+        albumDto.setUserName(sysUser.getNickname());
         return albumDto;
     }
 
@@ -162,5 +164,22 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         }
         album.setCoverUrl(albumDto.getCoverUrl());
         this.updateById(album);
+    }
+
+    /*管理端*/
+
+    // 查询所有相册
+    @Override
+    public List<AlbumDto> listAllAlbums() {
+        List<Album> albums = this.list();
+        // 把List<Album>转为List<AlbumDto>
+        List<AlbumDto> albumDtos = albums.stream().map(album -> {
+            AlbumDto albumDto = new AlbumDto();
+            BeanUtil.copyProperties(album, albumDto);
+            SysUser sysUser = sysUserMapper.selectById(album.getUserId());
+            albumDto.setUserName(sysUser.getNickname());
+            return albumDto;
+        }).toList();
+        return albumDtos;
     }
 }

@@ -22,14 +22,6 @@ export function changeShowStatus(data) {
   });
 }
 
-// 删除图片
-export function deletePhoto(photoId) {
-  return request({
-    url: `/photo/${photoId}`,
-    method: "delete",
-  });
-}
-
 // 批量删除图片
 export function batchDeletePhoto(photoIds) {
   return request({

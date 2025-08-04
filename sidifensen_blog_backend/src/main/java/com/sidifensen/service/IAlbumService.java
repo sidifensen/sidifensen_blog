@@ -39,4 +39,9 @@ public interface IAlbumService extends IService<Album> {
 
     // 修改相册封面
     void changeCover(AlbumDto albumDto);
+
+    /*管理端*/
+
+    // 查询所有相册
+    List<AlbumDto> listAllAlbums();
 }

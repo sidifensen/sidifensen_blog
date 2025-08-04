@@ -76,7 +76,7 @@ public class AlbumController {
     }
 
     /**
-     * 查看所有用户的相册
+     * 查看所有用户的相册(公开)
      */
     @GetMapping("/listAll")
     public Result<Object> listAllAlbum() {
@@ -104,6 +104,17 @@ public class AlbumController {
     public Result<String> changeCover(@RequestBody @Valid AlbumDto albumDto) {
         albumService.changeCover(albumDto);
         return Result.successMsg("相册封面更换成功");
+    }
+
+    // 管理端
+
+    /**
+     * 管理端查看所有用户的相册
+     */
+    @GetMapping("/listAllAlbums")
+    public Result<Object> listAllAlbums() {
+        List<AlbumDto> albumDtos = albumService.listAllAlbums();
+        return Result.success(albumDtos);
     }
 
 }

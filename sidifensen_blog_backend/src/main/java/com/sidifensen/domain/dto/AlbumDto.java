@@ -56,13 +56,13 @@ public class AlbumDto implements Serializable {
 
 
     /**
+     * 相册用户名
+     */
+    private String userName;
+
+    /**
      * 相册照片列表
      */
     private List<PhotoDto> photos;
-
-    /**
-     * 用户名
-     */
-    private String userName;
 
 }
