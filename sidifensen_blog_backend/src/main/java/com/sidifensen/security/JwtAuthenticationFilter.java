@@ -38,6 +38,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Resource
     private SysUserMapper sysUserMapper;
 
+    @Resource
+    private SysUserDetailsService userDetailsService;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // 如果是不需要登录的接口，则直接放行
@@ -67,7 +70,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 根据id查询用户信息
             SysUser sysUser = sysUserMapper.selectById(id);
             // 将SysUser转换为LoginUser
-            LoginUser loginUser = new LoginUser(sysUser);
+            LoginUser loginUser = userDetailsService.handleLogin(sysUser);
             // 判断是否为null
             if(ObjectUtil.isNotNull(loginUser)) {
                 // 鉴权，跳转的时候需要访问 /index 页面

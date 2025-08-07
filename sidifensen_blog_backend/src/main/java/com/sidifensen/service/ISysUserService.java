@@ -3,7 +3,7 @@ package com.sidifensen.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.entity.SysUser;
-import com.sidifensen.domain.vo.UserVo;
+import com.sidifensen.domain.vo.SysUserVo;
 
 /**
  * <p>
@@ -49,7 +49,7 @@ public interface ISysUserService extends IService<SysUser> {
      * 获取用户信息
      * @return UserVo 用户信息
      */
-    UserVo info();
+    SysUserVo info();
 
     // 删除用户
     void deleteUser(Long id);
@@ -58,4 +58,8 @@ public interface ISysUserService extends IService<SysUser> {
 
     // 管理员登录
     String adminLogin(AdminLoginDto adminLoginDto);
+
+    // 管理端获取用户信息
+    SysUserVo getAdminInfo();
+
 }

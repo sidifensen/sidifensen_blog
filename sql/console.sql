@@ -44,12 +44,10 @@ create table sys_menu
 (
     id             int primary key auto_increment comment '菜单id',
     parent_id      int                  default 0 comment '父级id',
-    title          varchar(30) not null comment '菜单标题',
+    name           varchar(10) not null comment '菜单名称',
     sort           int                  default 0 comment '排序',
-    type           tinyint              default 0 comment '类型 0-目录 1-菜单 2-按钮',
-    path           varchar(100) comment '路径',
-    component_path varchar(100) comment '组件路径',
-    permission     varchar(100) comment '权限标识',
+    path           varchar(100) comment '路由路径',
+    component      varchar(100) comment '组件路径',
     icon           varchar(30) comment '图标',
     status         tinyint     not null default 0 comment '状态 0-正常 1-禁用',
     create_time    datetime    not null comment '创建时间',
@@ -62,6 +60,22 @@ create table sys_role_menu
     id      int primary key auto_increment comment '主键id',
     role_id int not null comment '角色id',
     menu_id int not null comment '菜单id'
+);
+
+create table sys_permission (
+    id int primary key auto_increment comment '权限id',
+    description varchar(20) not null comment '权限描述',
+    permission varchar(30) not null comment '权限',
+    menu_id varchar(200) not null comment '菜单id',
+    create_time datetime not null comment '创建时间',
+    update_time datetime not null comment '更新时间',
+    is_deleted tinyint not null default 0 comment '是否删除 0-未删除 1-已删除'
+);
+
+create table sys_role_permission (
+    id int primary key auto_increment comment '主键id',
+    role_id int not null comment '角色id',
+    permission_id int not null comment '权限id'
 );
 
 # create table article
@@ -79,18 +93,6 @@ create table sys_role_menu
 #     is_deleted  tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除'
 # );
 
-INSERT INTO `sys_menu`
-VALUES (1, 0, '首页', 0, 0, '/index', 'index', 'index', 'home', 0, '2025-06-28 22:31:52', '2025-06-28 22:30:22', 0);
-INSERT INTO `sys_role`
-VALUES (1, 'admin', '超级管理员', NULL, 0, 0, '2025-06-28 22:31:00', '2025-06-28 22:30:22', 0);
-INSERT INTO `sys_role_menu`
-VALUES (1, 1, 1);
-INSERT INTO `sys_user`
-VALUES (1, 'sidifensen', '$2a$10$XqlrDmPYn2z12dh2IIscm.TdbXvQXD2lVJEc08j5vLM.QP8NUG/P2', '斯蒂芬森', '123456@qq.com', 0,
-        'helloworld', 'https://www.sidifensen.com/avatar.jpg', 0, 0, NULL, 0, '127.0.0.1', '2025-07-08 20:53:48',
-        '2025-06-28 22:30:22', '2025-06-28 22:30:22', 0);
-INSERT INTO `sys_user_role`
-VALUES (1, 1, 1);
 
 create table photo
 (

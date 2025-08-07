@@ -16,7 +16,7 @@ public class SecurityConstants {
             "/user/sendEmail",
             "/user/verifyReset",
             "/user/resetPassword",
-            "/user/adminLogin",
+            "/user/admin/login",
             "/album/listAll",
     };
 }

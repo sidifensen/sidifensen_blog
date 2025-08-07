@@ -11,7 +11,7 @@ import com.sidifensen.domain.entity.Album;
 import com.sidifensen.domain.entity.LoginUser;
 import com.sidifensen.domain.entity.Photo;
 import com.sidifensen.domain.entity.SysUser;
-import com.sidifensen.domain.vo.UserVo;
+import com.sidifensen.domain.vo.SysUserVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.AlbumMapper;
 import com.sidifensen.mapper.PhotoMapper;
@@ -95,7 +95,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     public void register(RegisterDto registerDto) {
         // 校验验证码
-        if (!registerDto.getEmailCheckCode().equals(redisComponent.getEmailCheckCode(registerDto.getEmail(),"register"))) {
+        if (!registerDto.getEmailCheckCode().equals(redisComponent.getEmailCheckCode(registerDto.getEmail(), "register"))) {
             throw new BlogException(BlogConstants.CheckCodeError);
         }
 
@@ -130,16 +130,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     public void sendEmailCheckCode(EmailDto emailDto) {
         String email = emailDto.getEmail();
         // 如果是重置密码, 则需要先校验邮箱是否存在
-        if(emailDto.getType().equals("reset")){
+        if (emailDto.getType().equals("reset")) {
             SysUser sysUser = sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getEmail, email));
-            if (ObjectUtil.isNull(sysUser)){
+            if (ObjectUtil.isNull(sysUser)) {
                 throw new BlogException(BlogConstants.NotFoundEmail);// 邮箱不存在
             }
         }
         //生成六位数的验证码
         String checkCode = String.valueOf((int) ((Math.random() * 9 + 1) * 100000));
         //将验证码存入redis
-        redisComponent.saveEmailCheckCode(email,emailDto.getType(), checkCode);
+        redisComponent.saveEmailCheckCode(email, emailDto.getType(), checkCode);
         // 发送邮件
         HashMap<String, Object> sendEmail = new HashMap<>();
         sendEmail.put("email", email);
@@ -151,7 +151,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Override
     public void verifyReset(VerifyResetDto verifyResetDto) {
-        if (!verifyResetDto.getEmailCheckCode().equals(redisComponent.getEmailCheckCode(verifyResetDto.getEmail(),"reset"))) {
+        if (!verifyResetDto.getEmailCheckCode().equals(redisComponent.getEmailCheckCode(verifyResetDto.getEmail(), "reset"))) {
             throw new BlogException(BlogConstants.CheckCodeError); // 验证码错误
         }
     }
@@ -168,37 +168,49 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         }
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<SysUser>().eq(SysUser::getEmail, resetPasswordDto.getEmail());
         SysUser newSysUser = new SysUser().setPassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
-        sysUserMapper.update(newSysUser,queryWrapper);
+        sysUserMapper.update(newSysUser, queryWrapper);
 
-        redisComponent.cleanEmailCheckCode(resetPasswordDto.getEmail(),"reset");
+        redisComponent.cleanEmailCheckCode(resetPasswordDto.getEmail(), "reset");
     }
 
     @Override
-    public UserVo info() {
+    public SysUserVo info() {
         Integer userId = SecurityUtils.getUserId();
         SysUser sysUser = sysUserMapper.selectById(userId);
-        UserVo userVo = BeanUtil.copyProperties(sysUser, UserVo.class);
-        return userVo;
+        if (sysUser == null) {
+            throw new BlogException(BlogConstants.NotFoundUser); // 用户不存在
+        }
+        SysUserVo sysUserVo = new SysUserVo();
+        sysUserVo.setId(sysUser.getId());
+        sysUserVo.setNickname(sysUser.getNickname());
+        sysUserVo.setUsername(sysUser.getUsername());
+        sysUserVo.setEmail(sysUser.getEmail());
+        sysUserVo.setIntroduction(sysUser.getIntroduction());
+        sysUserVo.setAvatar(sysUser.getAvatar());
+        sysUserVo.setSex(sysUser.getSex());
+        return sysUserVo;
     }
 
-
-    ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     // 删除用户
     @Override
     public void deleteUser(Long id) {
         sysUserMapper.deleteById(id);
         // TODO 异步删除用户相关信息
-        executorService.submit(() -> {
-            try {
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        try {
+            executor.submit(() -> {
                 // 删除用户相册
                 albumMapper.delete(new LambdaQueryWrapper<Album>().eq(Album::getUserId, id));
                 // 删除用户照片
                 photoMapper.delete(new LambdaQueryWrapper<Photo>().eq(Photo::getUserId, id));
-            } catch (Exception e) {
-                log.error("异步删除用户相关数据失败，用户ID: {}", id, e);
-            }
-        });
+            });
+        } catch (Exception e) {
+            log.error("异步删除用户相关数据失败，用户ID: {}", id, e);
+        } finally {
+            executor.shutdown();
+        }
+
     }
 
 
@@ -214,6 +226,18 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         // 创建token,此处的token时由UUID编码而成JWT字符串
         String token = jwtUtils.createToken(loginUser.getSysUser().getId(), adminLoginDto.getRememberMe());
         return token;
+    }
+
+    // 管理端获取用户信息
+    @Override
+    public SysUserVo getAdminInfo() {
+        SysUser user = SecurityUtils.getUser();
+        if (ObjectUtil.isEmpty(user)) {
+            return null;
+        }
+
+        SysUserVo sysUserVo = BeanUtil.copyProperties(user, SysUserVo.class);
+        return sysUserVo;
     }
 
 

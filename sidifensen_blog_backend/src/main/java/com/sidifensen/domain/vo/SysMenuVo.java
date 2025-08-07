@@ -1,4 +1,4 @@
-package com.sidifensen.domain.entity;
+package com.sidifensen.domain.vo;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
@@ -19,15 +19,13 @@ import java.util.Date;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("sys_menu")
-public class SysMenu implements Serializable {
+public class SysMenuVo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
      * 菜单id
      */
-    @TableId(type = IdType.AUTO)
     private Integer id;
 
     /**
@@ -44,6 +42,7 @@ public class SysMenu implements Serializable {
      * 排序
      */
     private Integer sort;
+
 
     /**
      * 路由路径
@@ -76,12 +75,5 @@ public class SysMenu implements Serializable {
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
-
-    /**
-     * 是否删除 0-未删除 1-已删除
-     */
-    @TableLogic
-    private Integer isDeleted;
-
 
 }

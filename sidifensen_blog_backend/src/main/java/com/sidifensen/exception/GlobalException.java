@@ -1,7 +1,9 @@
 package com.sidifensen.exception;
 
 import com.sidifensen.domain.result.Result;
+import com.sidifensen.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -20,20 +22,27 @@ public class GlobalException {
     @ExceptionHandler(Exception.class)
     Object handleException(Exception e) {
         e.printStackTrace();
-        log.error("系统异常：" + e.getMessage());
+        log.error("系统异常：{}", e.getMessage());
         return Result.error("系统异常，请联系管理员");
     }
 
     @ExceptionHandler(BlogException.class)
     Object handleBlogException(BlogException e) {
-        log.error("博客业务异常：" + e.getMessage());
+        log.error("博客业务异常：{}", e.getMessage());
         return Result.error(e.getMessage());
     }
 
     @ExceptionHandler(AuthenticationException.class)
     Object handleAuthenticationException(AuthenticationException e) {
-        log.error("认证异常："+ e.getMessage());
+        log.error("认证异常：{}", e.getMessage());
         return Result.unauthorized(e.getMessage()); // BadCredentialsException: 用户名或密码错误
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    Object handleAccessDeniedException(AccessDeniedException e) {
+        Integer userId = SecurityUtils.getUserId();
+        log.error("权限异常：{}, userId:{}", e.getMessage(),userId);
+        return Result.unauthorized("无权限"); // AccessDeniedException: 无权限
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

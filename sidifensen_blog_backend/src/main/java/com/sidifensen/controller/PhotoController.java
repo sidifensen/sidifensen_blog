@@ -24,7 +24,7 @@ public class PhotoController {
      * 上传照片到相册
      */
     @PostMapping("/upload")
-    public Result<Object> upload(@RequestParam("file") MultipartFile file,
+    public Result upload(@RequestParam("file") MultipartFile file,
                                  @RequestParam("albumId") Integer albumId) throws Exception {
         photoService.upload(file, albumId);
         return Result.success();
@@ -34,7 +34,7 @@ public class PhotoController {
      * 删除照片
      */
     @DeleteMapping("/delete/{photoId}")
-    public Result<Object> delete(@PathVariable("photoId") Integer photoId) throws Exception {
+    public Result delete(@PathVariable("photoId") Integer photoId) throws Exception {
         photoService.delete(photoId);
         return Result.success();
     }

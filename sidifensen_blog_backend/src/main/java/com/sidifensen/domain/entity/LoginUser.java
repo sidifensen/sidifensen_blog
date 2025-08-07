@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,11 +21,12 @@ public class LoginUser implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        List<String> permissions = sysUser.getPermissions();
-        if(ObjectUtil.isNotEmpty(permissions)){
-            return permissions.stream().map(permission -> new SimpleGrantedAuthority(permission)).collect(Collectors.toList());
+        List<SysPermission> sysPermissions = sysUser.getSysPermissions();
+        List<String> permissions = sysPermissions.stream().map(SysPermission::getPermission).collect(Collectors.toList());
+        if (ObjectUtil.isEmpty(permissions)){
+            return Collections.emptyList();
         }
-        return null;
+        return permissions.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
     }
 
     // 密码

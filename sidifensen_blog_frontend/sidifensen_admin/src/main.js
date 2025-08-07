@@ -11,10 +11,12 @@ import ElementPlus from "element-plus";
 import "element-plus/dist/index.css";
 app.use(ElementPlus);
 
-import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
-
 const pinia = createPinia();
-pinia.use(piniaPluginPersistedstate);
+
+import * as ElementPlusIconsVue from "@element-plus/icons-vue";
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+  app.component(key, component);
+}
 
 app.use(pinia);
 app.use(router);

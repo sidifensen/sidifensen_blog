@@ -1,6 +1,7 @@
 package com.sidifensen.utils;
 
 import com.sidifensen.domain.entity.LoginUser;
+import com.sidifensen.domain.entity.SysUser;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -21,6 +22,17 @@ public class SecurityUtils {
             return user.getSysUser().getId();
         }
         return 0;
+    }
+
+
+    /**
+     * 获取当前登录用户
+     * @return
+     */
+    public static SysUser getUser() {
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        SysUser sysUser = loginUser.getSysUser();
+        return sysUser;
     }
 
 }

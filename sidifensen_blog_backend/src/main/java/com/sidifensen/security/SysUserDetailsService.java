@@ -1,9 +1,10 @@
 package com.sidifensen.security;
 
-import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.entity.*;
+import com.sidifensen.domain.enums.MenuEnum;
 import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
 import com.sidifensen.domain.enums.RoleEnum;
 import com.sidifensen.exception.BlogException;
@@ -11,6 +12,7 @@ import com.sidifensen.mapper.*;
 import com.sidifensen.utils.IpUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -40,7 +42,12 @@ public class SysUserDetailsService implements UserDetailsService {
     private SysRoleMenuMapper sysRoleMenuMapper;
 
     @Resource
+    private SysRolePermissionMapper sysRolePermissionMapper;
+
+    @Resource
     private IpUtils ipUtils;
+    @Autowired
+    private SysPermissionMapper sysPermissionMapper;
 
 
     /**
@@ -81,31 +88,59 @@ public class SysUserDetailsService implements UserDetailsService {
 
     // 处理登录
     public LoginUser handleLogin(SysUser sysUser){
-        // 根据账号查询用户
+
+        // 查询用户对应的角色
         LambdaQueryWrapper<SysUserRole> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysUserRole::getUserId, sysUser.getId());
         List<SysUserRole> sysUserRoles = sysUserRoleMapper.selectList(queryWrapper);
 
-        // 查询用户对应的角色
-        List<SysRole> sysRoles = sysUserRoles.stream()
-                .map(role -> sysRoleMapper.selectById(role.getId()))
-                .filter(role -> role.getStatus() == RoleEnum.ROLE_STATUS_NORMAL.getStatus())
-                .collect(Collectors.toList());
-        // 将角色加入到用户信息中
-        sysUser.setRoles(sysRoles);
+        LambdaQueryWrapper<SysRole> queryWrapper1 = new LambdaQueryWrapper<>();
+        queryWrapper1.in(SysRole::getId, sysUserRoles.stream().map(SysUserRole::getRoleId).collect(Collectors.toList()));
+        queryWrapper1.eq(SysRole::getStatus, RoleEnum.ROLE_STATUS_NORMAL.getStatus());
+        List<SysRole> sysRoles = sysRoleMapper.selectList(queryWrapper1);
 
-        if (!CollUtil.isEmpty(sysRoles)){
-            // 查询角色对应的菜单权限
-            List<SysRoleMenu> sysRoleMenus = sysRoleMenuMapper.selectBatchIds(sysRoles.stream().map(SysRole::getId).collect(Collectors.toList()));
-            List<Integer> menuIds = sysRoleMenus.stream().map(SysRoleMenu::getMenuId).collect(Collectors.toList());
-            // 查询菜单
-            List<SysMenu> sysMenus = umsMenuMapper.selectBatchIds(menuIds);
-            List<String> permissions = sysMenus.stream().map(SysMenu::getPermission).collect(Collectors.toList());
-            // 将菜单权限加入到用户信息中
-            sysUser.setPermissions(permissions);
+        if (ObjectUtil.isEmpty(sysRoles)){
+            throw new BlogException(BlogConstants.NotFoundRole);
+        }
+        List<Integer> roleIds = sysRoles.stream().map(SysRole::getId).collect(Collectors.toList());
+
+        // 将角色加入到用户信息中
+        sysUser.setSysRoles(sysRoles);
+
+        // 查询角色对应的菜单
+        LambdaQueryWrapper<SysRoleMenu> queryWrapper2 = new LambdaQueryWrapper<>();
+        queryWrapper2.in(SysRoleMenu::getRoleId, roleIds);
+        List<SysRoleMenu> sysRoleMenus = sysRoleMenuMapper.selectList(queryWrapper2);
+
+        LambdaQueryWrapper<SysMenu> queryWrapper3 = new LambdaQueryWrapper<>();
+        queryWrapper3.in(SysMenu::getId, sysRoleMenus.stream().map(SysRoleMenu::getMenuId).collect(Collectors.toList()));
+        queryWrapper3.eq(SysMenu::getStatus, MenuEnum.MENU_STATUS_NORMAL.getStatus());
+        List<SysMenu> sysMenus = umsMenuMapper.selectList(queryWrapper3);
+
+        if (ObjectUtil.isEmpty(sysMenus)){
+            throw new BlogException(BlogConstants.NotFoundMenu);
+        }
+        // 将菜单信息加入到用户信息中
+        sysUser.setSysMenus(sysMenus);
+
+        // 查询角色对应的权限
+        LambdaQueryWrapper<SysRolePermission> queryWrapper4 = new LambdaQueryWrapper<>();
+        queryWrapper4.in(SysRolePermission::getRoleId, roleIds);
+        List<SysRolePermission> sysRolePermissions = sysRolePermissionMapper.selectList(queryWrapper4);
+
+        LambdaQueryWrapper<SysPermission> queryWrapper5 = new LambdaQueryWrapper<>();
+        queryWrapper5.in(SysPermission::getId, sysRolePermissions.stream().map(SysRolePermission::getPermissionId).collect(Collectors.toList()));
+        List<SysPermission> sysPermissions = sysPermissionMapper.selectList(queryWrapper5);
+
+        if (ObjectUtil.isEmpty(sysPermissions)){
+            throw new BlogException(BlogConstants.NotFoundPermission);
         }
 
-        // 根据角色查询权限 menu
+        // 将权限信息加入到用户信息中
+        sysUser.setSysPermissions(sysPermissions);
+
+
+        // 封装登录用户信息
         LoginUser loginUser = new LoginUser(sysUser);
         return loginUser;
     }

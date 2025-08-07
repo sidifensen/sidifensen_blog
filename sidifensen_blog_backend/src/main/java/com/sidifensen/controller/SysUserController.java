@@ -2,7 +2,7 @@ package com.sidifensen.controller;
 
 import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.result.Result;
-import com.sidifensen.domain.vo.UserVo;
+import com.sidifensen.domain.vo.SysUserVo;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.ISysUserService;
 import com.wf.captcha.ArithmeticCaptcha;
@@ -104,8 +104,8 @@ public class SysUserController {
      */
     @GetMapping("/info")
     public Result info() {
-        UserVo userVo = sysUserService.info();
-        return Result.success(userVo);
+        SysUserVo sysUserVo = sysUserService.info();
+        return Result.success(sysUserVo);
     }
 
     /**
@@ -126,10 +126,16 @@ public class SysUserController {
      * @param AdminLoginDto
      * @return
      */
-    @PostMapping("/adminLogin")
+    @PostMapping("/admin/login")
     public Result adminLogin(@RequestBody @Valid AdminLoginDto AdminLoginDto) {
         String jwt = sysUserService.adminLogin(AdminLoginDto);
         return Result.success(jwt, "登录成功");
+    }
+
+    @GetMapping("/admin/info")
+    private Result adminInfo() {
+        SysUserVo sysUserVo = sysUserService.getAdminInfo();
+        return Result.success(sysUserVo);
     }
 
 }

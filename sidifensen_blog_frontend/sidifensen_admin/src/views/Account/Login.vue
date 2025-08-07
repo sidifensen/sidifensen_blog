@@ -74,13 +74,15 @@ const handleLogin = () => {
           //将jwt存储到localStorage
           SetJwt(res.data.data);
           info().then((res) => {
-            userStore.user = res.data.data;
+            userStore.setUser(res.data.data);
+            // 加载菜单和动态路由
+            userStore.loadMenusAndRoutes().then(() => {
+              router.push("/");
+            });
           });
-          router.push("/");
         })
         .catch(() => {
           loading.value = false;
-          // ElMessage.error("登录失败，请检查用户名和密码");
         });
     }
   });
