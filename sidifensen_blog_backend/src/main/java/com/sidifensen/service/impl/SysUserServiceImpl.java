@@ -7,10 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.RabbitMQConstants;
 import com.sidifensen.domain.dto.*;
-import com.sidifensen.domain.entity.Album;
-import com.sidifensen.domain.entity.LoginUser;
-import com.sidifensen.domain.entity.Photo;
-import com.sidifensen.domain.entity.SysUser;
+import com.sidifensen.domain.entity.*;
 import com.sidifensen.domain.vo.SysUserVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.AlbumMapper;
@@ -30,6 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -221,8 +219,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                 new UsernamePasswordAuthenticationToken(adminLoginDto.getUsername(), adminLoginDto.getPassword());
         // 调用loadUserByUsername方法
         Authentication authenticate = authenticationManager.authenticate(authentication);
-        // 获取用户信息，返回的就是UserDetails
+        // 获取用户信息
         LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
+        List<SysRole> sysRoles = loginUser.getSysUser().getSysRoles();
+
+        if (sysRoles.stream().noneMatch(r -> r.getRole().equals("admin") || r.getRole().equals("viewer"))){
+            throw new BlogException(BlogConstants.NotAdminAccount); // 不是管理员账户
+        }
         // 创建token,此处的token时由UUID编码而成JWT字符串
         String token = jwtUtils.createToken(loginUser.getSysUser().getId(), adminLoginDto.getRememberMe());
         return token;
@@ -231,9 +234,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     // 管理端获取用户信息
     @Override
     public SysUserVo getAdminInfo() {
+        // 获取用户信息
         SysUser user = SecurityUtils.getUser();
         if (ObjectUtil.isEmpty(user)) {
             return null;
+        }
+
+        List<SysRole> sysRoles = user.getSysRoles();
+
+        if (sysRoles.stream().noneMatch(r -> r.getRole().equals("admin") || r.getRole().equals("viewer"))){
+            throw new BlogException(BlogConstants.NotAdminAccount); // 不是管理员账户
         }
 
         SysUserVo sysUserVo = BeanUtil.copyProperties(user, SysUserVo.class);

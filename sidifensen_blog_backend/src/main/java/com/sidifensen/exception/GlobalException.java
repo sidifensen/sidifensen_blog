@@ -1,7 +1,9 @@
 package com.sidifensen.exception;
 
+import com.sidifensen.domain.entity.LoginUser;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.utils.SecurityUtils;
+import com.sidifensen.utils.WebUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -40,8 +42,11 @@ public class GlobalException {
 
     @ExceptionHandler(AccessDeniedException.class)
     Object handleAccessDeniedException(AccessDeniedException e) {
-        Integer userId = SecurityUtils.getUserId();
-        log.error("权限异常：{}, userId:{}", e.getMessage(),userId);
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        // 获取访问的url
+        String requestUrl = WebUtils.getRequestUrl();
+        log.error("userId:{} 权限异常：{}; 访问url:{} ; 权限: {}",
+                loginUser.getSysUser().getId(), e.getMessage(), requestUrl, loginUser.getAuthorities());
         return Result.unauthorized("无权限"); // AccessDeniedException: 无权限
     }
 
@@ -50,11 +55,11 @@ public class GlobalException {
         log.error("参数校验异常:{}({})", e.getMessage(), e.getStackTrace());
         BindingResult bindingResult = e.getBindingResult();// 获取参数绑定结果
         String errorMsg = bindingResult.getFieldError().getDefaultMessage(); // 获取参数校验错误信息
-        return Result.error(errorMsg == null? "参数校验异常" : errorMsg);
+        return Result.error(errorMsg == null ? "参数校验异常" : errorMsg);
     }
 
     @ExceptionHandler(FileUploadException.class)
-    Object handlerFileUploadException(FileUploadException e){
+    Object handlerFileUploadException(FileUploadException e) {
         log.error("文件上传异常:{}({})", e.getMessage(), e.getStackTrace());
         return Result.success(e.getMessage());
     }

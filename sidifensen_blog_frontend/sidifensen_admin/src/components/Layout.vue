@@ -98,7 +98,7 @@ const handleLogout = () => {
     color: #e2e8f0;
     transition: width 0.3s ease;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 10;
+    z-index: 999;
     flex-shrink: 0;
 
     .logo-container {
@@ -226,9 +226,12 @@ const handleLogout = () => {
     // 内容区域
     .content {
       flex: 1;
-      padding: 24px;
+      padding: 10px;
       background-color: #f8fafc;
       overflow-y: auto;
+      :deep(.menu-management-container) {
+        padding: 0px;
+      }
     }
   }
 
@@ -306,11 +309,6 @@ const handleLogout = () => {
             margin-right: 0;
           }
         }
-      }
-
-      // 内容区域
-      .content {
-        padding: 16px;
       }
     }
 

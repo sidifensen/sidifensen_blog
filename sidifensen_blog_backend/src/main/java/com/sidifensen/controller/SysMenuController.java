@@ -6,11 +6,10 @@ import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysMenuVo;
 import com.sidifensen.service.ISysMenuService;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -32,8 +31,19 @@ public class SysMenuController {
     @PreAuthorize("hasAuthority('system:menu:list')")
     @GetMapping("list")
     public Result list() {
-        List<SysMenuVo> menuList = sysMenuService.listMenu();
-        return Result.success(menuList);
+        List<SysMenuVo> menuVoList = sysMenuService.listMenu();
+        return Result.success(menuVoList);
+    }
+
+    /**
+     * 查询所有用户的菜单列表
+     * @return
+     */
+    @PreAuthorize("hasAuthority('system:menu:listAll')")
+    @GetMapping("listAll")
+    public Result listAll(){
+        List<SysMenuVo> menuVoList = sysMenuService.listAllMenu();
+        return Result.success(menuVoList);
     }
 
     /**
@@ -43,20 +53,32 @@ public class SysMenuController {
      */
     @PreAuthorize("hasAuthority('system:menu:add')")
     @PostMapping("add")
-    public Result add(SysMenuDto sysMenuDto) {
+    public Result add(@RequestBody @Valid SysMenuDto sysMenuDto) {
         sysMenuService.add(sysMenuDto);
         return Result.successMsg("添加成功");
     }
 
     /**
+     * 修改菜单
+     * @param sysMenuDto 包含更新信息的菜单数据传输对象
+     * @return
+     */
+    @PreAuthorize("hasAuthority('system:menu:update')")
+    @PutMapping("update")
+    public Result update(@RequestBody @Valid SysMenuDto sysMenuDto) {
+        sysMenuService.update(sysMenuDto);
+        return Result.successMsg("更新成功");
+    }
+
+    /**
      * 删除菜单
-     * @param id 菜单ID
+     * @param menuId 菜单ID
      * @return
      */
     @PreAuthorize("hasAuthority('system:menu:delete')")
-    @PostMapping("delete")
-    public Result delete(Integer id) {
-        sysMenuService.delete(id);
+    @DeleteMapping("{menuId}")
+    public Result delete(@PathVariable @NotEmpty Integer menuId) {
+        sysMenuService.delete(menuId);
         return Result.successMsg("删除成功");
     }
 
@@ -67,9 +89,11 @@ public class SysMenuController {
      */
     @PreAuthorize("hasAuthority('system:menu:search')")
     @GetMapping("search")
-    public Result search(String name) {
+    public Result search(@RequestParam("name") String name) {
         List<SysMenuVo> menuList = sysMenuService.search(name);
         return Result.success(menuList);
     }
+
+
 
 }

@@ -23,7 +23,7 @@ public class LoginUser implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SysPermission> sysPermissions = sysUser.getSysPermissions();
         List<String> permissions = sysPermissions.stream().map(SysPermission::getPermission).collect(Collectors.toList());
-        if (ObjectUtil.isEmpty(permissions)){
+        if (ObjectUtil.isEmpty(permissions)) {
             return Collections.emptyList();
         }
         return permissions.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());

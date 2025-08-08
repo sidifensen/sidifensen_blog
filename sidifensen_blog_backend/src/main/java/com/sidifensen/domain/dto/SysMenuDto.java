@@ -1,5 +1,7 @@
 package com.sidifensen.domain.dto;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -59,6 +61,8 @@ public class SysMenuDto implements Serializable {
     /**
      * 状态 0-正常 1-禁用
      */
+    @Min(value = 0, message = "状态必须为0或1")
+    @Max(value = 1, message = "状态必须为0或1")
     private Integer status;
 
 

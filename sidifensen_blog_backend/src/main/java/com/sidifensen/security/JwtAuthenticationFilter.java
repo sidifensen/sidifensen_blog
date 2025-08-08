@@ -52,15 +52,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         // 从请求头中获取jwt
         String jwt = request.getHeader("Authorization");
-        if (ObjectUtil.isEmpty(jwt)){
+        if (ObjectUtil.isEmpty(jwt)) {
             //请先登录
             log.error("用户访问接口{},提示:请先登录", request.getRequestURI());
             WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.LoginRequired).toJson());
             return;
         }
-        if (ObjectUtil.isNotEmpty(jwt)){
+        if (ObjectUtil.isNotEmpty(jwt)) {
             // 解析并验证jwt
-            Long id = jwtUtils.parseToken(jwt);
+            Integer id = jwtUtils.parseToken(jwt);
             if (ObjectUtil.isEmpty(id)) {
                 //登录过期
                 log.error("用户访问接口{},提示:登录过期", request.getRequestURI());
@@ -71,14 +71,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SysUser sysUser = sysUserMapper.selectById(id);
             // 将SysUser转换为LoginUser
             LoginUser loginUser = userDetailsService.handleLogin(sysUser);
-            // 判断是否为null
-            if(ObjectUtil.isNotNull(loginUser)) {
+            if (ObjectUtil.isNotEmpty(loginUser)) {
                 // 鉴权，跳转的时候需要访问 /index 页面
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
                 // 将用户信息存储到SecurityContext中，SecurityContext存储到SecurityContextHolder中
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
+
         }
         filterChain.doFilter(request, response);
     }

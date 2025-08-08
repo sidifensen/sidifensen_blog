@@ -41,7 +41,7 @@ public class JwtUtilsTest {
     public void testParseToken() {
         String token = jwtUtils.createToken(id,false);
 
-        Long id = jwtUtils.parseToken(token);
+        Integer id = jwtUtils.parseToken(token);
         System.out.println("userId: " + id);
 
     }
@@ -100,7 +100,7 @@ public class JwtUtilsTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        Long id = jwtUtils.parseToken(token);
+        Integer id = jwtUtils.parseToken(token);
         System.out.println(id);
 
     }
@@ -123,7 +123,7 @@ public class JwtUtilsTest {
         System.out.println(localDateTime);
         boolean verify = JWTUtil.verify(token, "sidifensen".getBytes());
         System.out.println("verify: " + verify);
-        Long id = jwtUtils.parseToken(token);
+        Integer id = jwtUtils.parseToken(token);
         System.out.println(id);
     }
 

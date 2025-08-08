@@ -2,10 +2,12 @@ package com.sidifensen.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.SysMenuDto;
 import com.sidifensen.domain.entity.SysMenu;
 import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.vo.SysMenuVo;
+import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysMenuMapper;
 import com.sidifensen.service.ISysMenuService;
 import com.sidifensen.utils.SecurityUtils;
@@ -24,7 +26,7 @@ import java.util.List;
 @Service
 public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> implements ISysMenuService {
 
-    // 查询用户的菜单
+    // 查询登录用户的菜单
     @Override
     public List<SysMenuVo> listMenu() {
         SysUser user = SecurityUtils.getUser();
@@ -33,9 +35,18 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         return sysMenuVos;
     }
 
+    // 查询所有用户的菜单列表
+    @Override
+    public List<SysMenuVo> listAllMenu() {
+        List<SysMenu> sysMenus = this.list();
+        List<SysMenuVo> sysMenuVos = BeanUtil.copyToList(sysMenus, SysMenuVo.class);
+        return sysMenuVos;
+    }
+
     // 新增菜单
     @Override
     public void add(SysMenuDto sysMenuDto) {
+        sysMenuDto.setStatus(0);// 默认状态为正常
         SysMenu sysMenu = BeanUtil.copyProperties(sysMenuDto, SysMenu.class);
         this.save(sysMenu);
     }
@@ -43,7 +54,10 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
     // 删除菜单
     @Override
     public void delete(Integer id) {
-        this.removeById(id);
+        boolean exist = this.removeById(id);
+        if (!exist){
+            throw new BlogException(BlogConstants.NotFoundMenu);
+        }
     }
 
     // 根据菜单名称查找菜单
@@ -56,5 +70,13 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         // 将查询结果转换为SysMenuVo对象列表
         return BeanUtil.copyToList(sysMenus, SysMenuVo.class);
     }
+
+    // 更新菜单
+    @Override
+    public void update(SysMenuDto sysMenuDto) {
+        SysMenu sysMenu = BeanUtil.copyProperties(sysMenuDto, SysMenu.class);
+        this.updateById(sysMenu);
+    }
+
 
 }

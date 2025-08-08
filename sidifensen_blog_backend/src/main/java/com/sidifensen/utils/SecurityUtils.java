@@ -35,4 +35,13 @@ public class SecurityUtils {
         return sysUser;
     }
 
+    /**
+     * 获取当前spring security的登录用户
+     * @return
+     */
+    public static LoginUser getLoginUser() {
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return loginUser;
+    }
+
 }

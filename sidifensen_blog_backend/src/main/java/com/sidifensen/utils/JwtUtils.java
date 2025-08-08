@@ -38,7 +38,7 @@ public class JwtUtils {
      * @param token
      * @return
      */
-    public Long parseToken(String token) {
+    public Integer parseToken(String token) {
         // 验证token
         if (!JWTUtil.verify(token, secret.getBytes())) {
             return null;
@@ -54,11 +54,7 @@ public class JwtUtils {
         Object claim = jwt.getPayload().getClaim("id");
         if (claim instanceof NumberWithFormat) {
             Number number = (Number) ((NumberWithFormat) claim).getNumber();
-            return number.longValue(); //  安全转换为 Long
-        }
-
-        if (claim instanceof Number) {
-            return ((Number) claim).longValue(); // 兜底处理普通 Number 类型
+            return number.intValue(); //  转换为Integer类型
         }
         return null;
     }

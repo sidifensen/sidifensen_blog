@@ -129,9 +129,13 @@ public class SysUserController {
     @PostMapping("/admin/login")
     public Result adminLogin(@RequestBody @Valid AdminLoginDto AdminLoginDto) {
         String jwt = sysUserService.adminLogin(AdminLoginDto);
-        return Result.success(jwt, "登录成功");
+        return Result.success(jwt);
     }
 
+    /**
+     * 管理端获取登录用户信息
+     * @return
+     */
     @GetMapping("/admin/info")
     private Result adminInfo() {
         SysUserVo sysUserVo = sysUserService.getAdminInfo();

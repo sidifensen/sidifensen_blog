@@ -20,6 +20,9 @@ public interface ISysMenuService extends IService<SysMenu> {
     // 查询用户的菜单
     List<SysMenuVo> listMenu();
 
+    // 查询所有用户的菜单列表
+    List<SysMenuVo> listAllMenu();
+
     // 新增菜单
     void add(SysMenuDto sysMenuDto);
 
@@ -28,4 +31,7 @@ public interface ISysMenuService extends IService<SysMenu> {
 
     // 根据菜单名称查找菜单
     List<SysMenuVo> search(String name);
+
+    // 修改菜单
+    void update(SysMenuDto sysMenuDto);
 }
