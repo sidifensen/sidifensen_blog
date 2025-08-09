@@ -11,7 +11,7 @@
  Target Server Version : 80039 (8.0.39)
  File Encoding         : 65001
 
- Date: 09/08/2025 03:15:12
+ Date: 10/08/2025 03:04:31
 */
 
 SET NAMES utf8mb4;
@@ -128,32 +128,33 @@ CREATE TABLE `sys_menu`  (
   `update_time` datetime NOT NULL COMMENT '更新时间',
   `is_deleted` tinyint NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 22 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 23 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_menu
 -- ----------------------------
-INSERT INTO `sys_menu` VALUES (1, 0, '首页', 0, '/home', '/home', 'House', 0, '2025-06-28 22:31:52', '2025-08-09 02:21:42', 0);
-INSERT INTO `sys_menu` VALUES (2, 0, '系统管理', 1, '/system', '', 'Setting', 0, '2025-08-06 15:26:06', '2025-08-09 02:10:15', 0);
-INSERT INTO `sys_menu` VALUES (3, 2, '菜单管理', 0, '/system/menu', '/system/menu', 'Menu', 0, '2025-08-06 15:40:22', '2025-08-09 00:09:07', 0);
-INSERT INTO `sys_menu` VALUES (4, 2, '用户管理', 1, '/system/user', '/system/user', 'User', 0, '2025-08-06 15:41:35', '2025-08-06 15:41:37', 0);
-INSERT INTO `sys_menu` VALUES (5, 2, '角色管理', 2, '/system/role', '/system/role', 'Management', 0, '2025-08-06 15:42:21', '2025-08-06 15:42:24', 0);
-INSERT INTO `sys_menu` VALUES (6, 2, '权限管理', 3, '/system/permission', '/system/permission/system/system/permission/system', 'Operation', 0, '2025-08-06 15:43:41', '2025-08-08 21:38:49', 0);
-INSERT INTO `sys_menu` VALUES (7, 0, '1', 0, '/sys', '/sys', 'Menu', 0, '2025-08-08 16:17:18', '2025-08-08 21:41:10', 0);
+INSERT INTO `sys_menu` VALUES (1, 0, '首页', 0, '/home', '/home', 'House', 0, '2025-06-28 22:31:52', '2025-08-10 00:22:22', 0);
+INSERT INTO `sys_menu` VALUES (2, 0, '系统管理', 1, '/system', ' ', 'Setting', 0, '2025-08-06 15:26:06', '2025-08-09 22:45:22', 0);
+INSERT INTO `sys_menu` VALUES (3, 2, '菜单管理', 0, '/system/menu', '/system/menu', 'Menu', 0, '2025-08-06 15:40:22', '2025-08-09 21:50:46', 0);
+INSERT INTO `sys_menu` VALUES (4, 2, '角色管理', 1, '/system/role', '/system/role', 'Avatar', 0, '2025-08-06 15:41:35', '2025-08-06 15:41:37', 0);
+INSERT INTO `sys_menu` VALUES (5, 2, '权限管理', 2, '/system/permission', '/system/permission', 'Lock', 0, '2025-08-06 15:42:21', '2025-08-10 00:21:45', 0);
+INSERT INTO `sys_menu` VALUES (6, 2, '用户管理', 3, '/system/user', '/system/user', 'User', 0, '2025-08-06 15:43:41', '2025-08-10 01:31:13', 0);
+INSERT INTO `sys_menu` VALUES (7, 0, '1', 0, '/sys', '/sys', 'Menu', 0, '2025-08-08 16:17:18', '2025-08-10 00:22:27', 0);
 INSERT INTO `sys_menu` VALUES (8, 0, '1', 0, '/sys', '/sys', 'Menu', 0, '2025-08-08 16:17:43', '2025-08-08 16:58:23', 0);
 INSERT INTO `sys_menu` VALUES (9, 0, '1', 0, '/sys', '/sys', 'Menu', 0, '2025-08-08 20:33:16', '2025-08-08 20:33:19', 0);
 INSERT INTO `sys_menu` VALUES (10, 0, '1', 0, '/sys', '/sys', 'Menu', 0, '2025-08-08 20:34:20', '2025-08-08 20:34:23', 0);
-INSERT INTO `sys_menu` VALUES (11, 0, '1', 3, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
-INSERT INTO `sys_menu` VALUES (12, 0, '1', 3, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
-INSERT INTO `sys_menu` VALUES (13, 0, '1', 3, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
-INSERT INTO `sys_menu` VALUES (14, 0, '1', 3, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
-INSERT INTO `sys_menu` VALUES (15, 0, '1', 3, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
-INSERT INTO `sys_menu` VALUES (16, 0, '1', 3, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
-INSERT INTO `sys_menu` VALUES (17, 0, '1', 3, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
-INSERT INTO `sys_menu` VALUES (18, 0, '1', 3, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
-INSERT INTO `sys_menu` VALUES (19, 0, '1', 3, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
-INSERT INTO `sys_menu` VALUES (20, 0, '1', 3, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
-INSERT INTO `sys_menu` VALUES (21, 0, '1', 3, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
+INSERT INTO `sys_menu` VALUES (11, 0, '1', 0, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
+INSERT INTO `sys_menu` VALUES (12, 0, '1', 0, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
+INSERT INTO `sys_menu` VALUES (13, 0, '1', 0, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
+INSERT INTO `sys_menu` VALUES (14, 0, '1', 0, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
+INSERT INTO `sys_menu` VALUES (15, 0, '1', 0, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
+INSERT INTO `sys_menu` VALUES (16, 0, '1', 0, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
+INSERT INTO `sys_menu` VALUES (17, 0, '1', 0, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
+INSERT INTO `sys_menu` VALUES (18, 0, '1', 0, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
+INSERT INTO `sys_menu` VALUES (19, 0, '1', 0, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
+INSERT INTO `sys_menu` VALUES (20, 0, '1', 0, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
+INSERT INTO `sys_menu` VALUES (21, 0, '1', 0, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
+INSERT INTO `sys_menu` VALUES (22, 0, '1', 0, '/sys', '/sys', 'User', 0, '2025-08-10 01:01:19', '2025-08-10 01:02:04', 0);
 
 -- ----------------------------
 -- Table structure for sys_permission
@@ -168,17 +169,26 @@ CREATE TABLE `sys_permission`  (
   `update_time` datetime NOT NULL COMMENT '更新时间',
   `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_permission
 -- ----------------------------
-INSERT INTO `sys_permission` VALUES (1, '获取菜单', 'system:menu:list', '3', '2025-08-06 15:57:43', '2025-08-06 15:57:45', 0);
-INSERT INTO `sys_permission` VALUES (2, '新增菜单', 'system:menu:listAll', '3', '2025-08-08 20:27:02', '2025-08-08 20:27:06', 0);
+INSERT INTO `sys_permission` VALUES (1, '获取用户菜单', 'system:menu:list', '3', '2025-08-06 15:57:43', '2025-08-06 15:57:45', 0);
+INSERT INTO `sys_permission` VALUES (2, '获取全部菜单', 'system:menu:listAll', '3', '2025-08-08 20:27:02', '2025-08-08 20:27:06', 0);
 INSERT INTO `sys_permission` VALUES (3, '新增菜单', 'system:menu:add', '3', '2025-08-06 16:20:13', '2025-08-06 16:20:16', 0);
 INSERT INTO `sys_permission` VALUES (4, '修改菜单', 'system:menu:update', '3', '2025-08-06 16:20:13', '2025-08-06 16:20:16', 0);
 INSERT INTO `sys_permission` VALUES (5, '删除菜单', 'system:menu:delete', '3', '2025-08-06 16:20:13', '2025-08-06 16:20:16', 0);
 INSERT INTO `sys_permission` VALUES (6, '搜索菜单', 'system:menu:search', '3', '2025-08-08 03:06:41', '2025-08-08 03:06:43', 0);
+INSERT INTO `sys_permission` VALUES (7, '获取角色', 'system:role:list', '4', '2025-08-06 15:57:43', '2025-08-06 15:57:45', 0);
+INSERT INTO `sys_permission` VALUES (8, '新增角色', 'system:role:add', '4', '2025-08-06 16:20:13', '2025-08-06 16:20:16', 0);
+INSERT INTO `sys_permission` VALUES (9, '修改角色', 'system:role:update', '4', '2025-08-06 16:20:13', '2025-08-06 16:20:16', 0);
+INSERT INTO `sys_permission` VALUES (10, '删除角色', 'system:role:delete', '4', '2025-08-06 16:20:13', '2025-08-06 16:20:16', 0);
+INSERT INTO `sys_permission` VALUES (11, '搜索角色', 'system:role:search', '4', '2025-08-08 03:06:41', '2025-08-08 03:06:43', 0);
+INSERT INTO `sys_permission` VALUES (12, '菜单分配角色', 'system:role:menu:add', '4', '2025-08-09 23:42:07', '2025-08-09 23:42:09', 0);
+INSERT INTO `sys_permission` VALUES (13, '获取菜单所属角色', 'system:role:menu:get', '4', '2025-08-10 00:01:37', '2025-08-10 00:01:40', 0);
+INSERT INTO `sys_permission` VALUES (14, '权限授权角色', 'system:role:permission:add', '5', '2025-08-10 01:44:26', '2025-08-10 01:44:28', 0);
+INSERT INTO `sys_permission` VALUES (15, '获取权限所属角色', 'system:role:permission:get', '5', '2025-08-10 01:44:56', '2025-08-10 01:44:58', 0);
 
 -- ----------------------------
 -- Table structure for sys_role
@@ -186,23 +196,33 @@ INSERT INTO `sys_permission` VALUES (6, '搜索菜单', 'system:menu:search', '3
 DROP TABLE IF EXISTS `sys_role`;
 CREATE TABLE `sys_role`  (
   `id` int NOT NULL AUTO_INCREMENT COMMENT '角色id',
-  `role` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '角色',
+  `role` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '角色标识',
   `name` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '角色名称',
   `description` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '角色描述',
-  `sort` int NULL DEFAULT 0 COMMENT '  排序',
   `status` tinyint NOT NULL DEFAULT 0 COMMENT '状态 0-正常 1-禁用',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_time` datetime NOT NULL COMMENT '更新时间',
   `is_deleted` tinyint NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_role
 -- ----------------------------
-INSERT INTO `sys_role` VALUES (1, 'admin', '超级管理员', '拥有最高管理权限', 0, 0, '2025-06-28 22:31:00', '2025-06-28 22:30:22', 0);
-INSERT INTO `sys_role` VALUES (2, 'viewer', '管理后台查看者', '可以查看部分后台信息,但是不能进行操作', 0, 0, '2025-08-08 15:51:55', '2025-08-08 15:51:59', 0);
-INSERT INTO `sys_role` VALUES (3, 'user', '网站普通用户', '博客网站普通用户', 0, 0, '2025-08-08 15:52:58', '2025-08-08 15:53:00', 0);
+INSERT INTO `sys_role` VALUES (1, 'admin', '超级管理员', '拥有最高管理权限', 0, '2025-06-28 22:31:00', '2025-08-10 00:21:12', 0);
+INSERT INTO `sys_role` VALUES (2, 'viewer', '管理后台查看者', '可以查看部分后台信息,但是不能进行操作', 0, '2025-08-08 15:51:55', '2025-08-10 01:56:13', 0);
+INSERT INTO `sys_role` VALUES (3, 'user', '网站普通用户', '博客网站普通用户', 0, '2025-08-08 15:52:58', '2025-08-09 22:22:07', 0);
+INSERT INTO `sys_role` VALUES (4, 'vip', '用户', '用户', 0, '2025-08-09 13:18:12', '2025-08-09 22:22:10', 0);
+INSERT INTO `sys_role` VALUES (5, 'vip', '用户', '用户', 0, '2025-08-09 13:19:25', '2025-08-09 22:22:11', 0);
+INSERT INTO `sys_role` VALUES (6, 'vip', '用户', '用户', 0, '2025-08-09 13:19:26', '2025-08-09 22:22:12', 0);
+INSERT INTO `sys_role` VALUES (7, 'vip', '用户', '用户', 0, '2025-08-09 13:19:26', '2025-08-09 13:19:26', 0);
+INSERT INTO `sys_role` VALUES (8, 'vip', '用户', '用户', 0, '2025-08-09 13:19:26', '2025-08-09 13:19:26', 0);
+INSERT INTO `sys_role` VALUES (9, 'vip', '用户', '用户', 0, '2025-08-09 13:19:26', '2025-08-09 13:19:26', 0);
+INSERT INTO `sys_role` VALUES (10, 'vip1', '用户1', '用户1', 0, '2025-08-09 13:19:26', '2025-08-10 00:40:40', 0);
+INSERT INTO `sys_role` VALUES (11, 'vip', '用户', '用户', 0, '2025-08-09 13:19:26', '2025-08-09 13:19:26', 0);
+INSERT INTO `sys_role` VALUES (12, 'vip', '用户', '用户', 0, '2025-08-09 13:19:26', '2025-08-09 13:19:26', 0);
+INSERT INTO `sys_role` VALUES (13, 'vip', '用户', '用户', 0, '2025-08-09 18:47:40', '2025-08-10 00:42:58', 0);
+INSERT INTO `sys_role` VALUES (14, 'vip', '用户', '用户', 0, '2025-08-10 00:40:32', '2025-08-10 00:42:30', 0);
 
 -- ----------------------------
 -- Table structure for sys_role_menu
@@ -240,7 +260,7 @@ CREATE TABLE `sys_role_permission`  (
   `role_id` int NOT NULL COMMENT '角色id',
   `permission_id` int NOT NULL COMMENT '权限id',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 24 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_role_permission
@@ -252,6 +272,19 @@ INSERT INTO `sys_role_permission` VALUES (4, 1, 4);
 INSERT INTO `sys_role_permission` VALUES (5, 1, 5);
 INSERT INTO `sys_role_permission` VALUES (6, 1, 6);
 INSERT INTO `sys_role_permission` VALUES (7, 2, 1);
+INSERT INTO `sys_role_permission` VALUES (8, 2, 2);
+INSERT INTO `sys_role_permission` VALUES (9, 2, 6);
+INSERT INTO `sys_role_permission` VALUES (10, 1, 7);
+INSERT INTO `sys_role_permission` VALUES (11, 1, 8);
+INSERT INTO `sys_role_permission` VALUES (12, 1, 9);
+INSERT INTO `sys_role_permission` VALUES (13, 1, 10);
+INSERT INTO `sys_role_permission` VALUES (14, 1, 11);
+INSERT INTO `sys_role_permission` VALUES (15, 2, 7);
+INSERT INTO `sys_role_permission` VALUES (16, 2, 11);
+INSERT INTO `sys_role_permission` VALUES (17, 1, 12);
+INSERT INTO `sys_role_permission` VALUES (18, 1, 13);
+INSERT INTO `sys_role_permission` VALUES (19, 1, 14);
+INSERT INTO `sys_role_permission` VALUES (20, 1, 15);
 
 -- ----------------------------
 -- Table structure for sys_user
@@ -281,8 +314,8 @@ CREATE TABLE `sys_user`  (
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO `sys_user` VALUES (1, 'sidifensen', '$2a$10$GJwVW/wuZ/xFFiWNElXGNuaK3VKWfqIcCICrUyFEKz.cpFa7WtWNi', 'sidifensen', 'sidifensen@163.com', 0, 'helloworld', 'http://localhost:9000/sidifensen-blog/avatar.jpg', 0, 0, '127.0.0.1', 0, '192.168.10.233', '2025-08-09 02:22:04', '2025-06-28 22:30:22', '2025-07-31 17:29:15', 0);
-INSERT INTO `sys_user` VALUES (2, '斯蒂芬森', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '斯蒂芬森', '1848221808@qq.com', 0, NULL, NULL, 0, 0, '127.0.0.1', 0, '192.168.1.12', '2025-08-08 16:51:13', '2025-07-31 17:38:46', '2025-07-31 17:38:46', 0);
+INSERT INTO `sys_user` VALUES (1, 'sidifensen', '$2a$10$GJwVW/wuZ/xFFiWNElXGNuaK3VKWfqIcCICrUyFEKz.cpFa7WtWNi', 'sidifensen', 'sidifensen@163.com', 0, 'helloworld', 'http://localhost:9000/sidifensen-blog/avatar.jpg', 0, 0, '127.0.0.1', 0, '192.168.10.149', '2025-08-10 02:51:17', '2025-06-28 22:30:22', '2025-07-31 17:29:15', 0);
+INSERT INTO `sys_user` VALUES (2, '斯蒂芬森', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '斯蒂芬森', '1848221808@qq.com', 0, NULL, NULL, 0, 0, '127.0.0.1', 0, '192.168.10.149', '2025-08-10 02:00:15', '2025-07-31 17:38:46', '2025-07-31 17:38:46', 0);
 
 -- ----------------------------
 -- Table structure for sys_user_role

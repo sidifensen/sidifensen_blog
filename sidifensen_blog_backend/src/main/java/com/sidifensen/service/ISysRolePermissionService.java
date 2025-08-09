@@ -1,7 +1,11 @@
 package com.sidifensen.service;
 
-import com.sidifensen.domain.entity.SysRolePermission;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.sidifensen.domain.dto.SysRolePermissionDto;
+import com.sidifensen.domain.entity.SysRolePermission;
+import com.sidifensen.domain.vo.SysRoleVo;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +17,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface ISysRolePermissionService extends IService<SysRolePermission> {
 
+    void add(SysRolePermissionDto sysRolePermissionDto);
+
+    List<SysRoleVo> getRoles(Integer permissionId);
 }

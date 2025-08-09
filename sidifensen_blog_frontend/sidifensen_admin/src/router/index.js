@@ -26,8 +26,6 @@ const NotFound = () => import("@/components/404.vue");
 
 // 路由守卫
 router.beforeEach(async (to, from, next) => {
-  console.log("from: ", from);
-  console.log("to: ", to);
   const userStore = useUserStore();
 
   // 如果没有登录

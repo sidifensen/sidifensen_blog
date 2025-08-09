@@ -1,16 +1,20 @@
 package com.sidifensen.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.SysMenuDto;
 import com.sidifensen.domain.entity.SysMenu;
+import com.sidifensen.domain.entity.SysRoleMenu;
 import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.vo.SysMenuVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysMenuMapper;
+import com.sidifensen.mapper.SysRoleMenuMapper;
 import com.sidifensen.service.ISysMenuService;
 import com.sidifensen.utils.SecurityUtils;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +29,9 @@ import java.util.List;
  */
 @Service
 public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> implements ISysMenuService {
+
+    @Resource
+    private SysRoleMenuMapper sysRoleMenuMapper;
 
     // 查询登录用户的菜单
     @Override
@@ -51,26 +58,6 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         this.save(sysMenu);
     }
 
-    // 删除菜单
-    @Override
-    public void delete(Integer id) {
-        boolean exist = this.removeById(id);
-        if (!exist){
-            throw new BlogException(BlogConstants.NotFoundMenu);
-        }
-    }
-
-    // 根据菜单名称查找菜单
-    @Override
-    public List<SysMenuVo> search(String name) {
-        // 使用MyBatis Plus的条件构造器查询菜单名称包含指定字符串的菜单
-        List<SysMenu> sysMenus = this.lambdaQuery()
-                .like(SysMenu::getName, name)
-                .list();
-        // 将查询结果转换为SysMenuVo对象列表
-        return BeanUtil.copyToList(sysMenus, SysMenuVo.class);
-    }
-
     // 更新菜单
     @Override
     public void update(SysMenuDto sysMenuDto) {
@@ -78,5 +65,25 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         this.updateById(sysMenu);
     }
 
+    // 删除菜单
+    @Override
+    public void delete(Integer id) {
+        boolean exist = this.removeById(id);
+        if (!exist){
+            throw new BlogException(BlogConstants.NotFoundMenu);
+        }
+        // 删除角色_菜单关联表
+        sysRoleMenuMapper.delete(new QueryWrapper<SysRoleMenu>().lambda().eq(SysRoleMenu::getMenuId, id));
+    }
+
+    // 根据菜单名称查找菜单
+    @Override
+    public List<SysMenuVo> search(String name) {
+        // 使用MyBatis Plus的条件构造器查询菜单名称包含指定字符串的菜单
+        List<SysMenu> sysMenus = this.lambdaQuery().like(SysMenu::getName, name).list();
+        // 将查询结果转换为SysMenuVo对象列表
+        List<SysMenuVo> sysMenuVos = BeanUtil.copyToList(sysMenus, SysMenuVo.class);
+        return sysMenuVos;
+    }
 
 }

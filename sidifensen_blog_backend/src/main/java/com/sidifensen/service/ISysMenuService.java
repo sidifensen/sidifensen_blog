@@ -26,12 +26,12 @@ public interface ISysMenuService extends IService<SysMenu> {
     // 新增菜单
     void add(SysMenuDto sysMenuDto);
 
+    // 修改菜单
+    void update(SysMenuDto sysMenuDto);
+
     // 删除菜单
     void delete(Integer id);
 
     // 根据菜单名称查找菜单
     List<SysMenuVo> search(String name);
-
-    // 修改菜单
-    void update(SysMenuDto sysMenuDto);
 }

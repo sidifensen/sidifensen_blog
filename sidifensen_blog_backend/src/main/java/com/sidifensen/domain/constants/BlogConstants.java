@@ -20,6 +20,10 @@ public class BlogConstants {
     public static final String NotFoundMenu = "菜单不存在";
     public static final String NotFoundPermission = "权限不存在";
     public static final String NotAdminAccount = "不是管理员账户";
+    public static final String ExistRoleMenu = "角色菜单已存在";
+    public static final String ExistRolePermission = "角色权限已存在";
+    public static final String ExistMenuPermission = "菜单权限已存在";
+    public static final String ExistUserRole = "用户角色已存在";
 
     public static final String NotFoundAlbum = "相册不存在";
     public static final String CannotHandleOtherUserAlbum = "不能操作别人的相册";

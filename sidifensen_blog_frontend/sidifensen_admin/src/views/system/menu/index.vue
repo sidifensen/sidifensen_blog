@@ -5,13 +5,13 @@
         <h2 class="card-title">菜单管理</h2>
         <div class="card-actions">
           <el-input v-model="searchQuery" placeholder="搜索菜单名称" :prefix-icon="Search" size="small" class="search-input" />
-          <el-button type="primary" size="small" @click="handleAddMenu" :icon="Plus" class="add-button"> 新增菜单 </el-button>
+          <el-button type="primary" size="small" @click="handleAddMenu" :icon="Plus" class="add"> 新增菜单 </el-button>
         </div>
       </div>
 
       <!-- 菜单表格 -->
-      <el-table v-loading="loading" :data="paginatedMenuList" class="menu-table" style="height: 100%">
-        <el-table-column fixed prop="id" label="id" width="60" />
+      <el-table v-loading="loading" :data="paginatedMenuList" row-key="id" default-expand-all class="menu-table" style="height: 100%">
+        <el-table-column fixed prop="id" label="菜单id" />
         <el-table-column prop="parentId" label="父菜单id" />
         <el-table-column prop="name" label="菜单名称" />
         <el-table-column prop="path" label="路由路径" />
@@ -35,14 +35,19 @@
               :active-value="0"
               :inactive-value="1"
               inline-prompt
-              @change="(value) => handleStatusChange(row.id, value)" />
+              :loading="switchLoading"
+              :before-change="() => handleStatusChange(row.id, row.status === 0 ? 1 : 0)" />
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="170">
+        <el-table-column prop="createTime" label="创建时间" sortable width="120" />
+        <el-table-column prop="updateTime" label="更新时间" sortable width="120" />
+        <el-table-column label="操作" width="330">
           <template #default="{ row }">
             <div class="table-actions">
-              <el-button type="primary" size="small" @click="handleEditMenu(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
-              <el-button type="danger" size="small" @click="handleDeleteMenu(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
+              <el-button size="small" type="success" @click="handleAddMenu(row)" :icon="Plus" v-if="row.children || row.parentId == 0" class="add-button"> 新增 </el-button>
+              <el-button size="small" type="primary" @click="handleEditMenu(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
+              <el-button size="small" type="danger" @click="handleDeleteMenu(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
+              <el-button size="small" type="warning" @click="handleAuthorizeRole(row)" :icon="Avatar" class="role-button"> 分配角色 </el-button>
             </div>
           </template>
         </el-table-column>
@@ -67,8 +72,23 @@
           <el-input v-model="menuForm.component" placeholder="请输入组件路径" />
         </el-form-item>
         <el-form-item prop="icon">
-          <el-select v-model="menuForm.icon" placeholder="请选择图标">
-            <el-option v-for="icon in icons" :key="icon" :label="icon" :value="icon" />
+          <el-select v-model="menuForm.icon" placeholder="请选择图标" filterable clearable>
+            <el-option v-for="icon in icons" :key="icon" :label="icon" :value="icon">
+              <div style="display: flex; align-items: center">
+                <el-icon style="margin-right: 10px">
+                  <component :is="icon" />
+                </el-icon>
+                <span>{{ icon }}</span>
+              </div>
+            </el-option>
+            <template #label>
+              <div style="display: flex; align-items: center">
+                <el-icon style="margin-right: 10px">
+                  <component :is="menuForm.icon" />
+                </el-icon>
+                <span>{{ menuForm.icon }}</span>
+              </div>
+            </template>
           </el-select>
         </el-form-item>
         <el-form-item prop="parentId">
@@ -77,7 +97,7 @@
             <el-option v-for="menu in parentMenuOptions" :key="menu.id" :label="menu.name" :value="menu.id" />
           </el-select>
         </el-form-item>
-        <el-form-item prop="sort"> 排序号 &nbsp<el-input-number v-model="menuForm.sort" :min="1" :max="999" placeholder="请输入排序号" /> </el-form-item>
+        <el-form-item prop="sort"> 排序号 &nbsp<el-input-number v-model="menuForm.sort" :min="0" :max="999" placeholder="请输入排序号" /> </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
@@ -86,17 +106,37 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- 分配角色对话框 -->
+    <el-dialog v-model="authorizeDialogVisible" title="菜单分配角色" :before-close="handleAuthorizeDialogClose" width="500px">
+      <div class="authorize-dialog-content">
+        <p class="menu-name">当前菜单: {{ currentMenu?.name }}</p>
+        <el-form ref="authorizeFormRef" class="authorize-form">
+          <el-form-item label="选择角色">
+            <el-checkbox-group v-model="selectedRoles" class="role-checkbox-group">
+              <el-checkbox v-for="role in allRoles" :key="role.id" :label="role.id" :disabled="disabledRoles.includes(role.id)">{{ role.name }}</el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+        </el-form>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="handleAuthorizeDialogClose">取消</el-button>
+          <el-button type="primary" @click="handleAuthorizeSubmit">确认分配</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Search, Plus, Edit, Delete, Menu } from "@element-plus/icons-vue";
+import { Search, Plus, Edit, Delete, Avatar } from "@element-plus/icons-vue";
 import { getAllMenuList, addMenu, updateMenu, deleteMenu, queryMenu } from "@/api/menu";
-
-// 图标列表
-const icons = ["Menu", "HomeFilled", "User", "Settings", "Role", "Logout", "FileText", "Layers", "Message", "Database"];
+import { addRoleMenu, getRolesByMenu } from "@/api/role-menu";
+import { getRoles } from "@/api/role";
+import { icons } from "@/utils/Icon";
 
 // 搜索查询
 const searchQuery = ref("");
@@ -121,6 +161,7 @@ const dialogTitle = ref("新增菜单");
 
 // 表单引用
 const menuFormRef = ref(null);
+const authorizeFormRef = ref(null);
 // 表单数据
 const menuForm = ref({
   id: null,
@@ -159,6 +200,20 @@ const getMenuList = async () => {
     total.value = menuList.value.length;
     // 对菜单进行排序
     menuList.value.sort((a, b) => a.id - b.id);
+    // 树形化菜单, 根据parentId进行分组, 子菜单放入父菜单的children属性中
+    const treeMenuList = menuList.value.reduce((acc, cur) => {
+      if (cur.parentId === 0) {
+        acc.push(cur);
+      } else {
+        const parent = acc.find((item) => item.id === cur.parentId);
+        if (parent) {
+          parent.children = parent.children || [];
+          parent.children.push(cur);
+        }
+      }
+      return acc;
+    }, []);
+    menuList.value = treeMenuList;
     // 更新分页数据
     updatePaginatedMenuList();
   } catch (error) {
@@ -219,23 +274,30 @@ watch(searchQuery, (newVal) => {
   }
   searchTimeout.value = setTimeout(() => {
     handleSearch();
-  }, 500);
+  }, 100);
 });
 
 // 处理添加菜单
-const handleAddMenu = () => {
-  dialogTitle.value = "新增菜单";
-  menuForm.value = {
-    id: null,
-    name: "",
-    path: "",
-    component: "",
-    icon: "",
-    parentId: 0,
-    sort: 0,
-    status: 1,
-  };
-  dialogVisible.value = true;
+const handleAddMenu = (row) => {
+  if (row) {
+    dialogTitle.value = "新增菜单";
+    // 如果传值了说明是在表格行内的新增按钮
+    menuForm.value.parentId = row.id;
+    dialogVisible.value = true;
+  } else {
+    dialogTitle.value = "新增菜单";
+    menuForm.value = {
+      id: null,
+      name: "",
+      path: "",
+      component: "",
+      icon: "",
+      parentId: 0,
+      sort: 0,
+      status: 0,
+    };
+    dialogVisible.value = true;
+  }
 };
 
 // 处理编辑菜单
@@ -261,7 +323,6 @@ const handleDeleteMenu = (id) => {
         getMenuList();
       } catch (error) {
         ElMessage.error("删除失败");
-        console.error("删除菜单失败:", error);
       } finally {
         loading.value = false;
       }
@@ -271,20 +332,29 @@ const handleDeleteMenu = (id) => {
     });
 };
 
+const switchLoading = ref(false);
 // 处理状态变更
 const handleStatusChange = async (id, status) => {
-  try {
-    await updateMenu({ id, status });
-    ElMessage.success("状态更新成功");
-  } catch (error) {
-    ElMessage.error("状态更新失败");
-    console.error("更新菜单状态失败:", error);
-    // 恢复原始状态
-    const menu = menuList.value.find((item) => item.id === id);
-    if (menu) {
-      menu.status = !status;
-    }
-  }
+  return new Promise((resolve, reject) => {
+    switchLoading.value = true;
+    updateMenu({ id, status })
+      .then(() => {
+        ElMessage.success("状态更新成功");
+        // 手动更新本地数据状态
+        const menu = menuList.value.find((item) => item.id === id);
+        if (menu) {
+          menu.status = status;
+        }
+        resolve();
+      })
+      .catch((error) => {
+        ElMessage.error("状态更新失败");
+        reject(error);
+      })
+      .finally(() => {
+        switchLoading.value = false;
+      });
+  });
 };
 
 // 处理表单提交
@@ -293,8 +363,6 @@ const handleSubmit = () => {
     if (!valid) {
       return;
     }
-
-    loading.value = true;
     try {
       if (menuForm.value.id) {
         // 编辑菜单
@@ -309,17 +377,71 @@ const handleSubmit = () => {
       getMenuList();
     } catch (error) {
       ElMessage.error(menuForm.value.id ? "编辑菜单失败" : "新增菜单失败");
-      console.error(menuForm.value.id ? "编辑菜单失败:" : "新增菜单失败:", error);
-    } finally {
-      loading.value = false;
+      handleDialogClose();
     }
   });
+};
+
+// 授权角色弹窗
+const authorizeDialogVisible = ref(false);
+// 当前菜单
+const currentMenu = ref(null);
+// 选择的角色
+const selectedRoles = ref([]);
+// 所有角色
+const allRoles = ref([]);
+// 已经有菜单的角色id
+const disabledRoles = ref([]);
+
+// 处理授权角色
+const handleAuthorizeRole = async (row) => {
+  currentMenu.value = row;
+  authorizeDialogVisible.value = true;
+  // 清空已选角色和禁用角色数组
+  selectedRoles.value = [];
+  disabledRoles.value = [];
+
+  const res = await getRoles();
+  allRoles.value = res.data.data;
+
+  const res2 = await getRolesByMenu(row.id);
+  // 把数组里的id取出来
+  res2.data.data.forEach((item) => {
+    disabledRoles.value.push(item.id);
+  });
+};
+
+// 处理授权提交
+const handleAuthorizeSubmit = async () => {
+  console.log(selectedRoles.value);
+  try {
+    await addRoleMenu({
+      menuId: currentMenu.value.id,
+      roleIds: selectedRoles.value,
+    });
+    ElMessage.success(`已为菜单 ${currentMenu.value.name} 授权角色`);
+  } catch (error) {
+    ElMessage.error(`为菜单 ${currentMenu.value.name} 授权角色失败`);
+    console.error("授权失败:", error);
+  } finally {
+    authorizeDialogVisible.value = false;
+    // 重置选择的角色和禁用的角色
+    selectedRoles.value = [];
+    disabledRoles.value = [];
+  }
 };
 
 // 处理对话框关闭
 const handleDialogClose = () => {
   menuFormRef.value.resetFields();
   dialogVisible.value = false;
+};
+
+// 处理授权对话框关闭
+const handleAuthorizeDialogClose = () => {
+  authorizeDialogVisible.value = false;
+  selectedRoles.value = [];
+  disabledRoles.value = [];
 };
 
 // 处理分页大小变化
@@ -404,7 +526,7 @@ const handleCurrentChange = (current) => {
           }
         }
 
-        .add-button {
+        .add {
           border-radius: 8px;
           background: linear-gradient(135deg, #42b983 0%, #3aa17e 100%);
           border: none;
@@ -451,11 +573,32 @@ const handleCurrentChange = (current) => {
       }
 
       .table-actions {
+        height: 30px;
         display: flex;
+        align-items: center;
         gap: 8px; // 设置按钮之间的间距
         // flex-wrap: wrap; // 允许按钮在空间不足时换行
+        @media screen and (max-width: 480px) {
+          gap: 4px;
+        }
+
+        .add-button {
+          background-color: #d1fae5;
+          color: #059669;
+          border-color: #d1fae5;
+          border-radius: 6px;
+          transition: all 0.3s ease;
+
+          &:hover {
+            background-color: #a7f3d0;
+            border-color: #a7f3d0;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+          }
+        }
 
         .edit-button {
+          margin-left: 0;
           background-color: #e0f2fe;
           color: #0284c7;
           border-color: #e0f2fe;
@@ -470,7 +613,7 @@ const handleCurrentChange = (current) => {
           }
         }
         .delete-button {
-          margin-left: 0 !important; // 覆盖可能的默认边距
+          margin-left: 0;
           background-color: #fee2e2;
           color: #ef4444;
           border-color: #fee2e2;
@@ -482,6 +625,22 @@ const handleCurrentChange = (current) => {
             border-color: #fecaca;
             transform: translateY(-2px);
             box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+          }
+        }
+
+        .role-button {
+          margin-left: 0;
+          background-color: #fef3c7;
+          color: #d97706;
+          border-color: #fef3c7;
+          border-radius: 6px;
+          transition: all 0.3s ease;
+
+          &:hover {
+            background-color: #fde68a;
+            border-color: #fde68a;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
           }
         }
       }
@@ -519,16 +678,49 @@ const handleCurrentChange = (current) => {
     :deep(.el-form-item) {
       margin-bottom: 20px;
     }
-    :deep(.el-input-number),
-    :deep(.el-input__wrapper),
-    :deep(.el-select__wrapper) {
-      border-radius: 16px;
-      transition: all 0.3s ease;
-      &:focus-within {
-        box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-        border-color: #42b983;
+  }
+
+  // 授权角色对话框样式
+  .authorize-dialog-content {
+    padding: 10px;
+
+    .menu-name {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #1e293b;
+    }
+
+    .authorize-form {
+      :deep(.el-form-item) {
+        margin-bottom: 20px;
+      }
+
+      .role-checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+
+        :deep(.el-checkbox) {
+          margin-right: 16px;
+          margin-bottom: 8px;
+        }
       }
     }
+  }
+  :deep(.el-input-number),
+  :deep(.el-input__wrapper),
+  :deep(.el-select__wrapper) {
+    border-radius: 16px;
+    transition: all 0.3s ease;
+    &:focus-within {
+      box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
+      border-color: #42b983;
+    }
+  }
+  :deep(.el-input-number__decrease),
+  :deep(.el-input-number__increase) {
+    border-radius: 16px;
   }
 }
 
@@ -571,11 +763,10 @@ const handleCurrentChange = (current) => {
 
 @media screen and (max-width: 768px) {
   .menu-management-container {
-    padding: 12px;
-
     .menu-card {
+      padding: 2px;
       .card-header {
-        padding: 12px 16px;
+        padding: 6px;
 
         .card-title {
           font-size: 16px;
@@ -589,13 +780,15 @@ const handleCurrentChange = (current) => {
             width: 100%;
           }
 
-          .add-button {
+          .add {
             width: 100%;
           }
         }
       }
 
       .menu-table {
+        margin-top: 0;
+        max-height: calc(100vh - 220px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
         :deep(.el-table) {
           display: block;
           width: 100%;
@@ -604,7 +797,7 @@ const handleCurrentChange = (current) => {
       }
 
       .pagination-container {
-        padding: 5px;
+        padding: 4px;
         :deep(.el-pagination) {
           .el-pager {
             display: none;
@@ -655,7 +848,7 @@ const handleCurrentChange = (current) => {
         width: 100% !important;
       }
 
-      .add-button {
+      .add {
         width: 100%;
       }
     }

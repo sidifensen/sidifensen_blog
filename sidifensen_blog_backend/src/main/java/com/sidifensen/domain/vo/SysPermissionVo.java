@@ -1,6 +1,5 @@
-package com.sidifensen.domain.entity;
+package com.sidifensen.domain.vo;
 
-import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -19,15 +18,13 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("sys_permission")
-public class SysPermission implements Serializable {
+public class SysPermissionVo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
      * 权限id
      */
-    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
     /**
@@ -48,19 +45,17 @@ public class SysPermission implements Serializable {
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     /**
      * 更新时间
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
     /**
-     * 是否删除 0-未删除 1-已删除
+     * 对应的菜单名称
      */
-    private Integer isDeleted;
+    private String menuName;
 
 
 }

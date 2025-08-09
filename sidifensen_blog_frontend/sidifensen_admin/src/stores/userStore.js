@@ -75,7 +75,6 @@ export const useUserStore = defineStore("user", () => {
       menus.value = res.data.data;
       // 格式化菜单数据，添加children属性
       const formattedMenus = formatMenuData(menus.value);
-      console.log("菜单数据:", formattedMenus);
       menus.value = formattedMenus;
       routes.value = generateRoutes(formattedMenus);
       menusLoaded.value = true; // 标记菜单已加载

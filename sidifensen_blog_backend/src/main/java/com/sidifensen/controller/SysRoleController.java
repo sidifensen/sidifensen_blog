@@ -1,8 +1,17 @@
 package com.sidifensen.controller;
 
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.sidifensen.domain.dto.SysRoleDto;
+import com.sidifensen.domain.result.Result;
+import com.sidifensen.domain.vo.SysRoleVo;
+import com.sidifensen.service.ISysRoleService;
+import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author sidifensen
@@ -12,4 +21,70 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/role")
 public class SysRoleController {
 
+    @Resource
+    private ISysRoleService sysRoleService;
+
+    /**
+     * 查询角色列表
+     *
+     * @return
+     */
+    @PreAuthorize("hasAuthority('system:role:list')")
+    @GetMapping("list")
+    public Result list() {
+        List<SysRoleVo> sysRoleVos = sysRoleService.listRole();
+        return Result.success(sysRoleVos);
+    }
+
+    /**
+     * 新增角色
+     *
+     * @param sysRoleDto 角色信息
+     * @return
+     */
+    @PreAuthorize("hasAuthority('system:role:add')")
+    @PostMapping("add")
+    public Result add(@RequestBody @Valid SysRoleDto sysRoleDto) {
+        sysRoleService.add(sysRoleDto);
+        return Result.successMsg("添加成功");
+    }
+
+    /**
+     * 修改角色
+     *
+     * @param sysRoleDto 包含更新信息的角色数据
+     * @return
+     */
+    @PreAuthorize("hasAuthority('system:role:update')")
+    @PutMapping("update")
+    public Result update(@RequestBody @Valid SysRoleDto sysRoleDto) {
+        sysRoleService.update(sysRoleDto);
+        return Result.successMsg("修改成功");
+    }
+
+    /**
+     * 删除角色
+     *
+     * @param roleId 角色ID
+     * @return
+     */
+    @PreAuthorize("hasAuthority('system:role:delete')")
+    @DeleteMapping("{roleId}")
+    public Result delete(@PathVariable @NotEmpty Integer roleId) {
+        sysRoleService.delete(roleId);
+        return Result.successMsg("删除成功");
+    }
+
+    /**
+     * 根据角色名称查找角色
+     *
+     * @param name 角色名称
+     * @return
+     */
+    @PreAuthorize("hasAuthority('system:role:search')")
+    @GetMapping("search")
+    public Result search(@RequestParam("name") String name) {
+        List<SysRoleVo> roleList = sysRoleService.search(name);
+        return Result.success(roleList);
+    }
 }

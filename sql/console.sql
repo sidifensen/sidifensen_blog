@@ -23,10 +23,9 @@ create table sys_user
 create table sys_role
 (
     id          int primary key auto_increment comment '角色id',
-    role        varchar(10) not null comment '角色',
+    role        varchar(10) not null comment '角色标识',
     name        varchar(10) not null comment '角色名称',
     description varchar(20) comment '角色描述',
-    sort        int                  default 0 comment '  排序',
     status      tinyint     not null default 0 comment '状态 0-正常 1-禁用',
     create_time datetime    not null comment '创建时间',
     update_time datetime    not null comment '更新时间',

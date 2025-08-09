@@ -1,7 +1,5 @@
 package com.sidifensen.domain.vo;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -20,45 +18,29 @@ import java.util.Date;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class SysMenuVo implements Serializable {
+public class SysRoleVo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * 菜单id
+     * 角色id
      */
     private Integer id;
 
     /**
-     * 父级id
+     * 角色
      */
-    private Integer parentId;
+    private String role;
 
     /**
-     * 菜单名称
+     * 角色名称
      */
     private String name;
 
     /**
-     * 排序
+     * 角色描述
      */
-    private Integer sort;
-
-
-    /**
-     * 路由路径
-     */
-    private String path;
-
-    /**
-     * 组件路径
-     */
-    private String component;
-
-    /**
-     * 图标
-     */
-    private String icon;
+    private String description;
 
     /**
      * 状态 0-正常 1-禁用
@@ -68,13 +50,11 @@ public class SysMenuVo implements Serializable {
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
      * 更新时间
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
 }

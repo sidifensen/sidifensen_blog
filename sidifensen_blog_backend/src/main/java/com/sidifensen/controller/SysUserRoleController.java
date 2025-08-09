@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2025-06-29
  */
 @RestController
-@RequestMapping("/sys-user-role")
+@RequestMapping("/user-role")
 public class SysUserRoleController {
 
 }

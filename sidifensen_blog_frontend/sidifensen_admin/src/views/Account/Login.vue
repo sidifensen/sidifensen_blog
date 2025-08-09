@@ -77,7 +77,7 @@ const handleLogin = () => {
             userStore.setUser(res.data.data);
             // 加载菜单和动态路由
             userStore.loadMenusAndRoutes().then(() => {
-              router.push("/");
+              router.push("/home");
             });
           });
         })
@@ -238,6 +238,10 @@ const handleLogin = () => {
 // 输入框圆角
 :deep(.input-container .el-input__wrapper) {
   border-radius: 8px !important;
+}
+
+:deep(.el-input__inner.is-focus) {
+  box-shadow: 0 0 0 0 !important;
 }
 
 .form-item-remember {

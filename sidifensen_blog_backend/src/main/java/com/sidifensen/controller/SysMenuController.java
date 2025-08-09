@@ -67,7 +67,7 @@ public class SysMenuController {
     @PutMapping("update")
     public Result update(@RequestBody @Valid SysMenuDto sysMenuDto) {
         sysMenuService.update(sysMenuDto);
-        return Result.successMsg("更新成功");
+        return Result.successMsg("修改成功");
     }
 
     /**

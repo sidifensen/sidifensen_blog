@@ -51,7 +51,7 @@ request.interceptors.response.use(
     return Promise.reject(response.data);
   },
   (error) => {
-    console.log("error=====>", error);
+    // console.log("error=====>", error);
     let { status, data } = error.response;
     if (status === 401) {
       // 401 代表token过期，需要重新登录

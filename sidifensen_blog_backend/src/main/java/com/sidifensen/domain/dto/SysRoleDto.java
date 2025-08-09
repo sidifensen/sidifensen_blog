@@ -1,12 +1,12 @@
-package com.sidifensen.domain.entity;
+package com.sidifensen.domain.dto;
 
-import com.baomidou.mybatisplus.annotation.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * <p>
@@ -19,15 +19,13 @@ import java.util.Date;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("sys_role")
-public class SysRole implements Serializable {
+public class SysRoleDto implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
      * 角色id
      */
-    @TableId(type = IdType.AUTO)
     private Integer id;
 
     /**
@@ -48,25 +46,9 @@ public class SysRole implements Serializable {
     /**
      * 状态 0-正常 1-禁用
      */
+    @Min(value = 0, message = "状态必须为0或1")
+    @Max(value = 1, message = "状态必须为0或1")
     private Integer status;
-
-    /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private Date createTime;
-
-    /**
-     * 更新时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
-
-    /**
-     * 是否删除 0-未删除 1-已删除
-     */
-    @TableLogic
-    private Integer isDeleted;
 
 
 }

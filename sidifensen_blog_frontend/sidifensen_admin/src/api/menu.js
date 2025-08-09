@@ -1,6 +1,6 @@
 import request from "@/utils/Request";
 
-// 获取菜单
+// 获取登录用户的菜单
 export function getMenuList() {
   return request({
     url: "/menu/list",
@@ -8,7 +8,7 @@ export function getMenuList() {
   });
 }
 
-// 获取菜单
+// 获取所有菜单
 export function getAllMenuList() {
   return request({
     url: "/menu/listAll",
@@ -36,7 +36,7 @@ export function updateMenu(data) {
 // 删除菜单
 export function deleteMenu(menuId) {
   return request({
-    url: `/menu/delete/${menuId}`,
+    url: `/menu/${menuId}`,
     method: "delete",
   });
 }

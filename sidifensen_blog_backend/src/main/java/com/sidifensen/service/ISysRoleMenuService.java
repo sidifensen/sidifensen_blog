@@ -1,7 +1,11 @@
 package com.sidifensen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.sidifensen.domain.dto.SysRoleMenuDto;
 import com.sidifensen.domain.entity.SysRoleMenu;
+import com.sidifensen.domain.vo.SysRoleVo;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +17,7 @@ import com.sidifensen.domain.entity.SysRoleMenu;
  */
 public interface ISysRoleMenuService extends IService<SysRoleMenu> {
 
+    void add(SysRoleMenuDto sysRoleMenuDto);
+
+    List<SysRoleVo> getRoles(Integer menuId);
 }

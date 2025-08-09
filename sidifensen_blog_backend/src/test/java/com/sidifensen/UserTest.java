@@ -5,7 +5,6 @@ import com.sidifensen.mapper.SysUserMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 

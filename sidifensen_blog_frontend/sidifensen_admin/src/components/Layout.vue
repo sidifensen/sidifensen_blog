@@ -6,7 +6,8 @@
         <div class="logo-icon"></div>
         <h3 class="logo-text">管理员后台</h3>
       </div>
-      <el-menu :default-active="activeMenu" class="el-menu-vertical" background-color="#1e293b" text-color="#cbd5e1" active-text-color="#4ade80" :router="true">
+      <!-- pc端菜单 -->
+      <el-menu :default-active="activeMenu" class="el-menu-pc" background-color="#1e293b" text-color="#cbd5e1" active-text-color="#4ade80" :router="true">
         <template v-for="menu in menus" :key="menu.id">
           <el-sub-menu v-if="menu.children && menu.children.length > 0" :index="menu.path">
             <template #title>
@@ -27,10 +28,41 @@
         </template>
       </el-menu>
     </el-aside>
+
+    <!-- 移动端菜单 -->
+    <transition name="slide-fade">
+      <div v-show="isMobileMenuVisible" class="mobile-menu-overlay" @click="closeMobileMenu">
+        <el-menu :default-active="activeMenu" class="el-menu-mobile" background-color="#1e293b" text-color="#cbd5e1" active-text-color="#4ade80" :router="true" @click.stop @select="closeMobileMenu">
+          <template v-for="menu in menus" :key="menu.id">
+            <el-sub-menu v-if="menu.children && menu.children.length > 0" :index="menu.path">
+              <template #title>
+                <el-icon :size="18"><component :is="menu.icon || 'Menu'" /></el-icon>
+                <span>{{ menu.name }}</span>
+              </template>
+              <template v-for="child in menu.children" :key="child.id">
+                <el-menu-item :index="child.path">
+                  <el-icon :size="16"><component :is="child.icon || 'Menu'" /></el-icon>
+                  <span>{{ child.name }}</span>
+                </el-menu-item>
+              </template>
+            </el-sub-menu>
+            <el-menu-item v-else :index="menu.path">
+              <el-icon :size="18"><component :is="menu.icon || 'Menu'" /></el-icon>
+              <span>{{ menu.name }}</span>
+            </el-menu-item>
+          </template>
+        </el-menu>
+      </div>
+    </transition>
+
     <!-- 主内容区域 -->
     <el-container class="main-content">
       <!-- 顶部导航栏 -->
       <el-header class="header">
+        <!-- 移动端菜单按钮 -->
+        <div class="mobile-menu-button" @click="toggleMobileMenu">
+          <svg-icon name="menu" width="35px" height="35px" cursor="pointer" />
+        </div>
         <div class="header-right">
           <el-dropdown trigger="hover">
             <span class="user-info">
@@ -65,6 +97,18 @@ const router = useRouter();
 const menus = computed(() => {
   return userStore.menus;
 });
+
+// 移动端菜单是否可见
+const isMobileMenuVisible = ref(false);
+// 切换移动端菜单
+const toggleMobileMenu = () => {
+  isMobileMenuVisible.value = !isMobileMenuVisible.value;
+};
+
+// 关闭移动端菜单
+const closeMobileMenu = () => {
+  isMobileMenuVisible.value = false;
+};
 
 // 当前激活的菜单
 const activeMenu = computed(() => {
@@ -105,7 +149,7 @@ const handleLogout = () => {
       display: flex;
       align-items: center;
       padding: 16px;
-      height: 64px;
+      height: 60px;
 
       .logo-icon {
         width: 40px;
@@ -138,9 +182,9 @@ const handleLogout = () => {
     }
 
     // 菜单样式
-    .el-menu-vertical {
+    .el-menu-pc {
       border-right: none;
-      height: calc(100% - 64px);
+      height: calc(100% - 60px);
       overflow-y: auto;
       overflow-x: hidden;
 
@@ -189,7 +233,7 @@ const handleLogout = () => {
 
     // 顶部导航栏
     .header {
-      height: 64px;
+      height: 60px;
       background-color: #ffffff;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
       display: flex;
@@ -197,7 +241,11 @@ const handleLogout = () => {
       align-items: center;
       padding: 0 24px;
       position: relative;
-      z-index: 5;
+      z-index: 1000;
+
+      .mobile-menu-button {
+        display: none;
+      }
 
       .header-right {
         display: flex;
@@ -237,104 +285,78 @@ const handleLogout = () => {
 
   // 响应式 - 手机端
   @media screen and (max-width: 768px) {
+    .mobile-menu-overlay {
+      position: fixed; // 将遮罩层固定在视窗中，不随页面滚动
+      top: 0; // 使遮盖层覆盖整个视窗
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.3);
+      z-index: 999;
+      display: flex;
+      .el-menu-mobile {
+        position: absolute;
+        border: 0;
+        top: 50px;
+        background-color: #0f172a;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start; // 菜单项水平左对齐
+      }
+    }
+
     // 侧边栏默认收起
     .sidebar {
-      width: 64px !important;
-      position: fixed;
-      height: 100vh;
-
-      .logo-container {
-        justify-content: center;
-        align-items: center;
-        padding: 0;
-      }
-
-      // 确保logo图标在手机端不被拉伸
-      .logo-icon {
-        width: 40px !important;
-        height: 40px !important;
-        margin-right: 0 !important;
-        flex-shrink: 0;
-      }
-    }
-
-    // 隐藏logo文本
-    .logo-text {
       display: none;
-    }
-
-    // 菜单文本默认隐藏
-    .el-menu-vertical {
-      .el-menu-item span,
-      .el-sub-menu .el-sub-menu__title span {
-        display: none;
-      }
-
-      // 菜单图标居中
-      .el-menu-item,
-      .el-sub-menu .el-sub-menu__title {
-        display: flex;
-        justify-content: center;
-        padding: 12px 0;
-        .el-icon {
-          margin-right: 0;
-        }
-      }
-
-      // 父菜单的右侧箭头图标
-      :deep(.el-sub-menu__icon-arrow) {
-        right: 10px;
-      }
-
-      // 手机端子菜单不缩进
-      .el-sub-menu .el-menu-item {
-        padding-left: 0 !important;
-      }
     }
 
     // 主内容区域自适应
     .main-content {
-      margin-left: 64px;
-
       // 顶部导航栏
       .header {
+        justify-content: space-between;
         padding: 0 16px;
-
+        height: 50px;
+        .mobile-menu-button {
+          display: block;
+        }
         .user-info {
           span {
             // display: none;
           }
-
-          .el-icon {
-            margin-right: 0;
-          }
         }
       }
     }
+  }
 
-    // 侧边栏悬停时展开
-    .sidebar:hover {
-      width: 240px !important;
+  /* 移动端菜单动画 */
+  // 进入前和离开后的状态（初始和结束状态）
+  .slide-fade-enter-from,
+  .slide-fade-leave-to {
+    background-color: rgba(0, 0, 0, 0);
+    .el-menu-mobile {
+      transform: translateX(-100%); // 菜单在左侧，向右滑入
+      opacity: 0;
+    }
+  }
 
-      .logo-icon {
-        margin-right: 12px !important;
-      }
+  // 进入和离开过程中的动画属性
+  .slide-fade-enter-active,
+  .slide-fade-leave-active {
+    transition: all 0.5s ease;
+    .el-menu-mobile {
+      transition: all 0.5s ease;
+    }
+  }
 
-      .logo-text {
-        display: block;
-      }
-
-      .el-menu-vertical {
-        .el-menu-item span,
-        .el-sub-menu .el-sub-menu__title span {
-          display: inline;
-        }
-
-        .el-menu-item,
-        .el-sub-menu .el-sub-menu__title {
-          justify-content: flex-start;
-        }
-      }
+  // 进入后和离开前的状态（目标和初始状态）
+  .slide-fade-enter-to,
+  .slide-fade-leave-from {
+    background-color: rgba(0, 0, 0, 0.3); // 半透明背景
+    .el-menu-mobile {
+      transform: translateX(0); // 菜单在原位
+      opacity: 1;
     }
   }
 }

@@ -5,7 +5,7 @@
       <svg-icon name="menu" width="50px" height="50px" cursor="pointer" />
     </div>
 
-    <router-link class="logo" to="/"><el-text size="large" class="logo-text">斯蒂芬森的博客</el-text></router-link>
+    <router-link class="logo" to="/"><el-text size="large" class="logo-text">斯蒂芬森博客</el-text></router-link>
     <el-menu-item index="1" class="menu-item">
       <router-link to="/">
         <el-icon><House /></el-icon>
@@ -397,6 +397,7 @@ onBeforeUnmount(() => {
 // 响应式设计 - 移动端
 @media (max-width: 870px) {
   .pc-menu {
+    padding: 0 5px 0 0;
     .menu-item {
       display: none; // 隐藏PC端菜单
     }

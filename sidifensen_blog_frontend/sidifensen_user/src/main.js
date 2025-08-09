@@ -10,7 +10,7 @@ import App from "./App.vue";
 import router from "./router";
 
 // 注册svg全局组件
-import SvgIcon from "@/components/SvgIcon/index.vue";
+import SvgIcon from "@/components/SvgIcon.vue";
 import "virtual:svg-icons-register";
 
 // pinia持久化插件
