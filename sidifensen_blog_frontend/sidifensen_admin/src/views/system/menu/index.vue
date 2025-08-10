@@ -22,7 +22,7 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column prop="sort" label="排序" />
+        <el-table-column prop="sort" sortable label="排序" />
         <el-table-column prop="status" label="状态">
           <template #default="{ row }">
             <el-switch
@@ -114,7 +114,7 @@
         <el-form ref="authorizeFormRef" class="authorize-form">
           <el-form-item label="选择角色">
             <el-checkbox-group v-model="selectedRoles" class="role-checkbox-group">
-              <el-checkbox v-for="role in allRoles" :key="role.id" :label="role.id" :disabled="disabledRoles.includes(role.id)">{{ role.name }}</el-checkbox>
+              <el-checkbox v-for="role in allRoles" :key="role.id" :label="role.id">{{ role.name }}</el-checkbox>
             </el-checkbox-group>
           </el-form-item>
         </el-form>
@@ -135,8 +135,9 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { Search, Plus, Edit, Delete, Avatar } from "@element-plus/icons-vue";
 import { getAllMenuList, addMenu, updateMenu, deleteMenu, queryMenu } from "@/api/menu";
 import { addRoleMenu, getRolesByMenu } from "@/api/role-menu";
-import { getRoles } from "@/api/role";
+import { getRoleList } from "@/api/role";
 import { icons } from "@/utils/Icon";
+import { formatMenu } from "@/utils/Menu";
 
 // 搜索查询
 const searchQuery = ref("");
@@ -148,12 +149,9 @@ const paginatedMenuList = ref([]);
 const parentMenuOptions = ref([]);
 // 加载状态
 const loading = ref(false);
-// 当前页码
-const currentPage = ref(1);
-// 每页条数
-const pageSize = ref(10);
 // 总条数
 const total = ref(0);
+
 // 对话框可见性
 const dialogVisible = ref(false);
 // 对话框标题
@@ -196,24 +194,13 @@ const getMenuList = async () => {
   loading.value = true;
   try {
     const res = await getAllMenuList();
-    menuList.value = res.data.data;
+    
+    // 按照sort排序并树形化
+    menuList.value = formatMenu(res.data.data);
+    
+    // 树形化后的菜单列表长度为总数
     total.value = menuList.value.length;
-    // 对菜单进行排序
-    menuList.value.sort((a, b) => a.id - b.id);
-    // 树形化菜单, 根据parentId进行分组, 子菜单放入父菜单的children属性中
-    const treeMenuList = menuList.value.reduce((acc, cur) => {
-      if (cur.parentId === 0) {
-        acc.push(cur);
-      } else {
-        const parent = acc.find((item) => item.id === cur.parentId);
-        if (parent) {
-          parent.children = parent.children || [];
-          parent.children.push(cur);
-        }
-      }
-      return acc;
-    }, []);
-    menuList.value = treeMenuList;
+
     // 更新分页数据
     updatePaginatedMenuList();
   } catch (error) {
@@ -224,11 +211,28 @@ const getMenuList = async () => {
   }
 };
 
+// 当前页码
+const currentPage = ref(1);
+// 每页条数
+const pageSize = ref(10);
+
 // 更新分页数据
 const updatePaginatedMenuList = () => {
   const startIndex = (currentPage.value - 1) * pageSize.value;
   const endIndex = startIndex + pageSize.value;
   paginatedMenuList.value = menuList.value.slice(startIndex, endIndex);
+};
+
+// 处理分页大小变化
+const handleSizeChange = (size) => {
+  pageSize.value = size;
+  updatePaginatedMenuList();
+};
+
+// 处理当前页码变化
+const handleCurrentChange = (current) => {
+  currentPage.value = current;
+  updatePaginatedMenuList();
 };
 
 // 获取父菜单选项
@@ -274,7 +278,7 @@ watch(searchQuery, (newVal) => {
   }
   searchTimeout.value = setTimeout(() => {
     handleSearch();
-  }, 100);
+  }, 500);
 });
 
 // 处理添加菜单
@@ -382,6 +386,12 @@ const handleSubmit = () => {
   });
 };
 
+// 处理新增/编辑对话框关闭
+const handleDialogClose = () => {
+  menuFormRef.value.resetFields();
+  dialogVisible.value = false;
+};
+
 // 授权角色弹窗
 const authorizeDialogVisible = ref(false);
 // 当前菜单
@@ -390,30 +400,30 @@ const currentMenu = ref(null);
 const selectedRoles = ref([]);
 // 所有角色
 const allRoles = ref([]);
-// 已经有菜单的角色id
-const disabledRoles = ref([]);
 
 // 处理授权角色
 const handleAuthorizeRole = async (row) => {
   currentMenu.value = row;
   authorizeDialogVisible.value = true;
-  // 清空已选角色和禁用角色数组
+  // 清空已选角色
   selectedRoles.value = [];
-  disabledRoles.value = [];
+  console.log("selectedRoles", selectedRoles.value);
 
-  const res = await getRoles();
+  const res = await getRoleList();
   allRoles.value = res.data.data;
 
-  const res2 = await getRolesByMenu(row.id);
+  // 获取已经有菜单的角色
+  const res1 = await getRolesByMenu(row.id);
   // 把数组里的id取出来
-  res2.data.data.forEach((item) => {
-    disabledRoles.value.push(item.id);
+  res1.data.data.forEach((item) => {
+    // 默认选中已有菜单的角色
+    selectedRoles.value.push(item.id);
   });
 };
 
 // 处理授权提交
 const handleAuthorizeSubmit = async () => {
-  console.log(selectedRoles.value);
+  console.log("selectedRoles", selectedRoles.value);
   try {
     await addRoleMenu({
       menuId: currentMenu.value.id,
@@ -427,33 +437,13 @@ const handleAuthorizeSubmit = async () => {
     authorizeDialogVisible.value = false;
     // 重置选择的角色和禁用的角色
     selectedRoles.value = [];
-    disabledRoles.value = [];
   }
-};
-
-// 处理对话框关闭
-const handleDialogClose = () => {
-  menuFormRef.value.resetFields();
-  dialogVisible.value = false;
 };
 
 // 处理授权对话框关闭
 const handleAuthorizeDialogClose = () => {
   authorizeDialogVisible.value = false;
   selectedRoles.value = [];
-  disabledRoles.value = [];
-};
-
-// 处理分页大小变化
-const handleSizeChange = (size) => {
-  pageSize.value = size;
-  updatePaginatedMenuList();
-};
-
-// 处理当前页码变化
-const handleCurrentChange = (current) => {
-  currentPage.value = current;
-  updatePaginatedMenuList();
 };
 </script>
 

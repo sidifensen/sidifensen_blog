@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 import { getMenuList } from "@/api/menu";
 import { info } from "@/api/user";
 import { RemoveJwt } from "@/utils/Auth";
+import { formatMenu } from "@/utils/Menu";
 
 // 使用import.meta.glob批量导入视图组件和404组件
 const modules = {};
@@ -72,40 +73,20 @@ export const useUserStore = defineStore("user", () => {
     }
     try {
       const res = await getMenuList();
-      menus.value = res.data.data;
-      // 格式化菜单数据，添加children属性
-      const formattedMenus = formatMenuData(menus.value);
-      menus.value = formattedMenus;
-      routes.value = generateRoutes(formattedMenus);
-      menusLoaded.value = true; // 标记菜单已加载
+
+      // 按照sort排序并树形化
+      menus.value = formatMenu(res.data.data);
+
+      //生成路由
+      routes.value = generateRoutes(menus.value);
+      // 标记菜单已加载
+      menusLoaded.value = true;
       // 路由将在 router/index.js 中添加，这里不设置 routesAdded
       return routes.value;
     } catch (error) {
       console.error("获取菜单失败:", error);
       return [];
     }
-  };
-
-  // 格式化菜单数据，将扁平结构转换为树形结构
-  const formatMenuData = (menuList) => {
-    const menuMap = {};
-    const rootMenus = [];
-
-    // 创建菜单映射
-    menuList.forEach((menu) => {
-      menuMap[menu.id] = { ...menu, children: [] };
-    });
-
-    // 构建树形结构
-    menuList.forEach((menu) => {
-      if (menu.parentId === 0) {
-        rootMenus.push(menuMap[menu.id]);
-      } else if (menuMap[menu.parentId]) {
-        menuMap[menu.parentId].children.push(menuMap[menu.id]);
-      }
-    });
-
-    return rootMenus;
   };
 
   return {

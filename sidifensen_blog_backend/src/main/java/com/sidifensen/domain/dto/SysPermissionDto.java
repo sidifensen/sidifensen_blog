@@ -39,6 +39,6 @@ public class SysPermissionDto implements Serializable {
     /**
      * 菜单id
      */
-    private String menuId;
+    private Integer menuId;
 
 }

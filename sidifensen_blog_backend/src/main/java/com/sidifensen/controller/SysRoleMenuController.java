@@ -32,7 +32,7 @@ public class SysRoleMenuController {
     @PostMapping("add")
     public Result add(@RequestBody SysRoleMenuDto sysRoleMenuDto) {
         sysRoleService.add(sysRoleMenuDto);
-        return Result.successMsg("添加成功");
+        return Result.success();
     }
 
     /**

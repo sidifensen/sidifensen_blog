@@ -13,29 +13,28 @@ import java.util.List;
  * </p>
  *
  * @author sidifensen
- * @since 2025-08-06
+ * @since 2025-06-29
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class SysRolePermissionDto implements Serializable {
+public class SysUserRoleDto implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    private Integer userId;
+
+    private Integer roleId;
+
     /**
-     * 角色id列表
+     * 用户id
+     */
+    private List<Integer> userIds;
+
+    /**
+     * 角色id
      */
     private List<Integer> roleIds;
-
-    /**
-     * 权限id
-     */
-    private Integer permissionId;
-
-    /**
-     * 权限id列表(批量授权)
-     */
-    private List<Integer> permissionIds;
 
 
 }

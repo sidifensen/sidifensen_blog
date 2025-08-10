@@ -41,17 +41,17 @@ create table sys_user_role
 
 create table sys_menu
 (
-    id             int primary key auto_increment comment '菜单id',
-    parent_id      int                  default 0 comment '父级id',
-    name           varchar(10) not null comment '菜单名称',
-    sort           int                  default 0 comment '排序',
-    path           varchar(100) comment '路由路径',
-    component      varchar(100) comment '组件路径',
-    icon           varchar(30) comment '图标',
-    status         tinyint     not null default 0 comment '状态 0-正常 1-禁用',
-    create_time    datetime    not null comment '创建时间',
-    update_time    datetime    not null comment '更新时间',
-    is_deleted     tinyint     not null default 0 comment '是否删除 0-未删除 1-已删除'
+    id          int primary key auto_increment comment '菜单id',
+    parent_id   int                  default 0 comment '父级id',
+    name        varchar(10) not null comment '菜单名称',
+    sort        int                  default 0 comment '排序',
+    path        varchar(100) comment '路由路径',
+    component   varchar(100) comment '组件路径',
+    icon        varchar(30) comment '图标',
+    status      tinyint     not null default 0 comment '状态 0-正常 1-禁用',
+    create_time datetime    not null comment '创建时间',
+    update_time datetime    not null comment '更新时间',
+    is_deleted  tinyint     not null default 0 comment '是否删除 0-未删除 1-已删除'
 );
 
 create table sys_role_menu
@@ -61,19 +61,21 @@ create table sys_role_menu
     menu_id int not null comment '菜单id'
 );
 
-create table sys_permission (
-    id int primary key auto_increment comment '权限id',
+create table sys_permission
+(
+    id          int primary key auto_increment comment '权限id',
     description varchar(20) not null comment '权限描述',
-    permission varchar(30) not null comment '权限',
-    menu_id varchar(200) not null comment '菜单id',
-    create_time datetime not null comment '创建时间',
-    update_time datetime not null comment '更新时间',
-    is_deleted tinyint not null default 0 comment '是否删除 0-未删除 1-已删除'
+    permission  varchar(50) not null comment '权限',
+    menu_id     int         not null comment '菜单id',
+    create_time datetime    not null comment '创建时间',
+    update_time datetime    not null comment '更新时间',
+    is_deleted  tinyint     not null default 0 comment '是否删除 0-未删除 1-已删除'
 );
 
-create table sys_role_permission (
-    id int primary key auto_increment comment '主键id',
-    role_id int not null comment '角色id',
+create table sys_role_permission
+(
+    id            int primary key auto_increment comment '主键id',
+    role_id       int not null comment '角色id',
     permission_id int not null comment '权限id'
 );
 
@@ -96,13 +98,13 @@ create table sys_role_permission (
 create table photo
 (
     id             int primary key auto_increment comment '图片id',
-    user_id        bigint            not null comment '用户id',
-    url            varchar(400)      not null comment '图片url',
-    album_id       bigint            not null comment '相册id',
-    examine_status tinyint default 0 not null comment '审核状态 0-待审核 1-审核通过 2-审核未通过',
-    create_time    datetime          not null comment '创建时间',
-    update_time    datetime          not null comment '更新时间',
-    is_deleted     tinyint           not null default 0 comment '是否删除 0-未删除 1-已删除',
+    user_id        bigint       not null comment '用户id',
+    url            varchar(400) not null comment '图片url',
+    album_id       bigint       not null comment '相册id',
+    examine_status tinyint               default 0 not null comment '审核状态 0-待审核 1-审核通过 2-审核未通过',
+    create_time    datetime     not null comment '创建时间',
+    update_time    datetime     not null comment '更新时间',
+    is_deleted     tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
     index idx_examine_status (examine_status),
     index idx_photo_user_album_status_create_time (user_id, album_id, examine_status, create_time)
 );

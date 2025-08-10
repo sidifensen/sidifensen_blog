@@ -45,7 +45,7 @@ public class SysPermissionController {
     @PostMapping("add")
     public Result add(@RequestBody SysPermissionDto sysPermissionDto) {
         sysPermissionService.add(sysPermissionDto);
-        return Result.successMsg("添加成功");
+        return Result.success();
     }
 
     /**
@@ -58,7 +58,7 @@ public class SysPermissionController {
     @PutMapping("update")
     public Result update(@RequestBody SysPermissionDto sysPermissionDto) {
         sysPermissionService.update(sysPermissionDto);
-        return Result.successMsg("修改成功");
+        return Result.success();
     }
 
     /**
@@ -71,7 +71,7 @@ public class SysPermissionController {
     @DeleteMapping("{permissionId}")
     public Result delete(@PathVariable @NotEmpty Integer permissionId) {
         sysPermissionService.delete(permissionId);
-        return Result.successMsg("删除成功");
+        return Result.success();
     }
 
     /**
@@ -81,7 +81,7 @@ public class SysPermissionController {
      * @return
      */
     @PreAuthorize("hasAuthority('system:permission:search')")
-    @GetMapping("search")
+    @PostMapping("search")
     public Result search(@RequestBody SysPermissionDto sysPermissionDto) {
         List<SysPermissionVo> sysPermissionVos = sysPermissionService.search(sysPermissionDto);
         return Result.success(sysPermissionVos);

@@ -20,4 +20,6 @@ public interface ISysRolePermissionService extends IService<SysRolePermission> {
     void add(SysRolePermissionDto sysRolePermissionDto);
 
     List<SysRoleVo> getRoles(Integer permissionId);
+
+    void addBatch(SysRolePermissionDto sysRolePermissionDto);
 }

@@ -5,6 +5,8 @@ import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.vo.SysUserVo;
 
+import java.util.List;
+
 /**
  * <p>
  *  服务类
@@ -62,4 +64,6 @@ public interface ISysUserService extends IService<SysUser> {
     // 管理端获取用户信息
     SysUserVo getAdminInfo();
 
+    // 管理端获取用户列表
+    List<SysUserVo> listUser();
 }

@@ -250,5 +250,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return sysUserVo;
     }
 
+    // 管理端获取用户列表
+    @Override
+    public List<SysUserVo> listUser() {
+        List<SysUser> sysUsers = sysUserMapper.selectList(null);
+        List<SysUserVo> sysUserVos = BeanUtil.copyToList(sysUsers, SysUserVo.class);
+        return sysUserVos;
+    }
+
 
 }

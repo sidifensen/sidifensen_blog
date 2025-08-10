@@ -45,7 +45,7 @@ public class PhotoController {
     @DeleteMapping("/batch")
     public Result<String> batchDelete(@RequestBody List<Integer> photoIds) throws Exception {
         photoService.batchDelete(photoIds);
-        return Result.successMsg("批量删除成功");
+        return Result.success();
     }
 
 }

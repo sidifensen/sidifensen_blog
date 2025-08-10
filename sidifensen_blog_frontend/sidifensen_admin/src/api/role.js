@@ -1,7 +1,7 @@
 import request from "@/utils/Request";
 
 // 获取角色
-export function getRoles() {
+export function getRoleList() {
   return request({
     url: "/role/list",
     method: "get",

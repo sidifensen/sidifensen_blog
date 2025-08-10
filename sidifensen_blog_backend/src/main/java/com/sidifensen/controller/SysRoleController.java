@@ -46,7 +46,7 @@ public class SysRoleController {
     @PostMapping("add")
     public Result add(@RequestBody @Valid SysRoleDto sysRoleDto) {
         sysRoleService.add(sysRoleDto);
-        return Result.successMsg("添加成功");
+        return Result.success();
     }
 
     /**
@@ -59,7 +59,7 @@ public class SysRoleController {
     @PutMapping("update")
     public Result update(@RequestBody @Valid SysRoleDto sysRoleDto) {
         sysRoleService.update(sysRoleDto);
-        return Result.successMsg("修改成功");
+        return Result.success();
     }
 
     /**
@@ -72,7 +72,7 @@ public class SysRoleController {
     @DeleteMapping("{roleId}")
     public Result delete(@PathVariable @NotEmpty Integer roleId) {
         sysRoleService.delete(roleId);
-        return Result.successMsg("删除成功");
+        return Result.success();
     }
 
     /**

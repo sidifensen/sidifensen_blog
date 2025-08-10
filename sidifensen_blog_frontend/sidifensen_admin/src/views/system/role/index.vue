@@ -11,7 +11,7 @@
 
       <!-- 角色表格 -->
       <el-table v-loading="loading" :data="paginatedRoleList" class="table" style="height: 100%">
-        <el-table-column fixed prop="id" label="角色id" width="60" />
+        <el-table-column fixed prop="id" label="角色id" width="70" />
         <el-table-column prop="role" label="角色标识" />
         <el-table-column prop="name" label="角色名称" />
         <el-table-column prop="description" label="角色描述" />
@@ -33,11 +33,12 @@
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" sortable width="120" />
         <el-table-column prop="updateTime" label="更新时间" sortable width="120" />
-        <el-table-column label="操作" width="170">
+        <el-table-column label="操作" width="260">
           <template #default="{ row }">
             <div class="table-actions">
               <el-button type="primary" size="small" @click="handleEditRole(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
               <el-button type="danger" size="small" @click="handleDeleteRole(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
+              <el-button size="small" type="warning" @click="handleAuthorizeUser(row)" :icon="User" class="user-button"> 分配用户 </el-button>
             </div>
           </template>
         </el-table-column>
@@ -69,14 +70,38 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- 分配用户弹窗对话框 -->
+    <el-dialog v-model="authorizeDialogVisible" title="角色分配用户" :before-close="handleAuthorizeDialogClose" width="500px">
+      <div class="authorize-dialog-content">
+        <p class="role-name">当前角色: {{ currentRole?.name }}</p>
+        <el-form ref="authorizeFormRef" class="authorize-form">
+          <el-form-item label="选择用户">
+            <el-checkbox-group v-model="selectedUser" class="user-checkbox-group">
+              <el-checkbox v-for="user in allUser" :key="user.id" :label="user.id">{{ user.username }}</el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+        </el-form>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="handleAuthorizeDialogClose">取消</el-button>
+          <el-button type="primary" @click="handleAuthorizeSubmit">确认分配</el-button>
+        </span>
+      </template>
+    </el-dialog>
+
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Search, Plus, Edit, Delete } from "@element-plus/icons-vue";
-import { getRoles, addRole, updateRole, deleteRole, queryRole } from "@/api/role";
+import { Search, Plus, Edit, Delete, User } from "@element-plus/icons-vue";
+import { getRoleList, addRole, updateRole, deleteRole, queryRole } from "@/api/role";
+import { addUser, getUsersByRole } from "@/api/user-role";
+import { getUserList } from "@/api/user";
+
 
 // 搜索查询
 const searchQuery = ref("");
@@ -86,10 +111,6 @@ const roleList = ref([]);
 const paginatedRoleList = ref([]);
 // 加载状态
 const loading = ref(false);
-// 当前页码
-const currentPage = ref(1);
-// 每页条数
-const pageSize = ref(10);
 // 总条数
 const total = ref(0);
 // 对话框可见性
@@ -115,10 +136,10 @@ const rules = {
 };
 
 // 获取角色列表
-const getRoleList = async () => {
+const getRoles = async () => {
   loading.value = true;
   try {
-    const res = await getRoles();
+    const res = await getRoleList();
     roleList.value = res.data.data;
     total.value = roleList.value.length;
     // 对角色列表进行排序
@@ -134,8 +155,13 @@ const getRoleList = async () => {
 
 // 初始化
 onMounted(() => {
-  getRoleList();
+  getRoles();
 });
+
+// 当前页码
+const currentPage = ref(1);
+// 每页条数
+const pageSize = ref(10);
 
 // 更新分页数据
 const updatePaginatedRoleList = () => {
@@ -144,10 +170,22 @@ const updatePaginatedRoleList = () => {
   paginatedRoleList.value = roleList.value.slice(startIndex, endIndex);
 };
 
+// 处理分页大小变化
+const handleSizeChange = (size) => {
+  pageSize.value = size;
+  updatePaginatedRoleList();
+};
+
+// 处理当前页码变化
+const handleCurrentChange = (current) => {
+  currentPage.value = current;
+  updatePaginatedRoleList();
+};
+
 // 处理搜索
 const handleSearch = async () => {
   if (searchQuery.value.trim() === "") {
-    getRoleList();
+    getRoles();
     return;
   }
 
@@ -210,7 +248,7 @@ const handleDeleteRole = (id) => {
       try {
         await deleteRole(id);
         ElMessage.success("删除成功");
-        getRoleList();
+        getRoles();
       } catch (error) {
         ElMessage.error("删除失败");
       } finally {
@@ -265,7 +303,7 @@ const handleSubmit = () => {
         ElMessage.success("新增角色成功");
       }
       dialogVisible.value = false;
-      getRoleList();
+      getRoles();
     } catch (error) {
       ElMessage.error(roleForm.value.id ? "编辑角色失败" : "新增角色失败");
       handleDialogClose();
@@ -279,17 +317,61 @@ const handleDialogClose = () => {
   dialogVisible.value = false;
 };
 
-// 处理分页大小变化
-const handleSizeChange = (size) => {
-  pageSize.value = size;
-  updatePaginatedRoleList();
+// 授权角色弹窗
+const authorizeDialogVisible = ref(false);
+// 当前角色
+const currentRole = ref(null);
+// 选择的用户
+const selectedUser = ref([]);
+// 所有用户
+const allUser = ref([]);
+
+// 处理授权角色
+const handleAuthorizeUser = async (row) => {
+  currentRole.value = row;
+  authorizeDialogVisible.value = true;
+  // 清空已选角色和禁用角色数组
+  selectedUser.value = [];
+
+  // 获取角色列表
+  const res = await getUserList();
+  allUser.value = res.data.data;
+
+  // 获取已分配当前角色的用户
+  const res1 = await getUsersByRole(row.id);
+  // 把数组里的id取出来
+  res1.data.data.forEach((item) => {
+    // 默认选中已经有角色的用户
+    selectedUser.value.push(item.id);
+  });
 };
 
-// 处理当前页码变化
-const handleCurrentChange = (current) => {
-  currentPage.value = current;
-  updatePaginatedRoleList();
+// 处理授权提交
+const handleAuthorizeSubmit = async () => {
+  console.log(selectedUser.value);
+  try {
+    await addUser({
+      roleId: currentRole.value.id,
+      userIds: selectedUser.value,
+    });
+    ElMessage.success(`已为角色 ${currentRole.value.name} 分配用户`);
+  } catch (error) {
+    ElMessage.error(`为角色 ${currentRole.value.name} 分配用户失败`);
+    console.error("分配用户失败:", error);
+  } finally {
+    authorizeDialogVisible.value = false;
+    // 重置选择的用户和禁用的用户
+    selectedUser.value = [];
+  }
 };
+
+// 处理授权对话框关闭
+const handleAuthorizeDialogClose = () => {
+  authorizeDialogVisible.value = false;
+  selectedUser.value = [];
+};
+
+
 </script>
 
 <style lang="scss" scoped>
@@ -444,6 +526,21 @@ const handleCurrentChange = (current) => {
             box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
           }
         }
+        .user-button {
+          margin-left: 0;
+          background-color: #fef3c7;
+          color: #d97706;
+          border-color: #fef3c7;
+          border-radius: 6px;
+          transition: all 0.3s ease;
+
+          &:hover {
+            background-color: #fde68a;
+            border-color: #fde68a;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
+          }
+        }
       }
     }
 
@@ -487,6 +584,35 @@ const handleCurrentChange = (current) => {
       &:focus-within {
         box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
         border-color: #42b983;
+      }
+    }
+  }
+
+    // 授权角色对话框样式
+  .authorize-dialog-content {
+    padding: 10px;
+
+    .role-name {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #1e293b;
+    }
+
+    .authorize-form {
+      :deep(.el-form-item) {
+        margin-bottom: 20px;
+      }
+
+      .user-checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+
+        :deep(.el-checkbox) {
+          margin-right: 16px;
+          margin-bottom: 8px;
+        }
       }
     }
   }

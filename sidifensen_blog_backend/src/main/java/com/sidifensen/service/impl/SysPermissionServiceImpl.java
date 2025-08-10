@@ -46,6 +46,7 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
             // 设置菜单名称
             sysPermissionVos.stream().forEach(sysPermission -> {
                 sysPermission.setMenuName(sysMenus.stream().filter(sysMenu -> sysMenu.getId().equals(sysPermission.getMenuId())).findFirst().get().getName());
+                sysPermission.setIcon(sysMenus.stream().filter(sysMenu -> sysMenu.getId().equals(sysPermission.getMenuId())).findFirst().get().getIcon());
             });
         }
         return sysPermissionVos;
@@ -76,9 +77,11 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
     @Override
     public List<SysPermissionVo> search(SysPermissionDto sysPermissionDto) {
         LambdaQueryWrapper<SysPermission> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.like(ObjectUtil.isNotEmpty(sysPermissionDto.getDescription()), SysPermission::getDescription, sysPermissionDto.getDescription())
+        lambdaQueryWrapper
+                .like(ObjectUtil.isNotEmpty(sysPermissionDto.getDescription()), SysPermission::getDescription, sysPermissionDto.getDescription())
                 .like(ObjectUtil.isNotEmpty(sysPermissionDto.getPermission()), SysPermission::getPermission, sysPermissionDto.getPermission())
                 .eq(ObjectUtil.isNotEmpty(sysPermissionDto.getMenuId()), SysPermission::getMenuId, sysPermissionDto.getMenuId());
+
         List<SysPermission> sysPermissions = this.list(lambdaQueryWrapper);
         List<SysPermissionVo> sysPermissionVos = BeanUtil.copyToList(sysPermissions, SysPermissionVo.class);
 
@@ -87,6 +90,7 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
             // 设置菜单名称
             sysPermissionVos.stream().forEach(sysPermission -> {
                 sysPermission.setMenuName(sysMenus.stream().filter(sysMenu -> sysMenu.getId().equals(sysPermission.getMenuId())).findFirst().get().getName());
+                sysPermission.setIcon(sysMenus.stream().filter(sysMenu -> sysMenu.getId().equals(sysPermission.getMenuId())).findFirst().get().getIcon());
             });
         }
         return sysPermissionVos;

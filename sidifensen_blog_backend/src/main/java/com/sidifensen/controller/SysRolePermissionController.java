@@ -32,7 +32,7 @@ public class SysRolePermissionController {
     @PostMapping("add")
     public Result add(@RequestBody SysRolePermissionDto sysRolePermissionDto) {
         sysRolePermissionService.add(sysRolePermissionDto);
-        return Result.successMsg("添加成功");
+        return Result.success();
     }
 
     /**
@@ -46,6 +46,20 @@ public class SysRolePermissionController {
     public Result getRoles(@PathVariable Integer permissionId) {
         List<SysRoleVo> sysRoleVos =  sysRolePermissionService.getRoles(permissionId);
         return Result.success(sysRoleVos);
+    }
+
+
+    /**
+     * 将权限批量授权给角色
+     *
+     * @param sysRolePermissionDto 角色权限信息
+     * @return
+     */
+    @PreAuthorize("hasAuthority('system:role:permission:addBatch')")
+    @PostMapping("addBatch")
+    public Result addBatch(@RequestBody SysRolePermissionDto sysRolePermissionDto) {
+        sysRolePermissionService.addBatch(sysRolePermissionDto);
+        return Result.success();
     }
 
 }

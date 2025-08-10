@@ -8,9 +8,11 @@ import com.sidifensen.service.ISysUserService;
 import com.wf.captcha.ArithmeticCaptcha;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -137,9 +139,20 @@ public class SysUserController {
      * @return
      */
     @GetMapping("/admin/info")
-    private Result adminInfo() {
+    public Result adminInfo() {
         SysUserVo sysUserVo = sysUserService.getAdminInfo();
         return Result.success(sysUserVo);
+    }
+
+    /**
+     * 管理端获取用户列表
+     * @return
+     */
+    @PreAuthorize("hasAuthority('system:user:list')")
+    @GetMapping("/admin/list")
+    public Result list() {
+        List<SysUserVo> sysUserVos = sysUserService.listUser();
+        return Result.success(sysUserVos);
     }
 
 }

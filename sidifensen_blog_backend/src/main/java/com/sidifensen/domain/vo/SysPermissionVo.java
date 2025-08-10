@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * <p>
@@ -40,22 +40,27 @@ public class SysPermissionVo implements Serializable {
     /**
      * 菜单id
      */
-    private String menuId;
+    private Integer menuId;
 
     /**
      * 创建时间
      */
-    private LocalDateTime createTime;
+    private Date createTime;
 
     /**
      * 更新时间
      */
-    private LocalDateTime updateTime;
+    private Date updateTime;
 
     /**
      * 对应的菜单名称
      */
     private String menuName;
+
+    /**
+     * 对应的菜单图标
+     */
+    private String icon;
 
 
 }

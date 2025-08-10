@@ -55,7 +55,7 @@ public class SysMenuController {
     @PostMapping("add")
     public Result add(@RequestBody @Valid SysMenuDto sysMenuDto) {
         sysMenuService.add(sysMenuDto);
-        return Result.successMsg("添加成功");
+        return Result.success();
     }
 
     /**
@@ -67,7 +67,7 @@ public class SysMenuController {
     @PutMapping("update")
     public Result update(@RequestBody @Valid SysMenuDto sysMenuDto) {
         sysMenuService.update(sysMenuDto);
-        return Result.successMsg("修改成功");
+        return Result.success();
     }
 
     /**
@@ -79,7 +79,7 @@ public class SysMenuController {
     @DeleteMapping("{menuId}")
     public Result delete(@PathVariable @NotEmpty Integer menuId) {
         sysMenuService.delete(menuId);
-        return Result.successMsg("删除成功");
+        return Result.success();
     }
 
     /**

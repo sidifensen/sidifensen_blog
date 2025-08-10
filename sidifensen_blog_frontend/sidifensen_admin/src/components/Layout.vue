@@ -304,6 +304,9 @@ const handleLogout = () => {
         flex-direction: column;
         align-items: flex-start; // 菜单项水平左对齐
       }
+      :deep(.el-sub-menu){
+        width: 100%;
+      }
     }
 
     // 侧边栏默认收起

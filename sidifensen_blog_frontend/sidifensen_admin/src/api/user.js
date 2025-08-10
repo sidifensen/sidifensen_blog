@@ -16,3 +16,11 @@ export function info() {
     method: "get",
   });
 }
+
+// 获取用户列表
+export function getUserList() {
+  return request({
+    url: "/user/admin/list",
+    method: "get",
+  });
+}
