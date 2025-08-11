@@ -4,7 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.entity.*;
-import com.sidifensen.domain.enums.MenuEnum;
+import com.sidifensen.domain.enums.StatusEnum;
 import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
 import com.sidifensen.domain.enums.RoleEnum;
 import com.sidifensen.exception.BlogException;
@@ -62,7 +62,8 @@ public class SysUserDetailsService implements UserDetailsService {
 
         sysUser.setLoginType(RegisterOrLoginTypeEnum.EMAIL.getRegisterType());
         sysUser.setLoginTime(new Date());
-        sysUser.setLoginIp(ipUtils.getIpAddr());
+        sysUser.setLoginIp(ipUtils.getIp());
+        sysUser.setLoginAddress(ipUtils.getAddress());
         sysUserMapper.updateById(sysUser);
 
         return handleLogin(sysUser);
@@ -107,13 +108,14 @@ public class SysUserDetailsService implements UserDetailsService {
         }
 
         if (sysRoles.stream().anyMatch(r -> r.getRole().equals("admin") || r.getRole().equals("viewer"))) {
-            return setAdminLoginUser(sysUser);
+            LoginUser loginUser = new LoginUser(setUserDetail(sysUser));
+            return loginUser;
         }
         return new LoginUser(sysUser);
     }
 
     // 设置管理端登录用户的角色,菜单,权限信息
-    public LoginUser setAdminLoginUser(SysUser sysUser) {
+    public SysUser setUserDetail(SysUser sysUser) {
         // 查询用户对应的角色
         LambdaQueryWrapper<SysUserRole> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysUserRole::getUserId, sysUser.getId());
@@ -145,7 +147,7 @@ public class SysUserDetailsService implements UserDetailsService {
 
         LambdaQueryWrapper<SysMenu> queryWrapper3 = new LambdaQueryWrapper<>();
         queryWrapper3.in(SysMenu::getId, sysRoleMenus.stream().map(SysRoleMenu::getMenuId).collect(Collectors.toList()));
-        queryWrapper3.eq(SysMenu::getStatus, MenuEnum.MENU_STATUS_NORMAL.getStatus());
+        queryWrapper3.eq(SysMenu::getStatus, StatusEnum.NORMAL.getStatus());
         List<SysMenu> sysMenus = sysMenuMapper.selectList(queryWrapper3);
 
         if (ObjectUtil.isEmpty(sysMenus)) {
@@ -176,74 +178,7 @@ public class SysUserDetailsService implements UserDetailsService {
         // 将权限信息加入到用户信息中
         sysUser.setSysPermissions(sysPermissions);
 
-
-        // 封装登录用户信息
-        LoginUser loginUser = new LoginUser(sysUser);
-        return loginUser;
+        return sysUser;
     }
-
-    public List<SysRole> getRole(SysUser sysUser){
-        // 查询用户对应的角色
-        LambdaQueryWrapper<SysUserRole> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(SysUserRole::getUserId, sysUser.getId());
-        List<SysUserRole> sysUserRoles = sysUserRoleMapper.selectList(queryWrapper);
-
-        if (ObjectUtil.isEmpty(sysUserRoles)) {
-            throw new BlogException(BlogConstants.NotFoundRole);
-        }
-
-        LambdaQueryWrapper<SysRole> queryWrapper1 = new LambdaQueryWrapper<>();
-        queryWrapper1.in(SysRole::getId, sysUserRoles.stream().map(SysUserRole::getRoleId).collect(Collectors.toList()));
-        queryWrapper1.eq(SysRole::getStatus, RoleEnum.ROLE_STATUS_NORMAL.getStatus());
-        List<SysRole> sysRoles = sysRoleMapper.selectList(queryWrapper1);
-
-        if (ObjectUtil.isEmpty(sysRoles)) {
-            throw new BlogException(BlogConstants.NotFoundRole);
-        }
-        return sysRoles;
-    }
-
-    public List<SysMenu> getMenu(SysUser sysUser){
-        // 查询用户对应的角色
-        LambdaQueryWrapper<SysUserRole> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(SysUserRole::getUserId, sysUser.getId());
-        List<SysUserRole> sysUserRoles = sysUserRoleMapper.selectList(queryWrapper);
-
-        if (ObjectUtil.isEmpty(sysUserRoles)) {
-            throw new BlogException(BlogConstants.NotFoundRole);
-        }
-
-        LambdaQueryWrapper<SysRole> queryWrapper1 = new LambdaQueryWrapper<>();
-        queryWrapper1.in(SysRole::getId, sysUserRoles.stream().map(SysUserRole::getRoleId).collect(Collectors.toList()));
-        queryWrapper1.eq(SysRole::getStatus, RoleEnum.ROLE_STATUS_NORMAL.getStatus());
-        List<SysRole> sysRoles = sysRoleMapper.selectList(queryWrapper1);
-
-        if (ObjectUtil.isEmpty(sysRoles)) {
-            throw new BlogException(BlogConstants.NotFoundRole);
-        }
-
-        List<Integer> roleIds = sysRoles.stream().map(SysRole::getId).collect(Collectors.toList());
-
-        // 查询角色对应的菜单
-        LambdaQueryWrapper<SysRoleMenu> queryWrapper2 = new LambdaQueryWrapper<>();
-        queryWrapper2.in(SysRoleMenu::getRoleId, roleIds);
-        List<SysRoleMenu> sysRoleMenus = sysRoleMenuMapper.selectList(queryWrapper2);
-
-        if (ObjectUtil.isEmpty(sysRoleMenus)) {
-            throw new BlogException(BlogConstants.NotFoundMenu);
-        }
-
-        LambdaQueryWrapper<SysMenu> queryWrapper3 = new LambdaQueryWrapper<>();
-        queryWrapper3.in(SysMenu::getId, sysRoleMenus.stream().map(SysRoleMenu::getMenuId).collect(Collectors.toList()));
-        queryWrapper3.eq(SysMenu::getStatus, MenuEnum.MENU_STATUS_NORMAL.getStatus());
-        List<SysMenu> sysMenus = sysMenuMapper.selectList(queryWrapper3);
-
-        if (ObjectUtil.isEmpty(sysMenus)) {
-            throw new BlogException(BlogConstants.NotFoundMenu);
-        }
-
-        return sysMenus;
-    }
-
 
 }

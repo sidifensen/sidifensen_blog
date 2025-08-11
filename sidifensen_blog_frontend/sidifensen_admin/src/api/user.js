@@ -24,3 +24,38 @@ export function getUserList() {
     method: "get",
   });
 }
+
+// 修改用户
+export function updateUser(data) {
+  return request({
+    url: "/user/admin/update",
+    method: "post",
+    data: data,
+  });
+}
+
+// 删除用户
+export function deleteUser(userId) {
+  return request({
+    url: `/user/admin/${userId}`,
+    method: "delete",
+  });
+}
+
+// 搜索用户
+export function queryUser(data){
+  return request({
+    url: "/user/admin/search",
+    method: "post",
+    data: data,
+  });
+}
+
+// 获取用户详情
+export function getUserDetail(userId) {
+  return request({
+    url: `/user/admin/${userId}`,
+    method: "get",
+  });
+}
+

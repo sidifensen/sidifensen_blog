@@ -1,4 +1,5 @@
 <template>
+<el-watermark content="sidifensen_blog">
   <el-container class="layout-container">
     <!-- 侧边栏 -->
     <el-aside class="sidebar">
@@ -15,8 +16,20 @@
               <span>{{ menu.name }}</span>
             </template>
             <template v-for="child in menu.children" :key="child.id">
-              <el-menu-item :index="child.path">
-                <el-icon :size="16"><component :is="child.icon || 'Menu'" /></el-icon>
+              <el-sub-menu v-if="child.children && child.children.length > 0" :index="child.path">
+                <template #title>
+                  <el-icon :size="18"><component :is="child.icon || 'Menu'" /></el-icon>
+                  <span>{{ child.name }}</span>
+                </template>
+                <template v-for="grandchild in child.children" :key="grandchild.id">
+                  <el-menu-item :index="grandchild.path">
+                    <el-icon :size="16"><component :is="grandchild.icon || 'Menu'" /></el-icon>
+                    <span>{{ grandchild.name }}</span>
+                  </el-menu-item>
+                </template>
+              </el-sub-menu>
+              <el-menu-item v-else :index="child.path">
+                <el-icon :size="18"><component :is="child.icon || 'Menu'" /></el-icon>
                 <span>{{ child.name }}</span>
               </el-menu-item>
             </template>
@@ -40,7 +53,19 @@
                 <span>{{ menu.name }}</span>
               </template>
               <template v-for="child in menu.children" :key="child.id">
-                <el-menu-item :index="child.path">
+                <el-sub-menu v-if="child.children && child.children.length > 0" :index="child.path">
+                  <template #title>
+                    <el-icon :size="16"><component :is="child.icon || 'Menu'" /></el-icon>
+                    <span>{{ child.name }}</span>
+                  </template>
+                  <template v-for="grandchild in child.children" :key="grandchild.id">
+                    <el-menu-item :index="grandchild.path">
+                      <el-icon :size="16"><component :is="grandchild.icon || 'Menu'" /></el-icon>
+                      <span>{{ grandchild.name }}</span>
+                    </el-menu-item>
+                  </template>
+                </el-sub-menu>
+                <el-menu-item v-else :index="child.path">
                   <el-icon :size="16"><component :is="child.icon || 'Menu'" /></el-icon>
                   <span>{{ child.name }}</span>
                 </el-menu-item>
@@ -78,11 +103,12 @@
         </div>
       </el-header>
       <!-- 内容区域 -->
-      <el-main class="content">
-        <RouterView />
-      </el-main>
+        <el-main class="content">
+          <RouterView />
+        </el-main>
+      </el-container>
     </el-container>
-  </el-container>
+  </el-watermark>
 </template>
 
 <script setup>
@@ -219,6 +245,14 @@ const handleLogout = () => {
         .el-menu-item {
           padding-left: 40px !important;
         }
+
+        // 孙子菜单样式
+        .el-sub-menu {
+          // 孙子菜单下的菜单项额外缩进
+          .el-menu-item {
+            padding-left: 60px !important;
+          }
+        }
       }
     }
   }
@@ -303,9 +337,24 @@ const handleLogout = () => {
         display: flex;
         flex-direction: column;
         align-items: flex-start; // 菜单项水平左对齐
-      }
-      :deep(.el-sub-menu){
-        width: 100%;
+
+        // 移动端子菜单样式
+        .el-sub-menu {
+          width: 100%;
+
+          // 移动端子菜单下的菜单项缩进
+          .el-menu-item {
+            padding-left: 40px !important;
+          }
+
+          // 移动端孙子菜单样式
+          .el-sub-menu {
+            // 移动端孙子菜单下的菜单项额外缩进
+            .el-menu-item {
+              padding-left: 60px !important;
+            }
+          }
+        }
       }
     }
 

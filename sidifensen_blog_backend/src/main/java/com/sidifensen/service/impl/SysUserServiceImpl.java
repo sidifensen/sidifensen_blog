@@ -8,13 +8,17 @@ import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.RabbitMQConstants;
 import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.entity.*;
+import com.sidifensen.domain.enums.StatusEnum;
+import com.sidifensen.domain.vo.SysUserDetailVo;
 import com.sidifensen.domain.vo.SysUserVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.AlbumMapper;
 import com.sidifensen.mapper.PhotoMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.redis.RedisComponent;
+import com.sidifensen.security.SysUserDetailsService;
 import com.sidifensen.service.ISysUserService;
+import com.sidifensen.utils.IpUtils;
 import com.sidifensen.utils.JwtUtils;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
@@ -68,6 +72,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Resource
     private PhotoMapper photoMapper;
 
+    @Resource
+    private SysUserDetailsService sysUserDetailsService;
+
+    @Resource
+    private IpUtils ipUtils;
+
     @Override
     public String login(LoginDto loginDto) {
         try {
@@ -115,6 +125,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         user.setNickname(registerDto.getUsername());
         user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
         user.setEmail(registerDto.getEmail());
+        user.setRegisterIp(ipUtils.getIp());
+        user.setRegisterAddress(ipUtils.getAddress());
+        user.setStatus(StatusEnum.NORMAL.getStatus());
 
         int insert = sysUserMapper.insert(user);
         if (insert == 1) {
@@ -189,29 +202,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return sysUserVo;
     }
 
-
-    // 删除用户
-    @Override
-    public void deleteUser(Long id) {
-        sysUserMapper.deleteById(id);
-        // TODO 异步删除用户相关信息
-        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-        try {
-            executor.submit(() -> {
-                // 删除用户相册
-                albumMapper.delete(new LambdaQueryWrapper<Album>().eq(Album::getUserId, id));
-                // 删除用户照片
-                photoMapper.delete(new LambdaQueryWrapper<Photo>().eq(Photo::getUserId, id));
-            });
-        } catch (Exception e) {
-            log.error("异步删除用户相关数据失败，用户ID: {}", id, e);
-        } finally {
-            executor.shutdown();
-        }
-
-    }
-
-
     // 管理员登录
     @Override
     public String adminLogin(AdminLoginDto adminLoginDto) {
@@ -256,6 +246,57 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         List<SysUser> sysUsers = sysUserMapper.selectList(null);
         List<SysUserVo> sysUserVos = BeanUtil.copyToList(sysUsers, SysUserVo.class);
         return sysUserVos;
+    }
+
+    // 管理端更新用户信息
+    @Override
+    public void updateUser(SysUserDto sysUserDto) {
+        SysUser sysUser = BeanUtil.copyProperties(sysUserDto, SysUser.class);
+        sysUserMapper.updateById(sysUser);
+    }
+
+    // 管理端删除用户
+    @Override
+    public void deleteUser(Integer id) {
+        sysUserMapper.deleteById(id);
+        // TODO 异步删除用户相关信息
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        try {
+            executor.submit(() -> {
+                // 删除用户相册
+                albumMapper.delete(new LambdaQueryWrapper<Album>().eq(Album::getUserId, id));
+                // 删除用户照片
+                photoMapper.delete(new LambdaQueryWrapper<Photo>().eq(Photo::getUserId, id));
+            });
+        } catch (Exception e) {
+            log.error("异步删除用户相关数据失败，用户ID: {}", id, e);
+        } finally {
+            executor.shutdown();
+        }
+
+    }
+
+    // 管理端搜索角色
+    @Override
+    public List<SysUserVo> searchUser(SysUserSearchDTO sysUserSearchDTO) {
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(ObjectUtil.isNotEmpty(sysUserSearchDTO.getUsername()),SysUser::getUsername, sysUserSearchDTO.getUsername());
+        queryWrapper.like(ObjectUtil.isNotEmpty(sysUserSearchDTO.getEmail()),SysUser::getEmail, sysUserSearchDTO.getEmail());
+        queryWrapper.eq(ObjectUtil.isNotEmpty(sysUserSearchDTO.getStatus()),SysUser::getStatus, sysUserSearchDTO.getStatus());
+        queryWrapper.ge(ObjectUtil.isNotEmpty(sysUserSearchDTO.getCreateTimeStart()),SysUser::getCreateTime, sysUserSearchDTO.getCreateTimeStart());
+        queryWrapper.le(ObjectUtil.isNotEmpty(sysUserSearchDTO.getCreateTimeEnd()),SysUser::getCreateTime, sysUserSearchDTO.getCreateTimeEnd());
+
+        List<SysUser> sysUsers = sysUserMapper.selectList(queryWrapper);
+        return BeanUtil.copyToList(sysUsers, SysUserVo.class);
+    }
+
+    // 管理端获取用户详情
+    @Override
+    public SysUserDetailVo getUserInfo(Integer userId) {
+        SysUser sysUser = sysUserMapper.selectById(userId);
+        SysUser sysUserDetail = sysUserDetailsService.setUserDetail(sysUser);
+        SysUserDetailVo sysUserDetailVo = BeanUtil.copyProperties(sysUserDetail, SysUserDetailVo.class);
+        return sysUserDetailVo;
     }
 
 

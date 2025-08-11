@@ -1,22 +1,24 @@
 create table sys_user
 (
-    id            int primary key auto_increment comment '用户id',
-    username      varchar(10)  not null comment '用户名',
-    password      varchar(100) not null comment '密码',
-    nickname      varchar(10)  not null comment '昵称',
-    email         varchar(50)  not null comment '邮箱',
-    sex           tinyint               default 0 comment '性别 0-男 1-女',
-    introduction  varchar(50) comment '简介',
-    avatar        varchar(255) comment '头像',
-    status        tinyint      not null default 0 comment '状态 0-正常 1-禁用',
-    register_type tinyint               default 0 comment '注册方式 0-用户名/邮箱注册 1-第三方注册',
-    register_ip   varchar(100) comment '注册ip',
-    login_type    tinyint               default 0 comment '登录方式 0-用户名/邮箱登录 1-第三方登录',
-    login_ip      varchar(100) comment '登录ip',
-    login_time    datetime     not null comment '登录时间',
-    create_time   datetime     not null comment '创建时间',
-    update_time   datetime     not null comment '更新时间',
-    is_deleted    tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除'
+    id               int primary key auto_increment comment '用户id',
+    username         varchar(10)  not null comment '用户名',
+    password         varchar(100) not null comment '密码',
+    nickname         varchar(10)  not null comment '昵称',
+    email            varchar(50)  not null comment '邮箱',
+    sex              tinyint               default 0 comment '性别 0-男 1-女',
+    introduction     varchar(50) comment '简介',
+    avatar           varchar(255) comment '头像',
+    status           tinyint      not null default 0 comment '状态 0-正常 1-禁用',
+    register_type    tinyint               default 0 comment '注册方式 0-用户名/邮箱 1-gitee 2-github 3-QQ',
+    register_ip      varchar(100) comment '注册ip',
+    register_address varchar(100) comment '注册地址',
+    login_type       tinyint               default 0 comment '登录方式 0-用户名/邮箱 1-gitee 2-github 3-QQ',
+    login_ip         varchar(100) comment '登录ip',
+    login_address    varchar(100) comment '登录地址',
+    login_time       datetime     not null comment '登录时间',
+    create_time      datetime     not null comment '创建时间',
+    update_time      datetime     not null comment '更新时间',
+    is_deleted       tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除'
 );
 
 

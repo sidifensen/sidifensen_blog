@@ -3,6 +3,7 @@ package com.sidifensen.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.entity.SysUser;
+import com.sidifensen.domain.vo.SysUserDetailVo;
 import com.sidifensen.domain.vo.SysUserVo;
 
 import java.util.List;
@@ -53,8 +54,6 @@ public interface ISysUserService extends IService<SysUser> {
      */
     SysUserVo info();
 
-    // 删除用户
-    void deleteUser(Long id);
 
     // 管理端
 
@@ -66,4 +65,17 @@ public interface ISysUserService extends IService<SysUser> {
 
     // 管理端获取用户列表
     List<SysUserVo> listUser();
+
+    // 管理端更新用户
+    void updateUser(SysUserDto sysUserDto);
+
+    // 管理端删除用户
+    void deleteUser(Integer userId);
+
+    // 管理端搜索用户
+    List<SysUserVo> searchUser(SysUserSearchDTO sysUserSearchDTO);
+
+    // 管理的获取用户详情
+    SysUserDetailVo getUserInfo(Integer userId);
+
 }

@@ -11,7 +11,7 @@
 
       <!-- 菜单表格 -->
       <el-table v-loading="loading" :data="paginatedMenuList" row-key="id" default-expand-all class="menu-table" style="height: 100%">
-        <el-table-column fixed prop="id" label="菜单id" />
+        <el-table-column fixed prop="id" label="菜单id" width="120" />
         <el-table-column prop="parentId" label="父菜单id" />
         <el-table-column prop="name" label="菜单名称" />
         <el-table-column prop="path" label="路由路径" />
@@ -62,16 +62,16 @@
     <!-- 新增/编辑菜单对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" :before-close="handleDialogClose">
       <el-form ref="menuFormRef" :model="menuForm" :rules="rules" class="menu-form">
-        <el-form-item prop="name">
+        <el-form-item prop="name" label="菜单名称">
           <el-input v-model="menuForm.name" placeholder="请输入菜单名称" />
         </el-form-item>
-        <el-form-item prop="path">
+        <el-form-item prop="path" label="路由路径">
           <el-input v-model="menuForm.path" placeholder="请输入路由路径" />
         </el-form-item>
-        <el-form-item prop="component">
+        <el-form-item prop="component" label="组件路径">
           <el-input v-model="menuForm.component" placeholder="请输入组件路径" />
         </el-form-item>
-        <el-form-item prop="icon">
+        <el-form-item prop="icon" label="图标">
           <el-select v-model="menuForm.icon" placeholder="请选择图标" filterable clearable>
             <el-option v-for="icon in icons" :key="icon" :label="icon" :value="icon">
               <div style="display: flex; align-items: center">
@@ -91,10 +91,10 @@
             </template>
           </el-select>
         </el-form-item>
-        <el-form-item prop="parentId">
+        <el-form-item prop="parentId" label="父菜单">
           <el-select v-model="menuForm.parentId" placeholder="请选择父菜单">
             <el-option :value="0" label="无父菜单" />
-            <el-option v-for="menu in parentMenuOptions" :key="menu.id" :label="menu.name" :value="menu.id" />
+            <el-option v-for="menu in allMenus" :key="menu.id" :label="menu.name" :value="menu.id" />
           </el-select>
         </el-form-item>
         <el-form-item prop="sort"> 排序号 &nbsp<el-input-number v-model="menuForm.sort" :min="0" :max="999" placeholder="请输入排序号" /> </el-form-item>
@@ -186,7 +186,6 @@ const rules = {
 // 初始化
 onMounted(() => {
   getMenuList();
-  getParentMenuOptions();
 });
 
 // 获取菜单列表
@@ -194,10 +193,10 @@ const getMenuList = async () => {
   loading.value = true;
   try {
     const res = await getAllMenuList();
-    
+
     // 按照sort排序并树形化
     menuList.value = formatMenu(res.data.data);
-    
+
     // 树形化后的菜单列表长度为总数
     total.value = menuList.value.length;
 
@@ -235,18 +234,6 @@ const handleCurrentChange = (current) => {
   updatePaginatedMenuList();
 };
 
-// 获取父菜单选项
-const getParentMenuOptions = async () => {
-  try {
-    const res = await getAllMenuList();
-    // 只选择顶级菜单作为父菜单选项
-    parentMenuOptions.value = res.data.data.filter((menu) => menu.parentId === 0);
-  } catch (error) {
-    ElMessage.error("获取父菜单选项失败");
-    console.error("获取父菜单选项失败:", error);
-  }
-};
-
 // 处理搜索
 const handleSearch = async () => {
   if (searchQuery.value.trim() === "") {
@@ -281,8 +268,21 @@ watch(searchQuery, (newVal) => {
   }, 500);
 });
 
+const allMenus = ref([]);
+// 获取所有菜单
+const getAllMenus = async () => {
+  try {
+    const res = await getAllMenuList();
+    allMenus.value = res.data.data;
+  } catch (error) {
+    ElMessage.error("获取所有菜单失败");
+    console.error("获取所有菜单失败:", error);
+  }
+};
+
 // 处理添加菜单
 const handleAddMenu = (row) => {
+  getAllMenus();
   if (row) {
     dialogTitle.value = "新增菜单";
     // 如果传值了说明是在表格行内的新增按钮
@@ -306,6 +306,7 @@ const handleAddMenu = (row) => {
 
 // 处理编辑菜单
 const handleEditMenu = (row) => {
+  getAllMenus();
   dialogTitle.value = "编辑菜单";
   // 深拷贝行数据
   menuForm.value = { ...row };
@@ -333,6 +334,7 @@ const handleDeleteMenu = (id) => {
     })
     .catch(() => {
       // 取消删除
+      ElMessage.info("删除已取消");
     });
 };
 
@@ -407,7 +409,6 @@ const handleAuthorizeRole = async (row) => {
   authorizeDialogVisible.value = true;
   // 清空已选角色
   selectedRoles.value = [];
-  console.log("selectedRoles", selectedRoles.value);
 
   const res = await getRoleList();
   allRoles.value = res.data.data;
@@ -423,7 +424,6 @@ const handleAuthorizeRole = async (row) => {
 
 // 处理授权提交
 const handleAuthorizeSubmit = async () => {
-  console.log("selectedRoles", selectedRoles.value);
   try {
     await addRoleMenu({
       menuId: currentMenu.value.id,
@@ -763,7 +763,7 @@ const handleAuthorizeDialogClose = () => {
         }
 
         .card-actions {
-          flex-direction: column;
+          // flex-direction: column;
           gap: 8px;
 
           .search-input {
@@ -771,19 +771,13 @@ const handleAuthorizeDialogClose = () => {
           }
 
           .add {
-            width: 100%;
+            // width: 100%;
           }
         }
       }
 
       .menu-table {
         margin-top: 0;
-        max-height: calc(100vh - 220px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
-        :deep(.el-table) {
-          display: block;
-          width: 100%;
-          overflow-x: auto;
-        }
       }
 
       .pagination-container {
@@ -832,14 +826,14 @@ const handleAuthorizeDialogClose = () => {
 
     .card-actions {
       width: 100%;
-      flex-direction: column;
+      // flex-direction: column;
 
       .search-input {
         width: 100% !important;
       }
 
       .add {
-        width: 100%;
+        // width: 100%;
       }
     }
   }

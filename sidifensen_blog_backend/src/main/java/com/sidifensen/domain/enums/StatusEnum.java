@@ -5,10 +5,10 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum MenuEnum {
+public enum StatusEnum {
 
-    MENU_STATUS_NORMAL(0, "状态：正常"),
-    MENU_STATUS_DISABLE(1, "状态：禁用");
+    NORMAL(0, "状态：正常"),
+    DISABLE(1, "状态：禁用");
 
     // 类型
     private final Integer status;

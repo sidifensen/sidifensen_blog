@@ -2,6 +2,7 @@ package com.sidifensen.controller;
 
 import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.result.Result;
+import com.sidifensen.domain.vo.SysUserDetailVo;
 import com.sidifensen.domain.vo.SysUserVo;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.ISysUserService;
@@ -110,17 +111,6 @@ public class SysUserController {
         return Result.success(sysUserVo);
     }
 
-    /**
-     * 删除用户
-     * @param id
-     * @return
-     */
-    @DeleteMapping("/{id}")
-    public Result delete(@PathVariable Long id) {
-        sysUserService.deleteUser(id);
-        return Result.success("用户删除成功");
-    }
-
     // 管理端
 
     /**
@@ -150,9 +140,52 @@ public class SysUserController {
      */
     @PreAuthorize("hasAuthority('system:user:list')")
     @GetMapping("/admin/list")
-    public Result list() {
+    public Result listUser() {
         List<SysUserVo> sysUserVos = sysUserService.listUser();
         return Result.success(sysUserVos);
+    }
+
+    /**
+     * 管理端修改用户
+     * @return
+     */
+    @PreAuthorize("hasAuthority('system:user:update')")
+    @PostMapping("/admin/update")
+    public Result updateUser(@RequestBody @Valid SysUserDto sysUserDto) {
+        sysUserService.updateUser(sysUserDto);
+        return Result.success();
+    }
+
+    /**
+     * 管理端删除用户
+     * @return
+     */
+    @PreAuthorize("hasAuthority('system:user:delete')")
+    @DeleteMapping("/admin/{userId}")
+    public Result deleteUser(@PathVariable Integer userId) {
+        sysUserService.deleteUser(userId);
+        return Result.success();
+    }
+
+    /**
+     * 管理端搜索用户
+     * @return
+     */
+    @PreAuthorize("hasAuthority('system:user:search')")
+    @PostMapping("/admin/search")
+    public Result searchUser(@RequestBody @Valid SysUserSearchDTO sysUserSearchDTO) {
+        List<SysUserVo> sysUserVos = sysUserService.searchUser(sysUserSearchDTO);
+        return Result.success(sysUserVos);
+    }
+
+    /**
+     * 管理端获取用户详细信息
+     */
+    @PreAuthorize("hasAuthority('system:user:info')")
+    @GetMapping("/admin/{userId}")
+    public Result getUserInfo(@PathVariable Integer userId) {
+        SysUserDetailVo sysUserDetailVo = sysUserService.getUserInfo(userId);
+        return Result.success(sysUserDetailVo);
     }
 
 }

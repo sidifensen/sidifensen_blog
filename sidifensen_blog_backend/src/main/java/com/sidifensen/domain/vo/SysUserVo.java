@@ -1,13 +1,8 @@
 package com.sidifensen.domain.vo;
 
-import com.sidifensen.domain.entity.SysMenu;
-import com.sidifensen.domain.entity.SysPermission;
-import com.sidifensen.domain.entity.SysRole;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author sidifensen
@@ -57,7 +52,7 @@ public class SysUserVo {
     private Integer status;
 
     /**
-     * 注册方式 0-用户名/邮箱注册 1-第三方注册
+     * 注册方式 0-用户名/邮箱 1-gitee 2-github 3-QQ
      */
     private Integer registerType;
 
@@ -67,7 +62,12 @@ public class SysUserVo {
     private String registerIp;
 
     /**
-     * 登录方式 0-用户名/邮箱登录 1-第三方登录
+     * 注册地址
+     */
+    private String registerAddress;
+
+    /**
+     * 登录方式 0-用户名/邮箱 1-gitee 2-github 3-QQ
      */
     private Integer loginType;
 
@@ -75,6 +75,11 @@ public class SysUserVo {
      * 登录ip
      */
     private String loginIp;
+
+    /**
+     * 登录地址
+     */
+    private String loginAddress;
 
     /**
      * 登录时间
@@ -90,16 +95,5 @@ public class SysUserVo {
      * 更新时间
      */
     private Date updateTime;
-
-
-    // 角色信息
-    private List<SysRole> sysRoles = new ArrayList<>();
-
-    // 菜单信息
-    private List<SysMenu> sysMenus = new ArrayList<>();
-
-    // 权限信息
-    private List<SysPermission> sysPermissions = new ArrayList<>();
-
 
 }

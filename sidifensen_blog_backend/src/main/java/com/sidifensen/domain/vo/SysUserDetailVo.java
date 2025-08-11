@@ -1,46 +1,30 @@
-package com.sidifensen.domain.entity;
+package com.sidifensen.domain.vo;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.sidifensen.domain.entity.SysMenu;
+import com.sidifensen.domain.entity.SysPermission;
+import com.sidifensen.domain.entity.SysRole;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 /**
- * <p>
- * 
- * </p>
- *
  * @author sidifensen
- * @since 2025-06-29
+ * @since 2025-07-11
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
-@Accessors(chain = true)
-@TableName("sys_user")
-public class SysUser implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class SysUserDetailVo {
 
     /**
      * 用户id
      */
-    @TableId(type = IdType.AUTO)
     private Integer id;
 
     /**
      * 用户名
      */
     private String username;
-
-    /**
-     * 密码
-     */
-    private String password;
 
     /**
      * 昵称
@@ -110,31 +94,21 @@ public class SysUser implements Serializable {
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
      * 更新时间
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
-    /**
-     * 是否删除 0-未删除 1-已删除
-     */
-    @TableLogic
-    private Integer isDeleted;
 
     // 角色信息
-    @TableField(exist = false)
     private List<SysRole> sysRoles = new ArrayList<>();
 
     // 菜单信息
-    @TableField(exist = false)
     private List<SysMenu> sysMenus = new ArrayList<>();
 
     // 权限信息
-    @TableField(exist = false)
     private List<SysPermission> sysPermissions = new ArrayList<>();
 
 

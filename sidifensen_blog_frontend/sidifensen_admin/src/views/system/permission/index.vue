@@ -14,12 +14,15 @@
             </el-select>
             <el-button size="small" type="warning" :disabled="currentPermissionList.length === 0" @click="handleAuthorizeBatchRole" :icon="Avatar" class="authorize-button"> 批量授权角色 </el-button>
           </div>
-          <el-button type="primary" size="small" @click="handleAddPermission" :icon="Plus" class="add-button"> 新增权限 </el-button>
+          <div>
+            <el-button type="primary" size="small" @click="exportPermission" :icon="Download" class="export-button">导出</el-button>
+            <el-button type="primary" size="small" @click="handleAddPermission" :icon="Plus" class="add-button"> 新增权限 </el-button>
+          </div>
         </div>
       </div>
 
       <!-- 权限表格 -->
-      <el-table v-loading="loading" :data="paginatedPermissionList" class="table" style="height: 100%" @selection-change="handleSelectionChange">
+      <el-table id="my-table" v-loading="loading" :data="paginatedPermissionList" class="table" style="height: 100%" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" />
         <el-table-column fixed prop="id" label="权限id" width="70" />
         <el-table-column prop="description" label="权限描述" />
@@ -53,13 +56,13 @@
     <!-- 新增/编辑权限对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" :before-close="handleDialogClose">
       <el-form ref="permissionFormRef" :model="permissionForm" :rules="rules" class="editForm">
-        <el-form-item prop="description">
+        <el-form-item prop="description" label="权限描述">
           <el-input v-model="permissionForm.description" placeholder="请输入权限描述" />
         </el-form-item>
-        <el-form-item prop="permission">
+        <el-form-item prop="permission" label="权限标识">
           <el-input v-model="permissionForm.permission" placeholder="请输入权限标识" />
         </el-form-item>
-        <el-form-item prop="menuId">
+        <el-form-item prop="menuId" label="对应菜单">
           <el-select v-model="permissionForm.menuId" placeholder="请选择菜单名称">
             <el-option v-for="menu in menuList" :key="menu.id" :label="menu.name" :value="menu.id" />
           </el-select>
@@ -116,12 +119,40 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from "vue";
-import { Search, Plus, Edit, Delete, Avatar } from "@element-plus/icons-vue";
+import { ref, onMounted, watch } from "vue";
+import { Search, Plus, Edit, Delete, Avatar, Download } from "@element-plus/icons-vue";
 import { getPermissionList, addPermission, updatePermission, deletePermission, queryPermission } from "@/api/permission";
 import { getRoleList } from "@/api/role";
 import { addBatchRolePermission, addRolePermission, getRolesByPermission } from "@/api/role-permission";
 import { getAllMenuList } from "@/api/menu";
+
+import FileSaver from "file-saver";
+import * as XLSX from "xlsx";
+
+const exportPermission = () => {
+  // 使用完整的权限列表数据
+  const data = permissionList.value.map((item) => {
+    return {
+      权限id: item.id,
+      权限描述: item.description,
+      权限标识: item.permission,
+      菜单名称: item.menuName,
+      创建时间: item.createTime,
+      更新时间: item.updateTime,
+    };
+  });
+
+  // 创建工作表
+  const ws = XLSX.utils.json_to_sheet(data);
+
+  // 创建工作簿
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "权限列表");
+
+  // 导出工作簿
+  const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  FileSaver.saveAs(new Blob([wbout], { type: "application/octet-stream" }), "权限列表.xlsx");
+};
 
 // 权限列表数据
 const permissionList = ref([]);
@@ -299,6 +330,7 @@ const handleDeletePermission = (id) => {
     })
     .catch(() => {
       // 取消删除
+      ElMessage.info("删除已取消");
     });
 };
 
@@ -529,7 +561,22 @@ const handleAuthorizeBatchDialogClose = () => {
             opacity: 0.6;
           }
         }
+      }
 
+      .export-button {
+        margin-left: 10px;
+        background-color: #e0f2fe;
+        color: #0284c7;
+        border-color: #e0f2fe;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background-color: #bae6fd;
+          border-color: #bae6fd;
+          transform: translateY(-2px);
+          box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+        }
       }
 
       .add-button {
@@ -834,7 +881,7 @@ const handleAuthorizeBatchDialogClose = () => {
       justify-content: center;
       // flex-direction: column;
 
-      .search{
+      .search {
         width: 600px;
       }
 
@@ -844,7 +891,12 @@ const handleAuthorizeBatchDialogClose = () => {
       }
       .authorize-button {
         margin-bottom: 10px;
-        
+      }
+      .export-button {
+        margin-bottom: 10px;
+      }
+      .add-button {
+        margin-bottom: 10px;
       }
     }
   }

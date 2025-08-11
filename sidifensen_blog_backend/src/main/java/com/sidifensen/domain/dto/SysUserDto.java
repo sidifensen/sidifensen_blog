@@ -1,13 +1,16 @@
-package com.sidifensen.domain.entity;
+package com.sidifensen.domain.dto;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.sidifensen.domain.entity.SysMenu;
+import com.sidifensen.domain.entity.SysPermission;
+import com.sidifensen.domain.entity.SysRole;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -21,26 +24,19 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("sys_user")
-public class SysUser implements Serializable {
+public class SysUserDto implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
      * 用户id
      */
-    @TableId(type = IdType.AUTO)
     private Integer id;
 
     /**
      * 用户名
      */
     private String username;
-
-    /**
-     * 密码
-     */
-    private String password;
 
     /**
      * 昵称
@@ -70,6 +66,8 @@ public class SysUser implements Serializable {
     /**
      * 状态 0-正常 1-禁用
      */
+    @Min(value = 0, message = "状态必须为0或1")
+    @Max(value = 1, message = "状态必须为0或1")
     private Integer status;
 
     /**
@@ -77,64 +75,20 @@ public class SysUser implements Serializable {
      */
     private Integer registerType;
 
-    /**
-     * 注册ip
-     */
-    private String registerIp;
-
-    /**
-     * 注册地址
-     */
-    private String registerAddress;
 
     /**
      * 登录方式 0-用户名/邮箱 1-gitee 2-github 3-QQ
      */
     private Integer loginType;
 
-    /**
-     * 登录ip
-     */
-    private String loginIp;
-
-    /**
-     * 登录地址
-     */
-    private String loginAddress;
-
-    /**
-     * 登录时间
-     */
-    private Date loginTime;
-
-    /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private Date createTime;
-
-    /**
-     * 更新时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
-
-    /**
-     * 是否删除 0-未删除 1-已删除
-     */
-    @TableLogic
-    private Integer isDeleted;
 
     // 角色信息
-    @TableField(exist = false)
     private List<SysRole> sysRoles = new ArrayList<>();
 
     // 菜单信息
-    @TableField(exist = false)
     private List<SysMenu> sysMenus = new ArrayList<>();
 
     // 权限信息
-    @TableField(exist = false)
     private List<SysPermission> sysPermissions = new ArrayList<>();
 
 

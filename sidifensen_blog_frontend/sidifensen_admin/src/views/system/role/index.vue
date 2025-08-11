@@ -53,13 +53,13 @@
     <!-- 新增/编辑角色对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" :before-close="handleDialogClose">
       <el-form ref="roleFormRef" :model="roleForm" :rules="rules" class="editForm">
-        <el-form-item prop="role">
+        <el-form-item prop="role" label="对应用户标识">
           <el-input v-model="roleForm.role" placeholder="请输入角色标识" />
         </el-form-item>
-        <el-form-item prop="name">
+        <el-form-item prop="name" label="用户名称">
           <el-input v-model="roleForm.name" placeholder="请输入角色名称" />
         </el-form-item>
-        <el-form-item prop="description">
+        <el-form-item prop="description" label="用户描述">
           <el-input v-model="roleForm.description" placeholder="请输入角色描述" />
         </el-form-item>
       </el-form>
@@ -90,7 +90,6 @@
         </span>
       </template>
     </el-dialog>
-
   </div>
 </template>
 
@@ -101,7 +100,6 @@ import { Search, Plus, Edit, Delete, User } from "@element-plus/icons-vue";
 import { getRoleList, addRole, updateRole, deleteRole, queryRole } from "@/api/role";
 import { addUser, getUsersByRole } from "@/api/user-role";
 import { getUserList } from "@/api/user";
-
 
 // 搜索查询
 const searchQuery = ref("");
@@ -257,6 +255,7 @@ const handleDeleteRole = (id) => {
     })
     .catch(() => {
       // 取消删除
+      ElMessage.info("删除已取消");
     });
 };
 
@@ -370,8 +369,6 @@ const handleAuthorizeDialogClose = () => {
   authorizeDialogVisible.value = false;
   selectedUser.value = [];
 };
-
-
 </script>
 
 <style lang="scss" scoped>
@@ -588,7 +585,7 @@ const handleAuthorizeDialogClose = () => {
     }
   }
 
-    // 授权角色对话框样式
+  // 授权角色对话框样式
   .authorize-dialog-content {
     padding: 10px;
 
@@ -667,7 +664,7 @@ const handleAuthorizeDialogClose = () => {
         }
 
         .card-actions {
-          flex-direction: column;
+          // flex-direction: column;
           gap: 8px;
 
           .search-input {
@@ -675,7 +672,7 @@ const handleAuthorizeDialogClose = () => {
           }
 
           .add-button {
-            width: 100%;
+            // width: 100%;
           }
         }
       }
@@ -736,14 +733,14 @@ const handleAuthorizeDialogClose = () => {
 
     .card-actions {
       width: 100%;
-      flex-direction: column;
+      // flex-direction: column;
 
       .search-input {
         width: 100% !important;
       }
 
       .add-button {
-        width: 100%;
+        // width: 100%;
       }
     }
   }
