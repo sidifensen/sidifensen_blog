@@ -11,7 +11,7 @@
  Target Server Version : 80039 (8.0.39)
  File Encoding         : 65001
 
- Date: 12/08/2025 03:12:30
+ Date: 13/08/2025 23:32:14
 */
 
 SET NAMES utf8mb4;
@@ -155,11 +155,11 @@ INSERT INTO `sys_menu` VALUES (19, 0, '1', 15, '/sys', '/sys', 'Menu', 0, '2025-
 INSERT INTO `sys_menu` VALUES (20, 0, '1', 16, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-08 21:26:18', 0);
 INSERT INTO `sys_menu` VALUES (21, 0, '一', 17, '/sys', '/sys', 'Menu', 0, '2025-08-08 21:25:52', '2025-08-11 13:19:29', 0);
 INSERT INTO `sys_menu` VALUES (22, 23, '用户管理用户管理管理', 0, '/system/user/add', '/system/user/add', 'User', 0, '2025-08-10 01:01:19', '2025-08-11 12:31:31', 0);
-INSERT INTO `sys_menu` VALUES (23, 7, '系统管理系统管理管理', 1, '/sys/11', '/sys/11', 'AddLocation', 0, '2025-08-10 15:58:30', '2025-08-11 01:19:23', 0);
-INSERT INTO `sys_menu` VALUES (24, 7, 'sys111', 2, '/sys111', '/sys111', 'Apple', 0, '2025-08-10 15:58:46', '2025-08-10 15:58:46', 0);
-INSERT INTO `sys_menu` VALUES (25, 24, 'sys1111', 3, '/sys1111', '/sys1111', 'ArrowDown', 0, '2025-08-11 11:36:38', '2025-08-11 11:36:38', 0);
-INSERT INTO `sys_menu` VALUES (26, 25, 'sys11111', 0, '/sys11111', '/sys11111', 'AddLocation', 0, '2025-08-11 11:40:14', '2025-08-11 11:40:14', 0);
-INSERT INTO `sys_menu` VALUES (27, 26, 'sys111111', 0, '/sys111111', '/sys111111', 'Aim', 0, '2025-08-11 11:40:28', '2025-08-11 11:40:28', 0);
+INSERT INTO `sys_menu` VALUES (23, 7, '系统管理系统管理管理', 1, '/sys/11', '/sys/11', 'AddLocation', 0, '2025-08-10 15:58:30', '2025-08-13 18:25:06', 1);
+INSERT INTO `sys_menu` VALUES (24, 7, 'sys111', 2, '/sys111', '/sys111', 'Apple', 0, '2025-08-10 15:58:46', '2025-08-13 18:25:19', 1);
+INSERT INTO `sys_menu` VALUES (25, 24, 'sys1111', 3, '/sys1111', '/sys1111', 'ArrowDown', 0, '2025-08-11 11:36:38', '2025-08-13 18:24:49', 1);
+INSERT INTO `sys_menu` VALUES (26, 25, 'sys11111', 0, '/sys11111', '/sys11111', 'AddLocation', 0, '2025-08-11 11:40:14', '2025-08-13 18:24:47', 1);
+INSERT INTO `sys_menu` VALUES (27, 8, 'sys111111', 0, '/sys111111', '/sys111111', 'Aim', 0, '2025-08-11 11:40:28', '2025-08-13 18:25:12', 1);
 
 -- ----------------------------
 -- Table structure for sys_permission
@@ -272,8 +272,6 @@ INSERT INTO `sys_role_menu` VALUES (21, 2, 5);
 INSERT INTO `sys_role_menu` VALUES (22, 2, 6);
 INSERT INTO `sys_role_menu` VALUES (23, 2, 4);
 INSERT INTO `sys_role_menu` VALUES (26, 1, 7);
-INSERT INTO `sys_role_menu` VALUES (27, 1, 23);
-INSERT INTO `sys_role_menu` VALUES (28, 1, 24);
 INSERT INTO `sys_role_menu` VALUES (29, 1, 22);
 
 -- ----------------------------
@@ -338,10 +336,10 @@ INSERT INTO `sys_role_permission` VALUES (57, 1, 31);
 DROP TABLE IF EXISTS `sys_user`;
 CREATE TABLE `sys_user`  (
   `id` int NOT NULL AUTO_INCREMENT COMMENT '用户id',
-  `username` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '用户名',
+  `username` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '用户名',
   `password` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '密码',
-  `nickname` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '昵称',
-  `email` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '邮箱',
+  `nickname` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '昵称',
+  `email` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '邮箱',
   `sex` tinyint NULL DEFAULT 0 COMMENT '性别 0-男 1-女',
   `introduction` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '简介',
   `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '头像',
@@ -357,13 +355,13 @@ CREATE TABLE `sys_user`  (
   `update_time` datetime NOT NULL COMMENT '更新时间',
   `is_deleted` tinyint NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO `sys_user` VALUES (1, 'sidifensen', '$2a$10$GJwVW/wuZ/xFFiWNElXGNuaK3VKWfqIcCICrUyFEKz.cpFa7WtWNi', 'sidifensen', 'sidifensen@163.com', 0, 'helloworld1111', 'http://localhost:9000/sidifensen-blog/avatar.jpg', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.5.4', '内网地址', '2025-08-12 00:15:27', '2025-06-28 22:30:22', '2025-08-12 01:51:14', 0);
-INSERT INTO `sys_user` VALUES (2, '斯蒂芬森', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '斯蒂芬森', '1848221808@qq.com', 0, 'helloworld', 'http://localhost:9000/sidifensen-blog/xd.jpg', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 15:39:51', '2025-07-31 17:38:46', '2025-07-31 17:38:46', 0);
+INSERT INTO `sys_user` VALUES (1, 'sidifensen', '$2a$10$GJwVW/wuZ/xFFiWNElXGNuaK3VKWfqIcCICrUyFEKz.cpFa7WtWNi', '斯蒂芬森', 'sidifensen@163.com', 0, 'helloworld1111', 'http://localhost:9000/sidifensen-blog/avatar.jpg', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.5.4', '内网地址', '2025-08-13 18:40:05', '2025-06-28 22:30:22', '2025-08-12 01:51:14', 0);
+INSERT INTO `sys_user` VALUES (2, '斯蒂芬森', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '斯蒂芬森', '111111@qq.com', 0, 'helloworld', 'http://localhost:9000/sidifensen-blog/xd.jpg', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 15:39:51', '2025-07-31 17:38:46', '2025-07-31 17:38:46', 0);
 INSERT INTO `sys_user` VALUES (3, 'WebUser', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '网站用户', '123456@qq.com', 0, 'helloworld', 'http://localhost:9000/sidifensen-blog/xd.jpg', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 02:00:15', '2025-07-31 17:38:46', '2025-08-12 01:12:29', 0);
 INSERT INTO `sys_user` VALUES (4, 'WebUser', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '网站用户', '123456@qq.com', 0, 'helloworld', 'http://localhost:9000/sidifensen-blog/xd.jpg', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 02:00:15', '2025-07-31 17:38:46', '2025-07-31 17:38:46', 0);
 INSERT INTO `sys_user` VALUES (5, 'WebUser', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '网站用户', '123456@qq.com', 0, 'helloworld', 'http://localhost:9000/sidifensen-blog/xd.jpg', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 02:00:15', '2025-07-31 17:38:46', '2025-07-31 17:38:46', 0);
@@ -374,6 +372,8 @@ INSERT INTO `sys_user` VALUES (9, 'WebUser', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc
 INSERT INTO `sys_user` VALUES (10, 'WebUser', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '网站用户', '123456@qq.com', 0, 'helloworld', 'http://localhost:9000/sidifensen-blog/xd.jpg', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 02:00:15', '2025-07-31 17:38:46', '2025-07-31 17:38:46', 0);
 INSERT INTO `sys_user` VALUES (11, 'WebUser1', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '网站用户', '123456@qq.com', 0, 'helloworld', 'http://localhost:9000/sidifensen-blog/xd.jpg', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 02:00:15', '2025-07-31 17:38:46', '2025-08-12 01:30:15', 0);
 INSERT INTO `sys_user` VALUES (12, 'WebUser', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '网站用户', '123456@qq.com', 0, 'helloworld', 'http://localhost:9000/sidifensen-blog/xd.jpg', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 02:00:15', '2025-07-31 17:38:46', '2025-07-31 17:38:46', 1);
+INSERT INTO `sys_user` VALUES (13, 'sidifensen_14919133', '$2a$10$9Ai7TJESMAuzQ7PLHsj.SuxmKA9IBYoJVPgBKsyyb/AqKbjYcKXOe', '斯蒂芬森', NULL, 0, '梦想是成为全栈高手', 'https://foruda.gitee.com/avatar/1752080025136627357/14919133_sidifensen_1752080025.png', 0, 1, '127.0.0.1', '内网地址', 0, '192.168.5.4', '内网地址', '2025-08-13 23:09:06', '2025-08-13 23:09:05', '2025-08-13 23:09:05', 0);
+INSERT INTO `sys_user` VALUES (14, 'sidifensen_186551034', '$2a$10$4j5DL6d8XUOjmYcRIScmluLz4DGFifrpy8fE4gfV/2KADu3R/vv6S', '斯蒂芬森', NULL, 0, '梦想是成为全栈高手', 'https://avatars.githubusercontent.com/u/186551034?v=4', 0, 2, '127.0.0.1', '内网地址', 0, '192.168.5.4', '内网地址', '2025-08-13 23:30:34', '2025-08-13 23:30:33', '2025-08-13 23:30:33', 0);
 
 -- ----------------------------
 -- Table structure for sys_user_role
@@ -384,12 +384,24 @@ CREATE TABLE `sys_user_role`  (
   `user_id` int NOT NULL COMMENT '用户id',
   `role_id` int NOT NULL COMMENT '角色id',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 36 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 50 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_user_role
 -- ----------------------------
 INSERT INTO `sys_user_role` VALUES (2, 1, 1);
 INSERT INTO `sys_user_role` VALUES (17, 2, 2);
+INSERT INTO `sys_user_role` VALUES (38, 14919135, 3);
+INSERT INTO `sys_user_role` VALUES (39, 14919133, 3);
+INSERT INTO `sys_user_role` VALUES (40, 186551034, 3);
+INSERT INTO `sys_user_role` VALUES (41, 14919133, 3);
+INSERT INTO `sys_user_role` VALUES (42, 14919133, 3);
+INSERT INTO `sys_user_role` VALUES (43, 14919133, 3);
+INSERT INTO `sys_user_role` VALUES (44, 186551034, 3);
+INSERT INTO `sys_user_role` VALUES (45, 14919133, 3);
+INSERT INTO `sys_user_role` VALUES (46, 186551034, 3);
+INSERT INTO `sys_user_role` VALUES (47, 14919133, 3);
+INSERT INTO `sys_user_role` VALUES (48, 13, 3);
+INSERT INTO `sys_user_role` VALUES (49, 14, 3);
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -15,7 +15,7 @@
 
       <!-- 权限表格 -->
       <el-table v-loading="loading" :data="paginatedUserList" class="table" style="height: 100%">
-        <el-table-column fixed prop="id" label="用户id" width="70" />
+        <el-table-column prop="id" label="用户id" width="70" />
         <el-table-column prop="avatar" label="用户头像">
           <template #default="{ row }">
             <div style="display: flex; align-items: center">
@@ -115,51 +115,41 @@
     <el-dialog v-model="userDetailDialogVisible" title="用户详情" class="user-detail">
       <el-card v-if="userDetail" class="user-detail-card">
         <!-- 用户基本信息 -->
-        <div class="card-header">
-          <span>基本信息</span>
+        <h3>基本信息</h3>
+        <el-avatar :src="userDetail.avatar" size="80" class="user-avatar" />
+        <p>昵称:{{ userDetail.nickname }}</p>
+        <p>用户名:{{ userDetail.username }}</p>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">用户ID:</span>
+            <span class="value">{{ userDetail.id }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">邮箱:</span>
+            <span class="value">{{ userDetail.email }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">性别:</span>
+            <span class="value">{{ userDetail.sex === 0 ? "男" : userDetail.sex === 1 ? "女" : "未知" }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">状态:</span>
+            <span class="value">
+              <el-tag :type="userDetail.status === 0 ? 'success' : 'danger'">{{ userDetail.status === 0 ? "启用" : "禁用" }}</el-tag>
+            </span>
+          </div>
+          <div class="info-item">
+            <span class="label">简介:</span>
+            <span class="value">{{ userDetail.introduction || "暂无简介" }}</span>
+          </div>
         </div>
-        <!-- <div class="user-info-container"> -->
-          <div class="avatar-container">
-            <el-avatar :src="userDetail.avatar" size="80" class="user-avatar" />
-            <div class="user-name-title">
-              <h3>昵称:{{ userDetail.nickname }}</h3>
-              <p>用户名:{{ userDetail.username }}</p>
-            </div>
-          </div>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="label">用户ID:</span>
-              <span class="value">{{ userDetail.id }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">邮箱:</span>
-              <span class="value">{{ userDetail.email }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">性别:</span>
-              <span class="value">{{ userDetail.sex === 0 ? "男" : userDetail.sex === 1 ? "女" : "未知" }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">状态:</span>
-              <span class="value"
-                ><el-tag :type="userDetail.status === 0 ? 'success' : 'danger'">{{ userDetail.status === 0 ? "启用" : "禁用" }}</el-tag></span
-              >
-            </div>
-            <div class="info-item">
-              <span class="label">简介:</span>
-              <span class="value">{{ userDetail.introduction || "暂无简介" }}</span>
-            </div>
-          </div>
-        <!-- </div> -->
 
         <!-- 登录信息 -->
-        <div class="card-header">
-          <span>登录信息</span>
-        </div>
+        <h3>登录信息</h3>
         <div class="info-grid">
           <div class="info-item">
             <span class="label">登录类型:</span>
-            <span class="value">{{ userDetail.loginType === 0 ? "用户名/邮箱登录" : userDetail.loginType === 1 ? "gitee 登录" : userDetail.loginType === 2 ? "github 登录" : userDetail.loginType === 3 ? "QQ 登录" : "未知登录方式" }}</span>
+            <span class="value">{{ userDetail.loginType === 0 ? "用户名/邮箱" : userDetail.loginType === 1 ? "gitee" : userDetail.loginType === 2 ? "github" : userDetail.loginType === 3 ? "QQ" : "未知登录方式" }}</span>
           </div>
           <div class="info-item">
             <span class="label">登录IP:</span>
@@ -176,13 +166,11 @@
         </div>
 
         <!-- 注册信息 -->
-        <div class="card-header">
-          <span>注册信息</span>
-        </div>
+        <h3>注册信息</h3>
         <div class="info-grid">
           <div class="info-item">
             <span class="label">注册类型:</span>
-            <span class="value">{{ userDetail.registerType === 0 ? "普通注册" : "第三方注册" }}</span>
+            <span class="value">{{ userDetail.registerType === 0 ? "用户名/邮箱" : userDetail.registerType === 1 ? "gitee" : userDetail.registerType === 2 ? "github" : userDetail.registerType === 3 ? "QQ" : "未知注册方式" }}</span>
           </div>
           <div class="info-item">
             <span class="label">注册IP:</span>
@@ -203,20 +191,16 @@
         </div>
 
         <!-- 角色信息 -->
-        <div class="card-header">
-          <span>角色信息</span>
-        </div>
+        <h3>角色信息</h3>
         <div v-if="userDetail.sysRoles && userDetail.sysRoles.length > 0" class="role-list">
           <el-tag v-for="role in userDetail.sysRoles" :key="role.id" type="primary" style="margin-right: 10px; margin-bottom: 10px"> {{ role.name }} ({{ role.role }}) </el-tag>
         </div>
         <div v-else class="no-data">暂无角色信息</div>
 
         <!-- 权限信息 -->
-        <div class="card-header">
-          <span>权限信息</span>
-        </div>
+        <h3>权限信息</h3>
         <div v-if="userDetail.sysPermissions && userDetail.sysPermissions.length > 0" class="permission-container">
-          <el-table :data="userDetail.sysPermissions" border size="small" class="permission-table">
+          <el-table :data="userDetail.sysPermissions" size="small" class="permission-table">
             <el-table-column prop="id" label="权限ID" width="80" />
             <el-table-column prop="description" label="权限描述" width="180" />
             <el-table-column prop="permission" label="权限标识" width="220" />
@@ -227,11 +211,36 @@
         </div>
         <div v-else class="no-data">暂无权限信息</div>
 
-        <!-- 菜单权限 -->
-        <div class="card-header">
-          <span>菜单权限</span>
+        <!-- 菜单信息 -->
+        <h3>菜单信息</h3>
+        <div v-if="userDetail.sysMenus && userDetail.sysMenus.length > 0" class="permission-container">
+          <el-table :data="userDetail.sysMenus" size="small" row-key="id" default-expand-all class="permission-table">
+            <el-table-column prop="id" label="菜单ID" width="100" />
+            <el-table-column prop="parentId" label="父菜单ID" width="100" />
+            <el-table-column prop="name" label="菜单名称" width="180" />
+            <el-table-column prop="sort" label="排序" width="100" />
+            <el-table-column prop="path" label="路由路径" width="220" />
+            <el-table-column prop="component" label="组件路径" width="180" />
+            <el-table-column prop="icon" label="图标" width="100">
+              <template #default="{ row }">
+                <div v-if="row.icon" style="display: flex; align-items: center">
+                  <el-icon style="margin-right: 10px">
+                    <component :is="row.icon" />
+                  </el-icon>
+                  <span>{{ row.icon }}</span>
+                </div>
+                <span v-else>-</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="status" label="状态" width="80">
+              <template #default="{ row }">
+                <el-tag :type="row.status === 0 ? 'success' : 'danger'">{{ row.status === 0 ? "启用" : "禁用" }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="createTime" label="创建时间" width="180" />
+            <el-table-column prop="updateTime" label="更新时间" width="180" />
+          </el-table>
         </div>
-        <el-tree v-if="userDetail.sysMenus && userDetail.sysMenus.length > 0" :data="userDetail.sysMenus" :props="{ label: 'name', children: 'children' }" node-key="id" default-expand-all class="menu-tree" />
         <div v-else class="no-data">暂无菜单权限</div>
       </el-card>
       <div v-else class="loading-container"><el-loading v-loading="true" />加载中...</div>
@@ -567,12 +576,11 @@ const handleAuthorizeDialogClose = () => {
       justify-content: space-between;
       align-items: center;
       padding: 10px;
-      border-bottom: 1px solid #f0f0f0;
+      border-bottom: 1px solid var(--el-border-color);
 
       .card-title {
         font-size: 20px;
         font-weight: 600;
-        color: #1e293b;
         margin: 0;
         display: flex;
         align-items: center;
@@ -663,7 +671,7 @@ const handleAuthorizeDialogClose = () => {
     display: flex;
     flex-direction: column;
     margin-top: 16px;
-    max-height: calc(100vh - 250px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
+    max-height: calc(100vh - 220px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
 
     :deep(.el-tag__content) {
       display: flex;
@@ -671,12 +679,10 @@ const handleAuthorizeDialogClose = () => {
     }
 
     :deep(.el-table__header-wrapper) {
-      background-color: #f8fafc;
+      background-color: var(--el-bg-color);
       th {
         font-weight: 600;
         color: #475569;
-        background-color: #f8fafc !important;
-        border-bottom: 1px solid #e2e8f0;
       }
     }
 
@@ -766,9 +772,8 @@ const handleAuthorizeDialogClose = () => {
     display: flex;
     justify-content: flex-end;
     padding: 10px;
-    background-color: #f8fafc;
+    background-color: var(--el-bg-color);
     border-radius: 0 0 12px 12px;
-    border-top: 1px solid #f0f0f0;
     z-index: 10;
     width: 100%;
     box-sizing: border-box;
@@ -855,93 +860,31 @@ const handleAuthorizeDialogClose = () => {
       color: #333;
     }
 
-    .user-info-container {
-      display: flex;
-      flex-direction: column;
-      padding: 20px 0;
-
-      .avatar-container {
-        display: flex;
-        align-items: center;
-        margin-bottom: 20px;
-
-        .user-avatar {
-          margin-right: 20px;
-          border: 2px solid #f0f0f0;
-        }
-
-        .user-name-title {
-          h3 {
-            margin: 0;
-            font-size: 20px;
-            font-weight: bold;
-          }
-          p {
-            margin: 5px 0 0 0;
-            color: #666;
-          }
-        }
-      }
-
-      .info-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-
-        .info-item {
-          display: flex;
-          margin-bottom: 10px;
-
-          .label {
-            width: 100px;
-            color: #666;
-            text-align: right;
-            margin-right: 10px;
-            font-weight: 500;
-          }
-
-          .value {
-            flex: 1;
-            word-break: break-all;
-          }
-        }
-      }
-    }
-
     .role-list {
       padding: 10px 0;
     }
 
     .permission-container {
       padding: 10px 0;
+      .permission-table {
+        width: 100%;
+        margin-top: 10px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
     }
-
-    .permission-table {
-      width: 100%;
-      margin-top: 10px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .menu-tree {
-      margin-top: 10px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
     .no-data {
       padding: 10px;
       color: #999;
       text-align: center;
     }
   }
-}
-
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 300px;
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+  }
 }
 
 // 响应式设计
@@ -1005,8 +948,9 @@ const handleAuthorizeDialogClose = () => {
         }
       }
 
-      table {
+      .table {
         margin-top: 0;
+        max-height: calc(100vh - 180px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
       }
 
       .pagination-container {

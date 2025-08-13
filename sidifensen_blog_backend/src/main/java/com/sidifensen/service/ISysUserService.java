@@ -25,6 +25,13 @@ public interface ISysUserService extends IService<SysUser> {
     String login(LoginDto loginDto);
 
     /**
+     * oauth登录
+     * @param oauthLoginDto
+     * @return
+     */
+    String oauthLogin(OauthLoginDto oauthLoginDto);
+
+    /**
      * 注册
      * @param registerDto 注册信息
      */
@@ -77,5 +84,4 @@ public interface ISysUserService extends IService<SysUser> {
 
     // 管理的获取用户详情
     SysUserDetailVo getUserInfo(Integer userId);
-
 }

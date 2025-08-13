@@ -14,7 +14,13 @@ import "virtual:svg-icons-register";
 // 注册svg全局组件
 app.component("svg-icon", SvgIcon);
 
+// 夜间模式
+import "element-plus/theme-chalk/dark/css-vars.css";
+
+// pinia持久化插件
+import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 const pinia = createPinia();
+pinia.use(piniaPluginPersistedstate);
 app.use(pinia);
 
 import ElementPlus from "element-plus";
@@ -25,5 +31,11 @@ import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component);
 }
+
+// 引入 darkStore
+import { useDarkStore } from "./stores/darkStore";
+const darkStore = useDarkStore();
+darkStore.initDarkMode();
+
 
 app.mount("#app");

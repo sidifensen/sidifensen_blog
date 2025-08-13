@@ -50,7 +50,7 @@ public class LoginUser implements UserDetails {
     // 账号是否未被锁定
     @Override
     public boolean isAccountNonLocked() {
-        return sysUser.getStatus() == 0;// 0表示未被锁定
+        return true;
     }
 
     // 密码是否未过期

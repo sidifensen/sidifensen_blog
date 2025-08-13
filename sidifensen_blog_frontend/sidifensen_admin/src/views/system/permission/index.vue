@@ -24,7 +24,7 @@
       <!-- 权限表格 -->
       <el-table id="my-table" v-loading="loading" :data="paginatedPermissionList" class="table" style="height: 100%" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" />
-        <el-table-column fixed prop="id" label="权限id" width="70" />
+        <el-table-column prop="id" label="权限id" width="70" />
         <el-table-column prop="description" label="权限描述" />
         <el-table-column prop="permission" label="权限标识" />
         <el-table-column prop="menuName" label="菜单名称">
@@ -489,12 +489,11 @@ const handleAuthorizeBatchDialogClose = () => {
       justify-content: space-between;
       align-items: center;
       padding: 10px;
-      border-bottom: 1px solid #f0f0f0;
+      border-bottom: 1px solid var(--el-border-color);
 
       .card-title {
         font-size: 20px;
         font-weight: 600;
-        color: #1e293b;
         margin: 0;
         display: flex;
         align-items: center;
@@ -609,12 +608,10 @@ const handleAuthorizeBatchDialogClose = () => {
     }
 
     :deep(.el-table__header-wrapper) {
-      background-color: #f8fafc;
+      background-color: var(--el-bg-color);
       th {
         font-weight: 600;
         color: #475569;
-        background-color: #f8fafc !important;
-        border-bottom: 1px solid #e2e8f0;
       }
     }
 
@@ -691,9 +688,8 @@ const handleAuthorizeBatchDialogClose = () => {
     display: flex;
     justify-content: flex-end;
     padding: 10px;
-    background-color: #f8fafc;
+    background-color: var(--el-bg-color);
     border-radius: 0 0 12px 12px;
-    border-top: 1px solid #f0f0f0;
     z-index: 10;
     width: 100%;
     box-sizing: border-box;
@@ -821,9 +817,9 @@ const handleAuthorizeBatchDialogClose = () => {
         }
       }
 
-      table {
+      .table {
         margin-top: 0;
-        max-height: calc(100vh - 220px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
+        max-height: calc(100vh - 200px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
         :deep(.el-table) {
           display: block;
           width: 100%;

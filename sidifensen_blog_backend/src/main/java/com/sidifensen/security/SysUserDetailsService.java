@@ -4,15 +4,17 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.entity.*;
-import com.sidifensen.domain.enums.StatusEnum;
 import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
 import com.sidifensen.domain.enums.RoleEnum;
+import com.sidifensen.domain.enums.StatusEnum;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.*;
+import com.sidifensen.service.IpService;
 import com.sidifensen.utils.IpUtils;
+import com.sidifensen.utils.WebUtils;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -46,9 +48,12 @@ public class SysUserDetailsService implements UserDetailsService {
 
     @Resource
     private IpUtils ipUtils;
-    @Autowired
+
+    @Resource
     private SysPermissionMapper sysPermissionMapper;
 
+    @Resource
+    private IpService ipService;
 
     /**
      * 根据用户名查询用户信息
@@ -56,16 +61,24 @@ public class SysUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         // TODO 通过请求头 判断登录类型 账号/邮箱登录 或者 第三方登录
+        HttpServletRequest request = WebUtils.getRequest();
+        if (ObjectUtil.isEmpty(request)){
+            throw new BlogException(BlogConstants.CannotGetRequestInfo);
+        }
 
         // 根据用户名或邮箱登录
         SysUser sysUser = loginByUsernameOrEmail(username);
 
         sysUser.setLoginType(RegisterOrLoginTypeEnum.EMAIL.getRegisterType());
         sysUser.setLoginTime(new Date());
-        sysUser.setLoginIp(ipUtils.getIp());
+        String ip = ipUtils.getIp();
+        sysUser.setLoginIp(ip);
         sysUser.setLoginAddress(ipUtils.getAddress());
-        sysUserMapper.updateById(sysUser);
-
+        int i = sysUserMapper.updateById(sysUser);
+        if (i == 0) {
+            throw new BlogException(BlogConstants.NotFoundUser);
+        }
+        ipService.setLoginIp(sysUser.getId(),ip);
         return handleLogin(sysUser);
     }
 
@@ -77,11 +90,14 @@ public class SysUserDetailsService implements UserDetailsService {
                 .eq(SysUser::getRegisterType, RegisterOrLoginTypeEnum.EMAIL.getRegisterType());
         SysUser sysUser = sysUserMapper.selectOne(queryWrapper);
 
-        if (sysUser == null) {
+        if (ObjectUtil.isEmpty(sysUser)) {
             throw new BlogException(BlogConstants.NotFoundUser);
             // throw new UsernameNotFoundException("该用户不存在");
             // 如果用UsernameNotFoundException会被AbstractUserDetailsAuthenticationProvider的authenticate拦截，
             // 并且包装成BadCredentialsException, 返回"用户名或密码错误"的错误信息
+        }
+        if (sysUser.getStatus().equals(StatusEnum.DISABLE.getStatus())){
+            throw new BlogException(BlogConstants.UserDisabled);
         }
         return sysUser;
     }
@@ -107,6 +123,7 @@ public class SysUserDetailsService implements UserDetailsService {
             throw new BlogException(BlogConstants.NotFoundRole);
         }
 
+        // 如果用户是管理员或者查看者，则组装用户信息并返回
         if (sysRoles.stream().anyMatch(r -> r.getRole().equals("admin") || r.getRole().equals("viewer"))) {
             LoginUser loginUser = new LoginUser(setUserDetail(sysUser));
             return loginUser;

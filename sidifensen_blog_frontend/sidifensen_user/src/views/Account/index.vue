@@ -1,5 +1,5 @@
 <template>
-  <Header></Header>
+  <!-- <Header></Header> -->
   <div class="login_container">
     <div class="left_panel"></div>
     <div class="welcome_title">

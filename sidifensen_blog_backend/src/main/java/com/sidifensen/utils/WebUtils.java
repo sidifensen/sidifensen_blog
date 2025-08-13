@@ -1,5 +1,7 @@
 package com.sidifensen.utils;
 
+import cn.hutool.core.util.ObjectUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -58,6 +60,20 @@ public class WebUtils {
      */
     public static String getRequestUrl() {
         String requestURI = (((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()).getRequestURI();
-        return requestURI;
+        if (ObjectUtil.isNotEmpty(requestURI)){
+            return requestURI;
+        }
+        return null;
+    }
+
+    /**
+     * 获取request
+     */
+    public static HttpServletRequest getRequest() {
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (ObjectUtil.isNotEmpty(requestAttributes)) {
+            return requestAttributes.getRequest();
+        }
+        return null;
     }
 }

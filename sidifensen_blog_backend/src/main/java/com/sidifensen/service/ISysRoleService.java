@@ -31,4 +31,5 @@ public interface ISysRoleService extends IService<SysRole> {
 
     // 查找角色
     List<SysRoleVo> search(String name);
+
 }

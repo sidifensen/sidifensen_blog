@@ -37,13 +37,18 @@
     <el-divider>其他登录方式</el-divider>
     <!-- 其他的登录方式 -->
     <div class="other-login">
-      <svg-icon name="gitee" width="35px" height="35px" color="#4E86F1" cursor="pointer" />
-      <svg-icon name="github" width="36px" height="36px" color="#4E86F1" cursor="pointer" />
+      <el-link underline="never" :href="giteeLogin">
+        <svg-icon @click="giteeLogin" name="gitee" width="35px" height="35px" color="#4E86F1" cursor="pointer" />
+      </el-link>
+      <el-link underline="never" :href="githubLogin"> 
+        <svg-icon name="github" width="36px" height="36px" color="#4E86F1" cursor="pointer" />
+      </el-link>
     </div>
   </el-form>
 </template>
 
 <script setup>
+import { giteeLogin, githubLogin } from "@/api/oauth";
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { login, checkCode, info } from "@/api/user";
@@ -84,7 +89,7 @@ const loginBtn = () => {
           info().then((res) => {
             userStore.user = res.data.data;
           })
-          router.push("/");
+          router.push({name: "index"});
         })
         .catch(() => {
           //刷新验证码

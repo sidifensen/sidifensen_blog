@@ -17,7 +17,9 @@ import com.sidifensen.mapper.PhotoMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.security.SysUserDetailsService;
+import com.sidifensen.service.ISysUserRoleService;
 import com.sidifensen.service.ISysUserService;
+import com.sidifensen.service.IpService;
 import com.sidifensen.utils.IpUtils;
 import com.sidifensen.utils.JwtUtils;
 import com.sidifensen.utils.SecurityUtils;
@@ -78,6 +80,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Resource
     private IpUtils ipUtils;
 
+    @Resource
+    private IpService ipService;
+
+    @Resource
+    private ISysUserRoleService sysUserRoleService;
+
     @Override
     public String login(LoginDto loginDto) {
         try {
@@ -98,6 +106,19 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             redisComponent.cleanCheckCode(loginDto.getCheckCodeKey());
         }
 
+    }
+
+    @Override
+    public String oauthLogin(OauthLoginDto oauthLoginDto) {
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(oauthLoginDto.getUsername(), oauthLoginDto.getPassword());
+        // 调用loadUserByUsername方法
+        Authentication authenticate = authenticationManager.authenticate(authentication);
+        // 获取用户信息，返回的就是UserDetails
+        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
+        // 创建token,此处的token时由UUID编码而成JWT字符串
+        String token = jwtUtils.createToken(loginUser.getSysUser().getId(),true);
+        return token;
     }
 
     @Override
@@ -128,9 +149,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         user.setRegisterIp(ipUtils.getIp());
         user.setRegisterAddress(ipUtils.getAddress());
         user.setStatus(StatusEnum.NORMAL.getStatus());
+        String ip = ipUtils.getIp();
 
         int insert = sysUserMapper.insert(user);
         if (insert == 1) {
+            ipService.setRegisterIp(user.getId(),ip);
+            sysUserRoleService.setRegisterRole(user.getId());
+            redisComponent.cleanEmailCheckCode(registerDto.getEmail(), "register");
             log.info("用户{}注册成功", user.getUsername());
         }
 
@@ -298,6 +323,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         SysUserDetailVo sysUserDetailVo = BeanUtil.copyProperties(sysUserDetail, SysUserDetailVo.class);
         return sysUserDetailVo;
     }
+
 
 
 }

@@ -11,7 +11,7 @@
 
       <!-- 菜单表格 -->
       <el-table v-loading="loading" :data="paginatedMenuList" row-key="id" default-expand-all class="menu-table" style="height: 100%">
-        <el-table-column fixed prop="id" label="菜单id" width="120" />
+        <el-table-column prop="id" label="菜单id" width="120" />
         <el-table-column prop="parentId" label="父菜单id" />
         <el-table-column prop="name" label="菜单名称" />
         <el-table-column prop="path" label="路由路径" />
@@ -474,12 +474,12 @@ const handleAuthorizeDialogClose = () => {
       justify-content: space-between;
       align-items: center;
       padding: 10px;
-      border-bottom: 1px solid #f0f0f0;
+      border-bottom: 1px solid var(--el-border-color);
 
       .card-title {
         font-size: 20px;
         font-weight: 600;
-        color: #1e293b;
+        // color: #1e293b;
         margin: 0;
         display: flex;
         align-items: center;
@@ -537,15 +537,12 @@ const handleAuthorizeDialogClose = () => {
       display: flex;
       flex-direction: column;
       margin-top: 16px;
-      max-height: calc(100vh - 250px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
+      max-height: calc(100vh - 220px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
 
       :deep(.el-table__header-wrapper) {
-        background-color: #f8fafc;
         th {
           font-weight: 600;
           color: #475569;
-          background-color: #f8fafc !important;
-          border-bottom: 1px solid #e2e8f0;
         }
       }
 
@@ -640,9 +637,8 @@ const handleAuthorizeDialogClose = () => {
       display: flex;
       justify-content: flex-end;
       padding: 10px;
-      background-color: #f8fafc;
+      background-color: var(--el-bg-color);
       border-radius: 0 0 12px 12px;
-      border-top: 1px solid #f0f0f0;
       z-index: 10;
       width: 100%;
       box-sizing: border-box;
@@ -777,7 +773,7 @@ const handleAuthorizeDialogClose = () => {
       }
 
       .menu-table {
-        margin-top: 0;
+        max-height: calc(100vh - 200px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
       }
 
       .pagination-container {

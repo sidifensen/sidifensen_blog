@@ -1,51 +1,14 @@
 <template>
-<el-watermark content="sidifensen_blog">
-  <el-container class="layout-container">
-    <!-- 侧边栏 -->
-    <el-aside class="sidebar">
-      <div class="logo-container">
-        <div class="logo-icon"></div>
-        <h3 class="logo-text">管理员后台</h3>
-      </div>
-      <!-- pc端菜单 -->
-      <el-menu :default-active="activeMenu" class="el-menu-pc" background-color="#1e293b" text-color="#cbd5e1" active-text-color="#4ade80" :router="true">
-        <template v-for="menu in menus" :key="menu.id">
-          <el-sub-menu v-if="menu.children && menu.children.length > 0" :index="menu.path">
-            <template #title>
-              <el-icon :size="18"><component :is="menu.icon || 'Menu'" /></el-icon>
-              <span>{{ menu.name }}</span>
-            </template>
-            <template v-for="child in menu.children" :key="child.id">
-              <el-sub-menu v-if="child.children && child.children.length > 0" :index="child.path">
-                <template #title>
-                  <el-icon :size="18"><component :is="child.icon || 'Menu'" /></el-icon>
-                  <span>{{ child.name }}</span>
-                </template>
-                <template v-for="grandchild in child.children" :key="grandchild.id">
-                  <el-menu-item :index="grandchild.path">
-                    <el-icon :size="16"><component :is="grandchild.icon || 'Menu'" /></el-icon>
-                    <span>{{ grandchild.name }}</span>
-                  </el-menu-item>
-                </template>
-              </el-sub-menu>
-              <el-menu-item v-else :index="child.path">
-                <el-icon :size="18"><component :is="child.icon || 'Menu'" /></el-icon>
-                <span>{{ child.name }}</span>
-              </el-menu-item>
-            </template>
-          </el-sub-menu>
-          <el-menu-item v-else :index="menu.path">
-            <el-icon :size="18"><component :is="menu.icon || 'Menu'" /></el-icon>
-            <span>{{ menu.name }}</span>
-          </el-menu-item>
-        </template>
-      </el-menu>
-    </el-aside>
-
-    <!-- 移动端菜单 -->
-    <transition name="slide-fade">
-      <div v-show="isMobileMenuVisible" class="mobile-menu-overlay" @click="closeMobileMenu">
-        <el-menu :default-active="activeMenu" class="el-menu-mobile" background-color="#1e293b" text-color="#cbd5e1" active-text-color="#4ade80" :router="true" @click.stop @select="closeMobileMenu">
+  <el-watermark content="sidifensen_blog">
+    <el-container class="layout-container">
+      <!-- 侧边栏 -->
+      <el-aside class="sidebar">
+        <div class="logo-container">
+          <div class="logo-icon"></div>
+          <h3 class="logo-text">管理员后台</h3>
+        </div>
+        <!-- pc端菜单 -->
+        <el-menu :default-active="activeMenu" class="el-menu-pc" background-color="#1e293b" text-color="#cbd5e1" active-text-color="#4ade80" :router="true">
           <template v-for="menu in menus" :key="menu.id">
             <el-sub-menu v-if="menu.children && menu.children.length > 0" :index="menu.path">
               <template #title>
@@ -55,7 +18,7 @@
               <template v-for="child in menu.children" :key="child.id">
                 <el-sub-menu v-if="child.children && child.children.length > 0" :index="child.path">
                   <template #title>
-                    <el-icon :size="16"><component :is="child.icon || 'Menu'" /></el-icon>
+                    <el-icon :size="18"><component :is="child.icon || 'Menu'" /></el-icon>
                     <span>{{ child.name }}</span>
                   </template>
                   <template v-for="grandchild in child.children" :key="grandchild.id">
@@ -66,7 +29,7 @@
                   </template>
                 </el-sub-menu>
                 <el-menu-item v-else :index="child.path">
-                  <el-icon :size="16"><component :is="child.icon || 'Menu'" /></el-icon>
+                  <el-icon :size="18"><component :is="child.icon || 'Menu'" /></el-icon>
                   <span>{{ child.name }}</span>
                 </el-menu-item>
               </template>
@@ -77,32 +40,70 @@
             </el-menu-item>
           </template>
         </el-menu>
-      </div>
-    </transition>
+      </el-aside>
 
-    <!-- 主内容区域 -->
-    <el-container class="main-content">
-      <!-- 顶部导航栏 -->
-      <el-header class="header">
-        <!-- 移动端菜单按钮 -->
-        <div class="mobile-menu-button" @click="toggleMobileMenu">
-          <svg-icon name="menu" width="35px" height="35px" cursor="pointer" />
-        </div>
-        <div class="header-right">
-          <el-dropdown trigger="hover">
-            <span class="user-info">
-              <el-icon><User /></el-icon>
-              <span>{{ user.username }}</span>
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
-              </el-dropdown-menu>
+      <!-- 移动端菜单 -->
+      <transition name="slide-fade">
+        <div v-show="isMobileMenuVisible" class="mobile-menu-overlay" @click="closeMobileMenu">
+          <el-menu :default-active="activeMenu" class="el-menu-mobile" background-color="#1e293b" text-color="#cbd5e1" active-text-color="#4ade80" :router="true" @click.stop @select="closeMobileMenu">
+            <template v-for="menu in menus" :key="menu.id">
+              <el-sub-menu v-if="menu.children && menu.children.length > 0" :index="menu.path">
+                <template #title>
+                  <el-icon :size="18"><component :is="menu.icon || 'Menu'" /></el-icon>
+                  <span>{{ menu.name }}</span>
+                </template>
+                <template v-for="child in menu.children" :key="child.id">
+                  <el-sub-menu v-if="child.children && child.children.length > 0" :index="child.path">
+                    <template #title>
+                      <el-icon :size="16"><component :is="child.icon || 'Menu'" /></el-icon>
+                      <span>{{ child.name }}</span>
+                    </template>
+                    <template v-for="grandchild in child.children" :key="grandchild.id">
+                      <el-menu-item :index="grandchild.path">
+                        <el-icon :size="16"><component :is="grandchild.icon || 'Menu'" /></el-icon>
+                        <span>{{ grandchild.name }}</span>
+                      </el-menu-item>
+                    </template>
+                  </el-sub-menu>
+                  <el-menu-item v-else :index="child.path">
+                    <el-icon :size="16"><component :is="child.icon || 'Menu'" /></el-icon>
+                    <span>{{ child.name }}</span>
+                  </el-menu-item>
+                </template>
+              </el-sub-menu>
+              <el-menu-item v-else :index="menu.path">
+                <el-icon :size="18"><component :is="menu.icon || 'Menu'" /></el-icon>
+                <span>{{ menu.name }}</span>
+              </el-menu-item>
             </template>
-          </el-dropdown>
+          </el-menu>
         </div>
-      </el-header>
-      <!-- 内容区域 -->
+      </transition>
+
+      <!-- 主内容区域 -->
+      <el-container class="main-content">
+        <!-- 顶部导航栏 -->
+        <el-header class="header">
+          <!-- 移动端菜单按钮 -->
+          <div class="mobile-menu-button" @click="toggleMobileMenu">
+            <svg-icon name="menu" width="35px" height="35px" cursor="pointer" />
+          </div>
+          <div class="header-right">
+            <Dark />
+            <el-dropdown trigger="hover">
+              <span class="user-info">
+                <el-icon><User /></el-icon>
+                <span>{{ user.username }}</span>
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+        </el-header>
+        <!-- 内容区域 -->
         <el-main class="content">
           <RouterView />
         </el-main>
@@ -116,6 +117,7 @@ import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/userStore";
 import { ElMessage } from "element-plus";
+import Dark from "./Dark.vue";
 
 const userStore = useUserStore();
 const router = useRouter();
@@ -268,7 +270,8 @@ const handleLogout = () => {
     // 顶部导航栏
     .header {
       height: 60px;
-      background-color: #ffffff;
+      background-color: var(--el-bg-color);
+      border-bottom: 1px solid var(--el-border-color-light);
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
       display: flex;
       justify-content: flex-end;
@@ -294,7 +297,7 @@ const handleLogout = () => {
           transition: background-color 0.2s ease;
 
           &:hover {
-            background-color: #f1f5f9;
+            background-color: #f1f5f9
           }
 
           .el-icon {
@@ -309,7 +312,7 @@ const handleLogout = () => {
     .content {
       flex: 1;
       padding: 10px;
-      background-color: #f8fafc;
+      background-color: var(--el-bg-color);
       overflow-y: auto;
       :deep(.menu-management-container) {
         padding: 0px;

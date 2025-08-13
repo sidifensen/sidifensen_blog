@@ -12,6 +12,12 @@ spring:
     jwt:
       secret: sidifensen # jwt 密钥
   datasource:
+    hikari:
+      maximum-pool-size: 50          # 增加连接池大小
+      minimum-idle: 10               # 最小空闲连接
+      connection-timeout: 30000      # 连接超时时间
+      idle-timeout: 600000           # 空闲连接超时
+      max-lifetime: 1800000          # 连接最大生命周期
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/sidifensen_blog
     username: root
@@ -36,7 +42,7 @@ spring:
             required: true # 要求使用TLS协议
           ssl:
             enable: true # 开启SSL协议
-#        debug: true # 调试模式
+  #        debug: true # 调试模式
   rabbitmq:
     host: localhost
     port: 5672
@@ -58,3 +64,16 @@ minio: # minio 配置
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 打印sql日志到控制台
+oauth:
+  # gitee 登录
+  gitee:
+    client-id: 3768dadcd522198bdaf81fcb70b2412f438977ab6eeb0586b0dbca7ec333fbf0
+    client-secret: e0bc2c0847994f0fca074ae515b557eed0195edc7aae0d31874888e2f58873f3
+    redirect-uri: http://127.0.0.1:5000/oauth/gitee/callback
+  # gitub 登录
+  github:
+    client-id: Ov23lih4dEXnCCX6dvjW
+    client-secret: caa79068deee76fb29346e261f285047d72441ea
+    redirect-uri: http://127.0.0.1:5000/oauth/github/callback
+frontend:
+  host: http://localhost:7000/

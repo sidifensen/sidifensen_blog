@@ -20,7 +20,7 @@ const router = createRouter({
           },
         },
         {
-          path: "/albumSquare",
+          path: "/album/square",
           name: "AlbumSquare",
           component: () => import("@/views/Album/AlbumSquare.vue"),
           meta: {
@@ -28,7 +28,7 @@ const router = createRouter({
           },
         },
         {
-          path: "/myAlbum",
+          path: "/album/myAlbum",
           name: "MyAlbum",
           component: () => import("@/views/Album/MyAlbum.vue"),
           meta: {
@@ -43,37 +43,37 @@ const router = createRouter({
             title: "相册详情",
           },
         },
-      ],
-    },
-    {
-      path: "/account",
-      name: "account",
-      component: () => import("@/views/Account/index.vue"),
-      redirect: "/login",
-      children: [
         {
-          path: "/login",
-          component: () => import("@/views/Account/Login/index.vue"),
-          name: "login",
-          meta: {
-            title: "用户登录",
-          },
-        },
-        {
-          path: "/register",
-          component: () => import("@/views/Account/Register/index.vue"),
-          name: "register",
-          meta: {
-            title: "用户注册",
-          },
-        },
-        {
-          path: "/reset",
-          component: () => import("@/views/Account/Reset/index.vue"),
-          name: "reset",
-          meta: {
-            title: "重置密码",
-          },
+          path: "/account",
+          name: "Account",
+          component: () => import("@/views/Account/index.vue"),
+          redirect: "/login",
+          children: [
+            {
+              path: "/login",
+              component: () => import("@/views/Account/Login/index.vue"),
+              name: "login",
+              meta: {
+                title: "用户登录",
+              },
+            },
+            {
+              path: "/register",
+              component: () => import("@/views/Account/Register/index.vue"),
+              name: "register",
+              meta: {
+                title: "用户注册",
+              },
+            },
+            {
+              path: "/reset",
+              component: () => import("@/views/Account/Reset/index.vue"),
+              name: "reset",
+              meta: {
+                title: "重置密码",
+              },
+            },
+          ],
         },
       ],
     },

@@ -5,6 +5,7 @@ import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.SecurityConstants;
 import com.sidifensen.domain.entity.LoginUser;
 import com.sidifensen.domain.entity.SysUser;
+import com.sidifensen.domain.enums.StatusEnum;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.utils.JwtUtils;
@@ -69,6 +70,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
             // 根据id查询用户信息
             SysUser sysUser = sysUserMapper.selectById(id);
+            if (ObjectUtil.isEmpty(sysUser)){
+                // 用户不存在
+                log.error("用户访问接口{},提示:用户不存在", request.getRequestURI());
+                WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.NotFoundUser).toJson());
+                return;
+            }
+            if (sysUser.getStatus() == StatusEnum.DISABLE.getStatus()){
+                // 用户已被禁用
+                log.error("用户访问接口{},提示:用户已被禁用", request.getRequestURI());
+                WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.UserDisabled).toJson());
+                return;
+            }
             // 将SysUser转换为LoginUser
             LoginUser loginUser = userDetailsService.handleLogin(sysUser);
             if (ObjectUtil.isNotEmpty(loginUser)) {

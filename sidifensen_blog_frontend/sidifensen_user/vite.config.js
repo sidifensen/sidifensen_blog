@@ -27,7 +27,7 @@ export default defineConfig({
       resolvers: [ElementPlusResolver()],
     }),
     vue(),
-    // vueDevTools(),
+    vueDevTools(),
     // 配置自定义icon
     createSvgIconsPlugin({
       //这行代码的作用是将项目根目录下的 src/assets/svg 目录作为图标文件的查找目录

@@ -1,12 +1,12 @@
 create table sys_user
 (
     id               int primary key auto_increment comment '用户id',
-    username         varchar(10)  not null comment '用户名',
+    username         varchar(50)  not null comment '用户名',
     password         varchar(100) not null comment '密码',
     nickname         varchar(10)  not null comment '昵称',
     email            varchar(50)  not null comment '邮箱',
     sex              tinyint               default 0 comment '性别 0-男 1-女',
-    introduction     varchar(50) comment '简介',
+    introduction     varchar(100) comment '简介',
     avatar           varchar(255) comment '头像',
     status           tinyint      not null default 0 comment '状态 0-正常 1-禁用',
     register_type    tinyint               default 0 comment '注册方式 0-用户名/邮箱 1-gitee 2-github 3-QQ',

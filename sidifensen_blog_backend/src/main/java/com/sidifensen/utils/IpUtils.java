@@ -5,9 +5,14 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.sidifensen.domain.entity.IpDetail;
 import com.sidifensen.domain.result.IpResult;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 获取IP方法
@@ -17,8 +22,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class IpUtils {
 
-    @Resource
-    private HttpServletRequest request;
+    private static final Logger log = LoggerFactory.getLogger(IpUtils.class);
 
     /**
      * 获取客户端IP
@@ -26,6 +30,7 @@ public class IpUtils {
      * @return IP地址
      */
     public String getIp() {
+        HttpServletRequest request = WebUtils.getRequest();
         if (request == null) {
             return "unknown";
         }
@@ -80,15 +85,14 @@ public class IpUtils {
         return StrUtil.isBlank(checkString) || "unknown".equalsIgnoreCase(checkString);
     }
 
-
-    private static final String GET_IP_URL = "https://ip9.com.cn/get?ip={}";
+    private static final String GET_IP_URL = "https://ip9.com.cn/get";
+    private static final String GET_IP_URL1 = "https://ip9.com.cn/get?ip={}";
 
     // 发送请求获取IP地址
     public String getAddress() {
         String address;
-        String ip = getIp();
         try {
-            String res = HttpUtil.get(StrUtil.format(GET_IP_URL, ip));
+            String res = HttpUtil.get(GET_IP_URL);
             IpResult ipResult = JSONUtil.toBean(res, IpResult.class);
             IpDetail ipDetail = JSONUtil.toBean(ipResult.getData(), IpDetail.class);
             if (ipDetail.getIsp().equals("内网地址") || ipDetail.getIsp().equals("回环地址") || ipDetail.getIsp().equals("本机网络")) {
@@ -103,29 +107,54 @@ public class IpUtils {
         return address;
     }
 
-    public static void main(String[] args) {
-        long startTime = System.currentTimeMillis();
-        int requestCount = 100;
-        System.out.println("=== 测试开始 ===");
-
-        IpUtils ipUtils = new IpUtils();
-
-        for (int i = 0; i < requestCount; i++) {
-            String ipDetail = ipUtils.getAddress();
-            System.out.println("Request " + (i + 1) + ": " + ipDetail);
+    // 发送请求获取IP地址
+    public String getAddress(String ip) {
+        String address;
+        try {
+            String res = HttpUtil.get(StrUtil.format(GET_IP_URL1, ip));
+            IpResult ipResult = JSONUtil.toBean(res, IpResult.class);
+            IpDetail ipDetail = JSONUtil.toBean(ipResult.getData(), IpDetail.class);
+            if (ipDetail.getIsp().equals("内网地址") || ipDetail.getIsp().equals("回环地址") || ipDetail.getIsp().equals("本机网络")) {
+                address = "内网地址";
+            } else {
+                address = ipDetail.getCountry() + "-" + ipDetail.getProv() + "-" + ipDetail.getCity() + "-" + ipDetail.getArea();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("获取IP地址失败");
         }
+        return address;
+    }
 
-        long endTime = System.currentTimeMillis();
-        long totalTime = endTime - startTime;
+    public static void main(String[] args) throws InterruptedException {
+        ExecutorService executor = Executors.newFixedThreadPool(8);
+        executor.execute(() -> {
 
-        System.out.println("\n=== 测试结果 ===");
-        System.out.println("请求次数: " + requestCount);
-        System.out.println("总耗时: " + totalTime + " ms");
-        System.out.println("平均每次请求耗时: " + (totalTime / (double) requestCount) + " ms");
+            long startTime = System.currentTimeMillis();
+            int requestCount = 100;
+            System.out.println("=== 测试开始 ===");
+
+            IpUtils ipUtils = new IpUtils();
+
+            for (int i = 0; i < requestCount; i++) {
+                String ipDetail = ipUtils.getAddress();
+                System.out.println("Request " + (i + 1) + ": " + ipDetail);
+            }
+
+            long endTime = System.currentTimeMillis();
+            long totalTime = endTime - startTime;
+
+            System.out.println("\n=== 测试结果 ===");
+            System.out.println("请求次数: " + requestCount);
+            System.out.println("总耗时: " + totalTime + " ms");
+            System.out.println("平均每次请求耗时: " + (totalTime / (double) requestCount) + " ms");
+        });
         //=== 测试结果 ===
         //请求次数: 60
         //总耗时: 61098 ms
         //平均每次请求耗时: 1018.3 ms
+        executor.shutdown();
+        executor.awaitTermination(60, TimeUnit.SECONDS);
     }
 
 

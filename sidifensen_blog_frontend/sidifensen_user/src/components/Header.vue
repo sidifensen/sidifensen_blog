@@ -1,54 +1,50 @@
 <template>
-  <el-menu :default-active="activeIndex" class="pc-menu" mode="horizontal" @select="handleSelect" :ellipsis="false" :class="{ hidden: !isVisible }">
+  <el-menu :default-active="activeIndex" router class="pc-menu" mode="horizontal" @select="handleSelect" :ellipsis="false" :class="{ hidden: !isVisible }">
     <!-- 移动端菜单按钮 -->
     <div class="mobile-menu-button" @click="toggleMobileMenu">
       <svg-icon name="menu" width="50px" height="50px" cursor="pointer" />
     </div>
 
     <router-link class="logo" to="/"><el-text size="large" class="logo-text">斯蒂芬森博客</el-text></router-link>
-    <el-menu-item index="1" class="menu-item">
-      <router-link to="/">
-        <el-icon><House /></el-icon>
-        <span class="menu-text">首页</span>
-      </router-link>
+    <el-menu-item index="/" class="menu-item">
+      <el-icon><House /></el-icon>
+      <span class="menu-text">首页</span>
     </el-menu-item>
-    <el-menu-item index="2" class="menu-item">
+    <el-menu-item index="/article" class="menu-item">
       <el-icon><Message /></el-icon>
       <span class="menu-text">文章</span>
     </el-menu-item>
-    <el-menu-item index="3" class="menu-item">
-      <router-link to="/albumSquare">
-        <el-icon><Picture /></el-icon>
-        <span class="menu-text">相册</span>
-      </router-link>
+    <el-menu-item index="/album/square" class="menu-item">
+      <el-icon><Picture /></el-icon>
+      <span class="menu-text">相册</span>
     </el-menu-item>
-    <el-sub-menu index="4" class="menu-item">
+    <el-sub-menu index="/archive" class="menu-item">
       <template #title>
         <el-icon><Files /></el-icon>
         <span class="menu-text">归档</span>
       </template>
-      <el-menu-item index="4-1">
+      <el-menu-item index="/category">
         <el-icon> <DocumentCopy /></el-icon>分类
       </el-menu-item>
-      <el-menu-item index="4-2">
+      <el-menu-item index="/tag">
         <el-icon><PriceTag /></el-icon>标签
       </el-menu-item>
-      <el-menu-item index="4-3">
+      <el-menu-item index="/timeline">
         <el-icon> <Clock /> </el-icon>时间轴
       </el-menu-item>
     </el-sub-menu>
-    <el-sub-menu index="5" class="menu-item">
+    <el-sub-menu index="/other" class="menu-item">
       <template #title>
         <el-icon><Menu /></el-icon>
         <span class="menu-text">其他</span>
       </template>
-      <el-menu-item index="5-1">
+      <el-menu-item index="/confession">
         <el-icon><Fries /></el-icon>树洞
       </el-menu-item>
-      <el-menu-item index="5-2">
+      <el-menu-item index="/message-board">
         <el-icon><Postcard /></el-icon>留言板
       </el-menu-item>
-      <el-menu-item index="5-3">
+      <el-menu-item index="/about">
         <el-icon><UserFilled /></el-icon>关于
       </el-menu-item>
     </el-sub-menu>
@@ -61,10 +57,11 @@
         <el-icon size="29px" color="#3d92eb"><Search /></el-icon>
       </div>
       <Dark />
-      <div v-if="user.nickname" class="user-info">
+      <div v-if="user" class="user-info">
         <el-text size="large" class="nickname">{{ user.nickname }}</el-text>
         <el-dropdown>
-          <el-avatar style="cursor: pointer" :size="45" :src="user.avatar" />
+          <el-avatar v-if="user.avatar" style="cursor: pointer" :size="45" :src="user.avatar"/>
+          <el-avatar v-else style="cursor: pointer" :size="45" :icon="UserFilled"  />
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item>个人设置</el-dropdown-item>
@@ -73,9 +70,7 @@
           </template>
         </el-dropdown>
       </div>
-      <div class="login" v-else>
-        <router-link to="/account">登录</router-link>
-      </div>
+      <div class="login" v-else @click="handleLoginClick">登录</div>
     </div>
   </el-menu>
 
@@ -141,12 +136,58 @@ import Dark from "./Dark.vue";
 import { useUserStore } from "@/stores/userStore.js";
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { storeToRefs } from "pinia";
+import { useRoute, useRouter } from "vue-router";
+import { info, oauthLogin } from "@/api/user";
+import { SetJwt } from "@/utils/Auth";
+// 引入ElMessage
+import { ElMessage } from 'element-plus';
+import { UserFilled } from "@element-plus/icons-vue";
 
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
+const router = useRouter();
+const route = useRoute();
 
-import { RemoveJwt } from "@/utils/Auth";
-import { info } from "@/api/user";
+// 当前激活的菜单索引
+const activeIndex = ref("/");
+
+// 监听路由变化，更新激活的菜单
+router.afterEach((to) => {
+  activeIndex.value = to.path;
+});
+
+// 处理菜单选择事件
+const handleSelect = (index) => {
+  // 进行路由跳转
+  router.push(index);
+};
+
+const handleLoginClick = () => {
+  // 根据路由名称跳转
+  router.push({ name: "Account" });
+};
+
+const oauth = () => {
+  let user_name = route.query.user_name;
+  let access_token = route.query.access_token;
+  // 如果地址中有参数，则进行登录
+  if (user_name && access_token) {
+    oauthLogin({username: user_name, password: access_token })
+    .then(async (res) => {
+      // 去除url上面的参数
+      await router.replace({ query: {} });
+      ElMessage.success("登录成功");
+      // 将jwt存储到localStorage
+      SetJwt(res.data.data);
+      info().then((res) => {
+        userStore.user = res.data.data;
+        router.push({name: "index"});
+      });
+    });
+  }
+};
+
+oauth();
 
 const getUserInfo = async () => {
   const res = await info();
@@ -154,8 +195,7 @@ const getUserInfo = async () => {
 };
 
 const logout = () => {
-  RemoveJwt();
-  user.value = {};
+  userStore.clearUser();
 };
 
 // 头部是否可见
@@ -193,7 +233,7 @@ const closeMobileMenu = () => {
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
   // 如果pinia有userid再获取用户信息
-  if (user.value.id) {
+  if (user.value) {
     getUserInfo();
   }
 });
@@ -315,8 +355,9 @@ onBeforeUnmount(() => {
       width: 45px;
       height: 45px;
       margin-left: 5px;
-      background-color: #f0f0f0;
-      font-size: 12px;
+      background-color: var(--el-bg-color);
+      border: 1px solid var(--el-border-color);
+      font-size: 15px;
       border-radius: 50%;
       cursor: pointer;
     }

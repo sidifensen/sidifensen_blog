@@ -26,4 +26,6 @@ public interface ISysUserRoleService extends IService<SysUserRole> {
 
     List<SysUserVo> getUsers(Integer roleId);
 
+    void setRegisterRole(Integer userId);
+
 }

@@ -18,5 +18,10 @@ public class SecurityConstants {
             "/user/resetPassword",
             "/user/admin/login",
             "/album/listAll",
+            "/oauth/gitee/login",
+            "/oauth/gitee/callback",
+            "/oauth/github/login",
+            "/oauth/github/callback",
+            "/user/oauthLogin"
     };
 }

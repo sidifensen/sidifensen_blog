@@ -22,6 +22,10 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -49,7 +53,7 @@ public class SysUserRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUs
         List<Integer> userIds = sysUserRoleDto.getUserIds();
         Integer roleId = sysUserRoleDto.getRoleId();
 
-        if (ObjectUtil.isEmpty(userIds)){
+        if (ObjectUtil.isEmpty(userIds)) {
             // 用户没有选择, 删除所有关联记录
             this.remove(Wrappers.<SysUserRole>lambdaQuery().eq(SysUserRole::getRoleId, roleId));
             return;
@@ -75,7 +79,7 @@ public class SysUserRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUs
                 .collect(Collectors.toList());
 
         // 批量保存关联记录
-        if (ObjectUtil.isNotEmpty(sysUserRoles)){
+        if (ObjectUtil.isNotEmpty(sysUserRoles)) {
             boolean exist = this.saveBatch(sysUserRoles);
             if (!exist) {
                 throw new BlogException(BlogConstants.ExistUserRole);
@@ -88,7 +92,7 @@ public class SysUserRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUs
                 .eq(SysUserRole::getRoleId, roleId)
                 .list();
 
-        if (ObjectUtil.isNotEmpty(notExistSysUserRoles)){
+        if (ObjectUtil.isNotEmpty(notExistSysUserRoles)) {
             boolean exist = this.removeBatchByIds(notExistSysUserRoles);
             if (!exist) {
                 throw new BlogException(BlogConstants.ExistUserRole);
@@ -123,7 +127,7 @@ public class SysUserRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUs
         List<Integer> roleIds = sysUserRoleDto.getRoleIds();
         Integer userId = sysUserRoleDto.getUserId();
 
-        if (ObjectUtil.isEmpty(roleIds)){
+        if (ObjectUtil.isEmpty(roleIds)) {
             // 用户没有选择, 删除所有关联记录
             this.remove(Wrappers.<SysUserRole>lambdaQuery().eq(SysUserRole::getUserId, userId));
             return;
@@ -163,7 +167,7 @@ public class SysUserRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUs
                 .eq(SysUserRole::getUserId, userId)
                 .list();
 
-        if (ObjectUtil.isNotEmpty(notExistSysUserRoles)){
+        if (ObjectUtil.isNotEmpty(notExistSysUserRoles)) {
             boolean exist = this.removeBatchByIds(notExistSysUserRoles);
             if (!exist) {
                 throw new BlogException(BlogConstants.ExistUserRole);
@@ -189,5 +193,26 @@ public class SysUserRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUs
         }
         List<SysUserVo> sysUserVos = BeanUtil.copyToList(sysUsers, SysUserVo.class);
         return sysUserVos;
+    }
+
+    ExecutorService executor = new ThreadPoolExecutor(1, 1, 0l, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(500));
+
+    @Override
+    public void setRegisterRole(Integer userId) {
+        executor.execute(() -> {
+            // 设置注册用户的角色
+            SysRole sysRole = sysRoleMapper.selectOne(Wrappers.<SysRole>lambdaQuery().eq(SysRole::getRole, "user"));
+            if (ObjectUtil.isEmpty(sysRole)) {
+                throw new BlogException(BlogConstants.NotFoundRole);
+            }
+            SysUserRole sysUserRole = new SysUserRole();
+            sysUserRole.setUserId(userId);
+            sysUserRole.setRoleId(sysRole.getId());
+            boolean exist = this.save(sysUserRole);
+            if (!exist) {
+                throw new BlogException(BlogConstants.ExistUserRole);
+            }
+        });
     }
 }

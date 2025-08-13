@@ -59,7 +59,16 @@ public class SysUserController {
     @PostMapping("/login")
     public Result login(@RequestBody @Valid LoginDto loginDto) {
         String jwt = sysUserService.login(loginDto);
-        return Result.success(jwt, "登录成功");
+        return Result.success(jwt);
+    }
+
+    /**
+     * oauth登录
+     */
+    @PostMapping("/oauthLogin")
+    public Result oauthLogin(@RequestBody @Valid OauthLoginDto oauthLoginDto) {
+        String jwt = sysUserService.oauthLogin(oauthLoginDto);
+        return Result.success(jwt);
     }
 
     /**

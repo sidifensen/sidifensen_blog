@@ -36,7 +36,7 @@ public class GlobalException {
 
     @ExceptionHandler(AuthenticationException.class)
     Object handleAuthenticationException(AuthenticationException e) {
-        log.error("认证异常：{}", e.getMessage());
+        log.error("认证异常：{}", e.getMessage()); // 用户帐号已被锁定
         return Result.unauthorized(e.getMessage()); // BadCredentialsException: 用户名或密码错误
     }
 

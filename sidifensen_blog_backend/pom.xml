@@ -106,6 +106,18 @@
             <artifactId>minio</artifactId>
             <version>8.3.6</version>
         </dependency>
+        <!--JustAuth-->
+        <dependency>
+            <groupId>me.zhyd.oauth</groupId>
+            <artifactId>JustAuth</artifactId>
+            <version>1.16.7</version>
+        </dependency>
+        <!--阿里云图片内容安全-->
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>imageaudit20191230</artifactId>
+            <version>2.0.6</version>
+        </dependency>
     </dependencies>
 
     <build>
