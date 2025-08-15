@@ -1,11 +1,14 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.aspect.TimeConsuming;
 import com.sidifensen.domain.dto.AlbumDto;
 import com.sidifensen.domain.result.Result;
+import com.sidifensen.domain.vo.AlbumVo;
 import com.sidifensen.service.IAlbumService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,9 +29,10 @@ public class AlbumController {
      * @param albumId
      * @return
      */
+    @TimeConsuming
     @GetMapping("/{albumId}")
     public Result<Object> getAlbum(@PathVariable("albumId") Long albumId) {
-        AlbumDto album = albumService.getAlbum(albumId);
+        AlbumVo album = albumService.getAlbum(albumId);
         return Result.success(album);
     }
 
@@ -60,19 +64,19 @@ public class AlbumController {
      * @return
      */
     @DeleteMapping("/{albumId}")
-    public Result<String> deleteAlbum(@PathVariable("albumId") Long albumId) {
+    public Result<String> deleteAlbum(@PathVariable("albumId") Integer albumId) {
         albumService.deleteAlbum(albumId);
         return Result.success();
     }
 
     /**
-     * 查看用户所有的相册
+     * 查看当前用户所有的相册
      * @return
      */
     @GetMapping("/list")
     public Result<Object> listAlbum() {
-        List<AlbumDto> albumDtos = albumService.listAlbum();
-        return Result.success(albumDtos);
+        List<AlbumVo> albumVos = albumService.listAlbum();
+        return Result.success(albumVos);
     }
 
     /**
@@ -80,8 +84,8 @@ public class AlbumController {
      */
     @GetMapping("/listAll")
     public Result<Object> listAllAlbum() {
-        List<AlbumDto> albumDtos = albumService.listAllAlbum();
-        return Result.success(albumDtos);
+        List<AlbumVo> albumVos = albumService.listAllAlbum();
+        return Result.success(albumVos);
     }
 
     /**
@@ -111,10 +115,36 @@ public class AlbumController {
     /**
      * 管理端查看所有用户的相册
      */
-    @GetMapping("/listAllAlbums")
-    public Result<Object> listAllAlbums() {
-        List<AlbumDto> albumDtos = albumService.listAllAlbums();
-        return Result.success(albumDtos);
+    @PreAuthorize("hasAuthority('album:list')")
+    @GetMapping("/admin/list")
+    public Result<Object> adminList() {
+        List<AlbumVo> albumVos = albumService.adminList();
+        return Result.success(albumVos);
     }
+
+    /**
+     * 更新相册
+     * @param albumDto
+     * @return
+     */
+    @PreAuthorize("hasAuthority('album:update')")
+    @PutMapping("/admin/update")
+    public Result<String> adminUpdateAlbum(@RequestBody @Valid AlbumDto albumDto) {
+        albumService.adminUpdateAlbum(albumDto);
+        return Result.success();
+    }
+
+    /**
+     * 删除相册
+     * @param albumId
+     * @return
+     */
+    @PreAuthorize("hasAuthority('album:delete')")
+    @DeleteMapping("/admin/{albumId}")
+    public Result<String> adminDeleteAlbum(@PathVariable("albumId") Integer albumId) {
+        albumService.adminDeleteAlbum(albumId);
+        return Result.success();
+    }
+
 
 }

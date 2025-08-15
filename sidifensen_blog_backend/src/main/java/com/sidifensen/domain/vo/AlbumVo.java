@@ -1,10 +1,13 @@
-package com.sidifensen.domain.dto;
+package com.sidifensen.domain.vo;
 
+import com.sidifensen.domain.dto.PhotoDto;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
 
 /**
  * <p>
@@ -15,7 +18,7 @@ import java.io.Serializable;
  * @since 2025-07-30
  */
 @Data
-public class AlbumDto implements Serializable {
+public class AlbumVo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -46,5 +49,21 @@ public class AlbumDto implements Serializable {
     @Min(value = 0, message = "展示状态错误")
     @Max(value = 1, message = "展示状态错误")
     private Integer showStatus;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+
+    /**
+     * 相册用户名
+     */
+    private String userName;
+
+    /**
+     * 相册照片列表
+     */
+    private List<PhotoDto> photos;
 
 }

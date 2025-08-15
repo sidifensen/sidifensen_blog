@@ -18,10 +18,11 @@ public class SecurityConstants {
             "/user/resetPassword",
             "/user/admin/login",
             "/album/listAll",
+            "/album/{albumId:\\d+}",  // 限制albumId只能是数字
             "/oauth/gitee/login",
             "/oauth/gitee/callback",
             "/oauth/github/login",
             "/oauth/github/callback",
-            "/user/oauthLogin"
+            "/user/oauthLogin",
     };
 }

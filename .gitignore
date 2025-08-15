@@ -10,5 +10,7 @@ target
 .project
 logs
 job
-/src/main/resources/application.yaml
-/src/test/
+sidifensen_blog_backend/src/main/resources/application.yaml
+sidifensen_blog_backend/src/main/resources/application-dev.yaml
+sidifensen_blog_backend/src/main/resources/application-prod.yaml
+sidifensen_blog_backend/src/test/

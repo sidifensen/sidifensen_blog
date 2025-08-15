@@ -7,9 +7,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ExamineStatusEnum {
 
-    UNEXAMINED(0, "待审核"),
-    EXAMINED_PASS(1, "审核通过"),
-    EXAMINED_NOT_PASS(2, "审核未通过");
+    WAIT(0, "待审核"),
+    PASS(1, "审核通过"),
+    NO_PASS(2, "审核未通过");
 
     private final Integer code;
     private final String description;

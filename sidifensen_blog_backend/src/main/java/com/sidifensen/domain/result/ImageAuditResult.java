@@ -1,0 +1,36 @@
+package com.sidifensen.domain.result;
+
+/**
+ * 图片审核结果类
+ */
+public class ImageAuditResult {
+    /**
+     * 审核状态 0 审核通过 1 审核不通过 2 需要人工审核
+     */
+    private final Integer status;
+    /**
+     * 错误信息
+     */
+    private final String errorMessage;
+
+    public ImageAuditResult(Integer status, String errorMessage) {
+        this.status = status;
+        this.errorMessage = errorMessage;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    @Override
+    public String toString() {
+        return "ImageAuditResult{" +
+                "status=" + status +
+                ", errorMessage='" + errorMessage + '\'' +
+                '}';
+    }
+}

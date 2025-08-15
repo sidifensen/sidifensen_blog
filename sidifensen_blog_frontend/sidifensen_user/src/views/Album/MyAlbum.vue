@@ -8,7 +8,7 @@
             <el-button type="primary" @click="toAlbumSquare" class="album-square-btn">
               <el-icon style="margin-right: 2px"><HomeFilled /></el-icon>相册广场
             </el-button>
-            <el-button type="primary" @click="handleCreateAlbum" class="create-btn">
+            <el-button v-if="user" type="primary" @click="handleCreateAlbum" class="create-btn">
               <el-icon style="margin-right: 2px"><DocumentAdd /></el-icon>新建相册
             </el-button>
           </div>
@@ -18,21 +18,28 @@
       <div class="album-grid" v-loading="loading">
         <div v-for="album in albumList" :key="album.id" class="album-card">
           <div class="album-image-container" @click="handleViewAlbum(album.id)">
-            <el-image :src="album.coverUrl" class="album-image" fit="cover" />
+            <el-image :src="album.coverUrl || ''" class="album-image" fit="cover">
+              <template #placeholder>
+                <div class="loading-text">加载中...</div>
+              </template>
+              <template #error>
+                <div class="error">
+                  <el-icon><Picture /></el-icon>
+                </div>
+              </template>
+            </el-image>
             <div class="album-info">
               <h3 class="album-name">{{ album.name }}</h3>
             </div>
           </div>
         </div>
+        <el-empty v-if="albumList.length === 0" :image-size="200" description="暂无图片" />
       </div>
 
       <el-dialog v-model="dialogVisible" :title="'新建相册'">
         <el-form :model="albumForm" label-width="80px">
           <el-form-item label="相册名称">
             <el-input v-model="albumForm.name" />
-          </el-form-item>
-          <el-form-item label="相册描述">
-            <el-input v-model="albumForm.description" type="textarea" />
           </el-form-item>
         </el-form>
         <template #footer>
@@ -51,12 +58,16 @@ import { ref, onMounted } from "vue";
 import { listAlbum, createAlbum, updateAlbum, deleteAlbum, changeShowStatus, changeCover, getAlbum } from "@/api/album";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
+import { useUserStore } from "@/stores/userStore";
+import { storeToRefs } from "pinia";
+const userStore = useUserStore();
+const { user } = storeToRefs(userStore);
 
 const router = useRouter();
 const loading = ref(false);
 const albumList = ref([]);
 const dialogVisible = ref(false);
-const albumForm = ref({ name: "", description: "", coverUrl: "" });
+const albumForm = ref({ name: "", coverUrl: "" });
 
 const toAlbumSquare = () => {
   router.push({ name: "AlbumSquare" });
@@ -94,7 +105,6 @@ const submitAlbumForm = async () => {
       const AlbumDto = {
         id: albumForm.value.id,
         name: albumForm.value.name,
-        description: albumForm.value.description,
         coverUrl: albumForm.value.coverUrl,
       };
       await updateAlbum(AlbumDto);
@@ -141,6 +151,9 @@ const handleDeleteAlbum = async (albumId) => {
 // 页面加载时获取相册列表
 onMounted(() => {
   getAlbumList();
+  if (!user.value) {
+    router.push("/login");
+  }
 });
 </script>
 
@@ -280,6 +293,61 @@ onMounted(() => {
             height: 100%;
             background-color: #f0f0f0;
             transition: transform 0.5s;
+            .loading-text {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: 100%;
+              height: 100%;
+              font-size: 16px;
+              color: #606266;
+              background-color: #f5f5f5;
+            }
+            // 错误占位图标样式
+            .error {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: 100%;
+              height: 100%;
+              background-color: #f5f5f5;
+
+              .el-icon {
+                font-size: 40px;
+                color: #909399;
+              }
+            }
+            .loading-container {
+              position: absolute;
+              top: 0;
+              left: 0;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              width: 100%;
+              height: 100%;
+              background-color: #f5f5f5;
+            }
+            .loading-icon {
+              font-size: 30px;
+              color: #4096ff;
+              animation: rotate 1.5s linear infinite;
+            }
+            .loading-text {
+              margin-top: 10px;
+              font-size: 14px;
+              color: #909399;
+            }
+            /* 加载动画 */
+            @keyframes rotate {
+              from {
+                transform: rotate(0deg);
+              }
+              to {
+                transform: rotate(360deg);
+              }
+            }
           }
           /* 相册信息 */
           .album-info {

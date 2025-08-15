@@ -37,12 +37,6 @@ public class Photo implements Serializable {
     private String url;
 
     /**
-     * 相册id
-     */
-    private Integer albumId;
-
-
-    /**
      * 审核状态 0-待审核 1-审核通过 2-审核未通过
      */
     private Integer examineStatus;

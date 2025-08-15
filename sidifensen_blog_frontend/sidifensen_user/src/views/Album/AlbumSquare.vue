@@ -13,7 +13,16 @@
       <div class="album-grid" v-loading="loading">
         <div v-for="album in albums" :key="album.id" class="album-card">
           <div class="album-image-container" @click="handleViewAlbum(album.id)">
-            <el-image :src="album.coverUrl" class="album-image" fit="cover" />
+            <el-image :src="album.coverUrl || ''" class="album-image" fit="cover">
+              <template #placeholder>
+                <div class="loading-text">加载中...</div>
+              </template>
+              <template #error>
+                <div class="error">
+                  <el-icon><Picture /></el-icon>
+                </div>
+              </template>
+            </el-image>
             <div class="album-info">
               <h3 class="album-name">{{ album.name }}</h3>
               <h4 class="album-userName">{{ album.userName }}</h4>
@@ -38,8 +47,8 @@ const albums = ref([]);
 const getAllAlbums = async () => {
   loading.value = true;
   try {
-    const response = await listAllAlbum();
-    albums.value = response.data.data;
+    const res = await listAllAlbum();
+    albums.value = res.data.data;
   } catch (error) {
     console.error("获取相册列表失败:", error);
   } finally {
@@ -162,6 +171,63 @@ onMounted(() => {
             height: 100%;
             background-color: #f0f0f0;
             transition: transform 0.5s;
+            .loading-text {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: 100%;
+              height: 100%;
+              font-size: 16px;
+              color: #606266;
+              background-color: #f5f5f5;
+            }
+
+            // 错误占位图标样式
+            .error {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: 100%;
+              height: 100%;
+              background-color: #f5f5f5;
+
+              .el-icon {
+                font-size: 40px;
+                color: #909399;
+              }
+            }
+
+            .loading-container {
+              position: absolute;
+              top: 0;
+              left: 0;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              width: 100%;
+              height: 100%;
+              background-color: #f5f5f5;
+            }
+            .loading-icon {
+              font-size: 30px;
+              color: #4096ff;
+              animation: rotate 1.5s linear infinite;
+            }
+            .loading-text {
+              margin-top: 10px;
+              font-size: 14px;
+              color: #909399;
+            }
+            /* 加载动画 */
+            @keyframes rotate {
+              from {
+                transform: rotate(0deg);
+              }
+              to {
+                transform: rotate(360deg);
+              }
+            }
           }
           /* 相册信息 */
           .album-info {

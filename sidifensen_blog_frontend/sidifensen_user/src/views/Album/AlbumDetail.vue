@@ -31,8 +31,9 @@
             inline-prompt />
         </div>
         <div class="header-select" v-if="isAlbumOwner">
-          <el-button class="select-btn" style="margin-right: 10px" type="info" @click="toggleSelectMode">{{ isSelectMode ? "取消选择" : "选择图片" }}</el-button>
-          <el-button class="delete-btn" style="margin-right: 10px" v-show="selectedPhotos.length > 0" type="danger" @click="handleBatchDelete">
+          <el-button v-if="isSelectMode" class="select-all-btn" style="margin-right: 5px" type="success" @click="toggleAllSelection">{{ isAllSelected ? "取消全选" : "全选" }}</el-button>
+          <el-button class="select-btn" style="margin-right: 5px" type="info" @click="toggleSelectMode">{{ isSelectMode ? "取消选择" : "选择图片" }}</el-button>
+          <el-button class="delete-btn" style="margin-right: 5px" v-show="selectedPhotos.length > 0" type="danger" @click="handleBatchDelete">
             <el-icon><Delete /></el-icon>删除 ({{ selectedPhotos.length }})
           </el-button>
           <el-dropdown trigger="hover">
@@ -47,13 +48,31 @@
       </template>
 
       <!-- 按日期分组显示图片 -->
-      <div v-loading="loading" class="photo-container">
+      <div class="photo-container">
         <template v-for="(group, date) in groupedPhotos" :key="date">
           <div class="date-section">
-            <h3>{{ date }}</h3>
+            <div class="date-header">
+              <h3>{{ date }}</h3>
+              <el-checkbox v-if="isSelectMode" v-model="dateSelection[date]" @change="handleDateSelectionChange(date)" size="large" />
+            </div>
             <div class="photo-grid">
               <div v-for="(photo, index) in group" :key="photo.id" class="photo-item" :class="{ selected: selectedPhotos.includes(photo.id) }" @click="handlePhotoClick(photo)">
-                <el-image :src="photo.url" class="photo" fit="cover" :preview-src-list="isSelectMode ? [] : getAllPhotoUrls()" :preview-teleported="!isSelectMode" :initial-index="getPhotoIndex(photo)" show-progress close-on-press-escape lazy>
+                <el-image
+                  v-if="photo.url"
+                  v-loading="photo.loading"
+                  :src="photo.url"
+                  class="photo"
+                  fit="cover"
+                  :preview-src-list="isSelectMode ? [] : getAllPhotoUrls()"
+                  :preview-teleported="!isSelectMode"
+                  :initial-index="getPhotoIndex(photo)"
+                  show-progress
+                  close-on-press-escape
+                  lazy
+                  lazy-container=".photo-container"
+                  @load="photo.loading = false"
+                  @error="photo.loading = false"
+                  :init-loading="true">
                   <template #toolbar="{ actions, prev, next, activeIndex }">
                     <el-icon @click="prev"><Back /></el-icon>
                     <el-icon @click="next"><Right /></el-icon>
@@ -191,7 +210,28 @@ const getPhotoList = async () => {
   loading.value = true;
   try {
     const res = await getAlbum(albumForm.value.id);
-    photoList.value = res.data.data.photos || [];
+    const newPhotos = res.data.data.photos || [];
+
+    // 保留已存在图片的loading状态
+    const updatedPhotos = newPhotos.map((newPhoto) => {
+      // 查找是否已经存在这张图片
+      const existingPhoto = photoList.value.find((photo) => photo.id === newPhoto.id);
+      if (existingPhoto) {
+        // 保留已存在图片的loading状态
+        return {
+          ...newPhoto,
+          loading: existingPhoto.loading,
+        };
+      } else {
+        // 新图片设置为loading状态
+        return {
+          ...newPhoto,
+          loading: true,
+        };
+      }
+    });
+
+    photoList.value = updatedPhotos;
     albumForm.value.showStatus = res.data.data.showStatus || 0;
     albumForm.value.name = res.data.data.name || "";
     albumForm.value.coverUrl = res.data.data.coverUrl || "";
@@ -212,6 +252,9 @@ onMounted(() => {
 
 // 判断是否为相册所有者
 const isAlbumOwner = computed(() => {
+  if (!user.value) {
+    return false;
+  }
   const currentUserId = user.value.id;
   const albumUserId = albumForm.value.userId;
   return currentUserId && albumUserId && currentUserId === albumUserId;
@@ -263,15 +306,90 @@ const download = (number) => {
 
 // 是否为图片选择模式
 const isSelectMode = ref(false);
+// 是否全选
+const isAllSelected = ref(false);
 // 选中的图片列表
 const selectedPhotos = ref([]);
+// 按日期选择的状态
+const dateSelection = ref({});
 
 // 切换选择模式
 const toggleSelectMode = () => {
   isSelectMode.value = !isSelectMode.value;
   if (!isSelectMode.value) {
     selectedPhotos.value = [];
+    isAllSelected.value = false;
+    dateSelection.value = {};
+  } else {
+    // 初始化日期选择状态
+    for (const date in groupedPhotos.value) {
+      dateSelection.value[date] = false;
+    }
   }
+};
+
+// 处理日期选择变化
+const handleDateSelectionChange = (date) => {
+  const group = groupedPhotos.value[date];
+  // 如果日期被选中(true)
+  if (dateSelection.value[date]) {
+    // 选中该日期的所有图片
+    group.forEach((photo) => {
+      if (!selectedPhotos.value.includes(photo.id)) {
+        selectedPhotos.value.push(photo.id);
+      }
+    });
+  } else {
+    // 取消选中该日期的所有图片
+    selectedPhotos.value = selectedPhotos.value.filter((id) => {
+      return !group.some((photo) => photo.id === id);
+    });
+  }
+  // 更新全选状态
+  updateAllSelectedStatus();
+};
+
+// 切换全选状态
+const toggleAllSelection = () => {
+  isAllSelected.value = !isAllSelected.value;
+  if (isAllSelected.value) {
+    // 全选所有图片
+    selectedPhotos.value = [];
+    for (const date in groupedPhotos.value) {
+      const group = groupedPhotos.value[date];
+      group.forEach((photo) => {
+        selectedPhotos.value.push(photo.id);
+      });
+      // 日期选择状态全部设为true选中
+      dateSelection.value[date] = true;
+    }
+  } else {
+    // 取消全选
+    selectedPhotos.value = [];
+    for (const date in groupedPhotos.value) {
+      // 日期选择状态全部设为false取消选中
+      dateSelection.value[date] = false;
+    }
+  }
+};
+
+// 更新全选状态
+const updateAllSelectedStatus = () => {
+  let allSelected = true;
+
+  for (const date in groupedPhotos.value) {
+    const group = groupedPhotos.value[date];
+    const allInDateSelected = group.every((photo) => selectedPhotos.value.includes(photo.id));
+
+    if (!allInDateSelected) {
+      allSelected = false;
+    }
+
+    // 更新日期选择状态
+    dateSelection.value[date] = allInDateSelected;
+  }
+
+  isAllSelected.value = allSelected;
 };
 
 // 点击选择按钮后,点击图片处理逻辑
@@ -333,8 +451,8 @@ const handleFileChange = (file, fileListData) => {
   fileList.value = fileListData;
 };
 
-// 图片压缩函数 - 保持原始尺寸，仅质量压缩
-const compressImage = (file, quality = 0.3) => {
+// 图片压缩函数 - 优化版本：质量压缩+尺寸调整
+const compressImage = (file, quality = 0.7, maxWidth = 1200, maxHeight = 1200) => {
   return new Promise((resolve) => {
     // 读取文件
     const reader = new FileReader();
@@ -344,9 +462,16 @@ const compressImage = (file, quality = 0.3) => {
       const img = new Image();
       img.src = e.target.result;
       img.onload = () => {
-        // 使用原始尺寸
-        const width = img.width;
-        const height = img.height;
+        // 计算调整后的尺寸，保持比例
+        let width = img.width;
+        let height = img.height;
+
+        // 如果图片尺寸超过最大限制，则等比例缩小
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width = Math.floor(width * ratio);
+          height = Math.floor(height * ratio);
+        }
 
         // 创建Canvas进行压缩
         const canvas = document.createElement("canvas");
@@ -358,12 +483,18 @@ const compressImage = (file, quality = 0.3) => {
         // 使用drawImage将图片绘制到Canvas上
         ctx.drawImage(img, 0, 0, width, height);
 
+        // 总是转换为WebP格式以获得更好的压缩效果
+        const mimeType = "image/webp";
+
         // 转换为Blob
         canvas.toBlob(
           (blob) => {
-            resolve(new File([blob], file.name, { type: file.type }));
+            // 生成新的文件名，更改扩展名为webp
+            const nameWithoutExtension = file.name.substring(0, file.name.lastIndexOf('.'));
+            const fileName = `${nameWithoutExtension}.webp`;
+            resolve(new File([blob], fileName, { type: mimeType }));
           },
-          file.type,
+          mimeType,
           quality
         );
       };
@@ -394,7 +525,9 @@ const submitUpload = async () => {
     await Promise.all(uploadPromises); // 等待图片列表上传完成
     ElMessage.success("图片上传成功");
     uploadDialogVisible.value = false; // 关闭上传对话框
-    getPhotoList();
+    setTimeout(() => {
+      getPhotoList();
+    }, 2000);
   } catch (error) {
     ElMessage.error("上传图片失败");
   } finally {
@@ -782,6 +915,28 @@ const getExamineStatusClass = (status) => {
     align-items: center;
     justify-content: flex-end;
 
+    .select-all-btn {
+      background: linear-gradient(135deg, #67c23a, #409800);
+      border: none;
+      color: white;
+      font-size: 16px;
+      padding: 10px 16px;
+      border-radius: 6px;
+      margin-right: 10px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(103, 194, 58, 0.3);
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(103, 194, 58, 0.4);
+        background: linear-gradient(135deg, #409800, #67c23a);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+
     .select-btn {
       background: linear-gradient(135deg, #909399, #a6a9ad);
       border: none;
@@ -827,14 +982,31 @@ const getExamineStatusClass = (status) => {
 }
 
 .photo-container {
+  max-height: calc(100vh - 150px); /* 调整此值以适应不同屏幕 */
+  overflow-y: auto;
   /* 日期 */
   .date-section {
     margin-bottom: 30px;
-    h3 {
-      font-size: 16px;
+    .date-header {
+      display: flex;
+      align-items: center;
+      // justify-content: space-between;
       margin-bottom: 15px;
       padding-bottom: 5px;
       border-bottom: 1px solid #eee;
+      h3 {
+        font-size: 18px;
+        margin: 0;
+      }
+      .el-checkbox {
+        height: 20px;
+        width: 20px;
+        margin-left: 10px;
+        :deep(.el-checkbox__inner) {
+          width: 20px;
+          height: 20px;
+        }
+      }
     }
   }
   /* 照片列表 */
@@ -855,13 +1027,46 @@ const getExamineStatusClass = (status) => {
         height: 160px;
         object-fit: cover;
         transition: transform 0.3s ease;
+        // 错误占位图标样式
         .error {
           display: flex;
           justify-content: center;
           align-items: center;
           width: 100%;
           height: 100%;
+          background-color: #f5f5f5;
+
+          .el-icon {
+            font-size: 40px;
+            color: #909399;
+          }
+        }
+        .loading-container {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          width: 100%;
+          height: 100%;
+          background-color: #f5f5f5;
+          position: absolute;
+          top: 0;
+          left: 0;
+        }
+        .loading-icon {
           font-size: 30px;
+          color: #4096ff;
+          animation: rotate 1.5s linear infinite;
+        }
+        .loading-text {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 100%;
+          height: 100%;
+          font-size: 16px;
+          color: #606266;
+          background-color: #f5f5f5;
         }
       }
       // 选中图片样式
@@ -899,6 +1104,16 @@ const getExamineStatusClass = (status) => {
       // 未知状态
       .status-unknown {
         background: linear-gradient(135deg, #e6a23c, #c68a1f);
+      }
+
+      /* 加载动画 */
+      @keyframes rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
       }
 
       // 图片被选中时的小对勾

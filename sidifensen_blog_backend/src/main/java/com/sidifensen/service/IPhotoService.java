@@ -17,7 +17,7 @@ import java.util.List;
 public interface IPhotoService extends IService<Photo> {
 
     // 上传图片到相册
-    void upload(MultipartFile file, Integer albumId) throws Exception;
+    void uploadAlbumPhoto(MultipartFile file, Integer albumId) throws Exception;
 
     // 删除图片
     void delete(Integer photoId) throws Exception;
@@ -25,4 +25,9 @@ public interface IPhotoService extends IService<Photo> {
     // 批量删除图片
     void batchDelete(List<Integer> photoIds) throws Exception;
 
+    // 管理员删除图片
+    void adminDelete(Integer photoId) throws Exception;
+
+    // 管理员批量删除图片
+    void adminBatchDelete(List<Integer> photoIds) throws Exception;
 }

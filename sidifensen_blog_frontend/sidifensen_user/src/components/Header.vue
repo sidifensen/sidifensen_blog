@@ -87,7 +87,7 @@
             <el-icon><Message /></el-icon>
             <span class="menu-text">文章</span>
           </el-menu-item>
-          <el-menu-item index="/albumSquare" class="menu-item">
+          <el-menu-item index="/album/square" class="menu-item">
             <el-icon><Picture /></el-icon>
             <span class="menu-text">相册</span>
           </el-menu-item>

@@ -31,4 +31,5 @@ public class BlogConstants {
     public static final String CannotHandleOtherUserAlbum = "不能操作别人的相册";
     public static final String CannotHandleOtherUserPhoto = "不能操作别人的照片";
     public static final String NotFoundPhoto = "照片不存在";
+    public static final String ExamineStatusError = "审核状态错误";
 }

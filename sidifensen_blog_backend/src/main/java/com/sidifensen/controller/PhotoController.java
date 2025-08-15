@@ -26,7 +26,7 @@ public class PhotoController {
     @PostMapping("/upload")
     public Result upload(@RequestParam("file") MultipartFile file,
                                  @RequestParam("albumId") Integer albumId) throws Exception {
-        photoService.upload(file, albumId);
+        photoService.uploadAlbumPhoto(file, albumId);
         return Result.success();
     }
 
@@ -47,5 +47,27 @@ public class PhotoController {
         photoService.batchDelete(photoIds);
         return Result.success();
     }
+
+    // 管理端
+
+    /**
+     * 管理端删除照片
+     */
+    @DeleteMapping("/admin/delete/{photoId}")
+    public Result adminDelete(@PathVariable("photoId") Integer photoId) throws Exception {
+        photoService.adminDelete(photoId);
+        return Result.success();
+    }
+
+    /**
+     * 管理端批量删除照片
+     */
+    @DeleteMapping("/admin/batch")
+    public Result<String> adminBatchDelete(@RequestBody List<Integer> photoIds) throws Exception {
+        photoService.adminBatchDelete(photoIds);
+        return Result.success();
+    }
+
+
 
 }

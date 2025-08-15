@@ -5,6 +5,7 @@ import com.sidifensen.domain.result.Result;
 import com.sidifensen.utils.SecurityUtils;
 import com.sidifensen.utils.WebUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+
+import java.sql.SQLSyntaxErrorException;
 
 /**
  * 全局异常处理
@@ -30,6 +33,7 @@ public class GlobalException {
 
     @ExceptionHandler(BlogException.class)
     Object handleBlogException(BlogException e) {
+        e.printStackTrace();
         log.error("博客业务异常：{}", e.getMessage());
         return Result.error(e.getMessage());
     }
@@ -70,4 +74,16 @@ public class GlobalException {
         return Result.error("文件上传大小超出系统限制");
     }
 
+    @ExceptionHandler(SQLSyntaxErrorException.class)
+    Object handleSQLSyntaxErrorException(SQLSyntaxErrorException e) {
+        log.error("SQL语法错误：{}({})", e.getMessage(), e.getStackTrace());
+        return Result.error("SQL语法错误");
+    }
+    
+    @ExceptionHandler(BadSqlGrammarException.class)
+    Object handleBadSqlGrammarException(BadSqlGrammarException e) {
+        log.error("数据库语法错误：{}", e.getMessage());
+        e.printStackTrace();
+        return Result.error("数据库查询错误，请检查参数是否正确");
+    }
 }

@@ -102,13 +102,12 @@ create table photo
     id             int primary key auto_increment comment '图片id',
     user_id        bigint       not null comment '用户id',
     url            varchar(400) not null comment '图片url',
-    album_id       bigint       not null comment '相册id',
     examine_status tinyint               default 0 not null comment '审核状态 0-待审核 1-审核通过 2-审核未通过',
     create_time    datetime     not null comment '创建时间',
     update_time    datetime     not null comment '更新时间',
     is_deleted     tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
     index idx_examine_status (examine_status),
-    index idx_photo_user_album_status_create_time (user_id, album_id, examine_status, create_time)
+    index idx_photo_user_album_status_create_time (user_id, examine_status, create_time)
 );
 
 create table album
@@ -125,3 +124,28 @@ create table album
     index idx_user_status_create_time (user_id, show_status, create_time)
 );
 
+create table album_photo (
+    id int primary key auto_increment comment '主键id',
+    album_id int not null comment '相册id',
+    photo_id int not null comment '图片id',
+    index idx_album_id (album_id),
+    index idx_photo_id (photo_id),
+    index idx_album_photo(album_id, photo_id)
+);
+
+
+create table message (
+    id int primary key auto_increment comment '消息id',
+    read tinyint not null default 0 comment '是否已读 0-未读 1-已读',
+    type tinyint not null default 0 comment '消息类型 0-系统 1-评论 2-点赞 3-收藏 4-关注',
+    content text not null comment '消息内容',
+    create_time datetime not null comment '创建时间',
+    update_time datetime not null comment '更新时间',
+    is_deleted tinyint not null default 0 comment '是否删除 0-未删除 1-已删除'
+);
+
+create table user_message (
+    id int primary key auto_increment comment '主键id',
+    user_id int not null comment '用户id',
+    message_id int not null comment '消息id'
+);

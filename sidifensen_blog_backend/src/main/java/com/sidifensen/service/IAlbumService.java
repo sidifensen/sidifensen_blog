@@ -3,6 +3,7 @@ package com.sidifensen.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.AlbumDto;
 import com.sidifensen.domain.entity.Album;
+import com.sidifensen.domain.vo.AlbumVo;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ import java.util.List;
 public interface IAlbumService extends IService<Album> {
 
     // 查询相册详情
-    AlbumDto getAlbum(Long albumId);
+    AlbumVo getAlbum(Long albumId);
 
     // 新增相册
     void createAlbum(AlbumDto albumDto);
@@ -26,13 +27,13 @@ public interface IAlbumService extends IService<Album> {
     void updateAlbum(AlbumDto albumDto);
 
     // 删除相册
-    void deleteAlbum(Long albumId);
+    void deleteAlbum(Integer albumId);
 
     // 查询用户所有的相册
-    List<AlbumDto> listAlbum();
+    List<AlbumVo> listAlbum();
 
     // 查询所有用户的相册
-    List<AlbumDto> listAllAlbum();
+    List<AlbumVo> listAllAlbum();
 
     // 修改相册展示状态
     void changeShowStatus(AlbumDto albumDto);
@@ -43,5 +44,11 @@ public interface IAlbumService extends IService<Album> {
     /*管理端*/
 
     // 查询所有相册
-    List<AlbumDto> listAllAlbums();
+    List<AlbumVo> adminList();
+
+    // 更新相册信息
+    void adminUpdateAlbum(AlbumDto albumDto);
+
+    // 删除相册
+    void adminDeleteAlbum(Integer albumId);
 }
