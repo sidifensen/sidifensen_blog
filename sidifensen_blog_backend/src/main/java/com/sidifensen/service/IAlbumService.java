@@ -51,4 +51,10 @@ public interface IAlbumService extends IService<Album> {
 
     // 删除相册
     void adminDeleteAlbum(Integer albumId);
+
+    // 搜索相册
+    List<AlbumVo> searchAlbum(AlbumDto albumDto);
+
+    // 获取相册详情
+    AlbumVo adminGetAlbum(Long albumId);
 }

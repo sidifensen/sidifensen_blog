@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
  * @since 2025-06-29
  */
 @Service
-
 public class SysUserRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUserRole> implements ISysUserRoleService {
 
     @Resource

@@ -1,9 +1,7 @@
 package com.sidifensen.utils;
 
-import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.entity.LoginUser;
 import com.sidifensen.domain.entity.SysUser;
-import com.sidifensen.exception.BlogException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -23,7 +21,7 @@ public class SecurityUtils {
         if (authentication != null && authentication.getPrincipal() instanceof LoginUser user) {
             return user.getSysUser().getId();
         }
-        throw new BlogException(BlogConstants.NotFoundUser);
+        return 0;
     }
 
 

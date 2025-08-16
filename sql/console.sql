@@ -136,7 +136,7 @@ create table album_photo (
 
 create table message (
     id int primary key auto_increment comment '消息id',
-    read tinyint not null default 0 comment '是否已读 0-未读 1-已读',
+    is_read tinyint not null default 0 comment '是否已读 0-未读 1-已读',
     type tinyint not null default 0 comment '消息类型 0-系统 1-评论 2-点赞 3-收藏 4-关注',
     content text not null comment '消息内容',
     create_time datetime not null comment '创建时间',

@@ -11,6 +11,7 @@ import com.sidifensen.domain.entity.Album;
 import com.sidifensen.domain.entity.AlbumPhoto;
 import com.sidifensen.domain.entity.Photo;
 import com.sidifensen.domain.entity.SysUser;
+import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.enums.ShowStatusEnum;
 import com.sidifensen.domain.vo.AlbumVo;
 import com.sidifensen.exception.BlogException;
@@ -24,7 +25,10 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -57,15 +61,14 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
             throw new BlogException(BlogConstants.NotFoundAlbum);
         }
 
-        AlbumVo albumVo = new AlbumVo();
-        BeanUtil.copyProperties(album, albumVo);
+        AlbumVo albumVo = BeanUtil.copyProperties(album, AlbumVo.class);
         // 把album_id为albumId的全部照片查询出来
         List<AlbumPhoto> albumPhotos = albumPhotoMapper.selectList(new LambdaQueryWrapper<AlbumPhoto>().eq(AlbumPhoto::getAlbumId, albumId));
         List<Photo> photos = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(albumPhotos)) {
             LambdaQueryWrapper<Photo> queryWrapper = new LambdaQueryWrapper<Photo>()
                     .in(Photo::getId, albumPhotos.stream().map(AlbumPhoto::getPhotoId).toList())
-                    .eq(Photo::getUserId, album.getUserId());
+                    .eq(album.getUserId() != SecurityUtils.getUserId(), Photo::getExamineStatus, ExamineStatusEnum.PASS.getCode());// 如果相册不是当前用户的，只显示审核通过的照片
             photos = photoMapper.selectList(queryWrapper);
         }
 
@@ -145,13 +148,13 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     public List<AlbumVo> listAllAlbum() {
         LambdaQueryWrapper<Album> eq = new LambdaQueryWrapper<Album>().eq(Album::getShowStatus, ShowStatusEnum.PUBLIC.getCode());
         List<Album> albums = this.list(eq);
-        List<AlbumVo> albumVos = albums.stream().map(album -> {
-            AlbumVo albumVo = new AlbumVo();
-            BeanUtil.copyProperties(album, albumVo);
-            SysUser sysUser = sysUserMapper.selectById(album.getUserId());
-            albumVo.setUserName(sysUser.getNickname());
-            return albumVo;
-        }).toList();
+        List<AlbumVo> albumVos = BeanUtil.copyToList(albums, AlbumVo.class);
+        // 查询所有用户信息
+        List<SysUser> users = sysUserMapper.selectList(null);
+        Map<Integer, String> userMap = users.stream().collect(Collectors.toMap(SysUser::getId, SysUser::getUsername));
+        // 将用户名设置到AlbumVo中
+        albumVos.forEach(albumVo -> albumVo.setUserName(userMap.get(albumVo.getUserId())));
+
         return albumVos;
     }
 
@@ -188,13 +191,18 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     @Override
     public List<AlbumVo> adminList() {
         List<Album> albums = this.list();
-        List<AlbumVo> albumVos = albums.stream().map(album -> {
-            AlbumVo albumVo = new AlbumVo();
-            BeanUtil.copyProperties(album, albumVo);
-            SysUser sysUser = sysUserMapper.selectById(album.getUserId());
-            albumVo.setUserName(sysUser.getNickname());
-            return albumVo;
-        }).toList();
+        List<AlbumVo> albumVos = BeanUtil.copyToList(albums, AlbumVo.class);
+        // 用userId把username查询出来
+        HashMap<Integer, String> userMap = new HashMap<>();
+        // 查询所有用户信息
+        List<SysUser> users = sysUserMapper.selectList(null);
+        for (SysUser user : users) {
+            userMap.put(user.getId(), user.getUsername());
+        }
+        // 将用户名设置到AlbumVo中
+        for (AlbumVo albumVo : albumVos) {
+            albumVo.setUserName(userMap.get(albumVo.getUserId()));
+        }
         return albumVos;
     }
 
@@ -211,11 +219,58 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         this.updateById(album);
     }
 
+    // 删除相册
     @Override
     public void adminDeleteAlbum(Integer albumId) {
         int i = albumMapper.deleteById(albumId);
         if (i == 0) {
             throw new BlogException(BlogConstants.NotFoundAlbum);
         }
+    }
+
+    // 搜索相册
+    @Override
+    public List<AlbumVo> searchAlbum(AlbumDto albumDto) {
+        LambdaQueryWrapper<Album> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ObjectUtil.isNotEmpty(albumDto.getUserId()), Album::getUserId, albumDto.getUserId())
+                .like(ObjectUtil.isNotEmpty(albumDto.getName()), Album::getName, albumDto.getName())
+                .eq(ObjectUtil.isNotEmpty(albumDto.getShowStatus()), Album::getShowStatus, albumDto.getShowStatus());
+        List<Album> albums = this.list(queryWrapper);
+        List<AlbumVo> albumVos = BeanUtil.copyToList(albums, AlbumVo.class);
+        // 用userId把username查询出来
+        HashMap<Integer, String> userMap = new HashMap<>();
+        // 查询所有用户信息
+        List<SysUser> users = sysUserMapper.selectList(null);
+        for (SysUser user : users) {
+            userMap.put(user.getId(), user.getUsername());
+        }
+        // 将用户名设置到AlbumVo中
+        for (AlbumVo albumVo : albumVos) {
+            albumVo.setUserName(userMap.get(albumVo.getUserId()));
+        }
+        return albumVos;
+    }
+
+    @Override
+    public AlbumVo adminGetAlbum(Long albumId) {
+        Album album = this.getById(albumId);
+        if (ObjectUtil.isEmpty(album)) {
+            throw new BlogException(BlogConstants.NotFoundAlbum);
+        }
+
+        AlbumVo albumVo = BeanUtil.copyProperties(album, AlbumVo.class);
+        // 把album_id为albumId的全部照片查询出来
+        List<AlbumPhoto> albumPhotos = albumPhotoMapper.selectList(new LambdaQueryWrapper<AlbumPhoto>().eq(AlbumPhoto::getAlbumId, albumId));
+        List<Photo> photos = new ArrayList<>();
+        if (ObjectUtil.isNotEmpty(albumPhotos)) {
+            photos = photoMapper.selectList(new LambdaQueryWrapper<Photo>().in(Photo::getId, albumPhotos.stream().map(AlbumPhoto::getPhotoId).toList()));
+        }
+
+        // 把List<Photo>转为List<PhotoDto>
+        List<PhotoDto> photoDtos = BeanUtil.copyToList(photos, PhotoDto.class);
+        albumVo.setPhotos(photoDtos);
+        SysUser sysUser = sysUserMapper.selectById(album.getUserId());
+        albumVo.setUserName(sysUser.getUsername());
+        return albumVo;
     }
 }

@@ -1,27 +1,33 @@
 package com.sidifensen.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
+import com.sidifensen.domain.dto.PhotoAuditDto;
 import com.sidifensen.domain.entity.Album;
 import com.sidifensen.domain.entity.AlbumPhoto;
 import com.sidifensen.domain.entity.Photo;
+import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.enums.ImageAuditStatusEnum;
 import com.sidifensen.domain.enums.UploadEnum;
 import com.sidifensen.domain.result.ImageAuditResult;
+import com.sidifensen.domain.vo.PhotoVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.AlbumMapper;
 import com.sidifensen.mapper.AlbumPhotoMapper;
 import com.sidifensen.mapper.PhotoMapper;
+import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.IPhotoService;
 import com.sidifensen.utils.FileUploadUtils;
 import com.sidifensen.utils.ImageAuditUtils;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -61,6 +68,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
 
     // 创建线程池用于异步处理
     private final ExecutorService executorService = Executors.newFixedThreadPool(8);
+    @Autowired
+    private SysUserMapper sysUserMapper;
 
     // 上传图片
     @Override
@@ -73,15 +82,14 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     }
 
     private void auditAndUpdate(Integer userId, String url, Integer albumId) {
-        // 异步处理图片审核
+        // 异步处理相册图片审核
         executorService.execute(() -> {
             try {
                 // 保存图片信息到数据库
                 Photo photo = new Photo();
                 photo.setUserId(userId);
                 photo.setUrl(url);
-                // 初始设置为待审核状态
-                photo.setExamineStatus(ExamineStatusEnum.WAIT.getCode());
+                photo.setExamineStatus(ExamineStatusEnum.WAIT.getCode());// 初始设置为待审核状态
                 photoMapper.insert(photo);
 
                 ImageAuditResult imageAuditResult = imageAuditUtils.auditImageWithDetails(url);
@@ -104,8 +112,10 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                     throw new BlogException(BlogConstants.ExamineStatusError);
                 }
 
+                // 更新图片审核状态
                 photoMapper.updateById(updatePhoto);
 
+                // 保存相册照片关联记录
                 AlbumPhoto albumPhoto = new AlbumPhoto();
                 albumPhoto.setAlbumId(albumId);
                 albumPhoto.setPhotoId(photo.getId());
@@ -117,6 +127,12 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                     updateWrapper.eq(Album::getId, albumId);
                     updateWrapper.set(Album::getCoverUrl, url);
                     albumMapper.update(null, updateWrapper);
+                }
+
+
+                if (status.equals(ImageAuditStatusEnum.MANUAL_REVIEW.getCode())) {
+                    // 需要人工审核，发送消息给管理员
+
                 }
 
             } catch (Exception e) {
@@ -171,7 +187,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         if (ObjectUtil.isEmpty(photo)) {
             throw new BlogException(BlogConstants.NotFoundPhoto);
         }
-        if (photo.getUserId() != SecurityUtils.getUserId()){
+        if (photo.getUserId() != SecurityUtils.getUserId()) {
             throw new BlogException(BlogConstants.CannotHandleOtherUserPhoto);
         }
         AlbumPhoto albumPhoto = albumPhotoMapper.selectOne(new LambdaUpdateWrapper<AlbumPhoto>().eq(AlbumPhoto::getPhotoId, photoId));
@@ -228,7 +244,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 log.warn("照片ID {} 没有找到对应的相册ID", photo.getId());
                 continue;
             }
-            
+
             String dirName = baseDir + albumId + "/";
             String fileName = fileUploadUtils.getFileName(photo.getUrl());
             String fullPath = dirName + fileName;
@@ -237,7 +253,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
 
         // 批量删除照片信息
         photoMapper.deleteBatchIds(photoIds);
-        
+
         // 删除相册照片关联记录
         albumPhotoMapper.delete(new LambdaQueryWrapper<AlbumPhoto>().in(AlbumPhoto::getPhotoId, photoIds));
 
@@ -311,6 +327,41 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
 
         // 批量删除文件
         fileUploadUtils.deleteFiles(filePaths);
+    }
+
+    @Override
+    public void adminAudit(PhotoAuditDto photoAuditDto) {
+        // 更新照片审核状态
+        LambdaUpdateWrapper<Photo> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Photo::getId, photoAuditDto.getPhotoId());
+        updateWrapper.set(Photo::getExamineStatus, photoAuditDto.getExamineStatus());
+        photoMapper.update(null, updateWrapper);
+    }
+
+    @Override
+    public void adminAuditBatch(List<PhotoAuditDto> photoAuditDto) {
+        List<Integer> photoIds = photoAuditDto.stream().map(PhotoAuditDto::getPhotoId).collect(Collectors.toList());
+        // 更新照片审核状态
+        LambdaUpdateWrapper<Photo> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.in(Photo::getId, photoIds);
+        updateWrapper.set(Photo::getExamineStatus, ExamineStatusEnum.PASS.getCode());
+        photoMapper.update(null, updateWrapper);
+    }
+
+    @Override
+    public List<PhotoVo> listPhotos() {
+        List<Photo> photos = photoMapper.selectList(null);
+        if (ObjectUtil.isEmpty(photos)) {
+            return List.of();
+        }
+        List<Integer> userIds = photos.stream().map(Photo::getUserId).collect(Collectors.toList());
+        List<SysUser> sysUsers = sysUserMapper.selectBatchIds(userIds);
+        Map<Integer, String> userMap = sysUsers.stream().collect(Collectors.toMap(SysUser::getId, SysUser::getUsername));
+
+        List<PhotoVo> photoVos = BeanUtil.copyToList(photos, PhotoVo.class);
+        // 填充用户名
+        photoVos.forEach(photoVo -> photoVo.setUsername(userMap.get(photoVo.getUserId())));
+        return photoVos;
     }
 
 

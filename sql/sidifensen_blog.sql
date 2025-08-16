@@ -11,7 +11,7 @@
  Target Server Version : 80039 (8.0.39)
  File Encoding         : 65001
 
- Date: 16/08/2025 00:20:51
+ Date: 17/08/2025 03:11:54
 */
 
 SET NAMES utf8mb4;
@@ -33,16 +33,23 @@ CREATE TABLE `album`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_show_status`(`show_status` ASC) USING BTREE,
   INDEX `idx_user_status_create_time`(`user_id` ASC, `show_status` ASC, `create_time` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of album
 -- ----------------------------
-INSERT INTO `album` VALUES (1, 1, '风景', 'http://14.103.112.11:9000/sidifensen-blog/album/1/1/14d56ca203964a3da8f47316d3f1e8d2.jpg', 0, '2025-08-15 01:12:18', '2025-08-15 01:12:18', 0);
-INSERT INTO `album` VALUES (2, 1, '壁纸', 'http://14.103.112.11:9000/sidifensen-blog/album/1/2/e9ef1601e7fd477da8a8819fa7ab25f9.webp', 0, '2025-08-15 01:16:51', '2025-08-15 01:16:51', 0);
-INSERT INTO `album` VALUES (3, 1, '电脑壁纸', NULL, 0, '2025-08-15 01:17:16', '2025-08-15 01:17:16', 0);
+INSERT INTO `album` VALUES (1, 1, '风景1', 'http://14.103.112.11:9000/sidifensen-blog/album/1/1/14d56ca203964a3da8f47316d3f1e8d2.jpg', 0, '2025-08-15 01:12:18', '2025-08-15 01:12:18', 0);
+INSERT INTO `album` VALUES (2, 1, '壁纸', 'http://14.103.112.11:9000/sidifensen-blog/album/1/2/444ce751eebc480e96bc2bd6e61254bb.webp', 0, '2025-08-15 01:16:51', '2025-08-15 01:16:51', 0);
+INSERT INTO `album` VALUES (3, 1, '电脑壁纸', 'http://14.103.112.11:9000/sidifensen-blog/album/1/3/1d29f054b0f34070a6889dc49bf35ae3.webp', 0, '2025-08-15 01:17:16', '2025-08-15 01:17:16', 0);
 INSERT INTO `album` VALUES (4, 1, '精美壁纸', NULL, 0, '2025-08-15 01:24:06', '2025-08-15 01:24:06', 0);
-INSERT INTO `album` VALUES (5, 1, '1', NULL, 0, '2025-08-15 02:11:13', '2025-08-15 02:11:13', 0);
+INSERT INTO `album` VALUES (5, 1, '1', NULL, 0, '2025-08-15 02:11:13', '2025-08-15 02:11:13', 1);
+INSERT INTO `album` VALUES (6, 1, '优美壁纸', NULL, 0, '2025-08-17 00:23:38', '2025-08-17 00:23:38', 0);
+INSERT INTO `album` VALUES (7, 1, '手机壁纸', NULL, 0, '2025-08-17 00:24:19', '2025-08-17 00:24:19', 0);
+INSERT INTO `album` VALUES (8, 1, '大自然壁纸', NULL, 0, '2025-08-17 00:45:42', '2025-08-17 00:45:42', 0);
+INSERT INTO `album` VALUES (9, 1, '人文壁纸', NULL, 0, '2025-08-17 00:45:47', '2025-08-17 00:45:47', 0);
+INSERT INTO `album` VALUES (10, 1, '人像', NULL, 0, '2025-08-17 00:45:52', '2025-08-17 00:45:52', 0);
+INSERT INTO `album` VALUES (11, 1, '宠物', NULL, 0, '2025-08-17 00:46:01', '2025-08-17 00:46:01', 0);
+INSERT INTO `album` VALUES (12, 1, '科幻', NULL, 0, '2025-08-17 00:46:17', '2025-08-17 00:46:17', 0);
 
 -- ----------------------------
 -- Table structure for album_photo
@@ -56,7 +63,7 @@ CREATE TABLE `album_photo`  (
   INDEX `idx_album_id`(`album_id` ASC) USING BTREE,
   INDEX `idx_photo_id`(`photo_id` ASC) USING BTREE,
   INDEX `idx_album_photo`(`album_id` ASC, `photo_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1004 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1007 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of album_photo
@@ -1064,6 +1071,28 @@ INSERT INTO `album_photo` VALUES (1000, 1, 1000);
 INSERT INTO `album_photo` VALUES (1001, 2, 1001);
 INSERT INTO `album_photo` VALUES (1002, 2, 1002);
 INSERT INTO `album_photo` VALUES (1003, 2, 1003);
+INSERT INTO `album_photo` VALUES (1004, 2, 1004);
+INSERT INTO `album_photo` VALUES (1006, 2, 1006);
+INSERT INTO `album_photo` VALUES (1005, 3, 1005);
+
+-- ----------------------------
+-- Table structure for message
+-- ----------------------------
+DROP TABLE IF EXISTS `message`;
+CREATE TABLE `message`  (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '消息id',
+  `is_read` tinyint NOT NULL DEFAULT 0 COMMENT '是否已读 0-未读 1-已读',
+  `type` tinyint NOT NULL DEFAULT 0 COMMENT '消息类型 0-系统 1-评论 2-点赞 3-收藏 4-关注',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '消息内容',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
+  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of message
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for photo
@@ -1079,8 +1108,9 @@ CREATE TABLE `photo`  (
   `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_examine_status`(`examine_status` ASC) USING BTREE,
-  INDEX `idx_photo_user_album_status_create_time`(`user_id` ASC, `examine_status` ASC, `create_time` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1004 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+  INDEX `idx_photo_user_album_status_create_time`(`user_id` ASC, `examine_status` ASC, `create_time` ASC) USING BTREE,
+  INDEX `idx_is_deleted_id`(`is_deleted` ASC, `id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1007 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of photo
@@ -2088,6 +2118,9 @@ INSERT INTO `photo` VALUES (1000, 1, 'http://14.103.112.11:9000/sidifensen-blog/
 INSERT INTO `photo` VALUES (1001, 1, 'http://14.103.112.11:9000/sidifensen-blog/album/1/2/d93fa7e492d542bf834cd08a553f9955.jpg', 1, '2025-08-15 23:38:47', '2025-08-15 23:38:48', 0);
 INSERT INTO `photo` VALUES (1002, 1, 'http://14.103.112.11:9000/sidifensen-blog/album/1/2/91a312e5917142069d18b13e3e507ab7.webp', 1, '2025-08-15 23:47:18', '2025-08-15 23:47:20', 0);
 INSERT INTO `photo` VALUES (1003, 1, 'http://14.103.112.11:9000/sidifensen-blog/album/1/2/e9ef1601e7fd477da8a8819fa7ab25f9.webp', 1, '2025-08-15 23:50:14', '2025-08-15 23:50:15', 0);
+INSERT INTO `photo` VALUES (1004, 1, 'http://14.103.112.11:9000/sidifensen-blog/album/1/2/80e6bcc62397422bb9b6749d03ff5ab7.webp', 1, '2025-08-16 02:02:00', '2025-08-16 02:02:02', 0);
+INSERT INTO `photo` VALUES (1005, 1, 'http://14.103.112.11:9000/sidifensen-blog/album/1/3/1d29f054b0f34070a6889dc49bf35ae3.webp', 0, '2025-08-17 00:24:04', '2025-08-17 00:24:05', 0);
+INSERT INTO `photo` VALUES (1006, 1, 'http://14.103.112.11:9000/sidifensen-blog/album/1/2/444ce751eebc480e96bc2bd6e61254bb.webp', 1, '2025-08-17 01:37:44', '2025-08-17 01:37:45', 0);
 
 -- ----------------------------
 -- Table structure for sys_menu
@@ -2154,7 +2187,7 @@ CREATE TABLE `sys_permission`  (
   `update_time` datetime NOT NULL COMMENT '更新时间',
   `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 35 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 42 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_permission
@@ -2193,6 +2226,13 @@ INSERT INTO `sys_permission` VALUES (31, '获取用户详情', 'system:user:info
 INSERT INTO `sys_permission` VALUES (32, '获取相册列表', 'album:list', 28, '2025-08-15 23:42:33', '2025-08-15 23:42:33', 0);
 INSERT INTO `sys_permission` VALUES (33, '更新相册', 'album:update', 28, '2025-08-15 23:45:13', '2025-08-15 23:45:13', 0);
 INSERT INTO `sys_permission` VALUES (34, '删除相册', 'album:delete', 28, '2025-08-15 23:45:46', '2025-08-15 23:45:46', 0);
+INSERT INTO `sys_permission` VALUES (35, '搜索相册', 'album:search', 28, '2025-08-16 16:58:29', '2025-08-16 16:58:29', 0);
+INSERT INTO `sys_permission` VALUES (36, '获取相册详情', 'album:detail', 28, '2025-08-16 23:49:45', '2025-08-16 23:49:45', 0);
+INSERT INTO `sys_permission` VALUES (37, '删除图片', 'photo:delete', 28, '2025-08-17 00:30:04', '2025-08-17 00:30:04', 0);
+INSERT INTO `sys_permission` VALUES (38, '批量删除图片', 'photo:deleteBatch', 28, '2025-08-17 00:30:15', '2025-08-17 00:30:15', 0);
+INSERT INTO `sys_permission` VALUES (39, '审核图片', 'photo:audit', 28, '2025-08-17 00:39:51', '2025-08-17 00:39:51', 0);
+INSERT INTO `sys_permission` VALUES (40, '批量审核图片', 'photo:auditBatch', 28, '2025-08-17 01:45:58', '2025-08-17 01:45:58', 0);
+INSERT INTO `sys_permission` VALUES (41, '获取图片列表', 'photo:list', 29, '2025-08-17 03:10:00', '2025-08-17 03:10:00', 0);
 
 -- ----------------------------
 -- Table structure for sys_role
@@ -2268,7 +2308,7 @@ CREATE TABLE `sys_role_permission`  (
   `role_id` int NOT NULL COMMENT '角色id',
   `permission_id` int NOT NULL COMMENT '权限id',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 61 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 68 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_role_permission
@@ -2317,6 +2357,13 @@ INSERT INTO `sys_role_permission` VALUES (57, 1, 31);
 INSERT INTO `sys_role_permission` VALUES (58, 1, 32);
 INSERT INTO `sys_role_permission` VALUES (59, 1, 33);
 INSERT INTO `sys_role_permission` VALUES (60, 1, 34);
+INSERT INTO `sys_role_permission` VALUES (61, 1, 35);
+INSERT INTO `sys_role_permission` VALUES (62, 1, 36);
+INSERT INTO `sys_role_permission` VALUES (63, 1, 39);
+INSERT INTO `sys_role_permission` VALUES (64, 1, 38);
+INSERT INTO `sys_role_permission` VALUES (65, 1, 37);
+INSERT INTO `sys_role_permission` VALUES (66, 1, 40);
+INSERT INTO `sys_role_permission` VALUES (67, 1, 41);
 
 -- ----------------------------
 -- Table structure for sys_user
@@ -2348,9 +2395,9 @@ CREATE TABLE `sys_user`  (
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO `sys_user` VALUES (1, 'sidifensen', '$2a$10$GJwVW/wuZ/xFFiWNElXGNuaK3VKWfqIcCICrUyFEKz.cpFa7WtWNi', '斯蒂芬森', 'sidifensen@163.com', 0, 'helloworld1111', 'http://14.103.112.11:9000/sidifensen-blog/avatar/avatar.jpg', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.5.4', '内网地址', '2025-08-15 18:28:18', '2025-06-28 22:30:22', '2025-08-12 01:51:14', 0);
-INSERT INTO `sys_user` VALUES (2, '斯蒂芬森', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '斯蒂芬森', '111111@qq.com', 0, 'helloworld', 'http://14.103.112.11:9000/sidifensen-blog/avatar/avatar1.png', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 15:39:51', '2025-07-31 17:38:46', '2025-08-14 11:52:09', 0);
-INSERT INTO `sys_user` VALUES (3, 'WebUser', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '网站用户', '123456@qq.com', 0, 'helloworld', 'http://14.103.112.11:9000/sidifensen-blog/avatar/avatar1.png', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 02:00:15', '2025-07-31 17:38:46', '2025-08-12 01:12:29', 0);
+INSERT INTO `sys_user` VALUES (1, 'sidifensen', '$2a$10$GJwVW/wuZ/xFFiWNElXGNuaK3VKWfqIcCICrUyFEKz.cpFa7WtWNi', '斯蒂芬森', 'sidifensen@163.com', 0, 'helloworld1111', 'http://14.103.112.11:9000/sidifensen-blog/avatar/avatar.jpg', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.5.4', '内网地址', '2025-08-17 02:39:47', '2025-06-28 22:30:22', '2025-08-12 01:51:14', 0);
+INSERT INTO `sys_user` VALUES (2, 'youyu', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '柚屿', '111111@qq.com', 0, 'helloworld', 'http://14.103.112.11:9000/sidifensen-blog/avatar/avatar1.png', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 15:39:51', '2025-07-31 17:38:46', '2025-08-14 11:52:09', 0);
+INSERT INTO `sys_user` VALUES (3, '123', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '网站用户', '123456@qq.com', 0, 'helloworld', 'http://14.103.112.11:9000/sidifensen-blog/avatar/avatar1.png', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.5.4', '内网地址', '2025-08-16 22:37:55', '2025-07-31 17:38:46', '2025-08-12 01:12:29', 0);
 INSERT INTO `sys_user` VALUES (4, 'WebUser', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '网站用户', '123456@qq.com', 0, 'helloworld', 'http://14.103.112.11:9000/sidifensen-blog/avatar/avatar1.png', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 02:00:15', '2025-07-31 17:38:46', '2025-07-31 17:38:46', 0);
 INSERT INTO `sys_user` VALUES (5, 'WebUser', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '网站用户', '123456@qq.com', 0, 'helloworld', 'http://14.103.112.11:9000/sidifensen-blog/avatar/avatar1.png', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 02:00:15', '2025-07-31 17:38:46', '2025-07-31 17:38:46', 0);
 INSERT INTO `sys_user` VALUES (6, 'WebUser', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '网站用户', '123456@qq.com', 0, 'helloworld', 'http://14.103.112.11:9000/sidifensen-blog/avatar/avatar1.png', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 02:00:15', '2025-07-31 17:38:46', '2025-07-31 17:38:46', 0);
@@ -2360,8 +2407,8 @@ INSERT INTO `sys_user` VALUES (9, 'WebUser', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc
 INSERT INTO `sys_user` VALUES (10, 'WebUser', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '网站用户', '123456@qq.com', 0, 'helloworld', 'http://14.103.112.11:9000/sidifensen-blog/avatar/avatar1.png', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 02:00:15', '2025-07-31 17:38:46', '2025-07-31 17:38:46', 0);
 INSERT INTO `sys_user` VALUES (11, 'WebUser1', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '网站用户', '123456@qq.com', 0, 'helloworld', 'http://14.103.112.11:9000/sidifensen-blog/avatar/avatar1.png', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 02:00:15', '2025-07-31 17:38:46', '2025-08-12 01:30:15', 0);
 INSERT INTO `sys_user` VALUES (12, 'WebUser', '$2a$10$uTyUKEl.mc24YCN44QSjOukVgnc1hPGm6OFdZ0oQo6i5G5Yd.gIqS', '网站用户', '123456@qq.com', 0, 'helloworld', 'http://14.103.112.11:9000/sidifensen-blog/avatar/avatar1.png', 0, 0, '127.0.0.1', '内网地址', 0, '192.168.10.149', '内网地址', '2025-08-10 02:00:15', '2025-07-31 17:38:46', '2025-07-31 17:38:46', 1);
-INSERT INTO `sys_user` VALUES (13, 'sidifensen_14919133', '$2a$10$9Ai7TJESMAuzQ7PLHsj.SuxmKA9IBYoJVPgBKsyyb/AqKbjYcKXOe', '斯蒂芬森', NULL, 0, '梦想是成为全栈高手', 'https://foruda.gitee.com/avatar/1752080025136627357/14919133_sidifensen_1752080025.png', 0, 1, '127.0.0.1', '内网地址', 0, '192.168.5.4', '内网地址', '2025-08-13 23:09:06', '2025-08-13 23:09:05', '2025-08-13 23:09:05', 0);
-INSERT INTO `sys_user` VALUES (14, 'sidifensen_186551034', '$2a$10$4j5DL6d8XUOjmYcRIScmluLz4DGFifrpy8fE4gfV/2KADu3R/vv6S', '斯蒂芬森', NULL, 0, '梦想是成为全栈高手', 'https://avatars.githubusercontent.com/u/186551034?v=4', 0, 2, '127.0.0.1', '内网地址', 0, '192.168.5.4', '内网地址', '2025-08-13 23:30:34', '2025-08-13 23:30:33', '2025-08-13 23:30:33', 0);
+INSERT INTO `sys_user` VALUES (13, 'sidifensen_14919133', '$2a$10$9Ai7TJESMAuzQ7PLHsj.SuxmKA9IBYoJVPgBKsyyb/AqKbjYcKXOe', '斯蒂芬森2', NULL, 0, '梦想是成为全栈高手', 'https://foruda.gitee.com/avatar/1752080025136627357/14919133_sidifensen_1752080025.png', 0, 1, '127.0.0.1', '内网地址', 0, '192.168.5.4', '内网地址', '2025-08-13 23:09:06', '2025-08-13 23:09:05', '2025-08-13 23:09:05', 0);
+INSERT INTO `sys_user` VALUES (14, 'sidifensen_186551034', '$2a$10$4j5DL6d8XUOjmYcRIScmluLz4DGFifrpy8fE4gfV/2KADu3R/vv6S', '斯蒂芬森3', NULL, 0, '梦想是成为全栈高手', 'https://avatars.githubusercontent.com/u/186551034?v=4', 0, 2, '127.0.0.1', '内网地址', 0, '192.168.5.4', '内网地址', '2025-08-13 23:30:34', '2025-08-13 23:30:33', '2025-08-13 23:30:33', 0);
 
 -- ----------------------------
 -- Table structure for sys_user_role
@@ -2372,24 +2419,30 @@ CREATE TABLE `sys_user_role`  (
   `user_id` int NOT NULL COMMENT '用户id',
   `role_id` int NOT NULL COMMENT '角色id',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 50 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 51 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_user_role
 -- ----------------------------
 INSERT INTO `sys_user_role` VALUES (2, 1, 1);
 INSERT INTO `sys_user_role` VALUES (17, 2, 2);
-INSERT INTO `sys_user_role` VALUES (38, 14919135, 3);
-INSERT INTO `sys_user_role` VALUES (39, 14919133, 3);
-INSERT INTO `sys_user_role` VALUES (40, 186551034, 3);
-INSERT INTO `sys_user_role` VALUES (41, 14919133, 3);
-INSERT INTO `sys_user_role` VALUES (42, 14919133, 3);
-INSERT INTO `sys_user_role` VALUES (43, 14919133, 3);
-INSERT INTO `sys_user_role` VALUES (44, 186551034, 3);
-INSERT INTO `sys_user_role` VALUES (45, 14919133, 3);
-INSERT INTO `sys_user_role` VALUES (46, 186551034, 3);
-INSERT INTO `sys_user_role` VALUES (47, 14919133, 3);
 INSERT INTO `sys_user_role` VALUES (48, 13, 3);
 INSERT INTO `sys_user_role` VALUES (49, 14, 3);
+INSERT INTO `sys_user_role` VALUES (50, 3, 3);
+
+-- ----------------------------
+-- Table structure for user_message
+-- ----------------------------
+DROP TABLE IF EXISTS `user_message`;
+CREATE TABLE `user_message`  (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `user_id` int NOT NULL COMMENT '用户id',
+  `message_id` int NOT NULL COMMENT '消息id',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of user_message
+-- ----------------------------
 
 SET FOREIGN_KEY_CHECKS = 1;

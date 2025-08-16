@@ -123,7 +123,7 @@ public class AlbumController {
     }
 
     /**
-     * 更新相册
+     * 管理端更新相册
      * @param albumDto
      * @return
      */
@@ -135,7 +135,7 @@ public class AlbumController {
     }
 
     /**
-     * 删除相册
+     * 管理端删除相册
      * @param albumId
      * @return
      */
@@ -145,6 +145,29 @@ public class AlbumController {
         albumService.adminDeleteAlbum(albumId);
         return Result.success();
     }
+
+    /**
+     * 管理端搜索相册
+     */
+    @PreAuthorize("hasAuthority('album:search')")
+    @PostMapping("/admin/search")
+    public Result<Object> searchAlbum(@RequestBody @Valid AlbumDto albumDto) {
+        List<AlbumVo> albumVos = albumService.searchAlbum(albumDto);
+        return Result.success(albumVos);
+    }
+
+    /**
+     * 管理端查看相册详情
+     * @param albumId
+     * @return
+     */
+    @PreAuthorize("hasAuthority('album:detail')")
+    @GetMapping("/admin/{albumId}")
+    public Result<Object> adminGetAlbum(@PathVariable("albumId") Long albumId) {
+        AlbumVo album = albumService.adminGetAlbum(albumId);
+        return Result.success(album);
+    }
+
 
 
 }

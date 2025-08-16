@@ -3,8 +3,7 @@
   <div class="login_container">
     <div class="left_panel"></div>
     <div class="welcome_title">
-      <div>欢迎来到斯蒂芬森的博客</div>
-      <div>在这里，你可以找到我喜欢的文章，分享自己的想法，与志同道合的朋友交流。</div>
+      <div>欢迎来到斯蒂芬森博客</div>
     </div>
     <div class="right_panel">
       <router-view v-slot="{ Component }">

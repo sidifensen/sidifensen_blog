@@ -1,7 +1,9 @@
 package com.sidifensen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.sidifensen.domain.dto.PhotoAuditDto;
 import com.sidifensen.domain.entity.Photo;
+import com.sidifensen.domain.vo.PhotoVo;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -30,4 +32,14 @@ public interface IPhotoService extends IService<Photo> {
 
     // 管理员批量删除图片
     void adminBatchDelete(List<Integer> photoIds) throws Exception;
+
+    // 审核图片
+    void adminAudit(PhotoAuditDto photoAuditDto);
+
+    // 批量审核图片
+    void adminAuditBatch(List<PhotoAuditDto> photoAuditDto);
+
+    // 获取图片列表
+    List<PhotoVo> listPhotos();
+
 }
