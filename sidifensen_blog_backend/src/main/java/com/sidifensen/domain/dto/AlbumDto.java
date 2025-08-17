@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * <p>
@@ -46,5 +47,12 @@ public class AlbumDto implements Serializable {
     @Min(value = 0, message = "展示状态错误")
     @Max(value = 1, message = "展示状态错误")
     private Integer showStatus;
+
+    // 创建时间开始
+    private Date createTimeStart;
+
+    // 创建时间结束
+    private Date createTimeEnd;
+
 
 }

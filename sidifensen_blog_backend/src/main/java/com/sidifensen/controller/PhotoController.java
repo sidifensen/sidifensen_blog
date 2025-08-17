@@ -2,6 +2,7 @@ package com.sidifensen.controller;
 
 
 import com.sidifensen.domain.dto.PhotoAuditDto;
+import com.sidifensen.domain.dto.PhotoDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.PhotoVo;
 import com.sidifensen.service.IPhotoService;
@@ -98,9 +99,19 @@ public class PhotoController {
      * 获取图片列表
      */
     @PreAuthorize("hasAuthority('photo:list')")
-    @GetMapping("/list")
+    @GetMapping("/admin/list")
     public Result list() {
         List<PhotoVo> photoVoList = photoService.listPhotos();
+        return Result.success(photoVoList);
+    }
+
+    /**
+     * 搜索图片列表
+     */
+    @PreAuthorize("hasAuthority('photo:search')")
+    @PostMapping("/admin/search")
+    public Result adminSearch(@RequestBody PhotoDto photoDto) {
+        List<PhotoVo> photoVoList = photoService.adminSearch(photoDto);
         return Result.success(photoVoList);
     }
 

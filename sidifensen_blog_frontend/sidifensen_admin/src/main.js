@@ -25,7 +25,12 @@ app.use(pinia);
 
 import ElementPlus from "element-plus";
 import "element-plus/dist/index.css";
-app.use(ElementPlus);
+
+// 导入中文语言包
+import zhCn from "element-plus/dist/locale/zh-cn.mjs";
+app.use(ElementPlus, {
+  locale: zhCn,
+});
 
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {

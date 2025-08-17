@@ -34,3 +34,20 @@ export function adminAuditBatchPhoto(data){
     data
   });
 }
+
+// 管理端获取图片列表
+export function adminGetPhotoList(){
+  return request({
+    url: `/photo/admin/list`,
+    method: "get",
+  });
+}
+
+// 管理端搜索图片
+export function adminSearchPhoto(data){
+  return request({
+    url: `/photo/admin/search`,
+    method: "post",
+    data
+  });
+}

@@ -23,6 +23,14 @@ import "element-plus/theme-chalk/dark/css-vars.css";
 
 const app = createApp(App);
 
+import { enableAntiDebug } from '@/utils/antiDebug';
+// 启用防调试功能
+// enableAntiDebug();
+
+// 引入并配置disable-devtool
+import { setupDisableDevtool } from '@/utils/disableDevtool';
+setupDisableDevtool();
+
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component);
 }

@@ -13,7 +13,7 @@
       <div class="album-grid" v-loading="loading">
         <div v-for="album in albums" :key="album.id" class="album-card">
           <div class="album-image-container" @click="handleViewAlbum(album.id)">
-            <el-image :src="album.coverUrl || ''" class="album-image" fit="cover">
+            <el-image :src="album.coverUrl || ''" class="album-image" fit="cover" lazy loading="lazy">
               <template #placeholder>
                 <div class="loading-text">加载中...</div>
               </template>

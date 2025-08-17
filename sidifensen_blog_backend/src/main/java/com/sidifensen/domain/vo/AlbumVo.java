@@ -1,6 +1,5 @@
 package com.sidifensen.domain.vo;
 
-import com.sidifensen.domain.dto.PhotoDto;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
@@ -69,6 +68,6 @@ public class AlbumVo implements Serializable {
     /**
      * 相册照片列表
      */
-    private List<PhotoDto> photos;
+    private List<PhotoVo> photos;
 
 }

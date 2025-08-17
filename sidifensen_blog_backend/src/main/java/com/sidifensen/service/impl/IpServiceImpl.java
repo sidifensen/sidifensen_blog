@@ -5,6 +5,7 @@ import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.IpService;
 import com.sidifensen.utils.IpUtils;
+import com.sidifensen.utils.MyThreadFactory;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,12 +29,15 @@ public class IpServiceImpl implements IpService {
     @Resource
     private IpUtils ipUtils;
 
-    ExecutorService executor = new ThreadPoolExecutor(2, 4, 0l, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(500));
+    ExecutorService executorService = new ThreadPoolExecutor(
+            2, 4, 0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(500),
+            new MyThreadFactory("IpServiceImpl")
+    );
 
 
     public void setRegisterIp(Integer id, String ip) {
-        executor.execute(() -> {
+        executorService.execute(() -> {
             SysUser sysUser = sysUserMapper.selectById(id);
             if (ObjectUtil.isNotEmpty(sysUser)){
                 sysUser.setRegisterAddress(ipUtils.getAddress(ip));
@@ -43,7 +47,7 @@ public class IpServiceImpl implements IpService {
     }
 
     public void setLoginIp(Integer id, String ip) {
-        executor.execute(() -> {
+        executorService.execute(() -> {
             SysUser sysUser = sysUserMapper.selectById(id);
             if (ObjectUtil.isNotEmpty(sysUser)){
                 sysUser.setLoginAddress(ipUtils.getAddress(ip));

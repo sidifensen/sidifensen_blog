@@ -7,11 +7,6 @@
 </template>
 
 <script setup>
-import { ElMessage } from "element-plus";
-import { enableAntiDebug } from '@/utils/antiDebug';
-
-// 启用防调试功能
-enableAntiDebug();
 </script>
 
 <style lang="scss">

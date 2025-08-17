@@ -14,7 +14,7 @@ import { ref, watch } from "vue";
     const updateHtmlClass = () => {
       const html = document.querySelector("html");
       if (html) {
-        if (isDark.value) {
+        if (!isDark.value) {
           html.classList.remove("dark");
           html.classList.add("light");
         } else {

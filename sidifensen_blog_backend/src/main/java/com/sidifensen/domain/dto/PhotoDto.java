@@ -39,9 +39,10 @@ public class PhotoDto implements Serializable {
     @Max(value = 2, message = "审核状态错误")
     private Integer examineStatus;
 
-    /**
-     * 创建时间
-     */
-    private Date createTime;
+    // 创建时间开始
+    private Date createTimeStart;
+
+    // 创建时间结束
+    private Date createTimeEnd;
 
 }

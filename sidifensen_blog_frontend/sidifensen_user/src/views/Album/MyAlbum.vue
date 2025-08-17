@@ -18,7 +18,7 @@
       <div class="album-grid" v-loading="loading">
         <div v-for="album in albumList" :key="album.id" class="album-card">
           <div class="album-image-container" @click="handleViewAlbum(album.id)">
-            <el-image :src="album.coverUrl || ''" class="album-image" fit="cover">
+            <el-image :src="album.coverUrl || ''" class="album-image" fit="cover" lazy="true" loading="lazy">
               <template #placeholder>
                 <div class="loading-text">加载中...</div>
               </template>
@@ -150,9 +150,11 @@ const handleDeleteAlbum = async (albumId) => {
 
 // 页面加载时获取相册列表
 onMounted(() => {
-  getAlbumList();
   if (!user.value) {
+    ElMessage.error("请先登录");
     router.push("/login");
+  }else{
+    getAlbumList();
   }
 });
 </script>

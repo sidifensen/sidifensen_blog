@@ -59,8 +59,7 @@
               <div v-for="(photo, index) in group" :key="photo.id" class="photo-item" :class="{ selected: selectedPhotos.includes(photo.id) }" @click="handlePhotoClick(photo)">
                 <el-image
                   v-if="photo.url"
-                  v-loading="photo.loading"
-                  :src="photo.url"
+                  :src="photo.url || ''"
                   class="photo"
                   fit="cover"
                   :preview-src-list="isSelectMode ? [] : getAllPhotoUrls()"
@@ -69,10 +68,8 @@
                   show-progress
                   close-on-press-escape
                   lazy
-                  lazy-container=".photo-container"
-                  @load="photo.loading = false"
-                  @error="photo.loading = false"
-                  :init-loading="true">
+                  loading="lazy"
+                  >
                   <template #toolbar="{ actions, prev, next, activeIndex }">
                     <el-icon @click="prev"><Back /></el-icon>
                     <el-icon @click="next"><Right /></el-icon>
@@ -81,6 +78,9 @@
                       <ZoomIn />
                     </el-icon>
                     <el-icon @click="download(activeIndex)"><Download /></el-icon>
+                  </template>
+                  <template #placeholder>
+                    <div class="loading-text">加载中...</div>
                   </template>
                   <template #error>
                     <div class="error">
@@ -210,28 +210,7 @@ const getPhotoList = async () => {
   loading.value = true;
   try {
     const res = await getAlbum(albumForm.value.id);
-    const newPhotos = res.data.data.photos || [];
-
-    // 保留已存在图片的loading状态
-    const updatedPhotos = newPhotos.map((newPhoto) => {
-      // 查找是否已经存在这张图片
-      const existingPhoto = photoList.value.find((photo) => photo.id === newPhoto.id);
-      if (existingPhoto) {
-        // 保留已存在图片的loading状态
-        return {
-          ...newPhoto,
-          loading: existingPhoto.loading,
-        };
-      } else {
-        // 新图片设置为loading状态
-        return {
-          ...newPhoto,
-          loading: true,
-        };
-      }
-    });
-
-    photoList.value = updatedPhotos;
+    photoList.value = res.data.data.photos || [];;
     albumForm.value.showStatus = res.data.data.showStatus || 0;
     albumForm.value.name = res.data.data.name || "";
     albumForm.value.coverUrl = res.data.data.coverUrl || "";
@@ -490,7 +469,7 @@ const compressImage = (file, quality = 0.7, maxWidth = 1200, maxHeight = 1200) =
         canvas.toBlob(
           (blob) => {
             // 生成新的文件名，更改扩展名为webp
-            const nameWithoutExtension = file.name.substring(0, file.name.lastIndexOf('.'));
+            const nameWithoutExtension = file.name.substring(0, file.name.lastIndexOf("."));
             const fileName = `${nameWithoutExtension}.webp`;
             resolve(new File([blob], fileName, { type: mimeType }));
           },
@@ -655,7 +634,7 @@ const confirmCoverChange = async () => {
 
 // 返回相册列表
 const goBack = () => {
-  router.push({ name: "MyAlbum" });
+  router.go(-1);
 };
 
 // 获取所有图片的URL列表用于预览
@@ -982,8 +961,6 @@ const getExamineStatusClass = (status) => {
 }
 
 .photo-container {
-  max-height: calc(100vh - 150px); /* 调整此值以适应不同屏幕 */
-  overflow-y: auto;
   /* 日期 */
   .date-section {
     margin-bottom: 30px;
@@ -1040,23 +1017,6 @@ const getExamineStatusClass = (status) => {
             font-size: 40px;
             color: #909399;
           }
-        }
-        .loading-container {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          width: 100%;
-          height: 100%;
-          background-color: #f5f5f5;
-          position: absolute;
-          top: 0;
-          left: 0;
-        }
-        .loading-icon {
-          font-size: 30px;
-          color: #4096ff;
-          animation: rotate 1.5s linear infinite;
         }
         .loading-text {
           display: flex;

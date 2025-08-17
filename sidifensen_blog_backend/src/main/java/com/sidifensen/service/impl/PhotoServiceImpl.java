@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.PhotoAuditDto;
+import com.sidifensen.domain.dto.PhotoDto;
 import com.sidifensen.domain.entity.Album;
 import com.sidifensen.domain.entity.AlbumPhoto;
 import com.sidifensen.domain.entity.Photo;
@@ -24,10 +25,11 @@ import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.IPhotoService;
 import com.sidifensen.utils.FileUploadUtils;
 import com.sidifensen.utils.ImageAuditUtils;
+import com.sidifensen.utils.MyThreadFactory;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,7 +38,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -66,12 +70,16 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     @Resource
     private AlbumPhotoMapper albumPhotoMapper;
 
-    // 创建线程池用于异步处理
-    private final ExecutorService executorService = Executors.newFixedThreadPool(8);
-    @Autowired
+    @Resource
     private SysUserMapper sysUserMapper;
 
-    // 上传图片
+    ExecutorService executorService = new ThreadPoolExecutor(
+            2, 4, 0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(500),
+            new MyThreadFactory("PhotoServiceImpl")
+    );
+
+    // 上传图片到相册
     @Override
     public void uploadAlbumPhoto(MultipartFile file, Integer albumId) throws Exception {
         // 拼接userId/albumId作为目录名
@@ -84,61 +92,62 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     private void auditAndUpdate(Integer userId, String url, Integer albumId) {
         // 异步处理相册图片审核
         executorService.execute(() -> {
-            try {
-                // 保存图片信息到数据库
-                Photo photo = new Photo();
-                photo.setUserId(userId);
-                photo.setUrl(url);
-                photo.setExamineStatus(ExamineStatusEnum.WAIT.getCode());// 初始设置为待审核状态
-                photoMapper.insert(photo);
+            // 保存图片信息到数据库
+            Photo photo = new Photo();
+            photo.setUserId(userId);
+            photo.setUrl(url);
+            photo.setExamineStatus(ExamineStatusEnum.WAIT.getCode());// 初始设置为待审核状态
+            photoMapper.insert(photo);
 
-                ImageAuditResult imageAuditResult = imageAuditUtils.auditImageWithDetails(url);
-                Integer status = imageAuditResult.getStatus();
+            // 图片审核
+            ImageAuditResult imageAuditResult = imageAuditUtils.auditImageWithDetails(url);
+            Integer status = imageAuditResult.getStatus();
+            // 根据审核结果设置审核状态
+            Photo updatePhoto = getPhoto(photo, status);
+            // 更新图片审核状态
+            photoMapper.updateById(updatePhoto);
 
-                // 根据审核结果设置审核状态
-                Photo updatePhoto = new Photo();
-                updatePhoto.setId(photo.getId());
-                if (status.equals(ImageAuditStatusEnum.PASS.getCode())) {
-                    // 审核通过，设置审核状态为审核通过
-                    updatePhoto.setExamineStatus(ExamineStatusEnum.PASS.getCode());
-                } else if (status.equals(ImageAuditStatusEnum.REJECT.getCode())) {
-                    // 审核未通过，设置审核状态为审核未通过
-                    updatePhoto.setExamineStatus(ExamineStatusEnum.NO_PASS.getCode());
-                } else if (status.equals(ImageAuditStatusEnum.MANUAL_REVIEW.getCode())) {
-                    // 需要人工审核, 设置审核状态为待审核
-                    updatePhoto.setExamineStatus(ExamineStatusEnum.WAIT.getCode());
-                } else {
-                    // 状态错误
-                    throw new BlogException(BlogConstants.ExamineStatusError);
-                }
+            // 保存相册照片关联记录
+            AlbumPhoto albumPhoto = new AlbumPhoto();
+            albumPhoto.setAlbumId(albumId);
+            albumPhoto.setPhotoId(photo.getId());
+            albumPhotoMapper.insert(albumPhoto);
 
-                // 更新图片审核状态
-                photoMapper.updateById(updatePhoto);
-
-                // 保存相册照片关联记录
-                AlbumPhoto albumPhoto = new AlbumPhoto();
-                albumPhoto.setAlbumId(albumId);
-                albumPhoto.setPhotoId(photo.getId());
-                albumPhotoMapper.insert(albumPhoto);
-
-                // 更新相册的封面为最新上传的图片（仅当审核通过时）
-                if (status == 0) {
-                    LambdaUpdateWrapper<Album> updateWrapper = new LambdaUpdateWrapper<>();
-                    updateWrapper.eq(Album::getId, albumId);
-                    updateWrapper.set(Album::getCoverUrl, url);
-                    albumMapper.update(null, updateWrapper);
-                }
-
-
-                if (status.equals(ImageAuditStatusEnum.MANUAL_REVIEW.getCode())) {
-                    // 需要人工审核，发送消息给管理员
-
-                }
-
-            } catch (Exception e) {
-                log.error("图片异步处理失败", e);
+            // 更新相册的封面为最新上传的图片（仅当审核通过时）
+            if (status == 0) {
+                LambdaUpdateWrapper<Album> updateWrapper = new LambdaUpdateWrapper<>();
+                updateWrapper.eq(Album::getId, albumId);
+                updateWrapper.set(Album::getCoverUrl, url);
+                albumMapper.update(null, updateWrapper);
             }
+
+            if (status.equals(ImageAuditStatusEnum.MANUAL_REVIEW.getCode())) {
+                // TODO 需要人工审核，发送消息给管理员
+
+                // TODO 发送邮件给管理员
+
+            }
+
         });
+    }
+
+    private static @NotNull Photo getPhoto(Photo photo, Integer status) {
+        Photo updatePhoto = new Photo();
+        updatePhoto.setId(photo.getId());
+        if (status.equals(ImageAuditStatusEnum.PASS.getCode())) {
+            // 审核通过，设置审核状态为审核通过
+            updatePhoto.setExamineStatus(ExamineStatusEnum.PASS.getCode());
+        } else if (status.equals(ImageAuditStatusEnum.REJECT.getCode())) {
+            // 审核未通过，设置审核状态为审核未通过
+            updatePhoto.setExamineStatus(ExamineStatusEnum.NO_PASS.getCode());
+        } else if (status.equals(ImageAuditStatusEnum.MANUAL_REVIEW.getCode())) {
+            // 需要人工审核, 设置审核状态为待审核
+            updatePhoto.setExamineStatus(ExamineStatusEnum.WAIT.getCode());
+        } else {
+            // 状态错误
+            throw new BlogException(BlogConstants.ExamineStatusError);
+        }
+        return updatePhoto;
     }
 
     private void auditAndUpdate(Integer userId, String url) {
@@ -344,7 +353,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         // 更新照片审核状态
         LambdaUpdateWrapper<Photo> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.in(Photo::getId, photoIds);
-        updateWrapper.set(Photo::getExamineStatus, ExamineStatusEnum.PASS.getCode());
+        updateWrapper.set(Photo::getExamineStatus, photoAuditDto.get(0).getExamineStatus());
         photoMapper.update(null, updateWrapper);
     }
 
@@ -364,5 +373,26 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         return photoVos;
     }
 
+    @Override
+    public List<PhotoVo> adminSearch(PhotoDto photoDto) {
+        // 管理员搜索照片 (
+        LambdaQueryWrapper<Photo> queryWrapper = new LambdaQueryWrapper();
+        queryWrapper.eq(ObjectUtil.isNotEmpty(photoDto.getUserId()), Photo::getUserId, photoDto.getUserId())
+                .eq(ObjectUtil.isNotEmpty(photoDto.getExamineStatus()), Photo::getExamineStatus, photoDto.getExamineStatus())
+                .ge(ObjectUtil.isNotEmpty(photoDto.getCreateTimeStart()), Photo::getCreateTime, photoDto.getCreateTimeStart())
+                .le(ObjectUtil.isNotEmpty(photoDto.getCreateTimeEnd()), Photo::getCreateTime, photoDto.getCreateTimeEnd());
+        List<Photo> photos = photoMapper.selectList(queryWrapper);
+        if (ObjectUtil.isEmpty(photos)) {
+            return List.of();
+        }
+        List<Integer> userIds = photos.stream().map(Photo::getUserId).collect(Collectors.toList());
+        List<SysUser> sysUsers = sysUserMapper.selectBatchIds(userIds);
+        Map<Integer, String> userMap = sysUsers.stream().collect(Collectors.toMap(SysUser::getId, SysUser::getUsername));
+
+        List<PhotoVo> photoVos = BeanUtil.copyToList(photos, PhotoVo.class);
+        // 填充用户名
+        photoVos.forEach(photoVo -> photoVo.setUsername(userMap.get(photoVo.getUserId())));
+        return photoVos;
+    }
 
 }

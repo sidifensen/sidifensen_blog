@@ -12,6 +12,30 @@
           </el-select>
         </div>
       </div>
+      <div class="card-second">
+        <el-date-picker
+          v-model="searchCreateTimeStart"
+          type="datetime"
+          format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          placeholder="创建时间开始"
+          :prefix-icon="Calendar"
+          size="small"
+          class="search-input"
+          clearable
+          @change="handleSearch" />
+        <el-date-picker
+          v-model="searchCreateTimeEnd"
+          type="datetime"
+          format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          placeholder="创建时间结束"
+          :prefix-icon="Calendar"
+          size="small"
+          class="search-input"
+          clearable
+          @change="handleSearch" />
+      </div>
 
       <!-- 权限表格 -->
       <el-table v-loading="loading" :data="paginatedUserList" class="table" style="height: 100%">
@@ -250,7 +274,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from "vue";
-import { Search, Plus, InfoFilled, Edit, Delete, Avatar } from "@element-plus/icons-vue";
+import { Search, Plus, InfoFilled, Edit, Delete, Avatar, Calendar } from "@element-plus/icons-vue";
 import { getRoleList } from "@/api/role";
 import { getUserList, updateUser, deleteUser, queryUser, getUserDetail } from "@/api/user";
 import { getRolesByUser } from "@/api/user-role";
@@ -364,12 +388,22 @@ const searchUsername = ref("");
 const searchEmail = ref("");
 // 搜索用户状态
 const searchStatus = ref("");
+// 搜索创建时间开始
+const searchCreateTimeStart = ref(null);
+// 搜索创建时间结束
+const searchCreateTimeEnd = ref(null);
 
 // 处理搜索
 const handleSearch = async () => {
   loading.value = true;
   try {
-    const res = await queryUser({ username: searchUsername.value, email: searchEmail.value, status: searchStatus.value });
+    const res = await queryUser({
+      username: searchUsername.value,
+      email: searchEmail.value,
+      status: searchStatus.value,
+      createTimeStart: searchCreateTimeStart.value,
+      createTimeEnd: searchCreateTimeEnd.value,
+    });
     userList.value = res.data.data;
     total.value = userList.value.length;
     // 更新分页数据
@@ -575,9 +609,7 @@ const handleAuthorizeDialogClose = () => {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px;
-      border-bottom: 1px solid var(--el-border-color);
-
+      padding: 10px 10px 0 10px;
       .card-title {
         font-size: 20px;
         font-weight: 600;
@@ -599,7 +631,6 @@ const handleAuthorizeDialogClose = () => {
       .card-actions {
         display: flex;
         align-items: center;
-        // gap: 12px;
 
         .search-input {
           width: 240px;
@@ -608,8 +639,6 @@ const handleAuthorizeDialogClose = () => {
 
           :deep(.el-input__wrapper) {
             border-radius: 8px;
-            transition: all 0.3s ease;
-
             &:focus-within {
               box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
               border-color: #42b983;
@@ -625,41 +654,19 @@ const handleAuthorizeDialogClose = () => {
             }
           }
         }
-        .authorize-button {
-          margin-left: 10px;
-          background-color: #fef3c7;
-          color: #d97706;
-          border-color: #fef3c7;
-          border-radius: 6px;
-          transition: all 0.3s ease;
-          &:hover {
-            background-color: #fde68a;
-            border-color: #fde68a;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
-          }
-
-          &.is-disabled {
-            background-color: #f5f5f5;
-            border-color: #d9d9d9;
-            color: #bfbfbf;
-            cursor: not-allowed;
-            opacity: 0.6;
-          }
-        }
       }
-
-      .add-button {
-        margin-left: 10px;
+    }
+    .card-second {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 10px;
+      border-bottom: 1px solid var(--el-border-color);
+      :deep(.el-input__wrapper) {
         border-radius: 8px;
-        background: linear-gradient(135deg, #42b983 0%, #3aa17e 100%);
-        border: none;
-        transition: all 0.3s ease;
-
-        &:hover {
-          background: linear-gradient(135deg, #3aa17e 0%, #2d8f6a 100%);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(66, 185, 131, 0.4);
+        &:focus-within {
+          box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
+          border-color: #42b983;
         }
       }
     }

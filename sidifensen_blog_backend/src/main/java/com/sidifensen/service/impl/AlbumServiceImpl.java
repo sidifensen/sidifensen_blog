@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.AlbumDto;
-import com.sidifensen.domain.dto.PhotoDto;
 import com.sidifensen.domain.entity.Album;
 import com.sidifensen.domain.entity.AlbumPhoto;
 import com.sidifensen.domain.entity.Photo;
@@ -14,6 +13,7 @@ import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.enums.ShowStatusEnum;
 import com.sidifensen.domain.vo.AlbumVo;
+import com.sidifensen.domain.vo.PhotoVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.AlbumMapper;
 import com.sidifensen.mapper.AlbumPhotoMapper;
@@ -72,9 +72,8 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
             photos = photoMapper.selectList(queryWrapper);
         }
 
-        // 把List<Photo>转为List<PhotoDto>
-        List<PhotoDto> photoDtos = BeanUtil.copyToList(photos, PhotoDto.class);
-        albumVo.setPhotos(photoDtos);
+        List<PhotoVo> photoVos = BeanUtil.copyToList(photos, PhotoVo.class);
+        albumVo.setPhotos(photoVos);
         SysUser sysUser = sysUserMapper.selectById(album.getUserId());
         albumVo.setUserName(sysUser.getNickname());
         return albumVo;
@@ -130,7 +129,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         LambdaQueryWrapper<Album> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Album::getUserId, SecurityUtils.getUserId());
         List<Album> albums = this.list(queryWrapper);
-        // 把List<Album>转为List<AlbumDto>
+
         List<AlbumVo> albumVos = albums.stream().map(album -> {
             AlbumVo albumVo = new AlbumVo();
             albumVo.setId(album.getId());
@@ -234,7 +233,10 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         LambdaQueryWrapper<Album> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ObjectUtil.isNotEmpty(albumDto.getUserId()), Album::getUserId, albumDto.getUserId())
                 .like(ObjectUtil.isNotEmpty(albumDto.getName()), Album::getName, albumDto.getName())
-                .eq(ObjectUtil.isNotEmpty(albumDto.getShowStatus()), Album::getShowStatus, albumDto.getShowStatus());
+                .eq(ObjectUtil.isNotEmpty(albumDto.getShowStatus()), Album::getShowStatus, albumDto.getShowStatus())
+                .ge(ObjectUtil.isNotEmpty(albumDto.getCreateTimeStart()), Album::getCreateTime, albumDto.getCreateTimeStart())
+                .le(ObjectUtil.isNotEmpty(albumDto.getCreateTimeEnd()), Album::getCreateTime, albumDto.getCreateTimeEnd());
+
         List<Album> albums = this.list(queryWrapper);
         List<AlbumVo> albumVos = BeanUtil.copyToList(albums, AlbumVo.class);
         // 用userId把username查询出来
@@ -266,9 +268,8 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
             photos = photoMapper.selectList(new LambdaQueryWrapper<Photo>().in(Photo::getId, albumPhotos.stream().map(AlbumPhoto::getPhotoId).toList()));
         }
 
-        // 把List<Photo>转为List<PhotoDto>
-        List<PhotoDto> photoDtos = BeanUtil.copyToList(photos, PhotoDto.class);
-        albumVo.setPhotos(photoDtos);
+        List<PhotoVo> photoVos = BeanUtil.copyToList(photos, PhotoVo.class);
+        albumVo.setPhotos(photoVos);
         SysUser sysUser = sysUserMapper.selectById(album.getUserId());
         albumVo.setUserName(sysUser.getUsername());
         return albumVo;
