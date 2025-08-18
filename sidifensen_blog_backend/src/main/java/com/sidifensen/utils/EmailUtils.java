@@ -64,6 +64,38 @@ public class EmailUtils {
     }
 
     /**
+     * 发送HTML邮件
+     * @param subject 邮件主题
+     * @param templateName 邮件模板名称
+     * @param data 邮件模板数据
+     * @return
+     */
+    public void sendHtmlMailToAdmin(String subject, String templateName, Map<String, Object> data)  {
+        // 创建一个邮件消息
+        MimeMessage message = javaMailSender.createMimeMessage();
+        // 创建 MimeMessageHelper 对象, 用于设置邮件内容
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+
+        try {
+            helper.setTo(username);
+            helper.setSubject(subject);
+            helper.setFrom(username, "sidifensen");
+            // 邮件正文
+            Context context = new Context();
+            // 给模板传递数据
+            context.setVariables(data);
+            // 解析Thymeleaf模板
+            String htmlContent = templateEngine.process(templateName, context);
+            // 设置邮件正文内容,第二个参数表示是否是HTML内容
+            helper.setText(htmlContent, true);
+            javaMailSender.send(helper.getMimeMessage());
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            // 处理异常
+            log.error("发送邮件失败：{}", e.getMessage());
+        }
+    }
+
+    /**
      * 发送邮件
      *
      * @param to      收件人邮箱

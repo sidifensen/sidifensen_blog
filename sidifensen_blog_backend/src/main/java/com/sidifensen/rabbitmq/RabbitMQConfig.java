@@ -26,4 +26,22 @@ public class RabbitMQConfig {
                 .with(RabbitMQConstants.Email_Routing_Key).noargs();
     }
 
+    @Bean
+    public Exchange examineExchange() {
+        return new DirectExchange(RabbitMQConstants.Examine_Exchange, true, false);
+    }
+
+    @Bean
+    public Queue examineQueue() {
+        return new Queue(RabbitMQConstants.Examine_Queue, true, false, false);
+    }
+
+    @Bean
+    public Binding bindingExamineQueueToExchange() {
+        return BindingBuilder
+                .bind(examineQueue())
+                .to(examineExchange())
+                .with(RabbitMQConstants.Email_Routing_Key).noargs();
+    }
+
 }

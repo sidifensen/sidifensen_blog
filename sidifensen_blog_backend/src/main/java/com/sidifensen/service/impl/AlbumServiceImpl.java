@@ -56,7 +56,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     // 查询相册
     @Override
     public AlbumVo getAlbum(Long albumId) {
-        Album album = this.getById(albumId);
+        Album album = albumMapper.selectById(albumId);
         if (ObjectUtil.isEmpty(album)) {
             throw new BlogException(BlogConstants.NotFoundAlbum);
         }

@@ -8,6 +8,10 @@ const app = createApp(App);
 import router from "./router";
 app.use(router);
 
+// 引入并配置disable-devtool
+import { setupDisableDevtool } from '@/utils/disableDevtool';
+setupDisableDevtool();
+
 // 注册svg全局组件
 import SvgIcon from "@/components/SvgIcon.vue";
 import "virtual:svg-icons-register";

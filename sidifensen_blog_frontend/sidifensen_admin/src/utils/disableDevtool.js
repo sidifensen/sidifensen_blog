@@ -1,7 +1,7 @@
-// 引入disable-devtool库
-import DisableDevtool from 'disable-devtool';
 
 import { ElMessage } from 'element-plus';
+// 引入disable-devtool库
+import DisableDevtool from 'disable-devtool';
 
 // 定义检测器类型常量
 const DetectorType = {

@@ -190,8 +190,8 @@ const handleSearch = async () => {
       createTimeStart: searchCreateTimeStart.value,
       createTimeEnd: searchCreateTimeEnd.value,
     });
-    albumList.value = res.data.data;
-    total.value = albumList.value.length;
+    photoList.value = res.data.data;
+    total.value = photoList.value.length;
     // 更新分页数据
     updatePaginatedPhotoList();
   } catch (error) {
@@ -201,51 +201,7 @@ const handleSearch = async () => {
   }
 };
 
-watch(searchUserId, (newVal) => {
-  // 防抖处理
-  if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value);
-  }
-  searchTimeout.value = setTimeout(() => {
-    handleSearch();
-  }, 500);
-});
-
-watch(searchExamineStatus, (newVal) => {
-  // 防抖处理
-  if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value);
-  }
-  searchTimeout.value = setTimeout(() => {
-    handleSearch();
-  }, 500);
-});
-
-// 处理表单提交
-const handleSubmit = () => {
-  albumFormRef.value.validate(async (valid) => {
-    if (!valid) {
-      return;
-    }
-    try {
-      // 编辑相册
-      await adminUpdateAlbum(albumForm.value);
-      ElMessage.success("编辑相册成功");
-      dialogVisible.value = false;
-      getAlbums();
-    } catch (error) {
-      ElMessage.error("编辑相册失败");
-      handleDialogClose();
-    }
-  });
-};
-
-// 处理对话框关闭
-const handleDialogClose = () => {
-  albumFormRef.value.resetFields();
-  dialogVisible.value = false;
-};
-
+// 选中的图片
 const selectedPhotos = ref([]);
 // 表格多选
 const handleSelectionChange = async (photo) => {
@@ -259,7 +215,7 @@ const batchRejectLoading = ref(false);
 const batchDeleteLoading = ref(false);
 
 // 处理单个图片审核
-const handleAuditPhoto = (photoId, status) => {
+const handleAuditPhoto = (photoId) => {
   ElMessageBox.confirm("确定要审核通过该图片吗？", "确认", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
@@ -267,7 +223,7 @@ const handleAuditPhoto = (photoId, status) => {
   })
     .then(async () => {
       try {
-        await adminAuditPhoto({ id: photoId, examineStatus: status });
+        await adminAuditPhoto({ photoId: photoId, examineStatus: 1 });
         ElMessage.success("审核成功");
         await getPhotos();
       } catch (error) {

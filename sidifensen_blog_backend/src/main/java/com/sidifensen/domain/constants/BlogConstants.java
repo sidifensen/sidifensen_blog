@@ -32,4 +32,6 @@ public class BlogConstants {
     public static final String CannotHandleOtherUserPhoto = "不能操作别人的照片";
     public static final String NotFoundPhoto = "照片不存在";
     public static final String ExamineStatusError = "审核状态错误";
+
+    public static final String CannotSaveMessage = "消息保存失败";
 }

@@ -6,6 +6,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
+import com.sidifensen.domain.constants.MessageConstants;
+import com.sidifensen.domain.constants.RabbitMQConstants;
+import com.sidifensen.domain.dto.MessageDto;
 import com.sidifensen.domain.dto.PhotoAuditDto;
 import com.sidifensen.domain.dto.PhotoDto;
 import com.sidifensen.domain.entity.Album;
@@ -14,6 +17,7 @@ import com.sidifensen.domain.entity.Photo;
 import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.enums.ImageAuditStatusEnum;
+import com.sidifensen.domain.enums.MessageTypeEnum;
 import com.sidifensen.domain.enums.UploadEnum;
 import com.sidifensen.domain.result.ImageAuditResult;
 import com.sidifensen.domain.vo.PhotoVo;
@@ -22,6 +26,7 @@ import com.sidifensen.mapper.AlbumMapper;
 import com.sidifensen.mapper.AlbumPhotoMapper;
 import com.sidifensen.mapper.PhotoMapper;
 import com.sidifensen.mapper.SysUserMapper;
+import com.sidifensen.service.IMessageService;
 import com.sidifensen.service.IPhotoService;
 import com.sidifensen.utils.FileUploadUtils;
 import com.sidifensen.utils.ImageAuditUtils;
@@ -30,6 +35,7 @@ import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -73,6 +79,12 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     @Resource
     private SysUserMapper sysUserMapper;
 
+    @Resource
+    private IMessageService messageService;
+
+    @Resource
+    private RabbitTemplate rabbitTemplate;
+
     ExecutorService executorService = new ThreadPoolExecutor(
             2, 4, 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(500),
@@ -99,34 +111,39 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             photo.setExamineStatus(ExamineStatusEnum.WAIT.getCode());// 初始设置为待审核状态
             photoMapper.insert(photo);
 
-            // 图片审核
-            ImageAuditResult imageAuditResult = imageAuditUtils.auditImageWithDetails(url);
-            Integer status = imageAuditResult.getStatus();
-            // 根据审核结果设置审核状态
-            Photo updatePhoto = getPhoto(photo, status);
-            // 更新图片审核状态
-            photoMapper.updateById(updatePhoto);
+//            // 图片审核
+//            ImageAuditResult imageAuditResult = imageAuditUtils.auditImageWithDetails(url);
+//            Integer status = imageAuditResult.getStatus();
+//            // 根据审核结果设置审核状态
+//            Photo updatePhoto = getPhoto(photo, status);
+//            // 更新图片审核状态
+//            photoMapper.updateById(updatePhoto);
 
             // 保存相册照片关联记录
-            AlbumPhoto albumPhoto = new AlbumPhoto();
-            albumPhoto.setAlbumId(albumId);
-            albumPhoto.setPhotoId(photo.getId());
-            albumPhotoMapper.insert(albumPhoto);
+            albumPhotoMapper.insert(new AlbumPhoto(null, albumId, photo.getId()));
 
+            Integer status = 10086;
             // 更新相册的封面为最新上传的图片（仅当审核通过时）
             if (status == 0) {
                 LambdaUpdateWrapper<Album> updateWrapper = new LambdaUpdateWrapper<>();
-                updateWrapper.eq(Album::getId, albumId);
-                updateWrapper.set(Album::getCoverUrl, url);
+                updateWrapper.eq(Album::getId, albumId).set(Album::getCoverUrl, url);
                 albumMapper.update(null, updateWrapper);
             }
 
-            if (status.equals(ImageAuditStatusEnum.MANUAL_REVIEW.getCode())) {
-                // TODO 需要人工审核，发送消息给管理员
+//            if (status.equals(ImageAuditStatusEnum.MANUAL_REVIEW.getCode())) {
+            // 需要人工审核，发送消息给管理员
+            String text = MessageConstants.ImageNeedReview(photo.getId());
+            MessageDto messageDto = new MessageDto();
+            messageDto.setType(MessageTypeEnum.SYSTEM.getCode());
+            messageDto.setContent(text);
+            messageService.sendToAdmin(messageDto);
 
-                // TODO 发送邮件给管理员
+            // 发送邮件给管理员
+            HashMap<String, Object> sendEmail = new HashMap<>();
+            sendEmail.put("text", String.format(MessageConstants.IMAGE_NEED_REVIEW, photo.getId()));
+            rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
 
-            }
+//            }
 
         });
     }
@@ -318,7 +335,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             // 通过映射获取相册ID，而不是从photo对象中获取（photo对象中没有albumId字段）
             Integer albumId = photoToAlbumMap.get(photo.getId());
             if (albumId == null) {
-                log.warn("照片ID {} 没有找到对应的相册ID", photo.getId());
+                log.error("照片ID {} 没有找到对应的相册ID", photo.getId());
                 continue;
             }
 

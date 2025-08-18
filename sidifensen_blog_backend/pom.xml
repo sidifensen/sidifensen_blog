@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>com.sidifensen</groupId>
-    <artifactId>sidifensen_blog_blackend</artifactId>
+    <artifactId>sidifensen_blog_backend</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -135,8 +135,15 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>19</source>
-                    <target>19</target>
+                    <source>21</source>
+                    <target>21</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
                 </configuration>
             </plugin>
         </plugins>

@@ -312,37 +312,20 @@ const handleSearch = async () => {
   }
 };
 
-// 监听搜索输入变化
+// 监听搜索输入变化 - 统一防抖处理
 const searchTimeout = ref(null);
-watch(searchAlbumName, (newVal) => {
-  // 防抖处理
+const debounceSearch = () => {
   if (searchTimeout.value) {
     clearTimeout(searchTimeout.value);
   }
   searchTimeout.value = setTimeout(() => {
     handleSearch();
   }, 500);
-});
-
-watch(searchUserId, (newVal) => {
-  // 防抖处理
-  if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value);
-  }
-  searchTimeout.value = setTimeout(() => {
-    handleSearch();
-  }, 500);
-});
-
-watch(searchStatus, (newVal) => {
-  // 防抖处理
-  if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value);
-  }
-  searchTimeout.value = setTimeout(() => {
-    handleSearch();
-  }, 500);
-});
+};
+watch(searchAlbumName, debounceSearch);
+// watch(searchStatus, debounceSearch);
+// watch(searchCreateTimeStart, debounceSearch);
+// watch(searchCreateTimeEnd, debounceSearch);
 
 // 处理编辑相册
 const handleEditAlbum = (row) => {

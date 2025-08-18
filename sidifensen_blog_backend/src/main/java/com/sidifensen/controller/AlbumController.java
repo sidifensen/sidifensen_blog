@@ -1,7 +1,6 @@
 package com.sidifensen.controller;
 
 
-import com.sidifensen.aspect.TimeConsuming;
 import com.sidifensen.domain.dto.AlbumDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.AlbumVo;
@@ -29,7 +28,6 @@ public class AlbumController {
      * @param albumId
      * @return
      */
-    @TimeConsuming
     @GetMapping("/{albumId}")
     public Result<Object> getAlbum(@PathVariable("albumId") Long albumId) {
         AlbumVo album = albumService.getAlbum(albumId);

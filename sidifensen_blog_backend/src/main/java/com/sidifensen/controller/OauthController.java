@@ -39,8 +39,8 @@ public class OauthController {
     @Resource
     private OauthService oauthService;
 
-    @Value(("${frontend.host}"))
-    private String frontendHost;
+    @Value(("${frontend.userHost}"))
+    private String frontendUserHost;
 
     @GetMapping("/gitee/login")
     public void giteeLogin(HttpServletResponse response) throws IOException {
@@ -54,7 +54,7 @@ public class OauthController {
         AuthRequest authRequest = getGiteeAuthRequest();
         AuthResponse authResponse = authRequest.login(callback);
         String url = oauthService.login(authResponse, request, RegisterOrLoginTypeEnum.GITEE.getRegisterType());
-        request.sendRedirect(frontendHost + url);
+        request.sendRedirect(frontendUserHost + url);
     }
 
     @GetMapping("/github/login")
@@ -69,7 +69,7 @@ public class OauthController {
         AuthRequest authRequest = getGithubAuthRequest();
         AuthResponse authResponse = authRequest.login(callback);
         String url = oauthService.login(authResponse, request, RegisterOrLoginTypeEnum.GITHUB.getRegisterType());
-        request.sendRedirect(frontendHost + url);
+        request.sendRedirect(frontendUserHost + url);
     }
 
 

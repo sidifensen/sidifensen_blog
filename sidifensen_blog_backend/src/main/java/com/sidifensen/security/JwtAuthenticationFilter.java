@@ -70,28 +70,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.LoginExpired).toJson());
                 return;
             }
-            // 根据id查询用户信息
-            SysUser sysUser = sysUserMapper.selectById(id);
-            if (ObjectUtil.isEmpty(sysUser)){
-                // 用户不存在
-                log.error("用户访问接口{},提示:用户不存在", request.getRequestURI());
-                WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.NotFoundUser).toJson());
+            try {
+                // 根据id查询用户信息
+                SysUser sysUser = sysUserMapper.selectById(id);
+                if (ObjectUtil.isEmpty(sysUser)){
+                    // 用户不存在
+                    log.error("用户访问接口{},提示:用户不存在", request.getRequestURI());
+                    WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.NotFoundUser).toJson());
+                    return;
+                }
+                if (sysUser.getStatus() == StatusEnum.DISABLE.getStatus()){
+                    // 用户已被禁用
+                    log.error("用户访问接口{},提示:用户已被禁用", request.getRequestURI());
+                    WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.UserDisabled).toJson());
+                    return;
+                }
+                // 将SysUser转换为LoginUser
+                LoginUser loginUser = userDetailsService.handleLogin(sysUser);
+                if (ObjectUtil.isNotEmpty(loginUser)) {
+                    // 鉴权，跳转的时候需要访问 /index 页面
+                    UsernamePasswordAuthenticationToken authenticationToken =
+                            new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
+                    // 将用户信息存储到SecurityContext中，SecurityContext存储到SecurityContextHolder中
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                }
+            } catch (Exception e) {
+                log.error("查询用户信息时发生异常，用户ID: {}，错误信息: {}", id, e.getMessage(), e);
+                WebUtils.Unauthorized(response, Result.unauthorized("系统内部错误").toJson());
                 return;
-            }
-            if (sysUser.getStatus() == StatusEnum.DISABLE.getStatus()){
-                // 用户已被禁用
-                log.error("用户访问接口{},提示:用户已被禁用", request.getRequestURI());
-                WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.UserDisabled).toJson());
-                return;
-            }
-            // 将SysUser转换为LoginUser
-            LoginUser loginUser = userDetailsService.handleLogin(sysUser);
-            if (ObjectUtil.isNotEmpty(loginUser)) {
-                // 鉴权，跳转的时候需要访问 /index 页面
-                UsernamePasswordAuthenticationToken authenticationToken =
-                        new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
-                // 将用户信息存储到SecurityContext中，SecurityContext存储到SecurityContextHolder中
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
 
         }

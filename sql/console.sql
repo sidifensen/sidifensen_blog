@@ -18,7 +18,8 @@ create table sys_user
     login_time       datetime     not null comment '登录时间',
     create_time      datetime     not null comment '创建时间',
     update_time      datetime     not null comment '更新时间',
-    is_deleted       tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除'
+    is_deleted       tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
+    index `idx_is_deleted` (`is_deleted`)
 );
 
 
@@ -38,7 +39,8 @@ create table sys_user_role
 (
     id      int primary key auto_increment comment '主键id',
     user_id int not null comment '用户id',
-    role_id int not null comment '角色id'
+    role_id int not null comment '角色id',
+    index user_id (user_id)
 );
 
 create table sys_menu
@@ -60,7 +62,8 @@ create table sys_role_menu
 (
     id      int primary key auto_increment comment '主键id',
     role_id int not null comment '角色id',
-    menu_id int not null comment '菜单id'
+    menu_id int not null comment '菜单id',
+    index idx_role_id (role_id)
 );
 
 create table sys_permission
@@ -78,7 +81,8 @@ create table sys_role_permission
 (
     id            int primary key auto_increment comment '主键id',
     role_id       int not null comment '角色id',
-    permission_id int not null comment '权限id'
+    permission_id int not null comment '权限id',
+    index idx_role_id (role_id)
 );
 
 # create table article
@@ -106,8 +110,7 @@ create table photo
     create_time    datetime     not null comment '创建时间',
     update_time    datetime     not null comment '更新时间',
     is_deleted     tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index idx_examine_status (examine_status),
-    index idx_photo_user_album_status_create_time (user_id, examine_status, create_time)
+    index idx_deleted_id_examine_status (is_deleted, examine_status)
 );
 
 create table album
@@ -120,32 +123,34 @@ create table album
     create_time datetime    not null comment '创建时间',
     update_time datetime    not null comment '更新时间',
     is_deleted  tinyint     not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index idx_show_status (show_status),
-    index idx_user_status_create_time (user_id, show_status, create_time)
+    index idx_is_deleted_show_status (is_deleted, show_status),
+    index idx_is_deleted_user_id (is_deleted, user_id)
 );
 
-create table album_photo (
-    id int primary key auto_increment comment '主键id',
+create table album_photo
+(
+    id       int primary key auto_increment comment '主键id',
     album_id int not null comment '相册id',
     photo_id int not null comment '图片id',
-    index idx_album_id (album_id),
-    index idx_photo_id (photo_id),
-    index idx_album_photo(album_id, photo_id)
+    index idx_album_id (album_id)
 );
 
 
-create table message (
-    id int primary key auto_increment comment '消息id',
-    is_read tinyint not null default 0 comment '是否已读 0-未读 1-已读',
-    type tinyint not null default 0 comment '消息类型 0-系统 1-评论 2-点赞 3-收藏 4-关注',
-    content text not null comment '消息内容',
+create table message
+(
+    id          int primary key auto_increment comment '消息id',
+    is_read     tinyint  not null default 0 comment '是否已读 0-未读 1-已读',
+    type        tinyint  not null default 0 comment '消息类型 0-系统 1-评论 2-点赞 3-收藏 4-关注',
+    content     text     not null comment '消息内容',
     create_time datetime not null comment '创建时间',
     update_time datetime not null comment '更新时间',
-    is_deleted tinyint not null default 0 comment '是否删除 0-未删除 1-已删除'
+    is_deleted  tinyint  not null default 0 comment '是否删除 0-未删除 1-已删除'
 );
 
-create table user_message (
-    id int primary key auto_increment comment '主键id',
-    user_id int not null comment '用户id',
-    message_id int not null comment '消息id'
+create table user_message
+(
+    id         int primary key auto_increment comment '主键id',
+    user_id    int not null comment '用户id',
+    message_id int not null comment '消息id',
+    index idx_user_id (user_id)
 );
