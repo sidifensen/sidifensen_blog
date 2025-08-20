@@ -3,6 +3,7 @@ package com.sidifensen.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sidifensen.domain.entity.SysUser;
+import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.ISysUserRoleService;
@@ -39,31 +40,30 @@ public class OauthServiceImpl implements OauthService {
     private ISysUserRoleService sysUserRoleService;
 
     @Override
-    public String login(AuthResponse authResponse, HttpServletResponse request, Integer type) {
+    public String login(AuthResponse authResponse, HttpServletResponse request, Integer code) {
         if (authResponse.getCode() == 2000) {
             AuthUser authUser = (AuthUser) authResponse.getData();
-            String password = passwordEncoder.encode(authUser.getToken().getAccessToken());
-            LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<SysUser>().eq(SysUser::getId, authUser.getUuid()).eq(ObjectUtil.isNotEmpty(authUser.getEmail()), SysUser::getEmail, authUser.getEmail());
-            SysUser user = sysUserMapper.selectOne(queryWrapper);
+            String type = RegisterOrLoginTypeEnum.getType(code);
 
+            String username = type + "_" + authUser.getUuid();
+            LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, username);
+            SysUser user = sysUserMapper.selectOne(queryWrapper);
+            String password = passwordEncoder.encode(authUser.getToken().getAccessToken());
             String ip = ipUtils.getIp();
             if (ObjectUtil.isEmpty(user)) {
                 // 注册
                 SysUser sysUser = new SysUser();
-                sysUser.setUsername(authUser.getUsername() + "_" + authUser.getUuid());
+                sysUser.setUsername(username);
                 sysUser.setPassword(password);
-                if (ObjectUtil.isNotEmpty(authUser.getEmail())) {
-                    sysUser.setEmail(authUser.getEmail());
-                }
                 sysUser.setNickname(authUser.getNickname());
                 sysUser.setAvatar(authUser.getAvatar());
                 if (ObjectUtil.isNotEmpty(authUser.getRemark())) {
                     sysUser.setIntroduction(authUser.getRemark());
                 }
                 sysUser.setRegisterIp(ip);
-                sysUser.setRegisterType(type);
+                sysUser.setRegisterType(code);
                 sysUser.setLoginTime(new Date());
-                sysUser.setLoginType(type);
+                sysUser.setLoginType(code);
                 sysUser.setLoginIp(ip);
                 int insert = sysUserMapper.insert(sysUser);
                 if (insert > 0) {
@@ -76,8 +76,13 @@ public class OauthServiceImpl implements OauthService {
             sysUser.setPassword(password);
             sysUserMapper.updateById(sysUser);
             ipService.setLoginIp(sysUser.getId(), ip);
-
-            return "?user_name=" + authUser.getUsername() + "_" + authUser.getUuid() + "&access_token=" + authUser.getToken().getAccessToken();
+            switch (code) {
+                case 1:
+                    return "?login_type=gitee&user_name=" + username + "&access_token=" + authUser.getToken().getAccessToken();
+                case 2:
+                    return "?login_type=github&user_name=" + username + "&access_token=" + authUser.getToken().getAccessToken();
+            }
+            return "?login_type=gitee&user_name=" + username + "&access_token=" + authUser.getToken().getAccessToken();
         } else {
             log.error("oauth登录失败：{}", authResponse.getMsg());
             throw new BlogException("oauth登录失败：" + authResponse.getMsg());

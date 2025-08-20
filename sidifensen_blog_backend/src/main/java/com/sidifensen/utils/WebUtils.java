@@ -1,6 +1,8 @@
 package com.sidifensen.utils;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.sidifensen.domain.constants.BlogConstants;
+import com.sidifensen.exception.BlogException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -63,7 +65,7 @@ public class WebUtils {
         if (ObjectUtil.isNotEmpty(requestURI)){
             return requestURI;
         }
-        return null;
+        return "unknown";
     }
 
     /**
@@ -74,6 +76,6 @@ public class WebUtils {
         if (ObjectUtil.isNotEmpty(requestAttributes)) {
             return requestAttributes.getRequest();
         }
-        return null;
+        throw new BlogException(BlogConstants.CannotGetRequestInfo);
     }
 }

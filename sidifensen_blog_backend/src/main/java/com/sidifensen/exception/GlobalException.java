@@ -86,4 +86,11 @@ public class GlobalException {
         e.printStackTrace();
         return Result.error("数据库查询错误，请检查参数是否正确");
     }
+
+    @ExceptionHandler(ThreadPoolException.class)
+    Object handleThreadPoolException(ThreadPoolException e) {
+        log.error("线程池异常：{}", e.getMessage());
+        e.printStackTrace();
+        return Result.error(e.getMessage());
+    }
 }

@@ -16,6 +16,7 @@ import com.sidifensen.mapper.SysRoleMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.mapper.SysUserRoleMapper;
 import com.sidifensen.service.ISysUserRoleService;
+import com.sidifensen.utils.MyThreadFactory;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
@@ -194,12 +195,15 @@ public class SysUserRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUs
         return sysUserVos;
     }
 
-    ExecutorService executor = new ThreadPoolExecutor(1, 1, 0l, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(500));
+    ExecutorService executorService = new ThreadPoolExecutor(
+            2, 4, 0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(500),
+            new MyThreadFactory("sysUserRoleServiceImpl")
+    );
 
     @Override
     public void setRegisterRole(Integer userId) {
-        executor.execute(() -> {
+        executorService.execute(() -> {
             // 设置注册用户的角色
             SysRole sysRole = sysRoleMapper.selectOne(Wrappers.<SysRole>lambdaQuery().eq(SysRole::getRole, "user"));
             if (ObjectUtil.isEmpty(sysRole)) {

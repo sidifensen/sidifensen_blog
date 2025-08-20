@@ -18,7 +18,7 @@ import java.util.List;
 public interface IMessageService extends IService<Message> {
 
     // 发送消息
-    void send(MessageDto messageDto, Integer userId);
+    void send(MessageDto messageDto);
 
     // 发送消息给管理员
     void sendToAdmin(MessageDto messageDto);
@@ -29,4 +29,6 @@ public interface IMessageService extends IService<Message> {
     // 获取管理员消息列表
     List<MessageVo> getMessages();
 
+    // 管理员读取消息
+    void readMessage(Integer messageId);
 }

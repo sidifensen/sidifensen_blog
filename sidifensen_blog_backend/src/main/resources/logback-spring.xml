@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Configuration with debug and scan disabled to suppress initialization logs -->
 <configuration debug="false" scan="false" packagingData="false">
+
     <!-- 禁用状态监听器来屏蔽初始化日志 -->
     <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
     
@@ -64,6 +64,10 @@
     <logger name="org.mybatis.spring.SqlSessionFactoryBean" level="OFF"/>
     <logger name="org.mybatis.spring.SqlSessionUtils" level="OFF"/>
     
+    <!-- 共同的日志级别配置 -->
+    <logger name="org.mybatis.spring.mapper" level="OFF"/>
+    <logger name="org.apache" level="INFO"/>
+    
     <!-- 开发环境:打印控制台 -->
     <springProfile name="dev">
         <logger name="com.sidifensen" level="DEBUG"/>
@@ -86,4 +90,5 @@
             <appender-ref ref="ERROR_FILE"/>
         </root>
     </springProfile>
+
 </configuration>

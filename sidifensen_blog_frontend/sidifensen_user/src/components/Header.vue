@@ -168,11 +168,12 @@ const handleLoginClick = () => {
 };
 
 const oauth = () => {
-  let user_name = route.query.user_name;
-  let access_token = route.query.access_token;
+  const user_name = route.query.user_name;
+  const access_token = route.query.access_token;
+  const login_type = route.query.login_type;
   // 如果地址中有参数，则进行登录
   if (user_name && access_token) {
-    oauthLogin({username: user_name, password: access_token })
+    oauthLogin({type: login_type, username: user_name, password: access_token })
     .then(async (res) => {
       // 去除url上面的参数
       await router.replace({ query: {} });

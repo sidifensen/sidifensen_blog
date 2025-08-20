@@ -66,7 +66,7 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
-  base: "./",
+  base: "/",
   build: {
     // 调整chunk大小警告阈值为1000kB
     chunkSizeWarningLimit: 1000,

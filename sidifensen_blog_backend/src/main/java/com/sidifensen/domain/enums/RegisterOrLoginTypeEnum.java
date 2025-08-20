@@ -10,30 +10,51 @@ public enum RegisterOrLoginTypeEnum {
     /**
      * 邮箱或用户名登录
      */
-    EMAIL(0, "邮箱或用户名登录", "email"),
+    EMAIL(0, "email","邮箱或用户名登录" ),
     /**
      * Gitee
      */
-    GITEE(1, "Gitee登录", "gitee"),
+    GITEE(1, "gitee","Gitee登录" ),
     /**
      * Github
      */
-    GITHUB(2, "Github登录", "github");
+    GITHUB(2, "github","Github登录" );
 
 
     /**
      * 注册方式
      */
-    private final Integer registerType;
+    private final Integer code;
+
+    /**
+     * 策略
+     */
+    private final String type;
 
     /**
      * 描述
      */
     private final String description;
 
-    /**
-     * 策略
-     */
-    private final String strategy;
+
+    //根据code返回type
+    public static String getType(Integer code) {
+        for (RegisterOrLoginTypeEnum registerOrLoginTypeEnum : RegisterOrLoginTypeEnum.values()) {
+            if (registerOrLoginTypeEnum.getCode().equals(code)) {
+                return registerOrLoginTypeEnum.getType();
+            }
+        }
+        return "unknown";
+    }
+
+    //根据type返回code
+    public static Integer getCode(String type) {
+        for (RegisterOrLoginTypeEnum registerOrLoginTypeEnum : RegisterOrLoginTypeEnum.values()) {
+            if (registerOrLoginTypeEnum.getType().equals(type)) {
+                return registerOrLoginTypeEnum.getCode();
+            }
+        }
+        return 0;
+    }
 
 }

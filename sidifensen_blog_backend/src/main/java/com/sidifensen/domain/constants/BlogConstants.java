@@ -34,4 +34,5 @@ public class BlogConstants {
     public static final String ExamineStatusError = "审核状态错误";
 
     public static final String CannotSaveMessage = "消息保存失败";
+    public static final String CannotReadMessage = "消息读取失败";
 }

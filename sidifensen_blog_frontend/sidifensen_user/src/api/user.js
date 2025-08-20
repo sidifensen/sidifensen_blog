@@ -12,6 +12,9 @@ export function login(data) {
 export function oauthLogin(data) {
   return request({
     url: "/user/oauthLogin",
+    headers: {
+      "Login-Type": data.type,
+    },
     method: "post",
     data: data,
   });

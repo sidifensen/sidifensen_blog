@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # 容器名称
-CONTAINER_NAME=sidifensen_blog_backend
+CONTAINER_NAME=sidifensen_backend
 
 # 镜像名称
-IMAGE_NAME=sidifensen_blog_backend
+IMAGE_NAME=sidifensen_backend
 
-# 宿主机日志目录
-HOST_LOG_DIR=/opt/sidifensen/backend/logs
+# 宿主机日志目录 - 设置为脚本所在目录下的logs文件夹
+HOST_LOG_DIR=./logs
 
 # 检查jar文件是否存在
 if [ ! -f "./sidifensen_blog_backend-1.0-SNAPSHOT.jar" ]; then
@@ -49,4 +49,7 @@ docker run -d \
   -v $HOST_LOG_DIR:/app/logs $IMAGE_NAME
 
 echo "$CONTAINER_NAME 已启动"
+echo "容器信息:"
+docker ps --filter "name=$CONTAINER_NAME" --format "table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}"
+
 echo "日志目录已映射到 $HOST_LOG_DIR"

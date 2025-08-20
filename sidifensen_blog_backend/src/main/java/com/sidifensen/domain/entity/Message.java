@@ -1,6 +1,7 @@
 package com.sidifensen.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -14,12 +15,13 @@ import java.util.Date;
  * </p>
  *
  * @author sidifensen
- * @since 2025-08-17
+ * @since 2025-08-20
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @TableName("message")
+@AllArgsConstructor
 public class Message implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -44,6 +46,16 @@ public class Message implements Serializable {
      * 消息内容
      */
     private String content;
+
+    /**
+     * 发送消息的用户id
+     */
+    private Integer senderId;
+
+    /**
+     * 接收消息的用户id
+     */
+    private Integer receiverId;
 
     /**
      * 创建时间

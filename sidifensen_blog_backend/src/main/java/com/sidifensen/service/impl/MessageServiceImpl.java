@@ -7,11 +7,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.MessageDto;
 import com.sidifensen.domain.entity.Message;
-import com.sidifensen.domain.entity.UserMessage;
 import com.sidifensen.domain.vo.MessageVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.MessageMapper;
-import com.sidifensen.mapper.UserMessageMapper;
 import com.sidifensen.service.IMessageService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -30,18 +28,13 @@ import java.util.List;
 public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> implements IMessageService {
 
     @Resource
-    private UserMessageMapper userMessageMapper;
+    private MessageMapper messageMapper;
 
     @Override
-    public void send(MessageDto messageDto, Integer userId) {
+    public void send(MessageDto messageDto) {
         Message message = BeanUtil.copyProperties(messageDto, Message.class);
-        boolean save = this.save(message);
-        if (!save) {
-            throw new BlogException(BlogConstants.CannotSaveMessage);
-        }
-
-        int insert = userMessageMapper.insert(new UserMessage(null, message.getId(), userId));
-        if (insert == 0) {
+        int save = messageMapper.insert(message);
+        if (save <= 0) {
             throw new BlogException(BlogConstants.CannotSaveMessage);
         }
     }
@@ -55,16 +48,13 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
             throw new BlogException(BlogConstants.CannotSaveMessage);
         }
 
-        int insert = userMessageMapper.insert(new UserMessage(null, 1, message.getId()));
-        if (insert == 0) {
-            throw new BlogException(BlogConstants.CannotSaveMessage);
-        }
-
     }
 
     @Override
     public Integer getMessageCount() {
-        Long count = userMessageMapper.selectCount(new LambdaQueryWrapper<UserMessage>().eq(UserMessage::getUserId, 1));
+        // 统计未读消息数量
+        Long count = messageMapper.selectCount(new LambdaQueryWrapper<Message>().eq(Message::getIsRead, 0));
+
         return count.intValue();
     }
 
@@ -79,5 +69,17 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         return List.of();
     }
 
+    @Override
+    public void readMessage(Integer messageId) {
+        LambdaQueryWrapper<Message> eq = new LambdaQueryWrapper<Message>()
+                .eq(Message::getId, messageId);
+        // 读取消息
+        Message message = messageMapper.selectOne(eq);
+        if (ObjectUtil.isNotEmpty(message)) {
+            messageMapper.updateById(message);
+        } else {
+            throw new BlogException(BlogConstants.CannotReadMessage);
+        }
+    }
 
 }

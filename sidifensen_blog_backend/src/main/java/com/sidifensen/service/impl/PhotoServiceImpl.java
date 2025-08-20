@@ -136,6 +136,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             MessageDto messageDto = new MessageDto();
             messageDto.setType(MessageTypeEnum.SYSTEM.getCode());
             messageDto.setContent(text);
+            messageDto.setSenderId(1);
+            messageDto.setReceiverId(1);
             messageService.sendToAdmin(messageDto);
 
             // 发送邮件给管理员

@@ -30,7 +30,7 @@ import { enableAntiDebug } from '@/utils/antiDebug';
 // 引入并配置disable-devtool
 import { setupDisableDevtool } from '@/utils/disableDevtool';
 // 启用禁用开发者工具功能
-setupDisableDevtool();
+// setupDisableDevtool();
 
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component);

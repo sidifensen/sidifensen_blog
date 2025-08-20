@@ -4,9 +4,9 @@ create table sys_user
     username         varchar(50)  not null comment '用户名',
     password         varchar(100) not null comment '密码',
     nickname         varchar(10)  not null comment '昵称',
-    email            varchar(50)  not null comment '邮箱',
+    email            varchar(255)  not null comment '邮箱',
     sex              tinyint               default 0 comment '性别 0-男 1-女',
-    introduction     varchar(100) comment '简介',
+    introduction     varchar(200) comment '简介',
     avatar           varchar(255) comment '头像',
     status           tinyint      not null default 0 comment '状态 0-正常 1-禁用',
     register_type    tinyint               default 0 comment '注册方式 0-用户名/邮箱 1-gitee 2-github 3-QQ',
@@ -19,7 +19,8 @@ create table sys_user
     create_time      datetime     not null comment '创建时间',
     update_time      datetime     not null comment '更新时间',
     is_deleted       tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index `idx_is_deleted` (`is_deleted`)
+    index idx_username (username),
+    index idx_email (email)
 );
 
 
@@ -142,15 +143,12 @@ create table message
     is_read     tinyint  not null default 0 comment '是否已读 0-未读 1-已读',
     type        tinyint  not null default 0 comment '消息类型 0-系统 1-评论 2-点赞 3-收藏 4-关注',
     content     text     not null comment '消息内容',
+    sender_id int not null comment '发送消息的用户id',
+    receiver_id int not null comment '接收消息的用户id',
     create_time datetime not null comment '创建时间',
     update_time datetime not null comment '更新时间',
-    is_deleted  tinyint  not null default 0 comment '是否删除 0-未删除 1-已删除'
+    is_deleted  tinyint  not null default 0 comment '是否删除 0-未删除 1-已删除',
+    index idx_sender_id_type (sender_id, type),
+    index idx_receiver_id_type (receiver_id, type)
 );
 
-create table user_message
-(
-    id         int primary key auto_increment comment '主键id',
-    user_id    int not null comment '用户id',
-    message_id int not null comment '消息id',
-    index idx_user_id (user_id)
-);

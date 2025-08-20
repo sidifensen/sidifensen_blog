@@ -24,13 +24,13 @@ public class MessageController {
     private IMessageService messageService;
 
     /**
-     * 查看管理员消息数量
+     * 获取管理员未读消息数量
      * @param
      * @return
      */
     @PreAuthorize("hasAuthority('message:count')")
     @GetMapping("/admin/count")
-    public Result<Object> getMessageCount() {
+    public Result getMessageCount() {
         Integer count = messageService.getMessageCount();
         return Result.success(count);
     }
@@ -42,9 +42,21 @@ public class MessageController {
      */
     @PreAuthorize("hasAuthority('message:list')")
     @GetMapping("/admin/list")
-    public Result<Object> getMessages() {
+    public Result getMessages() {
         List<MessageVo> messageVos = messageService.getMessages();
         return Result.success(messageVos);
+    }
+
+    /**
+     * 管理员读取消息
+     * @param messageId
+     * @return
+     */
+    @PreAuthorize("hasAuthority('message:read')")
+    @GetMapping("/admin/read")
+    public Result readMessage(Integer messageId) {
+        messageService.readMessage(messageId);
+        return Result.success();
     }
 
 }

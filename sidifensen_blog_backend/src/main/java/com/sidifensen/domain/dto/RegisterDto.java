@@ -10,11 +10,12 @@ import org.hibernate.validator.constraints.Length;
 public class RegisterDto {
 
     // 用户名
-    @Pattern(regexp = "^[a-zA-Z0-9\\u4e00-\\u9fa5]+$")
-    @Length(min = 1, max = 10)
+    @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "用户名必须为数字、字母或下划线")
+    @Length(min = 4, max = 10)
     private String username;
 
     // 密码
+    @Pattern(regexp = "^[a-zA-Z0-9]+$", message = "密码只能包含英文和数字")
     @Length(min = 6, max = 20)
     private String password;
 

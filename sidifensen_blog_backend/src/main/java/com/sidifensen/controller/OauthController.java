@@ -53,7 +53,7 @@ public class OauthController {
     public void giteeCallback(AuthCallback callback, HttpServletResponse request) throws IOException {
         AuthRequest authRequest = getGiteeAuthRequest();
         AuthResponse authResponse = authRequest.login(callback);
-        String url = oauthService.login(authResponse, request, RegisterOrLoginTypeEnum.GITEE.getRegisterType());
+        String url = oauthService.login(authResponse, request, RegisterOrLoginTypeEnum.GITEE.getCode());
         request.sendRedirect(frontendUserHost + url);
     }
 
@@ -68,7 +68,7 @@ public class OauthController {
     public void githubCallback(AuthCallback callback, HttpServletResponse request) throws IOException {
         AuthRequest authRequest = getGithubAuthRequest();
         AuthResponse authResponse = authRequest.login(callback);
-        String url = oauthService.login(authResponse, request, RegisterOrLoginTypeEnum.GITHUB.getRegisterType());
+        String url = oauthService.login(authResponse, request, RegisterOrLoginTypeEnum.GITHUB.getCode());
         request.sendRedirect(frontendUserHost + url);
     }
 

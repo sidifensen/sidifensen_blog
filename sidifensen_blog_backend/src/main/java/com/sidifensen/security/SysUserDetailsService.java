@@ -60,16 +60,17 @@ public class SysUserDetailsService implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // TODO 通过请求头 判断登录类型 账号/邮箱登录 或者 第三方登录
         HttpServletRequest request = WebUtils.getRequest();
-        if (ObjectUtil.isEmpty(request)){
-            throw new BlogException(BlogConstants.CannotGetRequestInfo);
-        }
+        String loginType = request.getHeader("Login-Type");
 
-        // 根据用户名或邮箱登录
         SysUser sysUser = loginByUsernameOrEmail(username);
-
-        sysUser.setLoginType(RegisterOrLoginTypeEnum.EMAIL.getRegisterType());
+        if (ObjectUtil.isNotEmpty(loginType)) {
+            // oauth登录
+            sysUser.setLoginType(RegisterOrLoginTypeEnum.getCode(loginType));
+        } else {
+            // 根据用户名或邮箱登录
+            sysUser.setLoginType(RegisterOrLoginTypeEnum.EMAIL.getCode());
+        }
         sysUser.setLoginTime(new Date());
         String ip = ipUtils.getIp();
         sysUser.setLoginIp(ip);
@@ -78,7 +79,7 @@ public class SysUserDetailsService implements UserDetailsService {
         if (i == 0) {
             throw new BlogException(BlogConstants.NotFoundUser);
         }
-        ipService.setLoginIp(sysUser.getId(),ip);
+        ipService.setLoginIp(sysUser.getId(), ip);
         return handleLogin(sysUser);
     }
 
@@ -86,8 +87,7 @@ public class SysUserDetailsService implements UserDetailsService {
     public SysUser loginByUsernameOrEmail(String username) {
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysUser::getUsername, username)
-                .or().eq(SysUser::getEmail, username)
-                .eq(SysUser::getRegisterType, RegisterOrLoginTypeEnum.EMAIL.getRegisterType());
+                .or().eq(SysUser::getEmail, username);
         SysUser sysUser = sysUserMapper.selectOne(queryWrapper);
 
         if (ObjectUtil.isEmpty(sysUser)) {
@@ -96,7 +96,7 @@ public class SysUserDetailsService implements UserDetailsService {
             // 如果用UsernameNotFoundException会被AbstractUserDetailsAuthenticationProvider的authenticate拦截，
             // 并且包装成BadCredentialsException, 返回"用户名或密码错误"的错误信息
         }
-        if (sysUser.getStatus().equals(StatusEnum.DISABLE.getStatus())){
+        if (sysUser.getStatus().equals(StatusEnum.DISABLE.getStatus())) {
             throw new BlogException(BlogConstants.UserDisabled);
         }
         return sysUser;
@@ -113,13 +113,13 @@ public class SysUserDetailsService implements UserDetailsService {
                 .map(SysUserRole::getRoleId)
                 .collect(Collectors.toList());
 
-        if (ObjectUtil.isEmpty(roleIds)){
+        if (ObjectUtil.isEmpty(roleIds)) {
             throw new BlogException(BlogConstants.NotFoundRole);
         }
         List<SysRole> sysRoles = sysRoleMapper.selectList(new LambdaQueryWrapper<SysRole>()
                 .in(SysRole::getId, roleIds)
                 .eq(SysRole::getStatus, RoleEnum.ROLE_STATUS_NORMAL.getStatus()));
-        if (ObjectUtil.isEmpty(sysRoles)){
+        if (ObjectUtil.isEmpty(sysRoles)) {
             throw new BlogException(BlogConstants.NotFoundRole);
         }
 

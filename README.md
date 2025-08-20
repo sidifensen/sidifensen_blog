@@ -30,6 +30,8 @@
 - **样式**: Sass
 - **图标**: Element Plus Icons + SVG Icons
 
+> 所有技术栈均使用当前最新稳定版本，确保系统性能和安全性。
+
 ## 项目结构
 
 ```
@@ -76,12 +78,12 @@ sidifensen_blog/
 
 ## 项目特色
 
-1. **现代化技术栈**: 使用最新的Spring Boot 3和Vue 3
-2. **完整的功能体系**: 从内容管理到用户交互的完整博客生态
-3. **安全性**: 集成Spring Security和内容安全检测
-4. **性能优化**: Redis缓存、RabbitMQ异步处理
-5. **可扩展性**: 模块化设计，易于功能扩展
-6. **开发体验**: 完善的开发工具链和配置
+1. **完整的功能体系**: 从内容管理到用户交互的完整博客生态
+2. **安全性**: 集成Spring Security和内容安全检测
+3. **性能优化**: Redis缓存、RabbitMQ异步处理
+4. **可扩展性**: 模块化设计，易于功能扩展
+5. **开发体验**: 完善的开发工具链和配置
+6. **前后端分离**: 采用现代化前后端分离架构，提高开发效率
 
 ## 快速开始
 
@@ -112,43 +114,64 @@ npm run dev
 ```
 
 ### 数据库初始化
-```bash
-# 导入主数据库结构
-mysql -u root -p < sql/sidifensen_blog.sql
+1. 创建MySQL数据库：`sidifensen_blog`
+2. 执行SQL脚本：`sql/sidifensen_blog.sql`
+3. 根据需要执行控制台相关脚本：`sql/console.sql`
 
-# 导入控制台相关数据
-mysql -u root -p < sql/console.sql
-```
+## 部署教程
 
-## 部署说明
+### 环境准备
+1. 确保Docker已正确安装并运行
+2. 准备好数据库、Redis、RabbitMQ等服务
+3. 配置好MinIO存储服务和阿里云图片安全检测服务（如使用）
 
 ### 后端部署
 1. 配置 `application.yml` 中的数据库、Redis、RabbitMQ等连接信息
-2. 配置MinIO存储服务
-3. 配置阿里云图片安全检测服务
-4. 使用 `mvn clean package` 打包
-5. 运行生成的jar文件
+2. 使用 `mvn clean package` 打包项目，生成JAR文件
+3. 将打包完成的JAR文件、`docker.sh`脚本及`Dockerfile`放置于同一目录下
+4. 执行以下命令为脚本添加执行权限：
+   ```bash
+   chmod +x docker.sh
+   ```
+5. 运行脚本完成部署：
+   ```bash
+   ./docker.sh
+   ```
 
 ### 前端部署
-1. 使用 `npm run build` 构建生产版本
-2. 将dist目录部署到Web服务器
-3. 配置反向代理指向后端API
+1. 使用 `npm run build` 构建生产版本，生成`dist`文件夹
+2. 将构建生成的`dist`文件夹、`default.conf`配置文件、`docker.sh`脚本及`Dockerfile`放置于同一目录下
+3. 执行以下命令为脚本添加执行权限：
+   ```bash
+   chmod +x docker.sh
+   ```
+4. 运行脚本完成部署：
+   ```bash
+   ./docker.sh
+   ```
+
+> 注意：根据实际情况调整配置文件中的参数。
+
+## 访问应用
+部署完成后，可以通过以下地址访问应用：
+- 用户端: http://localhost:7000
+- 管理端: http://localhost:8000
+
+如果使用了自定义端口或域名，请相应调整访问地址。
 
 ## 开发说明
 
 ### 后端开发
 - 遵循Spring Boot最佳实践
 - 使用MyBatis-Plus简化数据库操作
-- 集成Spring Security保障系统安全
-- 使用Redis提升系统性能
-- 集成RabbitMQ处理异步任务
+- 代码规范：遵循Java编码规范，使用Lombok减少样板代码
+- API设计：RESTful风格API，返回统一格式的响应
 
 ### 前端开发
-- 使用Vue 3 Composition API
-- Element Plus组件库提供统一UI风格
-- Pinia进行状态管理
-- Vite提供快速的开发体验
-- 支持TypeScript开发
+- 使用Vue 3 Composition API进行组件开发
+- 状态管理：使用Pinia管理应用状态
+- 代码规范：遵循ESLint规则，使用Prettier格式化代码
+- 支持JavaScript开发
 
 ## 贡献指南
 

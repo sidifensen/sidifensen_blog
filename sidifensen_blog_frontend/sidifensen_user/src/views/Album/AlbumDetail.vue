@@ -198,7 +198,6 @@ const albumForm = ref({
   userId: "", // 相册所属用户ID
   userName: "", // 用户名称
 });
-const switchShowStatus = ref(albumForm.value.showStatus === 0 ? true : false);
 
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
@@ -228,6 +227,9 @@ onMounted(() => {
   getPhotoList();
   // 获取相册图片列表
 });
+
+// 切换显示状态
+const switchShowStatus = computed(() => albumForm.value.showStatus === 0);
 
 // 判断是否为相册所有者
 const isAlbumOwner = computed(() => {
@@ -270,17 +272,17 @@ const download = (number) => {
   const suffix = url.slice(url.lastIndexOf(".")); // 文件格式
   const filename = Date.now() + suffix; // 时间戳文件名
   fetch(url)
-    .then((response) => response.blob())
-    .then((blob) => {
-      const blobUrl = URL.createObjectURL(new Blob([blob])); // 创建一个blob对象url
-      const link = document.createElement("a"); // 创建一个隐藏a标签
-      link.href = blobUrl; // 给a标签的href属性赋值
-      link.download = filename; // 给a标签的download属性赋值
-      document.body.appendChild(link); // 下载前添加到body中
-      link.click(); // 点击a标签
-      URL.revokeObjectURL(blobUrl); // 释放url对象
-      link.remove(); // 移除a标签
-    });
+  .then((response) => response.blob())
+  .then((blob) => {
+    const blobUrl = URL.createObjectURL(new Blob([blob])); // 创建一个blob对象url
+    const link = document.createElement("a"); // 创建一个隐藏a标签
+    link.href = blobUrl; // 给a标签的href属性赋值
+    link.download = filename; // 给a标签的download属性赋值
+    document.body.appendChild(link); // 下载前添加到body中
+    link.click(); // 点击a标签
+    URL.revokeObjectURL(blobUrl); // 释放url对象
+    link.remove(); // 移除a标签
+  });
 };
 
 // 是否为图片选择模式
@@ -566,8 +568,10 @@ const handleDeleteAlbum = () => {
 
 // 修改相册展示状态
 const handleChangeAlbumShowStatus = async () => {
+  console.log("switchShowStatus.value",switchShowStatus.value)
   try {
     const newStatus = albumForm.value.showStatus === 0 ? 1 : 0;
+    console.log("newStatus",newStatus);
     const AlbumDto = {
       id: albumForm.value.id,
       showStatus: newStatus,
