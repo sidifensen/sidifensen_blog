@@ -57,7 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String jwt = request.getHeader("Authorization");
         if (ObjectUtil.isEmpty(jwt)) {
             //请先登录
-            log.error("用户访问接口{},提示:请先登录", request.getRequestURI());
+            log.error("用户访问接口{}, 提示:请先登录", request.getRequestURI());
             WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.LoginRequired).toJson());
             return;
         }
@@ -73,15 +73,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 // 根据id查询用户信息
                 SysUser sysUser = sysUserMapper.selectById(id);
-                if (ObjectUtil.isEmpty(sysUser)){
+                if (ObjectUtil.isEmpty(sysUser)) {
                     // 用户不存在
-                    log.error("用户访问接口{},提示:用户不存在", request.getRequestURI());
+                    log.error("用户访问接口{}, 提示:用户不存在", request.getRequestURI());
                     WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.NotFoundUser).toJson());
                     return;
                 }
-                if (sysUser.getStatus() == StatusEnum.DISABLE.getStatus()){
+                if (sysUser.getStatus() == StatusEnum.DISABLE.getStatus()) {
                     // 用户已被禁用
-                    log.error("用户访问接口{},提示:用户已被禁用", request.getRequestURI());
+                    log.error("用户id: {}, 访问接口{}, 提示:用户已被禁用", sysUser.getId(), request.getRequestURI());
                     WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.UserDisabled).toJson());
                     return;
                 }
@@ -95,7 +95,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
             } catch (Exception e) {
-                log.error("查询用户信息时发生异常，用户ID: {}，错误信息: {}", id, e.getMessage(), e);
+                log.error("查询用户信息时发生异常，用户ID: {}, 错误信息: {}", id, e.getMessage(), e);
                 WebUtils.Unauthorized(response, Result.unauthorized("系统内部错误").toJson());
                 return;
             }

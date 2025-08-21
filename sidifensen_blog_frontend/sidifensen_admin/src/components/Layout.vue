@@ -90,6 +90,41 @@
           </div>
           <div class="header-right">
             <Dark />
+            <!-- 消息通知 -->
+            <div class="message-container" @click.stop="toggleMessageDropdown">
+              <el-badge :value="unreadCount" :hidden="unreadCount === 0" class="message-badge-container">
+                <el-icon class="message-icon"><Bell /></el-icon>
+              </el-badge>
+              <!-- 自定义消息下拉框 -->
+              <div v-if="isMessageDropdownVisible" class="custom-message-dropdown" ref="messageDropdownRef">
+                <div class="message-header">
+                  <span class="message-title">消息通知</span>
+                  <el-button v-if="hasUnreadMessages" size="small" plain type="success" @click="markAllAsRead">全部标为已读</el-button>
+                  <el-button size="small" plain  type="danger" @click="deleteAllMessages">全部删除</el-button>
+                </div>
+                <div class="message-list" ref="messageListRef">
+                  <div v-if="messages.length === 0" class="no-message">
+                    <el-icon><Message /></el-icon>
+                    <span>暂无消息</span>
+                  </div>
+                  <div v-for="message in messages" :key="message.id" :data-id="message.id" class="message-item" :class="{ unread: !message.isRead }">
+                    <div class="message-content">
+                      <h4 class="message-title">{{ message.title }}</h4>
+                      <p class="message-desc">{{ message.content }}</p>
+                      <p class="message-time">{{ formatTime(message.createTime) }}</p>
+                    </div>
+                    <div class="message-actions">
+                      <el-button v-if="!message.isRead" class="read-button" @click.stop="markAsRead(message.id)">
+                        <el-icon><Check /></el-icon> 已读
+                      </el-button>
+                      <el-button class="delete-button" @click.stop="deleteMessage(message.id)">
+                        <el-icon><Delete /></el-icon> 删除
+                      </el-button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <el-dropdown trigger="hover">
               <span class="user-info">
                 <el-icon><User /></el-icon>
@@ -113,14 +148,171 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/userStore";
 import { ElMessage } from "element-plus";
 import Dark from "./Dark.vue";
+import { getMessagesCount, getMessageList, readAdminMessages, deleteAdminMessages } from "@/api/message";
+import { Bell, Message, Delete, User, Check } from "@element-plus/icons-vue";
+import { formatTime } from "@/utils/FormatTime";
+import { onUnmounted } from "vue";
 
 const userStore = useUserStore();
 const router = useRouter();
+
+// 消息相关状态
+const unreadCount = ref(0);
+const messages = ref([]);
+const hasUnreadMessages = computed(() => messages.value.some((msg) => !msg.isRead));
+const messageListRef = ref(null);
+const isMessageDropdownVisible = ref(false);
+const messageDropdownRef = ref(null);
+
+// 获取未读消息数量
+const fetchUnreadCount = async () => {
+  try {
+    const res = await getMessagesCount();
+    unreadCount.value = Number(res.data.data);
+  } catch (error) {
+    ElMessage.error("获取消息数量失败");
+    console.error("获取消息数量失败:", error);
+  }
+};
+
+// 获取消息列表
+const fetchMessages = async () => {
+  try {
+    const res = await getMessageList();
+    messages.value = res.data.data.map((msg) => {
+      // 解析content字段（JSON字符串）
+      let contentObj = {};
+      try {
+        contentObj = JSON.parse(msg.content);
+      } catch (e) {
+        console.error("解析消息内容失败:", e);
+      }
+      return {
+        ...msg,
+        isRead: msg.isRead === 1,
+        content: contentObj.text || msg.content,
+      };
+    });
+  } catch (error) {
+    ElMessage.error("获取消息列表失败");
+    console.error("获取消息列表失败:", error);
+    messages.value = [];
+  }
+};
+
+// 切换消息下拉框显示状态
+const toggleMessageDropdown = async () => {
+  isMessageDropdownVisible.value = !isMessageDropdownVisible.value;
+  if (isMessageDropdownVisible.value) {
+    await fetchMessages();
+    // 监听点击事件，点击外部关闭下拉框
+    setTimeout(() => {
+      document.addEventListener("click", closeMessageDropdown);
+    }, 0);
+  } else {
+    document.removeEventListener("click", closeMessageDropdown);
+  }
+};
+
+// 关闭消息下拉框
+const closeMessageDropdown = (e) => {
+  if (messageDropdownRef.value && !messageDropdownRef.value.contains(e.target) && !e.target.closest(".message-badge-container")) {
+    isMessageDropdownVisible.value = false;
+    document.removeEventListener("click", closeMessageDropdown);
+  }
+};
+
+// 清理事件监听器
+onUnmounted(() => {
+  document.removeEventListener("click", closeMessageDropdown);
+});
+
+// 标记单条消息为已读
+const markAsRead = async (messageId) => {
+  try {
+    // 确保messageId是整型
+    const numericMessageId = parseInt(messageId, 10);
+    await readAdminMessages([numericMessageId]);
+    // 刷新消息列表
+    await fetchMessages();
+    // 更新未读数量
+    await fetchUnreadCount();
+    ElMessage.success("消息已标记为已读");
+  } catch (error) {
+    ElMessage.error("标记消息为已读失败");
+    console.error("标记消息为已读失败:", error);
+  }
+};
+
+// 标记所有消息为已读
+const markAllAsRead = async () => {
+  const unreadMessageIds = messages.value.filter((msg) => !msg.isRead).map(({ id }) => id);
+  if (unreadMessageIds.length === 0) {
+    ElMessage.success("所有消息均已读");
+    return;
+  }
+  try {
+    await readAdminMessages(unreadMessageIds);
+    // 刷新消息列表
+    await fetchMessages();
+    // 更新未读数量
+    await fetchUnreadCount();
+    ElMessage.success("已标记所有消息为已读");
+  } catch (error) {
+    ElMessage.error("标记消息为已读失败");
+    console.error("标记消息为已读失败:", error);
+  }
+};
+
+// 删除消息
+const deleteMessage = async (messageId) => {
+  try {
+    const numericMessageId = Number(messageId);
+    await deleteAdminMessages([numericMessageId]);
+    // 刷新消息列表
+    await fetchMessages();
+    // 更新未读数量
+    await fetchUnreadCount();
+    ElMessage.success("消息删除成功");
+  } catch (error) {
+    ElMessage.error("消息删除失败");
+    console.error("消息删除失败:", error);
+  }
+};
+
+// 删除所有消息
+const deleteAllMessages = async () => {
+  if (messages.value.length === 0) {
+    ElMessage.success("暂无消息可删除");
+    return;
+  }
+  try {
+    const allMessageIds = messages.value.map(({ id }) => id);
+    await deleteAdminMessages(allMessageIds);
+    // 刷新消息列表
+    await fetchMessages();
+    // 更新未读数量
+    await fetchUnreadCount();
+    ElMessage.success("已删除所有消息");
+  } catch (error) {
+    ElMessage.error("删除所有消息失败");
+    console.error("删除所有消息失败:", error);
+  }
+};
+
+// 页面加载时获取消息数量
+onMounted(() => {
+  fetchUnreadCount();
+  // 可以添加一个定时器，定期刷新消息数量
+  const intervalId = setInterval(fetchUnreadCount, 60000); // 每分钟刷新一次
+  // 清理定时器
+  onUnmounted(() => clearInterval(intervalId));
+});
 
 const menus = computed(() => {
   return userStore.menus;
@@ -288,6 +480,206 @@ const handleLogout = () => {
         display: flex;
         align-items: center;
 
+        // 消息容器样式
+        .message-container {
+          position: relative;
+          display: inline-block;
+          // 消息徽章容器
+          :deep(.message-badge-container) {
+            margin-right: 20px;
+            cursor: pointer;
+            padding: 7px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            &:hover {
+              background-color: #f0f9ff;
+              transform: scale(1.05);
+            }
+            .message-icon {
+              font-size: 25px;
+              color: #3aa17e;
+            }
+            // 徽章
+            .el-badge__content {
+              top: 10px;
+              right: 20px;
+              color: #fff;
+              background: #3aa17e;
+            }
+          }
+
+          // 自定义消息下拉框样式
+          .custom-message-dropdown {
+            width: 420px;
+            max-height: calc(100vh - 150px);
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            border: 1px solid var(--el-border-color);
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 8px;
+            z-index: 1000;
+            transform-origin: top right;
+            animation: fade-in 0.2s ease-out;
+
+            // 下拉框动画
+            @keyframes fade-in {
+              from {
+                opacity: 0;
+                transform: scale(0.95);
+              }
+              to {
+                opacity: 1;
+                transform: scale(1);
+              }
+            }
+
+            // 移动端适配 - 移到最后以避免Sass警告
+            @media screen and (max-width: 768px) {
+              width: 70vw;
+              right: 50%;
+              transform: translateX(50%);
+            }
+
+            // 消息头部样式
+            .message-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 14px 20px;
+              background-color: var(--el-bg-color);
+              border-bottom: 1px solid var(--el-border-color);
+
+              .message-title {
+                flex: 1;
+                font-size: 16px;
+                font-weight: 600;
+                color: var(--el-text-color);
+              }
+            }
+
+            // 消息列表样式
+            .message-list {
+              max-height: 400px;
+              overflow-y: auto;
+              overflow-x: hidden;
+              padding: 0;
+              scrollbar-width: thin;
+              scrollbar-color: var(--el-scrollbar-thumb-color) var(--el-scrollbar-track-color);
+              .no-message {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 40px 0;
+                color: #94a3b8;
+                .el-icon {
+                  font-size: 48px;
+                  margin-bottom: 16px;
+                  color: #cbd5e1;
+                }
+                span {
+                  font-size: 14px;
+                }
+              }
+              // 消息列表
+              .message-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 16px 20px;
+                cursor: pointer;
+                transition: all 0.25s ease;
+                position: relative;
+                background-color: var(--el-bg-color-overlay);
+                border-bottom: 1px solid var(--el-border-color);
+                &:hover {
+                  background-color: var(--el-border-color-lighter); // 悬停状态使用浅色填充
+                }
+                &.unread {
+                  background-color: var(--el-border-color-light); // 未读状态使用浅色填充
+                }
+                // 未读消息指示点
+                &.unread::before {
+                  content: "";
+                  position: absolute;
+                  left: 10px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  width: 6px;
+                  height: 6px;
+                  border-radius: 50%;
+                  background-color: #3aa17e;
+                }
+                .message-content {
+                  flex: 1;
+                  padding-right: 10px;
+                  min-width: 0;
+                  .message-title {
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: #1e293b;
+                    margin-bottom: 4px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  }
+                  // content内容
+                  .message-desc {
+                    font-size: 13px;
+                    color: #64748b;
+                    margin-bottom: 6px;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2; // 显示行数
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                  }
+                  .message-time {
+                    font-size: 12px;
+                    color: #94a3b8;
+                  }
+                }
+                // 消息操作按钮
+                .message-actions {
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  gap: 6px;
+                  .el-button {
+                    min-width: auto;
+                    padding: 0 8px;
+                    height: 24px;
+                    line-height: 24px;
+                    font-size: 12px;
+                    border-radius: 4px;
+                    .el-icon {
+                      font-size: 14px;
+                      margin-right: 2px;
+                    }
+                  }
+                  .read-button {
+                    color: #3aa17e;
+                    border-color: #3aa17e;
+                    &:hover {
+                      background-color: rgba(58, 161, 126, 0.1);
+                    }
+                  }
+                  .delete-button {
+                    color: #ef4444;
+                    border-color: #ef4444;
+                    margin-left: 0;
+                    &:hover {
+                      background-color: rgba(239, 68, 68, 0.1);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
         .user-info {
           display: flex;
           align-items: center;
@@ -295,11 +687,9 @@ const handleLogout = () => {
           padding: 8px 12px;
           border-radius: 8px;
           transition: background-color 0.2s ease;
-
           &:hover {
-            background-color: #f1f5f9
+            background-color: #f1f5f9;
           }
-
           .el-icon {
             margin-right: 8px;
             color: #64748b;

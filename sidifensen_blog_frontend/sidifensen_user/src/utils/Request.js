@@ -54,7 +54,7 @@ request.interceptors.response.use(
     return Promise.reject(response.data);
   },
   (error) => {
-    console.log("error=====>", error);
+    // console.log("error=====>", error);
     let { status, data } = error.response;
     if (status === 401) {
       // 401 代表token过期或被禁用或被删除，需要重新登录
@@ -62,7 +62,7 @@ request.interceptors.response.use(
       // 清除userStore数据
       userStore.clearUser();
       // 需要重新登陆，跳转到登录页面
-      router.push("/account");
+      router.push("/login");
     }
     return Promise.reject(error);
   }

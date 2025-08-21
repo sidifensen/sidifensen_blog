@@ -124,7 +124,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     public void register(RegisterDto registerDto) {
         // 校验验证码
-        if (!registerDto.getEmailCheckCode().equals(redisComponent.getEmailCheckCode(registerDto.getEmail(), "register"))) {
+        if (ObjectUtil.isNotEmpty(registerDto.getEmailCheckCode()) && !registerDto.getEmailCheckCode().equals(redisComponent.getEmailCheckCode(registerDto.getEmail(), "register"))) {
             throw new BlogException(BlogConstants.CheckCodeError);
         }
 

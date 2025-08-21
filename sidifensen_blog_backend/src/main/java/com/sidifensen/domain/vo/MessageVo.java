@@ -39,6 +39,16 @@ public class MessageVo implements Serializable {
     private String content;
 
     /**
+     * 发送消息的用户id
+     */
+    private Integer senderId;
+
+    /**
+     * 接收消息的用户id
+     */
+    private Integer receiverId;
+
+    /**
      * 创建时间
      */
     private Date createTime;

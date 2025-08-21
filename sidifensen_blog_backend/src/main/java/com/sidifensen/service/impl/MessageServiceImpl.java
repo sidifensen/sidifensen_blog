@@ -3,6 +3,7 @@ package com.sidifensen.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.MessageDto;
@@ -35,7 +36,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         Message message = BeanUtil.copyProperties(messageDto, Message.class);
         int save = messageMapper.insert(message);
         if (save <= 0) {
-            throw new BlogException(BlogConstants.CannotSaveMessage);
+            throw new BlogException(BlogConstants.SaveMessageError);
         }
     }
 
@@ -43,42 +44,57 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
     @Override
     public void sendToAdmin(MessageDto messageDto) {
         Message message = BeanUtil.copyProperties(messageDto, Message.class);
-        boolean save = this.save(message);
-        if (!save) {
-            throw new BlogException(BlogConstants.CannotSaveMessage);
+        message.setSenderId(1);
+        message.setReceiverId(1);
+        int save = messageMapper.insert(message);
+        if (save <= 0) {
+            throw new BlogException(BlogConstants.SaveMessageError);
         }
 
     }
 
+    // 统计管理员未读消息数量
     @Override
-    public Integer getMessageCount() {
-        // 统计未读消息数量
+    public Integer getAdminMessagesCount() {
         Long count = messageMapper.selectCount(new LambdaQueryWrapper<Message>().eq(Message::getIsRead, 0));
-
         return count.intValue();
     }
 
+    // 获取管理员消息列表
     @Override
-    public List<MessageVo> getMessages() {
-        List<Message> messages = this.list(new LambdaQueryWrapper<Message>()
-                .orderByDesc(Message::getCreateTime));
-        if (ObjectUtil.isNotEmpty(messages)) {
-            List<MessageVo> messageVos = BeanUtil.copyToList(messages, MessageVo.class);
-            return messageVos;
+    public List<MessageVo> getAdminMessages() {
+        List<Message> messages = this.list(new LambdaQueryWrapper<Message>().orderByDesc(Message::getCreateTime));
+        if (ObjectUtil.isEmpty(messages)) {
+            return List.of();
         }
-        return List.of();
+        List<MessageVo> messageVos = BeanUtil.copyToList(messages, MessageVo.class);
+        return messageVos;
     }
 
+    // 管理员读取消息
     @Override
-    public void readMessage(Integer messageId) {
-        LambdaQueryWrapper<Message> eq = new LambdaQueryWrapper<Message>()
-                .eq(Message::getId, messageId);
-        // 读取消息
-        Message message = messageMapper.selectOne(eq);
-        if (ObjectUtil.isNotEmpty(message)) {
-            messageMapper.updateById(message);
-        } else {
-            throw new BlogException(BlogConstants.CannotReadMessage);
+    public void readAdminMessages(List<Integer> messageIds) {
+        if (ObjectUtil.isEmpty(messageIds)) {
+            return;
+        }
+        
+        // 批量更新消息状态为已读
+        LambdaUpdateWrapper<Message> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.in(Message::getId, messageIds)
+                .set(Message::getIsRead, 1);
+        
+        messageMapper.update(null, updateWrapper);
+    }
+
+    // 管理员删除消息
+    @Override
+    public void deleteAdminMessages(List<Integer> messageIds) {
+        if (ObjectUtil.isEmpty(messageIds)) {
+            return;
+        }
+        int delete = messageMapper.deleteBatchIds(messageIds);
+        if (delete <= 0) {
+            throw new BlogException(BlogConstants.DeleteMessageError);
         }
     }
 

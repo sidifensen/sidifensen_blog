@@ -224,6 +224,12 @@ const getPhotoList = async () => {
 };
 
 onMounted(() => {
+  // // 检查用户是否已登录
+  // if (!user.value) {
+  //   ElMessage.warning('请先登录');
+  //   router.push('/login');
+  //   return;
+  // }
   getPhotoList();
   // 获取相册图片列表
 });

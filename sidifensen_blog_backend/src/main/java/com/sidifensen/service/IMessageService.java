@@ -24,11 +24,14 @@ public interface IMessageService extends IService<Message> {
     void sendToAdmin(MessageDto messageDto);
 
     // 获取管理员消息数量
-    Integer getMessageCount();
+    Integer getAdminMessagesCount();
 
     // 获取管理员消息列表
-    List<MessageVo> getMessages();
+    List<MessageVo> getAdminMessages();
 
     // 管理员读取消息
-    void readMessage(Integer messageId);
+    void readAdminMessages(List<Integer> messageIds);
+
+    // 管理员删除消息
+    void deleteAdminMessages(List<Integer> messageIds);
 }

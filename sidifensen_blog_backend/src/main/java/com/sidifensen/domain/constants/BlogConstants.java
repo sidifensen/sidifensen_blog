@@ -33,6 +33,7 @@ public class BlogConstants {
     public static final String NotFoundPhoto = "照片不存在";
     public static final String ExamineStatusError = "审核状态错误";
 
-    public static final String CannotSaveMessage = "消息保存失败";
-    public static final String CannotReadMessage = "消息读取失败";
+    public static final String SaveMessageError = "消息保存失败";
+    public static final String ReadMessageError = "消息读取失败";
+    public static final String DeleteMessageError = "消息删除失败";
 }

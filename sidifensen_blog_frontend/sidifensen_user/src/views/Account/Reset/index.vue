@@ -21,7 +21,7 @@
                 <el-icon><EditPen /></el-icon>
               </template>
             </el-input>
-            <el-button class="checkCode" type="success" :disabled="!isEmailValid || waitTime != 0" @click="sendEmailBtn">
+            <el-button class="checkCode" type="success" :disabled="!isEmailValid || waitTime > 0" @click="sendEmailBtn">
               {{ waitTime > 0 ? `请稍后 ${waitTime} 秒` : "获取验证码" }}
             </el-button>
           </div>
@@ -70,8 +70,46 @@ const formDataRef = ref(null);
 // 发送邮箱验证码倒计时
 const waitTime = ref(0);
 
+// 邮箱正则表达式
+const EmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 // 判断邮箱是否正确
-const isEmailValid = computed(() => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.value.email));
+const isEmailValid = computed(() => EmailRegex.test(formData.value.email));
+
+// 验证邮箱格式
+const validateEmailFormat = (rule, value, callback) => {
+  if (!value) {
+    callback(new Error("请输入邮箱"));
+  } else if (!EmailRegex.test(value)) {
+    callback(new Error("请输入合法的邮箱"));
+  } else {
+    callback();
+  }
+};
+
+// 验证邮箱验证码
+const validateEmailCheckCode = (rule, value, callback) => {
+  if (!value) {
+    callback(new Error("请输入获取的验证码"));
+  } else if (!/^\d{6}$/.test(value)) {
+    callback(new Error("验证码必须是6位数字"));
+  } else {
+    callback();
+  }
+};
+
+// 验证密码字符类型
+const validatePasswordCharacters = (rule, value, callback) => {
+  if (value === "") {
+    callback(new Error("请输入密码"));
+  } else if (!/^[a-zA-Z0-9@]+$/.test(value)) {
+    callback(new Error("密码只能包含英文、数字和@符号"));
+  } else if (value.length < 6 || value.length > 20) {
+    callback(new Error("密码的长度必须在 6-20 个字符之间"));
+  } else {
+    callback();
+  }
+};
 
 // 验证重复密码
 const validatePassword = (rule, value, callback) => {
@@ -86,21 +124,15 @@ const validatePassword = (rule, value, callback) => {
 
 // 表单验证规则
 const rules = {
-  password: [
-    { required: true, message: "请输入密码", trigger: "blur" },
-    { min: 6, max: 20, message: "密码的长度必须在 6-20 个字符之间", trigger: ["blur", "change"] },
-  ],
+  password: [{ validator: validatePasswordCharacters, trigger: ["blur", "change"] }],
   repeatPassword: [{ validator: validatePassword, trigger: ["blur", "change"] }],
-  email: [
-    { required: true, message: "请输入邮件地址", trigger: "blur" },
-    { type: "email", message: "请输入合法的邮箱", trigger: ["blur", "change"] },
-  ],
-  emailCheckCode: [{ required: true, message: "请输入获取的验证码", trigger: "blur" }],
+  email: [{ validator: validateEmailFormat, trigger: ["blur", "change"] }],
+  emailCheckCode: [{ validator: validateEmailCheckCode, trigger: ["blur", "change"] }],
 };
 
 // 发送验证码
 function sendEmailBtn() {
-  if (isEmailValid) {
+  if (isEmailValid.value) {
     const EmailDto = ref({
       email: formData.value.email,
       type: "reset",
@@ -126,7 +158,7 @@ const step = ref(0);
 
 // 验证重置密码
 const verifyResetBtn = () => {
-  if (isEmailValid) {
+  if (isEmailValid.value) {
     const VerifyResetDto = ref({
       email: formData.value.email,
       emailCheckCode: formData.value.emailCheckCode,

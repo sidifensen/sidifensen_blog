@@ -28,7 +28,7 @@ pinia.use(piniaPluginPersistedstate);
 app.use(pinia);
 
 import ElementPlus from "element-plus";
-import "element-plus/dist/index.css";
+// import "element-plus/dist/index.css";
 
 // 导入中文语言包
 import zhCn from "element-plus/dist/locale/zh-cn.mjs";

@@ -245,11 +245,13 @@ const handleBatchAudit = () => {
     .then(async () => {
       batchAuditLoading.value = true;
       try {
-        const data = selectedPhotos.value.map((photo) => ({
-          photoId: photo.id,
-          examineStatus: 1,
-        }));
-        console.log(data);
+        const data = selectedPhotos.value
+          .map((photo) => ({
+            photoId: photo.id,
+            examineStatus: 1,
+          }))
+          .sort((a, b) => a.photoId - b.photoId); // 按照 photoId 升序排序
+        console.log(data)
         await adminAuditBatchPhoto(data);
         ElMessage.success("批量审核成功");
         await getPhotos();

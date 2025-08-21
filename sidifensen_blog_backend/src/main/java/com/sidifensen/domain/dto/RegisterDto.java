@@ -26,6 +26,7 @@ public class RegisterDto {
 
     // 邮箱验证码
     @Length(max = 6, min = 6)
+    @NotEmpty(message = "邮箱验证码不能为空")
     private String emailCheckCode;
 
 }

@@ -2,14 +2,15 @@
   <el-form :model="formData" :rules="rules" ref="formDataRef">
     <h2>登录</h2>
     <el-form-item prop="username">
-      <el-input clearable placeholder="请输入用户名" v-model="formData.username">
+      <el-input clearable placeholder="请输入用户名" maxlength="20" v-model="formData.username">
+
         <template #prefix>
           <el-icon><User /></el-icon>
         </template>
       </el-input>
     </el-form-item>
     <el-form-item prop="password">
-      <el-input clearable placeholder="请输入密码" v-model="formData.password" show-password>
+      <el-input clearable placeholder="请输入密码" maxlength="20" v-model="formData.password" show-password>
         <template #prefix>
           <el-icon><Lock /></el-icon>
         </template>
@@ -17,7 +18,7 @@
     </el-form-item>
     <el-form-item prop="checkCode">
       <div class="check-code-panel">
-        <el-input placeholder="请输入验证码" v-model="formData.checkCode">
+        <el-input placeholder="请输入验证码" maxlength="6" v-model="formData.checkCode">
           <template #prefix>
             <el-icon><EditPen /></el-icon>
           </template>
@@ -68,10 +69,45 @@ const formData = ref({
   checkCode: "",
 });
 
+// 验证用户名
+const validateUsername = (rule, value, callback) => {
+  if (value === "") {
+    callback(new Error("请输入用户名"));
+  } else if (!/^[a-zA-Z0-9]+$/.test(value)) {
+    callback(new Error("用户名只能是英文和数字"));
+  } else if (value.length < 4 || value.length > 20) {
+    callback(new Error("用户名的长度必须在 4-20 个字符之间"));
+  } else {
+    callback();
+  }
+};
+
+// 验证密码字符类型
+const validatePasswordCharacters = (rule, value, callback) => {
+  if (value === "") {
+    callback(new Error("请输入密码"));
+  } else if (!/^[a-zA-Z0-9@]+$/.test(value)) {
+    callback(new Error("密码只能包含英文、数字和@符号"));
+  } else if (value.length < 6 || value.length > 20) {
+    callback(new Error("密码的长度必须在 6-20 个字符之间"));
+  } else {
+    callback();
+  }
+};
+
+// 验证验证码
+const validateCheckCode = (rule, value, callback) => {
+  if (!value) {
+    callback(new Error("请输入验证码"));
+  } else {
+    callback();
+  }
+};
+
 const rules = ref({
-  username: [{ required: true, message: "请输入用户名/邮箱", trigger: "blur" }],
-  password: [{ required: true, message: "请输入密码", trigger: "blur" }],
-  checkCode: [{ required: true, message: "请输入验证码", trigger: "blur" }],
+  username: [{ validator: validateUsername, trigger: ["blur", "change"] }],
+  password: [{ validator: validatePasswordCharacters, trigger: ["blur", "change"] }],
+  checkCode: [{ validator: validateCheckCode, trigger: ["blur", "change"] }],
 });
 
 // 登录按钮

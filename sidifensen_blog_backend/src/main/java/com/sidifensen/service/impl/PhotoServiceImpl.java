@@ -136,8 +136,6 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             MessageDto messageDto = new MessageDto();
             messageDto.setType(MessageTypeEnum.SYSTEM.getCode());
             messageDto.setContent(text);
-            messageDto.setSenderId(1);
-            messageDto.setReceiverId(1);
             messageService.sendToAdmin(messageDto);
 
             // 发送邮件给管理员
@@ -364,6 +362,21 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         updateWrapper.eq(Photo::getId, photoAuditDto.getPhotoId());
         updateWrapper.set(Photo::getExamineStatus, photoAuditDto.getExamineStatus());
         photoMapper.update(null, updateWrapper);
+
+        // 如果是审核通过
+        if (photoAuditDto.getExamineStatus() == 1) {
+            AlbumPhoto albumPhoto = albumPhotoMapper.selectById(photoAuditDto.getPhotoId());
+            if (ObjectUtil.isNotEmpty(albumPhoto)) {
+                // 更新相册封面
+                Album album = albumMapper.selectById(albumPhoto.getAlbumId());
+                if (ObjectUtil.isNotEmpty(album)) {
+                    Photo photo = photoMapper.selectById(photoAuditDto.getPhotoId());
+                    album.setCoverUrl(photo.getUrl());
+                    albumMapper.updateById(album);
+                }
+            }
+        }
+
     }
 
     @Override
@@ -374,6 +387,21 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         updateWrapper.in(Photo::getId, photoIds);
         updateWrapper.set(Photo::getExamineStatus, photoAuditDto.get(0).getExamineStatus());
         photoMapper.update(null, updateWrapper);
+
+        // 更新相册封面
+        for (PhotoAuditDto dto : photoAuditDto) {
+            if (dto.getExamineStatus() == 1) {
+                AlbumPhoto albumPhoto = albumPhotoMapper.selectById(dto.getPhotoId());
+                if (ObjectUtil.isNotEmpty(albumPhoto)) {
+                    Album album = albumMapper.selectById(albumPhoto.getAlbumId());
+                    if (ObjectUtil.isNotEmpty(album)) {
+                        Photo photo = photoMapper.selectById(dto.getPhotoId());
+                        album.setCoverUrl(photo.getUrl());
+                        albumMapper.updateById(album);
+                    }
+                }
+            }
+        }
     }
 
     @Override

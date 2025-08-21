@@ -1,6 +1,7 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.aspect.TimeConsuming;
 import com.sidifensen.domain.dto.AlbumDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.AlbumVo;
@@ -28,6 +29,7 @@ public class AlbumController {
      * @param albumId
      * @return
      */
+    @TimeConsuming
     @GetMapping("/{albumId}")
     public Result<Object> getAlbum(@PathVariable("albumId") Long albumId) {
         AlbumVo album = albumService.getAlbum(albumId);
@@ -80,6 +82,7 @@ public class AlbumController {
     /**
      * 查看所有用户的相册(公开)
      */
+    @TimeConsuming
     @GetMapping("/listAll")
     public Result<Object> listAllAlbum() {
         List<AlbumVo> albumVos = albumService.listAllAlbum();
