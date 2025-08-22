@@ -19,6 +19,7 @@ import com.sidifensen.mapper.AlbumMapper;
 import com.sidifensen.mapper.AlbumPhotoMapper;
 import com.sidifensen.mapper.PhotoMapper;
 import com.sidifensen.mapper.SysUserMapper;
+import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.IAlbumService;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
@@ -53,9 +54,17 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     @Resource
     private AlbumPhotoMapper albumPhotoMapper;
 
+    @Resource
+    private RedisComponent redisComponent;
+
     // 查询相册
     @Override
-    public AlbumVo getAlbum(Long albumId) {
+    public AlbumVo getAlbum(Integer albumId) {
+        AlbumVo albumDetail = redisComponent.getAlbumDetail(albumId);
+        if (ObjectUtil.isNotEmpty(albumDetail)) {
+            return albumDetail;
+        }
+
         Album album = albumMapper.selectById(albumId);
         if (ObjectUtil.isEmpty(album)) {
             throw new BlogException(BlogConstants.NotFoundAlbum);
@@ -76,6 +85,8 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         albumVo.setPhotos(photoVos);
         SysUser sysUser = sysUserMapper.selectById(album.getUserId());
         albumVo.setUserName(sysUser.getNickname());
+
+        redisComponent.saveAlbumDetail(albumId, albumVo);
         return albumVo;
     }
 
@@ -107,6 +118,9 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
             album.setShowStatus(albumDto.getShowStatus());
         }
         this.updateById(album);
+
+        redisComponent.delAlbumDetail(albumDto.getId());
+        redisComponent.delUserAlbum(userId);
     }
 
     // 删除相册
@@ -121,14 +135,21 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         if (i == 0) {
             throw new BlogException(BlogConstants.NotFoundAlbum);
         }
+
+        redisComponent.delAlbumDetail(albumId);
+        redisComponent.delUserAlbum(userId);
     }
 
     // 查询用户所有的相册
     @Override
     public List<AlbumVo> listAlbum() {
-        LambdaQueryWrapper<Album> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Album::getUserId, SecurityUtils.getUserId());
-        List<Album> albums = this.list(queryWrapper);
+        Integer userId = SecurityUtils.getUserId();
+        List<AlbumVo> userAlbum = redisComponent.getUserAlbum(userId);
+        if (ObjectUtil.isNotEmpty(userAlbum)) {
+            return userAlbum;
+        }
+
+        List<Album> albums = this.list(new LambdaQueryWrapper<Album>().eq(Album::getUserId, userId));
 
         List<AlbumVo> albumVos = albums.stream().map(album -> {
             AlbumVo albumVo = new AlbumVo();
@@ -139,6 +160,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
             albumVo.setCreateTime(album.getCreateTime());
             return albumVo;
         }).toList();
+        redisComponent.saveUserAlbum(userId,albumVos);
         return albumVos;
     }
 

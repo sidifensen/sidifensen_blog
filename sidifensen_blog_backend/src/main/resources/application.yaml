@@ -2,5 +2,5 @@ spring:
   application:
     name: sidifensen-blog
   profiles:
-#    active: prod
-    active: dev
+    active: prod
+#    active: dev

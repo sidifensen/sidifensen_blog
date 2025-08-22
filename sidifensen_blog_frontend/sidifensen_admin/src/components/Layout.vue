@@ -524,6 +524,7 @@ const handleLogout = () => {
             z-index: 1000;
             transform-origin: top right;
             animation: fade-in 0.2s ease-out;
+            transition: all 0.2s ease-out;
 
             // 下拉框动画
             @keyframes fade-in {
@@ -536,12 +537,11 @@ const handleLogout = () => {
                 transform: scale(1);
               }
             }
-
-            // 移动端适配 - 移到最后以避免Sass警告
+            
             @media screen and (max-width: 768px) {
-              width: 70vw;
-              right: 50%;
-              transform: translateX(50%);
+              width: 300px;
+              left: -150px;
+              // transform: translateX(30%);
             }
 
             // 消息头部样式
@@ -560,6 +560,7 @@ const handleLogout = () => {
                 color: var(--el-text-color);
               }
             }
+            
 
             // 消息列表样式
             .message-list {
@@ -569,6 +570,7 @@ const handleLogout = () => {
               padding: 0;
               scrollbar-width: thin;
               scrollbar-color: var(--el-scrollbar-thumb-color) var(--el-scrollbar-track-color);
+
               .no-message {
                 display: flex;
                 flex-direction: column;

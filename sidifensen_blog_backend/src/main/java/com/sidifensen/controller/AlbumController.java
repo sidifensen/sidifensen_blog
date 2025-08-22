@@ -31,7 +31,7 @@ public class AlbumController {
      */
     @TimeConsuming
     @GetMapping("/{albumId}")
-    public Result<Object> getAlbum(@PathVariable("albumId") Long albumId) {
+    public Result<Object> getAlbum(@PathVariable("albumId") Integer albumId) {
         AlbumVo album = albumService.getAlbum(albumId);
         return Result.success(album);
     }
@@ -52,6 +52,7 @@ public class AlbumController {
      * @param albumDto
      * @return
      */
+    @TimeConsuming
     @PutMapping("/update")
     public Result<String> updateAlbum(@RequestBody @Valid AlbumDto albumDto) {
         albumService.updateAlbum(albumDto);
@@ -73,6 +74,7 @@ public class AlbumController {
      * 查看当前用户所有的相册
      * @return
      */
+    @TimeConsuming
     @GetMapping("/list")
     public Result<Object> listAlbum() {
         List<AlbumVo> albumVos = albumService.listAlbum();

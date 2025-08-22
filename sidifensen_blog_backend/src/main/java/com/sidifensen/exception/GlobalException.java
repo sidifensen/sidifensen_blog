@@ -5,6 +5,8 @@ import com.sidifensen.domain.result.Result;
 import com.sidifensen.utils.SecurityUtils;
 import com.sidifensen.utils.WebUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.ClientAbortException;
+import org.springframework.dao.QueryTimeoutException;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -94,4 +96,21 @@ public class GlobalException {
         e.printStackTrace();
         return Result.error(e.getMessage());
     }
+
+    /**
+     * 处理客户端主动断开连接的异常
+     * 这种情况通常是客户端重启或网络问题导致，不需要特别处理
+     */
+    @ExceptionHandler(ClientAbortException.class)
+    void handleClientAbortException(ClientAbortException e) {
+
+    }
+
+    @ExceptionHandler(QueryTimeoutException.class)
+    Object handleQueryTimeoutException(QueryTimeoutException e) {
+        log.error("服务器超时：{}", e.getMessage());
+        e.printStackTrace();
+        return Result.error("服务器超时");
+    }
+
 }

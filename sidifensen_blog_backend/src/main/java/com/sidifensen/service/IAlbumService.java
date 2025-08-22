@@ -18,7 +18,7 @@ import java.util.List;
 public interface IAlbumService extends IService<Album> {
 
     // 查询相册详情
-    AlbumVo getAlbum(Long albumId);
+    AlbumVo getAlbum(Integer albumId);
 
     // 新增相册
     void createAlbum(AlbumDto albumDto);
