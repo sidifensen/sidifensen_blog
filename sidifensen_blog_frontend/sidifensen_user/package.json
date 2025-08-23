@@ -11,6 +11,7 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
     "@vueuse/core": "^13.5.0",
+    "aieditor": "^1.4.0",
     "axios": "^1.10.0",
     "disable-devtool": "^0.3.9",
     "element-plus": "^2.10.2",

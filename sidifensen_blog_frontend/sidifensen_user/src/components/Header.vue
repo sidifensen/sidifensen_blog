@@ -5,7 +5,7 @@
       <svg-icon name="menu" width="50px" height="50px" cursor="pointer" />
     </div>
 
-    <router-link class="logo" to="/"><el-text size="large" class="logo-text">斯蒂芬森博客</el-text></router-link>
+    <router-link class="logo" to="/"><el-text size="large" class="logo-text">sidifensen</el-text></router-link>
     <el-menu-item index="/" class="menu-item">
       <el-icon><House /></el-icon>
       <span class="menu-text">首页</span>
@@ -18,36 +18,6 @@
       <el-icon><Picture /></el-icon>
       <span class="menu-text">相册</span>
     </el-menu-item>
-    <el-sub-menu index="/archive" class="menu-item">
-      <template #title>
-        <el-icon><Files /></el-icon>
-        <span class="menu-text">归档</span>
-      </template>
-      <el-menu-item index="/category">
-        <el-icon> <DocumentCopy /></el-icon>分类
-      </el-menu-item>
-      <el-menu-item index="/tag">
-        <el-icon><PriceTag /></el-icon>标签
-      </el-menu-item>
-      <el-menu-item index="/timeline">
-        <el-icon> <Clock /> </el-icon>时间轴
-      </el-menu-item>
-    </el-sub-menu>
-    <el-sub-menu index="/other" class="menu-item">
-      <template #title>
-        <el-icon><Menu /></el-icon>
-        <span class="menu-text">其他</span>
-      </template>
-      <el-menu-item index="/confession">
-        <el-icon><Fries /></el-icon>树洞
-      </el-menu-item>
-      <el-menu-item index="/message-board">
-        <el-icon><Postcard /></el-icon>留言板
-      </el-menu-item>
-      <el-menu-item index="/about">
-        <el-icon><UserFilled /></el-icon>关于
-      </el-menu-item>
-    </el-sub-menu>
     <el-menu-item index="/link" class="menu-item">
       <el-icon><Link /></el-icon>
       <span class="menu-text">友链</span>
@@ -104,21 +74,6 @@
             </el-menu-item>
             <el-menu-item index="/timeline">
               <el-icon> <Clock /> </el-icon>时间轴
-            </el-menu-item>
-          </el-sub-menu>
-          <el-sub-menu index="/other" class="menu-item">
-            <template #title>
-              <el-icon><Menu /></el-icon>
-              <span class="menu-text">其他</span>
-            </template>
-            <el-menu-item index="/confession">
-              <el-icon><Fries /></el-icon>树洞
-            </el-menu-item>
-            <el-menu-item index="/message-board">
-              <el-icon><Postcard /></el-icon>留言板
-            </el-menu-item>
-            <el-menu-item index="/about">
-              <el-icon><UserFilled /></el-icon>关于
             </el-menu-item>
           </el-sub-menu>
           <el-menu-item index="/link" class="menu-item">
@@ -273,8 +228,8 @@ onBeforeUnmount(() => {
     /* Logo文字 */
     .logo-text {
       font-size: 26px !important;
-      font-weight: 800;
-      font-family: "Helvetica Neue", Arial, sans-serif;
+      // font-weight: 800;
+      // font-family: "Helvetica Neue", Arial, sans-serif;
       color: #3d92eb;
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
       letter-spacing: 1px;

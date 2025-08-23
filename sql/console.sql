@@ -145,23 +145,24 @@ create table article
     description    varchar(200) not null comment '描述',
     content        text         not null comment '内容',
     cover_url      varchar(400) comment '封面url',
-    examine_status tinyint      not null default 0 comment '状态 0-待审核 1-审核通过 2-审核未通过',
     read_count     int          not null default 0 comment '阅读量',
     like_count     int          not null default 0 comment '点赞量',
     comment_count  int          not null default 0 comment '评论数',
     collect_count  int          not null default 0 comment '收藏量',
-    is_vip         tinyint      not null default 0 comment '是否为vip文章 0-否 1-是',
+    examine_status tinyint      not null default 0 comment '审核状态 0-待审核 1-审核通过 2-审核未通过',
+    visible_status tinyint      not null default 0 comment '可见状态 0-全部可见 1-仅我可见 2-粉丝可见 3-vip可见',
+    edit_status    tinyint      not null default 0 comment '编辑状态 0-发布 1-草稿 2-回收',
+    reprint_type   tinyint      not null default 0 comment '转载类型 0-原创 1-转载',
+    reprint_url    varchar(400) comment '转载链接',
     create_time    datetime     not null comment '创建时间',
     update_time    datetime     not null comment '更新时间',
     is_deleted     tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index idx_user_id (user_id),
-    index idx_tag_id (tag_id),
-    index idx_examine_status (examine_status)
+    index idx_user_id_examine_visible_edit_status (user_id, examine_status, visible_status, edit_status)
 );
 
 create table tag
 (
-    id int primary key auto_increment comment '标签id',
+    id   int primary key auto_increment comment '标签id',
     name varchar(15) not null comment '标签名称',
     index idx_name (name)
 )

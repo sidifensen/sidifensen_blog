@@ -57,10 +57,10 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     @Resource
     private RedisComponent redisComponent;
 
-    // 查询相册
+    // 查询相册详情
     @Override
     public AlbumVo getAlbum(Integer albumId) {
-        AlbumVo albumDetail = redisComponent.getAlbumDetail(albumId);
+        AlbumVo albumDetail = redisComponent.getAlbumDetail(List.of(albumId));
         if (ObjectUtil.isNotEmpty(albumDetail)) {
             return albumDetail;
         }
@@ -98,16 +98,20 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         album.setName(albumDto.getName());
         album.setShowStatus(ShowStatusEnum.PUBLIC.getCode());
         this.save(album);
+        redisComponent.saveAlbum(album.getId(), BeanUtil.copyProperties(album, AlbumVo.class));
+        redisComponent.saveUserAlbum(album.getUserId(), List.of(album.getId()));
     }
 
     // 更新相册
     @Override
     public void updateAlbum(AlbumDto albumDto) {
-        albumDto.setUserId(SecurityUtils.getUserId());
+        SysUser user = SecurityUtils.getUser();
+        Integer userId = user.getId();
+
+        albumDto.setUserId(userId);
         Album album = this.getById(albumDto.getId());
         album.setName(albumDto.getName());
 
-        Integer userId = SecurityUtils.getUserId();
         if (userId != album.getUserId()) {
             throw new BlogException(BlogConstants.CannotHandleOtherUserAlbum);
         }
@@ -119,8 +123,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         }
         this.updateById(album);
 
-        redisComponent.delAlbumDetail(albumDto.getId());
-        redisComponent.delUserAlbum(userId);
+        redisComponent.saveAlbum(albumDto.getId(), BeanUtil.copyProperties(album.setName(user.getNickname()), AlbumVo.class));
     }
 
     // 删除相册
@@ -136,15 +139,16 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
             throw new BlogException(BlogConstants.NotFoundAlbum);
         }
 
+        redisComponent.delAlbum(List.of(albumId));
         redisComponent.delAlbumDetail(albumId);
-        redisComponent.delUserAlbum(userId);
+        redisComponent.delUserAlbum(List.of(userId));
     }
 
     // 查询用户所有的相册
     @Override
     public List<AlbumVo> listAlbum() {
         Integer userId = SecurityUtils.getUserId();
-        List<AlbumVo> userAlbum = redisComponent.getUserAlbum(userId);
+        List<AlbumVo> userAlbum = redisComponent.getUserAlbum(List.of(userId));
         if (ObjectUtil.isNotEmpty(userAlbum)) {
             return userAlbum;
         }
@@ -160,13 +164,17 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
             albumVo.setCreateTime(album.getCreateTime());
             return albumVo;
         }).toList();
-        redisComponent.saveUserAlbum(userId,albumVos);
+        redisComponent.saveUserAlbum(userId, albumVos.stream().map(AlbumVo::getId).toList());
         return albumVos;
     }
 
     // 查询所有用户的相册
     @Override
     public List<AlbumVo> listAllAlbum() {
+        List<AlbumVo> allAlbum = redisComponent.getAllAlbum();
+        if (ObjectUtil.isNotEmpty(allAlbum)) {
+            return allAlbum;
+        }
         LambdaQueryWrapper<Album> eq = new LambdaQueryWrapper<Album>().eq(Album::getShowStatus, ShowStatusEnum.PUBLIC.getCode());
         List<Album> albums = this.list(eq);
         List<AlbumVo> albumVos = BeanUtil.copyToList(albums, AlbumVo.class);
@@ -192,6 +200,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         }
         album.setShowStatus(albumDto.getShowStatus());
         this.updateById(album);
+        redisComponent.saveAlbum(userId, BeanUtil.copyProperties(album, AlbumVo.class));
     }
 
     // 修改相册封面
@@ -204,6 +213,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         }
         album.setCoverUrl(albumDto.getCoverUrl());
         this.updateById(album);
+        redisComponent.saveAlbum(userId, BeanUtil.copyProperties(album, AlbumVo.class));
     }
 
     /*管理端*/
@@ -275,8 +285,9 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         return albumVos;
     }
 
+    // 管理员查询相册详情
     @Override
-    public AlbumVo adminGetAlbum(Long albumId) {
+    public AlbumVo adminGetAlbum(Integer albumId) {
         Album album = this.getById(albumId);
         if (ObjectUtil.isEmpty(album)) {
             throw new BlogException(BlogConstants.NotFoundAlbum);

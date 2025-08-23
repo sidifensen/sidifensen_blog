@@ -4,6 +4,7 @@ import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -24,7 +25,7 @@ public class RedisHeartbeatTask {
      * 每60秒执行一次心跳检测
      * 通过向Redis写入一个临时key来保持连接活跃
      */
-//    @Scheduled(fixedRate = 60000) // 每60秒执行一次
+    @Scheduled(fixedRate = 60000) // 每60秒执行一次
     public void sendHeartbeat() {
         try {
             String heartbeatKey = "heartbeat:" + UUID.randomUUID();

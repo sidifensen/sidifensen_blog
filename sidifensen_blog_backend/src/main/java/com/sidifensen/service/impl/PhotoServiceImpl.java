@@ -36,6 +36,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -85,6 +86,10 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     @Resource
     private RabbitTemplate rabbitTemplate;
 
+    // 是否开启图片自动审核
+    @Value("${sidifensen.photoAutoAudit}")
+    private Boolean photoAutoAudit;
+
     ExecutorService executorService = new ThreadPoolExecutor(
             2, 4, 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(500),
@@ -111,13 +116,15 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             photo.setExamineStatus(ExamineStatusEnum.WAIT.getCode());// 初始设置为待审核状态
             photoMapper.insert(photo);
 
-//            // 图片审核
-//            ImageAuditResult imageAuditResult = imageAuditUtils.auditImageWithDetails(url);
-//            Integer status = imageAuditResult.getStatus();
-//            // 根据审核结果设置审核状态
-//            Photo updatePhoto = getPhoto(photo, status);
-//            // 更新图片审核状态
-//            photoMapper.updateById(updatePhoto);
+            // 图片自动审核
+            if (photoAutoAudit) {
+                ImageAuditResult imageAuditResult = imageAuditUtils.auditImageWithDetails(url);
+                Integer status = imageAuditResult.getStatus();
+                // 根据审核结果设置审核状态
+                Photo updatePhoto = getPhoto(photo, status);
+                // 更新图片审核状态
+                photoMapper.updateById(updatePhoto);
+            }
 
             // 保存相册照片关联记录
             albumPhotoMapper.insert(new AlbumPhoto(null, albumId, photo.getId()));
@@ -130,13 +137,14 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 albumMapper.update(null, updateWrapper);
             }
 
-//            if (status.equals(ImageAuditStatusEnum.MANUAL_REVIEW.getCode())) {
-            // 需要人工审核，发送消息给管理员
-            String text = MessageConstants.ImageNeedReview(photo.getId());
-            MessageDto messageDto = new MessageDto();
-            messageDto.setType(MessageTypeEnum.SYSTEM.getCode());
-            messageDto.setContent(text);
-            messageService.sendToAdmin(messageDto);
+            if (status.equals(ImageAuditStatusEnum.MANUAL_REVIEW.getCode()) || !photoAutoAudit) {
+                // 需要人工审核，发送消息给管理员
+                String text = MessageConstants.ImageNeedReview(photo.getId());
+                MessageDto messageDto = new MessageDto();
+                messageDto.setType(MessageTypeEnum.SYSTEM.getCode());
+                messageDto.setContent(text);
+                messageService.sendToAdmin(messageDto);
+            }
 
             // 发送邮件给管理员
             HashMap<String, Object> sendEmail = new HashMap<>();

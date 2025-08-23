@@ -19,6 +19,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/album")
+@TimeConsuming
 public class AlbumController {
 
     @Resource
@@ -26,10 +27,10 @@ public class AlbumController {
 
     /**
      * 查看相册详情
+     *
      * @param albumId
      * @return
      */
-    @TimeConsuming
     @GetMapping("/{albumId}")
     public Result<Object> getAlbum(@PathVariable("albumId") Integer albumId) {
         AlbumVo album = albumService.getAlbum(albumId);
@@ -38,6 +39,7 @@ public class AlbumController {
 
     /**
      * 新建相册
+     *
      * @param albumDto
      * @return
      */
@@ -49,10 +51,10 @@ public class AlbumController {
 
     /**
      * 更新相册
+     *
      * @param albumDto
      * @return
      */
-    @TimeConsuming
     @PutMapping("/update")
     public Result<String> updateAlbum(@RequestBody @Valid AlbumDto albumDto) {
         albumService.updateAlbum(albumDto);
@@ -61,6 +63,7 @@ public class AlbumController {
 
     /**
      * 删除相册
+     *
      * @param albumId
      * @return
      */
@@ -72,9 +75,9 @@ public class AlbumController {
 
     /**
      * 查看当前用户所有的相册
+     *
      * @return
      */
-    @TimeConsuming
     @GetMapping("/list")
     public Result<Object> listAlbum() {
         List<AlbumVo> albumVos = albumService.listAlbum();
@@ -84,7 +87,6 @@ public class AlbumController {
     /**
      * 查看所有用户的相册(公开)
      */
-    @TimeConsuming
     @GetMapping("/listAll")
     public Result<Object> listAllAlbum() {
         List<AlbumVo> albumVos = albumService.listAllAlbum();
@@ -93,6 +95,7 @@ public class AlbumController {
 
     /**
      * 修改相册展示状态
+     *
      * @param albumDto
      * @return
      */
@@ -104,6 +107,7 @@ public class AlbumController {
 
     /**
      * 相册更换封面
+     *
      * @param albumDto
      * @return
      */
@@ -127,6 +131,7 @@ public class AlbumController {
 
     /**
      * 管理端更新相册
+     *
      * @param albumDto
      * @return
      */
@@ -139,6 +144,7 @@ public class AlbumController {
 
     /**
      * 管理端删除相册
+     *
      * @param albumId
      * @return
      */
@@ -161,16 +167,16 @@ public class AlbumController {
 
     /**
      * 管理端查看相册详情
+     *
      * @param albumId
      * @return
      */
     @PreAuthorize("hasAuthority('album:detail')")
     @GetMapping("/admin/{albumId}")
-    public Result<Object> adminGetAlbum(@PathVariable("albumId") Long albumId) {
+    public Result<Object> adminGetAlbum(@PathVariable("albumId") Integer albumId) {
         AlbumVo album = albumService.adminGetAlbum(albumId);
         return Result.success(album);
     }
-
 
 
 }

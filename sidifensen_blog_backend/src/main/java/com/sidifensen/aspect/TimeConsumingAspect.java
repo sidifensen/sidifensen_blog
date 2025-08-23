@@ -20,9 +20,9 @@ import java.util.concurrent.CompletableFuture;
 public class TimeConsumingAspect {
 
     /**
-     * 定义切点，匹配所有使用@TimeConsuming注解的方法
+     * 定义切点，匹配所有使用@TimeConsuming注解的方法或类
      */
-    @Pointcut("@annotation(com.sidifensen.aspect.TimeConsuming)")
+    @Pointcut("@annotation(com.sidifensen.aspect.TimeConsuming) || @within(com.sidifensen.aspect.TimeConsuming)")
     public void timeConsumingPointcut() {
     }
 
@@ -40,22 +40,26 @@ public class TimeConsumingAspect {
         Method method = signature.getMethod();
         String methodName = method.getName();
         String className = method.getDeclaringClass().getSimpleName();
-        
-        // 获取注解信息
+
+        // 获取方法上的注解信息
         TimeConsuming timeConsuming = method.getAnnotation(TimeConsuming.class);
-        String description = timeConsuming.value();
-        
+        // 如果方法上没有注解，则获取类上的注解
+        if (timeConsuming == null) {
+            timeConsuming = method.getDeclaringClass().getAnnotation(TimeConsuming.class);
+        }
+        String description = (timeConsuming != null) ? timeConsuming.value() : "";
+
         // 记录开始时间
         long startTime = System.currentTimeMillis();
-        
+
         try {
             // 执行目标方法
             Object result = joinPoint.proceed();
-            
+
             // 记录结束时间
             long endTime = System.currentTimeMillis();
             long consumeTime = endTime - startTime;
-            
+
             // 异步输出耗时信息
             CompletableFuture.runAsync(() -> {
                 if (description.isEmpty()) {
@@ -64,12 +68,12 @@ public class TimeConsumingAspect {
                     log.info("方法 {}.{}(\"{}\") 执行耗时: {} ms", className, methodName, description, consumeTime);
                 }
             });
-            
+
             return result;
         } catch (Throwable throwable) {
             long endTime = System.currentTimeMillis();
             long consumeTime = endTime - startTime;
-            
+
             // 异步输出异常信息和耗时
             CompletableFuture.runAsync(() -> {
                 if (description.isEmpty()) {
@@ -78,7 +82,7 @@ public class TimeConsumingAspect {
                     log.error("方法 {}.{}(\"{}\") 执行异常，耗时: {} ms", className, methodName, description, consumeTime, throwable);
                 }
             });
-            
+
             throw throwable;
         }
     }

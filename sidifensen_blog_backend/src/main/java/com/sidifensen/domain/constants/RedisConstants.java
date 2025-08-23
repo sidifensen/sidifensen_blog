@@ -12,7 +12,9 @@ public class RedisConstants {
 
     public static final String EmailCheckCode = RedisKeyPrefix + "EmailCheckCode:";
 
-    public static final String AlbumDetail = RedisKeyPrefix + "AlbumDetail:";
+    public static final String Albums = RedisKeyPrefix + "Albums:";
 
-    public static final String UserAlbum = RedisKeyPrefix + "UserAlbum:";
+    public static final String UserAlbums = RedisKeyPrefix + "UserAlbums:";
+
+    public static final String AlbumPhotos = RedisKeyPrefix + "AlbumPhotos:";
 }

@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author sidifensen
@@ -56,5 +56,5 @@ public interface IAlbumService extends IService<Album> {
     List<AlbumVo> searchAlbum(AlbumDto albumDto);
 
     // 获取相册详情
-    AlbumVo adminGetAlbum(Long albumId);
+    AlbumVo adminGetAlbum(Integer albumId);
 }

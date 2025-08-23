@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * 自定义注解，用于统计方法执行耗时
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface TimeConsuming {
     
