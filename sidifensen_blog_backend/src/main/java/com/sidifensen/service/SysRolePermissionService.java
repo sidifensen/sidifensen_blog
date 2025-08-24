@@ -9,13 +9,13 @@ import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author sidifensen
  * @since 2025-08-06
  */
-public interface ISysRolePermissionService extends IService<SysRolePermission> {
+public interface SysRolePermissionService extends IService<SysRolePermission> {
 
     void add(SysRolePermissionDto sysRolePermissionDto);
 

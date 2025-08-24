@@ -4,7 +4,7 @@ package com.sidifensen.controller;
 import com.sidifensen.domain.dto.SysRoleDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysRoleVo;
-import com.sidifensen.service.ISysRoleService;
+import com.sidifensen.service.SysRoleService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -22,7 +22,7 @@ import java.util.List;
 public class SysRoleController {
 
     @Resource
-    private ISysRoleService sysRoleService;
+    private SysRoleService sysRoleService;
 
     /**
      * 查询角色列表

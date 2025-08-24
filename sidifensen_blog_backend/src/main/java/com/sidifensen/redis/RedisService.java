@@ -1,11 +1,15 @@
 package com.sidifensen.redis;
 
+import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sidifensen.domain.entity.AlbumPhoto;
 import com.sidifensen.domain.entity.Photo;
 import com.sidifensen.domain.vo.AlbumVo;
+import com.sidifensen.domain.vo.PhotoVo;
 import com.sidifensen.mapper.AlbumPhotoMapper;
 import com.sidifensen.mapper.PhotoMapper;
-import com.sidifensen.service.IAlbumService;
+import com.sidifensen.service.AlbumService;
+import com.sidifensen.utils.MyThreadFactory;
 import jakarta.annotation.Resource;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -15,6 +19,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -28,13 +36,19 @@ public class RedisService implements ApplicationRunner {
     private RedisComponent redisComponent;
 
     @Resource
-    private IAlbumService albumService;
+    private AlbumService albumService;
 
     @Resource
     private AlbumPhotoMapper albumPhotoMapper;
 
     @Resource
     private PhotoMapper photoMapper;
+
+    ExecutorService executorService = new ThreadPoolExecutor(
+            2, 4, 0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(500),
+            new MyThreadFactory("RedisService")
+    );
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -111,5 +125,21 @@ public class RedisService implements ApplicationRunner {
         redisComponent.saveAllAlbumPhotos(albumPhotoMap);
     }
 
+    // 更新相册照片关联
+    public void updateAlbumPhotos(Integer albumId) {
+        executorService.execute(() -> {
+            List<AlbumPhoto> albumPhotos = albumPhotoMapper.selectList(new LambdaQueryWrapper<AlbumPhoto>().eq(AlbumPhoto::getAlbumId, albumId));
+            List<Integer> photoIds = albumPhotos.stream().map(AlbumPhoto::getPhotoId).collect(Collectors.toList());
+            List<Photo> photos = photoMapper.selectBatchIds(photoIds);
+            redisComponent.saveAlbumPhotos(albumId, BeanUtil.copyToList(photos, PhotoVo.class));
+        });
+    }
+
+    // 批量更新相册照片关联
+    public void multiUpdateAlbumPhotos(List<Integer> albumIds) {
+        for (Integer albumId : albumIds) {
+            updateAlbumPhotos(albumId);
+        }
+    }
 
 }

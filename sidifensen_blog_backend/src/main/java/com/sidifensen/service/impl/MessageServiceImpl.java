@@ -11,7 +11,7 @@ import com.sidifensen.domain.entity.Message;
 import com.sidifensen.domain.vo.MessageVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.MessageMapper;
-import com.sidifensen.service.IMessageService;
+import com.sidifensen.service.MessageService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +26,7 @@ import java.util.List;
  * @since 2025-08-17
  */
 @Service
-public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> implements IMessageService {
+public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> implements MessageService {
 
     @Resource
     private MessageMapper messageMapper;
@@ -77,12 +77,12 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         if (ObjectUtil.isEmpty(messageIds)) {
             return;
         }
-        
+
         // 批量更新消息状态为已读
         LambdaUpdateWrapper<Message> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.in(Message::getId, messageIds)
                 .set(Message::getIsRead, 1);
-        
+
         messageMapper.update(null, updateWrapper);
     }
 

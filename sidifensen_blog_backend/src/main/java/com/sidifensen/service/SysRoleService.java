@@ -9,13 +9,13 @@ import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author sidifensen
  * @since 2025-06-29
  */
-public interface ISysRoleService extends IService<SysRole> {
+public interface SysRoleService extends IService<SysRole> {
 
     // 查询角色列表
     List<SysRoleVo> listRole();

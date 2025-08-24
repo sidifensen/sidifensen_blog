@@ -9,13 +9,13 @@ import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author sidifensen
  * @since 2025-08-06
  */
-public interface ISysPermissionService extends IService<SysPermission> {
+public interface SysPermissionService extends IService<SysPermission> {
 
     // 查询权限列表
     List<SysPermissionVo> listPermission();

@@ -1,11 +1,12 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.aspect.TimeConsuming;
 import com.sidifensen.domain.dto.PhotoAuditDto;
 import com.sidifensen.domain.dto.PhotoDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.PhotoVo;
-import com.sidifensen.service.IPhotoService;
+import com.sidifensen.service.PhotoService;
 import jakarta.annotation.Resource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,17 +20,18 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/photo")
+@TimeConsuming
 public class PhotoController {
 
     @Resource
-    private IPhotoService photoService;
+    private PhotoService photoService;
 
     /**
      * 上传照片到相册
      */
     @PostMapping("/upload")
     public Result upload(@RequestParam("file") MultipartFile file,
-                                 @RequestParam("albumId") Integer albumId) throws Exception {
+                         @RequestParam("albumId") Integer albumId) throws Exception {
         photoService.uploadAlbumPhoto(file, albumId);
         return Result.success();
     }

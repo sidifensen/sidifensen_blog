@@ -26,8 +26,10 @@ import com.sidifensen.mapper.AlbumMapper;
 import com.sidifensen.mapper.AlbumPhotoMapper;
 import com.sidifensen.mapper.PhotoMapper;
 import com.sidifensen.mapper.SysUserMapper;
-import com.sidifensen.service.IMessageService;
-import com.sidifensen.service.IPhotoService;
+import com.sidifensen.redis.RedisComponent;
+import com.sidifensen.redis.RedisService;
+import com.sidifensen.service.MessageService;
+import com.sidifensen.service.PhotoService;
 import com.sidifensen.utils.FileUploadUtils;
 import com.sidifensen.utils.ImageAuditUtils;
 import com.sidifensen.utils.MyThreadFactory;
@@ -36,6 +38,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -60,7 +63,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements IPhotoService {
+public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements PhotoService {
 
     @Resource
     private FileUploadUtils fileUploadUtils;
@@ -81,7 +84,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     private SysUserMapper sysUserMapper;
 
     @Resource
-    private IMessageService messageService;
+    private MessageService messageService;
 
     @Resource
     private RabbitTemplate rabbitTemplate;
@@ -95,6 +98,10 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             new LinkedBlockingQueue<>(500),
             new MyThreadFactory("PhotoServiceImpl")
     );
+    @Autowired
+    private RedisService redisService;
+    @Autowired
+    private RedisComponent redisComponent;
 
     // 上传图片到相册
     @Override
@@ -116,10 +123,11 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             photo.setExamineStatus(ExamineStatusEnum.WAIT.getCode());// 初始设置为待审核状态
             photoMapper.insert(photo);
 
+            Integer status = 0;
             // 图片自动审核
             if (photoAutoAudit) {
                 ImageAuditResult imageAuditResult = imageAuditUtils.auditImageWithDetails(url);
-                Integer status = imageAuditResult.getStatus();
+                status = imageAuditResult.getStatus();
                 // 根据审核结果设置审核状态
                 Photo updatePhoto = getPhoto(photo, status);
                 // 更新图片审核状态
@@ -129,9 +137,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             // 保存相册照片关联记录
             albumPhotoMapper.insert(new AlbumPhoto(null, albumId, photo.getId()));
 
-            Integer status = 10086;
             // 更新相册的封面为最新上传的图片（仅当审核通过时）
-            if (status == 0) {
+            if (status == 0 || photoAutoAudit) {
                 LambdaUpdateWrapper<Album> updateWrapper = new LambdaUpdateWrapper<>();
                 updateWrapper.eq(Album::getId, albumId).set(Album::getCoverUrl, url);
                 albumMapper.update(null, updateWrapper);
@@ -151,8 +158,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             sendEmail.put("text", String.format(MessageConstants.IMAGE_NEED_REVIEW, photo.getId()));
             rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
 
-//            }
-
+            redisService.updateAlbumPhotos(albumId);
         });
     }
 
@@ -238,6 +244,9 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         String dirName = UploadEnum.ALBUM.getDir() + SecurityUtils.getUserId() + "/" + albumPhoto.getAlbumId() + "/";
         // 删除照片对应的文件
         fileUploadUtils.deleteFile(dirName, fileName);
+
+        // 更新相册照片关联
+        redisService.updateAlbumPhotos(albumPhoto.getAlbumId());
     }
 
     // 批量删除照片
@@ -293,6 +302,9 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
 
         // 批量删除文件
         fileUploadUtils.deleteFiles(filePaths);
+
+        // 批量更新相册照片关联
+        redisService.multiUpdateAlbumPhotos(albumPhotos.stream().map(AlbumPhoto::getAlbumId).collect(Collectors.toList()));
     }
 
     @Override
@@ -314,6 +326,9 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         String dirName = UploadEnum.ALBUM.getDir() + SecurityUtils.getUserId() + "/" + albumPhoto.getAlbumId() + "/";
         // 删除照片对应的文件
         fileUploadUtils.deleteFile(dirName, fileName);
+
+        // 更新相册照片关联
+        redisService.updateAlbumPhotos(albumPhoto.getAlbumId());
     }
 
     @Override
@@ -361,6 +376,9 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
 
         // 批量删除文件
         fileUploadUtils.deleteFiles(filePaths);
+
+        // 批量更新相册照片关联
+        redisService.multiUpdateAlbumPhotos(albumPhotos.stream().map(AlbumPhoto::getAlbumId).collect(Collectors.toList()));
     }
 
     @Override
@@ -371,9 +389,11 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         updateWrapper.set(Photo::getExamineStatus, photoAuditDto.getExamineStatus());
         photoMapper.update(null, updateWrapper);
 
+
+        AlbumPhoto albumPhoto = null;
         // 如果是审核通过
         if (photoAuditDto.getExamineStatus() == 1) {
-            AlbumPhoto albumPhoto = albumPhotoMapper.selectById(photoAuditDto.getPhotoId());
+            albumPhoto = albumPhotoMapper.selectById(photoAuditDto.getPhotoId());
             if (ObjectUtil.isNotEmpty(albumPhoto)) {
                 // 更新相册封面
                 Album album = albumMapper.selectById(albumPhoto.getAlbumId());
@@ -385,6 +405,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             }
         }
 
+        // 更新相册照片关联
+        redisService.updateAlbumPhotos(albumPhoto.getAlbumId());
     }
 
     @Override
@@ -396,6 +418,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         updateWrapper.set(Photo::getExamineStatus, photoAuditDto.get(0).getExamineStatus());
         photoMapper.update(null, updateWrapper);
 
+        List<Integer> albumIds = new ArrayList<>();
         // 更新相册封面
         for (PhotoAuditDto dto : photoAuditDto) {
             if (dto.getExamineStatus() == 1) {
@@ -407,9 +430,13 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                         album.setCoverUrl(photo.getUrl());
                         albumMapper.updateById(album);
                     }
+                    albumIds.add(albumPhoto.getAlbumId());
                 }
             }
         }
+
+        // 批量更新相册照片关联
+        redisService.multiUpdateAlbumPhotos(albumIds);
     }
 
     @Override

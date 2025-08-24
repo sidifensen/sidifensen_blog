@@ -5,7 +5,7 @@ import com.sidifensen.aspect.TimeConsuming;
 import com.sidifensen.domain.dto.AlbumDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.AlbumVo;
-import com.sidifensen.service.IAlbumService;
+import com.sidifensen.service.AlbumService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,7 +23,7 @@ import java.util.List;
 public class AlbumController {
 
     @Resource
-    private IAlbumService albumService;
+    private AlbumService albumService;
 
     /**
      * 查看相册详情

@@ -1,5 +1,5 @@
 <template>
-  <el-watermark content="sidifensen_blog">
+  <el-watermark content="sidifensen_blog" z-index="1000">
     <el-container class="layout-container">
       <!-- 侧边栏 -->
       <el-aside class="sidebar">

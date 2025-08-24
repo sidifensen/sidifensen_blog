@@ -9,13 +9,13 @@ import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author sidifensen
  * @since 2025-06-29
  */
-public interface ISysMenuService extends IService<SysMenu> {
+public interface SysMenuService extends IService<SysMenu> {
 
     // 查询用户的菜单
     List<SysMenuVo> listMenu();

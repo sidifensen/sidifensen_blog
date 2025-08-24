@@ -9,13 +9,13 @@ import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author sidifensen
  * @since 2025-06-29
  */
-public interface ISysRoleMenuService extends IService<SysRoleMenu> {
+public interface SysRoleMenuService extends IService<SysRoleMenu> {
 
     void add(SysRoleMenuDto sysRoleMenuDto);
 

@@ -12,7 +12,7 @@ import com.sidifensen.domain.vo.SysRoleVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysRoleMapper;
 import com.sidifensen.mapper.SysRolePermissionMapper;
-import com.sidifensen.service.ISysRolePermissionService;
+import com.sidifensen.service.SysRolePermissionService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * @since 2025-08-06
  */
 @Service
-public class SysRolePermissionServiceImpl extends ServiceImpl<SysRolePermissionMapper, SysRolePermission> implements ISysRolePermissionService {
+public class SysRolePermissionServiceImpl extends ServiceImpl<SysRolePermissionMapper, SysRolePermission> implements SysRolePermissionService {
 
     @Resource
     private SysRoleMapper sysRoleMapper;

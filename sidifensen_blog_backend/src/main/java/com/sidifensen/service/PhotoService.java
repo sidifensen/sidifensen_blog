@@ -11,13 +11,13 @@ import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author sidifensen
  * @since 2025-07-30
  */
-public interface IPhotoService extends IService<Photo> {
+public interface PhotoService extends IService<Photo> {
 
     // 上传图片到相册
     void uploadAlbumPhoto(MultipartFile file, Integer albumId) throws Exception;

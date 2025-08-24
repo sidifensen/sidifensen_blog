@@ -14,7 +14,7 @@ import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysMenuMapper;
 import com.sidifensen.mapper.SysPermissionMapper;
 import com.sidifensen.mapper.SysRolePermissionMapper;
-import com.sidifensen.service.ISysPermissionService;
+import com.sidifensen.service.SysPermissionService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +29,7 @@ import java.util.List;
  * @since 2025-08-06
  */
 @Service
-public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, SysPermission> implements ISysPermissionService {
+public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, SysPermission> implements SysPermissionService {
 
     @Resource
     private SysMenuMapper sysMenuMapper;

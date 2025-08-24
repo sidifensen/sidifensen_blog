@@ -3,7 +3,7 @@ package com.sidifensen.controller;
 
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.MessageVo;
-import com.sidifensen.service.IMessageService;
+import com.sidifensen.service.MessageService;
 import jakarta.annotation.Resource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +19,11 @@ import java.util.List;
 public class MessageController {
 
     @Resource
-    private IMessageService messageService;
+    private MessageService messageService;
 
     /**
      * 获取管理员未读消息数量
+     *
      * @param
      * @return
      */
@@ -35,6 +36,7 @@ public class MessageController {
 
     /**
      * 查看管理员消息
+     *
      * @param
      * @return
      */
@@ -47,6 +49,7 @@ public class MessageController {
 
     /**
      * 管理员读取消息/批量读取消息
+     *
      * @param messageIds
      * @return
      */
@@ -59,6 +62,7 @@ public class MessageController {
 
     /**
      * 管理员删除消息/批量删除消息
+     *
      * @param messageIds
      * @return
      */
@@ -68,7 +72,6 @@ public class MessageController {
         messageService.deleteAdminMessages(messageIds);
         return Result.success();
     }
-
 
 
 }

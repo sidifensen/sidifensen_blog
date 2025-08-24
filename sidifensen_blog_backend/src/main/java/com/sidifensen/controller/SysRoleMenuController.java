@@ -4,7 +4,7 @@ package com.sidifensen.controller;
 import com.sidifensen.domain.dto.SysRoleMenuDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysRoleVo;
-import com.sidifensen.service.ISysRoleMenuService;
+import com.sidifensen.service.SysRoleMenuService;
 import jakarta.annotation.Resource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +20,7 @@ import java.util.List;
 public class SysRoleMenuController {
 
     @Resource
-    private ISysRoleMenuService sysRoleService;
+    private SysRoleMenuService sysRoleService;
 
     /**
      * 将菜单分配给角色
@@ -44,7 +44,7 @@ public class SysRoleMenuController {
     @PreAuthorize("hasAuthority('system:role:menu:get')")
     @GetMapping("{menuId}")
     public Result getRoles(@PathVariable Integer menuId) {
-        List<SysRoleVo> sysRoleVos =  sysRoleService.getRoles(menuId);
+        List<SysRoleVo> sysRoleVos = sysRoleService.getRoles(menuId);
         return Result.success(sysRoleVos);
     }
 

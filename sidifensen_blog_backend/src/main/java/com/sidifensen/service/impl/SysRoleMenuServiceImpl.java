@@ -12,7 +12,7 @@ import com.sidifensen.domain.vo.SysRoleVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysRoleMapper;
 import com.sidifensen.mapper.SysRoleMenuMapper;
-import com.sidifensen.service.ISysRoleMenuService;
+import com.sidifensen.service.SysRoleMenuService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * @since 2025-06-29
  */
 @Service
-public class SysRoleMenuServiceImpl extends ServiceImpl<SysRoleMenuMapper, SysRoleMenu> implements ISysRoleMenuService {
+public class SysRoleMenuServiceImpl extends ServiceImpl<SysRoleMenuMapper, SysRoleMenu> implements SysRoleMenuService {
 
     @Resource
     private SysRoleMapper sysRoleMapper;
@@ -41,7 +41,7 @@ public class SysRoleMenuServiceImpl extends ServiceImpl<SysRoleMenuMapper, SysRo
         List<Integer> roleIds = sysRoleMenuDto.getRoleIds();
         Integer menuId = sysRoleMenuDto.getMenuId();
 
-        if (ObjectUtil.isEmpty(roleIds)){
+        if (ObjectUtil.isEmpty(roleIds)) {
             // 用户没有选择, 删除所有关联记录
             this.remove(Wrappers.<SysRoleMenu>lambdaQuery().eq(SysRoleMenu::getMenuId, menuId));
             return;

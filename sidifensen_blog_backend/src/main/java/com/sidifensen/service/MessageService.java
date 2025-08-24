@@ -9,13 +9,13 @@ import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author sidifensen
  * @since 2025-08-17
  */
-public interface IMessageService extends IService<Message> {
+public interface MessageService extends IService<Message> {
 
     // 发送消息
     void send(MessageDto messageDto);

@@ -15,7 +15,7 @@ import java.util.List;
  * @author sidifensen
  * @since 2025-07-30
  */
-public interface IAlbumService extends IService<Album> {
+public interface AlbumService extends IService<Album> {
 
     // 查询相册详情
     AlbumVo getAlbum(Integer albumId);

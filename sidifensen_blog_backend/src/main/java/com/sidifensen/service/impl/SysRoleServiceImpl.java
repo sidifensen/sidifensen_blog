@@ -13,7 +13,7 @@ import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysRoleMapper;
 import com.sidifensen.mapper.SysRoleMenuMapper;
 import com.sidifensen.mapper.SysRolePermissionMapper;
-import com.sidifensen.service.ISysRoleService;
+import com.sidifensen.service.SysRoleService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
@@ -21,14 +21,14 @@ import java.util.List;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author sidifensen
  * @since 2025-06-29
  */
 @Service
-public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> implements ISysRoleService {
+public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> implements SysRoleService {
 
     @Resource
     private SysRoleMenuMapper sysRoleMenuMapper;
@@ -58,7 +58,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     @Override
     public void delete(Integer roleId) {
         boolean exist = this.removeById(roleId);
-        if (!exist){
+        if (!exist) {
             throw new BlogException(BlogConstants.NotFoundRole);
         }
         // 删除角色_菜单关联表

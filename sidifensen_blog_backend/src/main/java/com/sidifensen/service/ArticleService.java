@@ -1,0 +1,35 @@
+package com.sidifensen.service;
+
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.sidifensen.domain.dto.ArticleDto;
+import com.sidifensen.domain.entity.Article;
+import com.sidifensen.domain.vo.ArticleVo;
+import com.sidifensen.domain.vo.PageVo;
+
+import java.util.List;
+
+/**
+ * <p>
+ * 服务类
+ * </p>
+ *
+ * @author sidifensen
+ * @since 2025-08-24
+ */
+public interface ArticleService extends IService<Article> {
+
+    // 获取文章列表
+    PageVo<List<ArticleVo>> getArticleList(Integer pageNum, Integer pageSize);
+
+    // 获取文章详情
+    ArticleVo getArticle(Integer articleId);
+
+    // 新增文章
+    void addArticle(ArticleDto articleDto);
+
+    // 更新文章
+    void updateArticle(ArticleDto articleDto);
+
+    // 删除文章
+    void deleteArticle(Integer articleId);
+}

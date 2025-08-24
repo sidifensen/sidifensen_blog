@@ -80,7 +80,6 @@ public class RedisComponent {
         redisUtils.hdel(RedisConstants.Albums, albumIds);
     }
 
-
     // 保存相册详情
     public void saveAlbumDetail(Integer albumId, AlbumVo albumVo) {
         executorService.execute(() -> {
@@ -103,6 +102,11 @@ public class RedisComponent {
                 redisUtils.hset(RedisConstants.AlbumPhotos, albumId, albumVo.getPhotos(), 7, TimeUnit.DAYS);
             }
         });
+    }
+
+    // 保存相册照片关联
+    public void saveAlbumPhotos(Integer albumId, List<PhotoVo> photos) {
+        redisUtils.hset(RedisConstants.AlbumPhotos, albumId, photos, 7, TimeUnit.DAYS);
     }
 
     // 获取相册详情

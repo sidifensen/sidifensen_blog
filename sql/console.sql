@@ -140,7 +140,6 @@ create table article
 (
     id             int primary key auto_increment comment '文章id',
     user_id        int          not null comment '用户id',
-    tag_id         int          not null comment '标签id',
     title          varchar(100) not null comment '标题',
     description    varchar(200) not null comment '描述',
     content        text         not null comment '内容',
@@ -150,14 +149,15 @@ create table article
     comment_count  int          not null default 0 comment '评论数',
     collect_count  int          not null default 0 comment '收藏量',
     examine_status tinyint      not null default 0 comment '审核状态 0-待审核 1-审核通过 2-审核未通过',
-    visible_status tinyint      not null default 0 comment '可见状态 0-全部可见 1-仅我可见 2-粉丝可见 3-vip可见',
-    edit_status    tinyint      not null default 0 comment '编辑状态 0-发布 1-草稿 2-回收',
+    edit_status    tinyint      not null default 0 comment '编辑状态 0-已发布 1-草稿箱 2-回收站',
+    visible_range  tinyint      not null default 0 comment '可见范围 0-全部可见 1-仅我可见 2-粉丝可见 3-vip可见',
     reprint_type   tinyint      not null default 0 comment '转载类型 0-原创 1-转载',
     reprint_url    varchar(400) comment '转载链接',
     create_time    datetime     not null comment '创建时间',
     update_time    datetime     not null comment '更新时间',
     is_deleted     tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index idx_user_id_examine_visible_edit_status (user_id, examine_status, visible_status, edit_status)
+    index idx_user_id_examine_edit_visible_status_create_time (user_id, examine_status, edit_status, visible_range, create_time),
+    index idx_examine_edit_visible_status_create_time (examine_status, edit_status, visible_range, create_time)
 );
 
 create table tag
@@ -165,4 +165,13 @@ create table tag
     id   int primary key auto_increment comment '标签id',
     name varchar(15) not null comment '标签名称',
     index idx_name (name)
-)
+);
+
+create table article_tag
+(
+    id         int primary key auto_increment comment '主键id',
+    article_id int not null comment '文章id',
+    tag_id     int not null comment '标签id',
+    index idx_article_id (article_id),
+    index idx_tag_id (tag_id)
+);

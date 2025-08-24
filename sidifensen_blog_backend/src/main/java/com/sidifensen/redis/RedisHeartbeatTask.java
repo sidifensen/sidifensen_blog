@@ -15,12 +15,12 @@ import java.util.UUID;
  */
 @Component
 public class RedisHeartbeatTask {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(RedisHeartbeatTask.class);
-    
+
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
-    
+
     /**
      * 每60秒执行一次心跳检测
      * 通过向Redis写入一个临时key来保持连接活跃
@@ -30,8 +30,7 @@ public class RedisHeartbeatTask {
         try {
             String heartbeatKey = "heartbeat:" + UUID.randomUUID();
             redisTemplate.opsForValue().set(heartbeatKey, System.currentTimeMillis(), 120);
-            logger.info("Redis心跳包发送成功: {}", heartbeatKey);
-            
+//            logger.info("Redis心跳包发送成功: {}", heartbeatKey);
             // 可选：删除临时key
             redisTemplate.delete(heartbeatKey);
         } catch (Exception e) {

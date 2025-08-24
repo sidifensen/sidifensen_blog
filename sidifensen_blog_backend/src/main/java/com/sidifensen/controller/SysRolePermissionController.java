@@ -4,7 +4,7 @@ package com.sidifensen.controller;
 import com.sidifensen.domain.dto.SysRolePermissionDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysRoleVo;
-import com.sidifensen.service.ISysRolePermissionService;
+import com.sidifensen.service.SysRolePermissionService;
 import jakarta.annotation.Resource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +20,7 @@ import java.util.List;
 public class SysRolePermissionController {
 
     @Resource
-    private ISysRolePermissionService sysRolePermissionService;
+    private SysRolePermissionService sysRolePermissionService;
 
     /**
      * 将权限授权给角色
@@ -44,7 +44,7 @@ public class SysRolePermissionController {
     @PreAuthorize("hasAuthority('system:role:permission:get')")
     @GetMapping("{permissionId}")
     public Result getRoles(@PathVariable Integer permissionId) {
-        List<SysRoleVo> sysRoleVos =  sysRolePermissionService.getRoles(permissionId);
+        List<SysRoleVo> sysRoleVos = sysRolePermissionService.getRoles(permissionId);
         return Result.success(sysRoleVos);
     }
 

@@ -15,7 +15,7 @@ import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysRoleMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.mapper.SysUserRoleMapper;
-import com.sidifensen.service.ISysUserRoleService;
+import com.sidifensen.service.SysUserRoleService;
 import com.sidifensen.utils.MyThreadFactory;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * @since 2025-06-29
  */
 @Service
-public class SysUserRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUserRole> implements ISysUserRoleService {
+public class SysUserRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUserRole> implements SysUserRoleService {
 
     @Resource
     private SysRoleMapper sysRoleMapper;

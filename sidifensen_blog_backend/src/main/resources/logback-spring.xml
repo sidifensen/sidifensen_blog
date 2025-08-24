@@ -2,10 +2,10 @@
 <configuration debug="false" scan="false" packagingData="false">
 
     <!-- 禁用状态监听器来屏蔽初始化日志 -->
-    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
-    
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
+
     <!-- 定义日志文件的存储地址 -->
-    <property name="LOG_HOME" value="./logs" />
+    <property name="LOG_HOME" value="./sidifensen_blog_backend/logs"/>
 
     <!-- 控制台输出 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -58,21 +58,21 @@
     <!-- 降低日志框架本身的日志级别 -->
     <logger name="ch.qos.logback" level="OFF"/>
     <logger name="org.springframework.boot.logging" level="OFF"/>
-    
+
     <!-- 降低MyBatis相关日志级别 -->
     <logger name="org.mybatis.spring.mapper.ClassPathMapperScanner" level="OFF"/>
     <logger name="org.mybatis.spring.SqlSessionFactoryBean" level="OFF"/>
     <logger name="org.mybatis.spring.SqlSessionUtils" level="OFF"/>
-    
+
     <!-- 共同的日志级别配置 -->
     <logger name="org.mybatis.spring.mapper" level="OFF"/>
     <logger name="org.apache" level="INFO"/>
-    
+
     <!-- 开发环境:打印控制台 -->
     <springProfile name="dev">
-        <logger name="com.sidifensen" level="DEBUG"/>
+        <logger name="com.sidifensen" level="INFO"/>
         <logger name="org.springframework" level="INFO"/>
-        <logger name="org.mybatis" level="INFO"/>
+        <logger name="org.mybatis" level="WARN"/>
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE"/>

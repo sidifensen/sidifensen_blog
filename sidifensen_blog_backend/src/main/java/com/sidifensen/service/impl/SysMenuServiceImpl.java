@@ -12,7 +12,7 @@ import com.sidifensen.domain.vo.SysMenuVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysMenuMapper;
 import com.sidifensen.mapper.SysRoleMenuMapper;
-import com.sidifensen.service.ISysMenuService;
+import com.sidifensen.service.SysMenuService;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -21,14 +21,14 @@ import java.util.List;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author sidifensen
  * @since 2025-06-29
  */
 @Service
-public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> implements ISysMenuService {
+public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> implements SysMenuService {
 
     @Resource
     private SysRoleMenuMapper sysRoleMenuMapper;
@@ -69,7 +69,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
     @Override
     public void delete(Integer id) {
         boolean exist = this.removeById(id);
-        if (!exist){
+        if (!exist) {
             throw new BlogException(BlogConstants.NotFoundMenu);
         }
         // 删除角色_菜单关联表

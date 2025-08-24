@@ -20,7 +20,7 @@ import com.sidifensen.mapper.AlbumPhotoMapper;
 import com.sidifensen.mapper.PhotoMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.redis.RedisComponent;
-import com.sidifensen.service.IAlbumService;
+import com.sidifensen.service.AlbumService;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * @since 2025-07-30
  */
 @Service
-public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements IAlbumService {
+public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements AlbumService {
 
     @Resource
     private AlbumMapper albumMapper;
@@ -248,15 +248,33 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         album.setCoverUrl(albumDto.getCoverUrl());
         album.setShowStatus(albumDto.getShowStatus());
         this.updateById(album);
+        redisComponent.saveAlbum(album.getUserId(), BeanUtil.copyProperties(album, AlbumVo.class));
     }
 
     // 删除相册
     @Override
     public void adminDeleteAlbum(Integer albumId) {
+        Album album = albumMapper.selectById(albumId);
+        if (album == null) {
+            throw new BlogException(BlogConstants.NotFoundAlbum);
+        }
         int i = albumMapper.deleteById(albumId);
         if (i == 0) {
             throw new BlogException(BlogConstants.NotFoundAlbum);
         }
+        // 删除照片
+        LambdaQueryWrapper<AlbumPhoto> eq = new LambdaQueryWrapper<AlbumPhoto>().eq(AlbumPhoto::getAlbumId, albumId);
+        List<Integer> photoIds = albumPhotoMapper.selectList(eq).stream().map(AlbumPhoto::getPhotoId).toList();
+        photoMapper.delete(new LambdaQueryWrapper<Photo>().in(Photo::getId, photoIds));
+
+        // 删除相册照片关联表
+        albumPhotoMapper.delete(new LambdaQueryWrapper<AlbumPhoto>().eq(AlbumPhoto::getAlbumId, albumId));
+
+
+        AlbumVo albumVo = redisComponent.getAlbum(List.of(albumId));
+        redisComponent.delAlbum(List.of(albumId));
+        redisComponent.delAlbumDetail(albumId);
+        redisComponent.delUserAlbum(List.of(albumVo.getUserId()));
     }
 
     // 搜索相册

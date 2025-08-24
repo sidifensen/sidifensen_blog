@@ -4,7 +4,7 @@ package com.sidifensen.controller;
 import com.sidifensen.domain.dto.SysPermissionDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysPermissionVo;
-import com.sidifensen.service.ISysPermissionService;
+import com.sidifensen.service.SysPermissionService;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,7 +21,7 @@ import java.util.List;
 public class SysPermissionController {
 
     @Resource
-    private ISysPermissionService sysPermissionService;
+    private SysPermissionService sysPermissionService;
 
     /**
      * 查询权限列表

@@ -17,9 +17,9 @@ import com.sidifensen.mapper.PhotoMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.security.SysUserDetailsService;
-import com.sidifensen.service.ISysUserRoleService;
-import com.sidifensen.service.ISysUserService;
 import com.sidifensen.service.IpService;
+import com.sidifensen.service.SysUserRoleService;
+import com.sidifensen.service.SysUserService;
 import com.sidifensen.utils.IpUtils;
 import com.sidifensen.utils.JwtUtils;
 import com.sidifensen.utils.SecurityUtils;
@@ -47,7 +47,7 @@ import java.util.concurrent.Executors;
  */
 @Service
 @Slf4j
-public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements ISysUserService {
+public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements SysUserService {
 
     @Resource
     private AuthenticationManager authenticationManager;
@@ -84,7 +84,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     private IpService ipService;
 
     @Resource
-    private ISysUserRoleService sysUserRoleService;
+    private SysUserRoleService sysUserRoleService;
 
     @Override
     public String login(LoginDto loginDto) {
@@ -117,7 +117,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         // 获取用户信息，返回的就是UserDetails
         LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
         // 创建token,此处的token时由UUID编码而成JWT字符串
-        String token = jwtUtils.createToken(loginUser.getSysUser().getId(),true);
+        String token = jwtUtils.createToken(loginUser.getSysUser().getId(), true);
         return token;
     }
 
@@ -153,7 +153,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
         int insert = sysUserMapper.insert(user);
         if (insert == 1) {
-            ipService.setRegisterIp(user.getId(),ip);
+            ipService.setRegisterIp(user.getId(), ip);
             sysUserRoleService.setRegisterRole(user.getId());
             redisComponent.cleanEmailCheckCode(registerDto.getEmail(), "register");
             log.info("用户{}注册成功", user.getUsername());
@@ -238,7 +238,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
         List<SysRole> sysRoles = loginUser.getSysUser().getSysRoles();
 
-        if (sysRoles.stream().noneMatch(r -> r.getRole().equals("admin") || r.getRole().equals("viewer"))){
+        if (sysRoles.stream().noneMatch(r -> r.getRole().equals("admin") || r.getRole().equals("viewer"))) {
             throw new BlogException(BlogConstants.NotAdminAccount); // 不是管理员账户
         }
         // 创建token,此处的token时由UUID编码而成JWT字符串
@@ -257,7 +257,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
         List<SysRole> sysRoles = user.getSysRoles();
 
-        if (sysRoles.stream().noneMatch(r -> r.getRole().equals("admin") || r.getRole().equals("viewer"))){
+        if (sysRoles.stream().noneMatch(r -> r.getRole().equals("admin") || r.getRole().equals("viewer"))) {
             throw new BlogException(BlogConstants.NotAdminAccount); // 不是管理员账户
         }
 
@@ -305,11 +305,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     public List<SysUserVo> searchUser(SysUserSearchDTO sysUserSearchDTO) {
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.like(ObjectUtil.isNotEmpty(sysUserSearchDTO.getUsername()),SysUser::getUsername, sysUserSearchDTO.getUsername());
-        queryWrapper.like(ObjectUtil.isNotEmpty(sysUserSearchDTO.getEmail()),SysUser::getEmail, sysUserSearchDTO.getEmail());
-        queryWrapper.eq(ObjectUtil.isNotEmpty(sysUserSearchDTO.getStatus()),SysUser::getStatus, sysUserSearchDTO.getStatus());
-        queryWrapper.ge(ObjectUtil.isNotEmpty(sysUserSearchDTO.getCreateTimeStart()),SysUser::getCreateTime, sysUserSearchDTO.getCreateTimeStart());
-        queryWrapper.le(ObjectUtil.isNotEmpty(sysUserSearchDTO.getCreateTimeEnd()),SysUser::getCreateTime, sysUserSearchDTO.getCreateTimeEnd());
+        queryWrapper.like(ObjectUtil.isNotEmpty(sysUserSearchDTO.getUsername()), SysUser::getUsername, sysUserSearchDTO.getUsername());
+        queryWrapper.like(ObjectUtil.isNotEmpty(sysUserSearchDTO.getEmail()), SysUser::getEmail, sysUserSearchDTO.getEmail());
+        queryWrapper.eq(ObjectUtil.isNotEmpty(sysUserSearchDTO.getStatus()), SysUser::getStatus, sysUserSearchDTO.getStatus());
+        queryWrapper.ge(ObjectUtil.isNotEmpty(sysUserSearchDTO.getCreateTimeStart()), SysUser::getCreateTime, sysUserSearchDTO.getCreateTimeStart());
+        queryWrapper.le(ObjectUtil.isNotEmpty(sysUserSearchDTO.getCreateTimeEnd()), SysUser::getCreateTime, sysUserSearchDTO.getCreateTimeEnd());
 
         List<SysUser> sysUsers = sysUserMapper.selectList(queryWrapper);
         return BeanUtil.copyToList(sysUsers, SysUserVo.class);
@@ -323,7 +323,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         SysUserDetailVo sysUserDetailVo = BeanUtil.copyProperties(sysUserDetail, SysUserDetailVo.class);
         return sysUserDetailVo;
     }
-
 
 
 }

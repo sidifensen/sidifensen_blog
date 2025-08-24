@@ -5,7 +5,7 @@ import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysUserDetailVo;
 import com.sidifensen.domain.vo.SysUserVo;
 import com.sidifensen.redis.RedisComponent;
-import com.sidifensen.service.ISysUserService;
+import com.sidifensen.service.SysUserService;
 import com.wf.captcha.ArithmeticCaptcha;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -25,7 +25,7 @@ import java.util.Map;
 public class SysUserController {
 
     @Resource
-    private ISysUserService sysUserService;
+    private SysUserService sysUserService;
 
     @Resource
     private RedisComponent redisComponent;
@@ -112,6 +112,7 @@ public class SysUserController {
 
     /**
      * 获取用户信息
+     *
      * @return
      */
     @GetMapping("/info")
@@ -124,6 +125,7 @@ public class SysUserController {
 
     /**
      * 管理端登录
+     *
      * @param AdminLoginDto
      * @return
      */
@@ -135,6 +137,7 @@ public class SysUserController {
 
     /**
      * 管理端获取登录用户信息
+     *
      * @return
      */
     @GetMapping("/admin/info")
@@ -145,6 +148,7 @@ public class SysUserController {
 
     /**
      * 管理端获取用户列表
+     *
      * @return
      */
     @PreAuthorize("hasAuthority('system:user:list')")
@@ -156,6 +160,7 @@ public class SysUserController {
 
     /**
      * 管理端修改用户
+     *
      * @return
      */
     @PreAuthorize("hasAuthority('system:user:update')")
@@ -167,6 +172,7 @@ public class SysUserController {
 
     /**
      * 管理端删除用户
+     *
      * @return
      */
     @PreAuthorize("hasAuthority('system:user:delete')")
@@ -178,6 +184,7 @@ public class SysUserController {
 
     /**
      * 管理端搜索用户
+     *
      * @return
      */
     @PreAuthorize("hasAuthority('system:user:search')")

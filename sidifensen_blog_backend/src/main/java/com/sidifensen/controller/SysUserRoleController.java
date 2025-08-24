@@ -5,7 +5,7 @@ import com.sidifensen.domain.dto.SysUserRoleDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysRoleVo;
 import com.sidifensen.domain.vo.SysUserVo;
-import com.sidifensen.service.ISysUserRoleService;
+import com.sidifensen.service.SysUserRoleService;
 import jakarta.annotation.Resource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +21,7 @@ import java.util.List;
 public class SysUserRoleController {
 
     @Resource
-    private ISysUserRoleService sysUserRoleService;
+    private SysUserRoleService sysUserRoleService;
 
 
     /**
@@ -46,7 +46,7 @@ public class SysUserRoleController {
     @PreAuthorize("hasAuthority('system:user:role:getUsers')")
     @GetMapping("getUsers/{roleId}")
     public Result getUsers(@PathVariable Integer roleId) {
-        List<SysUserVo> sysUserVos =  sysUserRoleService.getUsers(roleId);
+        List<SysUserVo> sysUserVos = sysUserRoleService.getUsers(roleId);
         return Result.success(sysUserVos);
     }
 
@@ -72,10 +72,9 @@ public class SysUserRoleController {
     @PreAuthorize("hasAuthority('system:user:role:getRoles')")
     @GetMapping("getRoles/{userId}")
     public Result getRoles(@PathVariable Integer userId) {
-        List<SysRoleVo> sysRoleVos =  sysUserRoleService.getRoles(userId);
+        List<SysRoleVo> sysRoleVos = sysUserRoleService.getRoles(userId);
         return Result.success(sysRoleVos);
     }
-
 
 
 }

@@ -4,7 +4,7 @@ package com.sidifensen.controller;
 import com.sidifensen.domain.dto.SysMenuDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysMenuVo;
-import com.sidifensen.service.ISysMenuService;
+import com.sidifensen.service.SysMenuService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -22,10 +22,11 @@ import java.util.List;
 public class SysMenuController {
 
     @Resource
-    private ISysMenuService sysMenuService;
+    private SysMenuService sysMenuService;
 
     /**
      * 查询登录用户的菜单列表
+     *
      * @return
      */
     @PreAuthorize("hasAuthority('system:menu:list')")
@@ -37,17 +38,19 @@ public class SysMenuController {
 
     /**
      * 查询所有用户的菜单列表
+     *
      * @return
      */
     @PreAuthorize("hasAuthority('system:menu:listAll')")
     @GetMapping("listAll")
-    public Result listAll(){
+    public Result listAll() {
         List<SysMenuVo> menuVoList = sysMenuService.listAllMenu();
         return Result.success(menuVoList);
     }
 
     /**
      * 新增菜单
+     *
      * @param sysMenuDto
      * @return
      */
@@ -60,6 +63,7 @@ public class SysMenuController {
 
     /**
      * 修改菜单
+     *
      * @param sysMenuDto 包含更新信息的菜单数据传输对象
      * @return
      */
@@ -72,6 +76,7 @@ public class SysMenuController {
 
     /**
      * 删除菜单
+     *
      * @param menuId 菜单ID
      * @return
      */
@@ -84,6 +89,7 @@ public class SysMenuController {
 
     /**
      * 根据菜单名称查找菜单
+     *
      * @param name 菜单名称
      * @return
      */
@@ -93,7 +99,6 @@ public class SysMenuController {
         List<SysMenuVo> menuList = sysMenuService.search(name);
         return Result.success(menuList);
     }
-
 
 
 }
