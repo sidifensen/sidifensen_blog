@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sidifensen.config.SidifensenConfig;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.MessageConstants;
 import com.sidifensen.domain.constants.RabbitMQConstants;
@@ -26,7 +27,6 @@ import com.sidifensen.mapper.AlbumMapper;
 import com.sidifensen.mapper.AlbumPhotoMapper;
 import com.sidifensen.mapper.PhotoMapper;
 import com.sidifensen.mapper.SysUserMapper;
-import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.redis.RedisService;
 import com.sidifensen.service.MessageService;
 import com.sidifensen.service.PhotoService;
@@ -38,8 +38,6 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -89,19 +87,17 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     @Resource
     private RabbitTemplate rabbitTemplate;
 
-    // 是否开启图片自动审核
-    @Value("${sidifensen.photoAutoAudit}")
-    private Boolean photoAutoAudit;
+    @Resource
+    private SidifensenConfig sidifensenConfig;
+
+    @Resource
+    private RedisService redisService;
 
     ExecutorService executorService = new ThreadPoolExecutor(
             2, 4, 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(500),
             new MyThreadFactory("PhotoServiceImpl")
     );
-    @Autowired
-    private RedisService redisService;
-    @Autowired
-    private RedisComponent redisComponent;
 
     // 上传图片到相册
     @Override
@@ -125,7 +121,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
 
             Integer status = 0;
             // 图片自动审核
-            if (photoAutoAudit) {
+            if (sidifensenConfig.isPhotoAutoAudit()) {
                 ImageAuditResult imageAuditResult = imageAuditUtils.auditImageWithDetails(url);
                 status = imageAuditResult.getStatus();
                 // 根据审核结果设置审核状态
@@ -138,13 +134,13 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             albumPhotoMapper.insert(new AlbumPhoto(null, albumId, photo.getId()));
 
             // 更新相册的封面为最新上传的图片（仅当审核通过时）
-            if (status == 0 || photoAutoAudit) {
+            if (status == 0 || sidifensenConfig.isPhotoAutoAudit()) {
                 LambdaUpdateWrapper<Album> updateWrapper = new LambdaUpdateWrapper<>();
                 updateWrapper.eq(Album::getId, albumId).set(Album::getCoverUrl, url);
                 albumMapper.update(null, updateWrapper);
             }
 
-            if (status.equals(ImageAuditStatusEnum.MANUAL_REVIEW.getCode()) || !photoAutoAudit) {
+            if (status.equals(ImageAuditStatusEnum.MANUAL_REVIEW.getCode()) || !sidifensenConfig.isPhotoAutoAudit()) {
                 // 需要人工审核，发送消息给管理员
                 String text = MessageConstants.ImageNeedReview(photo.getId());
                 MessageDto messageDto = new MessageDto();
@@ -228,7 +224,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             throw new BlogException(BlogConstants.NotFoundPhoto);
         }
         if (photo.getUserId() != SecurityUtils.getUserId()) {
-            throw new BlogException(BlogConstants.CannotHandleOtherUserPhoto);
+            throw new BlogException(BlogConstants.CannotHandleOthersPhoto);
         }
         AlbumPhoto albumPhoto = albumPhotoMapper.selectOne(new LambdaUpdateWrapper<AlbumPhoto>().eq(AlbumPhoto::getPhotoId, photoId));
         if (ObjectUtil.isEmpty(albumPhoto)) {
@@ -262,7 +258,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         // 在photos中对比每一张图片的userId是否与当前登录用户一致，如果不一致则抛出异常
         for (Photo photo : photos) {
             if (!photo.getUserId().equals(userId)) {
-                throw new BlogException(BlogConstants.CannotHandleOtherUserPhoto);
+                throw new BlogException(BlogConstants.CannotHandleOthersPhoto);
             }
         }
 

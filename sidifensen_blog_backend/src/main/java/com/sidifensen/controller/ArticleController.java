@@ -2,6 +2,7 @@ package com.sidifensen.controller;
 
 
 import com.sidifensen.domain.dto.ArticleDto;
+import com.sidifensen.domain.dto.ArticleStatusDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.ArticleVo;
 import com.sidifensen.domain.vo.PageVo;
@@ -29,6 +30,12 @@ public class ArticleController {
         return Result.success(articleVoList);
     }
 
+    @GetMapping("/user/list")
+    public Result getUserArticleList(@NotNull Integer pageNum, @NotNull Integer pageSize, ArticleStatusDto articleStatusDto) {
+        PageVo<List<ArticleVo>> articleVoList = articleService.getUserArticleList(pageNum, pageSize, articleStatusDto);
+        return Result.success(articleVoList);
+    }
+
     @GetMapping("/{articleId}")
     public Result getArticle(@PathVariable Integer articleId) {
         ArticleVo articleVo = articleService.getArticle(articleId);
@@ -41,7 +48,7 @@ public class ArticleController {
         return Result.success();
     }
 
-    @PostMapping("/update")
+    @PutMapping("/update")
     public Result updateArticle(@RequestBody ArticleDto articleDto) {
         articleService.updateArticle(articleDto);
         return Result.success();
@@ -52,4 +59,29 @@ public class ArticleController {
         articleService.deleteArticle(articleId);
         return Result.success();
     }
+
+    @GetMapping("/admin/list")
+    public Result adminGetArticleList() {
+        List<ArticleVo> articleVoList = articleService.adminGetArticleList();
+        return Result.success(articleVoList);
+    }
+
+    @GetMapping("/admin/{articleId}")
+    public Result adminGetArticle(@PathVariable Integer articleId) {
+        ArticleVo articleVo = articleService.adminGetArticle(articleId);
+        return Result.success(articleVo);
+    }
+
+    @PutMapping("/admin/update")
+    public Result adminUpdateArticle(@RequestBody ArticleDto articleDto) {
+        articleService.adminUpdateArticle(articleDto);
+        return Result.success();
+    }
+
+    @DeleteMapping("/admin/{articleId}")
+    public Result adminDeleteArticle(@PathVariable Integer articleId) {
+        articleService.adminDeleteArticle(articleId);
+        return Result.success();
+    }
+
 }

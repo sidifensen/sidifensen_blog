@@ -54,6 +54,9 @@ $button-padding: 10px 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   max-width: 500px;
   width: 100%;
+  @media screen and (max-width: 768px) {
+    max-width: 90%;
+  }
 
   .error-code {
     font-size: 100px;

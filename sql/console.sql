@@ -140,6 +140,7 @@ create table article
 (
     id             int primary key auto_increment comment '文章id',
     user_id        int          not null comment '用户id',
+    tag            varchar(255) not null comment '标签',
     title          varchar(100) not null comment '标题',
     description    varchar(200) not null comment '描述',
     content        text         not null comment '内容',
@@ -162,16 +163,32 @@ create table article
 
 create table tag
 (
-    id   int primary key auto_increment comment '标签id',
-    name varchar(15) not null comment '标签名称',
-    index idx_name (name)
+    id       int primary key auto_increment comment '标签id',
+    category varchar(10) not null comment '标签分类',
+    name     varchar(15) not null comment '标签名称',
+    unique index idx_name (name)
 );
 
-create table article_tag
+create table column
 (
-    id         int primary key auto_increment comment '主键id',
-    article_id int not null comment '文章id',
-    tag_id     int not null comment '标签id',
+    id          int primary key auto_increment comment '专栏id',
+    user_id     int         not null comment '用户id',
+    name        varchar(10) not null comment '专栏名称',
+    description varchar(200) comment '专栏描述',
+    cover_url   varchar(400) comment '专栏封面',
+    create_time datetime    not null comment '创建时间',
+    update_time datetime    not null comment '更新时间',
+    is_deleted  tinyint     not null default 0 comment '是否删除 0-未删除 1-已删除',
+    unique index idx_name (name)
+);
+
+create table article_column
+(
+    id          int primary key auto_increment comment '主键id',
+    article_id  int      not null comment '文章id',
+    column_id   int      not null comment '专栏id',
+    create_time datetime not null comment '创建时间',
+    update_time datetime not null comment '更新时间',
     index idx_article_id (article_id),
-    index idx_tag_id (tag_id)
+    index idx_column_id (column_id)
 );

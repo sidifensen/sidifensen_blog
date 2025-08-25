@@ -113,7 +113,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         album.setName(albumDto.getName());
 
         if (userId != album.getUserId()) {
-            throw new BlogException(BlogConstants.CannotHandleOtherUserAlbum);
+            throw new BlogException(BlogConstants.CannotHandleOthersAlbum);
         }
         if (albumDto.getCoverUrl() != null) {
             album.setCoverUrl(albumDto.getCoverUrl());
@@ -132,7 +132,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         Integer userId = SecurityUtils.getUserId();
         Album album = albumMapper.selectById(albumId);
         if (userId != album.getUserId()) {
-            throw new BlogException(BlogConstants.CannotHandleOtherUserAlbum);
+            throw new BlogException(BlogConstants.CannotHandleOthersAlbum);
         }
         int i = albumMapper.deleteById(albumId);
         if (i == 0) {
@@ -193,7 +193,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         Integer userId = SecurityUtils.getUserId();
         Album album = this.getById(albumDto.getId());
         if (userId != album.getUserId()) {
-            throw new BlogException(BlogConstants.CannotHandleOtherUserAlbum);
+            throw new BlogException(BlogConstants.CannotHandleOthersAlbum);
         }
         if (album == null) {
             throw new BlogException(BlogConstants.NotFoundAlbum);
@@ -209,7 +209,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         Album album = this.getById(albumDto.getId());
         Integer userId = SecurityUtils.getUserId();
         if (userId != album.getUserId()) {
-            throw new BlogException(BlogConstants.CannotHandleOtherUserAlbum);
+            throw new BlogException(BlogConstants.CannotHandleOthersAlbum);
         }
         album.setCoverUrl(albumDto.getCoverUrl());
         this.updateById(album);

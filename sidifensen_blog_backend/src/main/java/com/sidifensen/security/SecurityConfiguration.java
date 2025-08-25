@@ -1,6 +1,7 @@
 package com.sidifensen.security;
 
 
+import com.sidifensen.config.SidifensenConfig;
 import com.sidifensen.domain.constants.SecurityConstants;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Bean;
@@ -31,11 +32,14 @@ public class SecurityConfiguration {
     @Resource
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Resource
+    private SidifensenConfig sidifensenConfig;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // 设置认证管理器
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(SecurityConstants.No_Auth_Urls).permitAll()
+                .requestMatchers(SecurityConstants.Need_Auth_Urls).permitAll()
                 .anyRequest().authenticated());
         // 禁用 csrf
         http.csrf(AbstractHttpConfigurer::disable);
@@ -57,7 +61,7 @@ public class SecurityConfiguration {
 
     // 配置密码编码器
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
@@ -66,11 +70,11 @@ public class SecurityConfiguration {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
         corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
-        corsConfiguration.setAllowedOrigins(Collections.singletonList("*"));
+        corsConfiguration.setAllowedOrigins(sidifensenConfig.getAllowOrigins());
 
         // 创建 CorsConfigurationSource对象
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**",corsConfiguration);
+        source.registerCorsConfiguration("/**", corsConfiguration);
         return source;
     }
 

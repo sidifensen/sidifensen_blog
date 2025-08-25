@@ -8,41 +8,40 @@ const router = createRouter({
       path: "/",
       name: "index",
       component: () => import("@/views/Layout/index.vue"),
-      meta: {
-        title: "主页",
-      },
+      meta: { title: "主页" },
       children: [
         {
           path: "/",
           name: "Home",
           component: () => import("@/views/Home/index.vue"),
-          meta: {
-            title: "首页",
-          },
+          meta: { title: "首页" },
         },
         {
-          path: "/album/square",
-          name: "AlbumSquare",
-          component: () => import("@/views/Album/AlbumSquare.vue"),
-          meta: {
-            title: "相册广场",
-          },
-        },
-        {
-          path: "/album/myAlbum",
-          name: "MyAlbum",
-          component: () => import("@/views/Album/MyAlbum.vue"),
-          meta: {
-            title: "我的相册",
-          },
-        },
-        {
-          path: "/album/:albumId",
-          name: "AlbumDetail",
-          component: () => import("@/views/Album/AlbumDetail.vue"),
-          meta: {
-            title: "相册详情",
-          },
+          path: "/album",
+          name: "Album",
+          component: () => import("@/views/Album/index.vue"),
+          meta: { title: "相册" },
+          redirect: "/album/square",
+          children: [
+            {
+              path: "square",
+              name: "AlbumSquare",
+              component: () => import("@/views/Album/AlbumSquare.vue"),
+              meta: { title: "相册广场" },
+            },
+            {
+              path: "myAlbum",
+              name: "MyAlbum",
+              component: () => import("@/views/Album/MyAlbum.vue"),
+              meta: { title: "我的相册" },
+            },
+            {
+              path: ":albumId",
+              name: "AlbumDetail",
+              component: () => import("@/views/Album/AlbumDetail.vue"),
+              meta: { title: "相册详情" },
+            },
+          ],
         },
         {
           path: "/account",
@@ -54,25 +53,19 @@ const router = createRouter({
               path: "/login",
               component: () => import("@/views/Account/Login/index.vue"),
               name: "login",
-              meta: {
-                title: "用户登录",
-              },
+              meta: { title: "用户登录" },
             },
             {
               path: "/register",
               component: () => import("@/views/Account/Register/index.vue"),
               name: "register",
-              meta: {
-                title: "用户注册",
-              },
+              meta: { title: "用户注册" },
             },
             {
               path: "/reset",
               component: () => import("@/views/Account/Reset/index.vue"),
               name: "reset",
-              meta: {
-                title: "重置密码",
-              },
+              meta: { title: "重置密码" },
             },
           ],
         },
@@ -80,9 +73,7 @@ const router = createRouter({
           path: "/:pathMatch(.*)*",
           name: "NotFound",
           component: () => import("@/components/404.vue"),
-          meta: {
-            title: "页面不存在",
-          },
+          meta: { title: "页面不存在" },
         },
       ],
     },

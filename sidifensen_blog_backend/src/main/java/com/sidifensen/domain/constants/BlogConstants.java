@@ -18,6 +18,7 @@ public class BlogConstants {
     public static final String NewPasswordSameAsOld = "新密码不能与原密码相同";
 
     public static final String CannotGetRequestInfo = "无法获取请求信息";
+    public static final String IllegalRequest = "非法请求";
 
     public static final String NotFoundRole = "角色不存在";
     public static final String NotFoundMenu = "菜单不存在";
@@ -28,12 +29,20 @@ public class BlogConstants {
     public static final String ExistUserRole = "用户角色已存在";
 
     public static final String NotFoundAlbum = "相册不存在";
-    public static final String CannotHandleOtherUserAlbum = "不能操作别人的相册";
-    public static final String CannotHandleOtherUserPhoto = "不能操作别人的照片";
+    public static final String CannotHandleOthersAlbum = "不能操作别人的相册";
+    public static final String CannotHandleOthersPhoto = "不能操作别人的照片";
     public static final String NotFoundPhoto = "照片不存在";
     public static final String ExamineStatusError = "审核状态错误";
 
     public static final String SaveMessageError = "消息保存失败";
     public static final String ReadMessageError = "消息读取失败";
     public static final String DeleteMessageError = "消息删除失败";
+
+    public static final String AddTagError = "添加标签失败";
+    public static final String AddArticleError = "添加文章失败";
+    public static final String DeleteArticleError = "删除文章失败";
+    public static final String CannotHandleOthersArticle = "不能操作别人的文章";
+    public static final String UpdateArticleError = "更新文章失败";
+    public static final String NotFoundArticle = "文章不存在";
+    public static final String NotFoundTag = "标签不存在";
 }

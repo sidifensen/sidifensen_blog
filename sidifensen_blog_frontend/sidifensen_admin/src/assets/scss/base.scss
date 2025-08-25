@@ -1,16 +1,39 @@
+/* 引入阿里妈妈东方大楷字体 */
+@font-face {
+  font-family: 'AlimamaDongFangDaKai';
+  src: url('@/assets/font/AlimamaDongFangDaKai/AlimamaDongFangDaKai-Regular.woff2') format('woff2'),
+       url('@/assets/font/AlimamaDongFangDaKai/AlimamaDongFangDaKai-Regular.woff') format('woff'),
+       url('@/assets/font/AlimamaDongFangDaKai/AlimamaDongFangDaKai-Regular.ttf') format('truetype'),
+       url('@/assets/font/AlimamaDongFangDaKai/AlimamaDongFangDaKai-Regular.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 引入阿里巴巴普惠体字体 */
+@font-face {
+  font-family: 'Ailibabahuiputi';
+  src: url('@/assets/font/ailibabahuiputi/Alibaba_PuHuiTi_2.0_55_Regular_85_Bold.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+* {
+  font-family: 'Ailibabahuiputi', "Helvetica Neue", Arial, sans-serif;
+  box-sizing: border-box;
+}
+
 body {
   margin: 0px;
   padding: 0px;
   font-size: 14px;
 }
+
 //超链接去掉下划线
 a {
   text-decoration: none;
   color: #333;
-}
-
-* {
-  box-sizing: border-box;
 }
 
 // el-dropdown 去掉黑框

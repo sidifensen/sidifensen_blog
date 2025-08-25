@@ -3,6 +3,20 @@ body {
   padding: 0px;
   font-size: 14px;
 }
+
+@font-face {
+  font-family: 'AlimamaShuHei';
+  src: url('@/assets/font/AlimamaShuHei/AlimamaShuHeiTi-Bold.woff2') format('woff2'),
+        url('@/assets/font/AlimamaShuHei/AlimamaShuHeiTi-Bold.woff') format('woff'),
+        url('@/assets/font/AlimamaShuHei/AlimamaShuHeiTi-Bold.ttf') format('truetype'),
+        url('@/assets/font/AlimamaShuHei/AlimamaShuHeiTi-Bold.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+* {
+  font-family: 'AlimamaShuHei', "Helvetica Neue", Arial, sans-serif;
+}
 //超链接去掉下划线
 a {
   text-decoration: none;

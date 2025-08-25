@@ -9,9 +9,6 @@ import { createPinia } from "pinia";
 import App from "./App.vue";
 import router from "./router";
 
-// 注册svg全局组件
-import SvgIcon from "@/components/SvgIcon.vue";
-import "virtual:svg-icons-register";
 
 // pinia持久化插件
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
@@ -37,13 +34,14 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 
 // 注册svg全局组件
+import SvgIcon from "@/components/SvgIcon.vue";
+import "virtual:svg-icons-register";
 app.component("svg-icon", SvgIcon);
 
-/* - 用途 ： 
- app.config.globalProperties 主要用于添加全局属性，方便在组件中访问全局工具和数据；
- app.component() 用于全局注册组件，让组件可以在整个应用中直接使用。
-- 使用场景 ：如果需要在多个组件中共享工具函数、API 实例等，使用 app.config.globalProperties ；
-如果有一些通用组件需要在多个地方使用，使用 app.component() 进行全局注册。 */
+// 注册加载动画组件
+import LoadingAnimation from '@/components/LoadingAnimation.vue';
+app.component('LoadingAnimation', LoadingAnimation);
+
 
 app.use(pinia);
 app.use(router);

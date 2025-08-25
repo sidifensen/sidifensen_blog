@@ -1,5 +1,8 @@
 package com.sidifensen.domain.constants;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author sidifensen
  * @since 2025-07-08
@@ -7,9 +10,9 @@ package com.sidifensen.domain.constants;
 public class SecurityConstants {
 
     /**
-     * 数组常量
+     * 需要登录的接口
      */
-    public static final String[] No_Auth_Urls = {
+    public static final String[] Need_Auth_Urls = {
             "/user/login",
             "/user/checkCode",
             "/user/register",
@@ -25,4 +28,10 @@ public class SecurityConstants {
             "/oauth/github/callback",
             "/user/oauthLogin",
     };
+
+    // 允许的用户代理列表（可根据需要扩展）
+    public static final List<String> Allowed_User_Agents = Arrays.asList(
+            "Mozilla", "Chrome", "Firefox", "Safari", "Edge"
+    );
+
 }

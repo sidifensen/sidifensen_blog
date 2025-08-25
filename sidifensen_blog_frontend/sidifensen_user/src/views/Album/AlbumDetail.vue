@@ -1,5 +1,5 @@
 <template>
-  <div class="album-detail">
+  <div>
     <el-card class="card" shadow="hover">
       <template #header>
         <div class="header-title">
@@ -49,6 +49,7 @@
 
       <!-- 按日期分组显示图片 -->
       <div class="photo-container">
+        <LoadingAnimation v-if="loading" />
         <template v-for="(group, date) in groupedPhotos" :key="date">
           <div class="date-section">
             <div class="date-header">
@@ -68,8 +69,7 @@
                   show-progress
                   close-on-press-escape
                   lazy
-                  loading="lazy"
-                  >
+                  loading="lazy">
                   <template #toolbar="{ actions, prev, next, activeIndex }">
                     <el-icon @click="prev"><Back /></el-icon>
                     <el-icon @click="next"><Right /></el-icon>
@@ -99,7 +99,7 @@
             </div>
           </div>
         </template>
-        <el-empty v-if="Object.keys(groupedPhotos).length === 0 && !loading" description="暂无图片" />
+        <el-empty v-if="Object.keys(groupedPhotos).length === 0 && !loading" :image-size="200" description="暂无图片" />
       </div>
     </el-card>
 
@@ -209,7 +209,7 @@ const getPhotoList = async () => {
   loading.value = true;
   try {
     const res = await getAlbum(albumForm.value.id);
-    photoList.value = res.data.data.photos || [];;
+    photoList.value = res.data.data.photos || [];
     albumForm.value.showStatus = res.data.data.showStatus || 0;
     albumForm.value.name = res.data.data.name || "";
     albumForm.value.coverUrl = res.data.data.coverUrl || "";
@@ -278,17 +278,17 @@ const download = (number) => {
   const suffix = url.slice(url.lastIndexOf(".")); // 文件格式
   const filename = Date.now() + suffix; // 时间戳文件名
   fetch(url)
-  .then((response) => response.blob())
-  .then((blob) => {
-    const blobUrl = URL.createObjectURL(new Blob([blob])); // 创建一个blob对象url
-    const link = document.createElement("a"); // 创建一个隐藏a标签
-    link.href = blobUrl; // 给a标签的href属性赋值
-    link.download = filename; // 给a标签的download属性赋值
-    document.body.appendChild(link); // 下载前添加到body中
-    link.click(); // 点击a标签
-    URL.revokeObjectURL(blobUrl); // 释放url对象
-    link.remove(); // 移除a标签
-  });
+    .then((response) => response.blob())
+    .then((blob) => {
+      const blobUrl = URL.createObjectURL(new Blob([blob])); // 创建一个blob对象url
+      const link = document.createElement("a"); // 创建一个隐藏a标签
+      link.href = blobUrl; // 给a标签的href属性赋值
+      link.download = filename; // 给a标签的download属性赋值
+      document.body.appendChild(link); // 下载前添加到body中
+      link.click(); // 点击a标签
+      URL.revokeObjectURL(blobUrl); // 释放url对象
+      link.remove(); // 移除a标签
+    });
 };
 
 // 是否为图片选择模式
@@ -574,10 +574,10 @@ const handleDeleteAlbum = () => {
 
 // 修改相册展示状态
 const handleChangeAlbumShowStatus = async () => {
-  console.log("switchShowStatus.value",switchShowStatus.value)
+  console.log("switchShowStatus.value", switchShowStatus.value);
   try {
     const newStatus = albumForm.value.showStatus === 0 ? 1 : 0;
-    console.log("newStatus",newStatus);
+    console.log("newStatus", newStatus);
     const AlbumDto = {
       id: albumForm.value.id,
       showStatus: newStatus,
@@ -968,146 +968,147 @@ const getExamineStatusClass = (status) => {
       }
     }
   }
-}
 
-.photo-container {
-  /* 日期 */
-  .date-section {
-    margin-bottom: 30px;
-    .date-header {
-      display: flex;
-      align-items: center;
-      // justify-content: space-between;
-      margin-bottom: 15px;
-      padding-bottom: 5px;
-      border-bottom: 1px solid #eee;
-      h3 {
-        font-size: 18px;
-        margin: 0;
-      }
-      .el-checkbox {
-        height: 20px;
-        width: 20px;
-        margin-left: 10px;
-        :deep(.el-checkbox__inner) {
-          width: 20px;
-          height: 20px;
+  .photo-container {
+    min-height: 75vh;
+    /* 日期 */
+    .date-section {
+      margin-bottom: 30px;
+      .date-header {
+        display: flex;
+        align-items: center;
+        // justify-content: space-between;
+        margin-bottom: 15px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #eee;
+        h3 {
+          font-size: 18px;
+          margin: 0;
         }
-      }
-    }
-  }
-  /* 照片列表 */
-  .photo-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* 自动填充，每行2列 */
-    gap: 15px;
-    .photo-item {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      border-radius: 4px;
-      overflow: hidden;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      transition: transform 0.3s ease;
-      .photo {
-        width: 100%;
-        height: 160px;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-        // 错误占位图标样式
-        .error {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          width: 100%;
-          height: 100%;
-          background-color: #f5f5f5;
-
-          .el-icon {
-            font-size: 40px;
-            color: #909399;
+        .el-checkbox {
+          height: 20px;
+          width: 20px;
+          margin-left: 10px;
+          :deep(.el-checkbox__inner) {
+            width: 20px;
+            height: 20px;
           }
         }
-        .loading-text {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          width: 100%;
-          height: 100%;
-          font-size: 16px;
-          color: #606266;
-          background-color: #f5f5f5;
-        }
       }
-      // 选中图片样式
-      .selected {
-        border: 4px solid #409eff;
-        box-shadow: 0 0 12px rgba(64, 158, 255, 0.8);
-        background-color: rgba(64, 158, 255, 0.1);
-      }
-
-      // 审核状态样式
-      .examine-status {
-        position: absolute;
-        bottom: 5px;
-        right: 5px;
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-size: 12px;
-        font-weight: bold;
-        color: white;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-      }
-
-      // 待审核状态
-      .status-pending {
-        background: linear-gradient(135deg, #909399, #606266);
-      }
-      // 审核通过状态
-      // .status-approved {
-      //   background: linear-gradient(135deg, #67c23a, #409800);
-      // }
-      // 审核未通过状态
-      .status-rejected {
-        background: linear-gradient(135deg, #f56c6c, #dd3e3e);
-      }
-      // 未知状态
-      .status-unknown {
-        background: linear-gradient(135deg, #e6a23c, #c68a1f);
-      }
-
-      /* 加载动画 */
-      @keyframes rotate {
-        from {
-          transform: rotate(0deg);
-        }
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      // 图片被选中时的小对勾
-      .selected-icon {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        width: 30px;
-        height: 30px;
-        background: #409eff;
-        color: white;
-        border-radius: 50%;
-        font-size: 20px;
-      }
-      &:hover {
-        transform: translateY(-5px);
+    }
+    /* 照片列表 */
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* 自动填充，每行2列 */
+      gap: 15px;
+      .photo-item {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        border-radius: 4px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
         .photo {
-          transform: scale(1.1);
+          width: 100%;
+          height: 160px;
+          object-fit: cover;
+          transition: transform 0.3s ease;
+          // 错误占位图标样式
+          .error {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            background-color: #f5f5f5;
+
+            .el-icon {
+              font-size: 40px;
+              color: #909399;
+            }
+          }
+          .loading-text {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            font-size: 16px;
+            color: #606266;
+            background-color: #f5f5f5;
+          }
+        }
+        // 选中图片样式
+        .selected {
+          border: 4px solid #409eff;
+          box-shadow: 0 0 12px rgba(64, 158, 255, 0.8);
+          background-color: rgba(64, 158, 255, 0.1);
+        }
+
+        // 审核状态样式
+        .examine-status {
+          position: absolute;
+          bottom: 5px;
+          right: 5px;
+          padding: 2px 8px;
+          border-radius: 10px;
+          font-size: 12px;
+          font-weight: bold;
+          color: white;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        // 待审核状态
+        .status-pending {
+          background: linear-gradient(135deg, #909399, #606266);
+        }
+        // 审核通过状态
+        // .status-approved {
+        //   background: linear-gradient(135deg, #67c23a, #409800);
+        // }
+        // 审核未通过状态
+        .status-rejected {
+          background: linear-gradient(135deg, #f56c6c, #dd3e3e);
+        }
+        // 未知状态
+        .status-unknown {
+          background: linear-gradient(135deg, #e6a23c, #c68a1f);
+        }
+
+        /* 加载动画 */
+        @keyframes rotate {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        // 图片被选中时的小对勾
+        .selected-icon {
+          position: absolute;
+          top: 5px;
+          right: 5px;
+          width: 30px;
+          height: 30px;
+          background: #409eff;
+          color: white;
+          border-radius: 50%;
+          font-size: 20px;
+        }
+        &:hover {
+          transform: translateY(-5px);
+          .photo {
+            transform: scale(1.1);
+          }
         }
       }
     }
-  }
 
-  /* 选择按钮选中图片时的样式 */
+    /* 选择按钮选中图片时的样式 */
+  }
 }
 
 :deep(.el-dialog) {

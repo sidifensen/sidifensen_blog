@@ -15,7 +15,8 @@
         </div>
       </template>
 
-      <div class="album-grid" v-loading="loading">
+      <LoadingAnimation v-if="loading"/>
+      <div class="album-grid">
         <div v-for="album in albumList" :key="album.id" class="album-card">
           <div class="album-image-container" @click="handleViewAlbum(album.id)">
             <el-image :src="album.coverUrl || ''" class="album-image" fit="cover" lazy="true" loading="lazy">
@@ -33,8 +34,8 @@
             </div>
           </div>
         </div>
-        <el-empty v-if="albumList.length === 0" :image-size="200" description="暂无图片" />
       </div>
+      <el-empty v-if="albumList.length === 0 && !loading" :image-size="200" description="暂无相册" />
 
       <el-dialog v-model="dialogVisible" :title="'新建相册'">
         <el-form :model="albumForm" label-width="80px">
@@ -60,6 +61,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/userStore";
 import { storeToRefs } from "pinia";
+import LoadingAnimation from "../../components/LoadingAnimation.vue";
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
 

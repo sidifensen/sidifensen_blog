@@ -1,6 +1,7 @@
 package com.sidifensen.security;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.sidifensen.config.SidifensenConfig;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.SecurityConstants;
 import com.sidifensen.domain.entity.LoginUser;
@@ -43,16 +44,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Resource
     private SysUserDetailsService userDetailsService;
 
+    @Resource
+    private SidifensenConfig sidifensenConfig;
+
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // 如果是不需要登录的接口，则直接放行
-        for (String url : SecurityConstants.No_Auth_Urls) {
+        for (String url : SecurityConstants.Need_Auth_Urls) {
             AntPathRequestMatcher matcher = new AntPathRequestMatcher(url);
             if (matcher.matches(request)) {
                 filterChain.doFilter(request, response);
                 return;
             }
         }
+
+//        // 检查请求来源 - 防止简单的API工具直接访问
+//        String userAgent = request.getHeader("User-Agent");
+//        if (!isValidUserAgent(userAgent)) {
+//            log.warn("检测到可疑请求来源，User-Agent: {}", userAgent);
+//            WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.IllegalRequest).toJson());
+//            return;
+//        }
+//
+//        // 检查Referer头
+//        String referer = request.getHeader("Referer");
+//        if (referer == null || !isValidReferer(referer)) {
+//            log.warn("检测到可疑请求来源，Referer: {}", referer);
+//            WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.IllegalRequest).toJson());
+//            return;
+//        }
+
         // 从请求头中获取jwt
         String jwt = request.getHeader("Authorization");
         if (ObjectUtil.isEmpty(jwt)) {
@@ -103,4 +125,47 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request, response);
     }
+
+    /**
+     * 验证User-Agent是否合法
+     *
+     * @param userAgent User-Agent头
+     * @return 是否合法
+     */
+    private boolean isValidUserAgent(String userAgent) {
+        if (userAgent == null || userAgent.isEmpty()) {
+            return false;
+        }
+        // 检查是否包含允许的浏览器标识
+        for (String allowedAgent : SecurityConstants.Allowed_User_Agents) {
+            if (userAgent.contains(allowedAgent)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 验证Referer是否合法
+     *
+     * @param referer Referer头
+     * @return 是否合法
+     */
+    private boolean isValidReferer(String referer) {
+        // 对于公开API，可以允许空的Referer
+        if (referer == null || referer.isEmpty()) {
+            return true;
+        }
+
+        // 检查是否来自允许的域名（根据实际情况配置）
+        for (String origin : sidifensenConfig.getAllowOrigins()) {
+            if (referer.contains(origin)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
 }

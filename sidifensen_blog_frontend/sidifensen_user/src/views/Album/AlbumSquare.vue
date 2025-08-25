@@ -10,7 +10,8 @@
         </div>
       </template>
 
-      <div class="album-grid" v-loading="loading">
+      <LoadingAnimation v-if="loading" />
+      <div class="album-grid">
         <div v-for="album in albums" :key="album.id" class="album-card">
           <div class="album-image-container" @click="handleViewAlbum(album.id)">
             <el-image :src="album.coverUrl || ''" class="album-image" fit="cover" lazy loading="lazy">
@@ -30,6 +31,7 @@
           </div>
         </div>
       </div>
+      <el-empty v-if="albums.length === 0 && !loading" :image-size="200" description="暂无相册" />
     </el-card>
   </div>
 </template>
@@ -74,6 +76,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .album-container {
   .main-card {
+    min-height: 75vh;
     margin-bottom: 20px;
     :deep(.el-card__header) {
       padding: 10px;

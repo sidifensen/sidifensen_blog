@@ -6,7 +6,6 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * <p>
@@ -34,9 +33,9 @@ public class ArticleVo implements Serializable {
     private Integer userId;
 
     /**
-     * 标签名称
+     * 标签
      */
-    private List<String> tag;
+    private String tag;
 
     /**
      * 标题

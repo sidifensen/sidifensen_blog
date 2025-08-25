@@ -14,7 +14,7 @@
       <el-icon><Message /></el-icon>
       <span class="menu-text">文章</span>
     </el-menu-item>
-    <el-menu-item index="/album/square" class="menu-item">
+    <el-menu-item index="/album" class="menu-item">
       <el-icon><Picture /></el-icon>
       <span class="menu-text">相册</span>
     </el-menu-item>
@@ -108,7 +108,12 @@ const activeIndex = ref("/");
 
 // 监听路由变化，更新激活的菜单
 router.afterEach((to) => {
-  activeIndex.value = to.path;
+  // 如果路由路径以 "/album" 开头，则激活相册菜单
+  if (to.path.startsWith("/album")) {
+    activeIndex.value = "/album";
+  } else {
+    activeIndex.value = to.path;
+  }
 });
 
 // 处理菜单选择事件
@@ -228,8 +233,6 @@ onBeforeUnmount(() => {
     /* Logo文字 */
     .logo-text {
       font-size: 26px !important;
-      // font-weight: 800;
-      // font-family: "Helvetica Neue", Arial, sans-serif;
       color: #3d92eb;
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
       letter-spacing: 1px;

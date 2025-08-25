@@ -6,7 +6,6 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * <p>
@@ -33,10 +32,11 @@ public class ArticleDto implements Serializable {
      */
     private Integer userId;
 
+
     /**
-     * 标签id列表
+     * 标签
      */
-    private List<Integer> tagIds;
+    private String tag;
 
     /**
      * 标题

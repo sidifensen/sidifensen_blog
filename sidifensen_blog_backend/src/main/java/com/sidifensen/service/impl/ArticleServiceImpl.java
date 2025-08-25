@@ -1,20 +1,21 @@
 package com.sidifensen.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.ArticleDto;
+import com.sidifensen.domain.dto.ArticleStatusDto;
 import com.sidifensen.domain.entity.Article;
-import com.sidifensen.domain.entity.ArticleTag;
-import com.sidifensen.domain.entity.Tag;
 import com.sidifensen.domain.enums.EditStatusEnum;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.enums.VisibleRangeEnum;
 import com.sidifensen.domain.vo.ArticleVo;
 import com.sidifensen.domain.vo.PageVo;
+import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.ArticleMapper;
-import com.sidifensen.mapper.ArticleTagMapper;
 import com.sidifensen.mapper.TagMapper;
 import com.sidifensen.service.ArticleService;
 import com.sidifensen.utils.SecurityUtils;
@@ -22,8 +23,6 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -42,9 +41,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Resource
     private TagMapper tagMapper;
 
-    @Resource
-    private ArticleTagMapper articleTagMapper;
-
     @Override
     public PageVo<List<ArticleVo>> getArticleList(Integer pageNum, Integer pageSize) {
         Page<Article> page = new Page<>(pageNum, pageSize);
@@ -56,17 +52,31 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .orderByDesc(Article::getCreateTime);
 
         List<Article> articleList = articleMapper.selectPage(page, qw).getRecords();
-
-        List<Integer> articleIds = articleList.stream().map(Article::getId).toList();
-        List<ArticleTag> articleTags = articleTagMapper.selectList(new LambdaQueryWrapper<ArticleTag>().in(ArticleTag::getArticleId, articleIds));
-        List<Integer> tagIds = articleTags.stream().map(ArticleTag::getTagId).toList();
-        List<Tag> tags = tagMapper.selectByIds(tagIds);
-
-        Map<Integer, String> tagMap = tags.stream().collect(Collectors.toMap(Tag::getId, Tag::getName));
         List<ArticleVo> articleVoList = articleList.stream().map(article -> {
             ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
-            // 设置文章标签
-            articleVo.setTag(tagIds.stream().map(tagMap::get).toList());
+            return articleVo;
+        }).toList();
+
+        return new PageVo<>(articleVoList, page.getTotal());
+    }
+
+    @Override
+    public PageVo<List<ArticleVo>> getUserArticleList(Integer pageNum, Integer pageSize, ArticleStatusDto articleStatusDto) {
+        Integer userId = SecurityUtils.getUserId();
+        Page<Article> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
+                .eq(userId != 0, Article::getUserId, userId)
+                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatus()), Article::getExamineStatus, articleStatusDto.getExamineStatus())
+                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus()), Article::getEditStatus, articleStatusDto.getEditStatus())
+                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getVisibleRange()), Article::getVisibleRange, articleStatusDto.getVisibleRange())
+                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getReprintType()), Article::getReprintType, articleStatusDto.getReprintType())
+                .like(ObjectUtil.isNotEmpty(articleStatusDto.getTitle()), Article::getTitle, articleStatusDto.getTitle())
+                .like(ObjectUtil.isNotEmpty(articleStatusDto.getDescription()), Article::getDescription, articleStatusDto.getDescription())
+                .orderByDesc(articleStatusDto.getOrderBy() == 0 ? Article::getCreateTime : Article::getReadCount);
+
+        List<Article> articleList = articleMapper.selectPage(page, qw).getRecords();
+        List<ArticleVo> articleVoList = articleList.stream().map(article -> {
+            ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
             return articleVo;
         }).toList();
 
@@ -75,21 +85,59 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public ArticleVo getArticle(Integer articleId) {
-        return null;
+        Article article = articleMapper.selectById(articleId);
+        if (article == null) {
+            throw new BlogException(BlogConstants.NotFoundArticle);
+        }
+        return BeanUtil.copyProperties(article, ArticleVo.class);
     }
 
     @Override
     public void addArticle(ArticleDto articleDto) {
-
+        Article article = BeanUtil.copyProperties(articleDto, Article.class);
+        article.setUserId(SecurityUtils.getUserId());
+        if (articleMapper.insert(article) < 1) {
+            throw new BlogException(BlogConstants.AddArticleError);
+        }
     }
 
     @Override
     public void updateArticle(ArticleDto articleDto) {
-
+        Article article = BeanUtil.copyProperties(articleDto, Article.class);
+        if (articleMapper.updateById(article) < 1) {
+            throw new BlogException(BlogConstants.UpdateArticleError);
+        }
     }
 
     @Override
     public void deleteArticle(Integer articleId) {
+        Article article = articleMapper.selectById(articleId);
+        if (article == null) {
+            throw new BlogException(BlogConstants.NotFoundArticle);
+        }
+        if (article.getUserId() != SecurityUtils.getUserId()) {
+            throw new BlogException(BlogConstants.CannotHandleOthersArticle);
+        }
+        articleMapper.deleteById(articleId);
+    }
+
+    @Override
+    public List<ArticleVo> adminGetArticleList() {
+        return List.of();
+    }
+
+    @Override
+    public ArticleVo adminGetArticle(Integer articleId) {
+        return null;
+    }
+
+    @Override
+    public void adminUpdateArticle(ArticleDto articleDto) {
+
+    }
+
+    @Override
+    public void adminDeleteArticle(Integer articleId) {
 
     }
 }

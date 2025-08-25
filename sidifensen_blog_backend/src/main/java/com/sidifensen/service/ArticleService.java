@@ -2,6 +2,7 @@ package com.sidifensen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.ArticleDto;
+import com.sidifensen.domain.dto.ArticleStatusDto;
 import com.sidifensen.domain.entity.Article;
 import com.sidifensen.domain.vo.ArticleVo;
 import com.sidifensen.domain.vo.PageVo;
@@ -21,6 +22,9 @@ public interface ArticleService extends IService<Article> {
     // 获取文章列表
     PageVo<List<ArticleVo>> getArticleList(Integer pageNum, Integer pageSize);
 
+    // 获取用户文章列表
+    PageVo<List<ArticleVo>> getUserArticleList(Integer pageNum, Integer pageSize, ArticleStatusDto articleStatusDto);
+
     // 获取文章详情
     ArticleVo getArticle(Integer articleId);
 
@@ -32,4 +36,16 @@ public interface ArticleService extends IService<Article> {
 
     // 删除文章
     void deleteArticle(Integer articleId);
+
+    // 管理员获取文章列表
+    List<ArticleVo> adminGetArticleList();
+
+    // 管理员获取文章详情
+    ArticleVo adminGetArticle(Integer articleId);
+
+    // 管理员更新文章
+    void adminUpdateArticle(ArticleDto articleDto);
+
+    // 管理员删除文章
+    void adminDeleteArticle(Integer articleId);
 }

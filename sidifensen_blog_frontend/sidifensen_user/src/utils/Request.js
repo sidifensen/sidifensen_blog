@@ -16,7 +16,7 @@ const request = axios.create({
   // 后端地址
   baseURL: import.meta.env.VITE_BACKEND_SERVER,
   withCredentials: false, // 用于配置请求接口跨域时是否需要凭证
-  timeout: 30000, // 超时时间，单位毫秒
+  timeout: 10000, // 超时时间，单位毫秒
   headers: {
     // 配置请求头的参数类型，和编码格式
     "Content-Type": "application/json;charset=UTF-8",
