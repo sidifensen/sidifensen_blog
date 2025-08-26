@@ -3,7 +3,7 @@ import request from "@/utils/Request";
 // 管理端删除图片
 export function adminDeletePhoto(photoId) {
   return request({
-    url: `/photo/admin/${photoId}`,
+    url: `/photo/admin/delete/${photoId}`,
     method: "delete",
   });
 }
@@ -11,7 +11,7 @@ export function adminDeletePhoto(photoId) {
 // 管理端批量删除图片
 export function adminDeleteBatchPhoto(data) {
   return request({
-    url: `/photo/admin/batch`,
+    url: `/photo/admin/delete/batch`,
     method: "delete",
     data
   });

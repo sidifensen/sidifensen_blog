@@ -45,4 +45,9 @@ public class BlogConstants {
     public static final String UpdateArticleError = "更新文章失败";
     public static final String NotFoundArticle = "文章不存在";
     public static final String NotFoundTag = "标签不存在";
+
+    public static final String CannotHandleOthersColumn = "不能操作别人的专栏";
+    public static final String AddColumnError = "添加专栏失败";
+    public static final String UpdateColumnError = "更新专栏失败";
+    public static final String DeleteColumnError = "删除专栏失败";
 }

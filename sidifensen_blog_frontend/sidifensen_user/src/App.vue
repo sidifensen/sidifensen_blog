@@ -9,10 +9,6 @@
 <script setup></script>
 
 <style lang="scss">
-#app {
-  padding-top: 60px;
-}
-
 // 隐藏滚动条
 ::-webkit-scrollbar {
   display: none;

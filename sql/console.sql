@@ -169,26 +169,32 @@ create table tag
     unique index idx_name (name)
 );
 
-create table column
+create table `column`
 (
-    id          int primary key auto_increment comment '专栏id',
-    user_id     int         not null comment '用户id',
-    name        varchar(10) not null comment '专栏名称',
-    description varchar(200) comment '专栏描述',
-    cover_url   varchar(400) comment '专栏封面',
-    create_time datetime    not null comment '创建时间',
-    update_time datetime    not null comment '更新时间',
-    is_deleted  tinyint     not null default 0 comment '是否删除 0-未删除 1-已删除',
-    unique index idx_name (name)
+    id            int primary key auto_increment comment '专栏id',
+    user_id       int         not null comment '用户id',
+    sort          int         not null comment '排序',
+    name          varchar(10) not null comment '专栏名称',
+    description   varchar(200) comment '专栏描述',
+    cover_url     varchar(400) comment '专栏封面',
+    show_status   tinyint     not null default 0 comment '展示状态 0-公开 1-私密',
+    focus_count   int         not null default 0 comment '关注数',
+    article_count int         not null default 0 comment '文章数',
+    create_time   datetime    not null comment '创建时间',
+    update_time   datetime    not null comment '更新时间',
+    is_deleted    tinyint     not null default 0 comment '是否删除 0-未删除 1-已删除',
+    index idx_user_id (user_id)
 );
 
 create table article_column
 (
     id          int primary key auto_increment comment '主键id',
+    sort        int      not null comment '排序',
     article_id  int      not null comment '文章id',
     column_id   int      not null comment '专栏id',
     create_time datetime not null comment '创建时间',
     update_time datetime not null comment '更新时间',
+    is_deleted  tinyint  not null default 0 comment '是否删除 0-未删除 1-已删除',
     index idx_article_id (article_id),
     index idx_column_id (column_id)
 );

@@ -27,7 +27,7 @@
 }
 .login_container {
   display: flex;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 48px);
   .left_panel {
     flex: 1;
     background: url("@/assets/img/bg.jpg") no-repeat center center / cover;

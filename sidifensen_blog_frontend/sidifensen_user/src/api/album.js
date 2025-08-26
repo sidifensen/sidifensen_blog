@@ -3,7 +3,7 @@ import request from '@/utils/Request'
 // 查看相册详情
 export function getAlbum(albumId) {
   return request({
-    url: `/album/${albumId}`,
+    url: `/album/get/${albumId}`,
     method: 'get'
   })
 }
@@ -29,7 +29,7 @@ export function updateAlbum(data) {
 // 删除相册
 export function deleteAlbum(albumId) {
   return request({
-    url: `/album/${albumId}`,
+    url: `/album/delete/${albumId}`,
     method: 'delete'
   })
 }

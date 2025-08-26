@@ -40,7 +40,7 @@ $button-padding: 10px 20px;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: calc(100vh - 60px); // 使用height而不是min-height避免滚动条
+  height: 100vh;
   width: 100%;
   overflow: hidden; // 防止出现滚动条
   background-color: $bg-color;

@@ -5,26 +5,21 @@ body {
 }
 
 @font-face {
-  font-family: 'AlimamaShuHei';
-  src: url('@/assets/font/AlimamaShuHei/AlimamaShuHeiTi-Bold.woff2') format('woff2'),
-        url('@/assets/font/AlimamaShuHei/AlimamaShuHeiTi-Bold.woff') format('woff'),
-        url('@/assets/font/AlimamaShuHei/AlimamaShuHeiTi-Bold.ttf') format('truetype'),
-        url('@/assets/font/AlimamaShuHei/AlimamaShuHeiTi-Bold.otf') format('opentype');
+  font-family: "AlimamaShuHei";
+  src: url("@/assets/font/AlimamaShuHei/AlimamaShuHeiTi-Bold.woff2") format("woff2"), url("@/assets/font/AlimamaShuHei/AlimamaShuHeiTi-Bold.woff") format("woff"), url("@/assets/font/AlimamaShuHei/AlimamaShuHeiTi-Bold.ttf") format("truetype"),
+    url("@/assets/font/AlimamaShuHei/AlimamaShuHeiTi-Bold.otf") format("opentype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 * {
-  font-family: 'AlimamaShuHei', "Helvetica Neue", Arial, sans-serif;
-}
-//超链接去掉下划线
-a {
-  text-decoration: none;
-  color: #333;
-}
-
-* {
+  font-family: "AlimamaShuHei", "Helvetica Neue", Arial, sans-serif;
   box-sizing: border-box;
+}
+// 超链接去掉下划线
+a {
+  color: var(--el-text-color-primary);
+  text-decoration: none;
 }
 
 // el-dropdown 去掉黑框
@@ -54,4 +49,34 @@ a {
 .scale-leave-to {
   opacity: 0;
   transform: scale(0.9);
+}
+
+/* 移动端菜单动画 */
+// 进入前和离开后的状态（初始和结束状态）
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  background-color: rgba(0, 0, 0, 0);
+  .mobile-menu {
+    transform: translateX(-100%); // 菜单在左侧，向右滑入
+    opacity: 0;
+  }
+}
+
+// 进入和离开过程中的动画属性
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.5s ease;
+  .mobile-menu {
+    transition: all 0.5s ease;
+  }
+}
+
+// 进入后和离开前的状态（目标和初始状态）
+.slide-fade-enter-to,
+.slide-fade-leave-from {
+  background-color: rgba(0, 0, 0, 0.3); // 半透明背景
+  .mobile-menu {
+    transform: translateX(0); // 菜单在原位
+    opacity: 1;
+  }
 }

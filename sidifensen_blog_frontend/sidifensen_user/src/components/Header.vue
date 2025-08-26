@@ -4,7 +4,6 @@
     <div class="mobile-menu-button" @click="toggleMobileMenu">
       <svg-icon name="menu" width="50px" height="50px" cursor="pointer" />
     </div>
-
     <router-link class="logo" to="/"><el-text size="large" class="logo-text">sidifensen</el-text></router-link>
     <el-menu-item index="/" class="menu-item">
       <el-icon><House /></el-icon>
@@ -22,6 +21,10 @@
       <el-icon><Link /></el-icon>
       <span class="menu-text">友链</span>
     </el-menu-item>
+    <el-menu-item index="/creation" class="menu-item">
+      <el-icon><MagicStick /></el-icon>
+      <span class="menu-text">创作中心</span>
+    </el-menu-item>
     <div class="right">
       <div class="search">
         <el-icon size="29px" color="#3d92eb"><Search /></el-icon>
@@ -30,8 +33,8 @@
       <div v-if="user" class="user-info">
         <el-text size="large" class="nickname">{{ user.nickname }}</el-text>
         <el-dropdown>
-          <el-avatar v-if="user.avatar" style="cursor: pointer" :size="45" :src="user.avatar"/>
-          <el-avatar v-else style="cursor: pointer" :size="45" :icon="UserFilled"  />
+          <el-avatar v-if="user.avatar" style="cursor: pointer" :size="40" :src="user.avatar" />
+          <el-avatar v-else style="cursor: pointer" :size="40" :icon="UserFilled" />
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item>个人设置</el-dropdown-item>
@@ -61,24 +64,9 @@
             <el-icon><Picture /></el-icon>
             <span class="menu-text">相册</span>
           </el-menu-item>
-          <el-sub-menu index="/archive" class="menu-item">
-            <template #title>
-              <el-icon><Files /></el-icon>
-              <span class="menu-text">归档</span>
-            </template>
-            <el-menu-item index="/category">
-              <el-icon> <DocumentCopy /></el-icon>分类
-            </el-menu-item>
-            <el-menu-item index="/tag">
-              <el-icon><PriceTag /></el-icon>标签
-            </el-menu-item>
-            <el-menu-item index="/timeline">
-              <el-icon> <Clock /> </el-icon>时间轴
-            </el-menu-item>
-          </el-sub-menu>
-          <el-menu-item index="/link" class="menu-item">
-            <el-icon><Link /></el-icon>
-            <span class="menu-text">友链</span>
+          <el-menu-item index="/creation" class="menu-item">
+            <el-icon><MagicStick /></el-icon>
+            <span class="menu-text">创作中心</span>
           </el-menu-item>
         </el-menu>
       </div>
@@ -95,7 +83,7 @@ import { useRoute, useRouter } from "vue-router";
 import { info, oauthLogin } from "@/api/user";
 import { SetJwt } from "@/utils/Auth";
 // 引入ElMessage
-import { ElMessage } from 'element-plus';
+import { ElMessage } from "element-plus";
 import { UserFilled } from "@element-plus/icons-vue";
 
 const userStore = useUserStore();
@@ -118,8 +106,13 @@ router.afterEach((to) => {
 
 // 处理菜单选择事件
 const handleSelect = (index) => {
-  // 进行路由跳转
-  router.push(index);
+  // 对于创作中心路由，使用原生页面跳转以避免白屏问题
+  if (index === "/creation") {
+    window.location.href = "/creation";
+  } else {
+    // 对于其他路由，使用普通的push方法
+    router.push(index);
+  }
 };
 
 const handleLoginClick = () => {
@@ -133,8 +126,7 @@ const oauth = () => {
   const login_type = route.query.login_type;
   // 如果地址中有参数，则进行登录
   if (user_name && access_token) {
-    oauthLogin({type: login_type, username: user_name, password: access_token })
-    .then(async (res) => {
+    oauthLogin({ type: login_type, username: user_name, password: access_token }).then(async (res) => {
       // 去除url上面的参数
       await router.replace({ query: {} });
       ElMessage.success("登录成功");
@@ -142,7 +134,7 @@ const oauth = () => {
       SetJwt(res.data.data);
       info().then((res) => {
         userStore.user = res.data.data;
-        router.push({name: "index"});
+        router.push({ name: "index" });
       });
     });
   }
@@ -186,8 +178,9 @@ const toggleMobileMenu = () => {
 };
 
 // 关闭移动端菜单
-const closeMobileMenu = () => {
+const closeMobileMenu = (index) => {
   isMobileMenuVisible.value = false;
+  handleSelect(index);
 };
 
 // 组件挂载时添加监听滚动事件
@@ -207,7 +200,7 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .pc-menu {
-  height: 60px;
+  height: 48px;
   width: 100%;
   padding: 0 10px 0 10px;
   display: flex;
@@ -311,8 +304,8 @@ onBeforeUnmount(() => {
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 45px;
-      height: 45px;
+      width: 40px;
+      height: 40px;
       margin-left: 5px;
       background-color: var(--el-bg-color);
       border: 1px solid var(--el-border-color);
@@ -341,7 +334,6 @@ onBeforeUnmount(() => {
   display: flex;
   .mobile-menu {
     width: 150px;
-    // position: absolute;// top: 60px;// height: calc(100vh - 60px); //菜单在顶部，向下滑出
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -350,36 +342,6 @@ onBeforeUnmount(() => {
     .el-menu-item {
       width: 100%;
     }
-  }
-}
-
-/* 移动端菜单动画 */
-// 进入前和离开后的状态（初始和结束状态）
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  background-color: rgba(0, 0, 0, 0);
-  .mobile-menu {
-    transform: translateX(-100%); // 菜单在左侧，向右滑入
-    opacity: 0;
-  }
-}
-
-// 进入和离开过程中的动画属性
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: all 0.5s ease;
-  .mobile-menu {
-    transition: all 0.5s ease;
-  }
-}
-
-// 进入后和离开前的状态（目标和初始状态）
-.slide-fade-enter-to,
-.slide-fade-leave-from {
-  background-color: rgba(0, 0, 0, 0.3); // 半透明背景
-  .mobile-menu {
-    transform: translateX(0); // 菜单在原位
-    opacity: 1;
   }
 }
 

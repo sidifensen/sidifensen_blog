@@ -1,11 +1,12 @@
 package com.sidifensen.domain.dto;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 
 import java.io.Serializable;
 
 /**
-
  * @author sidifensen
  * @since 2025-08-17
  */
@@ -22,11 +23,15 @@ public class MessageDto implements Serializable {
     /**
      * 是否已读 0-未读 1-已读
      */
+    @Min(value = 0, message = "已读状态错误")
+    @Max(value = 1, message = "已读状态错误")
     private Integer isRead;
 
     /**
      * 消息类型 0-系统 1-评论 2-点赞 3-收藏 4-关注
      */
+    @Min(value = 0, message = "消息类型错误")
+    @Max(value = 4, message = "消息类型错误")
     private Integer type;
 
     /**

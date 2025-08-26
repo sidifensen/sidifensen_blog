@@ -134,13 +134,13 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             albumPhotoMapper.insert(new AlbumPhoto(null, albumId, photo.getId()));
 
             // 更新相册的封面为最新上传的图片（仅当审核通过时）
-            if (status == 0 || sidifensenConfig.isPhotoAutoAudit()) {
+            if (sidifensenConfig.isPhotoAutoAudit() && status == 0) {
                 LambdaUpdateWrapper<Album> updateWrapper = new LambdaUpdateWrapper<>();
                 updateWrapper.eq(Album::getId, albumId).set(Album::getCoverUrl, url);
                 albumMapper.update(null, updateWrapper);
             }
 
-            if (status.equals(ImageAuditStatusEnum.MANUAL_REVIEW.getCode()) || !sidifensenConfig.isPhotoAutoAudit()) {
+            if (!sidifensenConfig.isPhotoAutoAudit() || status.equals(ImageAuditStatusEnum.MANUAL_REVIEW.getCode())) {
                 // 需要人工审核，发送消息给管理员
                 String text = MessageConstants.ImageNeedReview(photo.getId());
                 MessageDto messageDto = new MessageDto();

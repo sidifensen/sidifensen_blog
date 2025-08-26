@@ -17,7 +17,19 @@ const router = createRouter({
           meta: { title: "首页" },
         },
         {
-          path: "/album",
+          path: "article",
+          name: "Article",
+          component: () => import("@/components/404.vue"),
+          meta: { title: "文章" },
+        },
+        {
+          path: "link",
+          name: "Link",
+          component: () => import("@/components/404.vue"),
+          meta: { title: "友链" },
+        },
+        {
+          path: "album",
           name: "Album",
           component: () => import("@/views/Album/index.vue"),
           meta: { title: "相册" },
@@ -44,7 +56,7 @@ const router = createRouter({
           ],
         },
         {
-          path: "/account",
+          path: "account",
           name: "Account",
           component: () => import("@/views/Account/index.vue"),
           redirect: "/login",
@@ -69,13 +81,47 @@ const router = createRouter({
             },
           ],
         },
+      ],
+    },
+    {
+      path: "/creation",
+      name: "Creation",
+      component: () => import("@/views/Creation/index.vue"),
+      meta: { title: "创作中心" },
+      children: [
         {
-          path: "/:pathMatch(.*)*",
-          name: "NotFound",
-          component: () => import("@/components/404.vue"),
-          meta: { title: "页面不存在" },
+          path: "",
+          name: "创作中心首页",
+          component: () => import("@/views/Creation/Home/index.vue"),
+        },
+        {
+          path: "articlemanage",
+          name: "创作中心文章管理",
+          component: () => import("@/views/Creation/ArticleManage/index.vue"),
+        },
+        {
+          path: "columnmanage",
+          name: "创作中心专栏管理",
+          component: () => import("@/views/Creation/ColumnManage/index.vue"),
+        },
+        {
+          path: "commentmanage",
+          name: "创作中心评论管理",
+          component: () => import("@/views/Creation/CommentManage/index.vue"),
         },
       ],
+    },
+    {
+      path: "/editor",
+      name: "Editor",
+      component: () => import("@/views/Editor/index.vue"),
+      meta: { title: "发布文章" },
+    },
+    {
+      path: "/:pathMatch(.*)*",
+      name: "NotFound",
+      component: () => import("@/components/404.vue"),
+      meta: { title: "页面不存在" },
     },
   ],
 });

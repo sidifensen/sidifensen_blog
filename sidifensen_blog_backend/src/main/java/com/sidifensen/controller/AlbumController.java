@@ -8,6 +8,7 @@ import com.sidifensen.domain.vo.AlbumVo;
 import com.sidifensen.service.AlbumService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,8 +32,8 @@ public class AlbumController {
      * @param albumId
      * @return
      */
-    @GetMapping("/{albumId}")
-    public Result<Object> getAlbum(@PathVariable("albumId") Integer albumId) {
+    @GetMapping("/get/{albumId}")
+    public Result<Object> getAlbum(@PathVariable("albumId") @NotNull(message = "相册id不能为空") Integer albumId) {
         AlbumVo album = albumService.getAlbum(albumId);
         return Result.success(album);
     }
@@ -67,7 +68,7 @@ public class AlbumController {
      * @param albumId
      * @return
      */
-    @DeleteMapping("/{albumId}")
+    @DeleteMapping("/delete/{albumId}")
     public Result<String> deleteAlbum(@PathVariable("albumId") Integer albumId) {
         albumService.deleteAlbum(albumId);
         return Result.success();
@@ -149,7 +150,7 @@ public class AlbumController {
      * @return
      */
     @PreAuthorize("hasAuthority('album:delete')")
-    @DeleteMapping("/admin/{albumId}")
+    @DeleteMapping("/admin/get/{albumId}")
     public Result<String> adminDeleteAlbum(@PathVariable("albumId") Integer albumId) {
         albumService.adminDeleteAlbum(albumId);
         return Result.success();
@@ -172,7 +173,7 @@ public class AlbumController {
      * @return
      */
     @PreAuthorize("hasAuthority('album:detail')")
-    @GetMapping("/admin/{albumId}")
+    @GetMapping("/admin/delete/{albumId}")
     public Result<Object> adminGetAlbum(@PathVariable("albumId") Integer albumId) {
         AlbumVo album = albumService.adminGetAlbum(albumId);
         return Result.success(album);

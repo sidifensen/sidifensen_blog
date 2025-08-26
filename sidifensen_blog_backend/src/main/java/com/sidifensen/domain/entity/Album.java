@@ -1,6 +1,8 @@
 package com.sidifensen.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -10,7 +12,7 @@ import java.util.Date;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author sidifensen
@@ -48,6 +50,8 @@ public class Album implements Serializable {
     /**
      * 展示状态 0-公开 1-私密
      */
+    @Min(value = 0, message = "展示状态错误")
+    @Max(value = 1, message = "展示状态错误")
     private Integer showStatus;
 
     /**

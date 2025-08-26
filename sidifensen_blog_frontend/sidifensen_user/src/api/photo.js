@@ -25,7 +25,7 @@ export function changeShowStatus(data) {
 // 批量删除图片
 export function batchDeletePhoto(photoIds) {
   return request({
-    url: "/photo/batch",
+    url: "/photo/delete/batch",
     method: "delete",
     data: photoIds,
   });

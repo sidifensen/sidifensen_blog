@@ -10,9 +10,9 @@ import java.util.List;
 public class SecurityConstants {
 
     /**
-     * 需要登录的接口
+     * 不需要登录的接口
      */
-    public static final String[] Need_Auth_Urls = {
+    public static final String[] No_Need_Auth_Urls = {
             "/user/login",
             "/user/checkCode",
             "/user/register",
@@ -21,12 +21,13 @@ public class SecurityConstants {
             "/user/resetPassword",
             "/user/admin/login",
             "/album/listAll",
-//            "/album/{albumId:\\d+}",  // 限制albumId只能是数字
+            "/album/get/{albumId:\\d+}",  // 限制albumId只能是数字
             "/oauth/gitee/login",
             "/oauth/gitee/callback",
             "/oauth/github/login",
             "/oauth/github/callback",
             "/user/oauthLogin",
+            "/favicon.ico"
     };
 
     // 允许的用户代理列表（可根据需要扩展）

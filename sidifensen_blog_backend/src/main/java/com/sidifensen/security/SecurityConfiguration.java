@@ -1,6 +1,5 @@
 package com.sidifensen.security;
 
-
 import com.sidifensen.config.SidifensenConfig;
 import com.sidifensen.domain.constants.SecurityConstants;
 import jakarta.annotation.Resource;
@@ -33,15 +32,14 @@ public class SecurityConfiguration {
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Resource
-    private SidifensenConfig sidifensenConfig;
+    private SidifensenConfig sidifensenConfig;  // 现在导入正确
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // 设置认证管理器
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(SecurityConstants.Need_Auth_Urls).permitAll()
+                .requestMatchers(SecurityConstants.No_Need_Auth_Urls).permitAll()
                 .anyRequest().authenticated());
-        // 禁用 csrf
         http.csrf(AbstractHttpConfigurer::disable);
         // 配置跨域
         http.cors(cors -> cors.configurationSource(configurationSource()));

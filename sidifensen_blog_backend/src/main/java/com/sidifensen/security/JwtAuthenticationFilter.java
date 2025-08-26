@@ -47,18 +47,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Resource
     private SidifensenConfig sidifensenConfig;
 
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // 如果是不需要登录的接口，则直接放行
-        for (String url : SecurityConstants.Need_Auth_Urls) {
+        for (String url : SecurityConstants.No_Need_Auth_Urls) {
             AntPathRequestMatcher matcher = new AntPathRequestMatcher(url);
             if (matcher.matches(request)) {
                 filterChain.doFilter(request, response);
                 return;
             }
         }
-
+        
 //        // 检查请求来源 - 防止简单的API工具直接访问
 //        String userAgent = request.getHeader("User-Agent");
 //        if (!isValidUserAgent(userAgent)) {

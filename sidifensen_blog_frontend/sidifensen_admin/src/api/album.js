@@ -20,7 +20,7 @@ export function adminUpdateAlbum(data) {
 // 管理端删除相册
 export function adminDeleteAlbum(albumId) {
   return request({
-    url: `/album/admin/${albumId}`,
+    url: `/album/admin/delete/${albumId}`,
     method: "delete",
   });
 }
@@ -37,7 +37,7 @@ export function adminSearchAlbum(data) {
 // 管理端查看相册详情
 export function adminGetAlbumDetail(albumId) {
   return request({
-    url: `/album/admin/${albumId}`,
+    url: `/album/admin/get/${albumId}`,
     method: 'get'
   })
 }

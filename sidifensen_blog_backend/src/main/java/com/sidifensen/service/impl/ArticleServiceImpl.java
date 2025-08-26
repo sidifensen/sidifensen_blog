@@ -1,6 +1,7 @@
 package com.sidifensen.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -9,20 +10,29 @@ import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.ArticleDto;
 import com.sidifensen.domain.dto.ArticleStatusDto;
 import com.sidifensen.domain.entity.Article;
+import com.sidifensen.domain.entity.ArticleColumn;
+import com.sidifensen.domain.entity.Column;
 import com.sidifensen.domain.enums.EditStatusEnum;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.enums.VisibleRangeEnum;
 import com.sidifensen.domain.vo.ArticleVo;
+import com.sidifensen.domain.vo.ColumnVo;
 import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.exception.BlogException;
+import com.sidifensen.mapper.ArticleColumnMapper;
 import com.sidifensen.mapper.ArticleMapper;
-import com.sidifensen.mapper.TagMapper;
+import com.sidifensen.mapper.ColumnMapper;
 import com.sidifensen.service.ArticleService;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -39,7 +49,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private ArticleMapper articleMapper;
 
     @Resource
-    private TagMapper tagMapper;
+    private ArticleColumnMapper articleColumnMapper;
+    @Autowired
+    private ColumnMapper columnMapper;
 
     @Override
     public PageVo<List<ArticleVo>> getArticleList(Integer pageNum, Integer pageSize) {
@@ -70,10 +82,24 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .eq(ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus()), Article::getEditStatus, articleStatusDto.getEditStatus())
                 .eq(ObjectUtil.isNotEmpty(articleStatusDto.getVisibleRange()), Article::getVisibleRange, articleStatusDto.getVisibleRange())
                 .eq(ObjectUtil.isNotEmpty(articleStatusDto.getReprintType()), Article::getReprintType, articleStatusDto.getReprintType())
-                .like(ObjectUtil.isNotEmpty(articleStatusDto.getTitle()), Article::getTitle, articleStatusDto.getTitle())
-                .like(ObjectUtil.isNotEmpty(articleStatusDto.getDescription()), Article::getDescription, articleStatusDto.getDescription())
-                .orderByDesc(articleStatusDto.getOrderBy() == 0 ? Article::getCreateTime : Article::getReadCount);
+                .and(ObjectUtil.isNotEmpty(articleStatusDto.getSearch()), wrapper -> wrapper
+                        .like(Article::getTag, articleStatusDto.getSearch()) // 标签
+                        .or()
+                        .like(Article::getTitle, articleStatusDto.getSearch()) // 标题
+                        .or()
+                        .like(Article::getDescription, articleStatusDto.getSearch())); // 描述
 
+        // 添加根据年月查询的条件
+        if (ObjectUtil.isNotEmpty(articleStatusDto.getCreateTime())) {
+            // 获取指定年月的第一天和最后一天
+            LocalDateTime dateTime = DateUtil.toLocalDateTime(articleStatusDto.getCreateTime());
+            LocalDateTime firstDayOfMonth = dateTime.with(TemporalAdjusters.firstDayOfMonth()).with(LocalTime.MIN);
+            LocalDateTime lastDayOfMonth = dateTime.with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX);
+
+            qw.between(Article::getCreateTime, firstDayOfMonth, lastDayOfMonth);
+        }
+
+        qw.orderByDesc(articleStatusDto.getOrderBy() == 0 ? Article::getCreateTime : Article::getReadCount);
         List<Article> articleList = articleMapper.selectPage(page, qw).getRecords();
         List<ArticleVo> articleVoList = articleList.stream().map(article -> {
             ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
@@ -86,10 +112,17 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public ArticleVo getArticle(Integer articleId) {
         Article article = articleMapper.selectById(articleId);
-        if (article == null) {
+        if (ObjectUtil.isEmpty(article)) {
             throw new BlogException(BlogConstants.NotFoundArticle);
         }
-        return BeanUtil.copyProperties(article, ArticleVo.class);
+        ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
+        List<ArticleColumn> articleColumns = articleColumnMapper.selectList(new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getId, article.getId()));
+        if (ObjectUtil.isNotEmpty(articleColumns)) {
+            List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId).collect(Collectors.toList());
+            List<Column> columns = columnMapper.selectByIds(columnIds);
+            articleVo.setColumns(BeanUtil.copyToList(columns, ColumnVo.class));
+        }
+        return articleVo;
     }
 
     @Override
@@ -99,10 +132,25 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (articleMapper.insert(article) < 1) {
             throw new BlogException(BlogConstants.AddArticleError);
         }
+        List<Integer> columnIds = articleDto.getColumnIds();
+        List<ArticleColumn> articleColumnList = columnIds.stream().map(columnId -> {
+            ArticleColumn articleColumn = new ArticleColumn();
+            articleColumn.setArticleId(article.getId());
+            articleColumn.setColumnId(columnId);
+            return articleColumn;
+        }).collect(Collectors.toList());
+        articleColumnMapper.insert(articleColumnList);
     }
 
     @Override
     public void updateArticle(ArticleDto articleDto) {
+        Article userArticle = articleMapper.selectById(articleDto.getId());
+        if (ObjectUtil.isEmpty(userArticle)) {
+            throw new BlogException(BlogConstants.NotFoundArticle);
+        }
+        if (userArticle.getUserId() != SecurityUtils.getUserId()) {
+            throw new BlogException(BlogConstants.CannotHandleOthersArticle);
+        }
         Article article = BeanUtil.copyProperties(articleDto, Article.class);
         if (articleMapper.updateById(article) < 1) {
             throw new BlogException(BlogConstants.UpdateArticleError);
@@ -119,6 +167,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             throw new BlogException(BlogConstants.CannotHandleOthersArticle);
         }
         articleMapper.deleteById(articleId);
+        articleColumnMapper.delete(new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, articleId));
     }
 
     @Override
@@ -128,7 +177,18 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public ArticleVo adminGetArticle(Integer articleId) {
-        return null;
+        Article article = articleMapper.selectById(articleId);
+        if (article == null) {
+            throw new BlogException(BlogConstants.NotFoundArticle);
+        }
+        ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
+        List<ArticleColumn> articleColumns = articleColumnMapper.selectList(new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getId, article.getId()));
+        if (ObjectUtil.isNotEmpty(articleColumns)) {
+            List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId).collect(Collectors.toList());
+            List<Column> columns = columnMapper.selectByIds(columnIds);
+            articleVo.setColumns(BeanUtil.copyToList(columns, ColumnVo.class));
+        }
+        return articleVo;
     }
 
     @Override

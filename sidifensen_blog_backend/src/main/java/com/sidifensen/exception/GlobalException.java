@@ -15,6 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.sql.SQLSyntaxErrorException;
 
@@ -25,6 +26,11 @@ import java.sql.SQLSyntaxErrorException;
 @Slf4j
 public class GlobalException {
 
+    @ExceptionHandler(NoHandlerFoundException.class)
+    Object handleNoHandlerFoundException(NoHandlerFoundException e) {
+        log.error("请求地址出错: {} ", e.getMessage());
+        return Result.error("请求地址出错");
+    }
 
     @ExceptionHandler(Exception.class)
     Object handleException(Exception e) {
@@ -49,10 +55,12 @@ public class GlobalException {
     @ExceptionHandler(AccessDeniedException.class)
     Object handleAccessDeniedException(AccessDeniedException e) {
         LoginUser loginUser = SecurityUtils.getLoginUser();
-        // 获取访问的url
-        String requestUrl = WebUtils.getRequestUrl();
-        log.error("userId:{} 权限异常：{}; 访问url:{} ; 权限: {}",
-                loginUser.getSysUser().getId(), e.getMessage(), requestUrl, loginUser.getAuthorities());
+        if (loginUser != null) {
+            // 获取访问的url
+            String requestUrl = WebUtils.getRequestUrl();
+            log.error("userId:{} 权限异常：{}; 访问url:{} ; 权限: {}",
+                    loginUser.getSysUser().getId(), e.getMessage(), requestUrl, loginUser.getAuthorities());
+        }
         return Result.unauthorized("无权限"); // AccessDeniedException: 无权限
     }
 
@@ -82,7 +90,7 @@ public class GlobalException {
         log.error("SQL语法错误：{}({})", e.getMessage(), e.getStackTrace());
         return Result.error("SQL语法错误");
     }
-    
+
     @ExceptionHandler(BadSqlGrammarException.class)
     Object handleBadSqlGrammarException(BadSqlGrammarException e) {
         log.error("数据库语法错误：{}", e.getMessage());
@@ -106,6 +114,9 @@ public class GlobalException {
 
     }
 
+    /**
+     * 处理查询超时异常
+     */
     @ExceptionHandler(QueryTimeoutException.class)
     Object handleQueryTimeoutException(QueryTimeoutException e) {
         log.error("服务器超时：{}", e.getMessage());

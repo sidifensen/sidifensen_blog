@@ -369,7 +369,7 @@ const handleLogout = () => {
       display: flex;
       align-items: center;
       padding: 16px;
-      height: 60px;
+      height: 48px;
 
       .logo-icon {
         width: 40px;
@@ -404,7 +404,7 @@ const handleLogout = () => {
     // 菜单样式
     .el-menu-pc {
       border-right: none;
-      height: calc(100% - 60px);
+      height: calc(100% - 48px);
       overflow-y: auto;
       overflow-x: hidden;
 
@@ -461,7 +461,7 @@ const handleLogout = () => {
 
     // 顶部导航栏
     .header {
-      height: 60px;
+      height: 48px;
       background-color: var(--el-bg-color);
       border-bottom: 1px solid var(--el-border-color-light);
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
