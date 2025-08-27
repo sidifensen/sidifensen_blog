@@ -20,7 +20,7 @@ import java.util.List;
 public interface PhotoService extends IService<Photo> {
 
     // 上传图片到相册
-    void uploadAlbumPhoto(MultipartFile file, Integer albumId) throws Exception;
+    void uploadAlbum(MultipartFile file, Integer albumId) throws Exception;
 
     // 删除图片
     void delete(Integer photoId) throws Exception;

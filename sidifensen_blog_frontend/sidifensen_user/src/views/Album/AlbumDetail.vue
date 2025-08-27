@@ -176,7 +176,7 @@ import { ref, onMounted, computed } from "vue";
 const { FileReader, Image } = window;
 import { useRoute, useRouter } from "vue-router";
 import { getAlbum, updateAlbum, deleteAlbum, changeShowStatus, changeCover } from "@/api/album";
-import { uploadPhoto, batchDeletePhoto } from "@/api/photo";
+import { uploadAlbum, batchDeletePhoto } from "@/api/photo";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useUserStore } from "@/stores/userStore";
 import { storeToRefs } from "pinia";
@@ -507,7 +507,7 @@ const submitUpload = async () => {
     }
 
     const uploadPromises = compressedFiles.map((file) => {
-      return uploadPhoto(file, albumForm.value.id);
+      return uploadAlbum(file, albumForm.value.id);
     });
     await Promise.all(uploadPromises); // 等待图片列表上传完成
     ElMessage.success("图片上传成功");

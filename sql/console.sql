@@ -143,7 +143,7 @@ create table article
     tag            varchar(255) not null comment '标签',
     title          varchar(100) not null comment '标题',
     description    varchar(200) not null comment '描述',
-    content        text         not null comment '内容',
+    content        mediumtext   not null comment '内容',
     cover_url      varchar(400) comment '封面url',
     read_count     int          not null default 0 comment '阅读量',
     like_count     int          not null default 0 comment '点赞量',

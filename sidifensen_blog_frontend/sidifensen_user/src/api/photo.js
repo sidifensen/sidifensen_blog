@@ -1,12 +1,12 @@
 import request from "@/utils/Request";
 
 // 上传图片
-export function uploadPhoto(file, albumId) {
+export function uploadAlbum(file, albumId) {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("albumId", albumId);
   return request({
-    url: "/photo/upload",
+    url: "/photo/uploadAlbum",
     method: "post",
     data: formData,
     headers: { "Content-Type": "multipart/form-data" },

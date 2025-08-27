@@ -101,7 +101,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
 
     // 上传图片到相册
     @Override
-    public void uploadAlbumPhoto(MultipartFile file, Integer albumId) throws Exception {
+    public void uploadAlbum(MultipartFile file, Integer albumId) throws Exception {
         // 拼接userId/albumId作为目录名
         Integer userId = SecurityUtils.getUserId();
         String dirName = userId + "/" + albumId + "/";

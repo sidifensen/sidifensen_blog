@@ -28,15 +28,11 @@ import Dark from "./Dark.vue";
 import { useUserStore } from "@/stores/userStore.js";
 import { ref, onMounted } from "vue";
 import { storeToRefs } from "pinia";
-import { useRouter } from "vue-router";
 import { info } from "@/api/user";
 import { UserFilled } from "@element-plus/icons-vue";
 
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
-const router = useRouter();
-// 控制header显示状态，默认为true确保header可见
-const isVisible = ref(true);
 
 const getUserInfo = async () => {
   const res = await info();
@@ -66,7 +62,7 @@ onMounted(() => {
   z-index: 1000;
   transition: transform 0.5s ease;
   background-color: var(--el-bg-color);
-  border-bottom: 1px solid var(--el-border-color-light);
+  border: none;
 
   .logo {
     margin-right: 10px;

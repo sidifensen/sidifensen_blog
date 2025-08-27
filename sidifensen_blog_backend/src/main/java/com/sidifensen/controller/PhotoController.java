@@ -29,13 +29,13 @@ public class PhotoController {
     /**
      * 上传照片到相册
      */
-    @PostMapping("/upload")
-    public Result upload(@RequestParam("file") MultipartFile file,
-                         @RequestParam("albumId") Integer albumId) throws Exception {
-        photoService.uploadAlbumPhoto(file, albumId);
+    @PostMapping("/uploadAlbum")
+    public Result uploadAlbum(@RequestParam("file") MultipartFile file,
+                              @RequestParam("albumId") Integer albumId) throws Exception {
+        photoService.uploadAlbum(file, albumId);
         return Result.success();
     }
-
+    
     /**
      * 删除照片
      */
