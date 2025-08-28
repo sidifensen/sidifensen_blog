@@ -109,8 +109,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         auditAndUpdate(userId, url, albumId);
     }
 
+    // 相册图片审核
     private void auditAndUpdate(Integer userId, String url, Integer albumId) {
-        // 异步处理相册图片审核
         executorService.execute(() -> {
             // 保存图片信息到数据库
             Photo photo = new Photo();
@@ -177,8 +177,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         return updatePhoto;
     }
 
+    // 图片审核(文章)
     private void auditAndUpdate(Integer userId, String url) {
-        // 异步处理图片审核
         executorService.execute(() -> {
             try {
                 // 保存图片信息到数据库

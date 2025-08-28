@@ -3,12 +3,12 @@ package com.sidifensen.controller;
 
 import com.sidifensen.domain.dto.TagDto;
 import com.sidifensen.domain.result.Result;
-import com.sidifensen.domain.vo.TagVo;
 import com.sidifensen.service.TagService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author sidifensen
@@ -36,7 +36,7 @@ public class TagController {
      */
     @GetMapping("/list")
     public Result listTag() {
-        List<TagVo> tagVos = tagService.listTag();
+        Map<String, List<String>> tagVos = tagService.listTag();
         return Result.success(tagVos);
     }
 

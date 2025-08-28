@@ -80,3 +80,30 @@ a {
     opacity: 1;
   }
 }
+
+/* 设置滚动条宽度和颜色 */
+::-webkit-scrollbar {
+  width: 8px;
+  background-color: #f5f5f5;
+}
+
+/* 设置滚动条轨道背景颜色 */
+::-webkit-scrollbar-track {
+  background-color: #f5f5f5;
+}
+
+/* 设置滚动条滑块颜色 */
+::-webkit-scrollbar-thumb {
+  background-color: #888;
+}
+
+// 缩放动画
+.scale-enter-active,
+.scale-leave-active {
+  transition: all 0.5s ease;
+}
+.scale-enter-from,
+.scale-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}

@@ -13,15 +13,63 @@
             <div class="directory-content" ref="directoryRef">
               <div v-if="!directoryItems.length" class="no-content">暂无内容</div>
               <div v-for="item in directoryItems" :key="item.id">
-                <a :href="`#${item.id}`" @click.prevent="scrollToHeading(item.id)" :class="['directory-item', `level-${item.level}`]">
+                <div @click="scrollToHeading(item.id)" :class="['directory-item', `level-${item.level}`, { active: activeHeadingId === item.id }]">
                   {{ item.text }}
-                </a>
+                </div>
               </div>
             </div>
           </div>
           <!-- 右侧编辑器内容 -->
           <div class="editor-content">
             <div class="aie-container-main"></div>
+            <div class="publish-settings">
+              <h3>发布文章设置</h3>
+              <div class="tag-setting">
+                <label>文章标签</label>
+                <el-tag class="tag-item" v-for="tag in tags" :key="tag" closable size="large" effect="plain" @close="deleteTag(tag)">
+                  {{ tag }}
+                </el-tag>
+                <el-button size="small" icon="Plus" style="margin-left: 0px">添加文章标签</el-button>
+              </div>
+              <div class="cover-setting">
+                <label>添加封面</label>
+                <el-upload class="uploader" action="" :auto-upload="false" :show-file-list="false" :on-change="handleCoverChange">
+                  <img v-if="coverImage" :src="coverImage" class="cover-image" />
+                  <el-icon v-else class="avatar-icon"><Plus /></el-icon>
+                </el-upload>
+                <div class="cover-tip">暂无内容图片，请在正文中添加图片</div>
+              </div>
+              <div class="description-setting">
+                <label>文章摘要</label>
+                <div>
+                  <el-input v-model="article.description" type="textarea" autosize placeholder="输入文章摘要"  :autosize="{ minRows: 2, maxRows: 4 }" maxlength="256" show-word-limit></el-input>
+                  <el-button size="small" style="margin-top: 8px" @click="extractSummary">AI提取摘要</el-button>
+                </div>
+              </div>
+              <div class="setting-item">
+                <label>分类专栏</label>
+                <el-tag v-for="tag in tags" :key="tag" closable :disable-transitions="false" @close="handleClose(tag)">
+                  {{ tag }}
+                </el-tag>
+                <el-button size="small">+ 新建分类专栏</el-button>
+              </div>
+              <div class="setting-item">
+                <label>文章类型</label>
+                <el-radio-group v-model="articleType">
+                  <el-radio label="0">原创</el-radio>
+                  <el-radio label="1">转载</el-radio>
+                </el-radio-group>
+              </div>
+              <div class="setting-item">
+                <label>可见范围</label>
+                <el-radio-group v-model="visibility">
+                  <el-radio label="0">全部可见</el-radio>
+                  <el-radio label="1">仅我可见</el-radio>
+                  <el-radio label="2">粉丝可见</el-radio>
+                  <el-radio label="3">VIP可见</el-radio>
+                </el-radio-group>
+              </div>
+            </div>
           </div>
         </div>
         <div class="aie-container-footer"></div>
@@ -48,6 +96,8 @@ import { useDarkStore } from "@/stores/darkStore";
 import { watch } from "vue";
 import { storeToRefs } from "pinia";
 import { ElMessage } from "element-plus";
+import { compressImage } from "@/utils/PhotoUtils";
+import { getTagList } from "@/api/tag";
 
 const darkStore = useDarkStore();
 const { isDark } = storeToRefs(darkStore);
@@ -59,6 +109,8 @@ const directoryRef = ref(null);
 let aiEditor = null;
 // 目录项数据
 const directoryItems = ref([]);
+// 当前激活的标题id
+const activeHeadingId = ref(null);
 
 // 监听主题变化
 watch(isDark, (newTheme) => {
@@ -198,6 +250,8 @@ const scrollToHeading = (id) => {
     }
     // 如果找到目标元素，则滚动到该位置
     if (targetElement) {
+      // 更新当前激活的标题ID
+      activeHeadingId.value = id;
       // 执行滚动操作
       targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
     } else {
@@ -206,6 +260,52 @@ const scrollToHeading = (id) => {
   } catch (error) {
     console.error("滚动到标题时出错:", error);
   }
+};
+
+// 处理封面文件选择变化
+const handleCoverChange = async (file) => {
+  // 获取文件对象
+  const rawFile = file.raw;
+  // 文件类型和大小校验
+  const isJPG = rawFile.type === "image/jpeg";
+  const isPNG = rawFile.type === "image/png";
+  const isJPEG = rawFile.type === "image/jpeg";
+  const isWEBP = rawFile.type === "image/webp";
+  const isLt5M = rawFile.size / 1024 / 1024 < 5;
+  if (!isJPG && !isPNG && !isJPEG && !isWEBP) {
+    ElMessage.error("上传封面图片只能是 jpg/png/jpeg/webp 格式!");
+    return;
+  }
+  if (!isLt5M) {
+    ElMessage.error("上传封面图片大小不能超过 5MB!");
+    return;
+  }
+  // 压缩图片并设置预览
+  const cover = await compressImage(rawFile);
+  // 将压缩后的File对象转换为base64编码的URL，以便在img标签中显示
+  const reader = new FileReader();
+  reader.readAsDataURL(cover);
+  reader.onload = () => {
+    coverImage.value = reader.result;
+    ElMessage.success("封面图片已上传成功");
+  };
+};
+
+// AI提取摘要
+const extractSummary = () => {
+  // 这里应该调用实际的AI摘要接口
+  // 这里只是一个示例
+  ElMessage.success("AI摘要提取中...");
+  // 模拟API调用延迟
+  setTimeout(() => {
+    ElMessage.success("AI摘要提取完成");
+  }, 1000);
+};
+
+// 处理发布文章
+const handleClickPublish = () => {
+  // 这里应该调用实际的发布文章接口
+  ElMessage.success("文章发布成功!");
 };
 
 // 在组件卸载前销毁编辑器实例、移除事件监听器并清理防抖计时器
@@ -217,25 +317,36 @@ onUnmounted(() => {
     clearTimeout(directoryUpdateTimer);
   }
 });
+
+const article = ref({
+  tag: "java,vue,springboot",
+  title: "",
+  description: "",
+  content: "",
+  coverUrl: "",
+  reprintType: 0,
+  visibleRange: 0,
+});
+
+// 封面图片URL
+const coverImage = ref("");
+
+// 所有标签
+const allTags = ref([]);
+getTagList().then((res) => {
+  allTags.value = res.data.data;
+  console.log(allTags.value);
+});
+
+// 当前标签
+const tags = ref(article.value.tag.split(","));
+// 删除标签
+const deleteTag = (tag) => {
+  tags.value = tags.value.filter((item) => item !== tag);
+};
 </script>
 
 <style lang="scss" scoped>
-// 全局样式 - 标题高亮动画
-// :global {
-//   .highlighted {
-//     animation: highlight 2s ease-in-out;
-//   }
-
-//   @keyframes highlight {
-//     0% {
-//       background-color: rgba(255, 215, 0, 0.5);
-//     }
-//     100% {
-//       background-color: transparent;
-//     }
-//   }
-// }
-
 .editor-container {
   display: flex;
   flex-direction: column;
@@ -279,7 +390,7 @@ onUnmounted(() => {
         border: 1px solid var(--el-border-color);
         border-radius: 4px;
         margin-left: 24px;
-        height: calc(100vh - 188px);
+        height: calc(100vh - 200px);
         padding: 10px;
         display: flex;
         flex-direction: column;
@@ -298,6 +409,46 @@ onUnmounted(() => {
           flex: 1;
           overflow-y: auto;
           padding: 8px 0;
+
+          // 目录项样式
+          .directory-item {
+            display: block;
+            padding: 6px 16px;
+            color: var(--el-text-color-primary);
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+
+            // 不同级别的标题缩进
+            &.level-1 {
+              padding-left: 16px;
+            }
+            &.level-2 {
+              padding-left: 32px;
+            }
+            &.level-3 {
+              padding-left: 48px;
+            }
+            &.level-4 {
+              padding-left: 64px;
+            }
+            &.level-5 {
+              padding-left: 80px;
+            }
+            &.level-6 {
+              padding-left: 96px;
+            }
+            &:hover {
+              background-color: var(--el-border-color-light);
+              color: var(--el-color-primary);
+            }
+            &.active {
+              background-color: var(--el-color-primary-light-9);
+              color: var(--el-color-primary);
+              font-weight: 500;
+            }
+          }
           .no-content {
             text-align: center;
             color: #9ca3af;
@@ -346,16 +497,92 @@ onUnmounted(() => {
       // 编辑器内容
       .editor-content {
         height: calc(100vh - 168px);
-        overflow: auto;
+        overflow-y: auto;
+        overflow-x: hidden;
         margin: auto;
         width: 60vw;
-        overflow: auto;
-        background: var(--el-bg-color);
-        border: 1px solid var(--el-border-color);
         border-radius: 8px;
         .aie-container-main {
+          background: var(--el-bg-color);
+          border: 1px solid var(--el-border-color);
           min-height: calc(100vh - 100px);
           padding: 16px;
+          margin-bottom: 24px;
+        }
+        // 发布文章设置样式
+        .publish-settings {
+          padding: 16px;
+          background: var(--el-bg-color);
+          border: 1px solid var(--el-border-color);
+          h3 {
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 18px;
+            font-weight: 600;
+          }
+          label {
+            margin-right: 16px;
+            font-weight: 500;
+            color: var(--el-text-color-primary);
+          }
+          .tag-item {
+            margin-right: 10px;
+          }
+          // 标签设置
+          .tag-setting {
+            display: flex;
+            align-items: center;
+          }
+          // 封面设置
+          .cover-setting {
+            display: flex;
+            height: 150px;
+            align-items: center;
+            // 封面上传样式
+            .uploader {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              margin-bottom: 8px;
+              width: 192px;
+              height: 108px;
+              display: block;
+              border: 1px solid var(--el-border-color);
+              border-radius: 6px;
+              cursor: pointer;
+              position: relative;
+              overflow: hidden;
+              transition: var(--el-transition-duration-fast);
+              .cover-image {
+                width: 192px;
+                height: 108px;
+                border-radius: 4px;
+              }
+              .avatar-icon {
+                font-size: 28px;
+                color: #8c939d;
+                width: 192px;
+                height: 108px;
+                text-align: center;
+              }
+            }
+            //图片选择
+            .cover-tip {
+              width: 129px;
+              height: 81px;
+              color: var(--el-text-color-secondary);
+              font-size: 12px;
+              margin-left: 16px;
+              border: 1px solid var(--el-border-color);
+            }
+          }
+          // 文章摘要设置
+          .description-setting {
+            display: flex;
+            align-items: center;
+            height: 100px;
+          }
         }
       }
     }

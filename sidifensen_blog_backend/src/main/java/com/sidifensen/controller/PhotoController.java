@@ -26,6 +26,16 @@ public class PhotoController {
     @Resource
     private PhotoService photoService;
 
+//    /**
+//     * 上传文章图片
+//     */
+//    @PostMapping("/uploadArticle")
+//    public Result uploadArticle(@RequestParam("file") MultipartFile file,
+//                                @RequestParam("articleId") Integer articleId) throws Exception {
+//        photoService.uploadArticle(file, articleId);
+//        return Result.success();
+//    }
+
     /**
      * 上传照片到相册
      */
@@ -35,7 +45,7 @@ public class PhotoController {
         photoService.uploadAlbum(file, albumId);
         return Result.success();
     }
-    
+
     /**
      * 删除照片
      */

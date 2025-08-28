@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.TagDto;
 import com.sidifensen.domain.entity.Tag;
-import com.sidifensen.domain.vo.TagVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.TagMapper;
 import com.sidifensen.service.TagService;
@@ -13,6 +12,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -39,14 +39,13 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
     }
 
     @Override
-    public List<TagVo> listTag() {
+    public Map<String, List<String>> listTag() {
         List<Tag> tags = tagMapper.selectList(null);
-        List<TagVo> tagVos = tags.stream().collect(
-                        Collectors.groupingBy(
-                                Tag::getCategory, Collectors.mapping(
-                                        Tag::getName, Collectors.toList()))
-                ).entrySet().stream().map(entry -> new TagVo(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+        Map<String, List<String>> tagVos = tags.stream().collect(
+                Collectors.groupingBy(
+                        Tag::getCategory, Collectors.mapping(
+                                Tag::getName, Collectors.toList()))
+        );
         return tagVos;
     }
 }

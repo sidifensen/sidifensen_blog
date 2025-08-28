@@ -36,7 +36,7 @@ public class ArticleController {
         return Result.success(articleVoList);
     }
 
-    @GetMapping("/{articleId}")
+    @GetMapping("/get/{articleId}")
     public Result getArticle(@PathVariable Integer articleId) {
         ArticleVo articleVo = articleService.getArticle(articleId);
         return Result.success(articleVo);
@@ -54,7 +54,7 @@ public class ArticleController {
         return Result.success();
     }
 
-    @DeleteMapping("/{articleId}")
+    @DeleteMapping("/delete/{articleId}")
     public Result deleteArticle(@PathVariable Integer articleId) {
         articleService.deleteArticle(articleId);
         return Result.success();
