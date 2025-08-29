@@ -1,7 +1,7 @@
 import request from "@/utils/Request";
 
-// 上传图片
-export function uploadAlbum(file, albumId) {
+// 上传相册图片
+export function uploadAlbumPhoto(file, albumId) {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("albumId", albumId);
@@ -12,6 +12,19 @@ export function uploadAlbum(file, albumId) {
     headers: { "Content-Type": "multipart/form-data" },
   });
 }
+
+// 上传文章图片
+export function uploadArticlePhoto(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  return request({
+    url: "/photo/uploadArticle",
+    method: "post",
+    data: formData,
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+}
+
 
 // 修改图片展示状态
 export function changeShowStatus(data) {

@@ -101,12 +101,22 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
 
     // 上传图片到相册
     @Override
-    public void uploadAlbum(MultipartFile file, Integer albumId) throws Exception {
+    public void uploadAlbum(MultipartFile file, Integer albumId) {
         // 拼接userId/albumId作为目录名
         Integer userId = SecurityUtils.getUserId();
         String dirName = userId + "/" + albumId + "/";
         String url = fileUploadUtils.upload(UploadEnum.ALBUM, file, dirName);
         auditAndUpdate(userId, url, albumId);
+    }
+
+    @Override
+    public String uploadArticle(MultipartFile file) {
+        // 拼接userId/albumId作为目录名
+        Integer userId = SecurityUtils.getUserId();
+        String dirName = userId + "/";
+        String url = fileUploadUtils.upload(UploadEnum.ARTICLE, file, dirName);
+        auditAndUpdate(userId, url);
+        return url;
     }
 
     // 相册图片审核
@@ -185,31 +195,33 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 Photo photo = new Photo();
                 photo.setUserId(userId);
                 photo.setUrl(url);
-                // 初始设置为待审核状态
-                photo.setExamineStatus(ExamineStatusEnum.WAIT.getCode());
+                photo.setExamineStatus(ExamineStatusEnum.WAIT.getCode());// 初始设置为待审核状态
                 photoMapper.insert(photo);
 
-                ImageAuditResult imageAuditResult = imageAuditUtils.auditImageWithDetails(url);
-                Integer status = imageAuditResult.getStatus();
-
-                // 根据审核结果设置审核状态
-                Photo updatePhoto = new Photo();
-                updatePhoto.setId(photo.getId());
-                if (status.equals(ImageAuditStatusEnum.PASS.getCode())) {
-                    // 审核通过，设置审核状态为审核通过
-                    updatePhoto.setExamineStatus(ExamineStatusEnum.PASS.getCode());
-                } else if (status.equals(ImageAuditStatusEnum.REJECT.getCode())) {
-                    // 审核未通过，设置审核状态为审核未通过
-                    updatePhoto.setExamineStatus(ExamineStatusEnum.NO_PASS.getCode());
-                } else if (status.equals(ImageAuditStatusEnum.MANUAL_REVIEW.getCode())) {
-                    // 需要人工审核, 设置审核状态为待审核
-                    updatePhoto.setExamineStatus(ExamineStatusEnum.WAIT.getCode());
-                } else {
-                    // 状态错误
-                    throw new BlogException(BlogConstants.ExamineStatusError);
+                Integer status = 0;
+                // 图片自动审核
+                if (sidifensenConfig.isPhotoAutoAudit()) {
+                    ImageAuditResult imageAuditResult = imageAuditUtils.auditImageWithDetails(url);
+                    status = imageAuditResult.getStatus();
+                    // 根据审核结果设置审核状态
+                    Photo updatePhoto = getPhoto(photo, status);
+                    // 更新图片审核状态
+                    photoMapper.updateById(updatePhoto);
                 }
 
-                photoMapper.updateById(updatePhoto);
+                if (!sidifensenConfig.isPhotoAutoAudit() || status.equals(ImageAuditStatusEnum.MANUAL_REVIEW.getCode())) {
+                    // 需要人工审核，发送消息给管理员
+                    String text = MessageConstants.ImageNeedReview(photo.getId());
+                    MessageDto messageDto = new MessageDto();
+                    messageDto.setType(MessageTypeEnum.SYSTEM.getCode());
+                    messageDto.setContent(text);
+                    messageService.sendToAdmin(messageDto);
+                }
+
+                // 发送邮件给管理员
+                HashMap<String, Object> sendEmail = new HashMap<>();
+                sendEmail.put("text", String.format(MessageConstants.IMAGE_NEED_REVIEW, photo.getId()));
+                rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
             } catch (Exception e) {
                 log.error("图片异步处理失败", e);
             }
@@ -218,7 +230,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
 
     // 删除照片
     @Override
-    public void delete(Integer photoId) throws Exception {
+    public void delete(Integer photoId) {
         Photo photo = photoMapper.selectById(photoId);
         if (ObjectUtil.isEmpty(photo)) {
             throw new BlogException(BlogConstants.NotFoundPhoto);
@@ -247,7 +259,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
 
     // 批量删除照片
     @Override
-    public void batchDelete(List<Integer> photoIds) throws Exception {
+    public void batchDelete(List<Integer> photoIds) {
         Integer userId = SecurityUtils.getUserId();
         // 查询要删除的照片信息
         List<Photo> photos = photoMapper.selectBatchIds(photoIds);
@@ -304,7 +316,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     }
 
     @Override
-    public void adminDelete(Integer photoId) throws Exception {
+    public void adminDelete(Integer photoId) {
         Photo photo = photoMapper.selectById(photoId);
         if (ObjectUtil.isEmpty(photo)) {
             throw new BlogException(BlogConstants.NotFoundPhoto);
@@ -328,7 +340,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     }
 
     @Override
-    public void adminBatchDelete(List<Integer> photoIds) throws Exception {
+    public void adminBatchDelete(List<Integer> photoIds) {
         Integer userId = SecurityUtils.getUserId();
         // 查询要删除的照片信息
         List<Photo> photos = photoMapper.selectBatchIds(photoIds);
@@ -386,10 +398,9 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         photoMapper.update(null, updateWrapper);
 
 
-        AlbumPhoto albumPhoto = null;
         // 如果是审核通过
         if (photoAuditDto.getExamineStatus() == 1) {
-            albumPhoto = albumPhotoMapper.selectById(photoAuditDto.getPhotoId());
+            AlbumPhoto albumPhoto = albumPhotoMapper.selectById(photoAuditDto.getPhotoId());
             if (ObjectUtil.isNotEmpty(albumPhoto)) {
                 // 更新相册封面
                 Album album = albumMapper.selectById(albumPhoto.getAlbumId());
@@ -397,12 +408,11 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                     Photo photo = photoMapper.selectById(photoAuditDto.getPhotoId());
                     album.setCoverUrl(photo.getUrl());
                     albumMapper.updateById(album);
+                    // 更新相册照片关联
+                    redisService.updateAlbumPhotos(albumPhoto.getAlbumId());
                 }
             }
         }
-
-        // 更新相册照片关联
-        redisService.updateAlbumPhotos(albumPhoto.getAlbumId());
     }
 
     @Override

@@ -23,7 +23,7 @@ public class ColumnController {
     private ColumnService columnService;
 
     /**
-     * 获取专栏列表
+     * 获取用户专栏列表
      *
      * @return 专栏列表
      */

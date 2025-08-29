@@ -26,22 +26,21 @@ public class PhotoController {
     @Resource
     private PhotoService photoService;
 
-//    /**
-//     * 上传文章图片
-//     */
-//    @PostMapping("/uploadArticle")
-//    public Result uploadArticle(@RequestParam("file") MultipartFile file,
-//                                @RequestParam("articleId") Integer articleId) throws Exception {
-//        photoService.uploadArticle(file, articleId);
-//        return Result.success();
-//    }
+    /**
+     * 上传文章图片
+     */
+    @PostMapping("/uploadArticle")
+    public Result uploadArticle(@RequestParam("file") MultipartFile file) {
+        String url = photoService.uploadArticle(file);
+        return Result.success(url);
+    }
 
     /**
      * 上传照片到相册
      */
     @PostMapping("/uploadAlbum")
     public Result uploadAlbum(@RequestParam("file") MultipartFile file,
-                              @RequestParam("albumId") Integer albumId) throws Exception {
+                              @RequestParam("albumId") Integer albumId) {
         photoService.uploadAlbum(file, albumId);
         return Result.success();
     }
@@ -50,7 +49,7 @@ public class PhotoController {
      * 删除照片
      */
     @DeleteMapping("/delete/{photoId}")
-    public Result delete(@PathVariable("photoId") Integer photoId) throws Exception {
+    public Result delete(@PathVariable("photoId") Integer photoId) {
         photoService.delete(photoId);
         return Result.success();
     }
@@ -59,7 +58,7 @@ public class PhotoController {
      * 批量删除照片
      */
     @DeleteMapping("/delete/batch")
-    public Result<String> batchDelete(@RequestBody List<Integer> photoIds) throws Exception {
+    public Result<String> batchDelete(@RequestBody List<Integer> photoIds) {
         photoService.batchDelete(photoIds);
         return Result.success();
     }
@@ -71,7 +70,7 @@ public class PhotoController {
      */
     @PreAuthorize("hasAuthority('photo:delete')")
     @DeleteMapping("/admin/delete/{photoId}")
-    public Result adminDelete(@PathVariable("photoId") Integer photoId) throws Exception {
+    public Result adminDelete(@PathVariable("photoId") Integer photoId) {
         photoService.adminDelete(photoId);
         return Result.success();
     }
@@ -81,7 +80,7 @@ public class PhotoController {
      */
     @PreAuthorize("hasAuthority('photo:deleteBatch')")
     @DeleteMapping("/admin/delete/batch")
-    public Result<String> adminBatchDelete(@RequestBody List<Integer> photoIds) throws Exception {
+    public Result<String> adminBatchDelete(@RequestBody List<Integer> photoIds) {
         photoService.adminBatchDelete(photoIds);
         return Result.success();
     }

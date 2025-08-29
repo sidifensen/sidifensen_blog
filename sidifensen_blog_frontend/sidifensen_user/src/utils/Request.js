@@ -16,7 +16,7 @@ const request = axios.create({
   // 后端地址
   baseURL: import.meta.env.VITE_BACKEND_SERVER,
   withCredentials: false, // 用于配置请求接口跨域时是否需要凭证
-  timeout: 10000, // 超时时间，单位毫秒
+  timeout: 30000, // 增加超时时间到30秒
   headers: {
     // 配置请求头的参数类型，和编码格式
     "Content-Type": "application/json;charset=UTF-8",
@@ -51,18 +51,21 @@ request.interceptors.response.use(
       // 响应失败的处理 401 400
       ElMessage.error(msg);
     }
+    console.log("响应拦截器",response.data)
     return Promise.reject(response.data);
   },
   (error) => {
     // console.log("error=====>", error);
-    let { status, data } = error.response;
-    if (status === 401) {
-      // 401 代表token过期或被禁用或被删除，需要重新登录
-      ElMessage.error(data.msg);
-      // 清除userStore数据
-      userStore.clearUser();
-      // 需要重新登陆，跳转到登录页面
-      router.push("/login");
+    if (error.response) {
+      let { status, data } = error.response;
+      if (status === 401) {
+        // 401 代表token过期或被禁用或被删除，需要重新登录
+        ElMessage.error(data.msg);
+        // 清除userStore数据
+        userStore.clearUser();
+        // 需要重新登陆，跳转到登录页面
+        router.push("/login");
+      }
     }
     return Promise.reject(error);
   }

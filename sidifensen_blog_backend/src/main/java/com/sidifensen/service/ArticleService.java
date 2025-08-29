@@ -1,6 +1,7 @@
 package com.sidifensen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.sidifensen.domain.dto.ArticleAuditDto;
 import com.sidifensen.domain.dto.ArticleDto;
 import com.sidifensen.domain.dto.ArticleStatusDto;
 import com.sidifensen.domain.entity.Article;
@@ -48,4 +49,7 @@ public interface ArticleService extends IService<Article> {
 
     // 管理员删除文章
     void adminDeleteArticle(Integer articleId);
+
+    // 管理员审核文章
+    void adminExamineArticle(ArticleAuditDto articleAuditDto);
 }

@@ -26,15 +26,15 @@
               <h3>发布文章设置</h3>
               <div class="tag-setting">
                 <label>文章标签</label>
-                <el-tag class="tag-item" v-for="tag in tags" :key="tag" closable size="large" effect="plain" @close="deleteTag(tag)">
+                <el-tag class="tag-item" v-for="tag in tags" :key="tag" closable size="large" effect="plain" @close="deleteTag(tag)" v-if="tag && tag.trim()">
                   {{ tag }}
                 </el-tag>
                 <el-button size="small" icon="Plus" style="margin-left: 0px">添加文章标签</el-button>
               </div>
               <div class="cover-setting">
                 <label>添加封面</label>
-                <el-upload class="uploader" action="" :auto-upload="false" :show-file-list="false" :on-change="handleCoverChange">
-                  <img v-if="coverImage" :src="coverImage" class="cover-image" />
+                <el-upload class="uploader" action="" :auto-upload="true" :show-file-list="false" list-type="picture" :http-request="handleCoverUpload">
+                  <img v-if="article.coverUrl || coverImage" :src="article.coverUrl || coverImage" class="cover-image" />
                   <el-icon v-else class="avatar-icon"><Plus /></el-icon>
                 </el-upload>
                 <div class="cover-tip">暂无内容图片，请在正文中添加图片</div>
@@ -42,43 +42,64 @@
               <div class="description-setting">
                 <label>文章摘要</label>
                 <div>
-                  <el-input v-model="article.description" type="textarea" autosize placeholder="输入文章摘要"  :autosize="{ minRows: 2, maxRows: 4 }" maxlength="256" show-word-limit></el-input>
-                  <el-button size="small" style="margin-top: 8px" @click="extractSummary">AI提取摘要</el-button>
+                  <el-input v-model="article.description" type="textarea" resize="none" placeholder="输入文章摘要" :autosize="{ minRows: 2, maxRows: 4 }" maxlength="256"></el-input>
+                  <el-button size="small" type="danger" icon="EditPen" plain round style="margin-top: 8px" @click="extractSummary">AI提取摘要</el-button>
                 </div>
               </div>
-              <div class="setting-item">
+              <div class="column-setting">
                 <label>分类专栏</label>
-                <el-tag v-for="tag in tags" :key="tag" closable :disable-transitions="false" @close="handleClose(tag)">
-                  {{ tag }}
-                </el-tag>
-                <el-button size="small">+ 新建分类专栏</el-button>
+                <div class="column-tags-container">
+                  <el-tag class="column-item" v-for="column in columns" :key="column.id" size="large" closable effect="plain" @close="deleteColumn(column)">
+                    {{ column.name }}
+                  </el-tag>
+                  <div class="column-actions">
+                    <el-button v-if="!inputVisible" size="small" icon="Plus" @mouseenter="showColumnListOnHover" @mouseleave="hideColumnListOnLeave" @click="showInputColumn">新增专栏 </el-button>
+                    <el-input v-if="inputVisible" ref="InputColumnRef" class="column-input" v-model="inputColumn" size="small" @keyup.enter="addNewColumnn" @blur="handleColumnInputBlur" />
+                  </div>
+                  <div v-if="showColumnDropdown" class="column-dropdown" @mouseenter="handleColumnDropdownEnter" @mouseleave="handleColumnDropdownLeave">
+                    <div v-if="columns.length >= 3" class="column-limit-overlay">
+                      <span>最多选择三个专栏</span>
+                    </div>
+                    <div class="column-list">
+                      <div v-for="item in allColumns" :key="item.id" class="column-option" :class="{ selected: isColumnSelected(item.id), disabled: columns.length >= 3 && !isColumnSelected(item.id) }" @click="selectColumn(item)">
+                        <el-checkbox :checked="isColumnSelected(item.id)" :disabled="columns.length >= 3 && !isColumnSelected(item.id)">
+                          <span>{{ item.name }}</span>
+                        </el-checkbox>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="setting-item">
+              <div class="reprint-type-setting">
                 <label>文章类型</label>
-                <el-radio-group v-model="articleType">
-                  <el-radio label="0">原创</el-radio>
-                  <el-radio label="1">转载</el-radio>
+                <el-radio-group class="reprint-type-radio" v-model="article.reprintType">
+                  <el-radio :label="0">原创</el-radio>
+                  <el-radio :label="1">转载</el-radio>
                 </el-radio-group>
               </div>
-              <div class="setting-item">
+              <div class="visible-range-setting">
                 <label>可见范围</label>
-                <el-radio-group v-model="visibility">
-                  <el-radio label="0">全部可见</el-radio>
-                  <el-radio label="1">仅我可见</el-radio>
-                  <el-radio label="2">粉丝可见</el-radio>
-                  <el-radio label="3">VIP可见</el-radio>
+                <el-radio-group class="visible-range-radio" v-model="article.visibleRange">
+                  <el-radio :label="0">全部可见</el-radio>
+                  <el-radio :label="1">仅我可见</el-radio>
+                  <el-radio :label="2">粉丝可见</el-radio>
+                  <el-radio :label="3">VIP可见</el-radio>
                 </el-radio-group>
               </div>
             </div>
+          </div>
+          <!-- 右下角回到顶部按钮 -->
+          <div class="back-to-top" @click="scrollToTop">
+            <el-icon><ArrowUp /></el-icon>
           </div>
         </div>
         <div class="aie-container-footer"></div>
       </div>
     </div>
     <div class="footer">
-      <div class="left">
-        <div>回到顶部</div>
-        <div>文章设置</div>
+      <div>字数统计: {{ wordCount }}字</div>
+      <div class="center">
+        <el-button icon="ArrowDown" @click="scrollToArticleSettings">文章设置</el-button>
       </div>
       <div class="right">
         <el-button type="primary" @click="handleClickPublish">发布文章</el-button>
@@ -96,11 +117,34 @@ import { useDarkStore } from "@/stores/darkStore";
 import { watch } from "vue";
 import { storeToRefs } from "pinia";
 import { ElMessage } from "element-plus";
-import { compressImage } from "@/utils/PhotoUtils";
+import { compressImage, validateImageFile } from "@/utils/PhotoUtils";
 import { getTagList } from "@/api/tag";
+import { addColumn, getColumnList } from "@/api/column";
+import { uploadArticlePhoto } from "@/api/photo";
+import { ArrowUp } from "@element-plus/icons-vue";
+import { addArticle } from "@/api/article";
 
 const darkStore = useDarkStore();
 const { isDark } = storeToRefs(darkStore);
+
+// 字数统计
+const wordCount = ref(0);
+
+// 滚动到页面顶部
+const scrollToTop = () => {
+  const contentArea = document.querySelector(".editor-content");
+  if (contentArea) {
+    contentArea.scrollTo({ top: 0, behavior: "smooth" });
+  }
+};
+
+// 滚动到文章设置区域
+const scrollToArticleSettings = () => {
+  const articleSettingsElement = document.querySelector(".publish-settings");
+  if (articleSettingsElement) {
+    articleSettingsElement.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+};
 
 // 创建div引用
 const divRef = ref(null);
@@ -120,6 +164,27 @@ watch(isDark, (newTheme) => {
   }
 });
 
+// 计算字数统计
+const countWords = () => {
+  if (!aiEditor) return;
+  try {
+    // 获取编辑器内容
+    const content = aiEditor.getHtml();
+    // 创建DOMParser实例用于解析HTML字符串
+    const parser = new DOMParser();
+    // 将HTML字符串解析为DOM文档对象
+    const doc = parser.parseFromString(content, "text/html");
+    // 获取纯文本内容
+    const text = doc.body.textContent || "";
+    // 计算纯文本字数（去除多余的空白字符）
+    const words = text.replace(/\s+/g, "").length;
+    // 更新字数统计
+    wordCount.value = words;
+  } catch (error) {
+    console.error("计算字数时出错:", error);
+  }
+};
+
 // 在组件挂载后初始化编辑器
 onMounted(() => {
   if (divRef.value) {
@@ -134,32 +199,80 @@ onMounted(() => {
       },
       content: "",
       draggable: false, // 禁用拖动
-      toolbarExcludeKeys: ["subscript", "superscript", "break", "video", "source-code", "printer"], // 排除下标,上标.强制换行,视频,源代码,打印
+      // 图片上传配置
+      image: {
+        allowBase64: false,
+        defaultSize: 350,
+        // 自定义图片上传逻辑
+        uploader: (file) => {
+          return new Promise((resolve, reject) => {
+            uploadArticlePhoto(file)
+              .then((response) => {
+                // 转换为 aiEditor 要求的格式
+                resolve({
+                  errorCode: 0,
+                  data: {
+                    src: response.data.data,
+                    alt: "文章图片",
+                  },
+                });
+              })
+              .catch((error) => {
+                // 处理请求异常情况
+                console.error("上传异常:", error);
+                if (error.msg || error.message) {
+                  reject(new Error(error.msg || error.message));
+                } else {
+                  reject(new Error("图片上传失败")); // 返回给onError
+                }
+              });
+          });
+        },
+        // 图片上传事件监听
+        uploaderEvent: {
+          onUploadBefore: (file) => {
+            // 文件类型和大小校验
+            if (!validateImageFile(file)) {
+              return false;
+            }
+            ElMessage.info("图片上传中...");
+            return true;
+          },
+          onSuccess: (file, response) => {
+            console.log("onSuccess上传成功:", response);
+            // {"errorCode": 0,"data": {"src": "", "alt": "文章图片"}
+            ElMessage.success("图片上传成功");
+            return true;
+          },
+          onFailed: (file, response) => {
+            console.log("onFailed上传失败:", response);
+            ElMessage.error(response?.msg || "图片上传失败");
+          },
+          onError: (file, error) => {
+            console.log("onError上传出错:", error);
+            ElMessage.error("上传出错: " + error.message);
+          },
+        },
+        // 选中图片时的浮动菜单配置
+        bubbleMenuItems: ["AlignLeft", "AlignCenter", "AlignRight", "delete"],
+      },
+      toolbarExcludeKeys: ["subscript", "superscript", "break", "video", "source-code", "printer", "fullscreen"], // 排除下标,上标.强制换行,视频,源代码,打印,全屏
       onSave: (editor) => {
         ElMessage.success("文档保存成功！");
         return true;
       }, // 保存回调
-      // 监听编辑器内容变化，更新目录（使用防抖处理）
+      // 监听编辑器内容变化，更新目录和字数统计（使用防抖处理）
       onChange: () => {
         updateDirectoryDebounced();
+        countWords();
         return true;
       },
     });
 
-    // 初始化时直接更新目录（不需要防抖）
+    // 初始化时直接更新目录和字数统计（不需要防抖）
     nextTick(() => {
       updateDirectory();
-    });
-
-    // 设置定期更新目录的定时器（使用防抖处理）
-    // 注意：这个定时器会被外部的onUnmounted钩子清理
-    const interval = setInterval(() => {
-      updateDirectoryDebounced(1000); // 1秒延迟的防抖，避免频繁更新
-    }, 10000); // 每10秒触发一次
-
-    // 组件卸载时清除定时器
-    onUnmounted(() => {
-      clearInterval(interval);
+      countWords();
     });
   }
 });
@@ -262,33 +375,72 @@ const scrollToHeading = (id) => {
   }
 };
 
-// 处理封面文件选择变化
-const handleCoverChange = async (file) => {
-  // 获取文件对象
-  const rawFile = file.raw;
-  // 文件类型和大小校验
-  const isJPG = rawFile.type === "image/jpeg";
-  const isPNG = rawFile.type === "image/png";
-  const isJPEG = rawFile.type === "image/jpeg";
-  const isWEBP = rawFile.type === "image/webp";
-  const isLt5M = rawFile.size / 1024 / 1024 < 5;
-  if (!isJPG && !isPNG && !isJPEG && !isWEBP) {
-    ElMessage.error("上传封面图片只能是 jpg/png/jpeg/webp 格式!");
-    return;
+// 在组件卸载前销毁编辑器实例、移除事件监听器并清理防抖计时器
+onUnmounted(() => {
+  // 销毁编辑器实例
+  aiEditor && aiEditor.destroy();
+  // 清理防抖计时器
+  if (directoryUpdateTimer) {
+    clearTimeout(directoryUpdateTimer);
   }
-  if (!isLt5M) {
-    ElMessage.error("上传封面图片大小不能超过 5MB!");
-    return;
+});
+
+// 文章数据
+const article = ref({
+  tag: "",
+  title: "",
+  description: "",
+  content: "",
+  coverUrl: "http://115.190.116.72:40000/sidifensen-blog/album/1/13/fd760317ef5745968a71200c65033c8b.webp",
+  reprintType: 0,
+  visibleRange: 0,
+});
+
+// 所有标签
+const allTags = ref([]);
+getTagList().then((res) => {
+  allTags.value = res.data.data;
+});
+
+// 当前标签
+const tags = ref((article.value.tag || "").split(",").filter((tag) => tag.trim() !== ""));
+// 删除标签
+const deleteTag = (tag) => {
+  tags.value = tags.value.filter((item) => item !== tag);
+};
+
+// 封面图片URL
+const coverImage = ref("");
+// 处理封面图片自动上传
+const handleCoverUpload = async (options) => {
+  const { file } = options;
+  try {
+    // 使用工具类校验文件类型和大小
+    const validation = validateImageFile(file);
+    if (!validation) {
+      options.onError && options.onError();
+      return;
+    }
+
+    // 压缩图片
+    const compressedFile = await compressImage(file);
+
+    // 上传到服务器
+    ElMessage.info("封面图片上传中...");
+    const response = await uploadArticlePhoto(compressedFile);
+
+    // 将服务器返回的URL赋值给coverImage
+    coverImage.value = response.data.data;
+    article.value.coverUrl = response.data.data;
+
+    // 调用成功回调
+    options.onSuccess && options.onSuccess();
+    ElMessage.success("封面图片上传成功");
+  } catch (error) {
+    console.error("封面图片上传失败:", error);
+    ElMessage.error("封面图片上传失败，请重试");
+    options.onError && options.onError();
   }
-  // 压缩图片并设置预览
-  const cover = await compressImage(rawFile);
-  // 将压缩后的File对象转换为base64编码的URL，以便在img标签中显示
-  const reader = new FileReader();
-  reader.readAsDataURL(cover);
-  reader.onload = () => {
-    coverImage.value = reader.result;
-    ElMessage.success("封面图片已上传成功");
-  };
 };
 
 // AI提取摘要
@@ -302,47 +454,161 @@ const extractSummary = () => {
   }, 1000);
 };
 
-// 处理发布文章
-const handleClickPublish = () => {
-  // 这里应该调用实际的发布文章接口
-  ElMessage.success("文章发布成功!");
+// 专栏标签输入框是否显示
+const inputVisible = ref(false);
+// 专栏输入框引用
+const InputColumnRef = ref();
+// 输入的专栏
+const inputColumn = ref("");
+// 用户专栏列表是否显示
+const showColumnDropdown = ref(false);
+// 选中的专栏
+const selectedColumns = ref({});
+
+// 鼠标悬停时只显示专栏列表
+const showColumnListOnHover = () => {
+  showColumnDropdown.value = true;
 };
 
-// 在组件卸载前销毁编辑器实例、移除事件监听器并清理防抖计时器
-onUnmounted(() => {
-  // 销毁编辑器实例
-  aiEditor && aiEditor.destroy();
-  // 清理防抖计时器
-  if (directoryUpdateTimer) {
-    clearTimeout(directoryUpdateTimer);
+// 鼠标移出按钮时隐藏专栏列表
+const hideColumnListOnLeave = () => {
+  // 添加短暂延迟，确保用户可以正常移动鼠标到下拉列表
+  setTimeout(() => {
+    // 只有当鼠标没有进入下拉列表区域时才隐藏
+    if (!isMouseInDropdown.value) {
+      showColumnDropdown.value = false;
+    }
+  }, 1000);
+};
+
+// 标记鼠标是否在下拉列表区域内
+const isMouseInDropdown = ref(false);
+
+// 点击时显示专栏输入框和专栏列表
+const showInputColumn = () => {
+  inputVisible.value = true;
+  showColumnDropdown.value = true;
+  nextTick(() => {
+    InputColumnRef?.value?.input.focus();
+  });
+};
+
+// 鼠标移入下拉列表区域时更新标记
+const handleColumnDropdownEnter = () => {
+  showColumnDropdown.value = true;
+  isMouseInDropdown.value = true;
+};
+
+// 鼠标移出下拉列表区域时更新标记并隐藏列表
+const handleColumnDropdownLeave = () => {
+  isMouseInDropdown.value = false;
+  // 添加延迟，以便点击操作能够完成
+  setTimeout(() => {
+    // 确保鼠标确实离开了按钮和下拉列表区域
+    // 同时检查inputVisible状态，如果输入框可见则保持下拉列表显示
+    if (!inputVisible.value) {
+      showColumnDropdown.value = false;
+    }
+  }, 1000);
+};
+
+// 输入框失焦时隐藏下拉列表并添加专栏
+const handleColumnInputBlur = () => {
+  // 先添加专栏
+  addNewColumnn();
+  // 由于addNewColumnn会将inputVisible设为false，所以这里直接隐藏下拉列表
+  setTimeout(() => {
+    showColumnDropdown.value = false;
+  }, 1000);
+};
+
+// 新增专栏
+const addNewColumnn = () => {
+  if (inputColumn.value) {
+    addColumn({
+      name: inputColumn.value,
+    })
+      .then((res) => {
+        // 刷新专栏列表
+        getColumnList().then((res) => {
+          allColumns.value = res.data.data
+            .sort((a, b) => {
+              return a.sort - b.sort;
+            })
+            .map((item) => {
+              return {
+                id: item.id,
+                name: item.name,
+              };
+            });
+        });
+        ElMessage.success("新增专栏成功");
+      })
+      .catch(() => {
+        ElMessage.error("新增专栏失败");
+      });
   }
+  inputVisible.value = false;
+  inputColumn.value = "";
+};
+
+// 当前选择的专栏
+const columns = ref([]);
+
+// 用户的专栏列表
+const allColumns = ref([]);
+getColumnList().then((res) => {
+  allColumns.value = res.data.data
+    .sort((a, b) => {
+      return a.sort - b.sort;
+    })
+    .map((item) => {
+      return {
+        id: item.id,
+        name: item.name,
+      };
+    });
 });
 
-const article = ref({
-  tag: "java,vue,springboot",
-  title: "",
-  description: "",
-  content: "",
-  coverUrl: "",
-  reprintType: 0,
-  visibleRange: 0,
+// 初始化时同步选中状态
+onMounted(() => {
+  // 初始化selectedColumns状态
+  columns.value.forEach((column) => {
+    selectedColumns.value[column.id] = true;
+  });
 });
 
-// 封面图片URL
-const coverImage = ref("");
+// 判断专栏是否已选择
+const isColumnSelected = (columnId) => {
+  return columns.value.some((column) => column.id === columnId);
+};
 
-// 所有标签
-const allTags = ref([]);
-getTagList().then((res) => {
-  allTags.value = res.data.data;
-  console.log(allTags.value);
-});
+// 选择专栏
+const selectColumn = (column) => {
+  // 如果已选择，则取消选择
+  if (isColumnSelected(column.id)) {
+    columns.value = columns.value.filter((item) => item.id !== column.id);
+  } else if (columns.value.length < 3) {
+    // 如果未选择且未达到上限，则添加选择
+    columns.value.push(column);
+  }
+};
 
-// 当前标签
-const tags = ref(article.value.tag.split(","));
-// 删除标签
-const deleteTag = (tag) => {
-  tags.value = tags.value.filter((item) => item !== tag);
+// 删除专栏
+const deleteColumn = (column) => {
+  columns.value = columns.value.filter((item) => item.id !== column.id);
+  selectedColumns.value[column.id] = false;
+};
+
+// 发布文章
+const handleClickPublish = async () => {
+  addArticle(articleForm.value)
+    .then(() => {
+      ElMessage.success("文章发布成功!");
+    })
+    .catch(() => {
+      ElMessage.error("文章发布失败!");
+    });
 };
 </script>
 
@@ -385,7 +651,7 @@ const deleteTag = (tag) => {
       background: var(--el-border-color-lighter);
       // 左侧目录样式
       .aie-directory {
-        max-width: 20vw;
+        width: 20vw;
         background: var(--el-bg-color);
         border: 1px solid var(--el-border-color);
         border-radius: 4px;
@@ -514,6 +780,7 @@ const deleteTag = (tag) => {
           padding: 16px;
           background: var(--el-bg-color);
           border: 1px solid var(--el-border-color);
+          padding-bottom: 50px;
           h3 {
             margin-top: 0;
             margin-bottom: 16px;
@@ -524,14 +791,9 @@ const deleteTag = (tag) => {
             margin-right: 16px;
             font-weight: 500;
             color: var(--el-text-color-primary);
-          }
-          .tag-item {
-            margin-right: 10px;
-          }
-          // 标签设置
-          .tag-setting {
-            display: flex;
-            align-items: center;
+            @media screen and (max-width: 768px) {
+              width: 40px;
+            }
           }
           // 封面设置
           .cover-setting {
@@ -569,6 +831,9 @@ const deleteTag = (tag) => {
             }
             //图片选择
             .cover-tip {
+              display: flex;
+              align-items: center;
+              justify-content: center;
               width: 129px;
               height: 81px;
               color: var(--el-text-color-secondary);
@@ -581,8 +846,140 @@ const deleteTag = (tag) => {
           .description-setting {
             display: flex;
             align-items: center;
-            height: 100px;
+            margin-bottom: 16px;
           }
+          // 分类专栏设置
+          .column-setting {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            .column-tags-container {
+              display: flex;
+              flex-wrap: wrap;
+              align-items: center;
+              position: relative;
+              @media screen and (max-width: 768px) {
+                width: 200px;
+              }
+              .column-item {
+                margin-right: 10px;
+                margin-bottom: 8px;
+              }
+              .column-actions {
+                display: flex;
+                align-items: center;
+                margin-bottom: 8px;
+                .column-input {
+                  width: 87.78px;
+                  height: 35.78px;
+                }
+              }
+              .column-dropdown {
+                position: absolute;
+                top: calc(100% + 4px);
+                left: 0;
+                min-width: 180px;
+                max-height: 150px;
+                overflow-y: auto;
+                background: var(--el-bg-color);
+                border: 1px solid var(--el-border-color);
+                border-radius: 4px;
+                box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+                .column-limit-overlay {
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  right: 0;
+                  bottom: 0;
+                  background: rgba(255, 255, 255, 0.8);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  z-index: 10;
+                  font-size: 14px;
+                  color: var(--el-text-color-secondary);
+                }
+                // 用户已有的专栏列表
+                .column-list {
+                  max-height: 200px;
+                  padding: 8px;
+                  position: relative;
+                  z-index: 5;
+                  align-items: center;
+                  gap: 2px;
+                  .column-option {
+                    display: flex;
+                    align-items: center;
+                    padding: 4px;
+                    cursor: pointer;
+                    transition: background-color 0.2s;
+                    border-radius: 4px;
+                    &:hover {
+                      background-color: var(--el-border-color-light);
+                    }
+
+                    &.selected {
+                      background-color: var(--el-color-primary-light-9);
+                    }
+                    &.disabled {
+                      cursor: not-allowed;
+                      opacity: 0.6;
+                      &:hover {
+                        background-color: transparent;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          // 文章类型设置
+          .reprint-type-setting {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            @media screen and (max-width: 768px) {
+              .reprint-type-radio {
+                display: flex;
+                flex-direction: column;
+              }
+            }
+          }
+          // 可见范围设置
+          .visible-range-setting {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            @media screen and (max-width: 768px) {
+              .visible-range-radio {
+                display: flex;
+                flex-direction: column;
+              }
+            }
+          }
+        }
+      }
+      // 回到顶部按钮
+      .back-to-top {
+        position: fixed;
+        width: 60px;
+        height: 60px;
+        bottom: 80px;
+        right: 20px;
+        font-size: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--el-bg-color);
+        border: 1px solid var(--el-border-color);
+        border-radius: 50%;
+        cursor: pointer;
+        @media screen and (max-width: 768px) {
+          width: 50px;
+          height: 50px;
+          font-size: 24px;
         }
       }
     }

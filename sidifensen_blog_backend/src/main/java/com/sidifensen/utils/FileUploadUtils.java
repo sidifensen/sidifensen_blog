@@ -40,29 +40,35 @@ public class FileUploadUtils {
      * @return 上传后的文件地址
      * @throws Exception 异常
      */
-    public String upload(UploadEnum uploadEnum, MultipartFile file) throws Exception {
-        // 验证文件大小
-        if (verifyTheFileSize(file.getSize(), uploadEnum.getLimitSize()))
-            throw new FileUploadException("上传文件超过限制大小:" + uploadEnum.getLimitSize() + "MB");
-        if (isFormatFile(file.getOriginalFilename(), uploadEnum.getFormat())) {
-            InputStream stream = file.getInputStream();
-            String name = UUID.randomUUID().toString().replace("-","");
-            String originalFilename = file.getOriginalFilename();
-            String fileExtension = null;
-            if (originalFilename != null) {
-                fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+    public String upload(UploadEnum uploadEnum, MultipartFile file) {
+        try {
+            // 验证文件大小
+            if (verifyTheFileSize(file.getSize(), uploadEnum.getLimitSize()))
+                throw new FileUploadException("上传文件超过限制大小:" + uploadEnum.getLimitSize() + "MB");
+            if (isFormatFile(file.getOriginalFilename(), uploadEnum.getFormat())) {
+                InputStream stream = file.getInputStream();
+                String name = UUID.randomUUID().toString().replace("-", "");
+                String originalFilename = file.getOriginalFilename();
+                String fileExtension = null;
+                if (originalFilename != null) {
+                    fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+                }
+                PutObjectArgs args = PutObjectArgs.builder()
+                        .bucket(bucketName)
+                        .headers(Map.of("Content-Type", Objects.requireNonNull(file.getContentType())))
+                        .object(uploadEnum.getDir() + name + "." + fileExtension)
+                        .stream(stream, file.getSize(), -1)
+                        .build();
+                client.putObject(args);
+                return endpoint + "/" + bucketName + "/" + uploadEnum.getDir() + name + "." + fileExtension;
             }
-            PutObjectArgs args = PutObjectArgs.builder()
-                    .bucket(bucketName)
-                    .headers(Map.of("Content-Type", Objects.requireNonNull(file.getContentType())))
-                    .object(uploadEnum.getDir() + name + "." + fileExtension)
-                    .stream(stream, file.getSize(), -1)
-                    .build();
-            client.putObject(args);
-            return endpoint + "/" + bucketName + "/" + uploadEnum.getDir() + name + "." + fileExtension;
+            log.error("--------------------上传文件格式不正确--------------------");
+            throw new FileUploadException("上传文件类型错误");
+        } catch (FileUploadException e) {
+            throw e; // 直接重新抛出特定的文件上传异常
+        } catch (Exception e) {
+            throw new FileUploadException("上传文件失败");
         }
-        log.error("--------------------上传文件格式不正确--------------------");
-        throw new FileUploadException("上传文件类型错误");
     }
 
     /**
@@ -74,35 +80,44 @@ public class FileUploadUtils {
      * @return 上传后的文件地址
      * @throws Exception 异常
      */
-    public String upload(UploadEnum uploadEnum, MultipartFile file, String dirName) throws Exception {
-        // 验证文件大小
-        if (verifyTheFileSize(file.getSize(), uploadEnum.getLimitSize()))
-            throw new FileUploadException("上传文件超过限制大小:" + uploadEnum.getLimitSize() + "MB");
+    public String upload(UploadEnum uploadEnum, MultipartFile file, String dirName) {
+        try {
+            // 验证文件大小
+            if (verifyTheFileSize(file.getSize(), uploadEnum.getLimitSize()))
+                throw new FileUploadException("上传文件超过限制大小:" + uploadEnum.getLimitSize() + "MB");
 
-        if (isFormatFile(file.getOriginalFilename(), uploadEnum.getFormat())) {
-            InputStream stream = file.getInputStream();
-            String name = UUID.randomUUID().toString().replace("-","");
-            String originalFilename = file.getOriginalFilename();
-            String fileExtension = null;
-            if (originalFilename != null) {
-                fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+            if (isFormatFile(file.getOriginalFilename(), uploadEnum.getFormat())) {
+                InputStream stream = file.getInputStream();
+                // 生成随机文件名
+                String name = UUID.randomUUID().toString().replace("-", "");
+                String originalFilename = file.getOriginalFilename();
+                String fileExtension = null;
+                // 提取文件扩展名
+                if (originalFilename != null) {
+                    fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+                }
+
+                // 构建用户自定义的目录路径
+                String dir = uploadEnum.getDir() + dirName;
+
+                PutObjectArgs args = PutObjectArgs.builder()
+                        .bucket(bucketName)
+                        .headers(Map.of("Content-Type", Objects.requireNonNull(file.getContentType())))
+                        .object(dir + name + "." + fileExtension)
+                        .stream(stream, file.getSize(), -1)
+                        .build();
+                client.putObject(args);
+                return endpoint + "/" + bucketName + "/" + dir + name + "." + fileExtension;
             }
-
-            // 构建用户自定义的目录路径
-            String dir = uploadEnum.getDir() + dirName ;
-
-            PutObjectArgs args = PutObjectArgs.builder()
-                    .bucket(bucketName)
-                    .headers(Map.of("Content-Type", Objects.requireNonNull(file.getContentType())))
-                    .object(dir + name + "." + fileExtension)
-                    .stream(stream, file.getSize(), -1)
-                    .build();
-            client.putObject(args);
-            return endpoint + "/" + bucketName + "/" + dir + name + "." + fileExtension;
+            log.error("--------------------上传文件格式不正确--------------------");
+            throw new FileUploadException("上传文件类型错误");
+        } catch (FileUploadException e) {
+            throw e; // 直接重新抛出特定的文件上传异常
+        } catch (Exception e) {
+            log.error("--------------------上传文件失败--------------------");
+            log.error("上传文件失败: {}", e.getMessage());
+            throw new FileUploadException("上传文件失败");
         }
-
-        log.error("--------------------上传文件格式不正确--------------------");
-        throw new FileUploadException("上传文件类型错误");
     }
 
 
@@ -167,19 +182,24 @@ public class FileUploadUtils {
      * @return 是否成功
      * @throws Exception 异常
      */
-    public boolean deleteFiles(List<String> fileNames) throws Exception {
-        List<DeleteObject> deleteObjects = fileNames.stream().map(DeleteObject::new).toList();
-        RemoveObjectsArgs removeObjectsArgs = RemoveObjectsArgs.builder()
-                .bucket(bucketName)
-                .objects(deleteObjects)
-                .build();
-        Iterable<Result<DeleteError>> results = client.removeObjects(removeObjectsArgs);
-        for (Result<DeleteError> result : results) {
-            DeleteError error = result.get();
-            log.error("文件: " + error.objectName() + "删除错误; ", error.message());
-            return false;
+    public boolean deleteFiles(List<String> fileNames) {
+        try {
+            List<DeleteObject> deleteObjects = fileNames.stream().map(DeleteObject::new).toList();
+            RemoveObjectsArgs removeObjectsArgs = RemoveObjectsArgs.builder()
+                    .bucket(bucketName)
+                    .objects(deleteObjects)
+                    .build();
+            Iterable<Result<DeleteError>> results = client.removeObjects(removeObjectsArgs);
+            for (Result<DeleteError> result : results) {
+                DeleteError error = result.get();
+                log.error("文件: " + error.objectName() + "删除错误; ", error.message());
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("删除文件失败", e);
+            throw new FileUploadException("删除文件失败");
         }
-        return true;
     }
 
     /**
@@ -189,22 +209,27 @@ public class FileUploadUtils {
      * @param dir      文件目录
      * @return 是否成功, 成功：true, 失败：false
      */
-    public boolean deleteFile(String dir, String fileName) throws Exception {
-        String objectName = dir + fileName; // 构建完整对象名
-        if (!isFileExist(dir, fileName)) {
-            log.error("文件 {} 不存在", objectName);
-            throw new FileUploadException("文件不存在");
-        }
-        // 执行删除操作
-        client.removeObject(
-                RemoveObjectArgs.builder()
-                        .bucket(bucketName)
-                        .object(objectName)
-                        .build()
-        );
+    public boolean deleteFile(String dir, String fileName) {
+        try {
+            String objectName = dir + fileName; // 构建完整对象名
+            if (!isFileExist(dir, fileName)) {
+                log.error("文件 {} 不存在", objectName);
+                throw new FileUploadException("文件不存在");
+            }
+            // 执行删除操作
+            client.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .build()
+            );
 
-        log.info("文件 {} 已成功从 MinIO 中删除", objectName);
-        return true;
+            log.info("文件 {} 已成功从 MinIO 中删除", objectName);
+            return true;
+        } catch (Exception e) {
+            log.error("删除文件失败", e);
+            throw new FileUploadException("删除文件失败");
+        }
     }
 
     /**
@@ -247,6 +272,7 @@ public class FileUploadUtils {
                      InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException |
                      XmlParserException e) {
                 log.error("判断文件是否存在出现错误,{}, 文件名：{}, 目录：{}", e.getMessage(), fileName, dir);
+                throw new FileUploadException("文件不存在");
             }
             if (item != null && item.objectName().equals(dir + fileName)) {
                 return true;

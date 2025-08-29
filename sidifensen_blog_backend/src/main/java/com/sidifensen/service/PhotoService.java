@@ -20,19 +20,22 @@ import java.util.List;
 public interface PhotoService extends IService<Photo> {
 
     // 上传图片到相册
-    void uploadAlbum(MultipartFile file, Integer albumId) throws Exception;
+    void uploadAlbum(MultipartFile file, Integer albumId);
+
+    // 上传文章图片
+    String uploadArticle(MultipartFile file);
 
     // 删除图片
-    void delete(Integer photoId) throws Exception;
+    void delete(Integer photoId);
 
     // 批量删除图片
-    void batchDelete(List<Integer> photoIds) throws Exception;
+    void batchDelete(List<Integer> photoIds);
 
     // 管理员删除图片
-    void adminDelete(Integer photoId) throws Exception;
+    void adminDelete(Integer photoId);
 
     // 管理员批量删除图片
-    void adminBatchDelete(List<Integer> photoIds) throws Exception;
+    void adminBatchDelete(List<Integer> photoIds);
 
     // 审核图片
     void adminAudit(PhotoAuditDto photoAuditDto);
@@ -45,4 +48,5 @@ public interface PhotoService extends IService<Photo> {
 
     // 搜索图片
     List<PhotoVo> adminSearch(PhotoDto photoDto);
+
 }

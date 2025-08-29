@@ -17,10 +17,7 @@ public enum UploadEnum {
     ALBUM("album/", "相册图片", List.of("jpg", "jpeg", "png", "gif", "webp"), 5.0),
 
     // 文章封面
-    ARTICLE_COVER("article/articleCover/", "文章封面", List.of("jpg", "jpeg", "png", "webp"), 5.0),
-
-    // 文章图片
-    ARTICLE_IMAGE("article/articleImage/", "文章图片", List.of("jpg", "jpeg", "png", "gif", "webp"), 3.0),
+    ARTICLE("article/", "文章封面", List.of("jpg", "jpeg", "png", "webp"), 5.0),
 
     // 用户头像
     USER_AVATAR("user/avatar/", "用户头像", List.of("jpg", "jpeg", "png", "webp"), 0.3),

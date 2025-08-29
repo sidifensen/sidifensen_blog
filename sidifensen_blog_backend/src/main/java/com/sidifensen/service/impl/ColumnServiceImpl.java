@@ -40,6 +40,10 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
 
     @Override
     public void addColumn(ColumnDto columnDto) {
+        // 查找sort最大值
+        Column column = columnMapper.selectOne(new LambdaQueryWrapper<Column>().select(Column::getSort).orderByDesc(Column::getSort).last("limit 1"));
+        Integer maxSort = (column != null) ? column.getSort() : 0;
+        columnDto.setSort(maxSort + 1);
         Integer userId = SecurityUtils.getUserId();
         if (userId != 0) {
             columnDto.setUserId(userId);

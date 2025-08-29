@@ -176,7 +176,7 @@ import { ref, onMounted, computed } from "vue";
 const { FileReader, Image } = window;
 import { useRoute, useRouter } from "vue-router";
 import { getAlbum, updateAlbum, deleteAlbum, changeShowStatus, changeCover } from "@/api/album";
-import { uploadAlbum, batchDeletePhoto } from "@/api/photo";
+import { uploadAlbumPhoto, batchDeletePhoto } from "@/api/photo";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useUserStore } from "@/stores/userStore";
 import { storeToRefs } from "pinia";
@@ -457,7 +457,7 @@ const submitUpload = async () => {
       compressedFiles.push(compressedFile);
     }
     const uploadPromises = compressedFiles.map((file) => {
-      return uploadAlbum(file, albumForm.value.id);
+      return uploadAlbumPhoto(file, albumForm.value.id);
     });
     await Promise.all(uploadPromises); // 等待图片列表上传完成
     ElMessage.success("图片上传成功");
@@ -536,7 +536,6 @@ const handleChangeAlbumShowStatus = async () => {
     albumForm.value.showStatus = newStatus;
     ElMessage.success("修改相册状态成功");
   } catch (error) {
-    console.log(albumForm.value);
     console.error("修改相册状态失败:", error);
     ElMessage.error("修改相册状态失败");
   }

@@ -15,6 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.sql.SQLSyntaxErrorException;
@@ -75,8 +76,7 @@ public class GlobalException {
 
     @ExceptionHandler(FileUploadException.class)
     Object handlerFileUploadException(FileUploadException e) {
-        log.error("文件上传异常:{}({})", e.getMessage(), e.getStackTrace());
-        return Result.success(e.getMessage());
+        return Result.error(e.getMessage());
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
@@ -112,6 +112,17 @@ public class GlobalException {
     @ExceptionHandler(ClientAbortException.class)
     void handleClientAbortException(ClientAbortException e) {
 
+    }
+
+    /**
+     * 处理文件上传过程中客户端断开连接的异常
+     * 这种情况通常是客户端重启或网络问题导致，不需要特别处理
+     */
+    @ExceptionHandler(MultipartException.class)
+    Object handleMultipartException(MultipartException e) {
+        log.error("文件上传过程中客户端断开连接: {}", e.getMessage());
+        // 可以选择返回一个友好的错误信息或者空响应
+        return Result.error("文件上传中断，请重新上传");
     }
 
     /**

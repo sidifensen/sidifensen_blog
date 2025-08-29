@@ -174,7 +174,7 @@ create table `column`
     id            int primary key auto_increment comment '专栏id',
     user_id       int         not null comment '用户id',
     sort          int         not null comment '排序',
-    name          varchar(10) not null comment '专栏名称',
+    name          varchar(30) not null comment '专栏名称',
     description   varchar(200) comment '专栏描述',
     cover_url     varchar(400) comment '专栏封面',
     show_status   tinyint     not null default 0 comment '展示状态 0-公开 1-私密',
