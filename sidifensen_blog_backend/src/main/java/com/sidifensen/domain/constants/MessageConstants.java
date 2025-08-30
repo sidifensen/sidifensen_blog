@@ -11,11 +11,14 @@ import java.util.Map;
  */
 public class MessageConstants {
 
-    
+
     public static final String IMAGE_NEED_REVIEW = "图片 %d 需要人工审核";
+    public static final String ARTICLE_NEED_REVIEW = "文章 %d 需要人工审核, 原因: %s";
+    public static final String ARTICLE_AUDIT_NOT_PASS = "文章 %d 内容审核不通过, 原因: %s";
 
     /**
      * 图片需要审核的消息
+     *
      * @param photoId 图片id
      * @return 格式化后的消息
      */
@@ -25,9 +28,36 @@ public class MessageConstants {
         map.put("text", text);
         return toJson(map);
     }
-    
+
+    /**
+     * 文章需要审核的消息
+     *
+     * @param articleId 文章id
+     * @return 格式化后的消息
+     */
+    public static String ArticleNeedReview(Integer articleId, String articleTitle) {
+        String text = String.format(ARTICLE_NEED_REVIEW, articleId, articleTitle);
+        Map<String, Object> map = new HashMap<>();
+        map.put("text", text);
+        return toJson(map);
+    }
+
+    /**
+     * 文章审核不通过的消息
+     *
+     * @param message 审核不通过的消息
+     * @return 格式化后的消息
+     */
+    public static String ArticleAuditNotPass(Integer articleId, String message) {
+        String text = String.format(ARTICLE_AUDIT_NOT_PASS, articleId, message);
+        Map<String, Object> map = new HashMap<>();
+        map.put("text", text);
+        return toJson(map);
+    }
+
     /**
      * 将传入的Map参数转换为JSON格式
+     *
      * @param map 包含数据的Map
      * @return JSON字符串
      */

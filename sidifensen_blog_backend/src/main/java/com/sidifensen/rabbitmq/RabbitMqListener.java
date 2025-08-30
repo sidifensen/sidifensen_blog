@@ -31,7 +31,7 @@ public class RabbitMqListener {
     @Value("${frontend.adminHost}")
     private String frontendAdminHost;
 
-
+    // 注册,重置密码邮箱验证码
     @RabbitListener(bindings = @QueueBinding(
             exchange = @Exchange(RabbitMQConstants.Email_Exchange),
             key = RabbitMQConstants.Email_Routing_Key,
@@ -52,6 +52,7 @@ public class RabbitMqListener {
         log.info("成功发送邮箱给{}", email);
     }
 
+    // 图片审核通知
     @RabbitListener(bindings = @QueueBinding(
             exchange = @Exchange(RabbitMQConstants.Examine_Exchange),
             key = RabbitMQConstants.Examine_Routing_Key,

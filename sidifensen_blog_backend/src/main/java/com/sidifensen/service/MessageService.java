@@ -16,6 +16,9 @@ public interface MessageService extends IService<Message> {
     // 发送消息
     void send(MessageDto messageDto);
 
+    // 给用户发送消息
+    void sendToUser(MessageDto messageDto);
+
     // 发送消息给管理员
     void sendToAdmin(MessageDto messageDto);
 

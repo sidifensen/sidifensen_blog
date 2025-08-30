@@ -397,7 +397,6 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         updateWrapper.set(Photo::getExamineStatus, photoAuditDto.getExamineStatus());
         photoMapper.update(null, updateWrapper);
 
-
         // 如果是审核通过
         if (photoAuditDto.getExamineStatus() == 1) {
             AlbumPhoto albumPhoto = albumPhotoMapper.selectById(photoAuditDto.getPhotoId());

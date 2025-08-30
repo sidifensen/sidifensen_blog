@@ -31,9 +31,22 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
     @Resource
     private MessageMapper messageMapper;
 
+    // 发送消息
     @Override
     public void send(MessageDto messageDto) {
         Message message = BeanUtil.copyProperties(messageDto, Message.class);
+        int save = messageMapper.insert(message);
+        if (save <= 0) {
+            throw new BlogException(BlogConstants.SaveMessageError);
+        }
+    }
+
+    // 给用户发送消息
+    @Override
+    public void sendToUser(MessageDto messageDto) {
+        Message message = BeanUtil.copyProperties(messageDto, Message.class);
+        message.setSenderId(1);
+        message.setReceiverId(messageDto.getReceiverId());
         int save = messageMapper.insert(message);
         if (save <= 0) {
             throw new BlogException(BlogConstants.SaveMessageError);

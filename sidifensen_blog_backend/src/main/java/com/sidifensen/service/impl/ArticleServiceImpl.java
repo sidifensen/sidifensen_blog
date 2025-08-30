@@ -6,15 +6,20 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sidifensen.config.SidifensenConfig;
 import com.sidifensen.domain.constants.BlogConstants;
+import com.sidifensen.domain.constants.MessageConstants;
+import com.sidifensen.domain.constants.RabbitMQConstants;
 import com.sidifensen.domain.dto.ArticleAuditDto;
 import com.sidifensen.domain.dto.ArticleDto;
 import com.sidifensen.domain.dto.ArticleStatusDto;
+import com.sidifensen.domain.dto.MessageDto;
 import com.sidifensen.domain.entity.Article;
 import com.sidifensen.domain.entity.ArticleColumn;
 import com.sidifensen.domain.entity.Column;
 import com.sidifensen.domain.enums.EditStatusEnum;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
+import com.sidifensen.domain.enums.MessageTypeEnum;
 import com.sidifensen.domain.enums.VisibleRangeEnum;
 import com.sidifensen.domain.result.ImageAuditResult;
 import com.sidifensen.domain.vo.ArticleVo;
@@ -25,9 +30,12 @@ import com.sidifensen.mapper.ArticleColumnMapper;
 import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.ColumnMapper;
 import com.sidifensen.service.ArticleService;
+import com.sidifensen.service.MessageService;
+import com.sidifensen.utils.MyThreadFactory;
 import com.sidifensen.utils.SecurityUtils;
 import com.sidifensen.utils.TextAuditUtils;
 import jakarta.annotation.Resource;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +43,12 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -54,11 +67,26 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Resource
     private ArticleColumnMapper articleColumnMapper;
-    @Autowired
+
+    @Resource
     private ColumnMapper columnMapper;
-    
-    @Autowired
+
+    @Resource
     private TextAuditUtils textAuditUtils;
+
+    @Resource
+    private SidifensenConfig sidifensenConfig;
+
+    @Resource
+    private MessageService messageService;
+
+    ExecutorService executorService = new ThreadPoolExecutor(
+            2, 4, 0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(500),
+            new MyThreadFactory("ArticleServiceImpl")
+    );
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Override
     public PageVo<List<ArticleVo>> getArticleList(Integer pageNum, Integer pageSize) {
@@ -139,14 +167,68 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (articleMapper.insert(article) < 1) {
             throw new BlogException(BlogConstants.AddArticleError);
         }
-        List<Integer> columnIds = articleDto.getColumnIds();
-        List<ArticleColumn> articleColumnList = columnIds.stream().map(columnId -> {
-            ArticleColumn articleColumn = new ArticleColumn();
-            articleColumn.setArticleId(article.getId());
-            articleColumn.setColumnId(columnId);
-            return articleColumn;
-        }).collect(Collectors.toList());
-        articleColumnMapper.insert(articleColumnList);
+
+        if (ObjectUtil.isNotEmpty(articleDto.getColumnIds())) {
+            executorService.execute(() -> {
+                List<Integer> columnIds = articleDto.getColumnIds();
+                columnIds.forEach(columnId -> {
+                    ArticleColumn articleColumn = articleColumnMapper.selectOne(new LambdaQueryWrapper<ArticleColumn>().select(ArticleColumn::getSort)
+                            .eq(ArticleColumn::getColumnId, columnId).orderByDesc(ArticleColumn::getSort).last("limit 1"));
+                    Integer sort = articleColumn == null ? 0 : articleColumn.getSort();
+                    ArticleColumn newArticleColumn = new ArticleColumn();
+                    newArticleColumn.setArticleId(article.getId());
+                    newArticleColumn.setColumnId(columnId);
+                    newArticleColumn.setSort(sort + 1);
+                    articleColumnMapper.insert(newArticleColumn);
+                });
+            });
+        }
+
+        auditArticle(article);
+    }
+
+    // 文章审核
+    private void auditArticle(Article article) {
+        executorService.execute(() -> {
+
+            MessageDto messageDto = new MessageDto();
+            messageDto.setType(MessageTypeEnum.SYSTEM.getCode());
+            // 进行自动审核
+            if (sidifensenConfig.isArticleAutoAudit()) {
+                ImageAuditResult auditResult = textAuditUtils.auditTextWithDetails(article.getTitle() + " " + article.getContent());
+
+
+                if (auditResult.getStatus().equals(ExamineStatusEnum.PASS)) {
+                    // 文字审核通过，更新审核状态为通过
+                    article.setExamineStatus(ExamineStatusEnum.PASS.getCode());
+                } else if (auditResult.getStatus().equals(ExamineStatusEnum.NO_PASS)) {
+                    // 文字审核不通过，更新审核状态为不通过，并记录原因，并发送消息给用户
+                    article.setExamineStatus(ExamineStatusEnum.NO_PASS.getCode());
+                    messageDto.setContent(MessageConstants.ArticleAuditNotPass(article.getId(), auditResult.getErrorMessage()));
+                    messageDto.setReceiverId(article.getUserId());
+                    messageService.sendToUser(messageDto);
+
+                } else if (auditResult.getStatus().equals(ExamineStatusEnum.WAIT)) {
+                    // 需要人工审核，更新审核状态为待审核，并记录原因，并发送消息给管理员
+                    messageDto.setContent(MessageConstants.ArticleNeedReview(article.getId(), auditResult.getErrorMessage()));
+                    messageService.sendToAdmin(messageDto);
+                    // 发送邮件给管理员
+                    HashMap<String, Object> sendEmail = new HashMap<>();
+                    sendEmail.put("text", MessageConstants.ArticleNeedReview(article.getId(), auditResult.getErrorMessage()));
+                    rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
+                }
+                articleMapper.updateById(article);
+            } else {
+                // 需要人工审核，发送消息给管理员
+                messageDto.setContent(MessageConstants.ArticleNeedReview(article.getId(), null));
+                messageService.sendToAdmin(messageDto);
+
+                // 发送邮件给管理员
+                HashMap<String, Object> sendEmail = new HashMap<>();
+                sendEmail.put("text", MessageConstants.ArticleNeedReview(article.getId(), null));
+                rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
+            }
+        });
     }
 
     @Override
@@ -219,12 +301,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (ObjectUtil.isEmpty(article)) {
             throw new BlogException(BlogConstants.NotFoundArticle);
         }
-        
+
         // 如果审核状态为通过，则进行文字内容审核
         if (articleAuditDto.getExamineStatus() == ExamineStatusEnum.PASS.getCode()) {
             // 进行文字内容审核
             ImageAuditResult auditResult = textAuditUtils.auditTextWithDetails(article.getTitle() + " " + article.getContent());
-            
+
             if (auditResult.getStatus() == 1) {
                 // 文字审核不通过，更新审核状态为不通过，并记录原因
                 articleAuditDto.setExamineStatus(ExamineStatusEnum.NO_PASS.getCode());
@@ -235,17 +317,17 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 articleAuditDto.setExamineReason("文字内容需要人工审核: " + auditResult.getErrorMessage());
             }
         }
-        
+
         // 更新文章审核状态
         Article updateArticle = new Article();
         updateArticle.setId(article.getId());
         updateArticle.setExamineStatus(articleAuditDto.getExamineStatus());
         updateArticle.setUpdateTime(new Date());
-        
+
         if (ObjectUtil.isNotEmpty(articleAuditDto.getExamineReason())) {
             updateArticle.setDescription(articleAuditDto.getExamineReason());
         }
-        
+
         articleMapper.updateById(updateArticle);
     }
 }

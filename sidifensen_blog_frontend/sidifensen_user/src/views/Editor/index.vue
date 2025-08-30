@@ -21,27 +21,78 @@
           </div>
           <!-- 右侧编辑器内容 -->
           <div class="editor-content">
+            <!-- 文章标题区域 -->
+            <div class="article-title-container">
+              <input 
+                v-model="article.title" 
+                type="text" 
+                class="article-title-input" 
+                placeholder="请输入文章标题..." 
+                maxlength="50"
+              />
+            </div>
+            <!-- 文章正文区域 -->
             <div class="aie-container-main"></div>
             <div class="publish-settings">
               <h3>发布文章设置</h3>
               <div class="tag-setting">
                 <label>文章标签</label>
-                <el-tag class="tag-item" v-for="tag in tags" :key="tag" closable size="large" effect="plain" @close="deleteTag(tag)" v-if="tag && tag.trim()">
-                  {{ tag }}
-                </el-tag>
-                <el-button size="small" icon="Plus" style="margin-left: 0px">添加文章标签</el-button>
+                <div class="tag-item-container">
+                  <el-tag class="tag-item" v-for="tag in tags" :key="tag" closable size="large" effect="plain" @close="deleteTag(tag)">
+                    {{ tag }}
+                  </el-tag>
+                  <el-button class="tag-add-button" size="small" icon="Plus" @click="showTagSelector">添加文章标签</el-button>
+                </div>
+                <div v-if="isTagSelectorVisible" class="tag-selector-container">
+                  <div class="tag-selector">
+                    <div class="tag-selector-header">
+                      <h4>标签</h4>
+                      <el-icon class="close-icon" @click="closeTagSelector"><Close /></el-icon>
+                    </div>
+                    <!-- 搜索标签 -->
+                    <div class="tag-search-container">
+                      <el-input v-model="tagSearchKeyword" placeholder="请输入文字搜索" size="small" @input="handleTagSearch" @keyup.enter="addCustomTag">
+                        <template #prefix>
+                          <el-icon :size="16"><Search /></el-icon>
+                        </template>
+                      </el-input>
+                      <div v-if="isSearchResultVisible && searchResults.length > 0" class="search-result-dropdown">
+                        <div v-for="result in searchResults" :key="result" class="search-result-item" @click="selectTag(result)">
+                          {{ result }}
+                        </div>
+                      </div>
+                    </div>
+                    <!-- 标签列表 -->
+                    <div class="tag-container">
+                      <div class="tag-category-list">
+                        <div v-for="category in tagCategories" :key="category" class="tag-category-item" :class="{ active: activeCategory === category }" @click="selectCategory(category)">
+                          {{ category }}
+                        </div>
+                      </div>
+                      <div class="tag-list">
+                        <div class="available-tags-section">
+                          <el-tag v-for="tag in getTagsByCategory(activeCategory)" :key="tag" class="available-tag" :class="{ 'tag-item-active': tags.includes(tag) }" size="small" @click="toggleTag(tag)">
+                            {{ tag }}
+                          </el-tag>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="cover-setting">
                 <label>添加封面</label>
-                <el-upload class="uploader" action="" :auto-upload="true" :show-file-list="false" list-type="picture" :http-request="handleCoverUpload">
-                  <img v-if="article.coverUrl || coverImage" :src="article.coverUrl || coverImage" class="cover-image" />
-                  <el-icon v-else class="avatar-icon"><Plus /></el-icon>
-                </el-upload>
-                <div class="cover-tip">暂无内容图片，请在正文中添加图片</div>
+                <div class="cover-container">
+                  <el-upload class="uploader" action="" :auto-upload="true" :show-file-list="false" list-type="picture" :http-request="handleCoverUpload">
+                    <img v-if="article.coverUrl || coverImage" :src="article.coverUrl || coverImage" class="cover-image" />
+                    <el-icon v-else class="avatar-icon"><Plus /></el-icon>
+                  </el-upload>
+                  <div class="cover-tip">暂无内容图片，请在正文中添加图片</div>
+                </div>
               </div>
               <div class="description-setting">
                 <label>文章摘要</label>
-                <div>
+                <div class="description-container">
                   <el-input v-model="article.description" type="textarea" resize="none" placeholder="输入文章摘要" :autosize="{ minRows: 2, maxRows: 4 }" maxlength="256"></el-input>
                   <el-button size="small" type="danger" icon="EditPen" plain round style="margin-top: 8px" @click="extractSummary">AI提取摘要</el-button>
                 </div>
@@ -49,12 +100,14 @@
               <div class="column-setting">
                 <label>分类专栏</label>
                 <div class="column-tags-container">
-                  <el-tag class="column-item" v-for="column in columns" :key="column.id" size="large" closable effect="plain" @close="deleteColumn(column)">
-                    {{ column.name }}
-                  </el-tag>
-                  <div class="column-actions">
-                    <el-button v-if="!inputVisible" size="small" icon="Plus" @mouseenter="showColumnListOnHover" @mouseleave="hideColumnListOnLeave" @click="showInputColumn">新增专栏 </el-button>
-                    <el-input v-if="inputVisible" ref="InputColumnRef" class="column-input" v-model="inputColumn" size="small" @keyup.enter="addNewColumnn" @blur="handleColumnInputBlur" />
+                  <div class="column-item-container">
+                    <el-tag class="column-item" v-for="column in columns" :key="column.id" size="large" closable effect="plain" @close="deleteColumn(column)">
+                      {{ column.name }}
+                    </el-tag>
+                    <div class="column-actions">
+                      <el-button v-if="!inputVisible" size="small" icon="Plus" @mouseenter="showColumnListOnHover" @mouseleave="hideColumnListOnLeave" @click="showInputColumn">新增专栏 </el-button>
+                      <el-input v-if="inputVisible" ref="InputColumnRef" class="column-input" v-model="inputColumn" size="small" @keyup.enter="addNewColumnn" @blur="handleColumnInputBlur" />
+                    </div>
                   </div>
                   <div v-if="showColumnDropdown" class="column-dropdown" @mouseenter="handleColumnDropdownEnter" @mouseleave="handleColumnDropdownLeave">
                     <div v-if="columns.length >= 3" class="column-limit-overlay">
@@ -80,10 +133,12 @@
               <div class="visible-range-setting">
                 <label>可见范围</label>
                 <el-radio-group class="visible-range-radio" v-model="article.visibleRange">
-                  <el-radio :label="0">全部可见</el-radio>
-                  <el-radio :label="1">仅我可见</el-radio>
-                  <el-radio :label="2">粉丝可见</el-radio>
-                  <el-radio :label="3">VIP可见</el-radio>
+                  <div class="visible-range-container">
+                    <el-radio :label="0">全部可见</el-radio>
+                    <el-radio :label="1">仅我可见</el-radio>
+                    <el-radio :label="2">粉丝可见</el-radio>
+                    <el-radio :label="3">VIP可见</el-radio>
+                  </div>
                 </el-radio-group>
               </div>
             </div>
@@ -121,7 +176,7 @@ import { compressImage, validateImageFile } from "@/utils/PhotoUtils";
 import { getTagList } from "@/api/tag";
 import { addColumn, getColumnList } from "@/api/column";
 import { uploadArticlePhoto } from "@/api/photo";
-import { ArrowUp } from "@element-plus/icons-vue";
+import { ArrowUp, Search, Close } from "@element-plus/icons-vue";
 import { addArticle } from "@/api/article";
 
 const darkStore = useDarkStore();
@@ -197,8 +252,12 @@ onMounted(() => {
       htmlPasteConfig: {
         pasteAsText: false, // 粘贴为文本
       },
-      content: "",
+      content: article.value.content, // 绑定文章内容
       draggable: false, // 禁用拖动
+      // 监听编辑器内容变化，更新article.content
+      onChange: (html) => {
+        article.value.content = html;
+      },
       // 图片上传配置
       image: {
         allowBase64: false,
@@ -391,9 +450,10 @@ const article = ref({
   title: "",
   description: "",
   content: "",
-  coverUrl: "http://115.190.116.72:40000/sidifensen-blog/album/1/13/fd760317ef5745968a71200c65033c8b.webp",
+  coverUrl: "",
   reprintType: 0,
   visibleRange: 0,
+  columnIds: [],
 });
 
 // 所有标签
@@ -402,12 +462,138 @@ getTagList().then((res) => {
   allTags.value = res.data.data;
 });
 
+// 标签选择器显示状态
+const isTagSelectorVisible = ref(false);
+// 标签搜索关键词
+const tagSearchKeyword = ref("");
+// 搜索结果是否可见
+const isSearchResultVisible = ref(false);
+// 搜索结果
+const searchResults = ref([]);
+// 标签分类列表
+const tagCategories = ref([]);
+// 当前选中的分类
+const activeCategory = ref("");
+
+// 监听allTags变化，初始化标签分类
+watch(
+  allTags,
+  (newTags) => {
+    if (newTags && typeof newTags === "object") {
+      tagCategories.value = Object.keys(newTags);
+      if (tagCategories.value.length > 0) {
+        activeCategory.value = tagCategories.value[0];
+      }
+    }
+  },
+  { immediate: true }
+);
+
+// 显示标签选择器
+const showTagSelector = () => {
+  isTagSelectorVisible.value = true;
+};
+
+// 关闭标签选择器
+const closeTagSelector = () => {
+  isTagSelectorVisible.value = false;
+  tagSearchKeyword.value = "";
+  isSearchResultVisible.value = false;
+  searchResults.value = [];
+};
+
+// 处理标签搜索
+const handleTagSearch = () => {
+  if (!tagSearchKeyword.value.trim()) {
+    isSearchResultVisible.value = false;
+    searchResults.value = [];
+    return;
+  }
+  const keyword = tagSearchKeyword.value.toLowerCase();
+  const results = [];
+  // 在所有标签中搜索
+  if (allTags.value && typeof allTags.value === "object") {
+    Object.values(allTags.value).forEach((tagArray) => {
+      tagArray.forEach((tag) => {
+        if (tag.toLowerCase().includes(keyword) && !results.includes(tag)) {
+          results.push(tag);
+        }
+      });
+    });
+  }
+  searchResults.value = results;
+  isSearchResultVisible.value = results.length > 0;
+};
+
+// 选择搜索结果中的标签
+const selectTag = (tag) => {
+  toggleTag(tag);
+  tagSearchKeyword.value = "";
+  isSearchResultVisible.value = false;
+  searchResults.value = [];
+};
+
+// 添加自定义标签
+const addCustomTag = () => {
+  const customTag = tagSearchKeyword.value.trim();
+  if (customTag && !tags.value.includes(customTag)) {
+    tags.value.push(customTag);
+    tagSearchKeyword.value = "";
+    isSearchResultVisible.value = false;
+    searchResults.value = [];
+  }
+};
+
+// 选择分类
+const selectCategory = (category) => {
+  activeCategory.value = category;
+};
+
+// 根据分类获取标签
+const getTagsByCategory = (category) => {
+  if (allTags.value && allTags.value[category]) {
+    return allTags.value[category];
+  }
+  return [];
+};
+
 // 当前标签
 const tags = ref((article.value.tag || "").split(",").filter((tag) => tag.trim() !== ""));
+
+// 切换标签选中状态
+const toggleTag = (tag) => {
+  const index = tags.value.indexOf(tag);
+  if (index > -1) {
+    tags.value.splice(index, 1);
+  } else {
+    tags.value.push(tag);
+  }
+  // 更新article中的tag值，确保数据同步
+  article.value.tag = tags.value.join(",");
+  console.log(tags.value);
+};
+
 // 删除标签
 const deleteTag = (tag) => {
   tags.value = tags.value.filter((item) => item !== tag);
 };
+
+// 点击外部关闭搜索结果
+const handleDocumentClick = (event) => {
+  if (isSearchResultVisible.value && !event.target.closest(".tag-search-container") && !event.target.closest(".search-result-dropdown")) {
+    isSearchResultVisible.value = false;
+  }
+};
+
+// 组件挂载时添加事件监听
+onMounted(() => {
+  document.addEventListener("click", handleDocumentClick);
+});
+
+// 组件卸载时移除事件监听
+onUnmounted(() => {
+  document.removeEventListener("click", handleDocumentClick);
+});
 
 // 封面图片URL
 const coverImage = ref("");
@@ -421,18 +607,14 @@ const handleCoverUpload = async (options) => {
       options.onError && options.onError();
       return;
     }
-
     // 压缩图片
     const compressedFile = await compressImage(file);
-
     // 上传到服务器
     ElMessage.info("封面图片上传中...");
     const response = await uploadArticlePhoto(compressedFile);
-
     // 将服务器返回的URL赋值给coverImage
     coverImage.value = response.data.data;
     article.value.coverUrl = response.data.data;
-
     // 调用成功回调
     options.onSuccess && options.onSuccess();
     ElMessage.success("封面图片上传成功");
@@ -445,10 +627,7 @@ const handleCoverUpload = async (options) => {
 
 // AI提取摘要
 const extractSummary = () => {
-  // 这里应该调用实际的AI摘要接口
-  // 这里只是一个示例
   ElMessage.success("AI摘要提取中...");
-  // 模拟API调用延迟
   setTimeout(() => {
     ElMessage.success("AI摘要提取完成");
   }, 1000);
@@ -472,7 +651,7 @@ const showColumnListOnHover = () => {
 
 // 鼠标移出按钮时隐藏专栏列表
 const hideColumnListOnLeave = () => {
-  // 添加短暂延迟，确保用户可以正常移动鼠标到下拉列表
+  // 添加延迟
   setTimeout(() => {
     // 只有当鼠标没有进入下拉列表区域时才隐藏
     if (!isMouseInDropdown.value) {
@@ -502,24 +681,22 @@ const handleColumnDropdownEnter = () => {
 // 鼠标移出下拉列表区域时更新标记并隐藏列表
 const handleColumnDropdownLeave = () => {
   isMouseInDropdown.value = false;
-  // 添加延迟，以便点击操作能够完成
+  // 添加延迟
   setTimeout(() => {
-    // 确保鼠标确实离开了按钮和下拉列表区域
     // 同时检查inputVisible状态，如果输入框可见则保持下拉列表显示
     if (!inputVisible.value) {
       showColumnDropdown.value = false;
     }
-  }, 1000);
+  }, 400);
 };
 
 // 输入框失焦时隐藏下拉列表并添加专栏
 const handleColumnInputBlur = () => {
   // 先添加专栏
   addNewColumnn();
-  // 由于addNewColumnn会将inputVisible设为false，所以这里直接隐藏下拉列表
   setTimeout(() => {
     showColumnDropdown.value = false;
-  }, 1000);
+  }, 500);
 };
 
 // 新增专栏
@@ -588,9 +765,11 @@ const selectColumn = (column) => {
   // 如果已选择，则取消选择
   if (isColumnSelected(column.id)) {
     columns.value = columns.value.filter((item) => item.id !== column.id);
+    article.value.columnIds = article.value.columnIds.filter((item) => item !== column.id);
   } else if (columns.value.length < 3) {
     // 如果未选择且未达到上限，则添加选择
     columns.value.push(column);
+    article.value.columnIds.push(column.id);
   }
 };
 
@@ -598,11 +777,13 @@ const selectColumn = (column) => {
 const deleteColumn = (column) => {
   columns.value = columns.value.filter((item) => item.id !== column.id);
   selectedColumns.value[column.id] = false;
+  article.value.columnIds = article.value.columnIds.filter((item) => item !== column.id);
 };
 
 // 发布文章
 const handleClickPublish = async () => {
-  addArticle(articleForm.value)
+  console.log(article.value);
+  addArticle(article.value)
     .then(() => {
       ElMessage.success("文章发布成功!");
     })
@@ -768,6 +949,35 @@ const handleClickPublish = async () => {
         margin: auto;
         width: 60vw;
         border-radius: 8px;
+        // 文章标题区域样式
+        .article-title-container {
+          margin-bottom: 20px;
+          .article-title-input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--el-text-color-primary);
+            background: var(--el-bg-color);
+            border: 1px solid var(--el-border-color);
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s ease;
+            &::placeholder {
+              color: var(--el-text-color-placeholder);
+              font-weight: 400;
+            }
+            &:focus {
+              border-color: var(--el-color-primary);
+              box-shadow: 0 0 0 2px rgba(64, 169, 255, 0.2);
+            }
+            @media screen and (max-width: 768px) {
+              font-size: 20px;
+              padding: 10px 12px;
+            }
+          }
+        }
+        // 文章正文区域样式
         .aie-container-main {
           background: var(--el-bg-color);
           border: 1px solid var(--el-border-color);
@@ -788,58 +998,200 @@ const handleClickPublish = async () => {
             font-weight: 600;
           }
           label {
+            display: inline-block;
             margin-right: 16px;
             font-weight: 500;
             color: var(--el-text-color-primary);
             @media screen and (max-width: 768px) {
               width: 40px;
+              min-width: 40px;
+            }
+          }
+          .tag-setting {
+            position: relative;
+            display: flex;
+            align-items: center;
+            .tag-item-container {
+              display: flex;
+              flex-wrap: wrap;
+              .tag-item {
+                margin-right: 10px;
+                margin-bottom: 10px;
+              }
+              .tag-add-button {
+                height: 22px;
+                margin-left: 0px;
+                margin-bottom: 10px;
+              }
+            }
+            // 标签选择器
+            .tag-selector-container {
+              position: absolute;
+              top: 100%;
+              left: 0;
+              width: 400px;
+              max-height: 400px;
+              margin-top: 8px;
+              border: 1px solid var(--el-border-color);
+              border-radius: 6px;
+              background: var(--el-bg-color);
+              padding: 16px;
+              z-index: 2000;
+              box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+              overflow: hidden;
+              @media screen and (max-width: 768px) {
+                width: 80vw;
+                max-height: 60vh;
+              }
+              .tag-selector {
+                width: 100%;
+                // 头部样式
+                .tag-selector-header {
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-bottom: 16px;
+                  h4 {
+                    margin: 0;
+                    font-size: 16px;
+                    font-weight: 500;
+                  }
+                  .close-icon {
+                    cursor: pointer;
+                    color: var(--el-text-color-secondary);
+                    &:hover {
+                      color: var(--el-text-color-primary);
+                    }
+                  }
+                }
+                // 搜索容器样式
+                .tag-search-container {
+                  position: relative;
+                  margin-bottom: 16px;
+                  .el-input {
+                    width: 100%;
+                  }
+                }
+                // 搜索结果下拉框样式
+                .search-result-dropdown {
+                  position: absolute;
+                  top: 100%;
+                  left: 0;
+                  right: 0;
+                  max-height: 200px;
+                  overflow-y: auto;
+                  background: var(--el-bg-color);
+                  border: 1px solid var(--el-border-color);
+                  border-radius: 4px;
+                  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+                  z-index: 1000;
+                  .search-result-item {
+                    padding: 8px 16px;
+                    cursor: pointer;
+                    transition: background-color 0.2s;
+                    &:hover {
+                      background-color: var(--el-border-color-light);
+                    }
+                  }
+                }
+                // 标签容器样式
+                .tag-container {
+                  display: flex;
+                  gap: 20px;
+                  height: 300px;
+                  // 左侧分类列表样式
+                  .tag-category-list {
+                    padding-right: 10px;
+                    width: 100px;
+                    overflow: auto;
+                    flex-shrink: 0;
+                    .tag-category-item {
+                      padding: 5px 15px;
+                      cursor: pointer;
+                      border-radius: 4px;
+                      margin-bottom: 5px;
+                      transition: all 0.2s;
+                      &:hover {
+                        background-color: var(--el-border-color-light);
+                      }
+                      &.active {
+                        background-color: var(--el-color-primary);
+                        color: white;
+                      }
+                    }
+                  }
+                  // 右侧标签列表样式
+                  .tag-list {
+                    flex: 1;
+                    overflow-y: auto;
+                    // 可用标签区域样式
+                    .available-tags-section {
+                      display: flex;
+                      flex-wrap: wrap;
+                      gap: 8px;
+                      .available-tag {
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        &.tag-item-active {
+                          background-color: var(--el-color-primary);
+                          color: white;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
           // 封面设置
           .cover-setting {
             display: flex;
-            height: 150px;
             align-items: center;
-            // 封面上传样式
-            .uploader {
+            margin-bottom: 10px;
+            .cover-container {
               display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              margin-bottom: 8px;
-              width: 192px;
-              height: 108px;
-              display: block;
-              border: 1px solid var(--el-border-color);
-              border-radius: 6px;
-              cursor: pointer;
-              position: relative;
-              overflow: hidden;
-              transition: var(--el-transition-duration-fast);
-              .cover-image {
+              flex-wrap: wrap;
+              // 封面上传样式
+              .uploader {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 8px;
                 width: 192px;
                 height: 108px;
-                border-radius: 4px;
+                display: block;
+                border: 1px solid var(--el-border-color);
+                border-radius: 6px;
+                cursor: pointer;
+                position: relative;
+                overflow: hidden;
+                transition: var(--el-transition-duration-fast);
+                .cover-image {
+                  width: 192px;
+                  height: 108px;
+                  border-radius: 4px;
+                }
+                .avatar-icon {
+                  font-size: 28px;
+                  color: #8c939d;
+                  width: 192px;
+                  height: 108px;
+                  text-align: center;
+                }
               }
-              .avatar-icon {
-                font-size: 28px;
-                color: #8c939d;
-                width: 192px;
-                height: 108px;
-                text-align: center;
+              //图片选择
+              .cover-tip {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 129px;
+                height: 81px;
+                color: var(--el-text-color-secondary);
+                font-size: 12px;
+                margin-left: 16px;
+                border: 1px solid var(--el-border-color);
               }
-            }
-            //图片选择
-            .cover-tip {
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              width: 129px;
-              height: 81px;
-              color: var(--el-text-color-secondary);
-              font-size: 12px;
-              margin-left: 16px;
-              border: 1px solid var(--el-border-color);
             }
           }
           // 文章摘要设置
@@ -847,32 +1199,36 @@ const handleClickPublish = async () => {
             display: flex;
             align-items: center;
             margin-bottom: 16px;
+            .description-container {
+              display: flex;
+              flex-wrap: wrap;
+            }
           }
           // 分类专栏设置
           .column-setting {
             display: flex;
             align-items: center;
             margin-bottom: 16px;
-            flex-wrap: wrap;
             .column-tags-container {
               display: flex;
               flex-wrap: wrap;
               align-items: center;
               position: relative;
-              @media screen and (max-width: 768px) {
-                width: 200px;
-              }
-              .column-item {
-                margin-right: 10px;
-                margin-bottom: 8px;
-              }
-              .column-actions {
+              .column-item-container {
                 display: flex;
-                align-items: center;
-                margin-bottom: 8px;
-                .column-input {
-                  width: 87.78px;
-                  height: 35.78px;
+                flex-wrap: wrap;
+                .column-item {
+                  margin-right: 10px;
+                  margin-bottom: 8px;
+                }
+                .column-actions {
+                  display: flex;
+                  align-items: center;
+                  margin-bottom: 8px;
+                  .column-input {
+                    width: 87.78px;
+                    height: 35.78px;
+                  }
                 }
               }
               .column-dropdown {
@@ -943,7 +1299,8 @@ const handleClickPublish = async () => {
             @media screen and (max-width: 768px) {
               .reprint-type-radio {
                 display: flex;
-                flex-direction: column;
+                flex-wrap: wrap;
+                // flex-direction: column;
               }
             }
           }
@@ -952,10 +1309,10 @@ const handleClickPublish = async () => {
             display: flex;
             align-items: center;
             margin-bottom: 16px;
-            @media screen and (max-width: 768px) {
-              .visible-range-radio {
-                display: flex;
-                flex-direction: column;
+            .visible-range-radio {
+              display: flex;
+              flex-wrap: wrap;
+              .visible-range-container {
               }
             }
           }

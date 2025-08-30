@@ -141,7 +141,7 @@ create table article
     id             int primary key auto_increment comment '文章id',
     user_id        int          not null comment '用户id',
     tag            varchar(255) not null comment '标签',
-    title          varchar(100) not null comment '标题',
+    title          varchar(50)  not null comment '标题',
     description    varchar(200) not null comment '描述',
     content        mediumtext   not null comment '内容',
     cover_url      varchar(400) comment '封面url',
