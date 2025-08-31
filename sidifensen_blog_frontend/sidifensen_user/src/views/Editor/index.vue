@@ -23,13 +23,7 @@
           <div class="editor-content">
             <!-- 文章标题区域 -->
             <div class="article-title-container">
-              <input 
-                v-model="article.title" 
-                type="text" 
-                class="article-title-input" 
-                placeholder="请输入文章标题..." 
-                maxlength="50"
-              />
+              <input v-model="article.title" type="text" class="article-title-input" placeholder="请输入文章标题..." maxlength="50" />
             </div>
             <!-- 文章正文区域 -->
             <div class="aie-container-main"></div>
@@ -41,7 +35,7 @@
                   <el-tag class="tag-item" v-for="tag in tags" :key="tag" closable size="large" effect="plain" @close="deleteTag(tag)">
                     {{ tag }}
                   </el-tag>
-                  <el-button class="tag-add-button" size="small" icon="Plus" @click="showTagSelector">添加文章标签</el-button>
+                  <el-button class="tag-add-button" size="small" icon="Plus" @click="showTagSelector" :disabled="tags.length >= 5">添加文章标签</el-button>
                 </div>
                 <div v-if="isTagSelectorVisible" class="tag-selector-container">
                   <div class="tag-selector">
@@ -51,7 +45,7 @@
                     </div>
                     <!-- 搜索标签 -->
                     <div class="tag-search-container">
-                      <el-input v-model="tagSearchKeyword" placeholder="请输入文字搜索" size="small" @input="handleTagSearch" @keyup.enter="addCustomTag">
+                      <el-input v-model="tagSearchKeyword" placeholder="请输入文字搜索" size="small" @input="handleTagSearch" @keyup.enter="addCustomTag" :disabled="tags.length >= 5">
                         <template #prefix>
                           <el-icon :size="16"><Search /></el-icon>
                         </template>
@@ -64,6 +58,10 @@
                     </div>
                     <!-- 标签列表 -->
                     <div class="tag-container">
+                      <!-- 标签数量限制提示遮盖层 -->
+                      <div v-if="tags.length >= 5" class="tag-limit-overlay">
+                        <span>最多只能添加5个标签</span>
+                      </div>
                       <div class="tag-category-list">
                         <div v-for="category in tagCategories" :key="category" class="tag-category-item" :class="{ active: activeCategory === category }" @click="selectCategory(category)">
                           {{ category }}
@@ -71,7 +69,14 @@
                       </div>
                       <div class="tag-list">
                         <div class="available-tags-section">
-                          <el-tag v-for="tag in getTagsByCategory(activeCategory)" :key="tag" class="available-tag" :class="{ 'tag-item-active': tags.includes(tag) }" size="small" @click="toggleTag(tag)">
+                          <el-tag
+                            v-for="tag in getTagsByCategory(activeCategory)"
+                            :key="tag"
+                            class="available-tag"
+                            :class="{ 'tag-item-active': tags.includes(tag) }"
+                            size="small"
+                            @click="toggleTag(tag)"
+                            :disabled="tags.length >= 5 && !tags.includes(tag)">
                             {{ tag }}
                           </el-tag>
                         </div>
@@ -93,7 +98,7 @@
               <div class="description-setting">
                 <label>文章摘要</label>
                 <div class="description-container">
-                  <el-input v-model="article.description" type="textarea" resize="none" placeholder="输入文章摘要" :autosize="{ minRows: 2, maxRows: 4 }" maxlength="256"></el-input>
+                  <el-input class="description-input" v-model="article.description" type="textarea" resize="none" placeholder="输入文章摘要" :autosize="{ minRows: 2, maxRows: 4 }" maxlength="256"></el-input>
                   <el-button size="small" type="danger" icon="EditPen" plain round style="margin-top: 8px" @click="extractSummary">AI提取摘要</el-button>
                 </div>
               </div>
@@ -125,20 +130,18 @@
               </div>
               <div class="reprint-type-setting">
                 <label>文章类型</label>
-                <el-radio-group class="reprint-type-radio" v-model="article.reprintType">
+                <el-radio-group v-model="article.reprintType">
                   <el-radio :label="0">原创</el-radio>
                   <el-radio :label="1">转载</el-radio>
                 </el-radio-group>
               </div>
               <div class="visible-range-setting">
                 <label>可见范围</label>
-                <el-radio-group class="visible-range-radio" v-model="article.visibleRange">
-                  <div class="visible-range-container">
-                    <el-radio :label="0">全部可见</el-radio>
-                    <el-radio :label="1">仅我可见</el-radio>
-                    <el-radio :label="2">粉丝可见</el-radio>
-                    <el-radio :label="3">VIP可见</el-radio>
-                  </div>
+                <el-radio-group v-model="article.visibleRange">
+                  <el-radio :label="0">全部可见</el-radio>
+                  <el-radio :label="1">仅我可见</el-radio>
+                  <el-radio :label="2">粉丝可见</el-radio>
+                  <el-radio :label="3">VIP可见</el-radio>
                 </el-radio-group>
               </div>
             </div>
@@ -157,6 +160,7 @@
         <el-button icon="ArrowDown" @click="scrollToArticleSettings">文章设置</el-button>
       </div>
       <div class="right">
+        <el-button @click="handleSaveDraft">保存草稿</el-button>
         <el-button type="primary" @click="handleClickPublish">发布文章</el-button>
       </div>
     </div>
@@ -164,7 +168,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, onMounted, onUnmounted, nextTick, computed } from "vue";
+import { useRoute } from "vue-router";
 import EditorHeader from "@/components/EditorHeader.vue";
 import { AiEditor } from "aieditor";
 import "aieditor/dist/style.css";
@@ -177,10 +182,29 @@ import { getTagList } from "@/api/tag";
 import { addColumn, getColumnList } from "@/api/column";
 import { uploadArticlePhoto } from "@/api/photo";
 import { ArrowUp, Search, Close } from "@element-plus/icons-vue";
-import { addArticle } from "@/api/article";
+import { addArticle, saveDraft, getArticleDetail } from "@/api/article";
 
 const darkStore = useDarkStore();
 const { isDark } = storeToRefs(darkStore);
+
+// 获取路由实例
+const route = useRoute();
+
+// 监听页面刷新事件，弹出确认框
+const handleBeforeUnload = (e) => {
+  // isModified 将在后面定义
+  console.log("检测页面刷新 - 内容是否已修改:", isModified?.value);
+  if (isModified?.value) {
+    console.log("阻止页面刷新，弹出确认框");
+    // 现代浏览器标准实现方式
+    e.preventDefault();
+    e.returnValue = "";
+    // 为了兼容不同浏览器，直接返回一个非空字符串
+    return "";
+  }
+  // 如果内容未修改，不阻止页面刷新
+  return undefined;
+};
 
 // 字数统计
 const wordCount = ref(0);
@@ -240,28 +264,91 @@ const countWords = () => {
   }
 };
 
-// 在组件挂载后初始化编辑器
-onMounted(() => {
+// 文章数据
+const article = ref({
+  tag: "",
+  title: "",
+  description: "",
+  content: "",
+  coverUrl: "",
+  reprintType: 0,
+  visibleRange: 0,
+  columnIds: [],
+});
+
+// 当前选择的专栏
+const columns = ref([]);
+
+// 根据文章ID获取文章详情并回显数据
+const loadArticleDetail = async () => {
+  try {
+    // 从路由参数中获取articleId
+    const articleId = route.query.articleId;
+    if (articleId && !isNaN(articleId)) {
+      ElMessage.info(`正在加载文章ID: ${articleId} 的内容...`);
+      // 调用获取文章详情接口
+      const response = await getArticleDetail(articleId);
+      const articleData = response.data.data;
+
+      // 填充文章基本信息
+      if (articleData) {
+        article.value.id = articleData.id || "";
+        article.value.title = articleData.title || "";
+        article.value.description = articleData.description || "";
+        article.value.content = articleData.content || "";
+        article.value.coverUrl = articleData.coverUrl || "";
+        article.value.reprintType = articleData.reprintType || 0;
+        article.value.visibleRange = articleData.visibleRange || 0;
+        article.value.columnIds = articleData.columnIds || [];
+
+        // 填充标签
+        if (articleData.tags && articleData.tags.length > 0) {
+          tags.value = articleData.tags;
+          article.value.tag = articleData.tags.join(",");
+        } else if (articleData.tag) {
+          // 兼容旧格式
+          tags.value = articleData.tag.split(",").filter((tag) => tag.trim() !== "");
+        }
+
+        // 填充专栏
+        if (articleData.columns && articleData.columns.length > 0) {
+          columns.value = articleData.columns;
+        } else if (articleData.columnIds && articleData.columnIds.length > 0 && allColumns.value.length > 0) {
+          // 如果只有columnIds，从allColumns中匹配名称
+          columns.value = allColumns.value.filter((column) => articleData.columnIds.includes(column.id));
+        }
+
+        ElMessage.success("文章内容加载成功");
+      }
+    }
+  } catch (error) {
+    console.error("加载文章详情失败:", error);
+    ElMessage.error("加载文章详情失败，请重试");
+  }
+};
+
+// 主onMounted钩子 - 合并所有初始化逻辑
+onMounted(async () => {
+  // 加载用户文章数据
+  await loadArticleDetail();
+
+  // 添加页面刷新事件监听
+  window.addEventListener("beforeunload", handleBeforeUnload);
+
   if (divRef.value) {
     aiEditor = new AiEditor({
       element: divRef.value,
       placeholder: "点击输入内容...",
       theme: isDark.value ? "dark" : "light",
-      contentRetention: true, // 开启内容保留
-      contentRetentionKey: "editor-content", // 保存本地的key
       htmlPasteConfig: {
         pasteAsText: false, // 粘贴为文本
       },
-      content: article.value.content, // 绑定文章内容
+      content: article.value.content, // 绑定文章内容（已提前加载）
       draggable: false, // 禁用拖动
-      // 监听编辑器内容变化，更新article.content
-      onChange: (html) => {
-        article.value.content = html;
-      },
       // 图片上传配置
       image: {
         allowBase64: false,
-        defaultSize: 350,
+        defaultSize: 100, // 修改默认尺寸为100%以适应容器宽度
         // 自定义图片上传逻辑
         uploader: (file) => {
           return new Promise((resolve, reject) => {
@@ -312,15 +399,14 @@ onMounted(() => {
             ElMessage.error("上传出错: " + error.message);
           },
         },
-        // 选中图片时的浮动菜单配置
-        bubbleMenuItems: ["AlignLeft", "AlignCenter", "AlignRight", "delete"],
+        bubbleMenuItems: ["delete"], // 选中图片时的浮动菜单配置, 只显示删除
       },
       toolbarExcludeKeys: ["subscript", "superscript", "break", "video", "source-code", "printer", "fullscreen"], // 排除下标,上标.强制换行,视频,源代码,打印,全屏
       onSave: (editor) => {
         ElMessage.success("文档保存成功！");
         return true;
-      }, // 保存回调
-      // 监听编辑器内容变化，更新目录和字数统计（使用防抖处理）
+      },
+      // 监听编辑器内容变化，更新article.content、目录和字数统计（使用防抖处理）
       onChange: () => {
         updateDirectoryDebounced();
         countWords();
@@ -330,6 +416,16 @@ onMounted(() => {
 
     // 初始化时直接更新目录和字数统计（不需要防抖）
     nextTick(() => {
+      // // 确保编辑器完全初始化后再设置内容
+      // if (aiEditor && article.value.content) {
+      //   // 检查是否有setHtml方法，如果有则使用它显式设置内容
+      //   if (typeof aiEditor.setHtml === 'function') {
+      //     aiEditor.setHtml(article.value.content);
+      //   } else if (typeof aiEditor.setContent === 'function') {
+      //     // 备用方案
+      //     aiEditor.setContent(article.value.content);
+      //   }
+      // }
       updateDirectory();
       countWords();
     });
@@ -434,7 +530,7 @@ const scrollToHeading = (id) => {
   }
 };
 
-// 在组件卸载前销毁编辑器实例、移除事件监听器并清理防抖计时器
+// 主onUnmounted钩子 - 合并所有清理逻辑
 onUnmounted(() => {
   // 销毁编辑器实例
   aiEditor && aiEditor.destroy();
@@ -442,19 +538,36 @@ onUnmounted(() => {
   if (directoryUpdateTimer) {
     clearTimeout(directoryUpdateTimer);
   }
+  // 移除页面刷新事件监听
+  window.removeEventListener("beforeunload", handleBeforeUnload);
 });
 
-// 文章数据
-const article = ref({
-  tag: "",
-  title: "",
-  description: "",
-  content: "",
-  coverUrl: "",
-  reprintType: 0,
-  visibleRange: 0,
-  columnIds: [],
-});
+// 标记内容是否已修改(阻止刷新页面)
+const isModified = ref(false);
+
+// 监听article变化，更新isModified标志和本地存储
+watch(
+  () => [article.value.title, article.value.content],
+  ([newTitle, newContent]) => {
+    // 检查标题是否有实际内容
+    const hasTitle = newTitle && newTitle.trim().length > 0;
+
+    // 检查内容是否有实际文本（移除HTML标签后）
+    let hasContent = false;
+    if (newContent) {
+      // 创建临时元素解析HTML
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = newContent;
+      // 获取纯文本并检查是否有实际内容
+      const textContent = tempDiv.textContent || tempDiv.innerText || "";
+      hasContent = textContent.trim().length > 0;
+    }
+
+    // 更新isModified标志
+    isModified.value = hasTitle || hasContent;
+  },
+  { deep: true, immediate: true }
+);
 
 // 所有标签
 const allTags = ref([]);
@@ -535,6 +648,11 @@ const selectTag = (tag) => {
 
 // 添加自定义标签
 const addCustomTag = () => {
+  // 限制最多添加5个标签
+  if (tags.value.length >= 5) {
+    ElMessage.warning("最多只能添加5个标签");
+    return;
+  }
   const customTag = tagSearchKeyword.value.trim();
   if (customTag && !tags.value.includes(customTag)) {
     tags.value.push(customTag);
@@ -565,8 +683,12 @@ const toggleTag = (tag) => {
   const index = tags.value.indexOf(tag);
   if (index > -1) {
     tags.value.splice(index, 1);
-  } else {
+  } else if (tags.value.length < 5) {
+    // 限制最多添加5个标签
     tags.value.push(tag);
+  } else {
+    ElMessage.warning("最多只能添加5个标签");
+    return;
   }
   // 更新article中的tag值，确保数据同步
   article.value.tag = tags.value.join(",");
@@ -577,23 +699,6 @@ const toggleTag = (tag) => {
 const deleteTag = (tag) => {
   tags.value = tags.value.filter((item) => item !== tag);
 };
-
-// 点击外部关闭搜索结果
-const handleDocumentClick = (event) => {
-  if (isSearchResultVisible.value && !event.target.closest(".tag-search-container") && !event.target.closest(".search-result-dropdown")) {
-    isSearchResultVisible.value = false;
-  }
-};
-
-// 组件挂载时添加事件监听
-onMounted(() => {
-  document.addEventListener("click", handleDocumentClick);
-});
-
-// 组件卸载时移除事件监听
-onUnmounted(() => {
-  document.removeEventListener("click", handleDocumentClick);
-});
 
 // 封面图片URL
 const coverImage = ref("");
@@ -641,8 +746,6 @@ const InputColumnRef = ref();
 const inputColumn = ref("");
 // 用户专栏列表是否显示
 const showColumnDropdown = ref(false);
-// 选中的专栏
-const selectedColumns = ref({});
 
 // 鼠标悬停时只显示专栏列表
 const showColumnListOnHover = () => {
@@ -729,9 +832,6 @@ const addNewColumnn = () => {
   inputColumn.value = "";
 };
 
-// 当前选择的专栏
-const columns = ref([]);
-
 // 用户的专栏列表
 const allColumns = ref([]);
 getColumnList().then((res) => {
@@ -745,14 +845,6 @@ getColumnList().then((res) => {
         name: item.name,
       };
     });
-});
-
-// 初始化时同步选中状态
-onMounted(() => {
-  // 初始化selectedColumns状态
-  columns.value.forEach((column) => {
-    selectedColumns.value[column.id] = true;
-  });
 });
 
 // 判断专栏是否已选择
@@ -776,24 +868,48 @@ const selectColumn = (column) => {
 // 删除专栏
 const deleteColumn = (column) => {
   columns.value = columns.value.filter((item) => item.id !== column.id);
-  selectedColumns.value[column.id] = false;
   article.value.columnIds = article.value.columnIds.filter((item) => item !== column.id);
 };
 
 // 发布文章
 const handleClickPublish = async () => {
-  console.log(article.value);
+  // 确保在发布前获取最新的编辑器内容
+  if (aiEditor) {
+    article.value.content = aiEditor.getHtml();
+  }
   addArticle(article.value)
     .then(() => {
       ElMessage.success("文章发布成功!");
+      // 文章发布成功后，清除本地存储的标题
+      try {
+        localStorage.removeItem("draft_article_title");
+      } catch (error) {
+        console.error("清除本地存储标题失败:", error);
+      }
     })
     .catch(() => {
       ElMessage.error("文章发布失败!");
     });
 };
+
+// 保存草稿
+const handleSaveDraft = async () => {
+  // 确保在保存前获取最新的编辑器内容
+  if (aiEditor) {
+    article.value.content = aiEditor.getHtml();
+  }
+  saveDraft(article.value)
+    .then(() => {
+      ElMessage.success("草稿保存成功!");
+    })
+    .catch(() => {
+      ElMessage.error("草稿保存失败!");
+    });
+};
 </script>
 
-<style lang="scss" scoped>
+<style scoped lang="scss">
+// 编辑器容器样式
 .editor-container {
   display: flex;
   flex-direction: column;
@@ -832,7 +948,7 @@ const handleClickPublish = async () => {
       background: var(--el-border-color-lighter);
       // 左侧目录样式
       .aie-directory {
-        width: 20vw;
+        width: 15vw;
         background: var(--el-bg-color);
         border: 1px solid var(--el-border-color);
         border-radius: 4px;
@@ -841,6 +957,7 @@ const handleClickPublish = async () => {
         padding: 10px;
         display: flex;
         flex-direction: column;
+        position: fixed;
         .directory-header {
           padding: 12px 16px;
           border-radius: 4px;
@@ -856,7 +973,6 @@ const handleClickPublish = async () => {
           flex: 1;
           overflow-y: auto;
           padding: 8px 0;
-
           // 目录项样式
           .directory-item {
             display: block;
@@ -866,7 +982,6 @@ const handleClickPublish = async () => {
             border-radius: 4px;
             transition: all 0.3s ease;
             cursor: pointer;
-
             // 不同级别的标题缩进
             &.level-1 {
               padding-left: 16px;
@@ -947,40 +1062,41 @@ const handleClickPublish = async () => {
         overflow-y: auto;
         overflow-x: hidden;
         margin: auto;
-        width: 60vw;
+        width: 50vw;
         border-radius: 8px;
+        :deep(img) {
+          max-width: 100% !important;
+          height: auto !important;
+          width: auto !important;
+        }
         // 文章标题区域样式
         .article-title-container {
-          margin-bottom: 20px;
+          width: 100%;
           .article-title-input {
             width: 100%;
-            padding: 12px 16px;
+            padding: 28px;
             font-size: 24px;
-            font-weight: 600;
             color: var(--el-text-color-primary);
             background: var(--el-bg-color);
-            border: 1px solid var(--el-border-color);
-            border-radius: 8px;
+            border: none;
+            border-bottom: 1px solid var(--el-border-color);
             outline: none;
             transition: all 0.3s ease;
+            box-sizing: border-box;
             &::placeholder {
               color: var(--el-text-color-placeholder);
               font-weight: 400;
             }
-            &:focus {
-              border-color: var(--el-color-primary);
-              box-shadow: 0 0 0 2px rgba(64, 169, 255, 0.2);
-            }
-            @media screen and (max-width: 768px) {
-              font-size: 20px;
-              padding: 10px 12px;
-            }
+          }
+          @media screen and (max-width: 768px) {
+            margin-top: 60px;
           }
         }
         // 文章正文区域样式
         .aie-container-main {
           background: var(--el-bg-color);
-          border: 1px solid var(--el-border-color);
+          border: none;
+          overflow-x: hidden;
           min-height: calc(100vh - 100px);
           padding: 16px;
           margin-bottom: 24px;
@@ -989,7 +1105,7 @@ const handleClickPublish = async () => {
         .publish-settings {
           padding: 16px;
           background: var(--el-bg-color);
-          border: 1px solid var(--el-border-color);
+          // border: 1px solid var(--el-border-color);
           padding-bottom: 50px;
           h3 {
             margin-top: 0;
@@ -1094,12 +1210,33 @@ const handleClickPublish = async () => {
                     }
                   }
                 }
-                // 标签容器样式
+                /* 标签容器样式 */
                 .tag-container {
+                  position: relative;
                   display: flex;
                   gap: 20px;
                   height: 300px;
-                  // 左侧分类列表样式
+                  /* 标签数量限制遮盖层 */
+                  .tag-limit-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 10;
+                    pointer-events: none;
+                    span {
+                      color: white;
+                      font-size: 14px;
+                      font-weight: 500;
+                    }
+                  }
+
+                  /* 左侧分类列表样式 */
                   .tag-category-list {
                     padding-right: 10px;
                     width: 100px;
@@ -1120,11 +1257,11 @@ const handleClickPublish = async () => {
                       }
                     }
                   }
-                  // 右侧标签列表样式
+                  /* 右侧标签列表样式 */
                   .tag-list {
                     flex: 1;
                     overflow-y: auto;
-                    // 可用标签区域样式
+                    /* 可用标签区域样式 */
                     .available-tags-section {
                       display: flex;
                       flex-wrap: wrap;
@@ -1202,6 +1339,11 @@ const handleClickPublish = async () => {
             .description-container {
               display: flex;
               flex-wrap: wrap;
+              .description-input {
+                :deep(.el-textarea__inner) {
+                  box-sizing: border-box;
+                }
+              }
             }
           }
           // 分类专栏设置
@@ -1275,7 +1417,6 @@ const handleClickPublish = async () => {
                     &:hover {
                       background-color: var(--el-border-color-light);
                     }
-
                     &.selected {
                       background-color: var(--el-color-primary-light-9);
                     }
@@ -1296,24 +1437,16 @@ const handleClickPublish = async () => {
             display: flex;
             align-items: center;
             margin-bottom: 16px;
-            @media screen and (max-width: 768px) {
-              .reprint-type-radio {
-                display: flex;
-                flex-wrap: wrap;
-                // flex-direction: column;
-              }
+            :deep(.el-radio) {
+              width: auto; // 留足够宽度
             }
           }
           // 可见范围设置
           .visible-range-setting {
             display: flex;
-            align-items: center;
             margin-bottom: 16px;
-            .visible-range-radio {
-              display: flex;
-              flex-wrap: wrap;
-              .visible-range-container {
-              }
+            :deep(.el-radio) {
+              width: auto; // 留足够宽度
             }
           }
         }
@@ -1337,6 +1470,9 @@ const handleClickPublish = async () => {
           width: 50px;
           height: 50px;
           font-size: 24px;
+        }
+        &:hover {
+          background: var(--el-hover-bg-color);
         }
       }
     }
@@ -1366,6 +1502,7 @@ const handleClickPublish = async () => {
       .aie-container {
         .editor-content-wrapper {
           padding-top: 0; // 间隙
+          max-width: 100%;
           .aie-directory {
             display: none; // 隐藏目录
           }
@@ -1373,6 +1510,9 @@ const handleClickPublish = async () => {
             margin-top: 100px;
             height: calc(100vh - 68px);
             width: 100vw; // 编辑文章区域
+            padding: 0 15px;
+            box-sizing: border-box;
+            overflow-x: hidden !important;
           }
         }
       }
@@ -1387,6 +1527,10 @@ const handleClickPublish = async () => {
         .editor-content-wrapper {
           .editor-content {
             margin-top: 120px;
+            width: 100vw !important;
+            padding: 0 10px;
+            box-sizing: border-box !important;
+            overflow-x: hidden !important;
           }
         }
       }

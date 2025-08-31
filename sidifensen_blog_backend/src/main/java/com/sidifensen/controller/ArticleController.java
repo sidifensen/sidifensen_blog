@@ -70,6 +70,15 @@ public class ArticleController {
     }
 
     /**
+     * 保存为草稿
+     */
+    @PostMapping("/saveDraft")
+    public Result saveDraft(@RequestBody ArticleDto articleDto) {
+        articleService.saveDraft(articleDto);
+        return Result.success();
+    }
+
+    /**
      * 更新文章
      *
      * @return 更新文章

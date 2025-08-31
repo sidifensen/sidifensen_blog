@@ -84,7 +84,7 @@ public class ImageAuditUtils {
         try {
             // 对URL进行编码处理，解决URL中包含特殊字符导致无法下载的问题
             String encodedImageUrl = encodeImageUrl(imageUrl);
-            
+
             Client client = createClient();
             Params params = createApiInfo();
 
@@ -117,12 +117,12 @@ public class ImageAuditUtils {
             // 检查所有结果，如果有任何一个结果建议为"block"，则审核不通过
             Integer status = 0;
             StringBuilder errorMessage = new StringBuilder();
-            
+
             // 遍历Results数组中的每个元素
             for (int i = 0; i < results.size(); i++) {
                 JSONObject result = results.get(i, JSONObject.class);
                 JSONArray subResults = result.getJSONArray("SubResults");
-                
+
                 // 遍历SubResults数组中的每个元素
                 for (int j = 0; j < subResults.size(); j++) {
                     JSONObject subResult = subResults.get(j, JSONObject.class);
@@ -130,7 +130,7 @@ public class ImageAuditUtils {
                     String scene = subResult.getStr("Scene");
                     String label = subResult.getStr("Label");
                     Double rate = subResult.getDouble("Rate");
-                    
+
                     // 如果建议是"block"，则审核不通过
                     if (ImageAuditConstants.Suggestion.BLOCK.equals(suggestion)) {
                         status = 1;
@@ -153,8 +153,8 @@ public class ImageAuditUtils {
                     }
                 }
             }
-            
-            log.info("图片:{} ,审核结果:{}", imageUrl, results);
+
+            log.info("图片:{} ,审核结果:{} , 错误信息:{}", imageUrl, results, errorMessage);
             return new ImageAuditResult(status, errorMessage.toString());
         } catch (com.aliyun.tea.TeaException e) {
             log.error("图片:{} ,审核失败:{}", imageUrl, e);
@@ -165,10 +165,10 @@ public class ImageAuditUtils {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * 对图片URL进行编码处理，解决URL中包含特殊字符导致无法下载的问题
-     * 
+     *
      * @param imageUrl 原始图片URL
      * @return 编码后的图片URL
      */
@@ -184,14 +184,14 @@ public class ImageAuditUtils {
                 int port = uri.getPort();
                 String path = uri.getPath();
                 String query = uri.getQuery();
-                
+
                 // 对路径和查询参数进行编码
                 StringBuilder encodedUrl = new StringBuilder();
                 encodedUrl.append(scheme).append("://").append(host);
                 if (port != -1) {
                     encodedUrl.append(":").append(port);
                 }
-                
+
                 // 对路径中的特殊字符进行编码
                 String[] pathSegments = path.split("/");
                 for (int i = 0; i < pathSegments.length; i++) {
@@ -200,12 +200,12 @@ public class ImageAuditUtils {
                     }
                 }
                 encodedUrl.append(String.join("/", pathSegments));
-                
+
                 // 添加查询参数（如果有的话）
                 if (query != null && !query.isEmpty()) {
                     encodedUrl.append("?").append(query);
                 }
-                
+
                 log.info("URL编码处理成功，使用编码后的URL: {}", encodedUrl.toString());
                 return encodedUrl.toString();
             }
@@ -227,65 +227,106 @@ public class ImageAuditUtils {
         switch (scene) {
             case ImageAuditConstants.Scene.PORN:
                 switch (label) {
-                    case ImageAuditConstants.Label.SEXY: return ImageAuditConstants.LabelDescription.SEXY;
-                    case ImageAuditConstants.Label.PORN: return ImageAuditConstants.LabelDescription.PORN;
-                    default: return ImageAuditConstants.LabelDescription.PORN_EXCEPTION;
+                    case ImageAuditConstants.Label.SEXY:
+                        return ImageAuditConstants.LabelDescription.SEXY;
+                    case ImageAuditConstants.Label.PORN:
+                        return ImageAuditConstants.LabelDescription.PORN;
+                    default:
+                        return ImageAuditConstants.LabelDescription.PORN_EXCEPTION;
                 }
             case ImageAuditConstants.Scene.TERRORISM:
                 switch (label) {
-                    case ImageAuditConstants.Label.BLOODY: return ImageAuditConstants.LabelDescription.BLOODY;
-                    case ImageAuditConstants.Label.EXPLOSION: return ImageAuditConstants.LabelDescription.EXPLOSION;
-                    case ImageAuditConstants.Label.OUTFIT: return ImageAuditConstants.LabelDescription.OUTFIT;
-                    case ImageAuditConstants.Label.LOGO: return ImageAuditConstants.LabelDescription.LOGO;
-                    case ImageAuditConstants.Label.WEAPON: return ImageAuditConstants.LabelDescription.WEAPON;
-                    case ImageAuditConstants.Label.POLITICS: return ImageAuditConstants.LabelDescription.POLITICS;
-                    case ImageAuditConstants.Label.VIOLENCE: return ImageAuditConstants.LabelDescription.VIOLENCE;
-                    case ImageAuditConstants.Label.CROWD: return ImageAuditConstants.LabelDescription.CROWD;
-                    case ImageAuditConstants.Label.PARADE: return ImageAuditConstants.LabelDescription.PARADE;
-                    case ImageAuditConstants.Label.CARCRASH: return ImageAuditConstants.LabelDescription.CARCRASH;
-                    case ImageAuditConstants.Label.FLAG: return ImageAuditConstants.LabelDescription.FLAG;
-                    case ImageAuditConstants.Label.LOCATION: return ImageAuditConstants.LabelDescription.LOCATION;
-                    case ImageAuditConstants.Label.DRUG: return ImageAuditConstants.LabelDescription.DRUG;
-                    case ImageAuditConstants.Label.GAMBLE: return ImageAuditConstants.LabelDescription.GAMBLE;
-                    case ImageAuditConstants.Label.OTHERS: return ImageAuditConstants.LabelDescription.OTHERS;
-                    default: return ImageAuditConstants.LabelDescription.TERRORISM_EXCEPTION;
+                    case ImageAuditConstants.Label.BLOODY:
+                        return ImageAuditConstants.LabelDescription.BLOODY;
+                    case ImageAuditConstants.Label.EXPLOSION:
+                        return ImageAuditConstants.LabelDescription.EXPLOSION;
+                    case ImageAuditConstants.Label.OUTFIT:
+                        return ImageAuditConstants.LabelDescription.OUTFIT;
+                    case ImageAuditConstants.Label.LOGO:
+                        return ImageAuditConstants.LabelDescription.LOGO;
+                    case ImageAuditConstants.Label.WEAPON:
+                        return ImageAuditConstants.LabelDescription.WEAPON;
+                    case ImageAuditConstants.Label.POLITICS:
+                        return ImageAuditConstants.LabelDescription.POLITICS;
+                    case ImageAuditConstants.Label.VIOLENCE:
+                        return ImageAuditConstants.LabelDescription.VIOLENCE;
+                    case ImageAuditConstants.Label.CROWD:
+                        return ImageAuditConstants.LabelDescription.CROWD;
+                    case ImageAuditConstants.Label.PARADE:
+                        return ImageAuditConstants.LabelDescription.PARADE;
+                    case ImageAuditConstants.Label.CARCRASH:
+                        return ImageAuditConstants.LabelDescription.CARCRASH;
+                    case ImageAuditConstants.Label.FLAG:
+                        return ImageAuditConstants.LabelDescription.FLAG;
+                    case ImageAuditConstants.Label.LOCATION:
+                        return ImageAuditConstants.LabelDescription.LOCATION;
+                    case ImageAuditConstants.Label.DRUG:
+                        return ImageAuditConstants.LabelDescription.DRUG;
+                    case ImageAuditConstants.Label.GAMBLE:
+                        return ImageAuditConstants.LabelDescription.GAMBLE;
+                    case ImageAuditConstants.Label.OTHERS:
+                        return ImageAuditConstants.LabelDescription.OTHERS;
+                    default:
+                        return ImageAuditConstants.LabelDescription.TERRORISM_EXCEPTION;
                 }
             case ImageAuditConstants.Scene.AD:
                 switch (label) {
-                    case ImageAuditConstants.Label.POLITICS_TEXT: return ImageAuditConstants.LabelDescription.POLITICS_TEXT;
-                    case ImageAuditConstants.Label.PORN_TEXT: return ImageAuditConstants.LabelDescription.PORN_TEXT;
-                    case ImageAuditConstants.Label.ABUSE: return ImageAuditConstants.LabelDescription.ABUSE;
-                    case ImageAuditConstants.Label.TERRORISM_TEXT: return ImageAuditConstants.LabelDescription.TERRORISM_TEXT;
-                    case ImageAuditConstants.Label.CONTRABAND: return ImageAuditConstants.LabelDescription.CONTRABAND;
-                    case ImageAuditConstants.Label.SPAM: return ImageAuditConstants.LabelDescription.SPAM;
-                    case ImageAuditConstants.Label.NPX: return ImageAuditConstants.LabelDescription.NPX;
-                    case ImageAuditConstants.Label.QRCODE: return ImageAuditConstants.LabelDescription.QRCODE;
-                    case ImageAuditConstants.Label.PROGRAM_CODE: return ImageAuditConstants.LabelDescription.PROGRAM_CODE;
-                    case ImageAuditConstants.Label.AD: return ImageAuditConstants.LabelDescription.AD;
-                    default: return ImageAuditConstants.LabelDescription.AD_EXCEPTION;
+                    case ImageAuditConstants.Label.POLITICS_TEXT:
+                        return ImageAuditConstants.LabelDescription.POLITICS_TEXT;
+                    case ImageAuditConstants.Label.PORN_TEXT:
+                        return ImageAuditConstants.LabelDescription.PORN_TEXT;
+                    case ImageAuditConstants.Label.ABUSE:
+                        return ImageAuditConstants.LabelDescription.ABUSE;
+                    case ImageAuditConstants.Label.TERRORISM_TEXT:
+                        return ImageAuditConstants.LabelDescription.TERRORISM_TEXT;
+                    case ImageAuditConstants.Label.CONTRABAND:
+                        return ImageAuditConstants.LabelDescription.CONTRABAND;
+                    case ImageAuditConstants.Label.SPAM:
+                        return ImageAuditConstants.LabelDescription.SPAM;
+                    case ImageAuditConstants.Label.NPX:
+                        return ImageAuditConstants.LabelDescription.NPX;
+                    case ImageAuditConstants.Label.QRCODE:
+                        return ImageAuditConstants.LabelDescription.QRCODE;
+                    case ImageAuditConstants.Label.PROGRAM_CODE:
+                        return ImageAuditConstants.LabelDescription.PROGRAM_CODE;
+                    case ImageAuditConstants.Label.AD:
+                        return ImageAuditConstants.LabelDescription.AD;
+                    default:
+                        return ImageAuditConstants.LabelDescription.AD_EXCEPTION;
                 }
             case ImageAuditConstants.Scene.LIVE:
                 switch (label) {
-                    case ImageAuditConstants.Label.MEANINGLESS: return ImageAuditConstants.LabelDescription.MEANINGLESS;
-                    case ImageAuditConstants.Label.PIP: return ImageAuditConstants.LabelDescription.PIP;
-                    case ImageAuditConstants.Label.SMOKING: return ImageAuditConstants.LabelDescription.SMOKING;
-                    case ImageAuditConstants.Label.DRIVELIVE: return ImageAuditConstants.LabelDescription.DRIVELIVE;
-                    case ImageAuditConstants.Label.DRUG: return ImageAuditConstants.LabelDescription.DRUG;
-                    case ImageAuditConstants.Label.GAMBLE: return ImageAuditConstants.LabelDescription.GAMBLE;
-                    default: return ImageAuditConstants.LabelDescription.LIVE_EXCEPTION;
+                    case ImageAuditConstants.Label.MEANINGLESS:
+                        return ImageAuditConstants.LabelDescription.MEANINGLESS;
+                    case ImageAuditConstants.Label.PIP:
+                        return ImageAuditConstants.LabelDescription.PIP;
+                    case ImageAuditConstants.Label.SMOKING:
+                        return ImageAuditConstants.LabelDescription.SMOKING;
+                    case ImageAuditConstants.Label.DRIVELIVE:
+                        return ImageAuditConstants.LabelDescription.DRIVELIVE;
+                    case ImageAuditConstants.Label.DRUG:
+                        return ImageAuditConstants.LabelDescription.DRUG;
+                    case ImageAuditConstants.Label.GAMBLE:
+                        return ImageAuditConstants.LabelDescription.GAMBLE;
+                    default:
+                        return ImageAuditConstants.LabelDescription.LIVE_EXCEPTION;
                 }
             case ImageAuditConstants.Scene.LOGO:
                 switch (label) {
-                    case ImageAuditConstants.Label.TV: return ImageAuditConstants.LabelDescription.TV;
-                    case ImageAuditConstants.Label.TRADEMARK: return ImageAuditConstants.LabelDescription.TRADEMARK;
-                    case ImageAuditConstants.Label.NORMAL: return ImageAuditConstants.LabelDescription.NORMAL;
-                    default: return ImageAuditConstants.LabelDescription.UNKNOWN;
+                    case ImageAuditConstants.Label.TV:
+                        return ImageAuditConstants.LabelDescription.TV;
+                    case ImageAuditConstants.Label.TRADEMARK:
+                        return ImageAuditConstants.LabelDescription.TRADEMARK;
+                    case ImageAuditConstants.Label.NORMAL:
+                        return ImageAuditConstants.LabelDescription.NORMAL;
+                    default:
+                        return ImageAuditConstants.LabelDescription.UNKNOWN;
                 }
             default:
                 return ImageAuditConstants.LabelDescription.UNKNOWN;
         }
     }
-    
+
     /**
      * 获取场景描述
      *
@@ -294,12 +335,18 @@ public class ImageAuditUtils {
      */
     private String getSceneDescription(String scene) {
         switch (scene) {
-            case ImageAuditConstants.Scene.PORN: return ImageAuditConstants.SceneDescription.PORN;
-            case ImageAuditConstants.Scene.TERRORISM: return ImageAuditConstants.SceneDescription.TERRORISM;
-            case ImageAuditConstants.Scene.AD: return ImageAuditConstants.SceneDescription.AD;
-            case ImageAuditConstants.Scene.LIVE: return ImageAuditConstants.SceneDescription.LIVE;
-            case ImageAuditConstants.Scene.LOGO: return ImageAuditConstants.SceneDescription.LOGO;
-            default: return ImageAuditConstants.SceneDescription.UNKNOWN;
+            case ImageAuditConstants.Scene.PORN:
+                return ImageAuditConstants.SceneDescription.PORN;
+            case ImageAuditConstants.Scene.TERRORISM:
+                return ImageAuditConstants.SceneDescription.TERRORISM;
+            case ImageAuditConstants.Scene.AD:
+                return ImageAuditConstants.SceneDescription.AD;
+            case ImageAuditConstants.Scene.LIVE:
+                return ImageAuditConstants.SceneDescription.LIVE;
+            case ImageAuditConstants.Scene.LOGO:
+                return ImageAuditConstants.SceneDescription.LOGO;
+            default:
+                return ImageAuditConstants.SceneDescription.UNKNOWN;
         }
     }
 

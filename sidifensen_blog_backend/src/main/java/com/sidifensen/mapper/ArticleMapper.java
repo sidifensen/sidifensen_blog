@@ -1,11 +1,11 @@
 package com.sidifensen.mapper;
 
-import com.sidifensen.domain.entity.Article;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.sidifensen.domain.entity.Article;
 
 /**
  * <p>
- *  Mapper 接口
+ * Mapper 接口
  * </p>
  *
  * @author sidifensen

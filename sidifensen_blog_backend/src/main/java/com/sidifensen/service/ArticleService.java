@@ -52,4 +52,7 @@ public interface ArticleService extends IService<Article> {
 
     // 管理员审核文章
     void adminExamineArticle(ArticleAuditDto articleAuditDto);
+
+    // 保存草稿
+    void saveDraft(ArticleDto articleDto);
 }

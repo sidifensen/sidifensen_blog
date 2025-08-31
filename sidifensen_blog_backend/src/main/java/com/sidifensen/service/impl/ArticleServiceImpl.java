@@ -42,7 +42,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -150,12 +149,19 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (ObjectUtil.isEmpty(article)) {
             throw new BlogException(BlogConstants.NotFoundArticle);
         }
+        if (article.getUserId() != SecurityUtils.getUserId()) {
+            throw new BlogException(BlogConstants.CannotHandleOthersArticle);
+        }
         ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
-        List<ArticleColumn> articleColumns = articleColumnMapper.selectList(new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, article.getId()));
-        if (ObjectUtil.isNotEmpty(articleColumns)) {
-            List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId).collect(Collectors.toList());
-            List<Column> columns = columnMapper.selectByIds(columnIds);
-            articleVo.setColumns(BeanUtil.copyToList(columns, ColumnVo.class));
+
+        // 如果文章状态为已发布, 则查询文章所属的专栏
+        if (article.getEditStatus().equals(EditStatusEnum.PUBLISHED.getCode())) {
+            List<ArticleColumn> articleColumns = articleColumnMapper.selectList(new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, article.getId()));
+            if (ObjectUtil.isNotEmpty(articleColumns)) {
+                List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId).collect(Collectors.toList());
+                List<Column> columns = columnMapper.selectByIds(columnIds);
+                articleVo.setColumns(BeanUtil.copyToList(columns, ColumnVo.class));
+            }
         }
         return articleVo;
     }
@@ -164,7 +170,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public void addArticle(ArticleDto articleDto) {
         Article article = BeanUtil.copyProperties(articleDto, Article.class);
         article.setUserId(SecurityUtils.getUserId());
-        if (articleMapper.insert(article) < 1) {
+        if (!articleMapper.insertOrUpdate(article)) {
             throw new BlogException(BlogConstants.AddArticleError);
         }
 
@@ -197,8 +203,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             if (sidifensenConfig.isArticleAutoAudit()) {
                 ImageAuditResult auditResult = textAuditUtils.auditTextWithDetails(article.getTitle() + " " + article.getContent());
 
-
-                if (auditResult.getStatus().equals(ExamineStatusEnum.PASS)) {
+                if (auditResult.getStatus().equals(ExamineStatusEnum.PASS.getCode())) {
                     // 文字审核通过，更新审核状态为通过
                     article.setExamineStatus(ExamineStatusEnum.PASS.getCode());
                 } else if (auditResult.getStatus().equals(ExamineStatusEnum.NO_PASS)) {
@@ -208,7 +213,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                     messageDto.setReceiverId(article.getUserId());
                     messageService.sendToUser(messageDto);
 
-                } else if (auditResult.getStatus().equals(ExamineStatusEnum.WAIT)) {
+                } else if (auditResult.getStatus().equals(ExamineStatusEnum.WAIT.getCode())) {
                     // 需要人工审核，更新审核状态为待审核，并记录原因，并发送消息给管理员
                     messageDto.setContent(MessageConstants.ArticleNeedReview(article.getId(), auditResult.getErrorMessage()));
                     messageService.sendToAdmin(messageDto);
@@ -229,6 +234,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
             }
         });
+    }
+
+    // 保存草稿
+    @Override
+    public void saveDraft(ArticleDto articleDto) {
+        Article article = BeanUtil.copyProperties(articleDto, Article.class);
+        article.setUserId(SecurityUtils.getUserId());
+        article.setEditStatus(EditStatusEnum.DRAFT.getCode());
+        articleMapper.insertOrUpdate(article);
     }
 
     @Override
@@ -297,37 +311,35 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public void adminExamineArticle(ArticleAuditDto articleAuditDto) {
-        Article article = articleMapper.selectById(articleAuditDto.getArticleId());
+        // 只查询userId字段
+        Article article = articleMapper.selectOne(new LambdaQueryWrapper<Article>()
+                .select(Article::getUserId)
+                .eq(Article::getId, articleAuditDto.getArticleId()));
+
         if (ObjectUtil.isEmpty(article)) {
             throw new BlogException(BlogConstants.NotFoundArticle);
         }
-
-        // 如果审核状态为通过，则进行文字内容审核
-        if (articleAuditDto.getExamineStatus() == ExamineStatusEnum.PASS.getCode()) {
-            // 进行文字内容审核
-            ImageAuditResult auditResult = textAuditUtils.auditTextWithDetails(article.getTitle() + " " + article.getContent());
-
-            if (auditResult.getStatus() == 1) {
-                // 文字审核不通过，更新审核状态为不通过，并记录原因
-                articleAuditDto.setExamineStatus(ExamineStatusEnum.NO_PASS.getCode());
-                articleAuditDto.setExamineReason("文字内容审核不通过: " + auditResult.getErrorMessage());
-            } else if (auditResult.getStatus() == 2) {
-                // 需要人工审核，更新审核状态为待审核，并记录原因
-                articleAuditDto.setExamineStatus(ExamineStatusEnum.WAIT.getCode());
-                articleAuditDto.setExamineReason("文字内容需要人工审核: " + auditResult.getErrorMessage());
-            }
+        Integer examineStatus = articleAuditDto.getExamineStatus();
+        String examineReason = articleAuditDto.getExamineReason();
+        // 审核状态为通过
+        if (examineStatus.equals(ExamineStatusEnum.PASS.getCode())) {
+            articleAuditDto.setExamineStatus(ExamineStatusEnum.PASS.getCode());
+        } else if (examineStatus.equals(ExamineStatusEnum.NO_PASS.getCode())) {
+            articleAuditDto.setExamineStatus(ExamineStatusEnum.NO_PASS.getCode());
+            articleAuditDto.setExamineReason(MessageConstants.ArticleAuditNotPass(articleAuditDto.getArticleId(), examineReason));
         }
 
         // 更新文章审核状态
         Article updateArticle = new Article();
-        updateArticle.setId(article.getId());
-        updateArticle.setExamineStatus(articleAuditDto.getExamineStatus());
-        updateArticle.setUpdateTime(new Date());
-
-        if (ObjectUtil.isNotEmpty(articleAuditDto.getExamineReason())) {
-            updateArticle.setDescription(articleAuditDto.getExamineReason());
-        }
-
+        updateArticle.setId(articleAuditDto.getArticleId());
+        updateArticle.setExamineStatus(examineStatus);
         articleMapper.updateById(updateArticle);
+
+        // 发送消息给用户
+        MessageDto messageDto = new MessageDto();
+        messageDto.setContent(MessageConstants.ArticleAuditNotPass(articleAuditDto.getArticleId(), examineReason));
+        messageDto.setReceiverId(article.getUserId());
+        messageService.sendToUser(messageDto);
     }
+
 }
