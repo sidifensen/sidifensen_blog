@@ -52,7 +52,7 @@ public class RabbitMqListener {
         log.info("成功发送邮箱给{}", email);
     }
 
-    // 图片审核通知
+    // 审核通知
     @RabbitListener(bindings = @QueueBinding(
             exchange = @Exchange(RabbitMQConstants.Examine_Exchange),
             key = RabbitMQConstants.Examine_Routing_Key,

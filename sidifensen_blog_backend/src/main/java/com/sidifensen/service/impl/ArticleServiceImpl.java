@@ -61,29 +61,23 @@ import java.util.stream.Collectors;
 @Service
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
 
-    @Resource
-    private ArticleMapper articleMapper;
-
-    @Resource
-    private ArticleColumnMapper articleColumnMapper;
-
-    @Resource
-    private ColumnMapper columnMapper;
-
-    @Resource
-    private TextAuditUtils textAuditUtils;
-
-    @Resource
-    private SidifensenConfig sidifensenConfig;
-
-    @Resource
-    private MessageService messageService;
-
     ExecutorService executorService = new ThreadPoolExecutor(
             2, 4, 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(500),
             new MyThreadFactory("ArticleServiceImpl")
     );
+    @Resource
+    private ArticleMapper articleMapper;
+    @Resource
+    private ArticleColumnMapper articleColumnMapper;
+    @Resource
+    private ColumnMapper columnMapper;
+    @Resource
+    private TextAuditUtils textAuditUtils;
+    @Resource
+    private SidifensenConfig sidifensenConfig;
+    @Resource
+    private MessageService messageService;
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
@@ -133,7 +127,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             qw.between(Article::getCreateTime, firstDayOfMonth, lastDayOfMonth);
         }
 
-        qw.orderByDesc(articleStatusDto.getOrderBy() == 0 ? Article::getCreateTime : Article::getReadCount);
+        qw.orderByDesc(ObjectUtil.isNotEmpty(articleStatusDto.getOrderBy()) && articleStatusDto.getOrderBy() == 0 ? Article::getCreateTime : Article::getReadCount);
         List<Article> articleList = articleMapper.selectPage(page, qw).getRecords();
         List<ArticleVo> articleVoList = articleList.stream().map(article -> {
             ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
@@ -199,6 +193,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
             MessageDto messageDto = new MessageDto();
             messageDto.setType(MessageTypeEnum.SYSTEM.getCode());
+            HashMap<String, Object> sendEmail = new HashMap<>();
             // 进行自动审核
             if (sidifensenConfig.isArticleAutoAudit()) {
                 ImageAuditResult auditResult = textAuditUtils.auditTextWithDetails(article.getTitle() + " " + article.getContent());
@@ -212,27 +207,20 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                     messageDto.setContent(MessageConstants.ArticleAuditNotPass(article.getId(), auditResult.getErrorMessage()));
                     messageDto.setReceiverId(article.getUserId());
                     messageService.sendToUser(messageDto);
-
                 } else if (auditResult.getStatus().equals(ExamineStatusEnum.WAIT.getCode())) {
                     // 需要人工审核，更新审核状态为待审核，并记录原因，并发送消息给管理员
                     messageDto.setContent(MessageConstants.ArticleNeedReview(article.getId(), auditResult.getErrorMessage()));
                     messageService.sendToAdmin(messageDto);
-                    // 发送邮件给管理员
-                    HashMap<String, Object> sendEmail = new HashMap<>();
-                    sendEmail.put("text", MessageConstants.ArticleNeedReview(article.getId(), auditResult.getErrorMessage()));
-                    rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
+                    sendEmail.put("text", String.format(MessageConstants.ARTICLE_NEED_REVIEW, article.getId(), auditResult.getErrorMessage()));
                 }
                 articleMapper.updateById(article);
             } else {
-                // 需要人工审核，发送消息给管理员
+                // 没有开启自动审核, 需要人工审核，发送消息给管理员
                 messageDto.setContent(MessageConstants.ArticleNeedReview(article.getId(), null));
                 messageService.sendToAdmin(messageDto);
-
-                // 发送邮件给管理员
-                HashMap<String, Object> sendEmail = new HashMap<>();
-                sendEmail.put("text", MessageConstants.ArticleNeedReview(article.getId(), null));
-                rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
+                sendEmail.put("text", String.format(MessageConstants.ARTICLE_NEED_REVIEW, article.getId(), null));
             }
+            rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
         });
     }
 

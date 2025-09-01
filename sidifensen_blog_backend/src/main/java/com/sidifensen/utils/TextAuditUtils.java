@@ -9,7 +9,6 @@ import com.aliyun.teaopenapi.models.OpenApiRequest;
 import com.aliyun.teaopenapi.models.Params;
 import com.aliyun.teautil.Common;
 import com.aliyun.teautil.models.RuntimeOptions;
-import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.result.ImageAuditResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,8 +18,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * 文字内容审核工具类
@@ -32,38 +29,33 @@ import java.util.regex.Pattern;
 @Component
 public class TextAuditUtils {
 
-    @Value("${aliyun.accessKeyId}")
-    private String accessKeyId;
-
-    @Value("${aliyun.accessKeySecret}")
-    private String accessKeySecret;
-
-    @Value("${aliyun.imageaudit.endpoint}")
-    private String endpoint;
-
     // 常见的HTML标签列表，用于更精确地识别HTML标签
     private static final Set<String> COMMON_HTML_TAGS = new HashSet<>();
 
     static {
         String[] tags = {
-                "html", "head", "title", "base", "link", "meta", "style",
-                "script", "noscript", "body", "section", "nav", "article", "aside",
-                "h1", "h2", "h3", "h4", "h5", "h6", "header", "footer", "address",
-                "p", "hr", "pre", "blockquote", "ol", "ul", "li", "dl", "dt", "dd",
-                "figure", "figcaption", "main", "div", "a", "em", "strong", "small",
-                "s", "cite", "q", "dfn", "abbr", "ruby", "rt", "rp", "data", "time",
-                "code", "var", "samp", "kbd", "sub", "sup", "i", "b", "u", "mark",
-                "bdi", "bdo", "span", "br", "wbr", "ins", "del", "picture", "source",
-                "img", "iframe", "embed", "object", "param", "video", "audio", "track",
-                "canvas", "map", "area", "table", "caption", "colgroup", "col", "tbody",
-                "thead", "tfoot", "tr", "td", "th", "form", "label", "input", "button",
-                "select", "datalist", "optgroup", "option", "textarea", "keygen", "output",
-                "progress", "meter", "fieldset", "legend", "details", "summary", "menuitem", "menu"
+                "html", "body",
+                "h1", "h2", "h3", "h4", "h5", "h6",
+                "p", "strong", "em", "u", "s", "code", "mark", "span",
+                "ul", "ol", "li",
+                "a", "blockquote", "hr",
+                "table", "colgroup", "col", "tbody", "tr", "th", "td",
+                "label", "input",
+                "pre",
+                "div", "span",
+                "img"
         };
         for (String tag : tags) {
             COMMON_HTML_TAGS.add(tag);
         }
     }
+
+    @Value("${aliyun.accessKeyId}")
+    private String accessKeyId;
+    @Value("${aliyun.accessKeySecret}")
+    private String accessKeySecret;
+    @Value("${aliyun.imageaudit.endpoint}")
+    private String endpoint;
 
     /**
      * 去除HTML标签，只保留纯文本内容
@@ -78,46 +70,21 @@ public class TextAuditUtils {
 
         String result = content;
 
-        // 使用正则表达式匹配HTML标签，并结合已知标签列表进行验证
-        // 匹配开始标签和自闭合标签
-        Pattern startTagPattern = Pattern.compile("<([a-zA-Z][a-zA-Z0-9]*)(\\s[^>]*?|\\s*)/?>");
-        Matcher startTagMatcher = startTagPattern.matcher(result);
-        StringBuffer sb1 = new StringBuffer();
+        // 先处理HTML注释
+        result = result.replaceAll("<!--.*?-->", "");
 
-        while (startTagMatcher.find()) {
-            String tagName = startTagMatcher.group(1).toLowerCase();
+        // 使用正则表达式去除所有HTML标签（包括自定义属性）
+        result = result.replaceAll("<[^>]*>", "");
 
-            // 只有在已知标签列表中的才替换为空
-            if (COMMON_HTML_TAGS.contains(tagName)) {
-                startTagMatcher.appendReplacement(sb1, "");
-            } else {
-                // 不是已知HTML标签，保留原内容
-                startTagMatcher.appendReplacement(sb1, startTagMatcher.group(0));
-            }
-        }
-        startTagMatcher.appendTail(sb1);
-        result = sb1.toString();
+        // 处理一些特殊字符的转换
+        result = result.replace("&nbsp;", " ")
+                .replace("&amp;", "&")
+                .replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("&quot;", "\"")
+                .replace("&#39;", "'");
 
-        // 匹配结束标签
-        Pattern endTagPattern = Pattern.compile("</([a-zA-Z][a-zA-Z0-9]*)\\s*>");
-        Matcher endTagMatcher = endTagPattern.matcher(result);
-        StringBuffer sb2 = new StringBuffer();
-
-        while (endTagMatcher.find()) {
-            String tagName = endTagMatcher.group(1).toLowerCase();
-
-            // 只有在已知标签列表中的才替换为空
-            if (COMMON_HTML_TAGS.contains(tagName)) {
-                endTagMatcher.appendReplacement(sb2, "");
-            } else {
-                // 不是已知HTML标签，保留原内容
-                endTagMatcher.appendReplacement(sb2, endTagMatcher.group(0));
-            }
-        }
-        endTagMatcher.appendTail(sb2);
-        result = sb2.toString();
-
-        return result;
+        return result.trim();
     }
 
     /**
@@ -234,7 +201,7 @@ public class TextAuditUtils {
             JSONArray elements = data.getJSONArray("Elements");
 
             // 检查所有结果，如果有任何一个结果建议为"block"，则审核不通过
-            Integer status = ExamineStatusEnum.PASS.getCode();
+            Integer status = 0;
             StringBuilder errorMessage = new StringBuilder();
 
             // 遍历Elements数组中的每个元素
@@ -276,7 +243,7 @@ public class TextAuditUtils {
 
                     // 如果建议是"block"，则审核不通过
                     if ("block".equals(suggestion)) {
-                        status = ExamineStatusEnum.NO_PASS.getCode(); // 审核不通过
+                        status = 1; // 审核不通过
                         // 构建错误信息
                         errorMessage.append("检测到违规内容: ")
                                 .append(labelDescription)
@@ -295,7 +262,7 @@ public class TextAuditUtils {
                                 .append("%; ");
                     } else if ("review".equals(suggestion)) {
                         // 如果建议是"review"，则需要人工审核
-                        status = ExamineStatusEnum.WAIT.getCode(); // 需要人工审核(待审核)
+                        status = 2; // 需要人工审核
                         errorMessage.append("需要人工审核: ")
                                 .append(labelDescription)
                                 .append("(")

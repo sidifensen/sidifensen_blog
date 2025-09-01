@@ -10,10 +10,10 @@
             <div class="directory-header">
               <h5>目录</h5>
             </div>
-            <div class="directory-content" ref="directoryRef">
+            <div ref="directoryRef" class="directory-content">
               <div v-if="!directoryItems.length" class="no-content">暂无内容</div>
               <div v-for="item in directoryItems" :key="item.id">
-                <div @click="scrollToHeading(item.id)" :class="['directory-item', `level-${item.level}`, { active: activeHeadingId === item.id }]">
+                <div :class="['directory-item', `level-${item.level}`, { active: activeHeadingId === item.id }]" @click="scrollToHeading(item.id)">
                   {{ item.text }}
                 </div>
               </div>
@@ -23,7 +23,7 @@
           <div class="editor-content">
             <!-- 文章标题区域 -->
             <div class="article-title-container">
-              <input v-model="article.title" type="text" class="article-title-input" placeholder="请输入文章标题..." maxlength="50" />
+              <input v-model="article.title" class="article-title-input" maxlength="50" placeholder="请输入文章标题..." type="text" />
             </div>
             <!-- 文章正文区域 -->
             <div class="aie-container-main"></div>
@@ -32,22 +32,26 @@
               <div class="tag-setting">
                 <label>文章标签</label>
                 <div class="tag-item-container">
-                  <el-tag class="tag-item" v-for="tag in tags" :key="tag" closable size="large" effect="plain" @close="deleteTag(tag)">
+                  <el-tag v-for="tag in tags" :key="tag" class="tag-item" closable effect="plain" size="large" @close="deleteTag(tag)">
                     {{ tag }}
                   </el-tag>
-                  <el-button class="tag-add-button" size="small" icon="Plus" @click="showTagSelector" :disabled="tags.length >= 5">添加文章标签</el-button>
+                  <el-button :disabled="tags.length >= 5" class="tag-add-button" icon="Plus" size="small" @click="showTagSelector">添加文章标签 </el-button>
                 </div>
                 <div v-if="isTagSelectorVisible" class="tag-selector-container">
                   <div class="tag-selector">
                     <div class="tag-selector-header">
                       <h4>标签</h4>
-                      <el-icon class="close-icon" @click="closeTagSelector"><Close /></el-icon>
+                      <el-icon class="close-icon" @click="closeTagSelector">
+                        <Close />
+                      </el-icon>
                     </div>
                     <!-- 搜索标签 -->
                     <div class="tag-search-container">
-                      <el-input v-model="tagSearchKeyword" placeholder="请输入文字搜索" size="small" @input="handleTagSearch" @keyup.enter="addCustomTag" :disabled="tags.length >= 5">
+                      <el-input v-model="tagSearchKeyword" :disabled="tags.length >= 5" placeholder="请输入文字搜索" size="small" @input="handleTagSearch" @keyup.enter="addCustomTag">
                         <template #prefix>
-                          <el-icon :size="16"><Search /></el-icon>
+                          <el-icon :size="16">
+                            <Search />
+                          </el-icon>
                         </template>
                       </el-input>
                       <div v-if="isSearchResultVisible && searchResults.length > 0" class="search-result-dropdown">
@@ -63,7 +67,7 @@
                         <span>最多只能添加5个标签</span>
                       </div>
                       <div class="tag-category-list">
-                        <div v-for="category in tagCategories" :key="category" class="tag-category-item" :class="{ active: activeCategory === category }" @click="selectCategory(category)">
+                        <div v-for="category in tagCategories" :key="category" :class="{ active: activeCategory === category }" class="tag-category-item" @click="selectCategory(category)">
                           {{ category }}
                         </div>
                       </div>
@@ -72,11 +76,11 @@
                           <el-tag
                             v-for="tag in getTagsByCategory(activeCategory)"
                             :key="tag"
-                            class="available-tag"
                             :class="{ 'tag-item-active': tags.includes(tag) }"
+                            :disabled="tags.length >= 5 && !tags.includes(tag)"
+                            class="available-tag"
                             size="small"
-                            @click="toggleTag(tag)"
-                            :disabled="tags.length >= 5 && !tags.includes(tag)">
+                            @click="toggleTag(tag)">
                             {{ tag }}
                           </el-tag>
                         </div>
@@ -88,9 +92,11 @@
               <div class="cover-setting">
                 <label>添加封面</label>
                 <div class="cover-container">
-                  <el-upload class="uploader" action="" :auto-upload="true" :show-file-list="false" list-type="picture" :http-request="handleCoverUpload">
+                  <el-upload :auto-upload="true" :http-request="handleCoverUpload" :show-file-list="false" action="" class="uploader" list-type="picture">
                     <img v-if="article.coverUrl || coverImage" :src="article.coverUrl || coverImage" class="cover-image" />
-                    <el-icon v-else class="avatar-icon"><Plus /></el-icon>
+                    <el-icon v-else class="avatar-icon">
+                      <Plus />
+                    </el-icon>
                   </el-upload>
                   <div class="cover-tip">暂无内容图片，请在正文中添加图片</div>
                 </div>
@@ -98,20 +104,20 @@
               <div class="description-setting">
                 <label>文章摘要</label>
                 <div class="description-container">
-                  <el-input class="description-input" v-model="article.description" type="textarea" resize="none" placeholder="输入文章摘要" :autosize="{ minRows: 2, maxRows: 4 }" maxlength="256"></el-input>
-                  <el-button size="small" type="danger" icon="EditPen" plain round style="margin-top: 8px" @click="extractSummary">AI提取摘要</el-button>
+                  <el-input v-model="article.description" :autosize="{ minRows: 2, maxRows: 4 }" class="description-input" maxlength="256" placeholder="输入文章摘要" resize="none" type="textarea"></el-input>
+                  <el-button icon="EditPen" plain round size="small" style="margin-top: 8px" type="danger" @click="extractSummary">AI提取摘要 </el-button>
                 </div>
               </div>
               <div class="column-setting">
                 <label>分类专栏</label>
                 <div class="column-tags-container">
                   <div class="column-item-container">
-                    <el-tag class="column-item" v-for="column in columns" :key="column.id" size="large" closable effect="plain" @close="deleteColumn(column)">
+                    <el-tag v-for="column in columns" :key="column.id" class="column-item" closable effect="plain" size="large" @close="deleteColumn(column)">
                       {{ column.name }}
                     </el-tag>
                     <div class="column-actions">
-                      <el-button v-if="!inputVisible" size="small" icon="Plus" @mouseenter="showColumnListOnHover" @mouseleave="hideColumnListOnLeave" @click="showInputColumn">新增专栏 </el-button>
-                      <el-input v-if="inputVisible" ref="InputColumnRef" class="column-input" v-model="inputColumn" size="small" @keyup.enter="addNewColumnn" @blur="handleColumnInputBlur" />
+                      <el-button v-if="!inputVisible" icon="Plus" size="small" @click="showInputColumn" @mouseenter="showColumnListOnHover" @mouseleave="hideColumnListOnLeave">新增专栏 </el-button>
+                      <el-input v-if="inputVisible" ref="InputColumnRef" v-model="inputColumn" class="column-input" size="small" @blur="handleColumnInputBlur" @keyup.enter="addNewColumnn" />
                     </div>
                   </div>
                   <div v-if="showColumnDropdown" class="column-dropdown" @mouseenter="handleColumnDropdownEnter" @mouseleave="handleColumnDropdownLeave">
@@ -119,7 +125,7 @@
                       <span>最多选择三个专栏</span>
                     </div>
                     <div class="column-list">
-                      <div v-for="item in allColumns" :key="item.id" class="column-option" :class="{ selected: isColumnSelected(item.id), disabled: columns.length >= 3 && !isColumnSelected(item.id) }" @click="selectColumn(item)">
+                      <div v-for="item in allColumns" :key="item.id" :class="{ selected: isColumnSelected(item.id), disabled: columns.length >= 3 && !isColumnSelected(item.id) }" class="column-option" @click="selectColumn(item)">
                         <el-checkbox :checked="isColumnSelected(item.id)" :disabled="columns.length >= 3 && !isColumnSelected(item.id)">
                           <span>{{ item.name }}</span>
                         </el-checkbox>
@@ -148,19 +154,21 @@
           </div>
           <!-- 右下角回到顶部按钮 -->
           <div class="back-to-top" @click="scrollToTop">
-            <el-icon><ArrowUp /></el-icon>
+            <el-icon>
+              <ArrowUp />
+            </el-icon>
           </div>
         </div>
         <div class="aie-container-footer"></div>
       </div>
     </div>
     <div class="footer">
-      <div>字数统计: {{ wordCount }}字</div>
+      <div class="left">字数统计: {{ wordCount }}字</div>
       <div class="center">
         <el-button icon="ArrowDown" @click="scrollToArticleSettings">文章设置</el-button>
       </div>
       <div class="right">
-        <el-button @click="handleSaveDraft">保存草稿</el-button>
+        <el-button v-if="!isDraft" @click="handleSaveDraft">保存草稿</el-button>
         <el-button type="primary" @click="handleClickPublish">发布文章</el-button>
       </div>
     </div>
@@ -168,21 +176,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick, computed } from "vue";
+import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import EditorHeader from "@/components/EditorHeader.vue";
 import { AiEditor } from "aieditor";
 import "aieditor/dist/style.css";
 import { useDarkStore } from "@/stores/darkStore";
-import { watch } from "vue";
 import { storeToRefs } from "pinia";
 import { ElMessage } from "element-plus";
 import { compressImage, validateImageFile } from "@/utils/PhotoUtils";
 import { getTagList } from "@/api/tag";
 import { addColumn, getColumnList } from "@/api/column";
 import { uploadArticlePhoto } from "@/api/photo";
-import { ArrowUp, Search, Close } from "@element-plus/icons-vue";
-import { addArticle, saveDraft, getArticleDetail } from "@/api/article";
+import { ArrowUp, Close, Search } from "@element-plus/icons-vue";
+import { addArticle, getArticleDetail, saveDraft } from "@/api/article";
 
 const darkStore = useDarkStore();
 const { isDark } = storeToRefs(darkStore);
@@ -279,16 +286,20 @@ const article = ref({
 // 当前选择的专栏
 const columns = ref([]);
 
+// 是否是草稿
+const isDraft = ref(false);
+
 // 根据文章ID获取文章详情并回显数据
 const loadArticleDetail = async () => {
   try {
     // 从路由参数中获取articleId
     const articleId = route.query.articleId;
     if (articleId && !isNaN(articleId)) {
-      ElMessage.info(`正在加载文章ID: ${articleId} 的内容...`);
+      // ElMessage.info(`正在加载文章ID: ${articleId} 的内容...`);
       // 调用获取文章详情接口
       const response = await getArticleDetail(articleId);
       const articleData = response.data.data;
+      // console.log('articleData:', articleData)
 
       // 填充文章基本信息
       if (articleData) {
@@ -300,6 +311,7 @@ const loadArticleDetail = async () => {
         article.value.reprintType = articleData.reprintType || 0;
         article.value.visibleRange = articleData.visibleRange || 0;
         article.value.columnIds = articleData.columnIds || [];
+        isDraft.value = articleData.editStatus === 1;
 
         // 填充标签
         if (articleData.tags && articleData.tags.length > 0) {
@@ -401,7 +413,8 @@ onMounted(async () => {
         },
         bubbleMenuItems: ["delete"], // 选中图片时的浮动菜单配置, 只显示删除
       },
-      toolbarExcludeKeys: ["subscript", "superscript", "break", "video", "source-code", "printer", "fullscreen"], // 排除下标,上标.强制换行,视频,源代码,打印,全屏
+      // 排除下标,上标.强制换行,视频,源代码,打印,全屏,附件
+      toolbarExcludeKeys: ["subscript", "superscript", "break", "video", "source-code", "printer", "fullscreen", "attachment"],
       onSave: (editor) => {
         ElMessage.success("文档保存成功！");
         return true;
@@ -416,16 +429,6 @@ onMounted(async () => {
 
     // 初始化时直接更新目录和字数统计（不需要防抖）
     nextTick(() => {
-      // // 确保编辑器完全初始化后再设置内容
-      // if (aiEditor && article.value.content) {
-      //   // 检查是否有setHtml方法，如果有则使用它显式设置内容
-      //   if (typeof aiEditor.setHtml === 'function') {
-      //     aiEditor.setHtml(article.value.content);
-      //   } else if (typeof aiEditor.setContent === 'function') {
-      //     // 备用方案
-      //     aiEditor.setContent(article.value.content);
-      //   }
-      // }
       updateDirectory();
       countWords();
     });
@@ -648,18 +651,20 @@ const selectTag = (tag) => {
 
 // 添加自定义标签
 const addCustomTag = () => {
-  // 限制最多添加5个标签
-  if (tags.value.length >= 5) {
-    ElMessage.warning("最多只能添加5个标签");
-    return;
-  }
-  const customTag = tagSearchKeyword.value.trim();
-  if (customTag && !tags.value.includes(customTag)) {
-    tags.value.push(customTag);
-    tagSearchKeyword.value = "";
-    isSearchResultVisible.value = false;
-    searchResults.value = [];
-  }
+  // // 限制最多添加5个标签
+  // if (tags.value.length >= 5) {
+  //   ElMessage.warning("最多只能添加5个标签");
+  //   return;
+  // }
+  // const customTag = tagSearchKeyword.value.trim();
+  // if (customTag && !tags.value.includes(customTag)) {
+  //   tags.value.push(customTag);
+  //   tagSearchKeyword.value = "";
+  //   isSearchResultVisible.value = false;
+  //   searchResults.value = [];
+  // }
+  ElMessage.warning("标签只能由后台管理员添加");
+  return;
 };
 
 // 选择分类
@@ -873,6 +878,7 @@ const deleteColumn = (column) => {
 
 // 发布文章
 const handleClickPublish = async () => {
+  console.log(article.value);
   // 确保在发布前获取最新的编辑器内容
   if (aiEditor) {
     article.value.content = aiEditor.getHtml();
@@ -908,30 +914,29 @@ const handleSaveDraft = async () => {
 };
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 // 编辑器容器样式
 .editor-container {
   display: flex;
   flex-direction: column;
-  background: #f3f4f6;
   width: 100vw;
-
+  background: #f3f4f6;
   // 编辑器
   .editor {
-    margin-top: 48px;
-    flex: 1;
-    padding: 0;
-    height: 100%;
     display: flex;
+    flex: 1;
     flex-direction: column;
+    height: 100%;
+    margin-top: 48px;
+    padding: 0;
     // 编辑器头部
     .aie-container-header {
-      display: flex;
       position: fixed;
       z-index: 1;
-      border: none;
+      display: flex;
       justify-content: center;
       width: 100vw;
+      border: none;
       :deep(aie-header) {
         width: 100vw;
         div {
@@ -942,27 +947,27 @@ const handleSaveDraft = async () => {
     }
     // 编辑器内容包装器
     .editor-content-wrapper {
+      display: flex;
       padding-top: 68px;
       padding-bottom: 48px;
-      display: flex;
       background: var(--el-border-color-lighter);
       // 左侧目录样式
       .aie-directory {
+        position: fixed;
+        display: flex;
+        flex-direction: column;
         width: 15vw;
+        height: calc(100vh - 200px);
+        margin-left: 24px;
+        padding: 10px;
         background: var(--el-bg-color);
         border: 1px solid var(--el-border-color);
         border-radius: 4px;
-        margin-left: 24px;
-        height: calc(100vh - 200px);
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        position: fixed;
         .directory-header {
           padding: 12px 16px;
-          border-radius: 4px;
-          border-bottom: 1px solid var(--el-border-color);
           background: var(--el-bg-color);
+          border-bottom: 1px solid var(--el-border-color);
+          border-radius: 4px;
           h5 {
             margin: 0;
             font-size: 18px;
@@ -970,15 +975,15 @@ const handleSaveDraft = async () => {
           }
         }
         .directory-content {
-          flex: 1;
           overflow-y: auto;
+          flex: 1;
           padding: 8px 0;
           // 目录项样式
           .directory-item {
             display: block;
             padding: 6px 16px;
-            color: var(--el-text-color-primary);
             text-decoration: none;
+            color: var(--el-text-color-primary);
             border-radius: 4px;
             transition: all 0.3s ease;
             cursor: pointer;
@@ -1002,40 +1007,40 @@ const handleSaveDraft = async () => {
               padding-left: 96px;
             }
             &:hover {
-              background-color: var(--el-border-color-light);
               color: var(--el-color-primary);
+              background-color: var(--el-border-color-light);
             }
             &.active {
-              background-color: var(--el-color-primary-light-9);
-              color: var(--el-color-primary);
               font-weight: 500;
+              color: var(--el-color-primary);
+              background-color: var(--el-color-primary-light-9);
             }
           }
           .no-content {
-            text-align: center;
-            color: #9ca3af;
             padding: 20px;
             font-size: 14px;
+            text-align: center;
+            color: #9ca3af;
           }
           .directory-item {
             display: block;
+            overflow: hidden;
             padding: 6px 16px;
-            color: var(--el-text-color-regular);
-            text-decoration: none;
             font-size: 14px;
             line-height: 20px;
             white-space: nowrap;
-            overflow: hidden;
+            text-decoration: none;
             text-overflow: ellipsis;
-            cursor: pointer;
+            color: var(--el-text-color-regular);
             transition: all 0.2s ease;
+            cursor: pointer;
             &:hover {
               color: var(--el-color-primary);
             }
             // 不同级别标题的缩进
             &.level-1 {
-              font-weight: 500;
               padding-left: 16px;
+              font-weight: 500;
             }
             &.level-2 {
               padding-left: 32px;
@@ -1055,24 +1060,24 @@ const handleSaveDraft = async () => {
           }
         }
       }
-
       // 编辑器内容
       .editor-content {
-        height: calc(100vh - 168px);
-        overflow-y: auto;
         overflow-x: hidden;
-        margin: auto;
+        overflow-y: auto;
         width: 50vw;
+        height: calc(100vh - 168px);
+        margin: auto;
         border-radius: 8px;
         :deep(img) {
+          width: auto !important;
           max-width: 100% !important;
           height: auto !important;
-          width: auto !important;
         }
         // 文章标题区域样式
         .article-title-container {
           width: 100%;
           .article-title-input {
+            box-sizing: border-box;
             width: 100%;
             padding: 28px;
             font-size: 24px;
@@ -1082,10 +1087,9 @@ const handleSaveDraft = async () => {
             border-bottom: 1px solid var(--el-border-color);
             outline: none;
             transition: all 0.3s ease;
-            box-sizing: border-box;
             &::placeholder {
-              color: var(--el-text-color-placeholder);
               font-weight: 400;
+              color: var(--el-text-color-placeholder);
             }
           }
           @media screen and (max-width: 768px) {
@@ -1094,19 +1098,19 @@ const handleSaveDraft = async () => {
         }
         // 文章正文区域样式
         .aie-container-main {
-          background: var(--el-bg-color);
-          border: none;
           overflow-x: hidden;
           min-height: calc(100vh - 100px);
-          padding: 16px;
           margin-bottom: 24px;
+          padding: 16px;
+          background: var(--el-bg-color);
+          border: none;
         }
         // 发布文章设置样式
         .publish-settings {
           padding: 16px;
-          background: var(--el-bg-color);
-          // border: 1px solid var(--el-border-color);
           padding-bottom: 50px;
+          // border: 1px solid var(--el-border-color);
+          background: var(--el-bg-color);
           h3 {
             margin-top: 0;
             margin-bottom: 16px;
@@ -1136,25 +1140,25 @@ const handleSaveDraft = async () => {
               }
               .tag-add-button {
                 height: 22px;
-                margin-left: 0px;
                 margin-bottom: 10px;
+                margin-left: 0px;
               }
             }
             // 标签选择器
             .tag-selector-container {
               position: absolute;
+              z-index: 2000;
               top: 100%;
               left: 0;
+              overflow: hidden;
               width: 400px;
               max-height: 400px;
               margin-top: 8px;
+              padding: 16px;
+              background: var(--el-bg-color);
               border: 1px solid var(--el-border-color);
               border-radius: 6px;
-              background: var(--el-bg-color);
-              padding: 16px;
-              z-index: 2000;
               box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-              overflow: hidden;
               @media screen and (max-width: 768px) {
                 width: 80vw;
                 max-height: 60vh;
@@ -1164,8 +1168,8 @@ const handleSaveDraft = async () => {
                 // 头部样式
                 .tag-selector-header {
                   display: flex;
-                  justify-content: space-between;
                   align-items: center;
+                  justify-content: space-between;
                   margin-bottom: 16px;
                   h4 {
                     margin: 0;
@@ -1173,8 +1177,8 @@ const handleSaveDraft = async () => {
                     font-weight: 500;
                   }
                   .close-icon {
-                    cursor: pointer;
                     color: var(--el-text-color-secondary);
+                    cursor: pointer;
                     &:hover {
                       color: var(--el-text-color-primary);
                     }
@@ -1191,20 +1195,20 @@ const handleSaveDraft = async () => {
                 // 搜索结果下拉框样式
                 .search-result-dropdown {
                   position: absolute;
+                  z-index: 1000;
                   top: 100%;
-                  left: 0;
                   right: 0;
-                  max-height: 200px;
+                  left: 0;
                   overflow-y: auto;
+                  max-height: 200px;
                   background: var(--el-bg-color);
                   border: 1px solid var(--el-border-color);
                   border-radius: 4px;
                   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-                  z-index: 1000;
                   .search-result-item {
                     padding: 8px 16px;
-                    cursor: pointer;
                     transition: background-color 0.2s;
+                    cursor: pointer;
                     &:hover {
                       background-color: var(--el-border-color-light);
                     }
@@ -1214,64 +1218,63 @@ const handleSaveDraft = async () => {
                 .tag-container {
                   position: relative;
                   display: flex;
-                  gap: 20px;
                   height: 300px;
+                  gap: 20px;
                   /* 标签数量限制遮盖层 */
                   .tag-limit-overlay {
                     position: absolute;
+                    z-index: 10;
                     top: 0;
-                    left: 0;
                     right: 0;
                     bottom: 0;
-                    background-color: rgba(0, 0, 0, 0.5);
+                    left: 0;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    z-index: 10;
+                    background-color: rgba(0, 0, 0, 0.5);
                     pointer-events: none;
                     span {
-                      color: white;
                       font-size: 14px;
                       font-weight: 500;
+                      color: white;
                     }
                   }
-
                   /* 左侧分类列表样式 */
                   .tag-category-list {
-                    padding-right: 10px;
-                    width: 100px;
                     overflow: auto;
                     flex-shrink: 0;
+                    width: 100px;
+                    padding-right: 10px;
                     .tag-category-item {
-                      padding: 5px 15px;
-                      cursor: pointer;
-                      border-radius: 4px;
                       margin-bottom: 5px;
+                      padding: 5px 15px;
+                      border-radius: 4px;
                       transition: all 0.2s;
+                      cursor: pointer;
                       &:hover {
                         background-color: var(--el-border-color-light);
                       }
                       &.active {
-                        background-color: var(--el-color-primary);
                         color: white;
+                        background-color: var(--el-color-primary);
                       }
                     }
                   }
                   /* 右侧标签列表样式 */
                   .tag-list {
-                    flex: 1;
                     overflow-y: auto;
+                    flex: 1;
                     /* 可用标签区域样式 */
                     .available-tags-section {
                       display: flex;
                       flex-wrap: wrap;
                       gap: 8px;
                       .available-tag {
-                        cursor: pointer;
                         transition: all 0.2s;
+                        cursor: pointer;
                         &.tag-item-active {
-                          background-color: var(--el-color-primary);
                           color: white;
+                          background-color: var(--el-color-primary);
                         }
                       }
                     }
@@ -1290,31 +1293,31 @@ const handleSaveDraft = async () => {
               flex-wrap: wrap;
               // 封面上传样式
               .uploader {
+                position: relative;
                 display: flex;
-                flex-direction: column;
+                display: block;
+                overflow: hidden;
                 align-items: center;
+                flex-direction: column;
                 justify-content: center;
-                margin-bottom: 8px;
                 width: 192px;
                 height: 108px;
-                display: block;
+                margin-bottom: 8px;
                 border: 1px solid var(--el-border-color);
                 border-radius: 6px;
-                cursor: pointer;
-                position: relative;
-                overflow: hidden;
                 transition: var(--el-transition-duration-fast);
+                cursor: pointer;
                 .cover-image {
                   width: 192px;
                   height: 108px;
                   border-radius: 4px;
                 }
                 .avatar-icon {
-                  font-size: 28px;
-                  color: #8c939d;
                   width: 192px;
                   height: 108px;
+                  font-size: 28px;
                   text-align: center;
+                  color: #8c939d;
                 }
               }
               //图片选择
@@ -1324,9 +1327,9 @@ const handleSaveDraft = async () => {
                 justify-content: center;
                 width: 129px;
                 height: 81px;
-                color: var(--el-text-color-secondary);
-                font-size: 12px;
                 margin-left: 16px;
+                font-size: 12px;
+                color: var(--el-text-color-secondary);
                 border: 1px solid var(--el-border-color);
               }
             }
@@ -1352,10 +1355,10 @@ const handleSaveDraft = async () => {
             align-items: center;
             margin-bottom: 16px;
             .column-tags-container {
-              display: flex;
-              flex-wrap: wrap;
-              align-items: center;
               position: relative;
+              display: flex;
+              align-items: center;
+              flex-wrap: wrap;
               .column-item-container {
                 display: flex;
                 flex-wrap: wrap;
@@ -1375,45 +1378,45 @@ const handleSaveDraft = async () => {
               }
               .column-dropdown {
                 position: absolute;
+                z-index: 1000;
                 top: calc(100% + 4px);
                 left: 0;
+                overflow-y: auto;
                 min-width: 180px;
                 max-height: 150px;
-                overflow-y: auto;
                 background: var(--el-bg-color);
                 border: 1px solid var(--el-border-color);
                 border-radius: 4px;
                 box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-                z-index: 1000;
                 .column-limit-overlay {
                   position: absolute;
+                  z-index: 10;
                   top: 0;
-                  left: 0;
                   right: 0;
                   bottom: 0;
-                  background: rgba(255, 255, 255, 0.8);
+                  left: 0;
                   display: flex;
                   align-items: center;
                   justify-content: center;
-                  z-index: 10;
                   font-size: 14px;
                   color: var(--el-text-color-secondary);
+                  background: rgba(255, 255, 255, 0.8);
                 }
                 // 用户已有的专栏列表
                 .column-list {
-                  max-height: 200px;
-                  padding: 8px;
                   position: relative;
                   z-index: 5;
                   align-items: center;
+                  max-height: 200px;
+                  padding: 8px;
                   gap: 2px;
                   .column-option {
                     display: flex;
                     align-items: center;
                     padding: 4px;
-                    cursor: pointer;
-                    transition: background-color 0.2s;
                     border-radius: 4px;
+                    transition: background-color 0.2s;
+                    cursor: pointer;
                     &:hover {
                       background-color: var(--el-border-color-light);
                     }
@@ -1454,14 +1457,14 @@ const handleSaveDraft = async () => {
       // 回到顶部按钮
       .back-to-top {
         position: fixed;
-        width: 60px;
-        height: 60px;
+        right: 22px;
         bottom: 80px;
-        right: 20px;
-        font-size: 30px;
         display: flex;
         align-items: center;
         justify-content: center;
+        width: 60px;
+        height: 60px;
+        font-size: 30px;
         background: var(--el-bg-color);
         border: 1px solid var(--el-border-color);
         border-radius: 50%;
@@ -1484,53 +1487,62 @@ const handleSaveDraft = async () => {
     position: fixed;
     bottom: 0px;
     left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
     width: 100%;
     height: 48px;
     background-color: var(--el-bg-color);
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
+    .left {
+      font-size: 12px;
+      padding: 5px;
+    }
+    .center {
+      margin-right: 5px;
+    }
     .right {
-      margin-right: 16px;
+      display: flex;
+      margin-right: 5px;
+      :deep(.el-button) {
+        margin-left: 5px;
+      }
     }
   }
 }
-
 @media screen and (max-width: 1024px) {
   .editor-container {
     .editor {
       .aie-container {
         .editor-content-wrapper {
-          padding-top: 0; // 间隙
           max-width: 100%;
+          padding-top: 0; // 间隙
           .aie-directory {
             display: none; // 隐藏目录
           }
           .editor-content {
-            margin-top: 100px;
-            height: calc(100vh - 68px);
-            width: 100vw; // 编辑文章区域
-            padding: 0 15px;
-            box-sizing: border-box;
             overflow-x: hidden !important;
+            box-sizing: border-box;
+            width: 100vw; // 编辑文章区域
+            height: calc(100vh - 68px);
+            margin-top: 100px;
+            padding: 0 15px;
           }
         }
       }
     }
   }
 }
-
 @media screen and (max-width: 768px) {
   .editor-container {
     .editor {
       .aie-container {
         .editor-content-wrapper {
           .editor-content {
-            margin-top: 120px;
-            width: 100vw !important;
-            padding: 0 10px;
-            box-sizing: border-box !important;
             overflow-x: hidden !important;
+            box-sizing: border-box !important;
+            width: 100vw !important;
+            margin-top: 120px;
+            padding: 0 10px;
           }
         }
       }

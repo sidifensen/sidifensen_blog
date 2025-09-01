@@ -41,8 +41,8 @@ public class ArticleController {
      *
      * @return 用户文章列表
      */
-    @GetMapping("/user/list")
-    public Result getUserArticleList(@NotNull Integer pageNum, @NotNull Integer pageSize, ArticleStatusDto articleStatusDto) {
+    @PostMapping("/user/list")
+    public Result getUserArticleList(@NotNull Integer pageNum, @NotNull Integer pageSize, @RequestBody ArticleStatusDto articleStatusDto) {
         PageVo<List<ArticleVo>> articleVoList = articleService.getUserArticleList(pageNum, pageSize, articleStatusDto);
         return Result.success(articleVoList);
     }

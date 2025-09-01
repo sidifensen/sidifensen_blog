@@ -22,6 +22,15 @@ export function saveDraft(data) {
 export function getArticleDetail(articleId) {
   return request({
     url: `/article/get/${articleId}`,
-    method: "get"
+    method: "get",
+  });
+}
+
+// 获取用户文章列表
+export function getUserArticleList(pageNum, pageSize, articleStatusDto) {
+  return request({
+    url: `/article/user/list?pageNum=${pageNum}&pageSize=${pageSize}`,
+    method: "post",
+    data: articleStatusDto,
   });
 }

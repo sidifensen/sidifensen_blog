@@ -10,6 +10,7 @@ import com.aliyun.teaopenapi.models.Params;
 import com.aliyun.teautil.Common;
 import com.aliyun.teautil.models.RuntimeOptions;
 import com.sidifensen.domain.constants.ImageAuditConstants;
+import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.result.ImageAuditResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -115,7 +116,7 @@ public class ImageAuditUtils {
             JSONArray results = data.getJSONArray("Results");
 
             // 检查所有结果，如果有任何一个结果建议为"block"，则审核不通过
-            Integer status = 0;
+            Integer status = ExamineStatusEnum.PASS.getCode();
             StringBuilder errorMessage = new StringBuilder();
 
             // 遍历Results数组中的每个元素
@@ -133,7 +134,7 @@ public class ImageAuditUtils {
 
                     // 如果建议是"block"，则审核不通过
                     if (ImageAuditConstants.Suggestion.BLOCK.equals(suggestion)) {
-                        status = 1;
+                        status = ExamineStatusEnum.NO_PASS.getCode();
                         // 构建错误信息
                         errorMessage.append(getSceneDescription(scene))
                                 .append(":")
@@ -143,7 +144,7 @@ public class ImageAuditUtils {
                                 .append("%; ");
                     } else if (ImageAuditConstants.Suggestion.REVIEW.equals(suggestion)) {
                         // 如果建议是"review"，则需要人工审核
-                        status = 2;
+                        status = ExamineStatusEnum.WAIT.getCode();
                         errorMessage.append(getSceneDescription(scene))
                                 .append(":")
                                 .append(getSceneLabelMessage(scene, label))
