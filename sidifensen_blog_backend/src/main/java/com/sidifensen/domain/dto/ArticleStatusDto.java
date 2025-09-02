@@ -27,7 +27,7 @@ public class ArticleStatusDto implements Serializable {
     /**
      * 搜索内容
      */
-    private String search;
+    private String keyword;
 
     /**
      * 审核状态 0-待审核 1-审核通过 2-审核未通过

@@ -14,10 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 文字内容审核工具类
@@ -45,9 +42,7 @@ public class TextAuditUtils {
                 "div", "span",
                 "img"
         };
-        for (String tag : tags) {
-            COMMON_HTML_TAGS.add(tag);
-        }
+        COMMON_HTML_TAGS.addAll(List.of(tags));
     }
 
     @Value("${aliyun.accessKeyId}")
@@ -56,36 +51,6 @@ public class TextAuditUtils {
     private String accessKeySecret;
     @Value("${aliyun.imageaudit.endpoint}")
     private String endpoint;
-
-    /**
-     * 去除HTML标签，只保留纯文本内容
-     *
-     * @param content 包含HTML标签的内容
-     * @return 去除HTML标签后的纯文本内容
-     */
-    public String removeHtmlTags(String content) {
-        if (content == null || content.isEmpty()) {
-            return content;
-        }
-
-        String result = content;
-
-        // 先处理HTML注释
-        result = result.replaceAll("<!--.*?-->", "");
-
-        // 使用正则表达式去除所有HTML标签（包括自定义属性）
-        result = result.replaceAll("<[^>]*>", "");
-
-        // 处理一些特殊字符的转换
-        result = result.replace("&nbsp;", " ")
-                .replace("&amp;", "&")
-                .replace("&lt;", "<")
-                .replace("&gt;", ">")
-                .replace("&quot;", "\"")
-                .replace("&#39;", "'");
-
-        return result.trim();
-    }
 
     /**
      * 根据label获取对应的违规分类描述
@@ -163,7 +128,7 @@ public class TextAuditUtils {
      * @return 审核结果详情
      */
     public ImageAuditResult auditTextWithDetails(String textContent) {
-        // 去除HTML标签，只保留纯文本内容进行审核
+        // 去除标签，只保留纯文本内容进行审核
         String cleanTextContent = removeHtmlTags(textContent);
 
         try {
@@ -291,5 +256,36 @@ public class TextAuditUtils {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String removeHtmlTags(String textContent) {
+
+        if (textContent == null || textContent.isEmpty()) {
+            return textContent;
+        }
+
+        String result = textContent;
+
+        // 先处理HTML注释
+        result = result.replaceAll("<!--.*?-->", "");
+        
+        //        // 使用正则表达式去除所有HTML标签（包括自定义属性）
+        //        result = result.replaceAll("<[^>]*>", "");
+
+        // 使用更精确的正则表达式来匹配真实的HTML标签
+        // 匹配开始标签和自闭合标签，要求标签名后必须跟空白字符、>或/，确保不会误删用户输入的内容
+        result = result.replaceAll("<([a-zA-Z][a-zA-Z0-9]*)(\\s[^>]*?|/?>)(</\\1>)?", "");
+        // 匹配结束标签
+        result = result.replaceAll("</([a-zA-Z][a-zA-Z0-9]*)\\s*>", "");
+
+        // 处理一些特殊字符的转换
+        result = result.replace("&nbsp;", " ")
+                .replace("&amp;", "&")
+                .replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("&quot;", "\"")
+                .replace("&#39;", "'");
+
+        return result.trim();
     }
 }

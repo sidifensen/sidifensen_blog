@@ -1,7 +1,5 @@
 <template>
   <div class="article-manage-container">
-    <CreationHeader />
-
     <div class="main-content">
       <!-- 顶部筛选按钮区域 -->
       <div class="filter-buttons">
@@ -9,6 +7,7 @@
         <el-button :type="activeFilterType === 'published' ? 'primary' : 'default'" @click="handleFilterClick('published')" class="filter-btn"> 已发布({{ publishedCount }}) </el-button>
         <el-button :type="activeFilterType === 'reviewing' ? 'primary' : 'default'" @click="handleFilterClick('reviewing')" class="filter-btn"> 审核中({{ reviewingCount }}) </el-button>
         <el-button :type="activeFilterType === 'draft' ? 'primary' : 'default'" @click="handleFilterClick('draft')" class="filter-btn"> 草稿箱({{ draftCount }}) </el-button>
+        <el-button :type="activeFilterType === 'garbage' ? 'primary' : 'default'" @click="handleFilterClick('garbage')" class="filter-btn"> 回收站({{ garbageCount }}) </el-button>
       </div>
 
       <!-- 高级筛选区域 -->
@@ -16,19 +15,25 @@
         <div class="filter-row">
           <div class="filter-item">
             <el-select v-model="filterParams.reprintType" placeholder="文章类型" @change="handleFilterChange" class="filter-select">
-              <el-option label="不限" value="-1"></el-option>
-              <el-option label="原创" value="0"></el-option>
-              <el-option label="转载" value="1"></el-option>
+              <template #prefix>
+                <span class="select-prefix">文章类型:</span>
+              </template>
+              <el-option label="不限" :value="-1"></el-option>
+              <el-option label="原创" :value="0"></el-option>
+              <el-option label="转载" :value="1"></el-option>
             </el-select>
           </div>
 
           <div class="filter-item">
             <el-select v-model="filterParams.visibleRange" placeholder="可见范围" @change="handleFilterChange" class="filter-select">
-              <el-option label="不限" value="-1"></el-option>
-              <el-option label="全部可见" value="0"></el-option>
-              <el-option label="仅我可见" value="1"></el-option>
-              <el-option label="粉丝可见" value="2"></el-option>
-              <el-option label="VIP可见" value="3"></el-option>
+              <template #prefix>
+                <span class="select-prefix">可见范围:</span>
+              </template>
+              <el-option label="不限" :value="-1"></el-option>
+              <el-option label="全部可见" :value="0"></el-option>
+              <el-option label="仅我可见" :value="1"></el-option>
+              <el-option label="粉丝可见" :value="2"></el-option>
+              <el-option label="VIP可见" :value="3"></el-option>
             </el-select>
           </div>
 
@@ -53,69 +58,63 @@
           <el-empty description="暂无文章数据"></el-empty>
         </div>
 
-        <el-table v-else :data="articles" class="article-table" style="width: 100%">
-          <el-table-column prop="title" label="文章" min-width="250">
-            <template #default="scope">
-              <div class="article-title-cell">
-                <span class="article-title">{{ scope.row.title }}</span>
-                <div class="article-meta">
-                  <span class="publish-time">{{ formatDate(scope.row.createTime) }}</span>
-                  <span v-if="scope.row.examineStatus !== 1" class="examine-status" :class="getExamineStatusClass(scope.row.examineStatus)">
-                    {{ getExamineStatusText(scope.row.examineStatus) }}
-                  </span>
+        <div v-else class="infinite-scroll-wrapper" v-infinite-scroll="loadArticles" infinite-scroll-disabled="!hasMore || loading || loadingMore" infinite-scroll-distance="10">
+          <el-table :data="articles" class="article-table" style="width: 100%">
+            <el-table-column prop="title" label="文章" min-width="250">
+              <template #default="{ row }">
+                <div class="article-title-cell">
+                  <!-- 文章封面图片 -->
+                  <el-image :src="row.coverUrl" alt="文章封面" class="article-cover" />
+                  <div>
+                    <span class="article-title">{{ row.title }}</span>
+                    <span v-if="row.examineStatus !== 1" class="examine-status" :class="getExamineStatusClass(row.examineStatus)">
+                      {{ getExamineStatusText(row.examineStatus) }}
+                    </span>
+                    <span class="type-badge" :class="row.reprintType === 0 ? 'original' : 'reprint'">
+                      {{ row.reprintType === 0 ? "原创" : "转载" }}
+                    </span>
+                    <span class="visible-badge" :class="`visible-${row.visibleRange}`">
+                      {{ getVisibleRangeText(row.visibleRange) }}
+                    </span>
+                    <div class="article-meta">
+                      <span class="publish-time">{{ formatDate(row.createTime) }}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </template>
-          </el-table-column>
+              </template>
+            </el-table-column>
 
-          <el-table-column prop="reprintType" label="类型" width="80">
-            <template #default="scope">
-              <span class="type-badge" :class="scope.row.reprintType === 0 ? 'original' : 'reprint'">
-                {{ scope.row.reprintType === 0 ? "原创" : "转载" }}
-              </span>
-            </template>
-          </el-table-column>
-
-          <el-table-column prop="visibleRange" label="可见范围" width="100">
-            <template #default="scope">
-              <span class="visible-badge" :class="`visible-${scope.row.visibleRange}`">
-                {{ getVisibleRangeText(scope.row.visibleRange) }}
-              </span>
-            </template>
-          </el-table-column>
-
-          <el-table-column prop="viewCount" label="浏览" width="80" align="center">
-            <template #default="scope">
-              {{ scope.row.viewCount || 0 }}
-            </template>
-          </el-table-column>
-
-          <el-table-column prop="likeCount" label="点赞" width="80" align="center">
-            <template #default="scope">
-              {{ scope.row.likeCount || 0 }}
-            </template>
-          </el-table-column>
-
-          <el-table-column prop="commentCount" label="评论" width="80" align="center">
-            <template #default="scope">
-              {{ scope.row.commentCount || 0 }}
-            </template>
-          </el-table-column>
-
-          <el-table-column prop="collectCount" label="收藏" width="80" align="center">
-            <template #default="scope">
-              {{ scope.row.collectCount || 0 }}
-            </template>
-          </el-table-column>
-
-          <el-table-column label="操作" width="150" fixed="right">
-            <template #default="scope">
-              <el-button type="text" @click="handleEditArticle(scope.row.id)">编辑</el-button>
-              <el-button type="text" @click="handleDeleteArticle(scope.row.id)">删除</el-button>
-              <el-button type="text" @click="handleViewArticle(scope.row.id)">浏览</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+            <el-table-column prop="readCount" label="阅读" width="80" align="center">
+              <template #default="{ row }">
+                {{ row.readCount || 0 }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="likeCount" label="点赞" width="80" align="center">
+              <template #default="{ row }">
+                {{ row.likeCount || 0 }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="commentCount" label="评论" width="80" align="center">
+              <template #default="{ row }">
+                {{ row.commentCount || 0 }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="collectCount" label="收藏" width="80" align="center">
+              <template #default="{ row }">
+                {{ row.collectCount || 0 }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="200" fixed="right">
+              <template #default="{ row }">
+                <el-button v-if="row.editStatus !== 2" type="text" @click="handleEditArticle(row.id)">编辑</el-button>
+                <el-button v-if="row.editStatus !== 2" type="text" @click="handleViewArticle(row.id)">浏览</el-button>
+                <el-button v-if="row.editStatus !== 2" type="text" @click="handleDeleteToDraftArticle(row.id)">删除</el-button>
+                <el-button v-if="row.editStatus == 2" type="text" @click="handleRecyleToDraftArticle(row.id)">回收至草稿箱</el-button>
+                <el-button v-if="row.editStatus == 2" type="text" @click="handleDeleteArticle(row.id)">彻底删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
 
         <!-- 加载更多指示器 -->
         <div v-if="loadingMore" class="loading-more">
@@ -131,9 +130,10 @@
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
-import CreationHeader from "@/components/CreationHeader.vue";
-import { getUserArticleList } from "@/api/article";
+import { deleteArticle, getUserArticleList, updateArticle } from "@/api/article";
 import { Search, View, Message, Pointer, Edit, Delete, Collection } from "@element-plus/icons-vue";
+// 导入Element Plus的无限滚动指令
+import { ElInfiniteScroll } from "element-plus";
 
 const router = useRouter();
 
@@ -145,21 +145,15 @@ const loadingMore = ref(false);
 // 当前页码
 const currentPage = ref(1);
 // 页面大小
-const pageSize = ref(20);
+const pageSize = ref(10);
 // 是否还有更多数据
 const hasMore = ref(true);
 // 搜索关键词
 const searchKeyword = ref("");
 
-// 统计数据
-const totalCount = ref(3);
-const publishedCount = ref(2);
-const reviewingCount = ref(0);
-const draftCount = ref(1);
-
 // 筛选参数
 const filterParams = ref({
-  editStatus: -1, // -1:全部, 0:已发布, 1:草稿
+  editStatus: -1, //  -1:全部, 0:已发布, 1:草稿箱, 2:回收站
   examineStatus: -1, // -1:全部, 0:审核中, 1:已通过, 2:已驳回
   reprintType: -1, // -1:全部, 0:原创, 1:转载
   visibleRange: -1, // -1:全部, 0:全部可见, 1:仅我可见, 2:粉丝可见, 3:VIP可见
@@ -220,17 +214,19 @@ const getVisibleRangeText = (range) => {
   }
 };
 
+// 统计数据
+const totalCount = ref(0);
+const publishedCount = ref(0);
+const reviewingCount = ref(0);
+const draftCount = ref(0);
+const garbageCount = ref(0);
+
 // 处理筛选按钮点击
 const handleFilterClick = (filterType) => {
   activeFilterType.value = filterType;
 
-  // 重置筛选参数
-  filterParams.value = {
-    reprintType: -1,
-    visibleRange: -1,
-    editStatus: -1,
-    examineStatus: -1,
-  };
+  // 重置筛选参数，保持默认值为-1
+  filterParams.value = {};
 
   // 清空搜索关键词
   searchKeyword.value = "";
@@ -241,15 +237,18 @@ const handleFilterClick = (filterType) => {
       // 全部，保持默认参数
       break;
     case "published":
-      filterParams.value.editStatus = 0;
-      filterParams.value.examineStatus = 1;
+      filterParams.value.editStatus = 0; //已发布
+      filterParams.value.examineStatus = 1; //审核通过
       break;
     case "draft":
-      filterParams.value.editStatus = 1;
+      filterParams.value.editStatus = 1; //草稿箱
+      break;
+    case "garbage":
+      filterParams.value.editStatus = 2; //回收站
       break;
     case "reviewing":
-      filterParams.value.editStatus = 0;
-      filterParams.value.examineStatus = 0;
+      filterParams.value.editStatus = 0; //已发布
+      filterParams.value.examineStatus = 0; //审核中
       break;
   }
 
@@ -291,123 +290,61 @@ const loadArticles = async (reset = false) => {
   }
 
   try {
-    // 构建请求参数
-    const params = {
-      editStatus: filterParams.value.editStatus,
-      examineStatus: filterParams.value.examineStatus,
-      reprintType: filterParams.value.reprintType,
-      visibleRange: filterParams.value.visibleRange,
-      keyword: searchKeyword.value,
-    };
+    // 构建请求参数 - 只传递非-1的参数，这样后端会返回全部数据
+    const params = {};
+
+    // 只有当值不为-1时才传递该参数
+    if (filterParams.value.editStatus !== -1) {
+      params.editStatus = filterParams.value.editStatus;
+    }
+    if (filterParams.value.examineStatus !== -1) {
+      params.examineStatus = filterParams.value.examineStatus;
+    }
+    if (filterParams.value.reprintType !== -1) {
+      params.reprintType = filterParams.value.reprintType;
+    }
+    if (filterParams.value.visibleRange !== -1) {
+      params.visibleRange = filterParams.value.visibleRange;
+    }
+
+    // 搜索关键词不为空时才传递
+    if (searchKeyword.value) {
+      params.keyword = searchKeyword.value;
+    }
 
     // 发送请求获取文章列表
     const response = await getUserArticleList(currentPage.value, pageSize.value, params);
+    const result = response.data || {};
+    const newArticles = result.data ? result.data.data || [] : [];
+    const total = result.data ? result.data.total || 0 : 0;
+    console.log("加载数据:", { currentPage: currentPage.value, newArticlesCount: newArticles.length, total });
 
-    if (response.data.code === 200 && response.data.data) {
-      const newArticles = response.data.data.records || [];
+    // 更新总数量统计
+    totalCount.value = total;
 
-      // 模拟数据，确保显示与截图一致
-      if (newArticles.length === 0 && reset) {
-        articles.value = [
-          {
-            id: 1,
-            title: "111111",
-            createTime: "2025-09-01 21:22:57",
-            examineStatus: 1,
-            reprintType: 0,
-            visibleRange: 0,
-            viewCount: 137,
-            likeCount: 2,
-            commentCount: 0,
-            collectCount: 1,
-          },
-          {
-            id: 2,
-            title: "多多多多多多多",
-            createTime: "2025-08-29 17:55:32",
-            examineStatus: 1,
-            reprintType: 0,
-            visibleRange: 1,
-            viewCount: 252,
-            likeCount: 2,
-            commentCount: 0,
-            collectCount: 2,
-          },
-        ];
-      } else {
-        // 根据是否重置决定如何处理返回的数据
-        if (reset) {
-          articles.value = newArticles;
-        } else {
-          articles.value = [...articles.value, ...newArticles];
-        }
-      }
-
-      // 判断是否还有更多数据
-      hasMore.value = newArticles.length === pageSize.value;
-
-      // 更新页码
-      if (hasMore.value) {
-        currentPage.value++;
-      }
+    // 从当前已加载的所有文章中重新计算各状态数量
+    if (reset) {
+      articles.value = newArticles;
     } else {
-      // 显示模拟数据
-      articles.value = [
-        {
-          id: 1,
-          title: "111111",
-          createTime: "2025-09-01 21:22:57",
-          examineStatus: 1,
-          reprintType: 0,
-          visibleRange: 0,
-          viewCount: 137,
-          likeCount: 2,
-          commentCount: 0,
-          collectCount: 1,
-        },
-        {
-          id: 2,
-          title: "多多多多多多多",
-          createTime: "2025-08-29 17:55:32",
-          examineStatus: 1,
-          reprintType: 0,
-          visibleRange: 1,
-          viewCount: 252,
-          likeCount: 2,
-          commentCount: 0,
-          collectCount: 2,
-        },
-      ];
+      articles.value = [...articles.value, ...newArticles];
+    }
+
+    // 重新计算各状态数量（基于所有已加载的文章）
+    publishedCount.value = articles.value.filter((item) => item.editStatus === 0 && item.examineStatus === 1).length;
+    reviewingCount.value = articles.value.filter((item) => item.editStatus === 0 && item.examineStatus === 0).length;
+    draftCount.value = articles.value.filter((item) => item.editStatus === 1).length;
+    garbageCount.value = articles.value.filter((item) => item.editStatus === 2).length;
+
+    // 判断是否还有更多数据
+    hasMore.value = articles.value.length < total;
+
+    // 更新页码
+    if (hasMore.value && newArticles.length > 0) {
+      currentPage.value++;
     }
   } catch (error) {
     console.error("加载文章列表失败:", error);
-    // 显示模拟数据
-    articles.value = [
-      {
-        id: 1,
-        title: "111111",
-        createTime: "2025-09-01 21:22:57",
-        examineStatus: 1,
-        reprintType: 0,
-        visibleRange: 0,
-        viewCount: 137,
-        likeCount: 2,
-        commentCount: 0,
-        collectCount: 1,
-      },
-      {
-        id: 2,
-        title: "多多多多多多多",
-        createTime: "2025-08-29 17:55:32",
-        examineStatus: 1,
-        reprintType: 0,
-        visibleRange: 1,
-        viewCount: 252,
-        likeCount: 2,
-        commentCount: 0,
-        collectCount: 2,
-      },
-    ];
+    ElMessage.error("加载文章列表失败");
   } finally {
     // 重置加载状态
     loading.value = false;
@@ -420,6 +357,38 @@ const handleEditArticle = (articleId) => {
   router.push({ path: "/editor", query: { articleId } });
 };
 
+// 删除到回收站
+const handleDeleteToDraftArticle = async (articleId) => {
+  const ArticleDto = {
+    id: articleId,
+    editStatus: 1,
+  };
+  updateArticle(ArticleDto)
+    .then((res) => {
+      ElMessage.success("文章删除成功");
+      loadArticles();
+    })
+    .catch((err) => {
+      ElMessage.error("文章删除失败");
+    });
+};
+
+// 回收至回收站
+const handleRecyleToDraftArticle = async (articleId) => {
+  const ArticleDto = {
+    id: articleId,
+    editStatus: 1,
+  };
+  updateArticle(ArticleDto)
+    .then((res) => {
+      ElMessage.success("文章回收成功");
+      loadArticles();
+    })
+    .catch((err) => {
+      ElMessage.error("文章回收失败");
+    });
+};
+
 // 处理删除文章
 const handleDeleteArticle = async (articleId) => {
   try {
@@ -429,12 +398,14 @@ const handleDeleteArticle = async (articleId) => {
       type: "warning",
     });
 
-    // 这里应该调用删除文章的API
-    // await deleteArticle(articleId);
-
-    // 模拟删除成功
-    articles.value = articles.value.filter((article) => article.id !== articleId);
-    ElMessage.success("文章删除成功");
+    await deleteArticle(articleId)
+      .then(() => {
+        ElMessage.success("文章删除成功");
+        loadArticles();
+      })
+      .catch((err) => {
+        ElMessage.error("文章删除失败");
+      });
   } catch (error) {
     if (error !== "cancel") {
       ElMessage.error("删除文章失败，请重试");
@@ -464,12 +435,11 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #f5f7fa;
 
   .main-content {
     flex: 1;
-    padding: 20px;
-    margin-top: 60px;
+    display: flex;
+    flex-direction: column;
 
     // 顶部筛选按钮区域
     .filter-buttons {
@@ -498,11 +468,15 @@ onUnmounted(() => {
 
         .filter-item {
           .filter-select {
-            width: 120px;
+            width: 200px;
           }
 
           .search-input {
             width: 200px;
+          }
+
+          .select-prefix {
+            margin-right: 5px;
           }
         }
       }
@@ -513,6 +487,16 @@ onUnmounted(() => {
       background-color: #fff;
       border-radius: 4px;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      flex: 1;
+      overflow-y: auto;
+      position: relative;
+      max-height: calc(100vh - 240px);
+
+      // 无限滚动容器样式
+      .infinite-scroll-wrapper {
+        position: relative;
+        overflow-y: auto;
+      }
 
       // 加载容器
       .loading-container,
@@ -536,14 +520,82 @@ onUnmounted(() => {
 
       // 文章表格
       .article-table {
+        width: 100%;
         border-top: 1px solid #ebeef5;
 
         .article-title-cell {
+          display: flex;
+          span {
+            margin-right: 5px;
+          }
+          .article-cover {
+            width: 120px;
+            height: 68px;
+            margin-right: 16px;
+            flex-shrink: 0;
+          }
           .article-title {
+            max-width: 275px;
             font-size: 14px;
             color: #303133;
             margin-bottom: 4px;
             display: block;
+            //文字省略号
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .examine-status {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+            color: #fff;
+
+            &.status-pending {
+              background-color: #e6a23c;
+            }
+
+            &.status-rejected {
+              background-color: #f56c6c;
+            }
+          }
+          .type-badge,
+          .visible-badge {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+
+            &.original {
+              background-color: #f0f9ff;
+              color: #009688;
+            }
+
+            &.reprint {
+              background-color: #fff7e6;
+              color: #e6a23c;
+            }
+
+            &.visible-0 {
+              background-color: #f0f9ff;
+              color: #1989fa;
+            }
+
+            &.visible-1 {
+              background-color: #f9f0ff;
+              color: #909399;
+            }
+
+            &.visible-2 {
+              background-color: #fef0f0;
+              color: #e6a23c;
+            }
+
+            &.visible-3 {
+              background-color: #fff1f0;
+              color: #f56c6c;
+            }
           }
 
           .article-meta {
@@ -555,60 +607,6 @@ onUnmounted(() => {
               font-size: 12px;
               color: #909399;
             }
-
-            .examine-status {
-              padding: 2px 6px;
-              border-radius: 10px;
-              font-size: 11px;
-              font-weight: 500;
-              color: #fff;
-
-              &.status-pending {
-                background-color: #e6a23c;
-              }
-
-              &.status-rejected {
-                background-color: #f56c6c;
-              }
-            }
-          }
-        }
-
-        .type-badge,
-        .visible-badge {
-          padding: 2px 6px;
-          border-radius: 10px;
-          font-size: 11px;
-          font-weight: 500;
-
-          &.original {
-            background-color: #f0f9ff;
-            color: #009688;
-          }
-
-          &.reprint {
-            background-color: #fff7e6;
-            color: #e6a23c;
-          }
-
-          &.visible-0 {
-            background-color: #f0f9ff;
-            color: #1989fa;
-          }
-
-          &.visible-1 {
-            background-color: #f9f0ff;
-            color: #909399;
-          }
-
-          &.visible-2 {
-            background-color: #fef0f0;
-            color: #e6a23c;
-          }
-
-          &.visible-3 {
-            background-color: #fff1f0;
-            color: #f56c6c;
           }
         }
       }

@@ -69,6 +69,13 @@ public class ArticleDto implements Serializable {
     private Integer examineStatus;
 
     /**
+     * 编辑状态 0-已发布 1-草稿箱 2-回收站
+     */
+    @Min(value = 0, message = "编辑状态错误")
+    @Max(value = 2, message = "编辑状态错误")
+    private Integer editStatus;
+
+    /**
      * 可见范围 0-全部可见 1-仅我可见 2-粉丝可见 3-vip可见
      */
     @Min(value = 0, message = "可见范围错误")

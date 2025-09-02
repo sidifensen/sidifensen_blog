@@ -36,7 +36,6 @@ import com.sidifensen.utils.SecurityUtils;
 import com.sidifensen.utils.TextAuditUtils;
 import jakarta.annotation.Resource;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -78,7 +77,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private SidifensenConfig sidifensenConfig;
     @Resource
     private MessageService messageService;
-    @Autowired
+    @Resource
     private RabbitTemplate rabbitTemplate;
 
     @Override
@@ -110,12 +109,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .eq(ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus()), Article::getEditStatus, articleStatusDto.getEditStatus())
                 .eq(ObjectUtil.isNotEmpty(articleStatusDto.getVisibleRange()), Article::getVisibleRange, articleStatusDto.getVisibleRange())
                 .eq(ObjectUtil.isNotEmpty(articleStatusDto.getReprintType()), Article::getReprintType, articleStatusDto.getReprintType())
-                .and(ObjectUtil.isNotEmpty(articleStatusDto.getSearch()), wrapper -> wrapper
-                        .like(Article::getTag, articleStatusDto.getSearch()) // 标签
+                .and(ObjectUtil.isNotEmpty(articleStatusDto.getKeyword()), wrapper -> wrapper
+                        .like(Article::getTag, articleStatusDto.getKeyword()) // 标签
                         .or()
-                        .like(Article::getTitle, articleStatusDto.getSearch()) // 标题
+                        .like(Article::getTitle, articleStatusDto.getKeyword()) // 标题
                         .or()
-                        .like(Article::getDescription, articleStatusDto.getSearch())); // 描述
+                        .like(Article::getDescription, articleStatusDto.getKeyword())); // 描述
 
         // 添加根据年月查询的条件
         if (ObjectUtil.isNotEmpty(articleStatusDto.getCreateTime())) {
@@ -127,7 +126,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             qw.between(Article::getCreateTime, firstDayOfMonth, lastDayOfMonth);
         }
 
-        qw.orderByDesc(ObjectUtil.isNotEmpty(articleStatusDto.getOrderBy()) && articleStatusDto.getOrderBy() == 0 ? Article::getCreateTime : Article::getReadCount);
+
+        if (ObjectUtil.isEmpty(articleStatusDto.getOrderBy()) || articleStatusDto.getOrderBy() == 0) {
+            qw.orderByDesc(Article::getCreateTime);
+        } else {
+            qw.orderByDesc(Article::getReadCount);
+        }
+
         List<Article> articleList = articleMapper.selectPage(page, qw).getRecords();
         List<ArticleVo> articleVoList = articleList.stream().map(article -> {
             ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
@@ -168,59 +173,62 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             throw new BlogException(BlogConstants.AddArticleError);
         }
 
-        if (ObjectUtil.isNotEmpty(articleDto.getColumnIds())) {
-            executorService.execute(() -> {
-                List<Integer> columnIds = articleDto.getColumnIds();
-                columnIds.forEach(columnId -> {
-                    ArticleColumn articleColumn = articleColumnMapper.selectOne(new LambdaQueryWrapper<ArticleColumn>().select(ArticleColumn::getSort)
-                            .eq(ArticleColumn::getColumnId, columnId).orderByDesc(ArticleColumn::getSort).last("limit 1"));
-                    Integer sort = articleColumn == null ? 0 : articleColumn.getSort();
-                    ArticleColumn newArticleColumn = new ArticleColumn();
-                    newArticleColumn.setArticleId(article.getId());
-                    newArticleColumn.setColumnId(columnId);
-                    newArticleColumn.setSort(sort + 1);
-                    articleColumnMapper.insert(newArticleColumn);
-                });
-            });
-        }
-
-        auditArticle(article);
+        auditArticle(articleDto);
     }
 
     // 文章审核
-    private void auditArticle(Article article) {
+    private void auditArticle(ArticleDto articleDto) {
         executorService.execute(() -> {
 
             MessageDto messageDto = new MessageDto();
             messageDto.setType(MessageTypeEnum.SYSTEM.getCode());
-            HashMap<String, Object> sendEmail = new HashMap<>();
             // 进行自动审核
             if (sidifensenConfig.isArticleAutoAudit()) {
-                ImageAuditResult auditResult = textAuditUtils.auditTextWithDetails(article.getTitle() + " " + article.getContent());
+                ImageAuditResult auditResult = textAuditUtils.auditTextWithDetails(articleDto.getTitle() + " " + articleDto.getContent());
 
                 if (auditResult.getStatus().equals(ExamineStatusEnum.PASS.getCode())) {
                     // 文字审核通过，更新审核状态为通过
-                    article.setExamineStatus(ExamineStatusEnum.PASS.getCode());
+                    articleDto.setExamineStatus(ExamineStatusEnum.PASS.getCode());
+
+                    // 文字审核通过，更新文章所属的专栏
+                    if (ObjectUtil.isNotEmpty(articleDto.getColumnIds())) {
+                        List<Integer> columnIds = articleDto.getColumnIds();
+                        columnIds.forEach(columnId -> {
+                            ArticleColumn articleColumn = articleColumnMapper.selectOne(new LambdaQueryWrapper<ArticleColumn>().select(ArticleColumn::getSort)
+                                    .eq(ArticleColumn::getColumnId, columnId).orderByDesc(ArticleColumn::getSort).last("limit 1"));
+                            Integer sort = articleColumn == null ? 0 : articleColumn.getSort();
+                            ArticleColumn newArticleColumn = new ArticleColumn();
+                            newArticleColumn.setArticleId(articleDto.getId());
+                            newArticleColumn.setColumnId(columnId);
+                            newArticleColumn.setSort(sort + 1); // 最大排序值加1
+                            articleColumnMapper.insert(newArticleColumn);
+                        });
+                    }
                 } else if (auditResult.getStatus().equals(ExamineStatusEnum.NO_PASS)) {
                     // 文字审核不通过，更新审核状态为不通过，并记录原因，并发送消息给用户
-                    article.setExamineStatus(ExamineStatusEnum.NO_PASS.getCode());
-                    messageDto.setContent(MessageConstants.ArticleAuditNotPass(article.getId(), auditResult.getErrorMessage()));
-                    messageDto.setReceiverId(article.getUserId());
+                    articleDto.setExamineStatus(ExamineStatusEnum.NO_PASS.getCode());
+                    messageDto.setContent(MessageConstants.ArticleAuditNotPass(articleDto.getId(), auditResult.getErrorMessage()));
+                    messageDto.setReceiverId(articleDto.getUserId());
                     messageService.sendToUser(messageDto);
                 } else if (auditResult.getStatus().equals(ExamineStatusEnum.WAIT.getCode())) {
                     // 需要人工审核，更新审核状态为待审核，并记录原因，并发送消息给管理员
-                    messageDto.setContent(MessageConstants.ArticleNeedReview(article.getId(), auditResult.getErrorMessage()));
+                    messageDto.setContent(MessageConstants.ArticleNeedReview(articleDto.getId(), articleDto.getTitle(), auditResult.getErrorMessage()));
                     messageService.sendToAdmin(messageDto);
-                    sendEmail.put("text", String.format(MessageConstants.ARTICLE_NEED_REVIEW, article.getId(), auditResult.getErrorMessage()));
+
+                    HashMap<String, Object> sendEmail = new HashMap<>();
+                    sendEmail.put("text", String.format(MessageConstants.ARTICLE_NEED_REVIEW, articleDto.getId(), auditResult.getErrorMessage()));
+                    rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
                 }
-                articleMapper.updateById(article);
+                articleMapper.updateById(BeanUtil.copyProperties(articleDto, Article.class));
             } else {
                 // 没有开启自动审核, 需要人工审核，发送消息给管理员
-                messageDto.setContent(MessageConstants.ArticleNeedReview(article.getId(), null));
+                messageDto.setContent(MessageConstants.ArticleNeedReview(articleDto.getId(), articleDto.getTitle(), null));
                 messageService.sendToAdmin(messageDto);
-                sendEmail.put("text", String.format(MessageConstants.ARTICLE_NEED_REVIEW, article.getId(), null));
+
+                HashMap<String, Object> sendEmail = new HashMap<>();
+                sendEmail.put("text", String.format(MessageConstants.ARTICLE_NEED_REVIEW, articleDto.getId(), null));
+                rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
             }
-            rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
         });
     }
 
@@ -241,6 +249,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         if (userArticle.getUserId() != SecurityUtils.getUserId()) {
             throw new BlogException(BlogConstants.CannotHandleOthersArticle);
+        }
+        if (articleDto.getEditStatus().equals(EditStatusEnum.DRAFT.getCode()) || articleDto.getEditStatus().equals(EditStatusEnum.RECYCLE.getCode())) {
+            // 如果设置草稿箱和回收站,则删除专栏文章
+            articleColumnMapper.delete(new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, articleDto.getId()));
         }
         Article article = BeanUtil.copyProperties(articleDto, Article.class);
         if (articleMapper.updateById(article) < 1) {

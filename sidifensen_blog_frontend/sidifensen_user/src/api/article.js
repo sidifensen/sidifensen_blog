@@ -34,3 +34,20 @@ export function getUserArticleList(pageNum, pageSize, articleStatusDto) {
     data: articleStatusDto,
   });
 }
+
+// 更新文章状态
+export function updateArticle(data) {
+  return request({
+    url: "/article/update",
+    method: "put",
+    data,
+  });
+}
+
+// 删除文章
+export function deleteArticle(articleId) {
+  return request({
+    url: `/article/delete/${articleId}`,
+    method: "delete",
+  });
+}
