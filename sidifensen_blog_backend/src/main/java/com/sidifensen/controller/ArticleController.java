@@ -1,6 +1,18 @@
 package com.sidifensen.controller;
 
 
+import java.util.List;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.sidifensen.domain.dto.ArticleAuditDto;
 import com.sidifensen.domain.dto.ArticleDto;
 import com.sidifensen.domain.dto.ArticleStatusDto;
@@ -8,11 +20,9 @@ import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.ArticleVo;
 import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.service.ArticleService;
+
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * @author sidifensen
@@ -46,6 +56,8 @@ public class ArticleController {
         PageVo<List<ArticleVo>> articleVoList = articleService.getUserArticleList(pageNum, pageSize, articleStatusDto);
         return Result.success(articleVoList);
     }
+
+
 
     /**
      * 获取用户文章详情
@@ -105,6 +117,7 @@ public class ArticleController {
      *
      * @return 管理员文章列表
      */
+    @PreAuthorize("hasAuthority('article:list')")
     @GetMapping("/admin/list")
     public Result adminGetArticleList() {
         List<ArticleVo> articleVoList = articleService.adminGetArticleList();
@@ -116,6 +129,7 @@ public class ArticleController {
      *
      * @return 管理员文章详情
      */
+    @PreAuthorize("hasAuthority('article:get')")
     @GetMapping("/admin/{articleId}")
     public Result adminGetArticle(@PathVariable Integer articleId) {
         ArticleVo articleVo = articleService.adminGetArticle(articleId);
@@ -127,6 +141,7 @@ public class ArticleController {
      *
      * @return 管理员更新文章
      */
+    @PreAuthorize("hasAuthority('article:update')")
     @PutMapping("/admin/update")
     public Result adminUpdateArticle(@RequestBody ArticleDto articleDto) {
         articleService.adminUpdateArticle(articleDto);
@@ -138,6 +153,7 @@ public class ArticleController {
      *
      * @return 管理员删除文章
      */
+    @PreAuthorize("hasAuthority('article:delete')")
     @DeleteMapping("/admin/{articleId}")
     public Result adminDeleteArticle(@PathVariable Integer articleId) {
         articleService.adminDeleteArticle(articleId);
@@ -149,6 +165,7 @@ public class ArticleController {
      *
      * @return 管理员审核文章
      */
+    @PreAuthorize("hasAuthority('article:examine')")
     @PutMapping("/admin/examine")
     public Result adminExamineArticle(@RequestBody ArticleAuditDto articleAuditDto) {
         articleService.adminExamineArticle(articleAuditDto);

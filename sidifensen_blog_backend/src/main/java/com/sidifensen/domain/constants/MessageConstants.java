@@ -48,8 +48,8 @@ public class MessageConstants {
      * @param message 审核不通过的消息
      * @return 格式化后的消息
      */
-    public static String ArticleAuditNotPass(Integer articleId, String message) {
-        String text = String.format(ARTICLE_AUDIT_NOT_PASS, articleId, message);
+    public static String ArticleAuditNotPass(Integer articleId, String title, String message) {
+        String text = String.format(ARTICLE_AUDIT_NOT_PASS, articleId, title, message);
         Map<String, Object> map = new HashMap<>();
         map.put("text", text);
         return toJson(map);

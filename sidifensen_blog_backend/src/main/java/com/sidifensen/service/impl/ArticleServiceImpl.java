@@ -35,6 +35,8 @@ import com.sidifensen.utils.MyThreadFactory;
 import com.sidifensen.utils.SecurityUtils;
 import com.sidifensen.utils.TextAuditUtils;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
@@ -58,6 +60,7 @@ import java.util.stream.Collectors;
  * @since 2025-08-24
  */
 @Service
+@Slf4j
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
 
     ExecutorService executorService = new ThreadPoolExecutor(
@@ -117,12 +120,23 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                         .like(Article::getDescription, articleStatusDto.getKeyword())); // 描述
 
         // 添加根据年月查询的条件
-        if (ObjectUtil.isNotEmpty(articleStatusDto.getCreateTime())) {
-            // 获取指定年月的第一天和最后一天
+        if (ObjectUtil.isNotEmpty(articleStatusDto.getYear())) {
+            if (ObjectUtil.isNotEmpty(articleStatusDto.getMonth())) {
+                // 如果指定了年份和月份，查询该月
+                LocalDateTime firstDayOfMonth = LocalDateTime.of(articleStatusDto.getYear(), articleStatusDto.getMonth(), 1, 0, 0, 0);
+                LocalDateTime lastDayOfMonth = firstDayOfMonth.with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX);
+                qw.between(Article::getCreateTime, firstDayOfMonth, lastDayOfMonth);
+            } else {
+                // 如果只指定了年份，查询整年
+                LocalDateTime firstDayOfYear = LocalDateTime.of(articleStatusDto.getYear(), 1, 1, 0, 0, 0);
+                LocalDateTime lastDayOfYear = LocalDateTime.of(articleStatusDto.getYear(), 12, 31, 23, 59, 59);
+                qw.between(Article::getCreateTime, firstDayOfYear, lastDayOfYear);
+            }
+        } else if (ObjectUtil.isNotEmpty(articleStatusDto.getCreateTime())) {
+            // 兼容原有的createTime参数
             LocalDateTime dateTime = DateUtil.toLocalDateTime(articleStatusDto.getCreateTime());
             LocalDateTime firstDayOfMonth = dateTime.with(TemporalAdjusters.firstDayOfMonth()).with(LocalTime.MIN);
             LocalDateTime lastDayOfMonth = dateTime.with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX);
-
             qw.between(Article::getCreateTime, firstDayOfMonth, lastDayOfMonth);
         }
 
@@ -172,8 +186,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (!articleMapper.insertOrUpdate(article)) {
             throw new BlogException(BlogConstants.AddArticleError);
         }
-
-        auditArticle(articleDto);
+        auditArticle(articleDto.setId(article.getId()));
     }
 
     // 文章审核
@@ -184,11 +197,17 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             messageDto.setType(MessageTypeEnum.SYSTEM.getCode());
             // 进行自动审核
             if (sidifensenConfig.isArticleAutoAudit()) {
-                ImageAuditResult auditResult = textAuditUtils.auditTextWithDetails(articleDto.getTitle() + " " + articleDto.getContent());
+                ImageAuditResult auditResult = textAuditUtils.auditTextWithDetailsSplit(articleDto.getTitle() + " " + articleDto.getContent());
 
+                // 先更新文章的审核状态
+                Article updateArticle = new Article();
+                updateArticle.setId(articleDto.getId());
+                
                 if (auditResult.getStatus().equals(ExamineStatusEnum.PASS.getCode())) {
                     // 文字审核通过，更新审核状态为通过
-                    articleDto.setExamineStatus(ExamineStatusEnum.PASS.getCode());
+                    updateArticle.setExamineStatus(ExamineStatusEnum.PASS.getCode());
+                    articleMapper.updateById(updateArticle);
+                    log.info("文章审核通过，ID: {}", String.valueOf(articleDto.getId()));
 
                     // 文字审核通过，更新文章所属的专栏
                     if (ObjectUtil.isNotEmpty(articleDto.getColumnIds())) {
@@ -204,14 +223,21 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                             articleColumnMapper.insert(newArticleColumn);
                         });
                     }
-                } else if (auditResult.getStatus().equals(ExamineStatusEnum.NO_PASS)) {
+                } else if (auditResult.getStatus().equals(ExamineStatusEnum.NO_PASS.getCode())) {
                     // 文字审核不通过，更新审核状态为不通过，并记录原因，并发送消息给用户
-                    articleDto.setExamineStatus(ExamineStatusEnum.NO_PASS.getCode());
-                    messageDto.setContent(MessageConstants.ArticleAuditNotPass(articleDto.getId(), auditResult.getErrorMessage()));
+                    updateArticle.setExamineStatus(ExamineStatusEnum.NO_PASS.getCode());
+                    articleMapper.updateById(updateArticle);
+                    log.info("文章审核不通过，ID: {}，标题: {}，原因: {}", articleDto.getId(), articleDto.getTitle(), auditResult.getErrorMessage());
+                    
+                    messageDto.setContent(MessageConstants.ArticleAuditNotPass(articleDto.getId(), articleDto.getTitle(), auditResult.getErrorMessage()));
                     messageDto.setReceiverId(articleDto.getUserId());
                     messageService.sendToUser(messageDto);
                 } else if (auditResult.getStatus().equals(ExamineStatusEnum.WAIT.getCode())) {
                     // 需要人工审核，更新审核状态为待审核，并记录原因，并发送消息给管理员
+                    updateArticle.setExamineStatus(ExamineStatusEnum.WAIT.getCode());
+                    articleMapper.updateById(updateArticle);
+                    log.info("文章需要人工审核，ID: {}", articleDto.getId());
+                    
                     messageDto.setContent(MessageConstants.ArticleNeedReview(articleDto.getId(), articleDto.getTitle(), auditResult.getErrorMessage()));
                     messageService.sendToAdmin(messageDto);
 
@@ -219,7 +245,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                     sendEmail.put("text", String.format(MessageConstants.ARTICLE_NEED_REVIEW, articleDto.getId(), auditResult.getErrorMessage()));
                     rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
                 }
-                articleMapper.updateById(BeanUtil.copyProperties(articleDto, Article.class));
             } else {
                 // 没有开启自动审核, 需要人工审核，发送消息给管理员
                 messageDto.setContent(MessageConstants.ArticleNeedReview(articleDto.getId(), articleDto.getTitle(), null));
@@ -275,7 +300,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public List<ArticleVo> adminGetArticleList() {
-        return List.of();
+        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
+                .orderByDesc(Article::getCreateTime);
+        List<Article> articleList = articleMapper.selectList(qw);
+        List<ArticleVo> articleVoList = BeanUtil.copyToList(articleList, ArticleVo.class);
+        return articleVoList;
     }
 
     @Override
@@ -314,6 +343,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 只查询userId字段
         Article article = articleMapper.selectOne(new LambdaQueryWrapper<Article>()
                 .select(Article::getUserId)
+                .select(Article::getTitle)
                 .eq(Article::getId, articleAuditDto.getArticleId()));
 
         if (ObjectUtil.isEmpty(article)) {
@@ -326,7 +356,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             articleAuditDto.setExamineStatus(ExamineStatusEnum.PASS.getCode());
         } else if (examineStatus.equals(ExamineStatusEnum.NO_PASS.getCode())) {
             articleAuditDto.setExamineStatus(ExamineStatusEnum.NO_PASS.getCode());
-            articleAuditDto.setExamineReason(MessageConstants.ArticleAuditNotPass(articleAuditDto.getArticleId(), examineReason));
+            articleAuditDto.setExamineReason(MessageConstants.ArticleAuditNotPass(articleAuditDto.getArticleId(), article.getTitle(), examineReason));
         }
 
         // 更新文章审核状态
@@ -337,9 +367,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         // 发送消息给用户
         MessageDto messageDto = new MessageDto();
-        messageDto.setContent(MessageConstants.ArticleAuditNotPass(articleAuditDto.getArticleId(), examineReason));
+        messageDto.setContent(MessageConstants.ArticleAuditNotPass(articleAuditDto.getArticleId(), article.getTitle(), examineReason));
         messageDto.setReceiverId(article.getUserId());
         messageService.sendToUser(messageDto);
     }
+
+
 
 }

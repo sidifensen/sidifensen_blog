@@ -14,6 +14,26 @@
       <div class="advanced-filter">
         <div class="filter-row">
           <div class="filter-item">
+            <el-select v-model="selectedYear" placeholder="年份" @change="handleDateFilterChange" class="filter-select">
+              <template #prefix>
+                <span class="select-prefix">年份:</span>
+              </template>
+              <el-option label="不限" :value="null"></el-option>
+              <el-option v-for="year in availableYears" :key="year" :label="year + '年'" :value="year"></el-option>
+            </el-select>
+          </div>
+
+          <div class="filter-item">
+            <el-select v-model="selectedMonth" placeholder="月份" @change="handleDateFilterChange" class="filter-select">
+              <template #prefix>
+                <span class="select-prefix">月份:</span>
+              </template>
+              <el-option label="不限" :value="null"></el-option>
+              <el-option v-for="month in 12" :key="month" :label="month + '月'" :value="month"></el-option>
+            </el-select>
+          </div>
+
+          <div class="filter-item">
             <el-select v-model="filterParams.reprintType" placeholder="文章类型" @change="handleFilterChange" class="filter-select">
               <template #prefix>
                 <span class="select-prefix">文章类型:</span>
@@ -48,7 +68,7 @@
       </div>
 
       <!-- 文章列表区域 -->
-      <div class="article-list-container">
+      <div class="article-list-container" ref="listContainer" @scroll="handleScroll">
         <div v-if="loading" class="loading-container">
           <div class="loading-spinner"></div>
           <span>加载中...</span>
@@ -58,7 +78,7 @@
           <el-empty description="暂无文章数据"></el-empty>
         </div>
 
-        <div v-else class="infinite-scroll-wrapper" v-infinite-scroll="loadArticles" infinite-scroll-disabled="!hasMore || loading || loadingMore" infinite-scroll-distance="10">
+        <div v-else>
           <el-table :data="articles" class="article-table" style="width: 100%">
             <el-table-column prop="title" label="文章" min-width="250">
               <template #default="{ row }">
@@ -77,7 +97,7 @@
                       {{ getVisibleRangeText(row.visibleRange) }}
                     </span>
                     <div class="article-meta">
-                      <span class="publish-time">{{ formatDate(row.createTime) }}</span>
+                      <span class="publish-time">{{ row.createTime }}</span>
                     </div>
                   </div>
                 </div>
@@ -114,12 +134,12 @@
               </template>
             </el-table-column>
           </el-table>
-        </div>
 
-        <!-- 加载更多指示器 -->
-        <div v-if="loadingMore" class="loading-more">
-          <div class="loading-spinner small"></div>
-          <span>加载更多...</span>
+          <!-- 加载更多指示器 -->
+          <div v-if="loadingMore" class="loading-more">
+            <div class="loading-spinner small"></div>
+            <span>加载更多...</span>
+          </div>
         </div>
       </div>
     </div>
@@ -132,8 +152,6 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import { deleteArticle, getUserArticleList, updateArticle } from "@/api/article";
 import { Search, View, Message, Pointer, Edit, Delete, Collection } from "@element-plus/icons-vue";
-// 导入Element Plus的无限滚动指令
-import { ElInfiniteScroll } from "element-plus";
 
 const router = useRouter();
 
@@ -150,6 +168,14 @@ const pageSize = ref(10);
 const hasMore = ref(true);
 // 搜索关键词
 const searchKeyword = ref("");
+// 列表容器引用
+const listContainer = ref(null);
+
+// 年份月份筛选
+const selectedYear = ref(null);
+const selectedMonth = ref(null);
+const availableYears = ref([]);
+// 月份固定为1-12
 
 // 筛选参数
 const filterParams = ref({
@@ -161,18 +187,6 @@ const filterParams = ref({
 
 // 当前激活的筛选类型
 const activeFilterType = ref("all");
-
-// 格式化日期
-const formatDate = (dateString) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${year}-${month}-${day} ${hours}:${minutes}`;
-};
 
 // 获取审核状态文本
 const getExamineStatusText = (status) => {
@@ -231,6 +245,10 @@ const handleFilterClick = (filterType) => {
   // 清空搜索关键词
   searchKeyword.value = "";
 
+  // 重置日期筛选
+  selectedYear.value = null;
+  selectedMonth.value = null;
+
   // 根据筛选类型设置参数
   switch (filterType) {
     case "all":
@@ -275,6 +293,14 @@ const handleSearch = () => {
   loadArticles(true);
 };
 
+// 处理日期筛选变化
+const handleDateFilterChange = () => {
+  currentPage.value = 1;
+  articles.value = [];
+  hasMore.value = true;
+  loadArticles(true);
+};
+
 // 加载文章列表
 const loadArticles = async (reset = false) => {
   // 如果没有更多数据或者已经在加载中，则不再请求
@@ -312,21 +338,33 @@ const loadArticles = async (reset = false) => {
       params.keyword = searchKeyword.value;
     }
 
+    // 日期筛选参数
+    if (selectedYear.value) {
+      params.year = selectedYear.value;
+      if (selectedMonth.value) {
+        params.month = selectedMonth.value;
+      }
+    }
     // 发送请求获取文章列表
     const response = await getUserArticleList(currentPage.value, pageSize.value, params);
     const result = response.data || {};
     const newArticles = result.data ? result.data.data || [] : [];
     const total = result.data ? result.data.total || 0 : 0;
-    console.log("加载数据:", { currentPage: currentPage.value, newArticlesCount: newArticles.length, total });
+    // console.log("加载数据:", { currentPage: currentPage.value, newArticlesCount: newArticles.length, total });
 
     // 更新总数量统计
     totalCount.value = total;
 
-    // 从当前已加载的所有文章中重新计算各状态数量
     if (reset) {
+      // 初次加载或筛选条件改变时
       articles.value = newArticles;
+      // 从文章数据中提取年月信息并更新筛选选项
+      updateDateFiltersFromArticles(newArticles);
     } else {
+      // 无限滚动时加载下一页数据
       articles.value = [...articles.value, ...newArticles];
+      // 合并新数据后更新筛选选项
+      updateDateFiltersFromArticles(articles.value);
     }
 
     // 重新计算各状态数量（基于所有已加载的文章）
@@ -397,7 +435,6 @@ const handleDeleteArticle = async (articleId) => {
       cancelButtonText: "取消",
       type: "warning",
     });
-
     await deleteArticle(articleId)
       .then(() => {
         ElMessage.success("文章删除成功");
@@ -419,6 +456,34 @@ const handleViewArticle = (articleId) => {
   ElMessage.success("浏览文章");
 };
 
+// 处理滚动事件 - 自定义无限滚动
+const handleScroll = () => {
+  // 如果没有列表容器或正在加载中或加载更多中或没有更多内容时,不用加载下一页了
+  if (!listContainer.value || loading.value || loadingMore.value || !hasMore.value) {
+    return;
+  }
+
+  const container = listContainer.value;
+  // 当滚动到底部附近时加载更多
+  if (container.scrollTop + container.clientHeight >= container.scrollHeight - 100) {
+    loadArticles();
+  }
+};
+
+// 从文章列表中提取年份选项
+const updateDateFiltersFromArticles = (articleList) => {
+  if (!articleList || articleList.length === 0) {
+    availableYears.value = [];
+    return;
+  }
+  // 提取所有文章的年份并去重排序
+  const years = [...new Set(articleList.map(article => {
+    const createTime = new Date(article.createTime);
+    return createTime.getFullYear();
+  }))].sort((a, b) => b - a);
+  availableYears.value = years;
+};
+
 // 组件挂载时的处理
 onMounted(async () => {
   await loadArticles(true);
@@ -427,6 +492,7 @@ onMounted(async () => {
 // 组件卸载时的处理
 onUnmounted(() => {
   // 清理资源
+  listContainer.value = null;
 });
 </script>
 
@@ -434,13 +500,10 @@ onUnmounted(() => {
 .article-manage-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  // min-height: 100vh;
+  height: calc(100vh - 48px);
 
   .main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-
     // 顶部筛选按钮区域
     .filter-buttons {
       display: flex;
@@ -491,12 +554,6 @@ onUnmounted(() => {
       overflow-y: auto;
       position: relative;
       max-height: calc(100vh - 240px);
-
-      // 无限滚动容器样式
-      .infinite-scroll-wrapper {
-        position: relative;
-        overflow-y: auto;
-      }
 
       // 加载容器
       .loading-container,
@@ -649,7 +706,6 @@ onUnmounted(() => {
   .article-manage-container {
     .main-content {
       padding: 10px;
-      margin-top: 50px;
 
       .filter-buttons {
         justify-content: center;

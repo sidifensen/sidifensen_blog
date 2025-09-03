@@ -29,6 +29,30 @@ a {
   outline: unset;
 }
 
+/* 设置滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background-color: transparent;
+}
+
+/* 设置滚动条轨道样式 */
+::-webkit-scrollbar-track {
+  background-color: var(--el-border-color-light);
+  border-radius: 4px;
+}
+
+/* 设置滚动条滑块样式 */
+::-webkit-scrollbar-thumb {
+  background-color: #c0c4cc;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+  
+  &:hover {
+    background-color: #909399;
+  }
+}
+
 // -enter-active 和 -leave-active 定义进入和离开的动画效果
 // -enter-from 和 -leave-to定义进入和离开的状态
 

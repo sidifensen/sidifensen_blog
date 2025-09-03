@@ -69,5 +69,15 @@ public class ArticleStatusDto implements Serializable {
      */
     private Date createTime;
 
+    /**
+     * 年份筛选
+     */
+    private Integer year;
+
+    /**
+     * 月份筛选
+     */
+    private Integer month;
+
 
 }

@@ -3,7 +3,7 @@
     <el-header class="header">
       <CreationHeader />
     </el-header>
-    <el-container class="content">
+    <el-container class="menu">
       <el-aside class="sidebar">
         <el-menu class="pc-menu" :default-active="activeIndex" router @select="handleSelect" :default-openeds="['/creation/manage']">
           <div class="create">
@@ -49,10 +49,13 @@ const computedActiveIndex = computed(() => {
 });
 
 // 监听computed属性变化，更新activeIndex
-watch(computedActiveIndex, (newPath) => {
-  activeIndex.value = newPath;
-}, { immediate: true });
-
+watch(
+  computedActiveIndex,
+  (newPath) => {
+    activeIndex.value = newPath;
+  },
+  { immediate: true }
+);
 </script>
 <style lang="scss" scoped>
 .layout-container {
@@ -61,7 +64,7 @@ watch(computedActiveIndex, (newPath) => {
   .header {
     height: 48px;
   }
-  .content {
+  .menu {
     height: calc(100vh - 48px);
     .sidebar {
       width: 200px;
@@ -93,10 +96,13 @@ watch(computedActiveIndex, (newPath) => {
             }
           }
         }
-        .menu-text{
+        .menu-text {
           font-size: 18px;
         }
       }
+    }
+    .router-view {
+      height: 100%;
     }
   }
 }

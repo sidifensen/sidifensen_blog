@@ -42,11 +42,17 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
         List<SysPermission> sysPermissions = this.list();
         List<SysPermissionVo> sysPermissionVos = BeanUtil.copyToList(sysPermissions, SysPermissionVo.class);
         if (ObjectUtil.isNotEmpty(sysPermissions)) {
-            List<SysMenu> sysMenus = sysMenuMapper.selectBatchIds(sysPermissions.stream().map(SysPermission::getMenuId).toList());
-            // 设置菜单名称
-            sysPermissionVos.stream().forEach(sysPermission -> {
-                sysPermission.setMenuName(sysMenus.stream().filter(sysMenu -> sysMenu.getId().equals(sysPermission.getMenuId())).findFirst().get().getName());
-                sysPermission.setIcon(sysMenus.stream().filter(sysMenu -> sysMenu.getId().equals(sysPermission.getMenuId())).findFirst().get().getIcon());
+            List<SysMenu> sysMenus = sysMenuMapper.selectList(new LambdaQueryWrapper<SysMenu>()
+                    .in(SysMenu::getId, sysPermissions.stream().map(SysPermission::getMenuId).toList()));
+            // 设置菜单名称和图标
+            sysPermissionVos.forEach(sysPermission -> {
+                sysMenus.stream()
+                    .filter(sysMenu -> sysMenu.getId().equals(sysPermission.getMenuId()))
+                    .findFirst()
+                    .ifPresent(menu -> {
+                        sysPermission.setMenuName(menu.getName());
+                        sysPermission.setIcon(menu.getIcon());
+                    });
             });
         }
         return sysPermissionVos;
@@ -86,11 +92,17 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
         List<SysPermissionVo> sysPermissionVos = BeanUtil.copyToList(sysPermissions, SysPermissionVo.class);
 
         if (ObjectUtil.isNotEmpty(sysPermissions)) {
-            List<SysMenu> sysMenus = sysMenuMapper.selectBatchIds(sysPermissions.stream().map(SysPermission::getMenuId).toList());
-            // 设置菜单名称
-            sysPermissionVos.stream().forEach(sysPermission -> {
-                sysPermission.setMenuName(sysMenus.stream().filter(sysMenu -> sysMenu.getId().equals(sysPermission.getMenuId())).findFirst().get().getName());
-                sysPermission.setIcon(sysMenus.stream().filter(sysMenu -> sysMenu.getId().equals(sysPermission.getMenuId())).findFirst().get().getIcon());
+            List<SysMenu> sysMenus = sysMenuMapper.selectList(new LambdaQueryWrapper<SysMenu>()
+                    .in(SysMenu::getId, sysPermissions.stream().map(SysPermission::getMenuId).toList()));
+            // 设置菜单名称和图标
+            sysPermissionVos.forEach(sysPermission -> {
+                sysMenus.stream()
+                    .filter(sysMenu -> sysMenu.getId().equals(sysPermission.getMenuId()))
+                    .findFirst()
+                    .ifPresent(menu -> {
+                        sysPermission.setMenuName(menu.getName());
+                        sysPermission.setIcon(menu.getIcon());
+                    });
             });
         }
         return sysPermissionVos;

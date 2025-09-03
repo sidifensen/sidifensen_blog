@@ -14,6 +14,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling // 启用定时任务
 public class Main {
     public static void main(String[] args) {
+        // 设置JVM文件编码为UTF-8
+        System.setProperty("file.encoding", "UTF-8");
+        System.setProperty("sun.jnu.encoding", "UTF-8");
+        
         SpringApplication app = new SpringApplication(Main.class);
 
         // 设置自定义 Banner

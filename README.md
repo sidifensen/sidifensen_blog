@@ -1,192 +1,508 @@
-# Sidifensen Blog 个人博客系统
-
-## 项目概述
-
-**sidifensen_blog** 是一个完整的个人博客系统，采用前后端分离的架构设计。这是一个功能丰富的现代化博客平台，包含了用户端和管理端两个前端应用。
-
-## 技术架构
-
-### 后端技术栈
-- **框架**: Spring Boot 3.1.4 (Java 21)
-- **安全**: Spring Security
-- **数据库**: MySQL 8.1.0 + MyBatis-Plus 3.5.3.1
-- **缓存**: Redis
-- **消息队列**: RabbitMQ
-- **文件存储**: MinIO
-- **模板引擎**: Thymeleaf
-- **其他工具**: 
-  - Lombok (代码简化)
-  - Hutool (工具库)
-  - FastJSON (JSON处理)
-  - JustAuth (第三方登录)
-  - 阿里云图片内容安全检测
-
-### 前端技术栈
-- **框架**: Vue 3.5.13 + Vite 6.2.4
-- **UI组件库**: Element Plus 2.10.2
-- **状态管理**: Pinia 3.0.1
-- **路由**: Vue Router 4.5.0
-- **HTTP客户端**: Axios 1.10.0
-- **样式**: Sass
-- **图标**: Element Plus Icons + SVG Icons
-
-> 所有技术栈均使用当前最新稳定版本，确保系统性能和安全性。
-
-## 项目结构
-
-```
-sidifensen_blog/
-├── sidifensen_blog_backend/          # 后端服务 (Spring Boot)
-│   ├── src/main/java/com/sidifensen/
-│   │   ├── controller/               # 控制器层
-│   │   ├── service/                  # 业务逻辑层
-│   │   ├── mapper/                   # 数据访问层
-│   │   ├── domain/                   # 实体类
-│   │   ├── security/                 # 安全配置
-│   │   ├── redis/                    # Redis配置
-│   │   ├── minio/                    # 文件存储配置
-│   │   ├── rabbitmq/                 # 消息队列
-│   │   └── utils/                    # 工具类
-│   └── pom.xml                       # Maven配置
-├── sidifensen_blog_frontend/         # 前端应用
-│   ├── sidifensen_user/              # 用户端 (Vue 3)
-│   └── sidifensen_admin/             # 管理端 (Vue 3)
-└── sql/                              # 数据库脚本
-    ├── sidifensen_blog.sql           # 主数据库结构
-    └── console.sql                   # 控制台相关
-```
-
-## 主要功能特性
-
-### 后端功能
-1. **用户认证与授权**: Spring Security + JWT
-2. **内容管理**: 博客文章、分类、标签管理
-3. **文件管理**: MinIO对象存储
-4. **缓存系统**: Redis缓存提升性能
-5. **消息队列**: RabbitMQ异步处理
-6. **第三方登录**: JustAuth支持多种OAuth
-7. **内容安全**: 阿里云图片内容检测
-8. **邮件服务**: 验证码、通知邮件
-9. **验证码**: 图形验证码生成
-
-### 前端功能
-1. **用户端**: 博客展示、文章阅读、用户交互
-2. **管理端**: 内容管理、用户管理、系统配置
-3. **响应式设计**: 支持多设备访问
-4. **现代化UI**: Element Plus组件库
-5. **状态持久化**: Pinia状态管理
-
-## 项目特色
-
-1. **完整的功能体系**: 从内容管理到用户交互的完整博客生态
-2. **安全性**: 集成Spring Security和内容安全检测
-3. **性能优化**: Redis缓存、RabbitMQ异步处理
-4. **可扩展性**: 模块化设计，易于功能扩展
-5. **开发体验**: 完善的开发工具链和配置
-6. **前后端分离**: 采用现代化前后端分离架构，提高开发效率
-
-## 快速开始
-
-### 环境要求
-- JDK 21+
-- Node.js 18+
-- MySQL 8.0+
-- Redis 6.0+
-- RabbitMQ 3.8+
-
-### 后端启动
-```bash
-cd sidifensen_blog_backend
-mvn spring-boot:run
-```
-
-### 前端启动
-```bash
-# 用户端
-cd sidifensen_blog_frontend/sidifensen_user
-npm install
-npm run dev
-
-# 管理端
-cd sidifensen_blog_frontend/sidifensen_admin
-npm install
-npm run dev
-```
-
-### 数据库初始化
-1. 创建MySQL数据库：`sidifensen_blog`
-2. 执行SQL脚本：`sql/sidifensen_blog.sql`
-3. 根据需要执行控制台相关脚本：`sql/console.sql`
-
-## 部署教程
-
-### 环境准备
-1. 确保Docker已正确安装并运行
-2. 准备好数据库、Redis、RabbitMQ等服务
-3. 配置好MinIO存储服务和阿里云图片安全检测服务（如使用）
-
-### 后端部署
-1. 配置 `application.yml` 中的数据库、Redis、RabbitMQ等连接信息
-2. 使用 `mvn clean package` 打包项目，生成JAR文件
-3. 将打包完成的JAR文件、`docker.sh`脚本及`Dockerfile`放置于同一目录下
-4. 执行以下命令为脚本添加执行权限：
-   ```bash
-   chmod +x docker.sh
-   ```
-5. 运行脚本完成部署：
-   ```bash
-   ./docker.sh
-   ```
-
-### 前端部署
-1. 使用 `npm run build` 构建生产版本，生成`dist`文件夹
-2. 将构建生成的`dist`文件夹、`default.conf`配置文件、`docker.sh`脚本及`Dockerfile`放置于同一目录下
-3. 执行以下命令为脚本添加执行权限：
-   ```bash
-   chmod +x docker.sh
-   ```
-4. 运行脚本完成部署：
-   ```bash
-   ./docker.sh
-   ```
-
-> 注意：根据实际情况调整配置文件中的参数。
-
-## 访问应用
-部署完成后，可以通过以下地址访问应用：
-- 用户端: http://localhost:7000
-- 管理端: http://localhost:8000
-
-如果使用了自定义端口或域名，请相应调整访问地址。
-
-## 开发说明
-
-### 后端开发
-- 遵循Spring Boot最佳实践
-- 使用MyBatis-Plus简化数据库操作
-- 代码规范：遵循Java编码规范，使用Lombok减少样板代码
-- API设计：RESTful风格API，返回统一格式的响应
-
-### 前端开发
-- 使用Vue 3 Composition API进行组件开发
-- 状态管理：使用Pinia管理应用状态
-- 代码规范：遵循ESLint规则，使用Prettier格式化代码
-- 支持JavaScript开发
-
-## 贡献指南
-
-欢迎提交Issue和Pull Request来改进这个项目！
-
-## 许可证
-
-本项目采用MIT许可证，详见LICENSE文件。
-
-## 联系方式
-
-如有问题或建议，请通过以下方式联系：
-- 提交GitHub Issue
-- 发送邮件至项目维护者
+<div align="center">
+  <h1>🚀 Sidifensen Blog</h1>
+  <p>现代化个人博客系统 | 前后端分离架构</p>
+  
+  ![Java](https://img.shields.io/badge/Java-21-orange.svg)
+  ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1.4-brightgreen.svg)
+  ![Vue.js](https://img.shields.io/badge/Vue.js-3.5.13-4FC08D.svg)
+  ![Element Plus](https://img.shields.io/badge/Element%20Plus-2.10.2-409EFF.svg)
+  ![License](https://img.shields.io/badge/License-MIT-blue.svg)
+  
+  <p>
+    <a href="#-功能特性">功能特性</a> •
+    <a href="#-技术架构">技术架构</a> •
+    <a href="#-快速开始">快速开始</a> •
+    <a href="#-部署指南">部署指南</a> •
+    <a href="#-项目结构">项目结构</a>
+  </p>
+</div>
 
 ---
 
-**这是一个设计精良、功能完整的个人博客系统，适合作为学习Spring Boot和Vue 3全栈开发的参考项目，也可以直接部署使用。**
+## 📋 项目概述
+
+**Sidifensen Blog** 是一个功能完整的现代化个人博客系统，采用前后端分离架构设计。系统包含用户端展示界面和管理端后台系统，提供了从内容创作到用户交互的完整博客解决方案。
+
+### ✨ 项目亮点
+
+- 🎨 **现代化 UI**: 基于 Element Plus 的精美界面设计
+- 🔒 **安全可靠**: Spring Security + JWT 认证，阿里云内容安全检测
+- ⚡ **高性能**: Redis 缓存 + RabbitMQ 异步处理
+- 📱 **响应式设计**: 完美适配桌面端和移动端
+- 🔧 **易于扩展**: 模块化架构，支持功能定制
+- 🚀 **开箱即用**: Docker 一键部署，快速上线
+
+## 🛠️ 技术架构
+
+<table>
+<tr>
+<td valign="top" width="50%">
+
+### 🔧 后端技术栈
+- **核心框架**: Spring Boot 3.1.4
+- **开发语言**: Java 21
+- **安全框架**: Spring Security + JWT
+- **数据库**: MySQL 8.1.0
+- **ORM框架**: MyBatis-Plus 3.5.12
+- **缓存中间件**: Redis
+- **消息队列**: RabbitMQ
+- **文件存储**: MinIO 8.3.6
+- **模板引擎**: Thymeleaf
+- **第三方登录**: JustAuth 1.16.7
+- **内容安全**: 阿里云图片内容检测
+- **工具库**: 
+  - Lombok 1.18.38 (代码简化)
+  - Hutool 5.8.38 (工具库)
+  - FastJSON 2.0.50 (JSON处理)
+  - Easy-Captcha 1.6.2 (验证码)
+
+</td>
+<td valign="top" width="50%">
+
+### 🎨 前端技术栈
+- **核心框架**: Vue 3.5.13
+- **构建工具**: Vite 6.2.4
+- **UI组件库**: Element Plus 2.10.2+
+- **状态管理**: Pinia 3.0.1
+- **路由管理**: Vue Router 4.5.0
+- **HTTP客户端**: Axios 1.10.0+
+- **样式预处理**: Sass
+- **图标库**: Element Plus Icons + SVG Icons
+- **富文本编辑器**: AiEditor 1.4.0
+- **开发工具**:
+  - Vue DevTools 7.7.2
+  - Auto Import 19.3.0
+  - TypeScript 支持
+  - 代码混淆保护
+
+</td>
+</tr>
+</table>
+
+### 🏗️ 架构特点
+
+- **微服务架构**: 前后端完全分离，独立部署
+- **RESTful API**: 标准化的 API 接口设计  
+- **响应式设计**: 支持多终端适配
+- **高可用部署**: Docker 容器化部署
+- **安全防护**: 多层安全防护机制
+
+## 📁 项目结构
+
+```
+📦 sidifensen_blog/
+├── 🔧 sidifensen_blog_backend/              # 后端服务 (Spring Boot)
+│   ├── 📂 src/main/java/com/sidifensen/
+│   │   ├── 🎮 controller/                   # REST API 控制器
+│   │   ├── 💼 service/                      # 业务逻辑服务层
+│   │   ├── 🗃️ mapper/                       # MyBatis 数据访问层
+│   │   ├── 📋 domain/                       # 数据实体类
+│   │   ├── 🔐 security/                     # Spring Security 配置
+│   │   ├── 🚀 redis/                        # Redis 缓存配置
+│   │   ├── 📁 minio/                        # MinIO 文件存储配置
+│   │   ├── 📨 rabbitmq/                     # RabbitMQ 消息队列
+│   │   └── 🛠️ utils/                        # 通用工具类
+│   ├── 📂 src/main/resources/
+│   │   ├── ⚙️ application*.yaml             # 应用配置文件
+│   │   ├── 📝 logback-spring.xml            # 日志配置
+│   │   ├── 🗂️ mapper/                       # MyBatis XML 映射文件
+│   │   └── 📧 templates/                    # Thymeleaf 邮件模板
+│   ├── 🐳 Dockerfile                        # Docker 构建文件
+│   ├── 📜 docker.sh                         # Docker 部署脚本
+│   └── 📋 pom.xml                           # Maven 依赖配置
+├── 🎨 sidifensen_blog_frontend/             # 前端应用目录
+│   ├── 👥 sidifensen_user/                  # 用户端界面 (Vue 3)
+│   │   ├── 📂 src/
+│   │   │   ├── 🔌 api/                      # API 接口封装
+│   │   │   ├── 🎭 components/               # 可复用组件
+│   │   │   ├── 📄 views/                    # 页面视图组件
+│   │   │   ├── 🧭 router/                   # 路由配置
+│   │   │   ├── 🗃️ stores/                   # Pinia 状态管理
+│   │   │   └── 🛠️ utils/                    # 前端工具函数
+│   │   ├── 🐳 Dockerfile                    # Docker 构建文件
+│   │   ├── 📜 docker.sh                     # Docker 部署脚本
+│   │   └── 📦 package.json                  # npm 依赖配置
+│   └── 🔧 sidifensen_admin/                 # 管理端后台 (Vue 3)
+│       ├── 📂 src/                          # 源码目录 (结构同用户端)
+│       ├── 🐳 Dockerfile                    # Docker 构建文件
+│       ├── 📜 docker.sh                     # Docker 部署脚本
+│       └── 📦 package.json                  # npm 依赖配置
+├── 🗄️ sql/                                  # 数据库脚本
+│   ├── 📊 sidifensen_blog.sql               # 主数据库结构和数据
+│   └── 🖥️ console.sql                       # 控制台相关脚本
+└── 📖 README.md                             # 项目说明文档
+```
+
+## ⭐ 功能特性
+
+<table>
+<tr>
+<td valign="top" width="50%">
+
+### 🔐 用户系统
+- **多种登录方式**: 账号密码 + 第三方 OAuth 登录
+- **权限管理**: 基于角色的访问控制 (RBAC)
+- **安全防护**: JWT 认证 + Spring Security
+- **邮件验证**: 注册验证码 + 密码重置
+- **图形验证码**: 防止恶意注册和登录
+
+### 📝 内容管理
+- **富文本编辑**: 支持 Markdown + 所见即所得编辑
+- **文章分类**: 多级分类和标签系统
+- **图片管理**: MinIO 对象存储 + 图片安全检测
+- **内容审核**: 阿里云内容安全自动审核
+- **SEO 优化**: 友好的 URL 结构和 Meta 信息
+
+### 🎨 用户界面
+- **响应式设计**: 完美适配桌面、平板、手机
+- **暗黑模式**: 支持明暗主题切换
+- **加载动画**: 优雅的加载和过渡效果
+- **无限滚动**: 流畅的内容浏览体验
+- **搜索功能**: 全文搜索和标签筛选
+
+</td>
+<td valign="top" width="50%">
+
+### 🔧 管理后台
+- **仪表盘**: 数据统计和系统监控
+- **用户管理**: 用户列表、角色权限管理
+- **内容管理**: 文章、分类、标签的 CRUD 操作
+- **文件管理**: 图片上传、删除、批量操作
+- **系统设置**: 站点配置、邮件配置等
+
+### ⚡ 性能优化
+- **Redis 缓存**: 热点数据缓存，提升响应速度
+- **异步处理**: RabbitMQ 消息队列处理耗时任务
+- **CDN 支持**: 静态资源 CDN 加速
+- **代码分割**: 前端代码按需加载
+- **图片优化**: 图片压缩和懒加载
+
+### 🚀 部署运维
+- **Docker 支持**: 一键容器化部署
+- **多环境配置**: 开发、测试、生产环境分离
+- **日志管理**: 结构化日志记录和分析
+- **监控告警**: 应用性能监控
+- **备份恢复**: 数据库自动备份机制
+
+</td>
+</tr>
+</table>
+
+## 🚀 快速开始
+
+### 📋 环境要求
+
+| 组件 | 版本要求 | 说明 |
+|------|----------|------|
+| ☕ JDK | 21+ | 后端运行环境 |
+| 🟢 Node.js | 18+ | 前端构建环境 |
+| 🐬 MySQL | 8.0+ | 主数据库 |
+| 🔴 Redis | 6.0+ | 缓存数据库 |
+| 🐰 RabbitMQ | 3.8+ | 消息队列 |
+| 🐳 Docker | 20.0+ | 容器化部署 (可选) |
+
+### 💾 数据库初始化
+
+```bash
+# 1. 创建数据库
+mysql -u root -p
+CREATE DATABASE sidifensen_blog CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+# 2. 导入数据结构
+mysql -u root -p sidifensen_blog < sql/sidifensen_blog.sql
+```
+
+### 🔧 后端启动
+
+```bash
+# 克隆项目
+git clone https://github.com/your-username/sidifensen_blog.git
+cd sidifensen_blog/sidifensen_blog_backend
+
+# 配置数据库连接
+# 编辑 src/main/resources/application-dev.yaml 文件
+# 修改数据库、Redis、RabbitMQ 连接信息
+
+# 启动后端服务
+mvn clean install
+mvn spring-boot:run
+
+# 或者使用 IDE 直接运行 SidifensenBlogBackendApplication.java
+```
+
+### 🎨 前端启动
+
+```bash
+# 用户端启动
+cd sidifensen_blog_frontend/sidifensen_user
+npm install
+npm run dev
+# 访问 http://localhost:5173
+
+# 管理端启动 (新开终端)
+cd sidifensen_blog_frontend/sidifensen_admin
+npm install  
+npm run dev
+# 访问 http://localhost:5174
+```
+
+### 🌐 访问应用
+
+启动成功后，可通过以下地址访问：
+
+- 📱 **用户端**: http://localhost:5173 (博客前台)
+- 🔧 **管理端**: http://localhost:5174 (后台管理)
+- 🔌 **后端API**: http://localhost:8080 (REST API)
+
+## 🐳 部署指南
+
+### 🔧 生产环境部署
+
+#### 1️⃣ 环境准备
+
+```bash
+# 安装 Docker 和 Docker Compose
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# 安装 Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.0.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+```
+
+#### 2️⃣ 后端部署
+
+```bash
+cd sidifensen_blog_backend
+
+# 1. 修改生产环境配置
+vim src/main/resources/application-prod.yaml
+
+# 2. 构建 JAR 包
+mvn clean package -DskipTests
+
+# 3. 构建 Docker 镜像并启动
+chmod +x docker.sh
+./docker.sh
+
+# 或者手动执行
+docker build -t sidifensen-blog-backend .
+docker run -d -p 8080:8080 --name sidifensen-blog-backend sidifensen-blog-backend
+```
+
+#### 3️⃣ 前端部署
+
+```bash
+# 用户端部署
+cd sidifensen_blog_frontend/sidifensen_user
+npm run build
+chmod +x docker.sh
+./docker.sh
+
+# 管理端部署  
+cd ../sidifensen_admin
+npm run build
+chmod +x docker.sh
+./docker.sh
+```
+
+#### 4️⃣ 使用 Docker Compose 一键部署
+
+创建 `docker-compose.yml` 文件：
+
+```yaml
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: your_password
+      MYSQL_DATABASE: sidifensen_blog
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis:6.2
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3.8-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  backend:
+    build: ./sidifensen_blog_backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - redis
+      - rabbitmq
+
+  frontend-user:
+    build: ./sidifensen_blog_frontend/sidifensen_user
+    ports:
+      - "7000:80"
+
+  frontend-admin:
+    build: ./sidifensen_blog_frontend/sidifensen_admin
+    ports:
+      - "8000:80"
+
+volumes:
+  mysql_data:
+```
+
+```bash
+# 一键启动所有服务
+docker-compose up -d
+```
+
+### 🌐 访问地址
+
+部署完成后，可通过以下地址访问：
+
+| 服务 | 地址 | 说明 |
+|------|------|------|
+| 📱 用户端 | http://your-domain:7000 | 博客前台展示 |
+| 🔧 管理端 | http://your-domain:8000 | 后台管理系统 |
+| 🔌 后端API | http://your-domain:8080 | REST API 接口 |
+| 🐰 RabbitMQ | http://your-domain:15672 | 消息队列管理 |
+
+### ⚙️ 配置说明
+
+**重要配置项：**
+
+- 数据库连接信息
+- Redis 连接配置  
+- RabbitMQ 连接配置
+- MinIO 存储配置
+- 阿里云内容安全配置
+- 邮件服务配置
+
+## 👨‍💻 开发说明
+
+### 🔧 后端开发规范
+
+```java
+// 示例：统一返回格式
+@RestController
+@RequestMapping("/api/articles")
+public class ArticleController {
+    
+    @GetMapping
+    public Result<PageInfo<Article>> getArticles(
+        @RequestParam(defaultValue = "1") Integer pageNum,
+        @RequestParam(defaultValue = "10") Integer pageSize
+    ) {
+        return Result.success(articleService.getArticles(pageNum, pageSize));
+    }
+}
+```
+
+**开发要点：**
+- 📋 遵循 Spring Boot 最佳实践和阿里巴巴 Java 开发手册
+- 🗃️ 使用 MyBatis-Plus 简化数据库操作，支持分页和条件构造器
+- 🏗️ 采用三层架构：Controller → Service → Mapper
+- 📝 使用 Lombok 减少样板代码，提高开发效率
+- 🔌 RESTful API 设计，统一返回格式 `Result<T>`
+- ✅ 参数校验使用 `@Valid` 和 `@Validated` 注解
+- 📊 集成 Swagger/OpenAPI 3.0 用于 API 文档生成
+
+### 🎨 前端开发规范
+
+```vue
+<!-- 示例：组件开发模板 -->
+<template>
+  <div class="article-list">
+    <el-card v-for="article in articles" :key="article.id">
+      <h3>{{ article.title }}</h3>
+      <p>{{ article.summary }}</p>
+    </el-card>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { getArticles } from '@/api/article'
+
+const articles = ref([])
+
+const loadArticles = async () => {
+  const { data } = await getArticles()
+  articles.value = data.list
+}
+
+onMounted(() => {
+  loadArticles()
+})
+</script>
+```
+
+**开发要点：**
+- 🎯 使用 Vue 3 Composition API，代码更加清晰和可复用
+- 🗃️ Pinia 状态管理，支持状态持久化
+- 🎨 Element Plus 组件库，确保 UI 一致性
+- 📱 响应式设计，使用 CSS Grid 和 Flexbox
+- 🔧 Vite 构建工具，支持热更新和快速构建
+- 📦 自动导入插件，减少重复的 import 语句
+- 🔒 代码混淆和压缩，保护前端代码
+
+### 🧪 测试和质量保证
+
+- **单元测试**: JUnit 5 + Mockito (后端)，Vitest (前端)
+- **集成测试**: TestContainers 用于数据库集成测试
+- **代码质量**: SonarQube 代码质量检测
+- **API 测试**: Postman 集合和自动化测试脚本
+
+## 🤝 贡献指南
+
+我们欢迎所有形式的贡献！请遵循以下步骤：
+
+### 📝 提交流程
+
+1. **Fork 项目** 到你的 GitHub 账号
+2. **创建特性分支**: `git checkout -b feature/amazing-feature`
+3. **提交更改**: `git commit -m 'Add some amazing feature'`
+4. **推送分支**: `git push origin feature/amazing-feature`
+5. **创建 Pull Request**
+
+### 🐛 问题报告
+
+发现 Bug 或有新功能建议？请通过 [GitHub Issues](https://github.com/your-username/sidifensen_blog/issues) 提交。
+
+**Bug 报告请包含：**
+- 🔍 详细的问题描述
+- 🔄 重现步骤
+- 💻 运行环境信息
+- 📸 截图或错误日志
+
+## 📄 许可证
+
+本项目基于 [MIT License](LICENSE) 开源协议。
+
+## 📞 联系方式
+
+<div align="center">
+
+**如有问题或建议，欢迎通过以下方式联系：**
+
+[![GitHub Issues](https://img.shields.io/badge/GitHub-Issues-black?logo=github)](https://github.com/your-username/sidifensen_blog/issues)
+[![Email](https://img.shields.io/badge/Email-Contact-blue?logo=gmail)](mailto:your-email@example.com)
+
+---
+
+### 🌟 如果这个项目对你有帮助，请给一个 Star ⭐
+
+**💡 这是一个设计精良、功能完整的现代化博客系统，适合：**
+- 🎓 学习 Spring Boot + Vue 3 全栈开发
+- 🚀 快速搭建个人博客网站  
+- 📚 作为企业级项目开发参考
+- 🔧 二次开发和功能扩展
+
+</div>

@@ -129,6 +129,19 @@ public class AlbumController {
         List<AlbumVo> albumVos = albumService.adminList();
         return Result.success(albumVos);
     }
+    
+    /**
+     * 管理端查看相册详情
+     *
+     * @param albumId
+     * @return
+     */
+    @PreAuthorize("hasAuthority('album:detail')")
+    @GetMapping("/admin/get/{albumId}")
+    public Result<Object> adminGetAlbum(@PathVariable("albumId") Integer albumId) {
+        AlbumVo album = albumService.adminGetAlbum(albumId);
+        return Result.success(album);
+    }
 
     /**
      * 管理端更新相册
@@ -144,19 +157,6 @@ public class AlbumController {
     }
 
     /**
-     * 管理端删除相册
-     *
-     * @param albumId
-     * @return
-     */
-    @PreAuthorize("hasAuthority('album:delete')")
-    @DeleteMapping("/admin/get/{albumId}")
-    public Result<String> adminDeleteAlbum(@PathVariable("albumId") Integer albumId) {
-        albumService.adminDeleteAlbum(albumId);
-        return Result.success();
-    }
-
-    /**
      * 管理端搜索相册
      */
     @PreAuthorize("hasAuthority('album:search')")
@@ -167,17 +167,16 @@ public class AlbumController {
     }
 
     /**
-     * 管理端查看相册详情
+     * 管理端删除相册
      *
      * @param albumId
      * @return
      */
-    @PreAuthorize("hasAuthority('album:detail')")
-    @GetMapping("/admin/delete/{albumId}")
-    public Result<Object> adminGetAlbum(@PathVariable("albumId") Integer albumId) {
-        AlbumVo album = albumService.adminGetAlbum(albumId);
-        return Result.success(album);
+    @PreAuthorize("hasAuthority('album:delete')")
+    @DeleteMapping("/admin/delete/{albumId}")
+    public Result<String> adminDeleteAlbum(@PathVariable("albumId") Integer albumId) {
+        albumService.adminDeleteAlbum(albumId);
+        return Result.success();
     }
-
 
 }

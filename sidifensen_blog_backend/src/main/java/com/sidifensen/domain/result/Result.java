@@ -13,8 +13,8 @@ public class Result<T> implements Serializable {
     private T data;
 
     // 返回成功的结果
-    public static Result success() {
-        Result result = new Result();
+    public static <T> Result<T> success() {
+        Result<T> result = new Result<T>();
         result.setCode(200);
         return result;
     }
