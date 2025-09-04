@@ -25,6 +25,14 @@ export function getUserList() {
   });
 }
 
+// 获取用户列表（包含文章数量）
+export function getUserListWithArticleCount() {
+  return request({
+    url: "/user/admin/listWithArticleCount",
+    method: "get",
+  });
+}
+
 // 修改用户
 export function updateUser(data) {
   return request({
@@ -43,7 +51,7 @@ export function deleteUser(userId) {
 }
 
 // 搜索用户
-export function queryUser(data){
+export function queryUser(data) {
   return request({
     url: "/user/admin/search",
     method: "post",
@@ -58,4 +66,3 @@ export function getUserDetail(userId) {
     method: "get",
   });
 }
-

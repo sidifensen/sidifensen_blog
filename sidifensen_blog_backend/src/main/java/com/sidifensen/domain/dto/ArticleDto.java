@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -102,11 +103,21 @@ public class ArticleDto implements Serializable {
     /**
      * 创建时间
      */
-    private LocalDateTime createTime;
+    private Date createTime;
 
     /**
      * 更新时间
      */
-    private LocalDateTime updateTime;
+    private Date updateTime;
+
+    /**
+     * 创建时间开始（用于搜索）
+     */
+    private Date createTimeStart;
+
+    /**
+     * 创建时间结束（用于搜索）
+     */
+    private Date createTimeEnd;
 
 }

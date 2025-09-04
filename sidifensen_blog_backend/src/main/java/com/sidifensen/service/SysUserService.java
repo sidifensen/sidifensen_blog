@@ -5,6 +5,7 @@ import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.vo.SysUserDetailVo;
 import com.sidifensen.domain.vo.SysUserVo;
+import com.sidifensen.domain.vo.SysUserWithArticleCountVo;
 
 import java.util.List;
 
@@ -68,7 +69,6 @@ public interface SysUserService extends IService<SysUser> {
      */
     SysUserVo info();
 
-
     // 管理端
 
     // 管理员登录
@@ -79,6 +79,9 @@ public interface SysUserService extends IService<SysUser> {
 
     // 管理端获取用户列表
     List<SysUserVo> listUser();
+
+    // 管理端获取用户列表（包含文章数量）
+    List<SysUserWithArticleCountVo> listUserWithArticleCount();
 
     // 管理端更新用户
     void updateUser(SysUserDto sysUserDto);

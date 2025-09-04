@@ -9,7 +9,7 @@ import router from "./router";
 app.use(router);
 
 // 引入并配置disable-devtool
-import { setupDisableDevtool } from '@/utils/disableDevtool';
+// import { setupDisableDevtool } from "@/utils/disableDevtool";
 // setupDisableDevtool();
 
 // 注册svg全局组件
@@ -28,7 +28,6 @@ pinia.use(piniaPluginPersistedstate);
 app.use(pinia);
 
 import ElementPlus from "element-plus";
-// import "element-plus/dist/index.css";
 
 // 导入中文语言包
 import zhCn from "element-plus/dist/locale/zh-cn.mjs";
@@ -45,6 +44,5 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 import { useDarkStore } from "./stores/darkStore";
 const darkStore = useDarkStore();
 darkStore.initDarkMode();
-
 
 app.mount("#app");

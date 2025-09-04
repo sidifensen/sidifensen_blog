@@ -11,8 +11,10 @@ import com.sidifensen.domain.entity.*;
 import com.sidifensen.domain.enums.StatusEnum;
 import com.sidifensen.domain.vo.SysUserDetailVo;
 import com.sidifensen.domain.vo.SysUserVo;
+import com.sidifensen.domain.vo.SysUserWithArticleCountVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.AlbumMapper;
+import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.PhotoMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.redis.RedisComponent;
@@ -86,15 +88,18 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Resource
     private SysUserRoleService sysUserRoleService;
 
+    @Resource
+    private ArticleMapper articleMapper;
+
     @Override
     public String login(LoginDto loginDto) {
         try {
             // 校验验证码
             if (!loginDto.getCheckCode().equals(redisComponent.getCheckCode(loginDto.getCheckCodeKey()))) {
-                throw new BlogException(BlogConstants.CheckCodeError); //验证码错误
+                throw new BlogException(BlogConstants.CheckCodeError); // 验证码错误
             }
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword());
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    loginDto.getUsername(), loginDto.getPassword());
             // 调用loadUserByUsername方法
             Authentication authenticate = authenticationManager.authenticate(authentication);
             // 获取用户信息，返回的就是UserDetails
@@ -110,8 +115,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Override
     public String oauthLogin(OauthLoginDto oauthLoginDto) {
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(oauthLoginDto.getUsername(), oauthLoginDto.getPassword());
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                oauthLoginDto.getUsername(), oauthLoginDto.getPassword());
         // 调用loadUserByUsername方法
         Authentication authenticate = authenticationManager.authenticate(authentication);
         // 获取用户信息，返回的就是UserDetails
@@ -124,7 +129,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     public void register(RegisterDto registerDto) {
         // 校验验证码
-        if (ObjectUtil.isNotEmpty(registerDto.getEmailCheckCode()) && !registerDto.getEmailCheckCode().equals(redisComponent.getEmailCheckCode(registerDto.getEmail(), "register"))) {
+        if (ObjectUtil.isNotEmpty(registerDto.getEmailCheckCode()) && !registerDto.getEmailCheckCode()
+                .equals(redisComponent.getEmailCheckCode(registerDto.getEmail(), "register"))) {
             throw new BlogException(BlogConstants.CheckCodeError);
         }
 
@@ -161,7 +167,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     }
 
-
     @Override
     public void sendEmailCheckCode(EmailDto emailDto) {
         String email = emailDto.getEmail();
@@ -172,9 +177,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                 throw new BlogException(BlogConstants.NotFoundEmail);// 邮箱不存在
             }
         }
-        //生成六位数的验证码
+        // 生成六位数的验证码
         String checkCode = String.valueOf((int) ((Math.random() * 9 + 1) * 100000));
-        //将验证码存入redis
+        // 将验证码存入redis
         redisComponent.saveEmailCheckCode(email, emailDto.getType(), checkCode);
         // 发送邮件
         HashMap<String, Object> sendEmail = new HashMap<>();
@@ -187,7 +192,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Override
     public void verifyReset(VerifyResetDto verifyResetDto) {
-        if (!verifyResetDto.getEmailCheckCode().equals(redisComponent.getEmailCheckCode(verifyResetDto.getEmail(), "reset"))) {
+        if (!verifyResetDto.getEmailCheckCode()
+                .equals(redisComponent.getEmailCheckCode(verifyResetDto.getEmail(), "reset"))) {
             throw new BlogException(BlogConstants.CheckCodeError); // 验证码错误
         }
     }
@@ -195,14 +201,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     public void resetPassword(ResetPasswordDto resetPasswordDto) {
         // 如果新密码与老密码相同
-        SysUser sysUser = sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getEmail, resetPasswordDto.getEmail()));
+        SysUser sysUser = sysUserMapper
+                .selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getEmail, resetPasswordDto.getEmail()));
         if (ObjectUtil.isNull(sysUser)) {
             throw new BlogException(BlogConstants.NotFoundEmail); // 邮箱不存在
         }
         if (passwordEncoder.matches(resetPasswordDto.getPassword(), sysUser.getPassword())) { // security的密码加密器对比密码用matches方法
             throw new BlogException(BlogConstants.NewPasswordSameAsOld); // 新密码不能与原密码相同
         }
-        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<SysUser>().eq(SysUser::getEmail, resetPasswordDto.getEmail());
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<SysUser>().eq(SysUser::getEmail,
+                resetPasswordDto.getEmail());
         SysUser newSysUser = new SysUser().setPassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
         sysUserMapper.update(newSysUser, queryWrapper);
 
@@ -230,8 +238,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     // 管理员登录
     @Override
     public String adminLogin(AdminLoginDto adminLoginDto) {
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(adminLoginDto.getUsername(), adminLoginDto.getPassword());
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                adminLoginDto.getUsername(), adminLoginDto.getPassword());
         // 调用loadUserByUsername方法
         Authentication authenticate = authenticationManager.authenticate(authentication);
         // 获取用户信息
@@ -273,6 +281,23 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return sysUserVos;
     }
 
+    // 管理端获取用户列表（包含文章数量）
+    @Override
+    public List<SysUserWithArticleCountVo> listUserWithArticleCount() {
+        List<SysUser> sysUsers = sysUserMapper.selectList(null);
+        List<SysUserWithArticleCountVo> sysUserVos = BeanUtil.copyToList(sysUsers, SysUserWithArticleCountVo.class);
+
+        // 为每个用户设置文章数量
+        for (SysUserWithArticleCountVo userVo : sysUserVos) {
+            LambdaQueryWrapper<Article> articleQuery = new LambdaQueryWrapper<Article>()
+                    .eq(Article::getUserId, userVo.getId());
+            Integer articleCount = Math.toIntExact(articleMapper.selectCount(articleQuery));
+            userVo.setArticleCount(articleCount);
+        }
+
+        return sysUserVos;
+    }
+
     // 管理端更新用户信息
     @Override
     public void updateUser(SysUserDto sysUserDto) {
@@ -305,11 +330,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     public List<SysUserVo> searchUser(SysUserSearchDTO sysUserSearchDTO) {
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.like(ObjectUtil.isNotEmpty(sysUserSearchDTO.getUsername()), SysUser::getUsername, sysUserSearchDTO.getUsername());
-        queryWrapper.like(ObjectUtil.isNotEmpty(sysUserSearchDTO.getEmail()), SysUser::getEmail, sysUserSearchDTO.getEmail());
-        queryWrapper.eq(ObjectUtil.isNotEmpty(sysUserSearchDTO.getStatus()), SysUser::getStatus, sysUserSearchDTO.getStatus());
-        queryWrapper.ge(ObjectUtil.isNotEmpty(sysUserSearchDTO.getCreateTimeStart()), SysUser::getCreateTime, sysUserSearchDTO.getCreateTimeStart());
-        queryWrapper.le(ObjectUtil.isNotEmpty(sysUserSearchDTO.getCreateTimeEnd()), SysUser::getCreateTime, sysUserSearchDTO.getCreateTimeEnd());
+        queryWrapper.like(ObjectUtil.isNotEmpty(sysUserSearchDTO.getUsername()), SysUser::getUsername,
+                sysUserSearchDTO.getUsername());
+        queryWrapper.like(ObjectUtil.isNotEmpty(sysUserSearchDTO.getEmail()), SysUser::getEmail,
+                sysUserSearchDTO.getEmail());
+        queryWrapper.eq(ObjectUtil.isNotEmpty(sysUserSearchDTO.getStatus()), SysUser::getStatus,
+                sysUserSearchDTO.getStatus());
+        queryWrapper.ge(ObjectUtil.isNotEmpty(sysUserSearchDTO.getCreateTimeStart()), SysUser::getCreateTime,
+                sysUserSearchDTO.getCreateTimeStart());
+        queryWrapper.le(ObjectUtil.isNotEmpty(sysUserSearchDTO.getCreateTimeEnd()), SysUser::getCreateTime,
+                sysUserSearchDTO.getCreateTimeEnd());
 
         List<SysUser> sysUsers = sysUserMapper.selectList(queryWrapper);
         return BeanUtil.copyToList(sysUsers, SysUserVo.class);
@@ -323,6 +353,5 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         SysUserDetailVo sysUserDetailVo = BeanUtil.copyProperties(sysUserDetail, SysUserDetailVo.class);
         return sysUserDetailVo;
     }
-
 
 }

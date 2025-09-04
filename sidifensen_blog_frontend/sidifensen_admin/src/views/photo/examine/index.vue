@@ -45,37 +45,76 @@
         <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedPhotos.length === 0" :loading="batchDeleteLoading"> 批量删除 </el-button>
       </div>
 
-      <!-- 表格 -->
-      <el-table v-loading="loading" :data="paginatedPhotoList" class="table" style="height: 100%" @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="30"/>
-        <el-table-column prop="url" label="图片" width="330">
-          <template #default="{ row }">
-            <div style="display: flex; align-items: center">
-              <el-image preview-teleported :src="row.url" style="width: 400px; height: 200px" :preview-src-list="[row.url]" fit="cover" />
+      <!-- 桌面端表格视图 -->
+      <div v-if="!isMobileView" class="desktop-view">
+        <el-table v-loading="loading" :data="paginatedPhotoList" class="table" style="height: 100%" @selection-change="handleSelectionChange">
+          <el-table-column type="selection" width="30" />
+          <el-table-column prop="url" label="图片" width="330">
+            <template #default="{ row }">
+              <div style="display: flex; align-items: center">
+                <el-image preview-teleported :src="row.url" style="width: 400px; height: 200px" :preview-src-list="[row.url]" fit="cover" />
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="id" label="id" width="60" />
+          <el-table-column prop="username" label="用户名" />
+          <el-table-column prop="examineStatus" label="状态">
+            <template #default="{ row }">
+              <div class="photo-status" :class="row.examineStatus === 0 ? 'status-unaudited' : row.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
+                {{ row.examineStatus === 0 ? "待审核" : row.examineStatus === 1 ? "已审核" : "未通过" }}
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createTime" label="创建时间" sortable width="120" />
+          <el-table-column prop="updateTime" label="更新时间" sortable width="120" />
+          <el-table-column label="操作" width="300">
+            <template #default="{ row }">
+              <div class="table-actions">
+                <el-button type="info" @click="handleAuditPhoto(row.id)" :icon="Check" class="examine-button">审核</el-button>
+                <el-button type="primary" @click="handleRejectPhoto(row.id)" :icon="Close" class="reject-button"> 拒绝 </el-button>
+                <el-button type="danger" @click="handleDeletePhoto(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+
+      <!-- 移动端卡片视图 -->
+      <div v-else class="mobile-view">
+        <div class="photo-cards">
+          <el-card v-for="photo in paginatedPhotoList" :key="photo.id" class="photo-card">
+            <div class="photo-card-content">
+              <div class="photo-header-section">
+                <el-image preview-teleported :src="photo.url" class="photo-cover" :preview-src-list="[photo.url]" fit="cover" />
+                <div class="photo-info">
+                  <div class="photo-header">
+                    <div class="photo-id">#{{ photo.id }}</div>
+                    <div class="photo-username">{{ photo.username }}</div>
+                    <div class="photo-status" :class="photo.examineStatus === 0 ? 'status-unaudited' : photo.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
+                      {{ photo.examineStatus === 0 ? "待审核" : photo.examineStatus === 1 ? "已审核" : "未通过" }}
+                    </div>
+                  </div>
+                  <div class="photo-meta">
+                    <div class="meta-item">
+                      <span class="label">创建时间:</span>
+                      <span>{{ photo.createTime }}</span>
+                    </div>
+                    <div class="meta-item">
+                      <span class="label">更新时间:</span>
+                      <span>{{ photo.updateTime }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="photo-actions">
+                <el-button type="info" @click="handleAuditPhoto(photo.id)" :icon="Check" class="examine-button">审核</el-button>
+                <el-button type="primary" @click="handleRejectPhoto(photo.id)" :icon="Close" class="reject-button">拒绝</el-button>
+                <el-button type="danger" @click="handleDeletePhoto(photo.id)" :icon="Delete" class="delete-button">删除</el-button>
+              </div>
             </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="id" label="id" width="60" />
-        <el-table-column prop="username" label="用户名" />
-        <el-table-column prop="examineStatus" label="状态">
-          <template #default="{ row }">
-            <div class="photo-status" :class="row.examineStatus === 0 ? 'status-unaudited' : row.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-              {{ row.examineStatus === 0 ? "待审核" : row.examineStatus === 1 ? "已审核" : "未通过" }}
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" sortable width="120" />
-        <el-table-column prop="updateTime" label="更新时间" sortable width="120" />
-        <el-table-column label="操作" width="300">
-          <template #default="{ row }">
-            <div class="table-actions">
-              <el-button type="info" @click="handleAuditPhoto(row.id)" :icon="Check" class="examine-button">审核</el-button>
-              <el-button type="primary" @click="handleRejectPhoto(row.id)" :icon="Close" class="reject-button"> 拒绝 </el-button>
-              <el-button type="danger" @click="handleDeletePhoto(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
+          </el-card>
+        </div>
+      </div>
 
       <!-- 分页 -->
       <div class="pagination-container">
@@ -86,9 +125,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from "vue";
+import { ref, onMounted, onUnmounted, watch, computed } from "vue";
 import { Delete, Close, Check } from "@element-plus/icons-vue";
-import { adminList } from "@/api/album";
 import { getUserList } from "@/api/user";
 import { adminDeletePhoto, adminDeleteBatchPhoto, adminAuditPhoto, adminAuditBatchPhoto, adminSearchPhoto, adminGetPhotoList } from "@/api/photo";
 
@@ -104,24 +142,6 @@ const currentPage = ref(1);
 const pageSize = ref(10);
 // 总条数
 const total = ref(0);
-// 对话框可见性
-const dialogVisible = ref(false);
-// 对话框标题
-const dialogTitle = ref("编辑相册");
-
-// 表单引用
-const photoFormRef = ref(null);
-// 表单数据
-const photoForm = ref({
-  id: null,
-  url: "",
-  examineStatus: 0,
-});
-
-// 表单验证规则
-const rules = {
-  url: [{ required: true, message: "请输入图片URL", trigger: "blur" }],
-};
 
 // 用户列表
 const userList = ref([]);
@@ -136,7 +156,7 @@ const getPhotos = async () => {
   loading.value = true;
   try {
     const res = await adminGetPhotoList();
-    photoList.value = res.data.data.sort((a, b) => b.id - a.id);//倒序展示
+    photoList.value = res.data.data.sort((a, b) => b.id - a.id); //倒序展示
     total.value = photoList.value.length;
     updatePaginatedPhotoList();
   } catch (error) {
@@ -146,10 +166,25 @@ const getPhotos = async () => {
   }
 };
 
+// 移动端检测
+const isMobileView = ref(false);
+
+// 监听窗口大小变化
+const handleResize = () => {
+  isMobileView.value = window.innerWidth <= 768;
+};
+
 // 初始化
 onMounted(() => {
   getPhotos();
   getUsers();
+  handleResize();
+  window.addEventListener("resize", handleResize);
+});
+
+// 组件卸载时移除监听
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
 });
 
 // 更新分页数据
@@ -251,7 +286,7 @@ const handleBatchAudit = () => {
             examineStatus: 1,
           }))
           .sort((a, b) => a.photoId - b.photoId); // 按照 photoId 升序排序
-        console.log(data)
+        console.log(data);
         await adminAuditBatchPhoto(data);
         ElMessage.success("批量审核成功");
         await getPhotos();
@@ -460,114 +495,274 @@ const handleBatchDelete = () => {
     }
   }
 
-  //表格
-  .table {
+  // 桌面端表格视图
+  .desktop-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .table {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-top: 16px;
+      max-height: calc(100vh - 220px);
+
+      :deep(.el-tag__content) {
+        display: flex;
+        align-items: center;
+      }
+
+      :deep(.el-table__header-wrapper) {
+        background-color: var(--el-bg-color);
+        th {
+          font-weight: 600;
+          color: #475569;
+        }
+      }
+
+      :deep(.el-table__body-wrapper) {
+        tr {
+          td {
+            color: #64748b;
+            padding: 12px 0;
+          }
+        }
+      }
+
+      :deep(.el-table__fixed-right) {
+        box-shadow: -3px 0 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .table-actions {
+        height: 30px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        @media screen and (max-width: 480px) {
+          gap: 4px;
+        }
+
+        .examine-button {
+          margin-left: 0;
+          background-color: #e0f2fe;
+          color: #0284c7;
+          border-color: #e0f2fe;
+          border-radius: 6px;
+          transition: all 0.3s ease;
+
+          &:hover {
+            background-color: #bae6fd;
+            border-color: #bae6fd;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+          }
+        }
+
+        .reject-button {
+          margin-left: 0;
+          background-color: #fef3c7;
+          color: #d97706;
+          border-color: #fef3c7;
+          border-radius: 6px;
+          transition: all 0.3s ease;
+          &:hover {
+            background-color: #fde68a;
+            border-color: #fde68a;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
+          }
+        }
+
+        .delete-button {
+          margin-left: 0;
+          background-color: #fee2e2;
+          color: #ef4444;
+          border-color: #fee2e2;
+          border-radius: 6px;
+          transition: all 0.3s ease;
+
+          &:hover {
+            background-color: #fecaca;
+            border-color: #fecaca;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+          }
+        }
+      }
+    }
+  }
+
+  // 移动端卡片视图
+  .mobile-view {
     flex: 1;
     display: flex;
     flex-direction: column;
     margin-top: 16px;
-    max-height: calc(100vh - 220px);
+    overflow-y: auto;
 
-    :deep(.el-tag__content) {
+    .photo-cards {
       display: flex;
-      align-items: center;
-    }
+      flex-direction: column;
+      gap: 12px;
+      padding: 10px;
 
-    :deep(.el-table__header-wrapper) {
-      background-color: var(--el-bg-color);
-      th {
-        font-weight: 600;
-        color: #475569;
-      }
-    }
-
-    :deep(.el-table__body-wrapper) {
-      tr {
-        td {
-          color: #64748b;
-          padding: 12px 0;
-        }
-      }
-    }
-
-    :deep(.el-table__fixed-right) {
-      box-shadow: -3px 0 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .table-actions {
-      height: 30px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      @media screen and (max-width: 480px) {
-        gap: 4px;
-      }
-      .examine-button {
-        margin-left: 0;
-        background-color: #e0f2fe;
-        color: #0284c7;
-        border-color: #e0f2fe;
-        border-radius: 6px;
+      .photo-card {
         transition: all 0.3s ease;
+        border-radius: 8px;
+        margin-bottom: 12px;
 
         &:hover {
-          background-color: #bae6fd;
-          border-color: #bae6fd;
           transform: translateY(-2px);
-          box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-      }
-      .reject-button {
-        margin-left: 0;
-        background-color: #fef3c7;
-        color: #d97706;
-        border-color: #fef3c7;
-        border-radius: 6px;
-        transition: all 0.3s ease;
-        &:hover {
-          background-color: #fde68a;
-          border-color: #fde68a;
-          transform: translateY(-2px);
-          box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
-        }
-      }
-      .delete-button {
-        margin-left: 0;
-        background-color: #fee2e2;
-        color: #ef4444;
-        border-color: #fee2e2;
-        border-radius: 6px;
-        transition: all 0.3s ease;
 
-        &:hover {
-          background-color: #fecaca;
-          border-color: #fecaca;
-          transform: translateY(-2px);
-          box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        .photo-card-content {
+          display: flex;
+          flex-direction: column;
+          padding: 16px;
+          gap: 12px;
+
+          .photo-header-section {
+            display: flex;
+            gap: 12px;
+
+            .photo-cover {
+              width: 120px;
+              height: 120px;
+              border-radius: 6px;
+              flex-shrink: 0;
+              object-fit: cover;
+            }
+
+            .photo-info {
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+
+              .photo-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+
+                .photo-id {
+                  font-size: 12px;
+                  color: #666;
+                  background-color: #f5f5f5;
+                  padding: 2px 6px;
+                  border-radius: 4px;
+                }
+
+                .photo-username {
+                  font-size: 14px;
+                  font-weight: 500;
+                  color: #333;
+                }
+
+                .photo-status {
+                  display: inline-block;
+                  padding: 2px 8px;
+                  border-radius: 12px;
+                  font-size: 11px;
+                  font-weight: 500;
+
+                  &.status-unaudited {
+                    background-color: #fff1f0;
+                    color: #f56c6c;
+                  }
+
+                  &.status-audited {
+                    background-color: #f0f9eb;
+                    color: #67c23a;
+                  }
+
+                  &.status-rejected {
+                    background-color: #fdf6ec;
+                    color: #e6a23c;
+                  }
+                }
+              }
+
+              .photo-meta {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+
+                .meta-item {
+                  font-size: 12px;
+                  color: #666;
+
+                  .label {
+                    font-weight: 500;
+                    margin-right: 4px;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .photo-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        padding-top: 8px;
+        border-top: 1px solid #f0f0f0;
+
+        .el-button {
+          font-size: 12px;
+          padding: 6px 16px;
+          height: auto;
+          border-radius: 4px;
+          flex: 1;
+        }
+
+        .examine-button {
+          background-color: #e0f2fe;
+          color: #0284c7;
+          border-color: #e0f2fe;
+        }
+
+        .reject-button {
+          background-color: #fef3c7;
+          color: #d97706;
+          border-color: #fef3c7;
+        }
+
+        .delete-button {
+          background-color: #fee2e2;
+          color: #ef4444;
+          border-color: #fee2e2;
         }
       }
     }
-    .photo-status {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-      margin-bottom: 6px;
+  }
 
-      &.status-unaudited {
-        background-color: #fff1f0;
-        color: #f56c6c;
-      }
+  // 通用的图片状态样式
+  .photo-status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    margin-bottom: 6px;
 
-      &.status-audited {
-        background-color: #f0f9eb;
-        color: #67c23a;
-      }
+    &.status-unaudited {
+      background-color: #fff1f0;
+      color: #f56c6c;
+    }
 
-      &.status-rejected {
-        background-color: #fdf6ec;
-        color: #e6a23c;
-      }
+    &.status-audited {
+      background-color: #f0f9eb;
+      color: #67c23a;
+    }
+
+    &.status-rejected {
+      background-color: #fdf6ec;
+      color: #e6a23c;
     }
   }
 

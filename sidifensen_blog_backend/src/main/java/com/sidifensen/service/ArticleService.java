@@ -55,4 +55,16 @@ public interface ArticleService extends IService<Article> {
 
     // 保存草稿
     void saveDraft(ArticleDto articleDto);
+
+    // 管理员搜索文章
+    List<ArticleVo> adminSearchArticle(ArticleDto articleDto);
+
+    // 管理员批量删除文章
+    void adminDeleteBatchArticle(List<ArticleAuditDto> articleAuditDtos);
+
+    // 管理员批量审核文章
+    void adminExamineBatchArticle(List<ArticleAuditDto> articleAuditDtos);
+
+    // 管理员根据用户ID获取文章列表
+    List<ArticleVo> adminGetArticlesByUserId(Integer userId);
 }

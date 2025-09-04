@@ -17,6 +17,7 @@ import com.sidifensen.domain.dto.MessageDto;
 import com.sidifensen.domain.entity.Article;
 import com.sidifensen.domain.entity.ArticleColumn;
 import com.sidifensen.domain.entity.Column;
+import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.enums.EditStatusEnum;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.enums.MessageTypeEnum;
@@ -29,6 +30,7 @@ import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.ArticleColumnMapper;
 import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.ColumnMapper;
+import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.ArticleService;
 import com.sidifensen.service.MessageService;
 import com.sidifensen.utils.MyThreadFactory;
@@ -43,8 +45,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -66,8 +70,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     ExecutorService executorService = new ThreadPoolExecutor(
             2, 4, 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(500),
-            new MyThreadFactory("ArticleServiceImpl")
-    );
+            new MyThreadFactory("ArticleServiceImpl"));
     @Resource
     private ArticleMapper articleMapper;
     @Resource
@@ -82,6 +85,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private MessageService messageService;
     @Resource
     private RabbitTemplate rabbitTemplate;
+    @Resource
+    private SysUserMapper sysUserMapper;
 
     @Override
     public PageVo<List<ArticleVo>> getArticleList(Integer pageNum, Integer pageSize) {
@@ -103,15 +108,20 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public PageVo<List<ArticleVo>> getUserArticleList(Integer pageNum, Integer pageSize, ArticleStatusDto articleStatusDto) {
+    public PageVo<List<ArticleVo>> getUserArticleList(Integer pageNum, Integer pageSize,
+            ArticleStatusDto articleStatusDto) {
         Integer userId = SecurityUtils.getUserId();
         Page<Article> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
                 .eq(userId != 0, Article::getUserId, userId)
-                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatus()), Article::getExamineStatus, articleStatusDto.getExamineStatus())
-                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus()), Article::getEditStatus, articleStatusDto.getEditStatus())
-                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getVisibleRange()), Article::getVisibleRange, articleStatusDto.getVisibleRange())
-                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getReprintType()), Article::getReprintType, articleStatusDto.getReprintType())
+                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatus()), Article::getExamineStatus,
+                        articleStatusDto.getExamineStatus())
+                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus()), Article::getEditStatus,
+                        articleStatusDto.getEditStatus())
+                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getVisibleRange()), Article::getVisibleRange,
+                        articleStatusDto.getVisibleRange())
+                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getReprintType()), Article::getReprintType,
+                        articleStatusDto.getReprintType())
                 .and(ObjectUtil.isNotEmpty(articleStatusDto.getKeyword()), wrapper -> wrapper
                         .like(Article::getTag, articleStatusDto.getKeyword()) // 标签
                         .or()
@@ -123,8 +133,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (ObjectUtil.isNotEmpty(articleStatusDto.getYear())) {
             if (ObjectUtil.isNotEmpty(articleStatusDto.getMonth())) {
                 // 如果指定了年份和月份，查询该月
-                LocalDateTime firstDayOfMonth = LocalDateTime.of(articleStatusDto.getYear(), articleStatusDto.getMonth(), 1, 0, 0, 0);
-                LocalDateTime lastDayOfMonth = firstDayOfMonth.with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX);
+                LocalDateTime firstDayOfMonth = LocalDateTime.of(articleStatusDto.getYear(),
+                        articleStatusDto.getMonth(), 1, 0, 0, 0);
+                LocalDateTime lastDayOfMonth = firstDayOfMonth.with(TemporalAdjusters.lastDayOfMonth())
+                        .with(LocalTime.MAX);
                 qw.between(Article::getCreateTime, firstDayOfMonth, lastDayOfMonth);
             } else {
                 // 如果只指定了年份，查询整年
@@ -139,7 +151,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             LocalDateTime lastDayOfMonth = dateTime.with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX);
             qw.between(Article::getCreateTime, firstDayOfMonth, lastDayOfMonth);
         }
-
 
         if (ObjectUtil.isEmpty(articleStatusDto.getOrderBy()) || articleStatusDto.getOrderBy() == 0) {
             qw.orderByDesc(Article::getCreateTime);
@@ -169,9 +180,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         // 如果文章状态为已发布, 则查询文章所属的专栏
         if (article.getEditStatus().equals(EditStatusEnum.PUBLISHED.getCode())) {
-            List<ArticleColumn> articleColumns = articleColumnMapper.selectList(new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, article.getId()));
+            List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
+                    new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, article.getId()));
             if (ObjectUtil.isNotEmpty(articleColumns)) {
-                List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId).collect(Collectors.toList());
+                List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId)
+                        .collect(Collectors.toList());
                 List<Column> columns = columnMapper.selectByIds(columnIds);
                 articleVo.setColumns(BeanUtil.copyToList(columns, ColumnVo.class));
             }
@@ -182,11 +195,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public void addArticle(ArticleDto articleDto) {
         Article article = BeanUtil.copyProperties(articleDto, Article.class);
-        article.setUserId(SecurityUtils.getUserId());
+        Integer userId = SecurityUtils.getUserId();
+        article.setUserId(userId);
         if (!articleMapper.insertOrUpdate(article)) {
             throw new BlogException(BlogConstants.AddArticleError);
         }
-        auditArticle(articleDto.setId(article.getId()));
+        articleDto.setId(article.getId()); // 回显id
+        articleDto.setUserId(userId);
+        auditArticle(articleDto);
     }
 
     // 文章审核
@@ -197,12 +213,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             messageDto.setType(MessageTypeEnum.SYSTEM.getCode());
             // 进行自动审核
             if (sidifensenConfig.isArticleAutoAudit()) {
-                ImageAuditResult auditResult = textAuditUtils.auditTextWithDetailsSplit(articleDto.getTitle() + " " + articleDto.getContent());
+                ImageAuditResult auditResult = textAuditUtils
+                        .auditTextWithDetailsSplit(articleDto.getTitle() + " " + articleDto.getContent());
 
                 // 先更新文章的审核状态
                 Article updateArticle = new Article();
                 updateArticle.setId(articleDto.getId());
-                
+
                 if (auditResult.getStatus().equals(ExamineStatusEnum.PASS.getCode())) {
                     // 文字审核通过，更新审核状态为通过
                     updateArticle.setExamineStatus(ExamineStatusEnum.PASS.getCode());
@@ -213,8 +230,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                     if (ObjectUtil.isNotEmpty(articleDto.getColumnIds())) {
                         List<Integer> columnIds = articleDto.getColumnIds();
                         columnIds.forEach(columnId -> {
-                            ArticleColumn articleColumn = articleColumnMapper.selectOne(new LambdaQueryWrapper<ArticleColumn>().select(ArticleColumn::getSort)
-                                    .eq(ArticleColumn::getColumnId, columnId).orderByDesc(ArticleColumn::getSort).last("limit 1"));
+                            ArticleColumn articleColumn = articleColumnMapper
+                                    .selectOne(new LambdaQueryWrapper<ArticleColumn>().select(ArticleColumn::getSort)
+                                            .eq(ArticleColumn::getColumnId, columnId)
+                                            .orderByDesc(ArticleColumn::getSort).last("limit 1"));
                             Integer sort = articleColumn == null ? 0 : articleColumn.getSort();
                             ArticleColumn newArticleColumn = new ArticleColumn();
                             newArticleColumn.setArticleId(articleDto.getId());
@@ -227,32 +246,39 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                     // 文字审核不通过，更新审核状态为不通过，并记录原因，并发送消息给用户
                     updateArticle.setExamineStatus(ExamineStatusEnum.NO_PASS.getCode());
                     articleMapper.updateById(updateArticle);
-                    log.info("文章审核不通过，ID: {}，标题: {}，原因: {}", articleDto.getId(), articleDto.getTitle(), auditResult.getErrorMessage());
-                    
-                    messageDto.setContent(MessageConstants.ArticleAuditNotPass(articleDto.getId(), articleDto.getTitle(), auditResult.getErrorMessage()));
+                    log.error("文章审核不通过，ID: {}，标题: {}，原因: {}", articleDto.getId(), articleDto.getTitle(),
+                            auditResult.getErrorMessage());
+
+                    messageDto.setContent(MessageConstants.ArticleAuditNotPass(articleDto.getId(),
+                            articleDto.getTitle(), auditResult.getErrorMessage()));
                     messageDto.setReceiverId(articleDto.getUserId());
                     messageService.sendToUser(messageDto);
                 } else if (auditResult.getStatus().equals(ExamineStatusEnum.WAIT.getCode())) {
                     // 需要人工审核，更新审核状态为待审核，并记录原因，并发送消息给管理员
                     updateArticle.setExamineStatus(ExamineStatusEnum.WAIT.getCode());
                     articleMapper.updateById(updateArticle);
-                    log.info("文章需要人工审核，ID: {}", articleDto.getId());
-                    
-                    messageDto.setContent(MessageConstants.ArticleNeedReview(articleDto.getId(), articleDto.getTitle(), auditResult.getErrorMessage()));
+                    log.error("文章需要人工审核，ID: {}", articleDto.getId());
+
+                    messageDto.setContent(MessageConstants.ArticleNeedReview(articleDto.getId(), articleDto.getTitle(),
+                            auditResult.getErrorMessage()));
                     messageService.sendToAdmin(messageDto);
 
                     HashMap<String, Object> sendEmail = new HashMap<>();
-                    sendEmail.put("text", String.format(MessageConstants.ARTICLE_NEED_REVIEW, articleDto.getId(), auditResult.getErrorMessage()));
-                    rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
+                    sendEmail.put("text", String.format(MessageConstants.ARTICLE_NEED_REVIEW, articleDto.getId(),
+                            auditResult.getErrorMessage()));
+                    rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange,
+                            RabbitMQConstants.Examine_Routing_Key, sendEmail);
                 }
             } else {
                 // 没有开启自动审核, 需要人工审核，发送消息给管理员
-                messageDto.setContent(MessageConstants.ArticleNeedReview(articleDto.getId(), articleDto.getTitle(), null));
+                messageDto.setContent(
+                        MessageConstants.ArticleNeedReview(articleDto.getId(), articleDto.getTitle(), null));
                 messageService.sendToAdmin(messageDto);
 
                 HashMap<String, Object> sendEmail = new HashMap<>();
                 sendEmail.put("text", String.format(MessageConstants.ARTICLE_NEED_REVIEW, articleDto.getId(), null));
-                rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
+                rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key,
+                        sendEmail);
             }
         });
     }
@@ -275,9 +301,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (userArticle.getUserId() != SecurityUtils.getUserId()) {
             throw new BlogException(BlogConstants.CannotHandleOthersArticle);
         }
-        if (articleDto.getEditStatus().equals(EditStatusEnum.DRAFT.getCode()) || articleDto.getEditStatus().equals(EditStatusEnum.RECYCLE.getCode())) {
+        if (articleDto.getEditStatus().equals(EditStatusEnum.DRAFT.getCode())
+                || articleDto.getEditStatus().equals(EditStatusEnum.RECYCLE.getCode())) {
             // 如果设置草稿箱和回收站,则删除专栏文章
-            articleColumnMapper.delete(new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, articleDto.getId()));
+            articleColumnMapper.delete(
+                    new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, articleDto.getId()));
         }
         Article article = BeanUtil.copyProperties(articleDto, Article.class);
         if (articleMapper.updateById(article) < 1) {
@@ -304,6 +332,35 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .orderByDesc(Article::getCreateTime);
         List<Article> articleList = articleMapper.selectList(qw);
         List<ArticleVo> articleVoList = BeanUtil.copyToList(articleList, ArticleVo.class);
+
+        // 批量查询用户名并设置到文章中
+        if (!articleVoList.isEmpty()) {
+            // 收集所有不为空的用户ID
+            List<Integer> userIds = articleVoList.stream()
+                    .map(ArticleVo::getUserId)
+                    .filter(ObjectUtil::isNotNull)
+                    .distinct()
+                    .toList();
+
+            if (!userIds.isEmpty()) {
+                // 批量查询用户信息
+                List<SysUser> users = sysUserMapper.selectList(
+                        new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIds));
+
+                // 创建用户ID到用户名的映射
+                Map<Integer, String> userIdToUsernameMap = users.stream()
+                        .collect(Collectors.toMap(SysUser::getId, SysUser::getUsername));
+
+                // 为每篇文章设置用户名
+                articleVoList.forEach(articleVo -> {
+                    if (articleVo.getUserId() != null) {
+                        String username = userIdToUsernameMap.get(articleVo.getUserId());
+                        articleVo.setUsername(username);
+                    }
+                });
+            }
+        }
+
         return articleVoList;
     }
 
@@ -314,9 +371,21 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             throw new BlogException(BlogConstants.NotFoundArticle);
         }
         ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
-        List<ArticleColumn> articleColumns = articleColumnMapper.selectList(new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getId, article.getId()));
+
+        // 获取用户信息
+        if (article.getUserId() != null) {
+            SysUser user = sysUserMapper.selectById(article.getUserId());
+            if (user != null) {
+                articleVo.setUsername(user.getUsername());
+            }
+        }
+
+        // 获取专栏信息
+        List<ArticleColumn> articleColumns = articleColumnMapper
+                .selectList(new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, article.getId()));
         if (ObjectUtil.isNotEmpty(articleColumns)) {
-            List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId).collect(Collectors.toList());
+            List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId)
+                    .collect(Collectors.toList());
             List<Column> columns = columnMapper.selectByIds(columnIds);
             articleVo.setColumns(BeanUtil.copyToList(columns, ColumnVo.class));
         }
@@ -340,24 +409,17 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public void adminExamineArticle(ArticleAuditDto articleAuditDto) {
-        // 只查询userId字段
-        Article article = articleMapper.selectOne(new LambdaQueryWrapper<Article>()
-                .select(Article::getUserId)
-                .select(Article::getTitle)
-                .eq(Article::getId, articleAuditDto.getArticleId()));
+
+        Article article = articleMapper.selectOne(
+                new LambdaQueryWrapper<Article>()
+                        .select(Article::getUserId, Article::getTitle)
+                        .eq(Article::getId, articleAuditDto.getArticleId()));
 
         if (ObjectUtil.isEmpty(article)) {
             throw new BlogException(BlogConstants.NotFoundArticle);
         }
         Integer examineStatus = articleAuditDto.getExamineStatus();
         String examineReason = articleAuditDto.getExamineReason();
-        // 审核状态为通过
-        if (examineStatus.equals(ExamineStatusEnum.PASS.getCode())) {
-            articleAuditDto.setExamineStatus(ExamineStatusEnum.PASS.getCode());
-        } else if (examineStatus.equals(ExamineStatusEnum.NO_PASS.getCode())) {
-            articleAuditDto.setExamineStatus(ExamineStatusEnum.NO_PASS.getCode());
-            articleAuditDto.setExamineReason(MessageConstants.ArticleAuditNotPass(articleAuditDto.getArticleId(), article.getTitle(), examineReason));
-        }
 
         // 更新文章审核状态
         Article updateArticle = new Article();
@@ -367,11 +429,214 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         // 发送消息给用户
         MessageDto messageDto = new MessageDto();
-        messageDto.setContent(MessageConstants.ArticleAuditNotPass(articleAuditDto.getArticleId(), article.getTitle(), examineReason));
         messageDto.setReceiverId(article.getUserId());
+
+        // 根据审核状态发送不同的消息
+        if (examineStatus.equals(ExamineStatusEnum.PASS.getCode())) {
+            // 审核通过
+            messageDto
+                    .setContent(MessageConstants.ArticleAuditPass(articleAuditDto.getArticleId(), article.getTitle()));
+        } else if (examineStatus.equals(ExamineStatusEnum.NO_PASS.getCode())) {
+            // 审核不通过
+            messageDto.setContent(MessageConstants.ArticleAuditNotPass(articleAuditDto.getArticleId(),
+                    article.getTitle(), examineReason));
+        }
+
         messageService.sendToUser(messageDto);
     }
 
+    // 管理员搜索文章
+    @Override
+    public List<ArticleVo> adminSearchArticle(ArticleDto articleDto) {
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ObjectUtil.isNotEmpty(articleDto.getUserId()), Article::getUserId, articleDto.getUserId())
+                .like(ObjectUtil.isNotEmpty(articleDto.getTitle()), Article::getTitle, articleDto.getTitle())
+                .like(ObjectUtil.isNotEmpty(articleDto.getDescription()), Article::getDescription,
+                        articleDto.getDescription())
+                .like(ObjectUtil.isNotEmpty(articleDto.getTag()), Article::getTag, articleDto.getTag())
+                .eq(ObjectUtil.isNotEmpty(articleDto.getExamineStatus()), Article::getExamineStatus,
+                        articleDto.getExamineStatus())
+                .eq(ObjectUtil.isNotEmpty(articleDto.getEditStatus()), Article::getEditStatus,
+                        articleDto.getEditStatus())
+                .eq(ObjectUtil.isNotEmpty(articleDto.getVisibleRange()), Article::getVisibleRange,
+                        articleDto.getVisibleRange())
+                .eq(ObjectUtil.isNotEmpty(articleDto.getReprintType()), Article::getReprintType,
+                        articleDto.getReprintType())
+                .ge(ObjectUtil.isNotEmpty(articleDto.getCreateTimeStart()), Article::getCreateTime,
+                        articleDto.getCreateTimeStart())
+                .le(ObjectUtil.isNotEmpty(articleDto.getCreateTimeEnd()), Article::getCreateTime,
+                        articleDto.getCreateTimeEnd())
+                .orderByDesc(Article::getCreateTime);
 
+        List<Article> articles = this.list(queryWrapper);
+        List<ArticleVo> articleVos = BeanUtil.copyToList(articles, ArticleVo.class);
+
+        // 用userId把username查询出来
+        HashMap<Integer, String> userMap = new HashMap<>();
+        // 查询所有用户信息
+        List<SysUser> users = sysUserMapper.selectList(null);
+        for (SysUser user : users) {
+            userMap.put(user.getId(), user.getUsername());
+        }
+        // 将用户名设置到ArticleVo中
+        for (ArticleVo articleVo : articleVos) {
+            articleVo.setUsername(userMap.get(articleVo.getUserId()));
+        }
+
+        return articleVos;
+    }
+
+    @Override
+    public void adminDeleteBatchArticle(List<ArticleAuditDto> articleAuditDtos) {
+        List<Integer> articleIds = articleAuditDtos.stream()
+                .map(ArticleAuditDto::getArticleId)
+                .toList();
+
+        // 批量删除文章
+        this.removeByIds(articleIds);
+    }
+
+    @Override
+    public void adminExamineBatchArticle(List<ArticleAuditDto> articleAuditDtos) {
+        if (ObjectUtil.isEmpty(articleAuditDtos)) {
+            return;
+        }
+
+        // 提取所有文章ID
+        List<Integer> articleIds = articleAuditDtos.stream()
+                .map(ArticleAuditDto::getArticleId)
+                .toList();
+
+        // 批量查询文章信息（只查询需要的字段）
+        List<Article> articles = articleMapper.selectList(new LambdaQueryWrapper<Article>()
+                .select(Article::getId, Article::getUserId, Article::getTitle)
+                .in(Article::getId, articleIds));
+
+        if (articles.size() != articleIds.size()) {
+            throw new BlogException(BlogConstants.NotFoundArticle);
+        }
+
+        // 创建文章ID到文章的映射
+        Map<Integer, Article> articleMap = articles.stream()
+                .collect(Collectors.toMap(Article::getId, article -> article));
+
+        // 准备批量更新的数据
+        List<Article> updateArticles = new ArrayList<>();
+        List<MessageDto> messages = new ArrayList<>();
+
+        for (ArticleAuditDto auditDto : articleAuditDtos) {
+            Article article = articleMap.get(auditDto.getArticleId());
+            Integer examineStatus = auditDto.getExamineStatus();
+            String examineReason = auditDto.getExamineReason();
+
+            // 准备更新的文章对象
+            Article updateArticle = new Article();
+            updateArticle.setId(auditDto.getArticleId());
+            updateArticle.setExamineStatus(examineStatus);
+            updateArticles.add(updateArticle);
+
+            // 准备消息通知
+            String messageContent;
+            if (examineStatus.equals(ExamineStatusEnum.PASS.getCode())) {
+                messageContent = MessageConstants.ArticleAuditPass(auditDto.getArticleId(), article.getTitle());
+            } else if (examineStatus.equals(ExamineStatusEnum.NO_PASS.getCode())) {
+                messageContent = MessageConstants.ArticleAuditNotPass(auditDto.getArticleId(), article.getTitle(),
+                        examineReason);
+            } else {
+                continue; // 跳过无效状态
+            }
+
+            MessageDto messageDto = new MessageDto();
+            messageDto.setContent(messageContent);
+            messageDto.setReceiverId(article.getUserId());
+            messages.add(messageDto);
+        }
+
+        // 批量更新文章状态
+        this.updateBatchById(updateArticles);
+
+        // 批量发送所有消息
+        if (!messages.isEmpty()) {
+            messageService.sendBatchToUsers(messages);
+        }
+    }
+
+    @Override
+    public List<ArticleVo> adminGetArticlesByUserId(Integer userId) {
+        // 构建查询条件：根据用户ID查询该用户的所有文章
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Article::getUserId, userId)
+                .orderByDesc(Article::getId);
+
+        List<Article> articles = this.list(queryWrapper);
+        List<ArticleVo> articleVos = BeanUtil.copyToList(articles, ArticleVo.class);
+
+        if (!articleVos.isEmpty()) {
+            // 获取文章对应的用户信息
+            List<Integer> userIds = articleVos.stream()
+                    .map(ArticleVo::getUserId)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            if (!userIds.isEmpty()) {
+                List<SysUser> users = sysUserMapper.selectList(
+                        new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIds));
+                Map<Integer, String> userMap = users.stream()
+                        .collect(Collectors.toMap(SysUser::getId, SysUser::getUsername));
+
+                // 设置用户名
+                articleVos.forEach(articleVo -> {
+                    String username = userMap.get(articleVo.getUserId());
+                    if (username != null) {
+                        articleVo.setUsername(username);
+                    }
+                });
+            }
+
+            // 获取专栏信息
+            List<Integer> articleIds = articleVos.stream()
+                    .map(ArticleVo::getId)
+                    .collect(Collectors.toList());
+
+            List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
+                    new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, articleIds));
+
+            if (!articleColumns.isEmpty()) {
+                List<Integer> columnIds = articleColumns.stream()
+                        .map(ArticleColumn::getColumnId)
+                        .distinct()
+                        .collect(Collectors.toList());
+
+                List<Column> columns = columnMapper.selectList(
+                        new LambdaQueryWrapper<Column>().in(Column::getId, columnIds));
+
+                Map<Integer, ColumnVo> columnMap = columns.stream()
+                        .collect(Collectors.toMap(Column::getId,
+                                column -> BeanUtil.copyProperties(column, ColumnVo.class)));
+
+                // 使用 groupingBy 来处理一个文章可能对应多个专栏的情况
+                Map<Integer, List<Integer>> articleColumnMap = articleColumns.stream()
+                        .collect(Collectors.groupingBy(
+                                ArticleColumn::getArticleId,
+                                Collectors.mapping(ArticleColumn::getColumnId, Collectors.toList())));
+
+                // 设置专栏信息
+                articleVos.forEach(articleVo -> {
+                    List<Integer> articleColumnIds = articleColumnMap.get(articleVo.getId());
+                    if (articleColumnIds != null && !articleColumnIds.isEmpty()) {
+                        List<ColumnVo> columnList = articleColumnIds.stream()
+                                .map(columnMap::get)
+                                .filter(columnVo -> columnVo != null)
+                                .collect(Collectors.toList());
+                        if (!columnList.isEmpty()) {
+                            articleVo.setColumns(columnList);
+                        }
+                    }
+                });
+            }
+        }
+
+        return articleVos;
+    }
 
 }

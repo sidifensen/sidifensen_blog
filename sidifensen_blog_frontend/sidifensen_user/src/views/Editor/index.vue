@@ -141,6 +141,16 @@
                   <el-radio :label="1">转载</el-radio>
                 </el-radio-group>
               </div>
+              <!-- 转载链接输入框 -->
+              <div v-if="article.reprintType === 1" class="reprint-url-setting">
+                <label>转载链接</label>
+                <el-input 
+                  v-model="article.reprintUrl" 
+                  placeholder="请输入转载文章的原始链接" 
+                  clearable 
+                  style="width: 300px;"
+                />
+              </div>
               <div class="visible-range-setting">
                 <label>可见范围</label>
                 <el-radio-group v-model="article.visibleRange">
@@ -281,6 +291,7 @@ const article = ref({
   reprintType: 0,
   visibleRange: 0,
   columnIds: [],
+  reprintUrl: "", // 转载链接
 });
 
 // 当前选择的专栏
@@ -311,6 +322,7 @@ const loadArticleDetail = async () => {
         article.value.reprintType = articleData.reprintType || 0;
         article.value.visibleRange = articleData.visibleRange || 0;
         article.value.columnIds = articleData.columnIds || [];
+        article.value.reprintUrl = articleData.reprintUrl || ""; // 转载链接
         isDraft.value = articleData.editStatus === 1;
 
         // 填充标签
@@ -1442,6 +1454,17 @@ const handleSaveDraft = async () => {
             margin-bottom: 16px;
             :deep(.el-radio) {
               width: auto; // 留足够宽度
+            }
+          }
+          // 转载链接设置
+          .reprint-url-setting {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            margin-left: 20px; // 缩进显示层级关系
+            label {
+              margin-right: 16px;
+              color: var(--el-text-color-regular);
             }
           }
           // 可见范围设置

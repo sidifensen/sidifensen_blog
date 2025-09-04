@@ -4,6 +4,7 @@ import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysUserDetailVo;
 import com.sidifensen.domain.vo.SysUserVo;
+import com.sidifensen.domain.vo.SysUserWithArticleCountVo;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.SysUserService;
 import com.wf.captcha.ArithmeticCaptcha;
@@ -40,7 +41,7 @@ public class SysUserController {
         ArithmeticCaptcha captcha = new ArithmeticCaptcha(100, 32);
         // checkCode是验证码的值
         String checkCode = captcha.text();
-        //checkCodeKey是验证码的唯一标识，验证码存入redis
+        // checkCodeKey是验证码的唯一标识，验证码存入redis
         String checkCodeKey = redisComponent.saveCheckCode(checkCode);
         String checkCodeBase64 = captcha.toBase64();
         // 将验证码图片(base64)和验证码key存入map，返回给前端
@@ -155,6 +156,18 @@ public class SysUserController {
     @GetMapping("/admin/list")
     public Result listUser() {
         List<SysUserVo> sysUserVos = sysUserService.listUser();
+        return Result.success(sysUserVos);
+    }
+
+    /**
+     * 管理端获取用户列表（包含文章数量）
+     *
+     * @return
+     */
+    @PreAuthorize("hasAuthority('system:user:list')")
+    @GetMapping("/admin/listWithArticleCount")
+    public Result listUserWithArticleCount() {
+        List<SysUserWithArticleCountVo> sysUserVos = sysUserService.listUserWithArticleCount();
         return Result.success(sysUserVos);
     }
 

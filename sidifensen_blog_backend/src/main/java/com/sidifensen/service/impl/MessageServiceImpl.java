@@ -53,6 +53,30 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         }
     }
 
+    // 批量给用户发送消息
+    @Override
+    public void sendBatchToUsers(List<MessageDto> messageDtos) {
+        if (ObjectUtil.isEmpty(messageDtos)) {
+            return;
+        }
+
+        // 转换为Message实体列表
+        List<Message> messages = messageDtos.stream()
+                .map(dto -> {
+                    Message message = BeanUtil.copyProperties(dto, Message.class);
+                    message.setSenderId(1); // 系统发送
+                    message.setReceiverId(dto.getReceiverId());
+                    return message;
+                })
+                .toList();
+
+        // 批量插入消息
+        boolean success = this.saveBatch(messages);
+        if (!success) {
+            throw new BlogException(BlogConstants.SaveMessageError);
+        }
+    }
+
     // 发送给管理员
     @Override
     public void sendToAdmin(MessageDto messageDto) {

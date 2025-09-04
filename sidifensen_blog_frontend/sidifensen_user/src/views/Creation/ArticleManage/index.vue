@@ -78,62 +78,60 @@
           <el-empty description="暂无文章数据"></el-empty>
         </div>
 
-        <div v-else>
-          <el-table :data="articles" class="article-table" style="width: 100%">
-            <el-table-column prop="title" label="文章" min-width="250">
-              <template #default="{ row }">
-                <div class="article-title-cell">
-                  <!-- 文章封面图片 -->
-                  <el-image :src="row.coverUrl" alt="文章封面" class="article-cover" />
-                  <div>
-                    <span class="article-title">{{ row.title }}</span>
-                    <span v-if="row.examineStatus !== 1" class="examine-status" :class="getExamineStatusClass(row.examineStatus)">
-                      {{ getExamineStatusText(row.examineStatus) }}
+        <div v-else class="article-cards">
+          <el-card v-for="article in articles" :key="article.id" class="article-card">
+            <div class="article-card-content">
+              <el-image :src="article.coverUrl" alt="文章封面" class="article-cover" />
+              <div class="article-info">
+                <div class="article-header">
+                  <span class="article-title">{{ article.title }}</span>
+                  <div class="article-badges">
+                    <span v-if="article.examineStatus !== 1" class="examine-status" :class="getExamineStatusClass(article.examineStatus)">
+                      {{ getExamineStatusText(article.examineStatus) }}
                     </span>
-                    <span class="type-badge" :class="row.reprintType === 0 ? 'original' : 'reprint'">
-                      {{ row.reprintType === 0 ? "原创" : "转载" }}
+                    <span class="type-badge" :class="article.reprintType === 0 ? 'original' : 'reprint'">
+                      {{ article.reprintType === 0 ? "原创" : "转载" }}
                     </span>
-                    <span class="visible-badge" :class="`visible-${row.visibleRange}`">
-                      {{ getVisibleRangeText(row.visibleRange) }}
+                    <span class="visible-badge" :class="`visible-${article.visibleRange}`">
+                      {{ getVisibleRangeText(article.visibleRange) }}
                     </span>
-                    <div class="article-meta">
-                      <span class="publish-time">{{ row.createTime }}</span>
-                    </div>
                   </div>
                 </div>
-              </template>
-            </el-table-column>
-
-            <el-table-column prop="readCount" label="阅读" width="80" align="center">
-              <template #default="{ row }">
-                {{ row.readCount || 0 }}
-              </template>
-            </el-table-column>
-            <el-table-column prop="likeCount" label="点赞" width="80" align="center">
-              <template #default="{ row }">
-                {{ row.likeCount || 0 }}
-              </template>
-            </el-table-column>
-            <el-table-column prop="commentCount" label="评论" width="80" align="center">
-              <template #default="{ row }">
-                {{ row.commentCount || 0 }}
-              </template>
-            </el-table-column>
-            <el-table-column prop="collectCount" label="收藏" width="80" align="center">
-              <template #default="{ row }">
-                {{ row.collectCount || 0 }}
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="200" fixed="right">
-              <template #default="{ row }">
-                <el-button v-if="row.editStatus !== 2" type="text" @click="handleEditArticle(row.id)">编辑</el-button>
-                <el-button v-if="row.editStatus !== 2" type="text" @click="handleViewArticle(row.id)">浏览</el-button>
-                <el-button v-if="row.editStatus !== 2" type="text" @click="handleDeleteToDraftArticle(row.id)">删除</el-button>
-                <el-button v-if="row.editStatus == 2" type="text" @click="handleRecyleToDraftArticle(row.id)">回收至草稿箱</el-button>
-                <el-button v-if="row.editStatus == 2" type="text" @click="handleDeleteArticle(row.id)">彻底删除</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
+                <div class="article-meta">
+                  <span class="publish-time">{{ article.createTime }}</span>
+                </div>
+                <div class="article-stats">
+                  <div class="stat-item">
+                    <el-icon><View /></el-icon>
+                    <span>{{ article.readCount || 0 }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <el-icon><Pointer /></el-icon>
+                    <span>{{ article.likeCount || 0 }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <el-icon><Message /></el-icon>
+                    <span>{{ article.commentCount || 0 }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <el-icon><Collection /></el-icon>
+                    <span>{{ article.collectCount || 0 }}</span>
+                  </div>
+                </div>
+                <div class="article-actions">
+                  <template v-if="article.editStatus !== 2">
+                    <el-button type="primary" text @click="handleEditArticle(article.id)">编辑</el-button>
+                    <el-button type="primary" text @click="handleViewArticle(article.id)">浏览</el-button>
+                    <el-button type="danger" text @click="handleDeleteToDraftArticle(article.id)">删除</el-button>
+                  </template>
+                  <template v-else>
+                    <el-button type="primary" text @click="handleRecyleToDraftArticle(article.id)">回收至草稿箱</el-button>
+                    <el-button type="danger" text @click="handleDeleteArticle(article.id)">彻底删除</el-button>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </el-card>
 
           <!-- 加载更多指示器 -->
           <div v-if="loadingMore" class="loading-more">
@@ -477,10 +475,14 @@ const updateDateFiltersFromArticles = (articleList) => {
     return;
   }
   // 提取所有文章的年份并去重排序
-  const years = [...new Set(articleList.map(article => {
-    const createTime = new Date(article.createTime);
-    return createTime.getFullYear();
-  }))].sort((a, b) => b - a);
+  const years = [
+    ...new Set(
+      articleList.map((article) => {
+        const createTime = new Date(article.createTime);
+        return createTime.getFullYear();
+      })
+    ),
+  ].sort((a, b) => b - a);
   availableYears.value = years;
 };
 
@@ -500,7 +502,6 @@ onUnmounted(() => {
 .article-manage-container {
   display: flex;
   flex-direction: column;
-  // min-height: 100vh;
   height: calc(100vh - 48px);
 
   .main-content {
@@ -518,7 +519,7 @@ onUnmounted(() => {
 
     // 高级筛选区域
     .advanced-filter {
-      background-color: #fff;
+      background-color: var(--el-bg-color);
       border-radius: 4px;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
       padding: 16px;
@@ -547,7 +548,7 @@ onUnmounted(() => {
 
     // 文章列表容器
     .article-list-container {
-      background-color: #fff;
+      background-color: var(--el-bg-color);
       border-radius: 4px;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
       flex: 1;
@@ -575,94 +576,152 @@ onUnmounted(() => {
         text-align: center;
       }
 
-      // 文章表格
-      .article-table {
-        width: 100%;
-        border-top: 1px solid #ebeef5;
+      // 文章卡片列表
+      .article-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+        padding: 16px;
 
-        .article-title-cell {
-          display: flex;
-          span {
-            margin-right: 5px;
-          }
-          .article-cover {
-            width: 120px;
-            height: 68px;
-            margin-right: 16px;
-            flex-shrink: 0;
-          }
-          .article-title {
-            max-width: 275px;
-            font-size: 14px;
-            color: #303133;
-            margin-bottom: 4px;
-            display: block;
-            //文字省略号
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-          }
-          .examine-status {
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 500;
-            color: #fff;
+        .article-card {
+          transition: all 0.3s ease;
 
-            &.status-pending {
-              background-color: #e6a23c;
-            }
-
-            &.status-rejected {
-              background-color: #f56c6c;
-            }
-          }
-          .type-badge,
-          .visible-badge {
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 500;
-
-            &.original {
-              background-color: #f0f9ff;
-              color: #009688;
-            }
-
-            &.reprint {
-              background-color: #fff7e6;
-              color: #e6a23c;
-            }
-
-            &.visible-0 {
-              background-color: #f0f9ff;
-              color: #1989fa;
-            }
-
-            &.visible-1 {
-              background-color: #f9f0ff;
-              color: #909399;
-            }
-
-            &.visible-2 {
-              background-color: #fef0f0;
-              color: #e6a23c;
-            }
-
-            &.visible-3 {
-              background-color: #fff1f0;
-              color: #f56c6c;
-            }
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
           }
 
-          .article-meta {
+          .article-card-content {
             display: flex;
-            gap: 12px;
-            align-items: center;
+            flex-direction: column;
 
-            .publish-time {
-              font-size: 12px;
-              color: #909399;
+            .article-cover {
+              width: 100%;
+              height: 160px;
+              object-fit: cover;
+              border-radius: 4px;
+              margin-bottom: 12px;
+            }
+
+            .article-info {
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+
+              .article-header {
+                .article-title {
+                  font-size: 16px;
+                  font-weight: 500;
+                  color: var(--el-text-color-regular);
+                  margin-bottom: 8px;
+                  display: block;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  display: -webkit-box;
+                  -webkit-line-clamp: 2;
+                  -webkit-box-orient: vertical;
+                }
+
+                .article-badges {
+                  display: flex;
+                  flex-wrap: wrap;
+                  gap: 6px;
+                  margin-bottom: 8px;
+                }
+              }
+
+              .examine-status {
+                padding: 2px 6px;
+                border-radius: 10px;
+                font-size: 11px;
+                font-weight: 500;
+                color: #fff;
+
+                &.status-pending {
+                  background-color: #e6a23c;
+                }
+
+                &.status-rejected {
+                  background-color: #f56c6c;
+                }
+              }
+
+              .type-badge,
+              .visible-badge {
+                padding: 2px 6px;
+                border-radius: 10px;
+                font-size: 11px;
+                font-weight: 500;
+
+                &.original {
+                  background-color: #f0f9ff;
+                  color: #009688;
+                }
+
+                &.reprint {
+                  background-color: #fff7e6;
+                  color: #e6a23c;
+                }
+
+                &.visible-0 {
+                  background-color: #f0f9ff;
+                  color: #1989fa;
+                }
+
+                &.visible-1 {
+                  background-color: #f9f0ff;
+                  color: #909399;
+                }
+
+                &.visible-2 {
+                  background-color: #fef0f0;
+                  color: #e6a23c;
+                }
+
+                &.visible-3 {
+                  background-color: #fff1f0;
+                  color: #f56c6c;
+                }
+              }
+
+              .article-meta {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+
+                .publish-time {
+                  font-size: 12px;
+                  color: #909399;
+                }
+              }
+
+              .article-stats {
+                display: flex;
+                justify-content: space-between;
+                padding: 8px 0;
+                border-top: 1px solid #f0f0f0;
+                border-bottom: 1px solid #f0f0f0;
+
+                .stat-item {
+                  display: flex;
+                  align-items: center;
+                  gap: 4px;
+                  color: #909399;
+                  font-size: 13px;
+
+                  .el-icon {
+                    font-size: 16px;
+                  }
+                }
+              }
+
+              .article-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 8px;
+                margin-top: 8px;
+              }
             }
           }
         }
