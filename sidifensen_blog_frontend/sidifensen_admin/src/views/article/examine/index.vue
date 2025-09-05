@@ -721,11 +721,14 @@ const getEditStatusType = (editStatus) => {
 </script>
 
 <style lang="scss" scoped>
+// ===== 主要页面容器样式 ===== // 文章审核页面的根容器，包含所有内容
 .management-container {
   height: 100%;
   box-sizing: border-box;
   position: relative;
 
+  // ===== 主卡片容器 =====
+  // 包含标题、搜索条件、数据内容的主要卡片
   .card {
     height: 100%;
     padding: 20px;
@@ -733,7 +736,6 @@ const getEditStatusType = (editStatus) => {
     display: flex;
     flex-direction: column;
     border-radius: 12px;
-    overflow: hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
 
@@ -741,12 +743,15 @@ const getEditStatusType = (editStatus) => {
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     }
 
+    // ===== 卡片头部区域 =====
+    // 包含页面标题和筛选条件的顶部区域
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 10px 10px 0 10px;
 
+      // 页面标题样式
       .card-title {
         font-size: 20px;
         font-weight: 600;
@@ -754,6 +759,7 @@ const getEditStatusType = (editStatus) => {
         display: flex;
         align-items: center;
 
+        // 标题前的装饰线
         &::before {
           content: "";
           display: inline-block;
@@ -765,15 +771,18 @@ const getEditStatusType = (editStatus) => {
         }
       }
 
+      // 搜索筛选操作区域
       .card-actions {
         display: flex;
         align-items: center;
 
+        // 搜索输入框和下拉选择器通用样式
         .search-input {
           width: 240px;
           border-radius: 8px;
           margin-left: 10px;
 
+          // Element Plus 输入框样式覆盖
           :deep(.el-input__wrapper) {
             border-radius: 8px;
             transition: all 0.3s ease;
@@ -784,6 +793,7 @@ const getEditStatusType = (editStatus) => {
             }
           }
 
+          // Element Plus 选择器样式覆盖
           :deep(.el-select__wrapper) {
             border-radius: 8px;
             transition: all 0.3s ease;
@@ -797,12 +807,15 @@ const getEditStatusType = (editStatus) => {
       }
     }
 
+    // ===== 第二行筛选区域 =====
+    // 包含时间筛选的第二行
     .card-second {
       display: flex;
       justify-content: flex-end;
       padding: 5px 5px 0 5px;
       gap: 10px;
 
+      // 时间选择器样式
       :deep(.el-input__wrapper) {
         border-radius: 8px;
         &:focus-within {
@@ -812,423 +825,476 @@ const getEditStatusType = (editStatus) => {
       }
     }
 
+    // ===== 批量操作按钮区域 =====
+    // 包含批量审核、拒绝、删除按钮的第三行
     .card-third {
       display: flex;
       justify-content: flex-end;
       padding: 10px;
       border-bottom: 1px solid var(--el-border-color);
     }
-  }
 
-  // 桌面端表格视图
-  .desktop-view {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding-bottom: 60px; // 为分页容器预留空间
+    // ===== 桌面端表格视图 =====
+    // PC端显示的表格布局
+    .desktop-view {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 60px; // 为分页容器预留空间
 
-    .table {
+      // 文章列表表格
+      .table {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        margin-top: 16px;
+        max-height: calc(100vh - 280px); // 增加高度预留，为分页容器留空间
+
+        // Element Plus 表格样式覆盖
+        :deep(.tag-wrap) {
+          white-space: normal;
+          word-break: break-all;
+          line-height: 1.4;
+          max-width: 180px;
+          display: inline-block;
+          height: auto;
+        }
+
+        // 表格头部样式
+        :deep(.el-table__header-wrapper) {
+          background-color: var(--el-bg-color);
+
+          th {
+            font-weight: 600;
+            color: #475569;
+          }
+        }
+
+        // 表格主体样式
+        :deep(.el-table__body-wrapper) {
+          tr {
+            td {
+              color: #64748b;
+              padding: 12px 0;
+              vertical-align: middle;
+
+              .cell {
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                min-height: 40px;
+              }
+            }
+          }
+        }
+
+        // 文章标题样式
+        .article-title {
+          max-width: 200px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          cursor: pointer;
+
+          &:hover {
+            color: #42b983;
+          }
+        }
+
+        // 无标签状态样式
+        .no-tag {
+          color: #999;
+          font-size: 12px;
+        }
+
+        // 文章封面容器样式
+        .article-cover-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100%;
+
+          // 有封面图片样式
+          .article-cover {
+            width: 100px;
+            height: 60px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+
+            &:hover {
+              transform: scale(1.05);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+          }
+
+          // 无封面占位样式
+          .no-cover {
+            width: 100px;
+            height: 60px;
+            background-color: #f5f5f5;
+            border: 1px dashed #ddd;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #999;
+          }
+        }
+
+        // 表格操作按钮区域样式
+        .table-actions {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-wrap: wrap;
+          height: 100%;
+          min-height: 60px;
+
+          // 查看按钮样式
+          .view-button {
+            background-color: #f0f9ff;
+            color: #0369a1;
+            border-color: #f0f9ff;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+
+            &:hover {
+              background-color: #dbeafe;
+              border-color: #dbeafe;
+              transform: translateY(-2px);
+              box-shadow: 0 2px 8px rgba(3, 105, 161, 0.3);
+            }
+          }
+
+          // 审核按钮样式
+          .examine-button {
+            background-color: #e0f2fe;
+            color: #0284c7;
+            border-color: #e0f2fe;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+
+            &:hover {
+              background-color: #bae6fd;
+              border-color: #bae6fd;
+              transform: translateY(-2px);
+              box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+            }
+          }
+
+          // 拒绝按钮样式
+          .reject-button {
+            background-color: #fef3c7;
+            color: #d97706;
+            border-color: #fef3c7;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+
+            &:hover {
+              background-color: #fde68a;
+              border-color: #fde68a;
+              transform: translateY(-2px);
+              box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
+            }
+          }
+
+          // 删除按钮样式
+          .delete-button {
+            background-color: #fee2e2;
+            color: #ef4444;
+            border-color: #fee2e2;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+
+            &:hover {
+              background-color: #fecaca;
+              border-color: #fecaca;
+              transform: translateY(-2px);
+              box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+            }
+          }
+        }
+      }
+    }
+
+    // ===== 移动端卡片视图 =====
+    // 手机端显示的卡片布局
+    .mobile-view {
       flex: 1;
       display: flex;
       flex-direction: column;
       margin-top: 16px;
-      max-height: calc(100vh - 280px); // 增加高度预留，为分页容器留空间
+      padding-bottom: 60px; // 为分页容器预留空间
+      overflow-y: auto;
 
-      :deep(.tag-wrap) {
-        white-space: normal;
-        word-break: break-all;
-        line-height: 1.4;
-        max-width: 180px;
-        display: inline-block;
-        height: auto;
-      }
-
-      :deep(.el-table__header-wrapper) {
-        background-color: var(--el-bg-color);
-        th {
-          font-weight: 600;
-          color: #475569;
-        }
-      }
-
-      :deep(.el-table__body-wrapper) {
-        tr {
-          td {
-            color: #64748b;
-            padding: 12px 0;
-            vertical-align: middle;
-
-            .cell {
-              display: flex;
-              align-items: center;
-              justify-content: flex-start;
-              min-height: 40px;
-            }
-          }
-        }
-      }
-
-      .article-title {
-        max-width: 200px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        cursor: pointer;
-
-        &:hover {
-          color: #42b983;
-        }
-      }
-
-      .no-tag {
-        color: #999;
-        font-size: 12px;
-      }
-
-      .article-cover-container {
+      // 文章卡片列表容器
+      .article-cards {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100%;
+        flex-direction: column;
+        gap: 12px;
+        padding: 10px;
 
-        .article-cover {
-          width: 100px;
-          height: 60px;
-          border-radius: 6px;
-          cursor: pointer;
+        // 单个文章卡片
+        .article-card {
           transition: all 0.3s ease;
+          border-radius: 8px;
+          margin-bottom: 12px;
 
           &:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-          }
-        }
-
-        .no-cover {
-          width: 100px;
-          height: 60px;
-          background-color: #f5f5f5;
-          border: 1px dashed #ddd;
-          border-radius: 6px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 12px;
-          color: #999;
-        }
-      }
-
-      .table-actions {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-wrap: wrap;
-        height: 100%;
-        min-height: 60px;
-
-        .view-button {
-          background-color: #f0f9ff;
-          color: #0369a1;
-          border-color: #f0f9ff;
-          border-radius: 6px;
-          transition: all 0.3s ease;
-
-          &:hover {
-            background-color: #dbeafe;
-            border-color: #dbeafe;
             transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(3, 105, 161, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
           }
-        }
 
-        .examine-button {
-          background-color: #e0f2fe;
-          color: #0284c7;
-          border-color: #e0f2fe;
-          border-radius: 6px;
-          transition: all 0.3s ease;
-
-          &:hover {
-            background-color: #bae6fd;
-            border-color: #bae6fd;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
-          }
-        }
-
-        .reject-button {
-          background-color: #fef3c7;
-          color: #d97706;
-          border-color: #fef3c7;
-          border-radius: 6px;
-          transition: all 0.3s ease;
-
-          &:hover {
-            background-color: #fde68a;
-            border-color: #fde68a;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
-          }
-        }
-
-        .delete-button {
-          background-color: #fee2e2;
-          color: #ef4444;
-          border-color: #fee2e2;
-          border-radius: 6px;
-          transition: all 0.3s ease;
-
-          &:hover {
-            background-color: #fecaca;
-            border-color: #fecaca;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-          }
-        }
-      }
-    }
-  }
-
-  // 移动端卡片视图
-  .mobile-view {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-top: 16px;
-    padding-bottom: 60px; // 为分页容器预留空间
-    overflow-y: auto;
-
-    .article-cards {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding: 10px;
-
-      .article-card {
-        transition: all 0.3s ease;
-        border-radius: 8px;
-        margin-bottom: 12px;
-
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .article-card-content {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-
-          .article-header-section {
+          // 卡片内容容器
+          .article-card-content {
             display: flex;
             flex-direction: column;
             gap: 12px;
 
-            .article-cover-mobile {
-              width: 100%;
-              margin-bottom: 8px;
-
-              .article-cover-img {
-                width: 100%;
-                height: 120px;
-                border-radius: 6px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                object-fit: cover;
-
-                &:hover {
-                  transform: scale(1.02);
-                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                }
-              }
-
-              .no-cover-mobile {
-                width: 100%;
-                height: 120px;
-                background-color: #f5f5f5;
-                border: 1px dashed #ddd;
-                border-radius: 6px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 12px;
-                color: #999;
-                text-align: center;
-              }
-            }
-
-            .article-info {
-              width: 100%;
+            // 文章头部信息区域
+            .article-header-section {
               display: flex;
               flex-direction: column;
-              gap: 8px;
+              gap: 12px;
 
-              .article-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 8px;
+              // 移动端文章封面容器
+              .article-cover-mobile {
+                width: 100%;
+                margin-bottom: 8px;
 
-                .article-id {
-                  font-size: 12px;
-                  color: #666;
+                // 封面图片样式
+                .article-cover-img {
+                  width: 100%;
+                  height: 120px;
+                  border-radius: 6px;
+                  cursor: pointer;
+                  transition: all 0.3s ease;
+                  object-fit: cover;
+
+                  &:hover {
+                    transform: scale(1.02);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                  }
+                }
+
+                // 无封面占位样式
+                .no-cover-mobile {
+                  width: 100%;
+                  height: 120px;
                   background-color: #f5f5f5;
-                  padding: 2px 6px;
-                  border-radius: 4px;
+                  border: 1px dashed #ddd;
+                  border-radius: 6px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 12px;
+                  color: #999;
+                  text-align: center;
                 }
               }
 
-              .article-title-mobile {
-                font-size: 16px;
-                font-weight: 500;
-                color: #333;
-                line-height: 1.4;
-                margin-bottom: 6px;
-              }
-
-              .article-author-mobile {
-                font-size: 13px;
-                color: #666;
-                margin-bottom: 8px;
-                display: flex;
-                align-items: center;
-
-                .author-label {
-                  font-weight: 500;
-                  color: #888;
-                  margin-right: 4px;
-                }
-
-                .author-name {
-                  color: #555;
-                  font-weight: 500;
-                }
-              }
-
-              .article-description-mobile {
-                font-size: 12px;
-                color: #666;
-                line-height: 1.4;
-                margin-bottom: 8px;
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                line-clamp: 2;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-              }
-
-              .article-badges-mobile {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 4px;
-                margin-bottom: 6px;
-
-                .el-tag {
-                  font-size: 10px;
-                  height: 20px;
-                  line-height: 18px;
-                }
-              }
-
-              // 状态标签单独一行
-              .article-status-row {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 6px;
-                margin-bottom: 8px;
-                justify-content: flex-start;
-
-                .el-tag {
-                  font-size: 10px;
-                  height: 22px;
-                  line-height: 20px;
-                  padding: 0 8px;
-                  font-weight: 500;
-                }
-              }
-
-              .article-meta {
+              // 文章信息区域
+              .article-info {
+                width: 100%;
                 display: flex;
                 flex-direction: column;
                 gap: 8px;
-                margin-top: 8px;
 
-                .meta-item {
-                  font-size: 12px;
+                // 文章头部信息（ID和状态）
+                .article-header {
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  flex-wrap: wrap;
+                  gap: 8px;
+
+                  // 文章ID样式
+                  .article-id {
+                    font-size: 12px;
+                    color: #666;
+                    background-color: #f5f5f5;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                  }
+                }
+
+                // 移动端文章标题样式
+                .article-title-mobile {
+                  font-size: 16px;
+                  font-weight: 500;
+                  color: #333;
+                  line-height: 1.4;
+                  margin-bottom: 6px;
+                }
+
+                // 移动端作者信息样式
+                .article-author-mobile {
+                  font-size: 13px;
                   color: #666;
+                  margin-bottom: 8px;
                   display: flex;
                   align-items: center;
 
-                  .label {
+                  .author-label {
                     font-weight: 500;
+                    color: #888;
                     margin-right: 4px;
                   }
-                }
 
-                // 统计数据行
-                .stats-row {
-                  display: flex;
-                  flex-wrap: wrap;
-                  gap: 6px 8px;
-
-                  .stat-item {
-                    background-color: #f8f9fa;
-                    padding: 3px 8px;
-                    border-radius: 12px;
-                    font-size: 11px;
+                  .author-name {
                     color: #555;
-                    border: 1px solid #e9ecef;
-                    white-space: nowrap;
-
-                    .label {
-                      color: #666;
-                      margin-right: 2px;
-                    }
+                    font-weight: 500;
                   }
                 }
 
-                // 时间信息行
-                .time-row {
+                // 移动端文章描述样式
+                .article-description-mobile {
+                  font-size: 12px;
+                  color: #666;
+                  line-height: 1.4;
+                  margin-bottom: 8px;
+                  display: -webkit-box;
+                  -webkit-line-clamp: 2;
+                  line-clamp: 2;
+                  -webkit-box-orient: vertical;
+                  overflow: hidden;
+                }
+
+                // 移动端文章标签样式
+                .article-badges-mobile {
                   display: flex;
                   flex-wrap: wrap;
-                  gap: 8px;
-                  margin-top: 4px;
+                  gap: 4px;
+                  margin-bottom: 6px;
 
-                  .time-item {
-                    font-size: 11px;
-                    color: #888;
+                  .el-tag {
+                    font-size: 10px;
+                    height: 20px;
+                    line-height: 18px;
+                  }
+                }
+
+                // 文章状态标签行
+                .article-status-row {
+                  display: flex;
+                  flex-wrap: wrap;
+                  gap: 6px;
+                  margin-bottom: 8px;
+                  justify-content: flex-start;
+
+                  .el-tag {
+                    font-size: 10px;
+                    height: 22px;
+                    line-height: 20px;
+                    padding: 0 8px;
+                    font-weight: 500;
+                  }
+                }
+
+                // 文章元数据区域
+                .article-meta {
+                  display: flex;
+                  flex-direction: column;
+                  gap: 8px;
+                  margin-top: 8px;
+
+                  // 元数据项通用样式
+                  .meta-item {
+                    font-size: 12px;
+                    color: #666;
+                    display: flex;
+                    align-items: center;
 
                     .label {
-                      color: #999;
+                      font-weight: 500;
+                      margin-right: 4px;
+                    }
+                  }
+
+                  // 统计数据行
+                  .stats-row {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 6px 8px;
+
+                    .stat-item {
+                      background-color: #f8f9fa;
+                      padding: 3px 8px;
+                      border-radius: 12px;
+                      font-size: 11px;
+                      color: #555;
+                      border: 1px solid #e9ecef;
+                      white-space: nowrap;
+
+                      .label {
+                        color: #666;
+                        margin-right: 2px;
+                      }
+                    }
+                  }
+
+                  // 时间信息行
+                  .time-row {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                    margin-top: 4px;
+
+                    .time-item {
+                      font-size: 11px;
+                      color: #888;
+
+                      .label {
+                        color: #999;
+                      }
                     }
                   }
                 }
               }
             }
-          }
 
-          .article-actions {
-            display: flex;
-            gap: 4px;
-            justify-content: center;
-            padding-top: 8px;
-            border-top: 1px solid #f0f0f0;
+            // 文章操作按钮区域
+            .article-actions {
+              display: flex;
+              gap: 4px;
+              justify-content: center;
+              padding-top: 8px;
+              border-top: 1px solid #f0f0f0;
 
-            .el-button {
-              font-size: 12px;
-              padding: 6px 10px;
-              height: auto;
-              border-radius: 4px;
-              flex: 1;
+              .el-button {
+                font-size: 12px;
+                padding: 6px 10px;
+                height: auto;
+                border-radius: 4px;
+                flex: 1;
+              }
             }
           }
         }
       }
     }
+
+    // ===== 分页容器 =====
+    // 固定在底部的分页组件
+    .pagination-container {
+      display: flex;
+      justify-content: flex-end;
+      padding: 10px;
+      background-color: var(--el-bg-color);
+      border-radius: 0 0 12px 12px;
+      z-index: 10;
+      width: 100%;
+      box-sizing: border-box;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+    }
   }
 
-  // 通用的文章状态样式
+  // ===== 通用文章状态样式 =====
+  // 桌面端和移动端共用的审核状态标签样式
   .article-status {
     display: inline-block;
     padding: 2px 8px;
@@ -1236,41 +1302,32 @@ const getEditStatusType = (editStatus) => {
     font-size: 12px;
     font-weight: 500;
 
+    // 待审核状态样式
     &.status-unaudited {
       background-color: #fff1f0;
       color: #f56c6c;
     }
 
+    // 已审核状态样式
     &.status-audited {
       background-color: #f0f9eb;
       color: #67c23a;
     }
 
+    // 审核拒绝状态样式
     &.status-rejected {
       background-color: #fdf6ec;
       color: #e6a23c;
     }
   }
-
-  .pagination-container {
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px;
-    background-color: var(--el-bg-color);
-    border-radius: 0 0 12px 12px;
-    z-index: 10;
-    width: 100%;
-    box-sizing: border-box;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-  }
 }
 
-// 文章详情对话框样式
+// ===== 文章详情对话框样式 =====
+// Element Plus 对话框样式覆盖，用于显示文章详情
 :deep(.article-detail-dialog) {
   border-radius: 16px;
 
+  // 对话框头部样式
   .el-dialog__header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -1278,11 +1335,13 @@ const getEditStatusType = (editStatus) => {
     padding: 20px 24px;
     position: relative;
 
+    // 对话框标题样式
     .el-dialog__title {
       font-size: 18px;
       font-weight: 600;
     }
 
+    // 关闭按钮样式
     .el-dialog__headerbtn {
       position: absolute;
       top: 50%;
@@ -1314,12 +1373,14 @@ const getEditStatusType = (editStatus) => {
     }
   }
 
+  // 对话框主体内容样式
   .el-dialog__body {
     padding: 24px;
     max-height: 80vh;
     overflow-y: auto;
   }
 
+  // 移动端对话框样式适配
   @media screen and (max-width: 767px) {
     width: 95% !important;
 
@@ -1329,24 +1390,31 @@ const getEditStatusType = (editStatus) => {
   }
 }
 
+// ===== 文章详情内容区域 =====
+// 包含文章基本信息和内容的详情区域
 .article-detail {
   // 文章基本信息区域
   .article-info-section {
     margin-bottom: 24px;
 
+    // 文章详情头部布局
     .article-detail-header {
       display: flex;
       gap: 24px;
       align-items: flex-start;
+
+      // 文章详情信息区域
       .article-detail-info {
         flex: 1;
 
+        // 文章标题区域
         .article-title-section {
           display: flex;
           align-items: center;
           gap: 12px;
           margin-bottom: 16px;
 
+          // 文章标题样式
           .article-title-detail {
             margin: 0;
             font-size: 24px;
@@ -1356,6 +1424,7 @@ const getEditStatusType = (editStatus) => {
             flex: 1;
           }
 
+          // 文章ID标签样式
           .article-id-detail {
             background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
@@ -1367,6 +1436,7 @@ const getEditStatusType = (editStatus) => {
           }
         }
 
+        // 作者信息区域
         .article-author-section {
           display: flex;
           align-items: center;
@@ -1387,6 +1457,7 @@ const getEditStatusType = (editStatus) => {
           }
         }
 
+        // 文章描述区域
         .article-description-detail {
           display: flex;
           align-items: flex-start;
@@ -1411,6 +1482,7 @@ const getEditStatusType = (editStatus) => {
             flex: 1;
           }
 
+          // 无描述状态样式
           &.no-description {
             background-color: #f8f9fa;
             border-left-color: #adb5bd;
@@ -1426,18 +1498,21 @@ const getEditStatusType = (editStatus) => {
           }
         }
 
+        // 文章标签和状态区域
         .article-badges-detail {
           display: flex;
           flex-direction: column;
           gap: 12px;
           margin-bottom: 20px;
 
+          // 标签组样式
           .badge-group {
             display: flex;
             align-items: center;
             gap: 8px;
             flex-wrap: wrap;
 
+            // 标签标题样式
             .badge-label {
               font-size: 13px;
               font-weight: 600;
@@ -1445,18 +1520,21 @@ const getEditStatusType = (editStatus) => {
               min-width: 80px;
             }
 
+            // 无数据状态样式
             .no-data {
               font-size: 12px;
               color: #adb5bd;
               font-style: italic;
             }
 
+            // Element Plus 标签样式
             .el-tag {
               font-size: 11px;
               height: 24px;
               line-height: 22px;
             }
 
+            // 专栏标签样式
             .column-tag {
               margin-right: 4px;
               margin-bottom: 4px;
@@ -1490,6 +1568,7 @@ const getEditStatusType = (editStatus) => {
         }
       }
 
+      // 文章封面详情区域
       .article-cover-detail {
         flex-shrink: 0;
         width: 640px; //保持长宽比16:9
@@ -1498,6 +1577,7 @@ const getEditStatusType = (editStatus) => {
         align-items: center;
         justify-content: center;
 
+        // 封面图片样式
         .detail-cover-img {
           width: 100%;
           height: 100%;
@@ -1513,6 +1593,7 @@ const getEditStatusType = (editStatus) => {
           }
         }
 
+        // 无封面占位样式
         .no-cover-detail {
           width: 100%;
           height: 100%;
@@ -1535,18 +1616,20 @@ const getEditStatusType = (editStatus) => {
       }
     }
 
-    // 底部统计数据样式
+    // 文章统计数据区域
     .article-stats-detail {
       border-top: 1px solid #e9ecef;
       padding-top: 20px;
       margin-top: 20px;
 
+      // 统计数据组容器
       .stats-group {
         display: flex;
         flex-wrap: wrap;
         gap: 12px;
         justify-content: space-evenly;
 
+        // 统计项样式
         .stat-item {
           display: flex;
           align-items: center;
@@ -1583,6 +1666,7 @@ const getEditStatusType = (editStatus) => {
             margin-left: auto;
           }
 
+          // 时间统计项特殊样式
           &.time-stat-item {
             background: linear-gradient(135deg, #e3f2fd, #bbdefb);
             border-color: #90caf9;
@@ -1606,92 +1690,106 @@ const getEditStatusType = (editStatus) => {
       }
     }
   }
-}
 
-// 文章内容区域
-.article-content-section {
-  .content-header {
-    margin-bottom: 16px;
+  // ===== 文章内容区域 =====
+  // 显示文章正文内容的区域
+  .article-content-section {
+    // 内容区域头部
+    .content-header {
+      margin-bottom: 16px;
 
-    h3 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-      color: #2c3e50;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+        gap: 8px;
 
-      &::before {
-        content: "";
-        width: 4px;
-        height: 20px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border-radius: 2px;
+        // 标题装饰线
+        &::before {
+          content: "";
+          width: 4px;
+          height: 20px;
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          border-radius: 2px;
+        }
+      }
+    }
+
+    // 文章内容主体
+    .article-content {
+      max-height: 69vh;
+      overflow-y: auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border: 1px solid #e9ecef;
+      border-radius: 12px;
+      line-height: 1.8;
+      font-size: 15px;
+      color: #333;
+
+      // 内容中的图片样式
+      :deep(img) {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin: 8px 0;
+      }
+
+      // 代码块样式
+      :deep(pre) {
+        background-color: #f8f9fa;
+        padding: 16px;
+        border-radius: 8px;
+        overflow-x: auto;
+        border-left: 4px solid #007bff;
+        margin: 12px 0;
+      }
+
+      // 内联代码样式
+      :deep(code) {
+        background-color: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #e83e8c;
+      }
+
+      // 引用块样式
+      :deep(blockquote) {
+        border-left: 4px solid #007bff;
+        padding-left: 16px;
+        margin: 16px 0;
+        color: #6c757d;
+        font-style: italic;
+      }
+
+      // 标题样式
+      :deep(h1, h2, h3, h4, h5, h6) {
+        margin: 20px 0 12px 0;
+        color: #2c3e50;
+      }
+
+      // 段落样式
+      :deep(p) {
+        margin: 12px 0;
+      }
+
+      // 列表样式
+      :deep(ul, ol) {
+        margin: 12px 0;
+        padding-left: 24px;
       }
     }
   }
-
-  .article-content {
-    max-height: 69vh;
-    overflow-y: auto;
-    padding: 20px;
-    background-color: #ffffff;
-    border: 1px solid #e9ecef;
-    border-radius: 12px;
-    line-height: 1.8;
-    font-size: 15px;
-    color: #333;
-
-    :deep(img) {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      margin: 8px 0;
-    }
-
-    :deep(pre) {
-      background-color: #f8f9fa;
-      padding: 16px;
-      border-radius: 8px;
-      overflow-x: auto;
-      border-left: 4px solid #007bff;
-      margin: 12px 0;
-    }
-
-    :deep(code) {
-      background-color: #f8f9fa;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 14px;
-      color: #e83e8c;
-    }
-
-    :deep(blockquote) {
-      border-left: 4px solid #007bff;
-      padding-left: 16px;
-      margin: 16px 0;
-      color: #6c757d;
-      font-style: italic;
-    }
-
-    :deep(h1, h2, h3, h4, h5, h6) {
-      margin: 20px 0 12px 0;
-      color: #2c3e50;
-    }
-
-    :deep(p) {
-      margin: 12px 0;
-    }
-
-    :deep(ul, ol) {
-      margin: 12px 0;
-      padding-left: 24px;
-    }
-  }
 }
 
+// ===== 其他通用组件样式 =====
+
+// 加载状态容器
 .loading-container {
   display: flex;
   justify-content: center;
@@ -1699,14 +1797,19 @@ const getEditStatusType = (editStatus) => {
   min-height: 200px;
 }
 
+// 对话框底部按钮区域
 .dialog-footer {
   display: flex;
   justify-content: center;
   gap: 120px;
   padding: 16px 0;
+
+  // 移动端按钮间距调整
   @media screen and (max-width: 768px) {
     gap: 4px;
   }
+
+  // 按钮通用样式
   .el-button {
     margin-left: 0px;
     padding: 10px 20px;
@@ -1721,7 +1824,10 @@ const getEditStatusType = (editStatus) => {
   }
 }
 
-// 响应式设计
+// ===== 响应式设计 =====
+// 按照不同屏幕尺寸进行适配的响应式样式
+
+// 中等屏幕适配 (1400px 以下)
 @media screen and (max-width: 1400px) {
   .management-container {
     .card {
@@ -1736,6 +1842,7 @@ const getEditStatusType = (editStatus) => {
   }
 }
 
+// 小屏幕适配 (1220px 以下)
 @media screen and (max-width: 1220px) {
   .management-container {
     .card {
@@ -1757,11 +1864,14 @@ const getEditStatusType = (editStatus) => {
   }
 }
 
+// 平板和小屏设备适配 (768px 以下)
 @media screen and (max-width: 768px) {
+  // 管理页面容器响应式调整
   .management-container {
     .card {
       padding: 2px;
 
+      // 卡片头部响应式调整
       .card-header {
         padding: 6px;
 
@@ -1776,11 +1886,15 @@ const getEditStatusType = (editStatus) => {
         }
       }
 
-      .table {
-        margin-top: 0;
-        max-height: calc(100vh - 240px); // 为分页容器预留更多空间
+      // 桌面端表格响应式调整
+      .desktop-view {
+        .table {
+          margin-top: 0;
+          max-height: calc(100vh - 240px); // 为分页容器预留更多空间
+        }
       }
 
+      // 分页容器响应式调整
       .pagination-container {
         padding: 4px;
 
@@ -1793,12 +1907,14 @@ const getEditStatusType = (editStatus) => {
     }
   }
 
+  // 文章详情对话框响应式调整
   .article-detail {
     .article-info-section {
       .article-detail-header {
         flex-direction: column;
         gap: 16px;
 
+        // 文章封面响应式调整
         .article-cover-detail {
           align-self: center;
           width: 100%;
@@ -1816,6 +1932,7 @@ const getEditStatusType = (editStatus) => {
         }
       }
 
+      // 统计数据响应式调整
       .article-stats-detail {
         .stats-group {
           flex-direction: column;
@@ -1830,25 +1947,36 @@ const getEditStatusType = (editStatus) => {
   }
 }
 
+// 手机端适配 (480px 以下)
 @media screen and (max-width: 480px) {
-  .card-header {
-    flex-direction: column;
-    align-items: flex-start;
+  // 卡片头部超小屏适配
+  .management-container {
+    .card {
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
 
-    .card-actions {
-      width: 100%;
-      justify-content: space-between;
+        .card-actions {
+          width: 100%;
+          justify-content: space-between;
 
-      .search-input {
-        width: 100%;
+          .search-input {
+            width: 100%;
+          }
+        }
       }
-    }
-  }
 
-  .table-actions {
-    .el-button {
-      font-size: 11px;
-      padding: 4px 8px;
+      // 桌面端表格操作按钮超小屏适配
+      .desktop-view {
+        .table {
+          .table-actions {
+            .el-button {
+              font-size: 11px;
+              padding: 4px 8px;
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -959,11 +959,13 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
+// 用户文章管理主容器
 .management-container {
   height: 100%;
   box-sizing: border-box;
   position: relative;
 
+  // 主卡片容器 - 包含所有内容
   .card {
     height: 100%;
     padding: 20px;
@@ -971,7 +973,6 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     border-radius: 12px;
-    overflow: hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
 
@@ -979,6 +980,7 @@ onUnmounted(() => {
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     }
 
+    // 卡片头部 - 标题和搜索区域
     .card-header {
       display: flex;
       justify-content: space-between;
@@ -1035,6 +1037,7 @@ onUnmounted(() => {
       }
     }
 
+    // 卡片第二行 - 日期选择器区域
     .card-second {
       display: flex;
       justify-content: flex-end;
@@ -1050,6 +1053,7 @@ onUnmounted(() => {
       }
     }
 
+    // 卡片第三行 - 批量操作按钮区域
     .card-third {
       display: flex;
       justify-content: flex-end;
@@ -1058,26 +1062,30 @@ onUnmounted(() => {
     }
   }
 
-  // 用户列表容器
+  // 用户列表视图 - 当 showArticles = false 时显示
   .user-list-container {
     flex: 1;
     margin-top: 16px;
     overflow-y: auto;
 
+    // 空状态容器
     .empty-container {
       padding: 60px 20px;
       text-align: center;
     }
 
+    // 用户卡片网格容器
     .user-cards {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 16px;
       padding: 16px;
+
       :deep(.el-card__body) {
         padding: 0;
       }
 
+      // 单个用户卡片
       .user-card {
         transition: all 0.3s ease;
         border-radius: 12px;
@@ -1087,17 +1095,20 @@ onUnmounted(() => {
           box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
         }
 
+        // 用户卡片内容容器
         .user-card-content {
           display: flex;
           gap: 16px;
           padding: 16px;
           min-height: 80px;
 
+          // 用户头像区域
           .user-avatar {
             flex-shrink: 0;
             align-self: center;
           }
 
+          // 用户信息和操作区域
           .user-right-content {
             flex: 1;
             display: flex;
@@ -1105,6 +1116,7 @@ onUnmounted(() => {
             justify-content: space-between;
             min-height: 60px;
 
+            // 用户基本信息
             .user-info {
               .user-id {
                 font-size: 12px;
@@ -1159,6 +1171,7 @@ onUnmounted(() => {
               }
             }
 
+            // 用户操作按钮
             .user-actions {
               align-self: center;
               margin-top: 8px;
@@ -1184,13 +1197,14 @@ onUnmounted(() => {
     }
   }
 
-  // 桌面端表格视图
+  // 桌面端表格视图 - 当 isMobileView = false 时显示
   .desktop-view {
     flex: 1;
     display: flex;
     flex-direction: column;
     padding-bottom: 60px; // 为分页容器预留空间
 
+    // 文章表格
     .table {
       flex: 1;
       display: flex;
@@ -1198,6 +1212,7 @@ onUnmounted(() => {
       margin-top: 16px;
       max-height: calc(100vh - 280px); // 增加高度预留，为分页容器留空间
 
+      // 表格标签包装样式
       :deep(.tag-wrap) {
         white-space: normal; // 保持文本换行
         word-break: break-word;
@@ -1208,6 +1223,7 @@ onUnmounted(() => {
         min-height: 20px;
       }
 
+      // 表格头部样式
       :deep(.el-table__header-wrapper) {
         background-color: var(--el-bg-color);
         th {
@@ -1216,6 +1232,7 @@ onUnmounted(() => {
         }
       }
 
+      // 表格主体样式
       :deep(.el-table__body-wrapper) {
         tr td {
           color: #64748b;
@@ -1231,6 +1248,7 @@ onUnmounted(() => {
         }
       }
 
+      // 文章标题样式
       .article-title {
         max-width: 200px;
         overflow: hidden;
@@ -1243,11 +1261,13 @@ onUnmounted(() => {
         }
       }
 
+      // 无标签提示
       .no-tag {
         color: #999;
         font-size: 12px;
       }
 
+      // 文章封面容器
       .article-cover-container {
         display: flex;
         justify-content: center;
@@ -1281,6 +1301,7 @@ onUnmounted(() => {
         }
       }
 
+      // 表格操作按钮组
       .table-actions {
         display: flex;
         align-items: center;
@@ -1303,6 +1324,7 @@ onUnmounted(() => {
           }
         }
 
+        // 查看按钮
         .view-button {
           background-color: #f0f9ff;
           color: #0369a1;
@@ -1315,6 +1337,7 @@ onUnmounted(() => {
           }
         }
 
+        // 编辑按钮
         .edit-button {
           background-color: #f0fdf4;
           color: #15803d;
@@ -1327,6 +1350,7 @@ onUnmounted(() => {
           }
         }
 
+        // 审核按钮
         .examine-button {
           background-color: #e0f2fe;
           color: #0284c7;
@@ -1339,6 +1363,7 @@ onUnmounted(() => {
           }
         }
 
+        // 拒绝按钮
         .reject-button {
           background-color: #fef3c7;
           color: #d97706;
@@ -1351,6 +1376,7 @@ onUnmounted(() => {
           }
         }
 
+        // 删除按钮
         .delete-button {
           background-color: #fee2e2;
           color: #ef4444;
@@ -1366,7 +1392,7 @@ onUnmounted(() => {
     }
   }
 
-  // 移动端卡片视图
+  // 移动端卡片视图 - 当 isMobileView = true 时显示
   .mobile-view {
     flex: 1;
     display: flex;
@@ -1375,12 +1401,14 @@ onUnmounted(() => {
     padding-bottom: 60px; // 为分页容器预留空间
     overflow-y: auto;
 
+    // 文章卡片列表容器
     .article-cards {
       display: flex;
       flex-direction: column;
       gap: 12px;
       padding: 10px;
 
+      // 单个文章卡片
       .article-card {
         transition: all 0.3s ease;
         border-radius: 8px;
@@ -1391,16 +1419,19 @@ onUnmounted(() => {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
+        // 文章卡片内容容器
         .article-card-content {
           display: flex;
           flex-direction: column;
           gap: 12px;
 
+          // 文章头部区域 - 包含封面和信息
           .article-header-section {
             display: flex;
             flex-direction: column;
             gap: 12px;
 
+            // 移动端文章封面
             .article-cover-mobile {
               width: 100%;
               margin-bottom: 8px;
@@ -1434,12 +1465,14 @@ onUnmounted(() => {
               }
             }
 
+            // 文章信息区域
             .article-info {
               width: 100%;
               display: flex;
               flex-direction: column;
               gap: 8px;
 
+              // 文章头部 - ID和状态
               .article-header {
                 display: flex;
                 justify-content: space-between;
@@ -1456,6 +1489,7 @@ onUnmounted(() => {
                 }
               }
 
+              // 移动端文章标题
               .article-title-mobile {
                 font-size: 16px;
                 font-weight: 500;
@@ -1464,6 +1498,7 @@ onUnmounted(() => {
                 margin-bottom: 6px;
               }
 
+              // 移动端文章描述
               .article-description-mobile {
                 font-size: 12px;
                 color: #666;
@@ -1476,6 +1511,7 @@ onUnmounted(() => {
                 overflow: hidden;
               }
 
+              // 移动端文章标签
               .article-badges-mobile {
                 display: flex;
                 flex-wrap: wrap;
@@ -1489,7 +1525,7 @@ onUnmounted(() => {
                 }
               }
 
-              // 状态标签单独一行
+              // 状态标签行
               .article-status-row {
                 display: flex;
                 flex-wrap: wrap;
@@ -1506,6 +1542,7 @@ onUnmounted(() => {
                 }
               }
 
+              // 文章元信息
               .article-meta {
                 display: flex;
                 flex-direction: column;
@@ -1524,6 +1561,7 @@ onUnmounted(() => {
                   }
                 }
 
+                // 统计数据行
                 .stats-row {
                   display: flex;
                   flex-wrap: wrap;
@@ -1545,6 +1583,7 @@ onUnmounted(() => {
                   }
                 }
 
+                // 时间信息行
                 .time-row {
                   display: flex;
                   flex-wrap: wrap;
@@ -1564,6 +1603,7 @@ onUnmounted(() => {
             }
           }
 
+          // 文章操作按钮
           .article-actions {
             display: flex;
             justify-content: center;
@@ -1608,6 +1648,7 @@ onUnmounted(() => {
     }
   }
 
+  // 分页容器
   .pagination-container {
     display: flex;
     justify-content: flex-end;
@@ -1627,6 +1668,7 @@ onUnmounted(() => {
 :deep(.article-detail-dialog) {
   border-radius: 16px;
 
+  // 对话框头部
   .el-dialog__header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -1670,12 +1712,14 @@ onUnmounted(() => {
     }
   }
 
+  // 对话框主体
   .el-dialog__body {
     padding: 24px;
     max-height: 80vh;
     overflow-y: auto;
   }
 
+  // 移动端适配
   @media screen and (max-width: 767px) {
     width: 95% !important;
 
@@ -1685,19 +1729,23 @@ onUnmounted(() => {
   }
 }
 
+// 文章详情容器
 .article-detail {
   // 文章基本信息区域
   .article-info-section {
     margin-bottom: 24px;
 
+    // 文章详情头部布局
     .article-detail-header {
       display: flex;
       gap: 24px;
       align-items: flex-start;
 
+      // 文章信息左侧区域
       .article-detail-info {
         flex: 1;
 
+        // 文章标题区域
         .article-title-section {
           display: flex;
           align-items: center;
@@ -1724,6 +1772,7 @@ onUnmounted(() => {
           }
         }
 
+        // 作者信息区域
         .article-author-section {
           display: flex;
           align-items: center;
@@ -1744,6 +1793,7 @@ onUnmounted(() => {
           }
         }
 
+        // 文章描述区域
         .article-description-detail {
           display: flex;
           align-items: flex-start;
@@ -1783,6 +1833,7 @@ onUnmounted(() => {
           }
         }
 
+        // 文章标签和状态详情
         .article-badges-detail {
           display: flex;
           flex-direction: column;
@@ -1847,6 +1898,7 @@ onUnmounted(() => {
         }
       }
 
+      // 文章封面右侧区域
       .article-cover-detail {
         flex-shrink: 0;
         width: 640px; //保持长宽比16:9
@@ -1892,7 +1944,7 @@ onUnmounted(() => {
       }
     }
 
-    // 底部统计数据样式
+    // 文章统计数据底部区域
     .article-stats-detail {
       border-top: 1px solid #e9ecef;
       padding-top: 20px;
@@ -1967,6 +2019,7 @@ onUnmounted(() => {
 
 // 文章内容区域
 .article-content-section {
+  // 内容头部
   .content-header {
     margin-bottom: 16px;
 
@@ -1989,6 +2042,7 @@ onUnmounted(() => {
     }
   }
 
+  // 文章内容主体
   .article-content {
     max-height: 69vh;
     overflow-y: auto;
@@ -2000,6 +2054,7 @@ onUnmounted(() => {
     font-size: 15px;
     color: #333;
 
+    // 内容中的图片样式
     :deep(img) {
       width: 100%;
       height: auto;
@@ -2008,6 +2063,7 @@ onUnmounted(() => {
       margin: 8px 0;
     }
 
+    // 代码块样式
     :deep(pre) {
       background-color: #f8f9fa;
       padding: 16px;
@@ -2017,6 +2073,7 @@ onUnmounted(() => {
       margin: 12px 0;
     }
 
+    // 行内代码样式
     :deep(code) {
       background-color: #f8f9fa;
       padding: 2px 6px;
@@ -2025,6 +2082,7 @@ onUnmounted(() => {
       color: #e83e8c;
     }
 
+    // 引用块样式
     :deep(blockquote) {
       border-left: 4px solid #007bff;
       padding-left: 16px;
@@ -2033,15 +2091,18 @@ onUnmounted(() => {
       font-style: italic;
     }
 
+    // 标题样式
     :deep(h1, h2, h3, h4, h5, h6) {
       margin: 20px 0 12px 0;
       color: #2c3e50;
     }
 
+    // 段落样式
     :deep(p) {
       margin: 12px 0;
     }
 
+    // 列表样式
     :deep(ul, ol) {
       margin: 12px 0;
       padding-left: 24px;
@@ -2049,6 +2110,7 @@ onUnmounted(() => {
   }
 }
 
+// 加载容器
 .loading-container {
   display: flex;
   justify-content: center;
@@ -2056,11 +2118,14 @@ onUnmounted(() => {
   min-height: 200px;
 }
 
+// 对话框底部操作区域
 .dialog-footer {
   display: flex;
   justify-content: center;
   gap: 120px;
   padding: 16px 0;
+
+  // 移动端适配
   @media screen and (max-width: 768px) {
     gap: 4px;
   }
@@ -2079,7 +2144,7 @@ onUnmounted(() => {
   }
 }
 
-// 响应式设计
+// 响应式设计 - 大屏幕适配
 @media screen and (max-width: 1400px) {
   .management-container {
     .card {
@@ -2094,6 +2159,7 @@ onUnmounted(() => {
   }
 }
 
+// 响应式设计 - 中等屏幕适配
 @media screen and (max-width: 1220px) {
   .management-container {
     .card {
@@ -2124,6 +2190,7 @@ onUnmounted(() => {
   }
 }
 
+// 响应式设计 - 小屏幕适配
 @media screen and (max-width: 768px) {
   .management-container {
     .card {
@@ -2245,6 +2312,7 @@ onUnmounted(() => {
     }
   }
 
+  // 移动端文章详情样式
   .article-detail {
     .article-info-section {
       .article-detail-header {
@@ -2282,6 +2350,7 @@ onUnmounted(() => {
   }
 }
 
+// 响应式设计 - 超小屏幕适配
 @media screen and (max-width: 480px) {
   .card-header {
     flex-direction: column;
@@ -2309,6 +2378,7 @@ onUnmounted(() => {
 :deep(.edit-article-dialog) {
   border-radius: 16px;
 
+  // 编辑对话框头部
   .el-dialog__header {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
@@ -2350,9 +2420,11 @@ onUnmounted(() => {
     }
   }
 
+  // 编辑对话框主体
   .el-dialog__body {
     padding: 24px;
 
+    // 编辑表单样式
     .el-form {
       .el-form-item {
         margin-bottom: 20px;
@@ -2378,6 +2450,7 @@ onUnmounted(() => {
           }
         }
 
+        // 单选按钮组样式
         .el-radio-group {
           .el-radio {
             margin-right: 20px;
@@ -2396,6 +2469,7 @@ onUnmounted(() => {
     }
   }
 
+  // 编辑对话框移动端适配
   @media screen and (max-width: 767px) {
     width: 95% !important;
 

@@ -1,0 +1,153 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: sidifensen-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123456}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-sidifensen_blog}
+      MYSQL_USER: ${MYSQL_USER:-sidifensen}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-sidifensen123}
+      TZ: Asia/Shanghai
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ../sql/sidifensen_blog.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - sidifensen-network
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: sidifensen-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
+    networks:
+      - sidifensen-network
+
+  # MinIO 对象存储
+  minio:
+    image: minio/minio:latest
+    container_name: sidifensen-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - sidifensen-network
+
+  # RabbitMQ 消息队列
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: sidifensen-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-admin123}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - sidifensen-network
+
+  # 后端服务
+  backend:
+    build:
+      context: ../sidifensen_blog_backend
+      dockerfile: Dockerfile
+    container_name: sidifensen-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-5000}:5000"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-sidifensen_blog}
+      MYSQL_USERNAME: ${MYSQL_USER:-sidifensen}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-sidifensen123}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-admin123}
+      MAIL_USERNAME: ${MAIL_USERNAME:-your-email@qq.com}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-your-email-password}
+      ALIYUN_ACCESS_KEY_ID: ${ALIYUN_ACCESS_KEY_ID:-your-access-key-id}
+      ALIYUN_ACCESS_KEY_SECRET: ${ALIYUN_ACCESS_KEY_SECRET:-your-access-key-secret}
+      JWT_SECRET: ${JWT_SECRET:-sidifensen}
+    depends_on:
+      - mysql
+      - redis
+      - minio
+      - rabbitmq
+    networks:
+      - sidifensen-network
+
+  # 前端管理端
+  frontend-admin:
+    build:
+      context: ../sidifensen_blog_frontend/sidifensen_admin
+      dockerfile: Dockerfile
+    container_name: sidifensen-admin
+    restart: unless-stopped
+    ports:
+      - "${ADMIN_PORT:-8000}:80"
+    depends_on:
+      - backend
+    networks:
+      - sidifensen-network
+
+  # 前端用户端
+  frontend-user:
+    build:
+      context: ../sidifensen_blog_frontend/sidifensen_user
+      dockerfile: Dockerfile
+    container_name: sidifensen-user
+    restart: unless-stopped
+    ports:
+      - "${USER_PORT:-7000}:80"
+    depends_on:
+      - backend
+    networks:
+      - sidifensen-network
+
+# 数据卷
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+
+# 网络
+networks:
+  sidifensen-network:
+    driver: bridge
+
+

@@ -98,7 +98,100 @@ onMounted(() => {
 - 全局样式变量定义在 `assets/scss/` 中
 - 响应式设计使用媒体查询
 - 颜色使用 CSS 变量或 SCSS 变量
+- **🎨 样式组织结构：SCSS 代码必须按照 template 的层次结构和嵌套关系来组织样式书写**
+- **📝 样式注释：每个样式模块必须添加清晰的中文注释，说明该模块的作用和用途**
 - **📋 代码质量检查：编写完成后务必检查所有标签是否正确闭合，确保代码格式规范**
+
+#### SCSS 组织规范示例
+
+```vue
+<template>
+  <div class="user-profile">
+    <!-- 用户信息卡片 -->
+    <div class="user-card">
+      <div class="avatar-section">
+        <img class="avatar" :src="user.avatar" alt="头像" />
+        <div class="user-info">
+          <h3 class="username">{{ user.name }}</h3>
+          <p class="user-role">{{ user.role }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 操作按钮区域 -->
+    <div class="action-buttons">
+      <el-button type="primary">编辑资料</el-button>
+      <el-button>修改密码</el-button>
+    </div>
+  </div>
+</template>
+
+<style lang="scss" scoped>
+// 用户资料页面主容器
+.user-profile {
+  padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+
+  // 用户信息卡片区域
+  .user-card {
+    background: var(--el-bg-color);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--el-box-shadow-light);
+
+    // 头像和信息区域
+    .avatar-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      // 用户头像样式
+      .avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--el-border-color-light);
+      }
+
+      // 用户信息文字区域
+      .user-info {
+        flex: 1;
+
+        // 用户名样式
+        .username {
+          margin: 0 0 8px 0;
+          font-size: 24px;
+          font-weight: 600;
+          color: var(--el-text-color-primary);
+        }
+
+        // 用户角色样式
+        .user-role {
+          margin: 0;
+          font-size: 14px;
+          color: var(--el-text-color-regular);
+        }
+      }
+    }
+  }
+
+  // 操作按钮区域
+  .action-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+
+    // 按钮样式调整
+    .el-button {
+      min-width: 120px;
+    }
+  }
+}
+</style>
+```
 
 ### 5. API 请求规范
 
@@ -385,9 +478,11 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+// 文章列表页面容器
 .article-list {
   padding: 20px;
 
+  // 搜索表单区域
   .el-form {
     margin-bottom: 20px;
     padding: 20px;
@@ -395,6 +490,7 @@ onMounted(() => {
     border-radius: 4px;
   }
 
+  // 分页组件区域
   .el-pagination {
     margin-top: 20px;
     text-align: right;
@@ -433,7 +529,15 @@ onMounted(() => {
    - 编写单元测试
    - **🔍 标签闭合检查：修改代码后必须检查所有 HTML 标签是否正确闭合，避免渲染错误**
 
-5. **安全性**
+5. **样式组织最佳实践**
+
+   - **层次结构对应**：SCSS 嵌套层级必须与 template 的 DOM 结构保持一致
+   - **模块化注释**：每个样式块都要有清晰的中文注释说明其功能
+   - **语义化命名**：CSS 类名要具有语义性，便于理解和维护
+   - **响应式设计**：使用媒体查询时也要保持层次结构的一致性
+   - **变量使用**：优先使用 CSS 变量和 SCSS 变量，提高主题切换的灵活性
+
+6. **安全性**
    - 输入验证和过滤
    - XSS 防护
    - CSRF 防护
