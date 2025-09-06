@@ -26,11 +26,18 @@ Docker Compose 是一个用于定义和运行多容器 Docker 应用程序的工
 
 ```
 sidifensen_blog/
-├── docker-compose.yml          # 生产环境配置
-├── docker-compose.dev.yml      # 开发环境配置
-├── docker-compose.override.yml # 开发环境覆盖配置
-├── env.example                 # 环境变量示例
-├── README-Docker.md           # Docker 部署文档
+├── script/                     # 脚本目录
+│   ├── docker-compose.yml          # 生产环境配置
+│   ├── docker-compose.dev.yml      # 开发环境配置
+│   ├── docker-compose.override.yml # 开发环境覆盖配置
+│   ├── env.example                 # 环境变量示例
+│   ├── start.sh                    # Linux/Mac 启动脚本
+│   ├── start.bat                   # Windows 启动脚本
+│   ├── README-Docker.md           # Docker 部署文档
+│   └── deploy/                     # 服务器部署脚本
+│       ├── deploy.sh              # 一键部署脚本
+│       ├── post-receive-hook.sh   # Git Hook 自动部署
+│       └── README.md              # 部署脚本说明
 ├── sidifensen_blog_backend/   # 后端服务
 │   ├── Dockerfile
 │   └── src/main/resources/
@@ -124,6 +131,29 @@ docker-compose -f docker-compose.dev.yml up -d
 # 或者使用开发环境配置
 docker-compose -f docker-compose.yml -f docker-compose.override.yml up -d
 ```
+
+#### 方式三：服务器部署
+
+**一键部署到生产服务器：**
+
+```bash
+# 在服务器上运行
+cd script/deploy
+sudo ./deploy.sh
+```
+
+**Git Hook 自动部署：**
+
+```bash
+# 设置 Git Hook（在服务器上）
+cp script/deploy/post-receive-hook.sh /path/to/repo.git/hooks/post-receive
+chmod +x /path/to/repo.git/hooks/post-receive
+
+# 之后每次推送代码到 main 分支时会自动部署
+git push origin main
+```
+
+详细的服务器部署说明请参考：[deploy/README.md](deploy/README.md)
 
 ### 5. 访问服务
 

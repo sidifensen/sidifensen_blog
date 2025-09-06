@@ -108,28 +108,11 @@ aliyun:
     access-key-id: ${ALIYUN_ACCESS_KEY_ID:your-access-key-id}
     access-key-secret: ${ALIYUN_ACCESS_KEY_SECRET:your-access-key-secret}
     region: cn-shanghai
-
-# 线程池配置
-thread-pool:
-  core-pool-size: 10
-  max-pool-size: 20
-  queue-capacity: 200
-  keep-alive-seconds: 60
-  thread-name-prefix: "sidifensen-"
-
-# 跨域配置
-cors:
-  allowed-origins:
-    - "http://localhost:8000"
-    - "http://localhost:7000"
-    - "http://127.0.0.1:8000"
-    - "http://127.0.0.1:7000"
-  allowed-methods:
-    - "GET"
-    - "POST"
-    - "PUT"
-    - "DELETE"
-    - "OPTIONS"
-  allowed-headers: "*"
-  allow-credentials: true
-  max-age: 3600
+sidifensen:
+  PhotoAutoAudit: false
+  ArticleAutoAudit: true
+  AllowOrigins:
+    - http://localhost:7000
+    - http://localhost:8000
+    - http://127.0.0.1:7000
+    - http://127.0.0.1:8000

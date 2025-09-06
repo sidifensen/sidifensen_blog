@@ -13,7 +13,7 @@ NC='\033[0m' # No Color
 
 # 配置变量
 PROJECT_DIR="/opt/sidifensen_blog"  # 项目部署目录
-GIT_REPO="https://github.com/your-username/sidifensen_blog.git"  # Git 仓库地址
+GIT_REPO="https://github.com/sidifensen/sidifensen_blog.git"  # Git 仓库地址
 BRANCH="main"  # 部署分支
 BACKUP_DIR="/opt/backups"  # 备份目录
 
@@ -44,32 +44,119 @@ check_root() {
     fi
 }
 
+# 检测操作系统
+detect_os() {
+    if [ -f /etc/redhat-release ]; then
+        OS="centos"
+        print_message "检测到 CentOS/RHEL 系统"
+    elif [ -f /etc/debian_version ]; then
+        OS="ubuntu"
+        print_message "检测到 Ubuntu/Debian 系统"
+    else
+        print_error "不支持的操作系统"
+        exit 1
+    fi
+}
+
 # 安装依赖
 install_dependencies() {
     print_title "安装系统依赖"
     
-    # 更新系统包
-    print_message "更新系统包..."
-    apt update -y
+    # 检测操作系统
+    detect_os
     
-    # 安装必要软件
-    print_message "安装 Git, Docker, Docker Compose..."
-    apt install -y git curl wget
+    if [ "$OS" = "centos" ]; then
+        # CentOS/RHEL 系统
+        print_message "更新系统包..."
+        yum update -y
+        
+        # 安装必要软件
+        print_message "安装 Git, Docker, Docker Compose..."
+        yum install -y git curl wget yum-utils device-mapper-persistent-data lvm2
+    else
+        # Ubuntu/Debian 系统
+        print_message "更新系统包..."
+        apt update -y
+        
+        # 安装必要软件
+        print_message "安装 Git, Docker, Docker Compose..."
+        apt install -y git curl wget
+    fi
     
     # 安装 Docker
     if ! command -v docker &> /dev/null; then
         print_message "安装 Docker..."
-        curl -fsSL https://get.docker.com -o get-docker.sh
-        sh get-docker.sh
+        
+        if [ "$OS" = "centos" ]; then
+            # CentOS Docker 安装
+            yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+            yum install -y docker-ce docker-ce-cli containerd.io
+        else
+            # Ubuntu/Debian Docker 安装
+            curl -fsSL https://get.docker.com -o get-docker.sh
+            sh get-docker.sh
+            rm get-docker.sh
+        fi
+        
+        # 启动 Docker 服务
         systemctl enable docker
         systemctl start docker
+        
+        # 将当前用户添加到 docker 组（如果不是 root）
+        if [ "$USER" != "root" ] && [ -n "$USER" ]; then
+            usermod -aG docker $USER
+            print_warning "已将用户 $USER 添加到 docker 组，请重新登录或使用 newgrp docker"
+        fi
     fi
     
     # 安装 Docker Compose
     if ! command -v docker-compose &> /dev/null; then
         print_message "安装 Docker Compose..."
-        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        
+        # 获取最新版本号
+        COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)
+        if [ -z "$COMPOSE_VERSION" ]; then
+            COMPOSE_VERSION="v2.21.0"  # 备用版本
+            print_warning "无法获取最新版本，使用备用版本 $COMPOSE_VERSION"
+        fi
+        
+        curl -L "https://github.com/docker/compose/releases/download/$COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         chmod +x /usr/local/bin/docker-compose
+        
+        # 验证安装
+        if docker-compose --version > /dev/null 2>&1; then
+            print_message "Docker Compose 安装成功: $(docker-compose --version)"
+        else
+            print_error "Docker Compose 安装失败"
+            exit 1
+        fi
+    fi
+    
+    # CentOS 特殊配置
+    if [ "$OS" = "centos" ]; then
+        print_message "配置 CentOS 特殊设置..."
+        
+        # 配置防火墙
+        if systemctl is-active --quiet firewalld; then
+            print_message "配置防火墙端口..."
+            firewall-cmd --permanent --add-port=5000/tcp    # 后端 API
+            firewall-cmd --permanent --add-port=8000/tcp    # 管理端前端
+            firewall-cmd --permanent --add-port=7000/tcp    # 用户端前端
+            firewall-cmd --permanent --add-port=3306/tcp    # MySQL
+            firewall-cmd --permanent --add-port=6379/tcp    # Redis
+            firewall-cmd --permanent --add-port=9000/tcp    # MinIO API
+            firewall-cmd --permanent --add-port=9001/tcp    # MinIO Console
+            firewall-cmd --permanent --add-port=5672/tcp    # RabbitMQ
+            firewall-cmd --permanent --add-port=15672/tcp   # RabbitMQ Management
+            firewall-cmd --reload
+            print_message "防火墙配置完成"
+        fi
+        
+        # 配置 SELinux (如果启用)
+        if command -v getenforce &> /dev/null && [ "$(getenforce)" != "Disabled" ]; then
+            print_warning "检测到 SELinux 已启用，建议设置为 Permissive 模式以避免 Docker 权限问题"
+            print_warning "可以运行: setenforce 0 && sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config"
+        fi
     fi
 }
 
