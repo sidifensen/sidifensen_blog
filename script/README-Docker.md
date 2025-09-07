@@ -29,7 +29,6 @@ sidifensen_blog/
 ├── script/                     # 脚本目录
 │   ├── docker-compose.yml          # 生产环境配置
 │   ├── docker-compose.dev.yml      # 开发环境配置
-│   ├── docker-compose.override.yml # 开发环境覆盖配置
 │   ├── env.example                 # 环境变量示例
 │   ├── start.sh                    # Linux/Mac 启动脚本
 │   ├── start.bat                   # Windows 启动脚本
@@ -59,6 +58,49 @@ sidifensen_blog/
 
 - Docker (20.10+)
 - Docker Compose (2.0+)
+- Git (用于代码管理和部署)
+
+#### Git 安装指南
+
+**Ubuntu/Debian:**
+```bash
+sudo apt update
+sudo apt install git
+```
+
+**CentOS/RHEL/Fedora:**
+```bash
+# CentOS/RHEL
+sudo yum install git
+# 或者使用 dnf (较新版本)
+sudo dnf install git
+
+# Fedora
+sudo dnf install git
+```
+
+**macOS:**
+```bash
+# 使用 Homebrew
+brew install git
+
+# 或者从官网下载安装包
+# https://git-scm.com/download/mac
+```
+
+**Windows:**
+```bash
+# 使用 Chocolatey
+choco install git
+
+# 或者从官网下载安装包
+# https://git-scm.com/download/win
+```
+
+**验证安装：**
+```bash
+git --version
+```
 
 ### 2. 克隆项目
 
@@ -128,8 +170,8 @@ cd script
 # 启动基础服务（数据库、Redis、MinIO、RabbitMQ）
 docker-compose -f docker-compose.dev.yml up -d
 
-# 或者使用开发环境配置
-docker-compose -f docker-compose.yml -f docker-compose.override.yml up -d
+# 或者使用开发环境配置（仅启动基础服务）
+docker-compose -f docker-compose.dev.yml up -d
 ```
 
 #### 方式三：服务器部署
@@ -219,7 +261,6 @@ ALIYUN_ACCESS_KEY_SECRET=your-access-key-secret
 - `application-docker.yaml`: Docker 环境下的 Spring Boot 配置
 - `docker-compose.yml`: 生产环境配置
 - `docker-compose.dev.yml`: 开发环境配置
-- `docker-compose.override.yml`: 开发环境覆盖配置
 
 ## 📝 常用命令
 
