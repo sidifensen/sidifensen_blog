@@ -1,5 +1,0 @@
-{
-  "java.compile.nullAnalysis.mode": "automatic",
-  "java.format.settings.url": ".vscode/java-formatter.xml",
-  "editorjumper.selectedIDE": "IDEA"
-}

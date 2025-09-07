@@ -7,6 +7,7 @@ import io.minio.errors.*;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,35 @@ public class FileUploadUtils {
 
     @Value("${minio.endpoint}")
     private String endpoint;
+
+    @Value("${minio.publicEndpoint}")
+    private String publicEndpoint;
+
+    /**
+     * 初始化方法，确保存储桶存在
+     */
+    @PostConstruct
+    public void init() {
+        try {
+            // 检查存储桶是否存在，如果不存在则创建
+            boolean bucketExists = client.bucketExists(BucketExistsArgs.builder()
+                    .bucket(bucketName)
+                    .build());
+
+            if (!bucketExists) {
+                // 创建存储桶
+                client.makeBucket(MakeBucketArgs.builder()
+                        .bucket(bucketName)
+                        .build());
+                log.info("成功创建 MinIO 存储桶: {}", bucketName);
+            } else {
+                log.info("MinIO 存储桶已存在: {}", bucketName);
+            }
+        } catch (Exception e) {
+            log.error("初始化 MinIO 存储桶失败: {}", e.getMessage(), e);
+            throw new FileUploadException("初始化存储桶失败");
+        }
+    }
 
     /**
      * 上传文件
@@ -60,13 +90,20 @@ public class FileUploadUtils {
                         .stream(stream, file.getSize(), -1)
                         .build();
                 client.putObject(args);
-                return endpoint + "/" + bucketName + "/" + uploadEnum.getDir() + name + "." + fileExtension;
+                return publicEndpoint + "/" + bucketName + "/" + uploadEnum.getDir() + name + "." + fileExtension;
             }
             log.error("--------------------上传文件格式不正确--------------------");
             throw new FileUploadException("上传文件类型错误");
         } catch (FileUploadException e) {
             throw e; // 直接重新抛出特定的文件上传异常
         } catch (Exception e) {
+            log.error("--------------------上传文件失败--------------------");
+            log.error("上传文件失败: {}", e.getMessage(), e);
+            // 检查是否是存储桶不存在的错误
+            if (e.getMessage() != null && e.getMessage().contains("bucket does not exist")) {
+                log.error("存储桶不存在，请检查 MinIO 配置和存储桶: {}", bucketName);
+                throw new FileUploadException("存储桶不存在，请联系管理员");
+            }
             throw new FileUploadException("上传文件失败");
         }
     }
@@ -107,7 +144,7 @@ public class FileUploadUtils {
                         .stream(stream, file.getSize(), -1)
                         .build();
                 client.putObject(args);
-                return endpoint + "/" + bucketName + "/" + dir + name + "." + fileExtension;
+                return publicEndpoint + "/" + bucketName + "/" + dir + name + "." + fileExtension;
             }
             log.error("--------------------上传文件格式不正确--------------------");
             throw new FileUploadException("上传文件类型错误");
@@ -115,11 +152,15 @@ public class FileUploadUtils {
             throw e; // 直接重新抛出特定的文件上传异常
         } catch (Exception e) {
             log.error("--------------------上传文件失败--------------------");
-            log.error("上传文件失败: {}", e.getMessage());
+            log.error("上传文件失败: {}", e.getMessage(), e);
+            // 检查是否是存储桶不存在的错误
+            if (e.getMessage() != null && e.getMessage().contains("bucket does not exist")) {
+                log.error("存储桶不存在，请检查 MinIO 配置和存储桶: {}", bucketName);
+                throw new FileUploadException("存储桶不存在，请联系管理员");
+            }
             throw new FileUploadException("上传文件失败");
         }
     }
-
 
     public Boolean verifyTheFileSize(Long fileSize, Double limitSize) {
         // 转为相同大小格式
@@ -165,9 +206,9 @@ public class FileUploadUtils {
                 // 提取出文件名
                 item = result.get();
                 fileNames.add(item.objectName());
-            } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException |
-                     InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException |
-                     XmlParserException e) {
+            } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException
+                    | InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException
+                    | XmlParserException e) {
                 log.error("获取文件出现错误", e);
             }
         });
@@ -221,8 +262,7 @@ public class FileUploadUtils {
                     RemoveObjectArgs.builder()
                             .bucket(bucketName)
                             .object(objectName)
-                            .build()
-            );
+                            .build());
 
             log.info("文件 {} 已成功从 MinIO 中删除", objectName);
             return true;
@@ -248,7 +288,6 @@ public class FileUploadUtils {
         return false;
     }
 
-
     /**
      * 判断文件是否存在
      *
@@ -268,9 +307,9 @@ public class FileUploadUtils {
             Item item = null;
             try {
                 item = result.get();
-            } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException |
-                     InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException |
-                     XmlParserException e) {
+            } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException
+                    | InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException
+                    | XmlParserException e) {
                 log.error("判断文件是否存在出现错误,{}, 文件名：{}, 目录：{}", e.getMessage(), fileName, dir);
                 throw new FileUploadException("文件不存在");
             }

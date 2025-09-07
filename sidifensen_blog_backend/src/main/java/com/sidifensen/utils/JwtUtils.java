@@ -14,20 +14,21 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class JwtUtils {
 
-    @Value("${spring.security.jwt.secret}")
+    @Value("${sidifensen.jwt}")
     private String secret;
 
     /**
      * 生成token
-     * @param id 用户id
+     * 
+     * @param id           用户id
      * @param isRememberMe 是否记住我
      * @return
      */
-    public String createToken(Integer id,boolean isRememberMe) {
+    public String createToken(Integer id, boolean isRememberMe) {
         String token = JWT.create()
                 // 设置过期时间 rememberMe为true时，token有效期为7天，否则为1天
-                .setExpiresAt(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(isRememberMe? 7 : 1)))
-                .addPayloads(Map.of("id",id))
+                .setExpiresAt(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(isRememberMe ? 7 : 1)))
+                .addPayloads(Map.of("id", id))
                 .setSigner(JWTSignerUtil.createSigner("HS256", secret.getBytes()))
                 .sign();
         return token;
@@ -35,6 +36,7 @@ public class JwtUtils {
 
     /**
      * 解析并验证token
+     * 
      * @param token
      * @return
      */
@@ -54,10 +56,9 @@ public class JwtUtils {
         Object claim = jwt.getPayload().getClaim("id");
         if (claim instanceof NumberWithFormat) {
             Number number = (Number) ((NumberWithFormat) claim).getNumber();
-            return number.intValue(); //  转换为Integer类型
+            return number.intValue(); // 转换为Integer类型
         }
         return null;
     }
-
 
 }

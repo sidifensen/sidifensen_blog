@@ -83,11 +83,18 @@ start_services() {
 show_access_info() {
     print_title "服务访问信息"
     
-    echo -e "${GREEN}✅ 后端 API:${NC}        http://localhost:5000"
-    echo -e "${GREEN}✅ 管理端前端:${NC}      http://localhost:8000"
-    echo -e "${GREEN}✅ 用户端前端:${NC}      http://localhost:7000"
-    echo -e "${GREEN}✅ MinIO 控制台:${NC}    http://localhost:9001 (minioadmin/minioadmin123)"
-    echo -e "${GREEN}✅ RabbitMQ 管理:${NC}   http://localhost:15672 (admin/admin123)"
+    # 从环境变量文件读取端口配置
+    local backend_port=$(grep "^BACKEND_PORT=" ../.env 2>/dev/null | cut -d'=' -f2 || echo "5000")
+    local admin_port=$(grep "^ADMIN_PORT=" ../.env 2>/dev/null | cut -d'=' -f2 || echo "8000")
+    local user_port=$(grep "^USER_PORT=" ../.env 2>/dev/null | cut -d'=' -f2 || echo "7000")
+    local minio_console_port=$(grep "^MINIO_CONSOLE_PORT=" ../.env 2>/dev/null | cut -d'=' -f2 || echo "9001")
+    local rabbitmq_management_port=$(grep "^RABBITMQ_MANAGEMENT_PORT=" ../.env 2>/dev/null | cut -d'=' -f2 || echo "15672")
+    
+    echo -e "${GREEN}✅ 后端 API:${NC}        http://localhost:${backend_port}"
+    echo -e "${GREEN}✅ 管理端前端:${NC}      http://localhost:${admin_port}"
+    echo -e "${GREEN}✅ 用户端前端:${NC}      http://localhost:${user_port}"
+    echo -e "${GREEN}✅ MinIO 控制台:${NC}    http://localhost:${minio_console_port} (minioadmin/minioadmin123)"
+    echo -e "${GREEN}✅ RabbitMQ 管理:${NC}   http://localhost:${rabbitmq_management_port} (admin/admin123)"
     
     echo ""
     print_message "常用命令:"
@@ -140,20 +147,24 @@ show_logs() {
     echo "选择要查看的服务日志:"
     echo "1. 所有服务"
     echo "2. 后端服务"
-    echo "3. MySQL"
-    echo "4. Redis"
-    echo "5. MinIO"
-    echo "6. RabbitMQ"
+    echo "3. 管理端前端"
+    echo "4. 用户端前端"
+    echo "5. MySQL"
+    echo "6. Redis"
+    echo "7. MinIO"
+    echo "8. RabbitMQ"
     
-    read -p "请选择 (1-6): " log_choice
+    read -p "请选择 (1-8): " log_choice
     
     case $log_choice in
         1) docker-compose logs -f ;;
         2) docker-compose logs -f backend ;;
-        3) docker-compose logs -f mysql ;;
-        4) docker-compose logs -f redis ;;
-        5) docker-compose logs -f minio ;;
-        6) docker-compose logs -f rabbitmq ;;
+        3) docker-compose logs -f frontend-admin ;;
+        4) docker-compose logs -f frontend-user ;;
+        5) docker-compose logs -f mysql ;;
+        6) docker-compose logs -f redis ;;
+        7) docker-compose logs -f minio ;;
+        8) docker-compose logs -f rabbitmq ;;
         *) print_error "无效选择" ;;
     esac
 }

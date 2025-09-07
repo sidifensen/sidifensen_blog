@@ -10,9 +10,9 @@ IMAGE_NAME=sidifensen_backend
 HOST_LOG_DIR=./logs
 
 # 检查jar文件是否存在
-if [ ! -f "./sidifensen_blog_backend-1.0-SNAPSHOT.jar" ]; then
-    echo "错误: 找不到jar文件 ./sidifensen_blog_backend-1.0-SNAPSHOT.jar"
-    echo "请确保已将jar文件上传到正确位置"
+if [ ! -f "./target/sidifensen_blog_backend-1.0-SNAPSHOT.jar" ]; then
+    echo "错误: 找不到jar文件 ./target/sidifensen_blog_backend-1.0-SNAPSHOT.jar"
+    echo "请确保已编译项目并生成jar文件到target目录"
     exit 1
 fi
 

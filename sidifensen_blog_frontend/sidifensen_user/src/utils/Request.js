@@ -51,7 +51,7 @@ request.interceptors.response.use(
       // 响应失败的处理 401 400
       ElMessage.error(msg);
     }
-    console.log("响应拦截器",response.data)
+    console.log("响应拦截器", response.data);
     return Promise.reject(response.data);
   },
   (error) => {

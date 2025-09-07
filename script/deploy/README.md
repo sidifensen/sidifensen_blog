@@ -1,4 +1,4 @@
-# 🚀 Sidifensen Blog 部署脚本
+# 🚀 Sidifensen Blog 自动化部署脚本
 
 本目录包含用于服务器部署的脚本文件。
 

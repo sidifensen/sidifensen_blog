@@ -3,8 +3,11 @@ FROM nginx:alpine
 # 设置时区为中国标准时间(UTC+8)
 ENV TZ=Asia/Shanghai
 
+# 更换为国内镜像源以加快包下载速度
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+
 # 安装curl工具和tzdata包，用于健康检查和时区支持
-RUN apk --no-cache add curl tzdata && \
+RUN apk update && apk --no-cache add curl tzdata && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     echo $TZ > /etc/timezone
 

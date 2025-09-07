@@ -63,12 +63,14 @@ sidifensen_blog/
 #### Git 安装指南
 
 **Ubuntu/Debian:**
+
 ```bash
 sudo apt update
 sudo apt install git
 ```
 
 **CentOS/RHEL/Fedora:**
+
 ```bash
 # CentOS/RHEL
 sudo yum install git
@@ -80,6 +82,7 @@ sudo dnf install git
 ```
 
 **macOS:**
+
 ```bash
 # 使用 Homebrew
 brew install git
@@ -89,6 +92,7 @@ brew install git
 ```
 
 **Windows:**
+
 ```bash
 # 使用 Chocolatey
 choco install git
@@ -98,6 +102,7 @@ choco install git
 ```
 
 **验证安装：**
+
 ```bash
 git --version
 ```
@@ -105,7 +110,7 @@ git --version
 ### 2. 克隆项目
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/sidifensen/sidifensen_blog.git
 cd sidifensen_blog
 ```
 
@@ -235,17 +240,23 @@ MYSQL_ROOT_PASSWORD=root123456
 MYSQL_DATABASE=sidifensen_blog
 MYSQL_USER=sidifensen
 MYSQL_PASSWORD=sidifensen123
+MYSQL_PORT=3306                    # 自定义 MySQL 端口
 
 # Redis 配置
 REDIS_PASSWORD=redis123
+REDIS_PORT=6379                    # 自定义 Redis 端口
 
 # MinIO 配置
 MINIO_ROOT_USER=minioadmin
 MINIO_ROOT_PASSWORD=minioadmin123
+MINIO_API_PORT=9000                # 自定义 MinIO API 端口
+MINIO_CONSOLE_PORT=9001            # 自定义 MinIO 控制台端口
 
 # RabbitMQ 配置
 RABBITMQ_DEFAULT_USER=admin
 RABBITMQ_DEFAULT_PASS=admin123
+RABBITMQ_PORT=5672                 # 自定义 RabbitMQ 服务端口
+RABBITMQ_MANAGEMENT_PORT=15672     # 自定义 RabbitMQ 管理端口
 
 # 邮件配置
 MAIL_USERNAME=your-email@qq.com
@@ -254,6 +265,31 @@ MAIL_PASSWORD=your-email-password
 # 阿里云配置
 ALIYUN_ACCESS_KEY_ID=your-access-key-id
 ALIYUN_ACCESS_KEY_SECRET=your-access-key-secret
+```
+
+### 端口自定义说明
+
+所有服务端口都支持通过环境变量自定义：
+
+| 服务          | 环境变量                   | 默认端口 | 说明                 |
+| ------------- | -------------------------- | -------- | -------------------- |
+| MySQL         | `MYSQL_PORT`               | 3306     | 数据库服务端口       |
+| Redis         | `REDIS_PORT`               | 6379     | 缓存服务端口         |
+| MinIO API     | `MINIO_API_PORT`           | 9000     | 对象存储 API 端口    |
+| MinIO 控制台  | `MINIO_CONSOLE_PORT`       | 9001     | 对象存储管理界面端口 |
+| RabbitMQ      | `RABBITMQ_PORT`            | 5672     | 消息队列服务端口     |
+| RabbitMQ 管理 | `RABBITMQ_MANAGEMENT_PORT` | 15672    | 消息队列管理界面端口 |
+
+**自定义端口示例：**
+
+```bash
+# 在 .env 文件中修改端口
+MYSQL_PORT=3307
+REDIS_PORT=6380
+MINIO_API_PORT=9002
+MINIO_CONSOLE_PORT=9003
+RABBITMQ_PORT=5673
+RABBITMQ_MANAGEMENT_PORT=15673
 ```
 
 ### 配置文件

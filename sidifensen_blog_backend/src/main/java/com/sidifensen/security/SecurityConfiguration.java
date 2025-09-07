@@ -32,7 +32,7 @@ public class SecurityConfiguration {
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Resource
-    private SidifensenConfig sidifensenConfig;  // 现在导入正确
+    private SidifensenConfig sidifensenConfig; // 现在导入正确
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -68,7 +68,7 @@ public class SecurityConfiguration {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
         corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
-//        corsConfiguration.setAllowedOrigins(sidifensenConfig.getAllowOrigins());
+        // corsConfiguration.setAllowedOrigins(sidifensenConfig.getAllowOrigins());
         corsConfiguration.setAllowedOrigins(Collections.singletonList("*"));
 
         // 创建 CorsConfigurationSource对象

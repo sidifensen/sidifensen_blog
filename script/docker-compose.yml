@@ -7,32 +7,45 @@ services:
     container_name: sidifensen-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123456}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-sidifensen_blog}
-      MYSQL_USER: ${MYSQL_USER:-sidifensen}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-sidifensen123}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       TZ: Asia/Shanghai
     ports:
-      - "${MYSQL_PORT:-3306}:3306"
+      - "${MYSQL_PORT}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ../sql/sidifensen_blog.sql:/docker-entrypoint-initdb.d/init.sql
-    command: --default-authentication-plugin=mysql_native_password
     networks:
       - sidifensen-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
 
   # Redis 缓存
   redis:
     image: redis:7-alpine
     container_name: sidifensen-redis
     restart: unless-stopped
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "${REDIS_PORT}:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     networks:
       - sidifensen-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 10s
+      retries: 5
+      interval: 10s
+      start_period: 30s
 
   # MinIO 对象存储
   minio:
@@ -40,11 +53,11 @@ services:
     container_name: sidifensen-minio
     restart: unless-stopped
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
-      - "${MINIO_API_PORT:-9000}:9000"
-      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+      - "${MINIO_API_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
@@ -57,15 +70,21 @@ services:
     container_name: sidifensen-rabbitmq
     restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-admin}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-admin123}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     ports:
-      - "${RABBITMQ_PORT:-5672}:5672"
-      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+      - "${RABBITMQ_PORT}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT}:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - sidifensen-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      timeout: 30s
+      retries: 10
+      interval: 10s
+      start_period: 60s
 
   # 后端服务
   backend:
@@ -75,34 +94,68 @@ services:
     container_name: sidifensen-backend
     restart: unless-stopped
     ports:
-      - "${BACKEND_PORT:-5000}:5000"
+      - "${BACKEND_PORT}:5000"
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      # Spring Boot 配置
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      
+      # 数据库配置
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-sidifensen_blog}
-      MYSQL_USERNAME: ${MYSQL_USER:-sidifensen}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-sidifensen123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USERNAME: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      
+      # Redis 配置
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      
+      # MinIO 配置
       MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT:-http://localhost:${MINIO_API_PORT}}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      
+      # RabbitMQ 配置
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
-      RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-admin}
-      RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-admin123}
-      MAIL_USERNAME: ${MAIL_USERNAME:-your-email@qq.com}
-      MAIL_PASSWORD: ${MAIL_PASSWORD:-your-email-password}
-      ALIYUN_ACCESS_KEY_ID: ${ALIYUN_ACCESS_KEY_ID:-your-access-key-id}
-      ALIYUN_ACCESS_KEY_SECRET: ${ALIYUN_ACCESS_KEY_SECRET:-your-access-key-secret}
-      JWT_SECRET: ${JWT_SECRET:-sidifensen}
+      RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
+      
+      # 邮件配置
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      
+      # OAuth 配置
+      GITEE_CLIENT_ID: ${GITEE_CLIENT_ID}
+      GITEE_CLIENT_SECRET: ${GITEE_CLIENT_SECRET}
+      GITEE_REDIRECT_URI: ${GITEE_REDIRECT_URI}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      GITHUB_REDIRECT_URI: ${GITHUB_REDIRECT_URI}
+      
+      # 前端地址配置
+      FRONTEND_USER_HOST: ${FRONTEND_USER_HOST}
+      FRONTEND_ADMIN_HOST: ${FRONTEND_ADMIN_HOST}
+      
+      # 阿里云配置
+      ALIYUN_ACCESS_KEY_ID: ${ALIYUN_ACCESS_KEY_ID}
+      ALIYUN_ACCESS_KEY_SECRET: ${ALIYUN_ACCESS_KEY_SECRET}
+      
+      # 自定义配置
+      SIDIFENSEN_JWT_SECRET: ${SIDIFENSEN_JWT_SECRET}
+      SIDIFENSEN_PHOTO_AUTO_AUDIT: ${SIDIFENSEN_PHOTO_AUTO_AUDIT}
+      SIDIFENSEN_ARTICLE_AUTO_AUDIT: ${SIDIFENSEN_ARTICLE_AUTO_AUDIT}
     depends_on:
-      - mysql
-      - redis
-      - minio
-      - rabbitmq
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_started
     networks:
       - sidifensen-network
 
@@ -114,7 +167,7 @@ services:
     container_name: sidifensen-admin
     restart: unless-stopped
     ports:
-      - "${ADMIN_PORT:-8000}:80"
+      - "${ADMIN_PORT}:80"
     depends_on:
       - backend
     networks:
@@ -128,7 +181,7 @@ services:
     container_name: sidifensen-user
     restart: unless-stopped
     ports:
-      - "${USER_PORT:-7000}:80"
+      - "${USER_PORT}:80"
     depends_on:
       - backend
     networks:

@@ -16,3 +16,6 @@ sidifensen_blog_backend/src/main/resources/application-prod.yaml
 sidifensen_blog_backend/src/test/
 
 .env
+
+# VS Code 配置文件
+.vscode/
