@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # MySQL 数据库
   mysql:
@@ -31,17 +29,21 @@ services:
     image: redis:7-alpine
     container_name: sidifensen-redis
     restart: unless-stopped
-    environment:
-      REDISCLI_AUTH: ${REDIS_PASSWORD}
     ports:
       - "${REDIS_PORT}:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    command: [
+      "redis-server",
+      "--appendonly", "yes",
+      "--requirepass", "${REDIS_PASSWORD}",
+      "--user", "default", "off",
+      "--user", "${REDIS_USERNAME}", "on", "+@all", "~*", "&*", ">${REDIS_PASSWORD}"
+    ]
     networks:
       - sidifensen-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "--user", "${REDIS_USERNAME}", "-a", "${REDIS_PASSWORD}", "ping"]
       timeout: 10s
       retries: 5
       interval: 10s
@@ -49,20 +51,40 @@ services:
 
   # MinIO 对象存储
   minio:
-    image: minio/minio:latest
+    image: minio/minio:RELEASE.2025-04-08T15-41-24Z
     container_name: sidifensen-minio
     restart: unless-stopped
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+      # 启用 MinIO Web 控制台
+      MINIO_BROWSER: on
+      MINIO_BROWSER_LOGIN_ANIMATION : on
+      MINIO_BROWSER_SESSION_DURATION : 12h
+      # 彻底禁用所有身份验证提供商
+      MINIO_IDENTITY_OPENID_ENABLE: "false"
+      MINIO_IDENTITY_LDAP_ENABLE: "false"
+      MINIO_IDENTITY_PLUGIN_ENABLE: "false"
+      # 配置区域设置
+      MINIO_REGION: us-east-1
+      # 禁用配置文件自动加载和身份验证相关配置
+      # MINIO_CONFIG_ENV_FILE: ""
+      # 强制跳过身份验证初始化
+      MINIO_SKIP_CLIENT: "true"
     ports:
       - "${MINIO_API_PORT}:9000"
       - "${MINIO_CONSOLE_PORT}:9001"
     volumes:
       - minio_data:/data
-    command: server /data --console-address ":9001"
+    command: server /data --console-address ":9001" --quiet
     networks:
       - sidifensen-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      timeout: 20s
+      retries: 3
+      interval: 30s
+      start_period: 20s
 
   # RabbitMQ 消息队列
   rabbitmq:
@@ -91,11 +113,15 @@ services:
     build:
       context: ../sidifensen_blog_backend
       dockerfile: Dockerfile
+    image: sidifensen-blog-backend
     container_name: sidifensen-backend
     restart: unless-stopped
     ports:
       - "${BACKEND_PORT}:5000"
     environment:
+      # 时区配置
+      TZ: Asia/Shanghai
+      
       # Spring Boot 配置
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       
@@ -109,13 +135,14 @@ services:
       # Redis 配置
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      REDIS_USERNAME: ${REDIS_USERNAME}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       
       # MinIO 配置
       MINIO_ENDPOINT: http://minio:9000
-      MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT:-http://localhost:${MINIO_API_PORT}}
-      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
-      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_PUBLIC_POINT: ${MINIO_PUBLIC_POINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       
       # RabbitMQ 配置
       RABBITMQ_HOST: rabbitmq
@@ -164,6 +191,7 @@ services:
     build:
       context: ../sidifensen_blog_frontend/sidifensen_admin
       dockerfile: Dockerfile
+    image: sidifensen-blog-admin
     container_name: sidifensen-admin
     restart: unless-stopped
     ports:
@@ -178,6 +206,7 @@ services:
     build:
       context: ../sidifensen_blog_frontend/sidifensen_user
       dockerfile: Dockerfile
+    image: sidifensen-blog-user
     container_name: sidifensen-user
     restart: unless-stopped
     ports:

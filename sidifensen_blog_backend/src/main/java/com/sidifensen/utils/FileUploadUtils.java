@@ -33,11 +33,11 @@ public class FileUploadUtils {
     @Value("${minio.endpoint}")
     private String endpoint;
 
-    @Value("${minio.publicEndpoint}")
-    private String publicEndpoint;
+    @Value("${minio.publicPoint}")
+    private String publicPoint;
 
     /**
-     * 初始化方法，确保存储桶存在
+     * 初始化方法，确保存储桶存在并设置为公开访问
      */
     @PostConstruct
     public void init() {
@@ -56,9 +56,61 @@ public class FileUploadUtils {
             } else {
                 log.info("MinIO 存储桶已存在: {}", bucketName);
             }
+
+            // 设置桶的访问策略为公开读取
+            setBucketPublicReadPolicy();
+
         } catch (Exception e) {
             log.error("初始化 MinIO 存储桶失败: {}", e.getMessage(), e);
             throw new FileUploadException("初始化存储桶失败");
+        }
+    }
+
+    /**
+     * 设置桶的访问策略为公开读取
+     */
+    private void setBucketPublicReadPolicy() {
+        try {
+            // MinIO 标准的公开读取策略
+            String policy = String.format("""
+                    {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Principal": "*",
+                                "Action": [
+                                    "s3:GetObject"
+                                ],
+                                "Resource": [
+                                    "arn:aws:s3:::%s/*"
+                                ]
+                            },
+                            {
+                                "Effect": "Allow",
+                                "Principal": "*",
+                                "Action": [
+                                    "s3:ListBucket"
+                                ],
+                                "Resource": [
+                                    "arn:aws:s3:::%s"
+                                ]
+                            }
+                        ]
+                    }
+                    """, bucketName, bucketName);
+
+            // 设置桶策略
+            client.setBucketPolicy(SetBucketPolicyArgs.builder()
+                    .bucket(bucketName)
+                    .config(policy)
+                    .build());
+
+            log.info("成功设置 MinIO 存储桶 {} 为公开读取访问", bucketName);
+        } catch (Exception e) {
+            log.error("设置 MinIO 存储桶公开访问策略失败: {}", e.getMessage(), e);
+            // 这里不抛出异常，因为桶策略设置失败不应该影响应用启动
+            // 但会记录错误日志，管理员可以手动设置
         }
     }
 
@@ -90,7 +142,7 @@ public class FileUploadUtils {
                         .stream(stream, file.getSize(), -1)
                         .build();
                 client.putObject(args);
-                return publicEndpoint + "/" + bucketName + "/" + uploadEnum.getDir() + name + "." + fileExtension;
+                return publicPoint + "/" + bucketName + "/" + uploadEnum.getDir() + name + "." + fileExtension;
             }
             log.error("--------------------上传文件格式不正确--------------------");
             throw new FileUploadException("上传文件类型错误");
@@ -144,7 +196,7 @@ public class FileUploadUtils {
                         .stream(stream, file.getSize(), -1)
                         .build();
                 client.putObject(args);
-                return publicEndpoint + "/" + bucketName + "/" + dir + name + "." + fileExtension;
+                return publicPoint + "/" + bucketName + "/" + dir + name + "." + fileExtension;
             }
             log.error("--------------------上传文件格式不正确--------------------");
             throw new FileUploadException("上传文件类型错误");

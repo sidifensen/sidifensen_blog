@@ -117,11 +117,13 @@ cd sidifensen_blog
 ### 3. 配置环境变量
 
 ```bash
-# 复制环境变量示例文件
+# Linux/macOS
 cp script/env.example .env
-
-# 编辑环境变量
 vim .env
+
+# Windows
+copy script/env.example .env
+notepad .env
 ```
 
 ### 4. 构建并启动服务
@@ -204,99 +206,136 @@ git push origin main
 
 ### 5. 访问服务
 
-- **后端 API**: http://localhost:5000
-- **管理端前端**: http://localhost:8000
-- **用户端前端**: http://localhost:7000
-- **MinIO 控制台**: http://localhost:9001
-- **RabbitMQ 管理界面**: http://localhost:15672
+- **后端 API**: http://localhost:${BACKEND_PORT}（默认5000）
+- **管理端前端**: http://localhost:${ADMIN_PORT}（默认8000）
+- **用户端前端**: http://localhost:${USER_PORT}（默认7000）
+- **MinIO 控制台**: http://localhost:${MINIO_CONSOLE_PORT}（默认9001）
+- **RabbitMQ 管理界面**: http://localhost:${RABBITMQ_MANAGEMENT_PORT}（默认15672）
 
 ## 🛠 服务说明
 
-### 核心服务
+项目包含以下服务：
 
-| 服务           | 端口       | 描述              | 管理界面               |
-| -------------- | ---------- | ----------------- | ---------------------- |
-| mysql          | 3306       | MySQL 数据库      | -                      |
-| redis          | 6379       | Redis 缓存        | -                      |
-| minio          | 9000/9001  | MinIO 对象存储    | http://localhost:9001  |
-| rabbitmq       | 5672/15672 | RabbitMQ 消息队列 | http://localhost:15672 |
-| backend        | 5000       | Spring Boot 后端  | -                      |
-| frontend-admin | 8000       | Vue 管理端        | http://localhost:8000  |
-| frontend-user  | 7000       | Vue 用户端        | http://localhost:7000  |
+### 1. MySQL 数据库
 
-### 默认账号
+- **镜像**：mysql:8.0
+- **端口**：`${MYSQL_PORT}:3306`（默认3306）
+- **数据卷**：mysql_data
+- **环境变量**：
+  - MYSQL_ROOT_PASSWORD：MySQL root 用户密码
+  - MYSQL_DATABASE：应用使用的数据库名称
+  - MYSQL_USER：应用连接数据库的用户名
+  - MYSQL_PASSWORD：应用连接数据库的密码
 
-- **MinIO**: admin / minioadmin123
-- **RabbitMQ**: admin / admin123
-- **MySQL**: root / root123456
+### 2. Redis 缓存
+
+- **镜像**：redis:7-alpine
+- **端口**：`${REDIS_PORT}:6379`（默认6379）
+- **数据卷**：redis_data
+- **环境变量**：
+  - REDIS_USERNAME：Redis 用户名
+  - REDIS_PASSWORD：Redis 访问密码
+
+### 3. MinIO 对象存储
+
+- **镜像**：minio/minio:RELEASE.2025-04-08T15-41-24Z
+- **API 端口**：`${MINIO_API_PORT}:9000`（默认9000）
+- **控制台端口**：`${MINIO_CONSOLE_PORT}:9001`（默认9001）
+- **数据卷**：minio_data
+- **环境变量**：
+  - MINIO_ROOT_USER：MinIO 访问密钥
+  - MINIO_ROOT_PASSWORD：MinIO 密钥
+  - MINIO_PUBLIC_POINT：MinIO 公网访问地址
+
+### 4. RabbitMQ 消息队列
+
+- **镜像**：rabbitmq:3-management-alpine
+- **服务端口**：`${RABBITMQ_PORT}:5672`（默认5672）
+- **管理界面端口**：`${RABBITMQ_MANAGEMENT_PORT}:15672`（默认15672）
+- **数据卷**：rabbitmq_data
+- **环境变量**：
+  - RABBITMQ_DEFAULT_USER：RabbitMQ 管理员用户名
+  - RABBITMQ_DEFAULT_PASS：RabbitMQ 管理员密码
+
+### 5. 后端服务
+
+- **构建上下文**：../sidifensen_blog_backend
+- **端口**：`${BACKEND_PORT}:5000`（默认5000）
+- **环境变量**：数据库、Redis、MinIO、RabbitMQ 等连接配置
+
+### 6. 前端管理端
+
+- **构建上下文**：../sidifensen_blog_frontend/sidifensen_admin
+- **端口**：`${ADMIN_PORT}:80`（默认8000）
+
+### 7. 前端用户端
+
+- **构建上下文**：../sidifensen_blog_frontend/sidifensen_user
+- **端口**：`${USER_PORT}:80`（默认7000）
 
 ## ⚙️ 环境配置
 
-### 环境变量说明
+项目使用 `.env` 文件来管理环境变量，这样可以方便地在不同环境（开发、测试、生产）之间切换配置。
+
+### 1. 创建 .env 文件
+
+复制 `env.example` 文件并重命名为 `.env`：
 
 ```bash
-# 数据库配置
-MYSQL_ROOT_PASSWORD=root123456
-MYSQL_DATABASE=sidifensen_blog
-MYSQL_USER=sidifensen
-MYSQL_PASSWORD=sidifensen123
-MYSQL_PORT=3306                    # 自定义 MySQL 端口
+# Linux/macOS
+cp script/env.example .env
 
-# Redis 配置
-REDIS_PASSWORD=redis123
-REDIS_PORT=6379                    # 自定义 Redis 端口
-
-# MinIO 配置
-MINIO_ROOT_USER=minioadmin
-MINIO_ROOT_PASSWORD=minioadmin123
-MINIO_API_PORT=9000                # 自定义 MinIO API 端口
-MINIO_CONSOLE_PORT=9001            # 自定义 MinIO 控制台端口
-
-# RabbitMQ 配置
-RABBITMQ_DEFAULT_USER=admin
-RABBITMQ_DEFAULT_PASS=admin123
-RABBITMQ_PORT=5672                 # 自定义 RabbitMQ 服务端口
-RABBITMQ_MANAGEMENT_PORT=15672     # 自定义 RabbitMQ 管理端口
-
-# 邮件配置
-MAIL_USERNAME=your-email@qq.com
-MAIL_PASSWORD=your-email-password
-
-# 阿里云配置
-ALIYUN_ACCESS_KEY_ID=your-access-key-id
-ALIYUN_ACCESS_KEY_SECRET=your-access-key-secret
+# Windows
+copy script/env.example .env
 ```
 
-### 端口自定义说明
+### 2. 配置环境变量
 
-所有服务端口都支持通过环境变量自定义：
+编辑 `.env` 文件，根据您的实际需求修改以下配置：
 
-| 服务          | 环境变量                   | 默认端口 | 说明                 |
-| ------------- | -------------------------- | -------- | -------------------- |
-| MySQL         | `MYSQL_PORT`               | 3306     | 数据库服务端口       |
-| Redis         | `REDIS_PORT`               | 6379     | 缓存服务端口         |
-| MinIO API     | `MINIO_API_PORT`           | 9000     | 对象存储 API 端口    |
-| MinIO 控制台  | `MINIO_CONSOLE_PORT`       | 9001     | 对象存储管理界面端口 |
-| RabbitMQ      | `RABBITMQ_PORT`            | 5672     | 消息队列服务端口     |
-| RabbitMQ 管理 | `RABBITMQ_MANAGEMENT_PORT` | 15672    | 消息队列管理界面端口 |
+- **Spring Boot 配置**：修改激活的配置文件（dev/docker/prod）
+- **数据库配置**：修改 MySQL 的 root 密码、数据库名、用户名和密码
+- **Redis 配置**：修改 Redis 的用户名和访问密码
+- **MinIO 配置**：修改 MinIO 的访问密钥和密钥，以及公网访问地址
+- **RabbitMQ 配置**：修改 RabbitMQ 的默认用户名和密码
+- **邮件配置**：填入真实的邮箱地址和密码或授权码
+- **OAuth 配置**：填入 Gitee 和 GitHub 的客户端 ID 和密钥
+- **前端地址配置**：根据实际部署情况修改前端地址
+- **阿里云配置**：填入真实的阿里云 AccessKey ID 和密钥
+- **应用自定义配置**：修改 JWT 密钥、自动审核开关等自定义配置
+- **端口配置**：根据需要修改各服务的端口
 
-**自定义端口示例：**
+> ⚠️ **安全提醒**：`.env` 文件包含敏感信息，不应提交到 Git 仓库。生产环境请务必修改所有默认密码。
 
-```bash
-# 在 .env 文件中修改端口
-MYSQL_PORT=3307
-REDIS_PORT=6380
-MINIO_API_PORT=9002
-MINIO_CONSOLE_PORT=9003
-RABBITMQ_PORT=5673
-RABBITMQ_MANAGEMENT_PORT=15673
-```
+### 3. 环境变量说明
 
-### 配置文件
+`.env` 文件中的主要配置项说明：
 
-- `application-docker.yaml`: Docker 环境下的 Spring Boot 配置
-- `docker-compose.yml`: 生产环境配置
-- `docker-compose.dev.yml`: 开发环境配置
+| 变量名 | 说明 | 默认值 |
+|--------|------|--------|
+| SPRING_PROFILES_ACTIVE | Spring Boot 激活的配置文件 | docker |
+| MYSQL_ROOT_PASSWORD | MySQL root 用户密码 | root |
+| MYSQL_DATABASE | 应用使用的数据库名称 | sidifensen_blog |
+| MYSQL_USER | 应用连接数据库的用户名 | sidifensen |
+| MYSQL_PASSWORD | 应用连接数据库的密码 | sidifensen123 |
+| REDIS_USERNAME | Redis 用户名 | sidifensen |
+| REDIS_PASSWORD | Redis 访问密码 | sidifensen123 |
+| MINIO_ROOT_USER | MinIO 访问密钥 | minioadmin |
+| MINIO_ROOT_PASSWORD | MinIO 密钥 | minioadmin123 |
+| MINIO_PUBLIC_POINT | MinIO 公网访问地址 | http://localhost:9000 |
+| RABBITMQ_DEFAULT_USER | RabbitMQ 管理员用户名 | admin |
+| RABBITMQ_DEFAULT_PASS | RabbitMQ 管理员密码 | admin123 |
+| MAIL_USERNAME | 发送邮件的邮箱地址 | your-email@qq.com |
+| MAIL_PASSWORD | 邮箱密码或授权码 | your-email-password |
+| GITEE_CLIENT_ID | Gitee OAuth 客户端 ID | your-gitee-client-id |
+| GITEE_CLIENT_SECRET | Gitee OAuth 客户端密钥 | your-gitee-client-secret |
+| GITHUB_CLIENT_ID | GitHub OAuth 客户端 ID | your-github-client-id |
+| GITHUB_CLIENT_SECRET | GitHub OAuth 客户端密钥 | your-github-client-secret |
+| SIDIFENSEN_JWT_SECRET | JWT 令牌签名密钥 | sidifensen |
+| SIDIFENSEN_PHOTO_AUTO_AUDIT | 图片自动审核开关 | false |
+| SIDIFENSEN_ARTICLE_AUTO_AUDIT | 文章自动审核开关 | true |
+
+> 📝 更多配置项说明请参考 `env.example` 文件中的详细注释。
 
 ## 📝 常用命令
 
@@ -407,6 +446,42 @@ docker-compose -f docker-compose.dev.yml logs -f
 
    # 重新构建前端
    docker-compose build --no-cache frontend-admin
+   ```
+
+5. **MinIO 控制台登录网络错误**
+
+   如果在 MinIO 控制台登录时遇到 "unable to login due to network error" 错误：
+
+   **问题原因：**
+
+   - 容器内部无法正确解析 localhost 域名
+   - MinIO 控制台与 API 服务之间的网络连接问题
+
+   **解决方案：**
+
+   ```bash
+   # 在 MinIO 容器内添加 hosts 记录
+   docker exec -it sidifensen-minio /bin/bash -c "echo '127.0.0.1 localhost' >> /etc/hosts"
+
+   # 验证修改是否成功
+   docker exec -it sidifensen-minio cat /etc/hosts
+   ```
+
+   修复完成后即可正常登录 MinIO 控制台。
+
+6. **环境变量未生效**
+
+   如果发现修改了 `.env` 文件中的配置但未生效：
+
+   ```bash
+   # 确保 .env 文件位于 script 目录的上级目录（项目根目录）
+   # 检查环境变量名称是否与 docker-compose.yml 中的定义一致
+   
+   # 重启服务使配置生效
+   docker-compose down && docker-compose up -d
+   
+   # 验证环境变量是否正确传递给容器
+   docker-compose exec backend env | grep MYSQL
    ```
 
 ### 日志查看

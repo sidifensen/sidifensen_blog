@@ -296,8 +296,8 @@ if not defined rabbitmq_management_port set rabbitmq_management_port=15672
 echo 后端 API:        http://localhost:%backend_port%
 echo 管理端前端:      http://localhost:%admin_port%
 echo 用户端前端:      http://localhost:%user_port%
-echo MinIO 控制台:    http://localhost:%minio_console_port% (minioadmin/minioadmin123)
-echo RabbitMQ 管理:   http://localhost:%rabbitmq_management_port% (admin/admin123)
+echo MinIO 控制台:    http://localhost:%minio_console_port%
+echo RabbitMQ 管理:   http://localhost:%rabbitmq_management_port%
 
 echo.
 echo [INFO] 常用命令:

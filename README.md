@@ -3,7 +3,7 @@
   <p>现代化个人博客系统 | 前后端分离架构</p>
   
   ![Java](https://img.shields.io/badge/Java-21-orange.svg)
-  ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1.4-brightgreen.svg)
+  ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.9-brightgreen.svg)
   ![Vue.js](https://img.shields.io/badge/Vue.js-3.5.13-4FC08D.svg)
   ![Element Plus](https://img.shields.io/badge/Element%20Plus-2.10.2-409EFF.svg)
   ![License](https://img.shields.io/badge/License-MIT-blue.svg)
@@ -39,21 +39,21 @@
 <td valign="top" width="50%">
 
 ### 🔧 后端技术栈
-- **核心框架**: Spring Boot 3.1.4
+- **核心框架**: Spring Boot 3.3.9
 - **开发语言**: Java 21
 - **安全框架**: Spring Security + JWT
 - **数据库**: MySQL 8.1.0
-- **ORM框架**: MyBatis-Plus 3.5.12
+- **ORM框架**: MyBatis-Plus 3.5.9
 - **缓存中间件**: Redis
 - **消息队列**: RabbitMQ
-- **文件存储**: MinIO 8.3.6
+- **文件存储**: MinIO RELEASE.2025-04-08T15-41-24Z
 - **模板引擎**: Thymeleaf
-- **第三方登录**: JustAuth 1.16.7
+- **第三方登录**: JustAuth 1.16.22
 - **内容安全**: 阿里云图片内容检测
 - **工具库**: 
-  - Lombok 1.18.38 (代码简化)
-  - Hutool 5.8.38 (工具库)
-  - FastJSON 2.0.50 (JSON处理)
+  - Lombok 1.18.36 (代码简化)
+  - Hutool 5.8.32 (工具库)
+  - FastJSON 2.0.49 (JSON处理)
   - Easy-Captcha 1.6.2 (验证码)
 
 </td>
@@ -62,10 +62,10 @@
 ### 🎨 前端技术栈
 - **核心框架**: Vue 3.5.13
 - **构建工具**: Vite 6.2.4
-- **UI组件库**: Element Plus 2.10.2+
+- **UI组件库**: Element Plus 2.10.2
 - **状态管理**: Pinia 3.0.1
 - **路由管理**: Vue Router 4.5.0
-- **HTTP客户端**: Axios 1.10.0+
+- **HTTP客户端**: Axios 1.10.0
 - **样式预处理**: Sass
 - **图标库**: Element Plus Icons + SVG Icons
 - **富文本编辑器**: AiEditor 1.4.0
@@ -130,6 +130,12 @@
 ├── 🗄️ sql/                                  # 数据库脚本
 │   ├── 📊 sidifensen_blog.sql               # 主数据库结构和数据
 │   └── 🖥️ console.sql                       # 控制台相关脚本
+├── 📜 script/                               # 部署脚本和配置文件
+│   ├── 🐳 docker-compose.yml                # Docker Compose 编排文件
+│   ├── 📜 env.example                       # 环境变量配置示例
+│   ├── 📜 start.sh                          # Linux 启动脚本
+│   ├── 📜 start.bat                         # Windows 启动脚本
+│   └── 📖 README-Docker.md                  # Docker 部署说明
 └── 📖 README.md                             # 项目说明文档
 ```
 
@@ -199,7 +205,9 @@
 | 🐬 MySQL | 8.0+ | 主数据库 |
 | 🔴 Redis | 6.0+ | 缓存数据库 |
 | 🐰 RabbitMQ | 3.8+ | 消息队列 |
-| 🐳 Docker | 20.0+ | 容器化部署 (可选) |
+| ☁️ MinIO | RELEASE.2025-04-08T15-41-24Z | 对象存储 |
+| 🐳 Docker | 20.0+ | 容器化部署 (推荐) |
+| 🐳 Docker Compose | 1.29+ | 容器编排 |
 
 ### 💾 数据库初始化
 
@@ -212,7 +220,11 @@ CREATE DATABASE sidifensen_blog CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 mysql -u root -p sidifensen_blog < sql/sidifensen_blog.sql
 ```
 
+> 💡 **提示**: 如果使用 Docker Compose 部署，数据库会自动初始化，无需手动执行以上步骤。
+
 ### 🔧 后端启动
+
+#### 传统方式启动
 
 ```bash
 # 克隆项目
@@ -230,7 +242,32 @@ mvn spring-boot:run
 # 或者使用 IDE 直接运行 SidifensenBlogBackendApplication.java
 ```
 
+#### Docker Compose 方式启动（推荐）
+
+```bash
+# 克隆项目
+git clone https://github.com/your-username/sidifensen_blog.git
+cd sidifensen_blog
+
+# 复制环境配置文件
+# Windows:
+copy script\env.example .env
+# Linux/Mac:
+# cp script/env.example .env
+
+# 根据需要修改 .env 文件中的配置
+# vim .env
+
+# 启动所有服务
+# Windows:
+cd script && docker-compose up -d
+# Linux/Mac:
+# cd script && docker-compose up -d
+```
+
 ### 🎨 前端启动
+
+#### 传统方式启动
 
 ```bash
 # 用户端启动
@@ -246,13 +283,27 @@ npm run dev
 # 访问 http://localhost:5174
 ```
 
+#### Docker Compose 方式启动（推荐）
+
+使用 Docker Compose 启动时，前端应用会自动构建并启动，无需手动执行以下步骤。
+
 ### 🌐 访问应用
 
 启动成功后，可通过以下地址访问：
 
+#### 传统方式启动
 - 📱 **用户端**: http://localhost:5173 (博客前台)
 - 🔧 **管理端**: http://localhost:5174 (后台管理)
 - 🔌 **后端API**: http://localhost:8080 (REST API)
+
+#### Docker Compose 方式启动（推荐）
+- 📱 **用户端**: http://localhost:7000 (博客前台)
+- 🔧 **管理端**: http://localhost:8000 (后台管理)
+- 🔌 **后端API**: http://localhost:5000 (REST API)
+- ☁️ **MinIO 控制台**: http://localhost:9001 (对象存储管理)
+- 🐰 **RabbitMQ 控制台**: http://localhost:15672 (消息队列管理)
+
+> 💡 **提示**: 默认端口可以在 `.env` 文件中修改。
 
 ## 🐳 部署指南
 
@@ -270,7 +321,29 @@ sudo curl -L "https://github.com/docker/compose/releases/download/v2.0.1/docker-
 sudo chmod +x /usr/local/bin/docker-compose
 ```
 
-#### 2️⃣ 后端部署
+#### 2️⃣ 使用 Docker Compose 一键部署（推荐）
+
+```bash
+# 克隆项目
+git clone https://github.com/your-username/sidifensen_blog.git
+cd sidifensen_blog
+
+# 复制环境配置文件
+# Linux/Mac:
+cp script/env.example .env
+# Windows:
+# copy script\env.example .env
+
+# 根据生产环境修改 .env 文件中的配置
+vim .env
+
+# 一键启动所有服务
+cd script && docker-compose up -d
+```
+
+#### 3️⃣ 传统方式部署
+
+##### 后端部署
 
 ```bash
 cd sidifensen_blog_backend
@@ -290,7 +363,7 @@ docker build -t sidifensen-blog-backend .
 docker run -d -p 8080:8080 --name sidifensen-blog-backend sidifensen-blog-backend
 ```
 
-#### 3️⃣ 前端部署
+##### 前端部署
 
 ```bash
 # 用户端部署
@@ -306,63 +379,6 @@ chmod +x docker.sh
 ./docker.sh
 ```
 
-#### 4️⃣ 使用 Docker Compose 一键部署
-
-创建 `docker-compose.yml` 文件：
-
-```yaml
-version: '3.8'
-services:
-  mysql:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: your_password
-      MYSQL_DATABASE: sidifensen_blog
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./sql:/docker-entrypoint-initdb.d
-
-  redis:
-    image: redis:6.2
-    ports:
-      - "6379:6379"
-
-  rabbitmq:
-    image: rabbitmq:3.8-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-
-  backend:
-    build: ./sidifensen_blog_backend
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mysql
-      - redis
-      - rabbitmq
-
-  frontend-user:
-    build: ./sidifensen_blog_frontend/sidifensen_user
-    ports:
-      - "7000:80"
-
-  frontend-admin:
-    build: ./sidifensen_blog_frontend/sidifensen_admin
-    ports:
-      - "8000:80"
-
-volumes:
-  mysql_data:
-```
-
-```bash
-# 一键启动所有服务
-docker-compose up -d
-```
-
 ### 🌐 访问地址
 
 部署完成后，可通过以下地址访问：
@@ -371,7 +387,8 @@ docker-compose up -d
 |------|------|------|
 | 📱 用户端 | http://your-domain:7000 | 博客前台展示 |
 | 🔧 管理端 | http://your-domain:8000 | 后台管理系统 |
-| 🔌 后端API | http://your-domain:8080 | REST API 接口 |
+| 🔌 后端API | http://your-domain:5000 | REST API 接口 |
+| ☁️ MinIO | http://your-domain:9001 | 对象存储管理 |
 | 🐰 RabbitMQ | http://your-domain:15672 | 消息队列管理 |
 
 ### ⚙️ 配置说明
@@ -384,6 +401,9 @@ docker-compose up -d
 - MinIO 存储配置
 - 阿里云内容安全配置
 - 邮件服务配置
+- OAuth 第三方登录配置
+
+> 💡 **提示**: 所有配置项都可以在 `.env` 文件中修改，详细说明请参考 `script/env.example` 文件。
 
 ## 👨‍💻 开发说明
 
@@ -492,8 +512,8 @@ onMounted(() => {
 
 **如有问题或建议，欢迎通过以下方式联系：**
 
-[![GitHub Issues](https://img.shields.io/badge/GitHub-Issues-black?logo=github)](https://github.com/your-username/sidifensen_blog/issues)
-[![Email](https://img.shields.io/badge/Email-Contact-blue?logo=gmail)](mailto:your-email@example.com)
+[![GitHub Issues](https://img.shields.io/badge/GitHub-Issues-black?logo=github)](https://github.com/sidifensen/sidifensen_blog/issues)
+[![Email](https://img.shields.io/badge/Email-Contact-blue?logo=gmail)](mailto:sidifensen@example.com)
 
 ---
 

@@ -1,5 +1,6 @@
 package com.sidifensen.domain.result;
 
+import com.sidifensen.domain.entity.IpDetail;
 import lombok.Data;
 
 /**
@@ -10,6 +11,6 @@ import lombok.Data;
 public class IpResult {
 
     private Integer ret;
-    private String data;
+    private IpDetail data;
 
 }
