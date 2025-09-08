@@ -170,7 +170,16 @@ clean_data() {
     if [ "$confirm" = "yes" ]; then
         print_message "停止并删除所有容器和数据卷..."
         docker-compose down -v
-        docker-compose -f docker-compose.dev.yml down -v 2>/dev/null || true
+        if [ -f "docker-compose.dev.yml" ]; then
+            docker-compose -f docker-compose.dev.yml down -v 2>/dev/null || true
+        fi
+        
+        print_message "删除命名数据卷..."
+        docker volume rm sidifensen-mysql-data 2>/dev/null || true
+        docker volume rm sidifensen-redis-data 2>/dev/null || true
+        docker volume rm sidifensen-minio-data 2>/dev/null || true
+        docker volume rm sidifensen-rabbitmq-data 2>/dev/null || true
+        
         print_message "数据清理完成"
     else
         print_message "操作已取消"

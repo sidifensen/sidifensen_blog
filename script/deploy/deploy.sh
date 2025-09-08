@@ -132,32 +132,6 @@ install_dependencies() {
         fi
     fi
     
-    # CentOS 特殊配置
-    if [ "$OS" = "centos" ]; then
-        print_message "配置 CentOS 特殊设置..."
-        
-        # 配置防火墙
-        if systemctl is-active --quiet firewalld; then
-            print_message "配置防火墙端口..."
-            firewall-cmd --permanent --add-port=5000/tcp    # 后端 API
-            firewall-cmd --permanent --add-port=8000/tcp    # 管理端前端
-            firewall-cmd --permanent --add-port=7000/tcp    # 用户端前端
-            firewall-cmd --permanent --add-port=3306/tcp    # MySQL
-            firewall-cmd --permanent --add-port=6379/tcp    # Redis
-            firewall-cmd --permanent --add-port=9000/tcp    # MinIO API
-            firewall-cmd --permanent --add-port=9001/tcp    # MinIO Console
-            firewall-cmd --permanent --add-port=5672/tcp    # RabbitMQ
-            firewall-cmd --permanent --add-port=15672/tcp   # RabbitMQ Management
-            firewall-cmd --reload
-            print_message "防火墙配置完成"
-        fi
-        
-        # 配置 SELinux (如果启用)
-        if command -v getenforce &> /dev/null && [ "$(getenforce)" != "Disabled" ]; then
-            print_warning "检测到 SELinux 已启用，建议设置为 Permissive 模式以避免 Docker 权限问题"
-            print_warning "可以运行: setenforce 0 && sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config"
-        fi
-    fi
 }
 
 # 创建备份

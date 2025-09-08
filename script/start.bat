@@ -248,12 +248,21 @@ echo ========================================
 echo 清理数据 (危险操作)
 echo ========================================
 echo [WARNING] 这将删除所有数据卷中的数据，包括数据库数据！
-set /p confirm="确定要继续吗？(yes/no): "
+set /p "confirm=确定要继续吗？(yes/no): "
 
 if /i "%confirm%"=="yes" (
     echo [INFO] 停止并删除所有容器和数据卷...
     docker-compose down -v
-    docker-compose -f docker-compose.dev.yml down -v 2>nul
+    if exist docker-compose.dev.yml (
+        docker-compose -f docker-compose.dev.yml down -v >nul 2>&1
+    )
+    
+    echo [INFO] 删除命名数据卷...
+    docker volume rm sidifensen-mysql-data >nul 2>&1
+    docker volume rm sidifensen-redis-data >nul 2>&1
+    docker volume rm sidifensen-minio-data >nul 2>&1
+    docker volume rm sidifensen-rabbitmq-data >nul 2>&1
+    
     echo [INFO] 数据清理完成
 ) else (
     echo [INFO] 操作已取消

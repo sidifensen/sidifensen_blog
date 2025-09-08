@@ -220,12 +220,16 @@ services:
 volumes:
   mysql_data:
     driver: local
+    name: sidifensen-mysql-data
   redis_data:
     driver: local
+    name: sidifensen-redis-data
   minio_data:
     driver: local
+    name: sidifensen-minio-data
   rabbitmq_data:
     driver: local
+    name: sidifensen-rabbitmq-data 
 
 # 网络
 networks:
