@@ -86,15 +86,33 @@ start_development() {
     print_title "启动开发环境"
     
     print_message "正在构建并启动服务..."
-    docker-compose -f docker-compose.dev.yml up -d --build
+    docker-compose -f docker-compose-service.yml up -d --build
     
     print_message "等待服务启动..."
     sleep 10
     
     print_message "检查服务状态..."
-    docker-compose -f docker-compose.dev.yml ps
+    docker-compose -f docker-compose-service.yml ps
     
-    print_message "开发环境基础服务已启动，可以手动启动后端和前端服务进行开发"
+    print_message "开发环境基础服务已启动"
+    print_message "四个基础服务：MySQL、Redis、MinIO、RabbitMQ"
+    print_message "现在可以在 IDE 中启动后端应用，在终端中启动前端应用进行开发"
+}
+
+# 启动应用服务
+start_apps_only() {
+    print_title "启动应用服务 (后端+前端)"
+    
+    print_message "正在启动后端和前端服务..."
+    docker-compose -f docker-compose.apps.yml up -d --build
+    
+    print_message "等待服务启动..."
+    sleep 10
+    
+    print_message "检查服务状态..."
+    docker-compose -f docker-compose.apps.yml ps
+    
+    show_access_info
 }
 
 # 停止服务
@@ -106,9 +124,9 @@ stop_services() {
         docker-compose down
     fi
     
-    if [ -f "docker-compose.dev.yml" ]; then
+    if [ -f "docker-compose-service.yml" ]; then
         print_message "停止开发环境服务..."
-        docker-compose -f docker-compose.dev.yml down
+        docker-compose -f docker-compose-service.yml down
     fi
     
     print_message "所有服务已停止"
@@ -170,9 +188,6 @@ clean_data() {
     if [ "$confirm" = "yes" ]; then
         print_message "停止并删除所有容器和数据卷..."
         docker-compose down -v
-        if [ -f "docker-compose.dev.yml" ]; then
-            docker-compose -f docker-compose.dev.yml down -v 2>/dev/null || true
-        fi
         
         print_message "删除命名数据卷..."
         docker volume rm sidifensen-mysql-data 2>/dev/null || true
@@ -191,17 +206,17 @@ show_access_info() {
     print_title "服务访问信息"
     
     # 从环境变量文件读取端口配置
-    backend_port=$(grep "^BACKEND_PORT=" ../.env 2>/dev/null | cut -d'=' -f2 || echo "5000")
-    admin_port=$(grep "^ADMIN_PORT=" ../.env 2>/dev/null | cut -d'=' -f2 || echo "8000")
-    user_port=$(grep "^USER_PORT=" ../.env 2>/dev/null | cut -d'=' -f2 || echo "7000")
-    minio_console_port=$(grep "^MINIO_CONSOLE_PORT=" ../.env 2>/dev/null | cut -d'=' -f2 || echo "9001")
-    rabbitmq_management_port=$(grep "^RABBITMQ_MANAGEMENT_PORT=" ../.env 2>/dev/null | cut -d'=' -f2 || echo "15672")
+    backend_port=$(grep "^BACKEND_PORT=" .env 2>/dev/null | cut -d'=' -f2 || echo "5000")
+    admin_port=$(grep "^ADMIN_PORT=" .env 2>/dev/null | cut -d'=' -f2 || echo "8000")
+    user_port=$(grep "^USER_PORT=" .env 2>/dev/null | cut -d'=' -f2 || echo "7000")
+    minio_console_port=$(grep "^MINIO_CONSOLE_PORT=" .env 2>/dev/null | cut -d'=' -f2 || echo "9001")
+    rabbitmq_management_port=$(grep "^RABBITMQ_MANAGEMENT_PORT=" .env 2>/dev/null | cut -d'=' -f2 || echo "15672")
     
     echo -e "${GREEN}✅ 后端 API:${NC}        http://localhost:${backend_port}"
     echo -e "${GREEN}✅ 管理端前端:${NC}      http://localhost:${admin_port}"
     echo -e "${GREEN}✅ 用户端前端:${NC}      http://localhost:${user_port}"
-    echo -e "${GREEN}✅ MinIO 控制台:${NC}    http://localhost:${minio_console_port} (minioadmin/minioadmin123)"
-    echo -e "${GREEN}✅ RabbitMQ 管理:${NC}   http://localhost:${rabbitmq_management_port} (admin/admin123)"
+    echo -e "${GREEN}✅ MinIO 控制台:${NC}    http://localhost:${minio_console_port} "
+    echo -e "${GREEN}✅ RabbitMQ 管理:${NC}   http://localhost:${rabbitmq_management_port} "
     
     echo ""
     print_message "常用命令:"
@@ -227,11 +242,12 @@ show_menu() {
     print_title "Sidifensen Blog Docker 管理脚本"
     echo "1. 启动生产环境 (完整服务)"
     echo "2. 启动开发环境 (仅基础服务)"
-    echo "3. 停止所有服务"
-    echo "4. 查看服务状态"
-    echo "5. 查看服务日志"
-    echo "6. 重启服务"
-    echo "7. 清理数据 (危险操作)"
+    echo "3. 启动应用服务 (后端+前端)"
+    echo "4. 停止所有服务"
+    echo "5. 查看服务状态"
+    echo "6. 查看服务日志"
+    echo "7. 重启服务"
+    echo "8. 清理数据 (危险操作)"
     echo "0. 退出"
     echo ""
 }
@@ -258,16 +274,17 @@ main() {
     
     while true; do
         show_menu
-        read -p "请选择操作 (0-7): " choice
+        read -p "请选择操作 (0-8): " choice
         
         case $choice in
             1) start_production ;;
             2) start_development ;;
-            3) stop_services ;;
-            4) show_status ;;
-            5) show_logs ;;
-            6) restart_services ;;
-            7) clean_data ;;
+            3) start_apps_only ;;
+            4) stop_services ;;
+            5) show_status ;;
+            6) show_logs ;;
+            7) restart_services ;;
+            8) clean_data ;;
             0) exit_script ;;
             *) invalid_choice ;;
         esac

@@ -69,23 +69,25 @@ echo Sidifensen Blog Docker 管理脚本
 echo ========================================
 echo 1. 启动生产环境 (完整服务)
 echo 2. 启动开发环境 (仅基础服务)
-echo 3. 停止所有服务
-echo 4. 查看服务状态
-echo 5. 查看服务日志
-echo 6. 重启服务
-echo 7. 清理数据 (危险操作)
+echo 3. 启动应用服务 (后端+前端)
+echo 4. 停止所有服务
+echo 5. 查看服务状态
+echo 6. 查看服务日志
+echo 7. 重启服务
+echo 8. 清理数据 (危险操作)
 echo 0. 退出
 echo.
 
-set /p choice="请选择操作 (0-7): "
+set /p choice="请选择操作 (0-8): "
 
 if "%choice%"=="1" goto start_production
 if "%choice%"=="2" goto start_development
-if "%choice%"=="3" goto stop_services
-if "%choice%"=="4" goto show_status
-if "%choice%"=="5" goto show_logs
-if "%choice%"=="6" goto restart_services
-if "%choice%"=="7" goto clean_data
+if "%choice%"=="3" goto start_apps_only
+if "%choice%"=="4" goto stop_services
+if "%choice%"=="5" goto show_status
+if "%choice%"=="6" goto show_logs
+if "%choice%"=="7" goto restart_services
+if "%choice%"=="8" goto clean_data
 if "%choice%"=="0" goto exit_script
 goto invalid_choice
 
@@ -109,12 +111,26 @@ echo ========================================
 echo 启动开发环境
 echo ========================================
 echo [INFO] 正在构建并启动服务...
-docker-compose -f docker-compose.dev.yml up -d --build
+docker-compose -f docker-compose-service.yml up -d --build
 echo [INFO] 等待服务启动...
 timeout /t 10 /nobreak >nul
 echo [INFO] 检查服务状态...
-docker-compose -f docker-compose.dev.yml ps
+docker-compose -f docker-compose-service.yml ps
 echo [INFO] 开发环境基础服务已启动，可以手动启动后端和前端服务进行开发
+goto menu_continue
+
+:start_apps_only
+echo.
+echo ========================================
+echo 启动应用服务 (后端+前端)
+echo ========================================
+echo [INFO] 正在启动后端和前端服务...
+docker-compose -f docker-compose-apps.yml up -d --build
+echo [INFO] 等待服务启动...
+timeout /t 10 /nobreak >nul
+echo [INFO] 检查服务状态...
+docker-compose -f docker-compose-apps.yml ps
+call :show_access_info
 goto menu_continue
 
 :stop_services
@@ -126,9 +142,9 @@ if exist "docker-compose.yml" (
     echo [INFO] 停止生产环境服务...
     docker-compose down
 )
-if exist "docker-compose.dev.yml" (
+if exist "docker-compose-service.yml" (
     echo [INFO] 停止开发环境服务...
-    docker-compose -f docker-compose.dev.yml down
+    docker-compose -f docker-compose-service.yml down
 )
 echo [INFO] 所有服务已停止
 goto menu_continue
@@ -253,9 +269,6 @@ set /p "confirm=确定要继续吗？(yes/no): "
 if /i "%confirm%"=="yes" (
     echo [INFO] 停止并删除所有容器和数据卷...
     docker-compose down -v
-    if exist docker-compose.dev.yml (
-        docker-compose -f docker-compose.dev.yml down -v >nul 2>&1
-    )
     
     echo [INFO] 删除命名数据卷...
     docker volume rm sidifensen-mysql-data >nul 2>&1
@@ -289,11 +302,11 @@ echo 服务访问信息
 echo ========================================
 
 :: 从环境变量文件读取端口配置
-for /f "tokens=2 delims==" %%i in ('findstr "^BACKEND_PORT=" ..\.env 2^>nul') do set backend_port=%%i
-for /f "tokens=2 delims==" %%i in ('findstr "^ADMIN_PORT=" ..\.env 2^>nul') do set admin_port=%%i
-for /f "tokens=2 delims==" %%i in ('findstr "^USER_PORT=" ..\.env 2^>nul') do set user_port=%%i
-for /f "tokens=2 delims==" %%i in ('findstr "^MINIO_CONSOLE_PORT=" ..\.env 2^>nul') do set minio_console_port=%%i
-for /f "tokens=2 delims==" %%i in ('findstr "^RABBITMQ_MANAGEMENT_PORT=" ..\.env 2^>nul') do set rabbitmq_management_port=%%i
+for /f "tokens=2 delims==" %%i in ('findstr "^BACKEND_PORT=" .env 2^>nul') do set backend_port=%%i
+for /f "tokens=2 delims==" %%i in ('findstr "^ADMIN_PORT=" .env 2^>nul') do set admin_port=%%i
+for /f "tokens=2 delims==" %%i in ('findstr "^USER_PORT=" .env 2^>nul') do set user_port=%%i
+for /f "tokens=2 delims==" %%i in ('findstr "^MINIO_CONSOLE_PORT=" .env 2^>nul') do set minio_console_port=%%i
+for /f "tokens=2 delims==" %%i in ('findstr "^RABBITMQ_MANAGEMENT_PORT=" .env 2^>nul') do set rabbitmq_management_port=%%i
 
 :: 设置默认值
 if not defined backend_port set backend_port=5000

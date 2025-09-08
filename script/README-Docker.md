@@ -7,6 +7,7 @@
 - [快速开始](#快速开始)
 - [服务说明](#服务说明)
 - [环境配置](#环境配置)
+- [部署步骤](#部署步骤)
 - [常用命令](#常用命令)
 - [故障排除](#故障排除)
 
@@ -28,7 +29,8 @@ Docker Compose 是一个用于定义和运行多容器 Docker 应用程序的工
 sidifensen_blog/
 ├── script/                     # 脚本目录
 │   ├── docker-compose.yml          # 生产环境配置
-│   ├── docker-compose.dev.yml      # 开发环境配置
+│   ├── docker-compose-service.yml  # 基础服务配置（MySQL、Redis、MinIO、RabbitMQ）
+│   ├── docker-compose-apps.yml     # 应用服务配置（后端+前端）
 │   ├── env.example                 # 环境变量示例
 │   ├── start.sh                    # Linux/Mac 启动脚本
 │   ├── start.bat                   # Windows 启动脚本
@@ -145,6 +147,7 @@ start.bat
 
 - 启动生产环境（完整服务）
 - 启动开发环境（仅基础服务）
+- 启动应用服务（后端+前端）
 - 停止所有服务
 - 查看服务状态和日志
 - 重启服务
@@ -168,17 +171,35 @@ docker-compose ps
 docker-compose logs -f
 ```
 
-**开发环境**
+**开发环境（仅基础服务）**
 
 ```bash
 # 进入 script 目录
 cd script
 
-# 启动基础服务（数据库、Redis、MinIO、RabbitMQ）
-docker-compose -f docker-compose.dev.yml up -d
+# 启动四个基础服务：MySQL、Redis、MinIO、RabbitMQ
+docker-compose -f docker-compose-service.yml up -d
 
-# 或者使用开发环境配置（仅启动基础服务）
-docker-compose -f docker-compose.dev.yml up -d
+# 查看基础服务状态
+docker-compose -f docker-compose-service.yml ps
+
+# 此时可以在 IDE 中启动后端和前端应用进行开发
+```
+
+**应用服务**
+
+```bash
+# 进入 script 目录
+cd script
+
+# 只启动应用服务（后端+前端，需要基础服务已运行）
+docker-compose -f docker-compose-apps.yml up -d --build
+
+# 查看应用服务状态
+docker-compose -f docker-compose-apps.yml ps
+
+# 查看应用服务日志
+docker-compose -f docker-compose-apps.yml logs -f
 ```
 
 #### 方式三：服务器部署
@@ -206,20 +227,39 @@ git push origin main
 
 ### 5. 访问服务
 
-- **后端 API**: http://localhost:${BACKEND_PORT}（默认5000）
-- **管理端前端**: http://localhost:${ADMIN_PORT}（默认8000）
-- **用户端前端**: http://localhost:${USER_PORT}（默认7000）
-- **MinIO 控制台**: http://localhost:${MINIO_CONSOLE_PORT}（默认9001）
-- **RabbitMQ 管理界面**: http://localhost:${RABBITMQ_MANAGEMENT_PORT}（默认15672）
+- **后端 API**: http://localhost:${BACKEND_PORT}（默认 5000）
+- **管理端前端**: http://localhost:${ADMIN_PORT}（默认 8000）
+- **用户端前端**: http://localhost:${USER_PORT}（默认 7000）
+- **MinIO 控制台**: http://localhost:${MINIO_CONSOLE_PORT}（默认 9001）
+- **RabbitMQ 管理界面**: http://localhost:${RABBITMQ_MANAGEMENT_PORT}（默认 15672）
 
 ## 🛠 服务说明
 
-项目包含以下服务：
+项目包含以下服务和配置文件：
+
+### Docker Compose 配置文件
+
+1. **docker-compose.yml** - 生产环境完整配置
+
+   - 包含所有服务：数据库、缓存、消息队列、对象存储、后端、前端
+   - 适用于生产环境部署
+
+2. **docker-compose-service.yml** - 基础服务配置
+
+   - **仅包含四个基础服务**：MySQL、Redis、MinIO、RabbitMQ
+   - **不包含应用服务**：后端和前端需要在 IDE 中单独启动
+   - 适用于本地开发调试，提供必要的基础设施支持
+
+3. **docker-compose.apps.yml** - 应用服务配置
+   - 只包含应用服务：后端、前端管理端、前端用户端
+   - 依赖外部基础服务，适用于应用服务的独立部署和更新
+
+### 服务详情
 
 ### 1. MySQL 数据库
 
 - **镜像**：mysql:8.0
-- **端口**：`${MYSQL_PORT}:3306`（默认3306）
+- **端口**：`${MYSQL_PORT}:3306`（默认 3306）
 - **数据卷**：mysql_data
 - **环境变量**：
   - MYSQL_ROOT_PASSWORD：MySQL root 用户密码
@@ -230,7 +270,7 @@ git push origin main
 ### 2. Redis 缓存
 
 - **镜像**：redis:7-alpine
-- **端口**：`${REDIS_PORT}:6379`（默认6379）
+- **端口**：`${REDIS_PORT}:6379`（默认 6379）
 - **数据卷**：redis_data
 - **环境变量**：
   - REDIS_USERNAME：Redis 用户名
@@ -239,8 +279,8 @@ git push origin main
 ### 3. MinIO 对象存储
 
 - **镜像**：minio/minio:RELEASE.2025-04-08T15-41-24Z
-- **API 端口**：`${MINIO_API_PORT}:9000`（默认9000）
-- **控制台端口**：`${MINIO_CONSOLE_PORT}:9001`（默认9001）
+- **API 端口**：`${MINIO_API_PORT}:9000`（默认 9000）
+- **控制台端口**：`${MINIO_CONSOLE_PORT}:9001`（默认 9001）
 - **数据卷**：minio_data
 - **环境变量**：
   - MINIO_ROOT_USER：MinIO 访问密钥
@@ -250,8 +290,8 @@ git push origin main
 ### 4. RabbitMQ 消息队列
 
 - **镜像**：rabbitmq:3-management-alpine
-- **服务端口**：`${RABBITMQ_PORT}:5672`（默认5672）
-- **管理界面端口**：`${RABBITMQ_MANAGEMENT_PORT}:15672`（默认15672）
+- **服务端口**：`${RABBITMQ_PORT}:5672`（默认 5672）
+- **管理界面端口**：`${RABBITMQ_MANAGEMENT_PORT}:15672`（默认 15672）
 - **数据卷**：rabbitmq_data
 - **环境变量**：
   - RABBITMQ_DEFAULT_USER：RabbitMQ 管理员用户名
@@ -260,18 +300,169 @@ git push origin main
 ### 5. 后端服务
 
 - **构建上下文**：../sidifensen_blog_backend
-- **端口**：`${BACKEND_PORT}:5000`（默认5000）
+- **端口**：`${BACKEND_PORT}:5000`（默认 5000）
 - **环境变量**：数据库、Redis、MinIO、RabbitMQ 等连接配置
 
 ### 6. 前端管理端
 
 - **构建上下文**：../sidifensen_blog_frontend/sidifensen_admin
-- **端口**：`${ADMIN_PORT}:80`（默认8000）
+- **端口**：`${ADMIN_PORT}:80`（默认 8000）
 
 ### 7. 前端用户端
 
 - **构建上下文**：../sidifensen_blog_frontend/sidifensen_user
-- **端口**：`${USER_PORT}:80`（默认7000）
+- **端口**：`${USER_PORT}:80`（默认 7000）
+
+## 🚀 部署步骤
+
+### 1. 本地开发环境部署
+
+#### 方式一：完整 Docker 环境（推荐用于测试）
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/sidifensen/sidifensen_blog.git
+cd sidifensen_blog
+
+# 2. 配置环境变量
+cp script/env.example .env
+# 编辑 .env 文件，修改必要的配置
+
+# 3. 启动完整服务
+cd script
+./start.sh  # Linux/Mac
+# 或
+start.bat   # Windows
+
+# 选择 "1. 启动生产环境 (完整服务)"
+```
+
+#### 方式二：开发环境（推荐用于开发）
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/sidifensen/sidifensen_blog.git
+cd sidifensen_blog
+
+# 2. 配置环境变量
+cp script/env.example .env
+# 编辑 .env 文件，修改必要的配置
+
+# 3. 启动基础服务
+cd script
+./start.sh  # Linux/Mac
+# 或
+start.bat   # Windows
+
+# 选择 "2. 启动开发环境 (仅基础服务)"
+
+# 4. 在 IDE 中启动后端应用
+# 5. 在终端中启动前端应用
+cd sidifensen_blog_frontend/sidifensen_admin
+npm run dev
+
+cd sidifensen_blog_frontend/sidifensen_user
+npm run dev
+```
+
+### 2. 生产服务器部署
+
+#### 方式一：使用预构建文件部署
+
+```bash
+# 1. 在本地构建项目
+# 后端构建
+cd sidifensen_blog_backend
+mvn clean package -DskipTests
+
+# 前端构建
+cd sidifensen_blog_frontend/sidifensen_admin
+npm run build
+
+cd sidifensen_blog_frontend/sidifensen_user
+npm run build
+
+# 2. 将构建文件传输到服务器
+# 传输后端 target 文件夹
+scp -r sidifensen_blog_backend/target user@server:/path/to/sidifensen_blog/sidifensen_blog_backend/
+
+# 传输前端 dist 文件夹
+scp -r sidifensen_blog_frontend/sidifensen_admin/dist user@server:/path/to/sidifensen_blog/sidifensen_blog_frontend/sidifensen_admin/
+scp -r sidifensen_blog_frontend/sidifensen_user/dist user@server:/path/to/sidifensen_blog/sidifensen_blog_frontend/sidifensen_user/
+
+# 3. 在服务器上启动服务
+ssh user@server
+cd /path/to/sidifensen_blog/script
+./start.sh
+# 选择 "1. 启动生产环境 (完整服务)"
+```
+
+#### 方式二：服务器直接构建部署
+
+```bash
+# 1. 在服务器上克隆项目
+git clone https://github.com/sidifensen/sidifensen_blog.git
+cd sidifensen_blog
+
+# 2. 配置环境变量
+cp script/env.example .env
+# 编辑 .env 文件，修改生产环境配置
+
+# 3. 启动服务（会自动构建）
+cd script
+./start.sh
+# 选择 "1. 启动生产环境 (完整服务)"
+```
+
+#### 方式三：分步部署（推荐用于生产环境）
+
+```bash
+# 1. 在服务器上克隆项目
+git clone https://github.com/sidifensen/sidifensen_blog.git
+cd sidifensen_blog
+
+# 2. 配置环境变量
+cp script/env.example .env
+# 编辑 .env 文件，修改生产环境配置
+
+# 3. 先启动基础服务
+cd script
+docker-compose -f docker-compose-service.yml up -d
+
+# 4. 等待基础服务启动完成（约 2-3 分钟）
+docker-compose -f docker-compose-service.yml ps
+
+# 5. 启动应用服务
+docker-compose -f docker-compose-apps.yml up -d --build
+
+# 6. 检查所有服务状态
+docker-compose -f docker-compose.yml ps
+```
+
+### 3. 部署验证
+
+部署完成后，可以通过以下方式验证服务是否正常运行：
+
+```bash
+# 检查服务状态
+docker-compose ps
+
+# 检查服务日志
+docker-compose logs -f
+
+# 测试服务访问
+curl http://localhost:5000/actuator/health  # 后端健康检查
+curl http://localhost:8000                  # 管理端前端
+curl http://localhost:7000                  # 用户端前端
+```
+
+### 4. 部署注意事项
+
+1. **环境变量配置**：生产环境务必修改 `.env` 文件中的默认密码和密钥
+2. **端口配置**：确保服务器防火墙开放相应端口
+3. **资源要求**：建议服务器至少 2GB 内存，2 核 CPU
+4. **数据备份**：定期备份数据库和 MinIO 数据
+5. **SSL 证书**：生产环境建议配置 HTTPS
 
 ## ⚙️ 环境配置
 
@@ -311,29 +502,29 @@ copy script/env.example .env
 
 `.env` 文件中的主要配置项说明：
 
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| SPRING_PROFILES_ACTIVE | Spring Boot 激活的配置文件 | docker |
-| MYSQL_ROOT_PASSWORD | MySQL root 用户密码 | root |
-| MYSQL_DATABASE | 应用使用的数据库名称 | sidifensen_blog |
-| MYSQL_USER | 应用连接数据库的用户名 | sidifensen |
-| MYSQL_PASSWORD | 应用连接数据库的密码 | sidifensen123 |
-| REDIS_USERNAME | Redis 用户名 | sidifensen |
-| REDIS_PASSWORD | Redis 访问密码 | sidifensen123 |
-| MINIO_ROOT_USER | MinIO 访问密钥 | minioadmin |
-| MINIO_ROOT_PASSWORD | MinIO 密钥 | minioadmin123 |
-| MINIO_PUBLIC_POINT | MinIO 公网访问地址 | http://localhost:9000 |
-| RABBITMQ_DEFAULT_USER | RabbitMQ 管理员用户名 | admin |
-| RABBITMQ_DEFAULT_PASS | RabbitMQ 管理员密码 | admin123 |
-| MAIL_USERNAME | 发送邮件的邮箱地址 | your-email@qq.com |
-| MAIL_PASSWORD | 邮箱密码或授权码 | your-email-password |
-| GITEE_CLIENT_ID | Gitee OAuth 客户端 ID | your-gitee-client-id |
-| GITEE_CLIENT_SECRET | Gitee OAuth 客户端密钥 | your-gitee-client-secret |
-| GITHUB_CLIENT_ID | GitHub OAuth 客户端 ID | your-github-client-id |
-| GITHUB_CLIENT_SECRET | GitHub OAuth 客户端密钥 | your-github-client-secret |
-| SIDIFENSEN_JWT_SECRET | JWT 令牌签名密钥 | sidifensen |
-| SIDIFENSEN_PHOTO_AUTO_AUDIT | 图片自动审核开关 | false |
-| SIDIFENSEN_ARTICLE_AUTO_AUDIT | 文章自动审核开关 | true |
+| 变量名                        | 说明                       | 默认值                    |
+| ----------------------------- | -------------------------- | ------------------------- |
+| SPRING_PROFILES_ACTIVE        | Spring Boot 激活的配置文件 | docker                    |
+| MYSQL_ROOT_PASSWORD           | MySQL root 用户密码        | root                      |
+| MYSQL_DATABASE                | 应用使用的数据库名称       | sidifensen_blog           |
+| MYSQL_USER                    | 应用连接数据库的用户名     | sidifensen                |
+| MYSQL_PASSWORD                | 应用连接数据库的密码       | sidifensen123             |
+| REDIS_USERNAME                | Redis 用户名               | sidifensen                |
+| REDIS_PASSWORD                | Redis 访问密码             | sidifensen123             |
+| MINIO_ROOT_USER               | MinIO 访问密钥             | minioadmin                |
+| MINIO_ROOT_PASSWORD           | MinIO 密钥                 | minioadmin123             |
+| MINIO_PUBLIC_POINT            | MinIO 公网访问地址         | http://localhost:9000     |
+| RABBITMQ_DEFAULT_USER         | RabbitMQ 管理员用户名      | admin                     |
+| RABBITMQ_DEFAULT_PASS         | RabbitMQ 管理员密码        | admin123                  |
+| MAIL_USERNAME                 | 发送邮件的邮箱地址         | your-email@qq.com         |
+| MAIL_PASSWORD                 | 邮箱密码或授权码           | your-email-password       |
+| GITEE_CLIENT_ID               | Gitee OAuth 客户端 ID      | your-gitee-client-id      |
+| GITEE_CLIENT_SECRET           | Gitee OAuth 客户端密钥     | your-gitee-client-secret  |
+| GITHUB_CLIENT_ID              | GitHub OAuth 客户端 ID     | your-github-client-id     |
+| GITHUB_CLIENT_SECRET          | GitHub OAuth 客户端密钥    | your-github-client-secret |
+| SIDIFENSEN_JWT_SECRET         | JWT 令牌签名密钥           | sidifensen                |
+| SIDIFENSEN_PHOTO_AUTO_AUDIT   | 图片自动审核开关           | false                     |
+| SIDIFENSEN_ARTICLE_AUTO_AUDIT | 文章自动审核开关           | true                      |
 
 > 📝 更多配置项说明请参考 `env.example` 文件中的详细注释。
 
@@ -390,17 +581,73 @@ docker-compose exec mysql mysqldump -u root -p sidifensen_blog > backup.sql
 docker-compose exec -T mysql mysql -u root -p sidifensen_blog < backup.sql
 ```
 
-### 开发环境
+### 开发环境（仅基础服务）
 
 ```bash
-# 启动开发环境
-docker-compose -f docker-compose.dev.yml up -d
+# 启动四个基础服务
+docker-compose -f docker-compose-service.yml up -d
 
-# 只启动基础服务
-docker-compose -f docker-compose.dev.yml up -d mysql redis minio rabbitmq
+# 查看基础服务状态
+docker-compose -f docker-compose-service.yml ps
 
-# 查看开发环境日志
-docker-compose -f docker-compose.dev.yml logs -f
+# 查看基础服务日志
+docker-compose -f docker-compose-service.yml logs -f
+
+# 停止基础服务
+docker-compose -f docker-compose-service.yml down
+```
+
+> 💡 **开发环境说明**：
+>
+> - 只启动 MySQL、Redis、MinIO、RabbitMQ 四个基础服务
+> - 后端应用需要在 IDE 中单独启动（如 IntelliJ IDEA、VS Code）
+> - 前端应用需要在终端中单独启动（如 `npm run dev`）
+> - 适合本地开发调试，可以直接在 IDE 中打断点调试
+
+### 应用服务部署
+
+```bash
+# 启动应用服务（需要基础服务已运行）
+docker-compose -f docker-compose-apps.yml up -d --build
+
+# 停止应用服务
+docker-compose -f docker-compose-apps.yml down
+
+# 重启应用服务
+docker-compose -f docker-compose-apps.yml restart
+
+# 查看应用服务日志
+docker-compose -f docker-compose-apps.yml logs -f
+
+# 单独重启某个应用服务
+docker-compose -f docker-compose-apps.yml restart backend
+docker-compose -f docker-compose-apps.yml restart frontend-admin
+docker-compose -f docker-compose-apps.yml restart frontend-user
+```
+
+### 组合使用示例
+
+```bash
+# 场景1：本地开发环境（推荐）
+# 1. 启动基础服务
+docker-compose -f docker-compose-service.yml up -d
+# 2. 在 IDE 中启动后端应用（Spring Boot）
+# 3. 在终端中启动前端应用（npm run dev）
+
+# 场景2：完整 Docker 开发环境
+# 1. 启动基础服务
+docker-compose -f docker-compose-service.yml up -d
+# 2. 启动应用服务
+docker-compose -f docker-compose-apps.yml up -d --build
+
+# 场景3：只更新应用服务
+# 停止应用服务
+docker-compose -f docker-compose-apps.yml down
+# 重新构建并启动
+docker-compose -f docker-compose-apps.yml up -d --build
+
+# 场景4：生产环境一键部署
+docker-compose up -d --build
 ```
 
 ## 🔧 故障排除
@@ -476,10 +723,10 @@ docker-compose -f docker-compose.dev.yml logs -f
    ```bash
    # 确保 .env 文件位于 script 目录的上级目录（项目根目录）
    # 检查环境变量名称是否与 docker-compose.yml 中的定义一致
-   
+
    # 重启服务使配置生效
    docker-compose down && docker-compose up -d
-   
+
    # 验证环境变量是否正确传递给容器
    docker-compose exec backend env | grep MYSQL
    ```
