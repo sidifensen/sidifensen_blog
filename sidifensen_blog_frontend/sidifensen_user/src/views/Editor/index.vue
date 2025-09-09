@@ -144,12 +144,7 @@
               <!-- 转载链接输入框 -->
               <div v-if="article.reprintType === 1" class="reprint-url-setting">
                 <label>转载链接</label>
-                <el-input 
-                  v-model="article.reprintUrl" 
-                  placeholder="请输入转载文章的原始链接" 
-                  clearable 
-                  style="width: 300px;"
-                />
+                <el-input v-model="article.reprintUrl" placeholder="请输入转载文章的原始链接" clearable style="width: 300px" />
               </div>
               <div class="visible-range-setting">
                 <label>可见范围</label>
@@ -178,8 +173,8 @@
         <el-button icon="ArrowDown" @click="scrollToArticleSettings">文章设置</el-button>
       </div>
       <div class="right">
-        <el-button v-if="!isDraft" @click="handleSaveDraft">保存草稿</el-button>
-        <el-button type="primary" @click="handleClickPublish">发布文章</el-button>
+        <el-button v-if="!isDraft" :loading="isSavingDraft" :disabled="isPublishing" @click="handleSaveDraft">保存草稿</el-button>
+        <el-button type="primary" :loading="isPublishing" :disabled="isSavingDraft" @click="handleClickPublish">发布文章</el-button>
       </div>
     </div>
   </div>
@@ -187,7 +182,7 @@
 
 <script setup>
 import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import EditorHeader from "@/components/EditorHeader.vue";
 import { AiEditor } from "aieditor";
 import "aieditor/dist/style.css";
@@ -206,6 +201,7 @@ const { isDark } = storeToRefs(darkStore);
 
 // 获取路由实例
 const route = useRoute();
+const router = useRouter();
 
 // 监听页面刷新事件，弹出确认框
 const handleBeforeUnload = (e) => {
@@ -299,6 +295,11 @@ const columns = ref([]);
 
 // 是否是草稿
 const isDraft = ref(false);
+
+// 发布状态管理
+const isPublishing = ref(false);
+// 保存草稿状态管理
+const isSavingDraft = ref(false);
 
 // 根据文章ID获取文章详情并回显数据
 const loadArticleDetail = async () => {
@@ -890,39 +891,78 @@ const deleteColumn = (column) => {
 
 // 发布文章
 const handleClickPublish = async () => {
-  console.log(article.value);
-  // 确保在发布前获取最新的编辑器内容
-  if (aiEditor) {
-    article.value.content = aiEditor.getHtml();
+  // 防止重复点击
+  if (isPublishing.value) {
+    return;
   }
-  addArticle(article.value)
-    .then(() => {
-      ElMessage.success("文章发布成功!");
-      // 文章发布成功后，清除本地存储的标题
-      try {
-        localStorage.removeItem("draft_article_title");
-      } catch (error) {
-        console.error("清除本地存储标题失败:", error);
-      }
-    })
-    .catch(() => {
-      ElMessage.error("文章发布失败!");
-    });
+
+  // 基本校验
+  if (!article.value.title || !article.value.title.trim()) {
+    ElMessage.warning("请输入文章标题");
+    return;
+  }
+
+  try {
+    isPublishing.value = true;
+
+    // 确保在发布前获取最新的编辑器内容
+    if (aiEditor) {
+      article.value.content = aiEditor.getHtml();
+    }
+
+    // 校验文章内容
+    if (!article.value.content || article.value.content.trim() === "") {
+      ElMessage.warning("请输入文章内容");
+      return;
+    }
+
+    await addArticle(article.value);
+    ElMessage.success("文章发布成功!");
+
+    // 标记内容未修改，避免刷新提示
+    isModified.value = false;
+
+    // 延迟跳转，让用户看到成功提示
+    // setTimeout(() => {
+    // 返回上一页
+    router.go(-1);
+    // }, 1000);
+  } catch (error) {
+    ElMessage.error("文章发布失败!");
+  } finally {
+    isPublishing.value = false;
+  }
 };
 
 // 保存草稿
 const handleSaveDraft = async () => {
-  // 确保在保存前获取最新的编辑器内容
-  if (aiEditor) {
-    article.value.content = aiEditor.getHtml();
+  // 防止重复点击
+  if (isSavingDraft.value) {
+    return;
   }
-  saveDraft(article.value)
-    .then(() => {
-      ElMessage.success("草稿保存成功!");
-    })
-    .catch(() => {
-      ElMessage.error("草稿保存失败!");
-    });
+
+  // 基本校验
+  if (!article.value.title || !article.value.title.trim()) {
+    ElMessage.warning("请输入文章标题");
+    return;
+  }
+
+  try {
+    isSavingDraft.value = true;
+
+    // 确保在保存前获取最新的编辑器内容
+    if (aiEditor) {
+      article.value.content = aiEditor.getHtml();
+    }
+
+    await saveDraft(article.value);
+    ElMessage.success("草稿保存成功!");
+  } catch (error) {
+    console.error("草稿保存失败:", error);
+    ElMessage.error("草稿保存失败!");
+  } finally {
+    isSavingDraft.value = false;
+  }
 };
 </script>
 

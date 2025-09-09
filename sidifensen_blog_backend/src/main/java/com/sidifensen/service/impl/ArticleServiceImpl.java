@@ -116,8 +116,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .eq(userId != 0, Article::getUserId, userId)
                 .eq(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatus()), Article::getExamineStatus,
                         articleStatusDto.getExamineStatus())
-                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus()), Article::getEditStatus,
-                        articleStatusDto.getEditStatus())
+                .eq(Article::getEditStatus, ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus())
+                        ? articleStatusDto.getEditStatus()
+                        : EditStatusEnum.PUBLISHED.getCode())
                 .eq(ObjectUtil.isNotEmpty(articleStatusDto.getVisibleRange()), Article::getVisibleRange,
                         articleStatusDto.getVisibleRange())
                 .eq(ObjectUtil.isNotEmpty(articleStatusDto.getReprintType()), Article::getReprintType,
@@ -347,15 +348,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 List<SysUser> users = sysUserMapper.selectList(
                         new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIds));
 
-                // 创建用户ID到用户名的映射
-                Map<Integer, String> userIdToUsernameMap = users.stream()
-                        .collect(Collectors.toMap(SysUser::getId, SysUser::getUsername));
+                // 创建用户ID到用户昵称的映射
+                Map<Integer, String> userIdToNicknameMap = users.stream()
+                        .collect(Collectors.toMap(SysUser::getId, SysUser::getNickname));
 
-                // 为每篇文章设置用户名
+                // 为每篇文章设置用户昵称
                 articleVoList.forEach(articleVo -> {
                     if (articleVo.getUserId() != null) {
-                        String username = userIdToUsernameMap.get(articleVo.getUserId());
-                        articleVo.setUsername(username);
+                        String nickname = userIdToNicknameMap.get(articleVo.getUserId());
+                        articleVo.setNickname(nickname);
                     }
                 });
             }
@@ -376,7 +377,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (article.getUserId() != null) {
             SysUser user = sysUserMapper.selectById(article.getUserId());
             if (user != null) {
-                articleVo.setUsername(user.getUsername());
+                articleVo.setNickname(user.getNickname());
             }
         }
 
@@ -471,16 +472,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         List<Article> articles = this.list(queryWrapper);
         List<ArticleVo> articleVos = BeanUtil.copyToList(articles, ArticleVo.class);
 
-        // 用userId把username查询出来
+        // 用userId把nickname查询出来
         HashMap<Integer, String> userMap = new HashMap<>();
         // 查询所有用户信息
         List<SysUser> users = sysUserMapper.selectList(null);
         for (SysUser user : users) {
-            userMap.put(user.getId(), user.getUsername());
+            userMap.put(user.getId(), user.getNickname());
         }
-        // 将用户名设置到ArticleVo中
+        // 将用户昵称设置到ArticleVo中
         for (ArticleVo articleVo : articleVos) {
-            articleVo.setUsername(userMap.get(articleVo.getUserId()));
+            articleVo.setNickname(userMap.get(articleVo.getUserId()));
         }
 
         return articleVos;
@@ -582,13 +583,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 List<SysUser> users = sysUserMapper.selectList(
                         new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIds));
                 Map<Integer, String> userMap = users.stream()
-                        .collect(Collectors.toMap(SysUser::getId, SysUser::getUsername));
+                        .collect(Collectors.toMap(SysUser::getId, SysUser::getNickname));
 
-                // 设置用户名
+                // 设置用户昵称
                 articleVos.forEach(articleVo -> {
-                    String username = userMap.get(articleVo.getUserId());
-                    if (username != null) {
-                        articleVo.setUsername(username);
+                    String nickname = userMap.get(articleVo.getUserId());
+                    if (nickname != null) {
+                        articleVo.setNickname(nickname);
                     }
                 });
             }

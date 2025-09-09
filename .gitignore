@@ -10,12 +10,11 @@ target
 .project
 logs
 job
-sidifensen_blog_backend/src/main/resources/application.yaml
-sidifensen_blog_backend/src/main/resources/application-dev.yaml
-sidifensen_blog_backend/src/main/resources/application-prod.yaml
+
 sidifensen_blog_backend/src/test/
 
 .env
+.env.prod
 
 # VS Code 配置文件
 .vscode/

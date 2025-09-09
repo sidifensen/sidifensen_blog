@@ -71,3 +71,11 @@ export function info() {
     method: "get",
   });
 }
+
+// 根据用户ID获取用户详情信息
+export function getUserInfo(userId) {
+  return request({
+    url: `/user/admin/${userId}`,
+    method: "get",
+  });
+}

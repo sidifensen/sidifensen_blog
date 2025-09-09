@@ -1,0 +1,114 @@
+server:
+  port: 5000
+spring:
+  application:
+    name: sidifensen-blog
+  mvc:
+    throw-exception-if-no-handler-found: true # 禁用默认的 404 处理
+  web:
+    resources:
+      add-mappings: false # 禁用默认资源映射
+  servlet:
+    multipart:
+      max-file-size: 10MB # 文件上传最大大小
+      max-request-size: 10MB # 请求体最大大小
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss # Date 日期格式化
+    time-zone: GMT+8
+  datasource:
+    hikari:
+      maximum-pool-size: 50 # 增加连接池大小
+      minimum-idle: 10 # 最小空闲连接
+      connection-timeout: 30000 # 连接超时时间
+      idle-timeout: 240000 # 空闲连接超时，设置为4分钟，小于max-lifetime
+      max-lifetime: 300000 # 连接最大生命周期，设置为5分钟，确保远小于MySQL的wait_timeout
+      connection-test-query: SELECT 1 # 连接测试查询
+      validation-timeout: 3000 # 连接验证超时时间
+      leak-detection-threshold: 60000 # 连接泄漏检测阈值
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:sidifensen_blog}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false&connectTimeout=30000&socketTimeout=30000
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:root}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: 0
+      username: ${REDIS_USERNAME:}
+      password: ${REDIS_PASSWORD:}
+      timeout: 10s
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 1
+        shutdown-timeout: 100ms
+  mail:
+    host: smtp.qq.com
+    port: 465
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true # 开启SMTP认证
+          starttls:
+            enable: true # 开启TLS协议
+            required: true # 要求使用TLS协议
+          ssl:
+            enable: true # 开启SSL协议
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:admin}
+    password: ${RABBITMQ_PASSWORD:admin123}
+    virtual-host: /
+    connection-timeout: 60000 # 连接超时时间(毫秒)
+    requested-heartbeat: 60 # 心跳检测间隔(秒)
+    listener:
+      simple:
+        retry:
+          enabled: true #是否开启消费者重试
+          max-attempts: 5 #最大重试次数
+          initial-interval: 5000 #重试间隔时间（单位毫秒）
+          multiplier: 2 #间隔时间乘子，间隔时间*乘子=下一次的间隔时间，最大不能超过设置的最大间隔时间
+          max-interval: 30000 #重试最大时间间隔（单位毫秒）
+        concurrency: 5 # 监听器并发数
+        max-concurrency: 10 # 监听器最大并发数
+minio: # minio 配置
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  publicPoint: ${MINIO_PUBLIC_POINT:http://localhost:9000}
+  accessKey: ${MINIO_ACCESS_KEY:minioadmin}
+  secretKey: ${MINIO_SECRET_KEY:minioadmin123}
+  bucketName: sidifensen-blog
+oauth:
+  # gitee 登录
+  gitee:
+    client-id: ${GITEE_CLIENT_ID} # gitee 客户端ID
+    client-secret: ${GITEE_CLIENT_SECRET} # gitee 客户端密钥
+    redirect-uri: ${GITEE_REDIRECT_URI:http://localhost:5000/oauth/gitee/callback}
+  # gitub 登录
+  github:
+    client-id: ${GITHUB_CLIENT_ID:} # github 客户端ID
+    client-secret: ${GITHUB_CLIENT_SECRET:} # github 客户端密钥
+    redirect-uri: ${GITHUB_REDIRECT_URI:http://localhost:5000/oauth/github/callback} # github 重定向URI
+frontend:
+  userHost: ${FRONTEND_USER_HOST:http://localhost:7000/} # 前端用户地址
+  adminHost: ${FRONTEND_ADMIN_HOST:http://localhost:8000/} # 前端管理员地址
+# 阿里云配置
+aliyun:
+  accessKeyId: ${ALIYUN_ACCESS_KEY_ID}
+  accessKeySecret: ${ALIYUN_ACCESS_KEY_SECRET}
+  imageaudit:
+    endpoint: imageaudit.cn-shanghai.aliyuncs.com
+sidifensen:
+  jwt: ${SIDIFENSEN_JWT_SECRET:sidifensen} # jwt 密钥
+  PhotoAutoAudit: ${SIDIFENSEN_PHOTO_AUTO_AUDIT:false} # 是否开启图片自动审核
+  ArticleAutoAudit: ${SIDIFENSEN_ARTICLE_AUTO_AUDIT:true} # 是否开启文章自动审核
+  AllowOrigins:
+    - http://localhost:7000
+    - http://localhost:8000
+    - http://127.0.0.1:7000
+    - http://127.0.0.1:8000
+    - http://115.190.116.72:7000
+    - http://115.190.116.72:8000

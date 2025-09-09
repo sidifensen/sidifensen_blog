@@ -34,9 +34,9 @@ public class ArticleVo implements Serializable {
     private Integer userId;
 
     /**
-     * 用户名
+     * 用户昵称
      */
-    private String username;
+    private String nickname;
 
     /**
      * 标签
@@ -122,6 +122,5 @@ public class ArticleVo implements Serializable {
      * 更新时间
      */
     private Date updateTime;
-
 
 }

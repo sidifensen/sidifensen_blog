@@ -150,8 +150,10 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import { deleteArticle, getUserArticleList, updateArticle } from "@/api/article";
 import { Search, View, Message, Pointer, Edit, Delete, Collection } from "@element-plus/icons-vue";
+import { useUserStore } from "@/stores/userStore";
 
 const router = useRouter();
+const userStore = useUserStore();
 
 // 文章列表数据
 const articles = ref([]);
@@ -450,8 +452,13 @@ const handleDeleteArticle = async (articleId) => {
 
 // 处理浏览文章
 const handleViewArticle = (articleId) => {
-  // 这里应该跳转到文章详情页
-  ElMessage.success("浏览文章");
+  // 获取当前用户ID，跳转到文章详情页
+  const currentUser = userStore.user;
+  if (currentUser && currentUser.id) {
+    router.push(`/user/${currentUser.id}/article/${articleId}`);
+  } else {
+    ElMessage.error("获取用户信息失败，无法跳转");
+  }
 };
 
 // 处理滚动事件 - 自定义无限滚动

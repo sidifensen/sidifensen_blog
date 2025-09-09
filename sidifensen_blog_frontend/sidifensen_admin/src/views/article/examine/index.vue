@@ -11,7 +11,7 @@
             <el-option label="全部" value="" />
           </el-select>
           <el-select v-model="searchUserId" placeholder="用户名称" filterable clearable size="small" class="search-input" @change="handleSearch">
-            <el-option v-for="user in userList" :key="user.id" :label="user.username" :value="user.id" />
+            <el-option v-for="user in userList" :key="user.id" :label="user.nickname || user.username" :value="user.id" />
           </el-select>
         </div>
       </div>
@@ -65,7 +65,7 @@
               </el-tooltip>
             </template>
           </el-table-column>
-          <el-table-column prop="username" label="作者" width="120" />
+          <el-table-column prop="nickname" label="作者昵称" width="120" />
           <el-table-column prop="tag" label="标签" width="150">
             <template #default="{ row }">
               <el-tag v-if="row.tag" size="small" type="info" class="tag-wrap">
@@ -142,8 +142,8 @@
 
                   <!-- 作者信息紧跟标题 -->
                   <div class="article-author-mobile">
-                    <span class="author-label">作者:</span>
-                    <span class="author-name">{{ article.username }}</span>
+                    <span class="author-label">作者昵称:</span>
+                    <span class="author-name">{{ article.nickname }}</span>
                   </div>
 
                   <div class="article-description-mobile" v-if="article.description">{{ article.description }}</div>
@@ -230,7 +230,7 @@
 
               <div class="article-author-section">
                 <el-icon class="author-icon"><User /></el-icon>
-                <span class="author-name-detail">{{ currentArticle?.username || "未知作者" }}</span>
+                <span class="author-name-detail">{{ currentArticle?.nickname || "未知作者" }}</span>
               </div>
 
               <div class="article-description-detail" v-if="currentArticle && currentArticle.description && currentArticle.description.trim()">

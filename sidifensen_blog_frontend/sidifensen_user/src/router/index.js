@@ -17,10 +17,16 @@ const router = createRouter({
           meta: { title: "首页" },
         },
         {
-          path: "article",
-          name: "Article",
-          component: () => import("@/components/404.vue"),
-          meta: { title: "文章" },
+          path: "user/:userId",
+          name: "UserHomepage",
+          component: () => import("@/views/User/Homepage/index.vue"),
+          meta: { title: "用户主页" },
+        },
+        {
+          path: "user/:userId/article/:articleId",
+          name: "ArticleDetail",
+          component: () => import("@/views/User/Article/index.vue"),
+          meta: { title: "文章详情" },
         },
         {
           path: "link",
