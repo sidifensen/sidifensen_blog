@@ -51,3 +51,11 @@ export function deleteArticle(articleId) {
     method: "delete",
   });
 }
+
+// 获取用户文章状态统计
+export function getUserArticleStatistics() {
+  return request({
+    url: "/article/user/statistics",
+    method: "get",
+  });
+}

@@ -112,3 +112,11 @@ sidifensen:
     - http://127.0.0.1:8000
     - http://115.190.116.72:7000
     - http://115.190.116.72:8000
+logging:
+  level:
+    org.springframework.boot.autoconfigure: INFO
+    org.springframework.boot.autoconfigure.logging: INFO
+    org.springframework: INFO
+    org.springframework.boot.context.properties: INFO
+    org.springframework.core.env: INFO
+    org.springframework.boot.env: INFO

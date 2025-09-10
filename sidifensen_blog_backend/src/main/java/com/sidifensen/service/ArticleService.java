@@ -5,6 +5,7 @@ import com.sidifensen.domain.dto.ArticleAuditDto;
 import com.sidifensen.domain.dto.ArticleDto;
 import com.sidifensen.domain.dto.ArticleStatusDto;
 import com.sidifensen.domain.entity.Article;
+import com.sidifensen.domain.vo.ArticleStatisticsVo;
 import com.sidifensen.domain.vo.ArticleVo;
 import com.sidifensen.domain.vo.PageVo;
 
@@ -25,6 +26,9 @@ public interface ArticleService extends IService<Article> {
 
     // 获取用户文章列表
     PageVo<List<ArticleVo>> getUserArticleList(Integer pageNum, Integer pageSize, ArticleStatusDto articleStatusDto);
+
+    // 获取用户文章状态统计
+    ArticleStatisticsVo getUserArticleStatistics();
 
     // 获取文章详情
     ArticleVo getArticle(Integer articleId);

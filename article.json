@@ -1,0 +1,347 @@
+<div style="text-align:left"><img src="http://115.190.116.72:40000/sidifensen-blog/article/1/b058688e7b7949f79e69c37b4c2d19bb.jpg" alt="文章图片" width="100" height="auto" data-align="left"></div><p></p><p><strong>🚀 Sidifensen Blog</strong></p><p>现代化个人博客系统 | 前后端分离架构</p><p><a target="_blank" rel="noopener noreferrer nofollow" href="https://file+.vscode-resource.vscode-cdn.net/d%3A/code/sidifensen_blog/README.md#-%E5%8A%9F%E8%83%BD%E7%89%B9%E6%80%A7">功能特性</a>&nbsp;•&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="https://file+.vscode-resource.vscode-cdn.net/d%3A/code/sidifensen_blog/README.md#-%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84">技术架构</a>&nbsp;•&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="https://file+.vscode-resource.vscode-cdn.net/d%3A/code/sidifensen_blog/README.md#-%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B">快速开始</a>&nbsp;•&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="https://file+.vscode-resource.vscode-cdn.net/d%3A/code/sidifensen_blog/README.md#-%E9%83%A8%E7%BD%B2%E6%8C%87%E5%8D%97">部署指南</a>&nbsp;•&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="https://file+.vscode-resource.vscode-cdn.net/d%3A/code/sidifensen_blog/README.md#-%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84">项目结构</a></p><hr><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%93%8B-%E9%A1%B9%E7%9B%AE%E6%A6%82%E8%BF%B0"><strong>📋 项目概述</strong></h2><p class="code-line"><strong>Sidifensen Blog</strong>&nbsp;是一个功能完整的现代化个人博客系统，采用前后端分离架构设计。系统包含用户端展示界面和管理端后台系统，提供了从内容创作到用户交互的完整博客解决方案。</p><h3 style="line-height: 1.25" class="code-line" id="%E2%9C%A8-%E9%A1%B9%E7%9B%AE%E4%BA%AE%E7%82%B9"><strong>✨ 项目亮点</strong></h3><ul class="code-line"><li class="code-line"><p>🎨&nbsp;<strong>现代化 UI</strong>: 基于 Element Plus 的精美界面设计</p></li><li class="code-line"><p>🔒&nbsp;<strong>安全可靠</strong>: Spring Security + JWT 认证，阿里云内容安全检测</p></li><li class="code-line"><p>⚡&nbsp;<strong>高性能</strong>: Redis 缓存 + RabbitMQ 异步处理</p></li><li class="code-line"><p>📱&nbsp;<strong>响应式设计</strong>: 完美适配桌面端和移动端</p></li><li class="code-line"><p>🔧&nbsp;<strong>易于扩展</strong>: 模块化架构，支持功能定制</p></li><li class="code-line"><p>🚀&nbsp;<strong>开箱即用</strong>: Docker 一键部署，快速上线</p></li></ul><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%9B%A0%EF%B8%8F-%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84"><strong>🛠️ 技术架构</strong></h2><table style="min-width: 50px"><colgroup><col style="min-width: 25px"><col style="min-width: 25px"></colgroup><tbody><tr><td colspan="1" rowspan="1"><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%94%A7-%E5%90%8E%E7%AB%AF%E6%8A%80%E6%9C%AF%E6%A0%88"><strong>🔧 后端技术栈</strong></h3><ul class="code-line"><li class="code-line"><p><strong>核心框架</strong>: Spring Boot 3.1.4</p></li><li class="code-line"><p><strong>开发语言</strong>: Java 21</p></li><li class="code-line"><p><strong>安全框架</strong>: Spring Security + JWT</p></li><li class="code-line"><p><strong>数据库</strong>: MySQL 8.1.0</p></li><li class="code-line"><p><strong>ORM框架</strong>: MyBatis-Plus 3.5.12</p></li><li class="code-line"><p><strong>缓存中间件</strong>: Redis</p></li><li class="code-line"><p><strong>消息队列</strong>: RabbitMQ</p></li><li class="code-line"><p><strong>文件存储</strong>: MinIO 8.3.6</p></li><li class="code-line"><p><strong>模板引擎</strong>: Thymeleaf</p></li><li class="code-line"><p><strong>第三方登录</strong>: JustAuth 1.16.7</p></li><li class="code-line"><p><strong>内容安全</strong>: 阿里云图片内容检测</p></li><li class="code-line"><p><strong>工具库</strong>:</p><ul class="code-line"><li class="code-line"><p>Lombok 1.18.38 (代码简化)</p></li><li class="code-line"><p>Hutool 5.8.38 (工具库)</p></li><li class="code-line"><p>FastJSON 2.0.50 (JSON处理)</p></li><li class="code-line"><p>Easy-Captcha 1.6.2 (验证码)</p></li></ul></li></ul></td><td colspan="1" rowspan="1"><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%8E%A8-%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF%E6%A0%88"><strong>🎨 前端技术栈</strong></h3><ul class="code-line"><li class="code-line"><p><strong>核心框架</strong>: Vue 3.5.13</p></li><li class="code-line"><p><strong>构建工具</strong>: Vite 6.2.4</p></li><li class="code-line"><p><strong>UI组件库</strong>: Element Plus 2.10.2+</p></li><li class="code-line"><p><strong>状态管理</strong>: Pinia 3.0.1</p></li><li class="code-line"><p><strong>路由管理</strong>: Vue Router 4.5.0</p></li><li class="code-line"><p><strong>HTTP客户端</strong>: Axios 1.10.0+</p></li><li class="code-line"><p><strong>样式预处理</strong>: Sass</p></li><li class="code-line"><p><strong>图标库</strong>: Element Plus Icons + SVG Icons</p></li><li class="code-line"><p><strong>富文本编辑器</strong>: AiEditor 1.4.0</p></li><li class="code-line"><p><strong>开发工具</strong>:</p><ul class="code-line"><li class="code-line"><p>Vue DevTools 7.7.2</p></li><li class="code-line"><p>Auto Import 19.3.0</p></li><li class="code-line"><p>TypeScript 支持</p></li><li class="code-line"><p>代码混淆保护</p></li></ul></li></ul></td></tr></tbody></table><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%8F%97%EF%B8%8F-%E6%9E%B6%E6%9E%84%E7%89%B9%E7%82%B9"><strong>🏗️ 架构特点</strong></h3><ul class="code-line"><li class="code-line"><p><strong>微服务架构</strong>: 前后端完全分离，独立部署</p></li><li class="code-line"><p><strong>RESTful API</strong>: 标准化的 API 接口设计</p></li><li class="code-line"><p><strong>响应式设计</strong>: 支持多终端适配</p></li><li class="code-line"><p><strong>高可用部署</strong>: Docker 容器化部署</p></li><li class="code-line"><p><strong>安全防护</strong>: 多层安全防护机制</p></li></ul><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%93%81-%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84"><strong>📁 项目结构</strong></h2><pre><code class="language-auto">📦 sidifensen_blog/
+├── 🔧 sidifensen_blog_backend/              # 后端服务 (Spring Boot)
+│   ├── 📂 src/main/java/com/sidifensen/
+│   │   ├── 🎮 controller/                   # REST API 控制器
+│   │   ├── 💼 service/                      # 业务逻辑服务层
+│   │   ├── 🗃️ mapper/                       # MyBatis 数据访问层
+│   │   ├── 📋 domain/                       # 数据实体类
+│   │   ├── 🔐 security/                     # Spring Security 配置
+│   │   ├── 🚀 redis/                        # Redis 缓存配置
+│   │   ├── 📁 minio/                        # MinIO 文件存储配置
+│   │   ├── 📨 rabbitmq/                     # RabbitMQ 消息队列
+│   │   └── 🛠️ utils/                        # 通用工具类
+│   ├── 📂 src/main/resources/
+│   │   ├── ⚙️ application*.yaml             # 应用配置文件
+│   │   ├── 📝 logback-spring.xml            # 日志配置
+│   │   ├── 🗂️ mapper/                       # MyBatis XML 映射文件
+│   │   └── 📧 templates/                    # Thymeleaf 邮件模板
+│   ├── 🐳 Dockerfile                        # Docker 构建文件
+│   ├── 📜 docker.sh                         # Docker 部署脚本
+│   └── 📋 pom.xml                           # Maven 依赖配置
+├── 🎨 sidifensen_blog_frontend/             # 前端应用目录
+│   ├── 👥 sidifensen_user/                  # 用户端界面 (Vue 3)
+│   │   ├── 📂 src/
+│   │   │   ├── 🔌 api/                      # API 接口封装
+│   │   │   ├── 🎭 components/               # 可复用组件
+│   │   │   ├── 📄 views/                    # 页面视图组件
+│   │   │   ├── 🧭 router/                   # 路由配置
+│   │   │   ├── 🗃️ stores/                   # Pinia 状态管理
+│   │   │   └── 🛠️ utils/                    # 前端工具函数
+│   │   ├── 🐳 Dockerfile                    # Docker 构建文件
+│   │   ├── 📜 docker.sh                     # Docker 部署脚本
+│   │   └── 📦 package.json                  # npm 依赖配置
+│   └── 🔧 sidifensen_admin/                 # 管理端后台 (Vue 3)
+│       ├── 📂 src/                          # 源码目录 (结构同用户端)
+│       ├── 🐳 Dockerfile                    # Docker 构建文件
+│       ├── 📜 docker.sh                     # Docker 部署脚本
+│       └── 📦 package.json                  # npm 依赖配置
+├── 🗄️ sql/                                  # 数据库脚本
+│   ├── 📊 sidifensen_blog.sql               # 主数据库结构和数据
+│   └── 🖥️ console.sql                       # 控制台相关脚本
+└── 📖 README.md                             # 项目说明文档
+</code></pre><h2 style="line-height: 1.25" class="code-line" id="%E2%AD%90-%E5%8A%9F%E8%83%BD%E7%89%B9%E6%80%A7"><strong>⭐ 功能特性</strong></h2><table style="min-width: 50px"><colgroup><col style="min-width: 25px"><col style="min-width: 25px"></colgroup><tbody><tr><td colspan="1" rowspan="1"><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%94%90-%E7%94%A8%E6%88%B7%E7%B3%BB%E7%BB%9F"><strong>🔐 用户系统</strong></h3><ul class="code-line"><li class="code-line"><p><strong>多种登录方式</strong>: 账号密码 + 第三方 OAuth 登录</p></li><li class="code-line"><p><strong>权限管理</strong>: 基于角色的访问控制 (RBAC)</p></li><li class="code-line"><p><strong>安全防护</strong>: JWT 认证 + Spring Security</p></li><li class="code-line"><p><strong>邮件验证</strong>: 注册验证码 + 密码重置</p></li><li class="code-line"><p><strong>图形验证码</strong>: 防止恶意注册和登录</p></li></ul><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%93%9D-%E5%86%85%E5%AE%B9%E7%AE%A1%E7%90%86"><strong>📝 内容管理</strong></h3><ul class="code-line"><li class="code-line"><p><strong>富文本编辑</strong>: 支持 Markdown + 所见即所得编辑</p></li><li class="code-line"><p><strong>文章分类</strong>: 多级分类和标签系统</p></li><li class="code-line"><p><strong>图片管理</strong>: MinIO 对象存储 + 图片安全检测</p></li><li class="code-line"><p><strong>内容审核</strong>: 阿里云内容安全自动审核</p></li><li class="code-line"><p><strong>SEO 优化</strong>: 友好的 URL 结构和 Meta 信息</p></li></ul><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%8E%A8-%E7%94%A8%E6%88%B7%E7%95%8C%E9%9D%A2"><strong>🎨 用户界面</strong></h3><ul class="code-line"><li class="code-line"><p><strong>响应式设计</strong>: 完美适配桌面、平板、手机</p></li><li class="code-line"><p><strong>暗黑模式</strong>: 支持明暗主题切换</p></li><li class="code-line"><p><strong>加载动画</strong>: 优雅的加载和过渡效果</p></li><li class="code-line"><p><strong>无限滚动</strong>: 流畅的内容浏览体验</p></li><li class="code-line"><p><strong>搜索功能</strong>: 全文搜索和标签筛选</p></li></ul></td><td colspan="1" rowspan="1"><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%94%A7-%E7%AE%A1%E7%90%86%E5%90%8E%E5%8F%B0"><strong>🔧 管理后台</strong></h3><ul class="code-line"><li class="code-line"><p><strong>仪表盘</strong>: 数据统计和系统监控</p></li><li class="code-line"><p><strong>用户管理</strong>: 用户列表、角色权限管理</p></li><li class="code-line"><p><strong>内容管理</strong>: 文章、分类、标签的 CRUD 操作</p></li><li class="code-line"><p><strong>文件管理</strong>: 图片上传、删除、批量操作</p></li><li class="code-line"><p><strong>系统设置</strong>: 站点配置、邮件配置等</p></li></ul><h3 style="line-height: 1.25" class="code-line" id="%E2%9A%A1-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><strong>⚡ 性能优化</strong></h3><ul class="code-line"><li class="code-line"><p><strong>Redis 缓存</strong>: 热点数据缓存，提升响应速度</p></li><li class="code-line"><p><strong>异步处理</strong>: RabbitMQ 消息队列处理耗时任务</p></li><li class="code-line"><p><strong>CDN 支持</strong>: 静态资源 CDN 加速</p></li><li class="code-line"><p><strong>代码分割</strong>: 前端代码按需加载</p></li><li class="code-line"><p><strong>图片优化</strong>: 图片压缩和懒加载</p></li></ul><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%9A%80-%E9%83%A8%E7%BD%B2%E8%BF%90%E7%BB%B4"><strong>🚀 部署运维</strong></h3><ul class="code-line"><li class="code-line"><p><strong>Docker 支持</strong>: 一键容器化部署</p></li><li class="code-line"><p><strong>多环境配置</strong>: 开发、测试、生产环境分离</p></li><li class="code-line"><p><strong>日志管理</strong>: 结构化日志记录和分析</p></li><li class="code-line"><p><strong>监控告警</strong>: 应用性能监控</p></li><li class="code-line"><p><strong>备份恢复</strong>: 数据库自动备份机制</p></li></ul></td></tr></tbody></table><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%9A%80-%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B"><strong>🚀 快速开始</strong></h2><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%93%8B-%E7%8E%AF%E5%A2%83%E8%A6%81%E6%B1%82"><strong>📋 环境要求</strong></h3><table class="code-line" style="min-width: 75px"><colgroup><col style="min-width: 25px"><col style="min-width: 25px"><col style="min-width: 25px"></colgroup><tbody><tr><th colspan="1" rowspan="1"><p><strong>组件</strong></p></th><th colspan="1" rowspan="1"><p><strong>版本要求</strong></p></th><th colspan="1" rowspan="1"><p><strong>说明</strong></p></th></tr><tr><td colspan="1" rowspan="1"><p>☕ JDK</p></td><td colspan="1" rowspan="1"><p>21+</p></td><td colspan="1" rowspan="1"><p>后端运行环境</p></td></tr><tr><td colspan="1" rowspan="1"><p>🟢 Node.js</p></td><td colspan="1" rowspan="1"><p>18+</p></td><td colspan="1" rowspan="1"><p>前端构建环境</p></td></tr><tr><td colspan="1" rowspan="1"><p>🐬 MySQL</p></td><td colspan="1" rowspan="1"><p>8.0+</p></td><td colspan="1" rowspan="1"><p>主数据库</p></td></tr><tr><td colspan="1" rowspan="1"><p>🔴 Redis</p></td><td colspan="1" rowspan="1"><p>6.0+</p></td><td colspan="1" rowspan="1"><p>缓存数据库</p></td></tr><tr><td colspan="1" rowspan="1"><p>🐰 RabbitMQ</p></td><td colspan="1" rowspan="1"><p>3.8+</p></td><td colspan="1" rowspan="1"><p>消息队列</p></td></tr><tr><td colspan="1" rowspan="1"><p>🐳 Docker</p></td><td colspan="1" rowspan="1"><p>20.0+</p></td><td colspan="1" rowspan="1"><p>容器化部署 (可选)</p></td></tr></tbody></table><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%92%BE-%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%9D%E5%A7%8B%E5%8C%96"><strong>💾 数据库初始化</strong></h3><pre><code class="language-bash"># 1. 创建数据库
+mysql -u root -p
+CREATE DATABASE sidifensen_blog CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+# 2. 导入数据结构
+mysql -u root -p sidifensen_blog &lt; sql/sidifensen_blog.sql
+</code></pre><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%94%A7-%E5%90%8E%E7%AB%AF%E5%90%AF%E5%8A%A8"><strong>🔧 后端启动</strong></h3><pre><code class="language-bash"># 克隆项目
+git clone https://github.com/your-username/sidifensen_blog.git
+cd sidifensen_blog/sidifensen_blog_backend
+
+# 配置数据库连接# 编辑 src/main/resources/application-dev.yaml 文件# 修改数据库、Redis、RabbitMQ 连接信息
+
+# 启动后端服务
+mvn clean install
+mvn spring-boot:run
+
+# 或者使用 IDE 直接运行 SidifensenBlogBackendApplication.java</code></pre><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%8E%A8-%E5%89%8D%E7%AB%AF%E5%90%AF%E5%8A%A8"><strong>🎨 前端启动</strong></h3><pre><code class="language-bash"># 用户端启动cd sidifensen_blog_frontend/sidifensen_user
+npm install
+npm run dev
+# 访问 http://localhost:5173
+
+# 管理端启动 (新开终端)cd sidifensen_blog_frontend/sidifensen_admin
+npm install  
+npm run dev
+# 访问 http://localhost:5174</code></pre><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%8C%90-%E8%AE%BF%E9%97%AE%E5%BA%94%E7%94%A8"><strong>🌐 访问应用</strong></h3><p class="code-line">启动成功后，可通过以下地址访问：</p><ul class="code-line"><li class="code-line"><p>📱&nbsp;<strong>用户端</strong>:&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="http://localhost:5173/">http://localhost:5173</a>&nbsp;(博客前台)</p></li><li class="code-line"><p>🔧&nbsp;<strong>管理端</strong>:&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="http://localhost:5174/">http://localhost:5174</a>&nbsp;(后台管理)</p></li><li class="code-line"><p>🔌&nbsp;<strong>后端API</strong>:&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="http://localhost:8080/">http://localhost:8080</a>&nbsp;(REST API)</p></li></ul><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%90%B3-%E9%83%A8%E7%BD%B2%E6%8C%87%E5%8D%97"><strong>🐳 部署指南</strong></h2><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%94%A7-%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2"><strong>🔧 生产环境部署</strong></h3><h4 style="line-height: 1.25" class="code-line" id="1%EF%B8%8F%E2%83%A3-%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><strong>1️⃣ 环境准备</strong></h4><pre><code class="language-bash"># 安装 Docker 和 Docker Compose
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# 安装 Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.0.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+</code></pre><h4 style="line-height: 1.25" class="code-line" id="2%EF%B8%8F%E2%83%A3-%E5%90%8E%E7%AB%AF%E9%83%A8%E7%BD%B2"><strong>2️⃣ 后端部署</strong></h4><pre><code class="language-bash">cd sidifensen_blog_backend
+
+# 1. 修改生产环境配置
+vim src/main/resources/application-prod.yaml
+
+# 2. 构建 JAR 包
+mvn clean package -DskipTests
+
+# 3. 构建 Docker 镜像并启动chmod +x docker.sh
+./docker.sh
+
+# 或者手动执行
+docker build -t sidifensen-blog-backend .
+docker run -d -p 8080:8080 --name sidifensen-blog-backend sidifensen-blog-backend
+</code></pre><h4 style="line-height: 1.25" class="code-line" id="3%EF%B8%8F%E2%83%A3-%E5%89%8D%E7%AB%AF%E9%83%A8%E7%BD%B2"><strong>3️⃣ 前端部署</strong></h4><pre><code class="language-bash"># 用户端部署cd sidifensen_blog_frontend/sidifensen_user
+npm run build
+chmod +x docker.sh
+./docker.sh
+
+# 管理端部署  cd ../sidifensen_admin
+npm run build
+chmod +x docker.sh
+./docker.sh
+</code></pre><h4 style="line-height: 1.25" class="code-line" id="4%EF%B8%8F%E2%83%A3-%E4%BD%BF%E7%94%A8-docker-compose-%E4%B8%80%E9%94%AE%E9%83%A8%E7%BD%B2"><strong>4️⃣ 使用 Docker Compose 一键部署</strong></h4><p class="code-line">创建&nbsp;<code>docker-compose.yml</code>&nbsp;文件：</p><pre><code class="language-yaml">version: '3.8'services:mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: your_password
+      MYSQL_DATABASE: sidifensen_blog
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis:6.2
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3.8-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  backend:
+    build: ./sidifensen_blog_backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - redis
+      - rabbitmq
+
+  frontend-user:
+    build: ./sidifensen_blog_frontend/sidifensen_user
+    ports:
+      - "7000:80"
+
+  frontend-admin:
+    build: ./sidifensen_blog_frontend/sidifensen_admin
+    ports:
+      - "8000:80"
+
+volumes:mysql_data:</code></pre><pre><code class="language-bash"># 一键启动所有服务
+docker-compose up -d
+</code></pre><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%8C%90-%E8%AE%BF%E9%97%AE%E5%9C%B0%E5%9D%80"><strong>🌐 访问地址</strong></h3><p class="code-line">部署完成后，可通过以下地址访问：</p><table class="code-line" style="min-width: 75px"><colgroup><col style="min-width: 25px"><col style="min-width: 25px"><col style="min-width: 25px"></colgroup><tbody><tr><th colspan="1" rowspan="1"><p><strong>服务</strong></p></th><th colspan="1" rowspan="1"><p><strong>地址</strong></p></th><th colspan="1" rowspan="1"><p><strong>说明</strong></p></th></tr><tr><td colspan="1" rowspan="1"><p>📱 用户端</p></td><td colspan="1" rowspan="1"><p><a target="_blank" rel="noopener noreferrer nofollow" href="http://your-domain:7000/">http://your-domain:7000</a></p></td><td colspan="1" rowspan="1"><p>博客前台展示</p></td></tr><tr><td colspan="1" rowspan="1"><p>🔧 管理端</p></td><td colspan="1" rowspan="1"><p><a target="_blank" rel="noopener noreferrer nofollow" href="http://your-domain:8000/">http://your-domain:8000</a></p></td><td colspan="1" rowspan="1"><p>后台管理系统</p></td></tr><tr><td colspan="1" rowspan="1"><p>🔌 后端API</p></td><td colspan="1" rowspan="1"><p><a target="_blank" rel="noopener noreferrer nofollow" href="http://your-domain:8080/">http://your-domain:8080</a></p></td><td colspan="1" rowspan="1"><p>REST API 接口</p></td></tr><tr><td colspan="1" rowspan="1"><p>🐰 RabbitMQ</p></td><td colspan="1" rowspan="1"><p><a target="_blank" rel="noopener noreferrer nofollow" href="http://your-domain:15672/">http://your-domain:15672</a></p></td><td colspan="1" rowspan="1"><p>消息队列管理</p></td></tr></tbody></table><h3 style="line-height: 1.25" class="code-line" id="%E2%9A%99%EF%B8%8F-%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E"><strong>⚙️ 配置说明</strong></h3><p class="code-line"><strong>重要配置项：</strong></p><ul class="code-line"><li class="code-line"><p>数据库连接信息</p></li><li class="code-line"><p>Redis 连接配置</p></li><li class="code-line"><p>RabbitMQ 连接配置</p></li><li class="code-line"><p>MinIO 存储配置</p></li><li class="code-line"><p>阿里云内容安全配置</p></li><li class="code-line"><p>邮件服务配置</p></li></ul><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%91%A8%E2%80%8D%F0%9F%92%BB-%E5%BC%80%E5%8F%91%E8%AF%B4%E6%98%8E"><strong>👨‍💻 开发说明</strong></h2><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%94%A7-%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83"><strong>🔧 后端开发规范</strong></h3><pre><code class="language-java">// 示例：统一返回格式@RestController@RequestMapping("/api/articles")public class ArticleController {
+    
+    @GetMapping
+    public Result&lt;PageInfo&lt;Article&gt;&gt; getArticles(
+        @RequestParam(defaultValue = "1") Integer pageNum,
+        @RequestParam(defaultValue = "10") Integer pageSize
+    ) {
+        return Result.success(articleService.getArticles(pageNum, pageSize));
+    }
+}
+</code></pre><p class="code-line"><strong>开发要点：</strong></p><ul class="code-line"><li class="code-line"><p>📋 遵循 Spring Boot 最佳实践和阿里巴巴 Java 开发手册</p></li><li class="code-line"><p>🗃️ 使用 MyBatis-Plus 简化数据库操作，支持分页和条件构造器</p></li><li class="code-line"><p>🏗️ 采用三层架构：Controller → Service → Mapper</p></li><li class="code-line"><p>📝 使用 Lombok 减少样板代码，提高开发效率</p></li><li class="code-line"><p>🔌 RESTful API 设计，统一返回格式&nbsp;<code>Result&lt;T&gt;</code></p></li><li class="code-line"><p>✅ 参数校验使用&nbsp;<code>@Valid</code>&nbsp;和&nbsp;<code>@Validated</code>&nbsp;注解</p></li><li class="code-line"><p>📊 集成 Swagger/OpenAPI 3.0 用于 API 文档生成</p></li></ul><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%8E%A8-%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83"><strong>🎨 前端开发规范</strong></h3><pre><code class="language-vue">&lt;!-- 示例：组件开发模板 --&gt;
+&lt;template&gt;
+  &lt;div class="article-list"&gt;
+    &lt;el-card v-for="article in articles" :key="article.id"&gt;
+      &lt;h3&gt;{{ article.title }}&lt;/h3&gt;
+      &lt;p&gt;{{ article.summary }}&lt;/p&gt;
+    &lt;/el-card&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { ref, onMounted } from 'vue'
+import { getArticles } from '@/api/article'
+
+const articles = ref([])
+
+const loadArticles = async () =&gt; {
+  const { data } = await getArticles()
+  articles.value = data.list
+}
+
+onMounted(() =&gt; {
+  loadArticles()
+})
+&lt;/script&gt;
+</code></pre><p class="code-line"><strong>开发要点：</strong></p><ul class="code-line"><li class="code-line"><p>🎯 使用 Vue 3 Composition API，代码更加清晰和可复用</p></li><li class="code-line"><p>🗃️ Pinia 状态管理，支持状态持久化</p></li><li class="code-line"><p>🎨 Element Plus 组件库，确保 UI 一致性</p></li><li class="code-line"><p>📱 响应式设计，使用 CSS Grid 和 Flexbox</p></li><li class="code-line"><p>🔧 Vite 构建工具，支持热更新和快速构建</p></li><li class="code-line"><p>📦 自动导入插件，减少重复的 import 语句</p></li><li class="code-line"><p>🔒 代码混淆和压缩，保护前端代码</p></li></ul><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%A7%AA-%E6%B5%8B%E8%AF%95%E5%92%8C%E8%B4%A8%E9%87%8F%E4%BF%9D%E8%AF%81"><strong>🧪 测试和质量保证</strong></h3><ul class="code-line"><li class="code-line"><p><strong>单元测试</strong>: JUnit 5 + Mockito (后端)，Vitest (前端)</p></li><li class="code-line"><p><strong>集成测试</strong>: TestContainers 用于数据库集成测试</p></li><li class="code-line"><p><strong>代码质量</strong>: SonarQube 代码质量检测</p></li><li class="code-line"><p><strong>API 测试</strong>: Postman 集合和自动化测试脚本</p></li></ul><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%A4%9D-%E8%B4%A1%E7%8C%AE%E6%8C%87%E5%8D%97"><strong>🤝 贡献指南</strong></h2><p class="code-line">我们欢迎所有形式的贡献！请遵循以下步骤：</p><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%93%9D-%E6%8F%90%E4%BA%A4%E6%B5%81%E7%A8%8B"><strong>📝 提交流程</strong></h3><ol class="code-line"><li class="code-line"><p><strong>Fork 项目</strong>&nbsp;到你的 GitHub 账号</p></li><li class="code-line"><p><strong>创建特性分支</strong>:&nbsp;<code>git checkout -b feature/amazing-feature</code></p></li><li class="code-line"><p><strong>提交更改</strong>:&nbsp;<code>git commit -m 'Add some amazing feature'</code></p></li><li class="code-line"><p><strong>推送分支</strong>:&nbsp;<code>git push origin feature/amazing-feature</code></p></li><li class="code-line"><p><strong>创建 Pull Request</strong></p></li></ol><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%90%9B-%E9%97%AE%E9%A2%98%E6%8A%A5%E5%91%8A"><strong>🐛 问题报告</strong></h3><p class="code-line">发现 Bug 或有新功能建议？请通过&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="https://github.com/your-username/sidifensen_blog/issues">GitHub Issues</a>&nbsp;提交。</p><p class="code-line"><strong>Bug 报告请包含：</strong></p><ul class="code-line"><li class="code-line"><p>🔍 详细的问题描述</p></li><li class="code-line"><p>🔄 重现步骤</p></li><li class="code-line"><p>💻 运行环境信息</p></li><li class="code-line"><p>📸 截图或错误日志</p></li></ul><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%93%84-%E8%AE%B8%E5%8F%AF%E8%AF%81"><strong>📄 许可证</strong></h2><p class="code-line">本项目基于&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="https://file+.vscode-resource.vscode-cdn.net/d%3A/code/sidifensen_blog/LICENSE">MIT License</a>&nbsp;开源协议。</p><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%93%9E-%E8%81%94%E7%B3%BB%E6%96%B9%E5%BC%8F"><strong>📞 联系方式</strong></h2><p class="code-line"><strong>如有问题或建议，欢迎通过以下方式联系：</strong></p><hr><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%8C%9F-%E5%A6%82%E6%9E%9C%E8%BF%99%E4%B8%AA%E9%A1%B9%E7%9B%AE%E5%AF%B9%E4%BD%A0%E6%9C%89%E5%B8%AE%E5%8A%A9%E8%AF%B7%E7%BB%99%E4%B8%80%E4%B8%AA-star-%E2%AD%90"><strong>🌟 如果这个项目对你有帮助，请给一个 Star ⭐</strong></h3><p class="code-line"><strong>💡 这是一个设计精良、功能完整的现代化博客系统，适合：</strong></p><ul class="code-line"><li class="code-line"><p>🎓 学习 Spring Boot + Vue 3 全栈开发</p></li><li class="code-line"><p>🚀 快速搭建个人博客网站</p></li><li class="code-line"><p>📚 作为企业级项目开发参考</p></li><li class="code-line"><p>🔧 二次开发和功能扩展</p></li></ul><h1 style="line-height: 1.25"><strong>🚀 Sidifensen Blog</strong></h1><p>现代化个人博客系统 | 前后端分离架构</p><p><a target="_blank" rel="noopener noreferrer nofollow" href="https://file+.vscode-resource.vscode-cdn.net/d%3A/code/sidifensen_blog/README.md#-%E5%8A%9F%E8%83%BD%E7%89%B9%E6%80%A7">功能特性</a>&nbsp;•&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="https://file+.vscode-resource.vscode-cdn.net/d%3A/code/sidifensen_blog/README.md#-%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84">技术架构</a>&nbsp;•&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="https://file+.vscode-resource.vscode-cdn.net/d%3A/code/sidifensen_blog/README.md#-%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B">快速开始</a>&nbsp;•&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="https://file+.vscode-resource.vscode-cdn.net/d%3A/code/sidifensen_blog/README.md#-%E9%83%A8%E7%BD%B2%E6%8C%87%E5%8D%97">部署指南</a>&nbsp;•&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="https://file+.vscode-resource.vscode-cdn.net/d%3A/code/sidifensen_blog/README.md#-%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84">项目结构</a></p><hr><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%93%8B-%E9%A1%B9%E7%9B%AE%E6%A6%82%E8%BF%B0"><strong>📋 项目概述</strong></h2><p class="code-line"><strong>Sidifensen Blog</strong>&nbsp;是一个功能完整的现代化个人博客系统，采用前后端分离架构设计。系统包含用户端展示界面和管理端后台系统，提供了从内容创作到用户交互的完整博客解决方案。</p><h3 style="line-height: 1.25" class="code-line" id="%E2%9C%A8-%E9%A1%B9%E7%9B%AE%E4%BA%AE%E7%82%B9"><strong>✨ 项目亮点</strong></h3><ul class="code-line"><li class="code-line"><p>🎨&nbsp;<strong>现代化 UI</strong>: 基于 Element Plus 的精美界面设计</p></li><li class="code-line"><p>🔒&nbsp;<strong>安全可靠</strong>: Spring Security + JWT 认证，阿里云内容安全检测</p></li><li class="code-line"><p>⚡&nbsp;<strong>高性能</strong>: Redis 缓存 + RabbitMQ 异步处理</p></li><li class="code-line"><p>📱&nbsp;<strong>响应式设计</strong>: 完美适配桌面端和移动端</p></li><li class="code-line"><p>🔧&nbsp;<strong>易于扩展</strong>: 模块化架构，支持功能定制</p></li><li class="code-line"><p>🚀&nbsp;<strong>开箱即用</strong>: Docker 一键部署，快速上线</p></li></ul><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%9B%A0%EF%B8%8F-%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84"><strong>🛠️ 技术架构</strong></h2><table style="min-width: 50px"><colgroup><col style="min-width: 25px"><col style="min-width: 25px"></colgroup><tbody><tr><td colspan="1" rowspan="1"><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%94%A7-%E5%90%8E%E7%AB%AF%E6%8A%80%E6%9C%AF%E6%A0%88"><strong>🔧 后端技术栈</strong></h3><ul class="code-line"><li class="code-line"><p><strong>核心框架</strong>: Spring Boot 3.1.4</p></li><li class="code-line"><p><strong>开发语言</strong>: Java 21</p></li><li class="code-line"><p><strong>安全框架</strong>: Spring Security + JWT</p></li><li class="code-line"><p><strong>数据库</strong>: MySQL 8.1.0</p></li><li class="code-line"><p><strong>ORM框架</strong>: MyBatis-Plus 3.5.12</p></li><li class="code-line"><p><strong>缓存中间件</strong>: Redis</p></li><li class="code-line"><p><strong>消息队列</strong>: RabbitMQ</p></li><li class="code-line"><p><strong>文件存储</strong>: MinIO 8.3.6</p></li><li class="code-line"><p><strong>模板引擎</strong>: Thymeleaf</p></li><li class="code-line"><p><strong>第三方登录</strong>: JustAuth 1.16.7</p></li><li class="code-line"><p><strong>内容安全</strong>: 阿里云图片内容检测</p></li><li class="code-line"><p><strong>工具库</strong>:</p><ul class="code-line"><li class="code-line"><p>Lombok 1.18.38 (代码简化)</p></li><li class="code-line"><p>Hutool 5.8.38 (工具库)</p></li><li class="code-line"><p>FastJSON 2.0.50 (JSON处理)</p></li><li class="code-line"><p>Easy-Captcha 1.6.2 (验证码)</p></li></ul></li></ul></td><td colspan="1" rowspan="1"><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%8E%A8-%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF%E6%A0%88"><strong>🎨 前端技术栈</strong></h3><ul class="code-line"><li class="code-line"><p><strong>核心框架</strong>: Vue 3.5.13</p></li><li class="code-line"><p><strong>构建工具</strong>: Vite 6.2.4</p></li><li class="code-line"><p><strong>UI组件库</strong>: Element Plus 2.10.2+</p></li><li class="code-line"><p><strong>状态管理</strong>: Pinia 3.0.1</p></li><li class="code-line"><p><strong>路由管理</strong>: Vue Router 4.5.0</p></li><li class="code-line"><p><strong>HTTP客户端</strong>: Axios 1.10.0+</p></li><li class="code-line"><p><strong>样式预处理</strong>: Sass</p></li><li class="code-line"><p><strong>图标库</strong>: Element Plus Icons + SVG Icons</p></li><li class="code-line"><p><strong>富文本编辑器</strong>: AiEditor 1.4.0</p></li><li class="code-line"><p><strong>开发工具</strong>:</p><ul class="code-line"><li class="code-line"><p>Vue DevTools 7.7.2</p></li><li class="code-line"><p>Auto Import 19.3.0</p></li><li class="code-line"><p>TypeScript 支持</p></li><li class="code-line"><p>代码混淆保护</p></li></ul></li></ul></td></tr></tbody></table><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%8F%97%EF%B8%8F-%E6%9E%B6%E6%9E%84%E7%89%B9%E7%82%B9"><strong>🏗️ 架构特点</strong></h3><ul class="code-line"><li class="code-line"><p><strong>微服务架构</strong>: 前后端完全分离，独立部署</p></li><li class="code-line"><p><strong>RESTful API</strong>: 标准化的 API 接口设计</p></li><li class="code-line"><p><strong>响应式设计</strong>: 支持多终端适配</p></li><li class="code-line"><p><strong>高可用部署</strong>: Docker 容器化部署</p></li><li class="code-line"><p><strong>安全防护</strong>: 多层安全防护机制</p></li></ul><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%93%81-%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84"><strong>📁 项目结构</strong></h2><pre><code class="language-auto">📦 sidifensen_blog/
+├── 🔧 sidifensen_blog_backend/              # 后端服务 (Spring Boot)
+│   ├── 📂 src/main/java/com/sidifensen/
+│   │   ├── 🎮 controller/                   # REST API 控制器
+│   │   ├── 💼 service/                      # 业务逻辑服务层
+│   │   ├── 🗃️ mapper/                       # MyBatis 数据访问层
+│   │   ├── 📋 domain/                       # 数据实体类
+│   │   ├── 🔐 security/                     # Spring Security 配置
+│   │   ├── 🚀 redis/                        # Redis 缓存配置
+│   │   ├── 📁 minio/                        # MinIO 文件存储配置
+│   │   ├── 📨 rabbitmq/                     # RabbitMQ 消息队列
+│   │   └── 🛠️ utils/                        # 通用工具类
+│   ├── 📂 src/main/resources/
+│   │   ├── ⚙️ application*.yaml             # 应用配置文件
+│   │   ├── 📝 logback-spring.xml            # 日志配置
+│   │   ├── 🗂️ mapper/                       # MyBatis XML 映射文件
+│   │   └── 📧 templates/                    # Thymeleaf 邮件模板
+│   ├── 🐳 Dockerfile                        # Docker 构建文件
+│   ├── 📜 docker.sh                         # Docker 部署脚本
+│   └── 📋 pom.xml                           # Maven 依赖配置
+├── 🎨 sidifensen_blog_frontend/             # 前端应用目录
+│   ├── 👥 sidifensen_user/                  # 用户端界面 (Vue 3)
+│   │   ├── 📂 src/
+│   │   │   ├── 🔌 api/                      # API 接口封装
+│   │   │   ├── 🎭 components/               # 可复用组件
+│   │   │   ├── 📄 views/                    # 页面视图组件
+│   │   │   ├── 🧭 router/                   # 路由配置
+│   │   │   ├── 🗃️ stores/                   # Pinia 状态管理
+│   │   │   └── 🛠️ utils/                    # 前端工具函数
+│   │   ├── 🐳 Dockerfile                    # Docker 构建文件
+│   │   ├── 📜 docker.sh                     # Docker 部署脚本
+│   │   └── 📦 package.json                  # npm 依赖配置
+│   └── 🔧 sidifensen_admin/                 # 管理端后台 (Vue 3)
+│       ├── 📂 src/                          # 源码目录 (结构同用户端)
+│       ├── 🐳 Dockerfile                    # Docker 构建文件
+│       ├── 📜 docker.sh                     # Docker 部署脚本
+│       └── 📦 package.json                  # npm 依赖配置
+├── 🗄️ sql/                                  # 数据库脚本
+│   ├── 📊 sidifensen_blog.sql               # 主数据库结构和数据
+│   └── 🖥️ console.sql                       # 控制台相关脚本
+└── 📖 README.md                             # 项目说明文档
+</code></pre><h2 style="line-height: 1.25" class="code-line" id="%E2%AD%90-%E5%8A%9F%E8%83%BD%E7%89%B9%E6%80%A7"><strong>⭐ 功能特性</strong></h2><table style="min-width: 50px"><colgroup><col style="min-width: 25px"><col style="min-width: 25px"></colgroup><tbody><tr><td colspan="1" rowspan="1"><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%94%90-%E7%94%A8%E6%88%B7%E7%B3%BB%E7%BB%9F"><strong>🔐 用户系统</strong></h3><ul class="code-line"><li class="code-line"><p><strong>多种登录方式</strong>: 账号密码 + 第三方 OAuth 登录</p></li><li class="code-line"><p><strong>权限管理</strong>: 基于角色的访问控制 (RBAC)</p></li><li class="code-line"><p><strong>安全防护</strong>: JWT 认证 + Spring Security</p></li><li class="code-line"><p><strong>邮件验证</strong>: 注册验证码 + 密码重置</p></li><li class="code-line"><p><strong>图形验证码</strong>: 防止恶意注册和登录</p></li></ul><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%93%9D-%E5%86%85%E5%AE%B9%E7%AE%A1%E7%90%86"><strong>📝 内容管理</strong></h3><ul class="code-line"><li class="code-line"><p><strong>富文本编辑</strong>: 支持 Markdown + 所见即所得编辑</p></li><li class="code-line"><p><strong>文章分类</strong>: 多级分类和标签系统</p></li><li class="code-line"><p><strong>图片管理</strong>: MinIO 对象存储 + 图片安全检测</p></li><li class="code-line"><p><strong>内容审核</strong>: 阿里云内容安全自动审核</p></li><li class="code-line"><p><strong>SEO 优化</strong>: 友好的 URL 结构和 Meta 信息</p></li></ul><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%8E%A8-%E7%94%A8%E6%88%B7%E7%95%8C%E9%9D%A2"><strong>🎨 用户界面</strong></h3><ul class="code-line"><li class="code-line"><p><strong>响应式设计</strong>: 完美适配桌面、平板、手机</p></li><li class="code-line"><p><strong>暗黑模式</strong>: 支持明暗主题切换</p></li><li class="code-line"><p><strong>加载动画</strong>: 优雅的加载和过渡效果</p></li><li class="code-line"><p><strong>无限滚动</strong>: 流畅的内容浏览体验</p></li><li class="code-line"><p><strong>搜索功能</strong>: 全文搜索和标签筛选</p></li></ul></td><td colspan="1" rowspan="1"><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%94%A7-%E7%AE%A1%E7%90%86%E5%90%8E%E5%8F%B0"><strong>🔧 管理后台</strong></h3><ul class="code-line"><li class="code-line"><p><strong>仪表盘</strong>: 数据统计和系统监控</p></li><li class="code-line"><p><strong>用户管理</strong>: 用户列表、角色权限管理</p></li><li class="code-line"><p><strong>内容管理</strong>: 文章、分类、标签的 CRUD 操作</p></li><li class="code-line"><p><strong>文件管理</strong>: 图片上传、删除、批量操作</p></li><li class="code-line"><p><strong>系统设置</strong>: 站点配置、邮件配置等</p></li></ul><h3 style="line-height: 1.25" class="code-line" id="%E2%9A%A1-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><strong>⚡ 性能优化</strong></h3><ul class="code-line"><li class="code-line"><p><strong>Redis 缓存</strong>: 热点数据缓存，提升响应速度</p></li><li class="code-line"><p><strong>异步处理</strong>: RabbitMQ 消息队列处理耗时任务</p></li><li class="code-line"><p><strong>CDN 支持</strong>: 静态资源 CDN 加速</p></li><li class="code-line"><p><strong>代码分割</strong>: 前端代码按需加载</p></li><li class="code-line"><p><strong>图片优化</strong>: 图片压缩和懒加载</p></li></ul><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%9A%80-%E9%83%A8%E7%BD%B2%E8%BF%90%E7%BB%B4"><strong>🚀 部署运维</strong></h3><ul class="code-line"><li class="code-line"><p><strong>Docker 支持</strong>: 一键容器化部署</p></li><li class="code-line"><p><strong>多环境配置</strong>: 开发、测试、生产环境分离</p></li><li class="code-line"><p><strong>日志管理</strong>: 结构化日志记录和分析</p></li><li class="code-line"><p><strong>监控告警</strong>: 应用性能监控</p></li><li class="code-line"><p><strong>备份恢复</strong>: 数据库自动备份机制</p></li></ul></td></tr></tbody></table><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%9A%80-%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B"><strong>🚀 快速开始</strong></h2><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%93%8B-%E7%8E%AF%E5%A2%83%E8%A6%81%E6%B1%82"><strong>📋 环境要求</strong></h3><table class="code-line" style="min-width: 75px"><colgroup><col style="min-width: 25px"><col style="min-width: 25px"><col style="min-width: 25px"></colgroup><tbody><tr><th colspan="1" rowspan="1"><p><strong>组件</strong></p></th><th colspan="1" rowspan="1"><p><strong>版本要求</strong></p></th><th colspan="1" rowspan="1"><p><strong>说明</strong></p></th></tr><tr><td colspan="1" rowspan="1"><p>☕ JDK</p></td><td colspan="1" rowspan="1"><p>21+</p></td><td colspan="1" rowspan="1"><p>后端运行环境</p></td></tr><tr><td colspan="1" rowspan="1"><p>🟢 Node.js</p></td><td colspan="1" rowspan="1"><p>18+</p></td><td colspan="1" rowspan="1"><p>前端构建环境</p></td></tr><tr><td colspan="1" rowspan="1"><p>🐬 MySQL</p></td><td colspan="1" rowspan="1"><p>8.0+</p></td><td colspan="1" rowspan="1"><p>主数据库</p></td></tr><tr><td colspan="1" rowspan="1"><p>🔴 Redis</p></td><td colspan="1" rowspan="1"><p>6.0+</p></td><td colspan="1" rowspan="1"><p>缓存数据库</p></td></tr><tr><td colspan="1" rowspan="1"><p>🐰 RabbitMQ</p></td><td colspan="1" rowspan="1"><p>3.8+</p></td><td colspan="1" rowspan="1"><p>消息队列</p></td></tr><tr><td colspan="1" rowspan="1"><p>🐳 Docker</p></td><td colspan="1" rowspan="1"><p>20.0+</p></td><td colspan="1" rowspan="1"><p>容器化部署 (可选)</p></td></tr></tbody></table><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%92%BE-%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%9D%E5%A7%8B%E5%8C%96"><strong>💾 数据库初始化</strong></h3><pre><code class="language-bash"># 1. 创建数据库
+mysql -u root -p
+CREATE DATABASE sidifensen_blog CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+# 2. 导入数据结构
+mysql -u root -p sidifensen_blog &lt; sql/sidifensen_blog.sql
+</code></pre><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%94%A7-%E5%90%8E%E7%AB%AF%E5%90%AF%E5%8A%A8"><strong>🔧 后端启动</strong></h3><pre><code class="language-bash"># 克隆项目
+git clone https://github.com/your-username/sidifensen_blog.git
+cd sidifensen_blog/sidifensen_blog_backend
+
+# 配置数据库连接# 编辑 src/main/resources/application-dev.yaml 文件# 修改数据库、Redis、RabbitMQ 连接信息
+
+# 启动后端服务
+mvn clean install
+mvn spring-boot:run
+
+# 或者使用 IDE 直接运行 SidifensenBlogBackendApplication.java</code></pre><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%8E%A8-%E5%89%8D%E7%AB%AF%E5%90%AF%E5%8A%A8"><strong>🎨 前端启动</strong></h3><pre><code class="language-bash"># 用户端启动cd sidifensen_blog_frontend/sidifensen_user
+npm install
+npm run dev
+# 访问 http://localhost:5173
+
+# 管理端启动 (新开终端)cd sidifensen_blog_frontend/sidifensen_admin
+npm install  
+npm run dev
+# 访问 http://localhost:5174</code></pre><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%8C%90-%E8%AE%BF%E9%97%AE%E5%BA%94%E7%94%A8"><strong>🌐 访问应用</strong></h3><p class="code-line">启动成功后，可通过以下地址访问：</p><ul class="code-line"><li class="code-line"><p>📱&nbsp;<strong>用户端</strong>:&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="http://localhost:5173/">http://localhost:5173</a>&nbsp;(博客前台)</p></li><li class="code-line"><p>🔧&nbsp;<strong>管理端</strong>:&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="http://localhost:5174/">http://localhost:5174</a>&nbsp;(后台管理)</p></li><li class="code-line"><p>🔌&nbsp;<strong>后端API</strong>:&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="http://localhost:8080/">http://localhost:8080</a>&nbsp;(REST API)</p></li></ul><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%90%B3-%E9%83%A8%E7%BD%B2%E6%8C%87%E5%8D%97"><strong>🐳 部署指南</strong></h2><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%94%A7-%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2"><strong>🔧 生产环境部署</strong></h3><h4 style="line-height: 1.25" class="code-line" id="1%EF%B8%8F%E2%83%A3-%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><strong>1️⃣ 环境准备</strong></h4><pre><code class="language-bash"># 安装 Docker 和 Docker Compose
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# 安装 Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.0.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+</code></pre><h4 style="line-height: 1.25" class="code-line" id="2%EF%B8%8F%E2%83%A3-%E5%90%8E%E7%AB%AF%E9%83%A8%E7%BD%B2"><strong>2️⃣ 后端部署</strong></h4><pre><code class="language-bash">cd sidifensen_blog_backend
+
+# 1. 修改生产环境配置
+vim src/main/resources/application-prod.yaml
+
+# 2. 构建 JAR 包
+mvn clean package -DskipTests
+
+# 3. 构建 Docker 镜像并启动chmod +x docker.sh
+./docker.sh
+
+# 或者手动执行
+docker build -t sidifensen-blog-backend .
+docker run -d -p 8080:8080 --name sidifensen-blog-backend sidifensen-blog-backend
+</code></pre><h4 style="line-height: 1.25" class="code-line" id="3%EF%B8%8F%E2%83%A3-%E5%89%8D%E7%AB%AF%E9%83%A8%E7%BD%B2"><strong>3️⃣ 前端部署</strong></h4><pre><code class="language-bash"># 用户端部署cd sidifensen_blog_frontend/sidifensen_user
+npm run build
+chmod +x docker.sh
+./docker.sh
+
+# 管理端部署  cd ../sidifensen_admin
+npm run build
+chmod +x docker.sh
+./docker.sh
+</code></pre><h4 style="line-height: 1.25" class="code-line" id="4%EF%B8%8F%E2%83%A3-%E4%BD%BF%E7%94%A8-docker-compose-%E4%B8%80%E9%94%AE%E9%83%A8%E7%BD%B2"><strong>4️⃣ 使用 Docker Compose 一键部署</strong></h4><p class="code-line">创建&nbsp;<code>docker-compose.yml</code>&nbsp;文件：</p><pre><code class="language-yaml">version: '3.8'services:mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: your_password
+      MYSQL_DATABASE: sidifensen_blog
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis:6.2
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3.8-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  backend:
+    build: ./sidifensen_blog_backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - redis
+      - rabbitmq
+
+  frontend-user:
+    build: ./sidifensen_blog_frontend/sidifensen_user
+    ports:
+      - "7000:80"
+
+  frontend-admin:
+    build: ./sidifensen_blog_frontend/sidifensen_admin
+    ports:
+      - "8000:80"
+
+volumes:mysql_data:</code></pre><pre><code class="language-bash"># 一键启动所有服务
+docker-compose up -d
+</code></pre><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%8C%90-%E8%AE%BF%E9%97%AE%E5%9C%B0%E5%9D%80"><strong>🌐 访问地址</strong></h3><p class="code-line">部署完成后，可通过以下地址访问：</p><table class="code-line" style="min-width: 75px"><colgroup><col style="min-width: 25px"><col style="min-width: 25px"><col style="min-width: 25px"></colgroup><tbody><tr><th colspan="1" rowspan="1"><p><strong>服务</strong></p></th><th colspan="1" rowspan="1"><p><strong>地址</strong></p></th><th colspan="1" rowspan="1"><p><strong>说明</strong></p></th></tr><tr><td colspan="1" rowspan="1"><p>📱 用户端</p></td><td colspan="1" rowspan="1"><p><a target="_blank" rel="noopener noreferrer nofollow" href="http://your-domain:7000/">http://your-domain:7000</a></p></td><td colspan="1" rowspan="1"><p>博客前台展示</p></td></tr><tr><td colspan="1" rowspan="1"><p>🔧 管理端</p></td><td colspan="1" rowspan="1"><p><a target="_blank" rel="noopener noreferrer nofollow" href="http://your-domain:8000/">http://your-domain:8000</a></p></td><td colspan="1" rowspan="1"><p>后台管理系统</p></td></tr><tr><td colspan="1" rowspan="1"><p>🔌 后端API</p></td><td colspan="1" rowspan="1"><p><a target="_blank" rel="noopener noreferrer nofollow" href="http://your-domain:8080/">http://your-domain:8080</a></p></td><td colspan="1" rowspan="1"><p>REST API 接口</p></td></tr><tr><td colspan="1" rowspan="1"><p>🐰 RabbitMQ</p></td><td colspan="1" rowspan="1"><p><a target="_blank" rel="noopener noreferrer nofollow" href="http://your-domain:15672/">http://your-domain:15672</a></p></td><td colspan="1" rowspan="1"><p>消息队列管理</p></td></tr></tbody></table><h3 style="line-height: 1.25" class="code-line" id="%E2%9A%99%EF%B8%8F-%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E"><strong>⚙️ 配置说明</strong></h3><p class="code-line"><strong>重要配置项：</strong></p><ul class="code-line"><li class="code-line"><p>数据库连接信息</p></li><li class="code-line"><p>Redis 连接配置</p></li><li class="code-line"><p>RabbitMQ 连接配置</p></li><li class="code-line"><p>MinIO 存储配置</p></li><li class="code-line"><p>阿里云内容安全配置</p></li><li class="code-line"><p>邮件服务配置</p></li></ul><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%91%A8%E2%80%8D%F0%9F%92%BB-%E5%BC%80%E5%8F%91%E8%AF%B4%E6%98%8E"><strong>👨‍💻 开发说明</strong></h2><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%94%A7-%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83"><strong>🔧 后端开发规范</strong></h3><pre><code class="language-java">// 示例：统一返回格式@RestController@RequestMapping("/api/articles")public class ArticleController {
+    
+    @GetMapping
+    public Result&lt;PageInfo&lt;Article&gt;&gt; getArticles(
+        @RequestParam(defaultValue = "1") Integer pageNum,
+        @RequestParam(defaultValue = "10") Integer pageSize
+    ) {
+        return Result.success(articleService.getArticles(pageNum, pageSize));
+    }
+}
+</code></pre><p class="code-line"><strong>开发要点：</strong></p><ul class="code-line"><li class="code-line"><p>📋 遵循 Spring Boot 最佳实践和阿里巴巴 Java 开发手册</p></li><li class="code-line"><p>🗃️ 使用 MyBatis-Plus 简化数据库操作，支持分页和条件构造器</p></li><li class="code-line"><p>🏗️ 采用三层架构：Controller → Service → Mapper</p></li><li class="code-line"><p>📝 使用 Lombok 减少样板代码，提高开发效率</p></li><li class="code-line"><p>🔌 RESTful API 设计，统一返回格式&nbsp;<code>Result&lt;T&gt;</code></p></li><li class="code-line"><p>✅ 参数校验使用&nbsp;<code>@Valid</code>&nbsp;和&nbsp;<code>@Validated</code>&nbsp;注解</p></li><li class="code-line"><p>📊 集成 Swagger/OpenAPI 3.0 用于 API 文档生成</p></li></ul><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%8E%A8-%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83"><strong>🎨 前端开发规范</strong></h3><pre><code class="language-vue">&lt;!-- 示例：组件开发模板 --&gt;
+&lt;template&gt;
+  &lt;div class="article-list"&gt;
+    &lt;el-card v-for="article in articles" :key="article.id"&gt;
+      &lt;h3&gt;{{ article.title }}&lt;/h3&gt;
+      &lt;p&gt;{{ article.summary }}&lt;/p&gt;
+    &lt;/el-card&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { ref, onMounted } from 'vue'
+import { getArticles } from '@/api/article'
+
+const articles = ref([])
+
+const loadArticles = async () =&gt; {
+  const { data } = await getArticles()
+  articles.value = data.list
+}
+
+onMounted(() =&gt; {
+  loadArticles()
+})
+&lt;/script&gt;
+</code></pre><p class="code-line"><strong>开发要点：</strong></p><ul class="code-line"><li class="code-line"><p>🎯 使用 Vue 3 Composition API，代码更加清晰和可复用</p></li><li class="code-line"><p>🗃️ Pinia 状态管理，支持状态持久化</p></li><li class="code-line"><p>🎨 Element Plus 组件库，确保 UI 一致性</p></li><li class="code-line"><p>📱 响应式设计，使用 CSS Grid 和 Flexbox</p></li><li class="code-line"><p>🔧 Vite 构建工具，支持热更新和快速构建</p></li><li class="code-line"><p>📦 自动导入插件，减少重复的 import 语句</p></li><li class="code-line"><p>🔒 代码混淆和压缩，保护前端代码</p></li></ul><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%A7%AA-%E6%B5%8B%E8%AF%95%E5%92%8C%E8%B4%A8%E9%87%8F%E4%BF%9D%E8%AF%81"><strong>🧪 测试和质量保证</strong></h3><ul class="code-line"><li class="code-line"><p><strong>单元测试</strong>: JUnit 5 + Mockito (后端)，Vitest (前端)</p></li><li class="code-line"><p><strong>集成测试</strong>: TestContainers 用于数据库集成测试</p></li><li class="code-line"><p><strong>代码质量</strong>: SonarQube 代码质量检测</p></li><li class="code-line"><p><strong>API 测试</strong>: Postman 集合和自动化测试脚本</p></li></ul><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%A4%9D-%E8%B4%A1%E7%8C%AE%E6%8C%87%E5%8D%97"><strong>🤝 贡献指南</strong></h2><p class="code-line">我们欢迎所有形式的贡献！请遵循以下步骤：</p><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%93%9D-%E6%8F%90%E4%BA%A4%E6%B5%81%E7%A8%8B"><strong>📝 提交流程</strong></h3><ol class="code-line"><li class="code-line"><p><strong>Fork 项目</strong>&nbsp;到你的 GitHub 账号</p></li><li class="code-line"><p><strong>创建特性分支</strong>:&nbsp;<code>git checkout -b feature/amazing-feature</code></p></li><li class="code-line"><p><strong>提交更改</strong>:&nbsp;<code>git commit -m 'Add some amazing feature'</code></p></li><li class="code-line"><p><strong>推送分支</strong>:&nbsp;<code>git push origin feature/amazing-feature</code></p></li><li class="code-line"><p><strong>创建 Pull Request</strong></p></li></ol><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%90%9B-%E9%97%AE%E9%A2%98%E6%8A%A5%E5%91%8A"><strong>🐛 问题报告</strong></h3><p class="code-line">发现 Bug 或有新功能建议？请通过&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="https://github.com/your-username/sidifensen_blog/issues">GitHub Issues</a>&nbsp;提交。</p><p class="code-line"><strong>Bug 报告请包含：</strong></p><ul class="code-line"><li class="code-line"><p>🔍 详细的问题描述</p></li><li class="code-line"><p>🔄 重现步骤</p></li><li class="code-line"><p>💻 运行环境信息</p></li><li class="code-line"><p>📸 截图或错误日志</p></li></ul><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%93%84-%E8%AE%B8%E5%8F%AF%E8%AF%81"><strong>📄 许可证</strong></h2><p class="code-line">本项目基于&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="https://file+.vscode-resource.vscode-cdn.net/d%3A/code/sidifensen_blog/LICENSE">MIT License</a>&nbsp;开源协议。</p><h2 style="line-height: 1.25" class="code-line" id="%F0%9F%93%9E-%E8%81%94%E7%B3%BB%E6%96%B9%E5%BC%8F"><strong>📞 联系方式</strong></h2><p class="code-line"><strong>如有问题或建议，欢迎通过以下方式联系：</strong></p><hr><h3 style="line-height: 1.25" class="code-line" id="%F0%9F%8C%9F-%E5%A6%82%E6%9E%9C%E8%BF%99%E4%B8%AA%E9%A1%B9%E7%9B%AE%E5%AF%B9%E4%BD%A0%E6%9C%89%E5%B8%AE%E5%8A%A9%E8%AF%B7%E7%BB%99%E4%B8%80%E4%B8%AA-star-%E2%AD%90"><strong>🌟 如果这个项目对你有帮助，请给一个 Star ⭐</strong></h3><p class="code-line"><strong>💡 这是一个设计精良、功能完整的现代化博客系统，适合：</strong></p><ul class="code-line"><li class="code-line"><p>🎓 学习 Spring Boot + Vue 3 全栈开发</p></li><li class="code-line"><p>🚀 快速搭建个人博客网站</p></li><li class="code-line"><p>📚 作为企业级项目开发参考</p></li><li class="code-line"><p>🔧 二次开发和功能扩展</p></li></ul>

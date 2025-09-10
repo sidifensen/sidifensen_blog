@@ -76,7 +76,7 @@ onMounted(async () => {
 <style lang="scss" scoped>
 // 文章详情页面主容器
 .article-detail {
-  min-height: 100vh;
+  height: 100%;
   background-color: var(--el-bg-color-page);
   padding: 20px 0;
 
@@ -92,13 +92,14 @@ onMounted(async () => {
     // 左侧用户信息栏
     .left-sidebar {
       position: sticky;
-      top: 80px;
+      top: 70px;
       height: fit-content;
     }
 
     // 中间文章内容区域
     .main-content {
-      min-height: 500px;
+      width: 100%;
+      overflow: hidden;
       background-color: var(--el-bg-color);
       border-radius: 8px;
       box-shadow: var(--el-box-shadow-light);
@@ -107,7 +108,7 @@ onMounted(async () => {
     // 右侧文章目录栏
     .right-sidebar {
       position: sticky;
-      top: 80px;
+      top: 70px;
       height: fit-content;
     }
   }
@@ -136,6 +137,7 @@ onMounted(async () => {
     .article-container {
       padding: 0 10px;
       gap: 10px;
+      width: 100%;
     }
   }
 }

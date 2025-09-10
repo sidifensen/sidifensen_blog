@@ -1,7 +1,9 @@
 <template>
   <div class="article-catalog">
     <div class="catalog-header">
-      <el-icon><Document /></el-icon>
+      <el-icon>
+        <Document />
+      </el-icon>
       <span>目录</span>
     </div>
 

@@ -1,10 +1,10 @@
 package com.sidifensen.controller;
 
-
 import com.sidifensen.domain.dto.ArticleAuditDto;
 import com.sidifensen.domain.dto.ArticleDto;
 import com.sidifensen.domain.dto.ArticleStatusDto;
 import com.sidifensen.domain.result.Result;
+import com.sidifensen.domain.vo.ArticleStatisticsVo;
 import com.sidifensen.domain.vo.ArticleVo;
 import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.service.ArticleService;
@@ -43,11 +43,22 @@ public class ArticleController {
      * @return 用户文章列表
      */
     @PostMapping("/user/list")
-    public Result getUserArticleList(@NotNull Integer pageNum, @NotNull Integer pageSize, @RequestBody ArticleStatusDto articleStatusDto) {
+    public Result getUserArticleList(@NotNull Integer pageNum, @NotNull Integer pageSize,
+            @RequestBody ArticleStatusDto articleStatusDto) {
         PageVo<List<ArticleVo>> articleVoList = articleService.getUserArticleList(pageNum, pageSize, articleStatusDto);
         return Result.success(articleVoList);
     }
 
+    /**
+     * 获取用户文章状态统计
+     *
+     * @return 用户文章状态统计
+     */
+    @GetMapping("/user/statistics")
+    public Result getUserArticleStatistics() {
+        ArticleStatisticsVo statisticsVo = articleService.getUserArticleStatistics();
+        return Result.success(statisticsVo);
+    }
 
     /**
      * 获取用户文章详情

@@ -60,7 +60,9 @@
           <div class="filter-item">
             <el-input v-model="searchKeyword" placeholder="请输入关键词" @keyup.enter="handleSearch" class="search-input">
               <template #prefix>
-                <el-icon><Search /></el-icon>
+                <el-icon>
+                  <Search />
+                </el-icon>
               </template>
             </el-input>
           </div>
@@ -81,7 +83,18 @@
         <div v-else class="article-cards">
           <el-card v-for="article in articles" :key="article.id" class="article-card">
             <div class="article-card-content">
-              <el-image :src="article.coverUrl" alt="文章封面" class="article-cover" />
+              <el-image :src="article.coverUrl" alt="文章封面" class="article-cover">
+                <template #placeholder>
+                  <div class="loading-text">加载中...</div>
+                </template>
+                <template #error>
+                  <div class="error">
+                    <el-icon>
+                      <Picture />
+                    </el-icon>
+                  </div>
+                </template>
+              </el-image>
               <div class="article-info">
                 <div class="article-header">
                   <span class="article-title">{{ article.title }}</span>
@@ -102,19 +115,27 @@
                 </div>
                 <div class="article-stats">
                   <div class="stat-item">
-                    <el-icon><View /></el-icon>
+                    <el-icon>
+                      <View />
+                    </el-icon>
                     <span>{{ article.readCount || 0 }}</span>
                   </div>
                   <div class="stat-item">
-                    <el-icon><Pointer /></el-icon>
+                    <el-icon>
+                      <Pointer />
+                    </el-icon>
                     <span>{{ article.likeCount || 0 }}</span>
                   </div>
                   <div class="stat-item">
-                    <el-icon><Message /></el-icon>
+                    <el-icon>
+                      <Message />
+                    </el-icon>
                     <span>{{ article.commentCount || 0 }}</span>
                   </div>
                   <div class="stat-item">
-                    <el-icon><Collection /></el-icon>
+                    <el-icon>
+                      <Collection />
+                    </el-icon>
                     <span>{{ article.collectCount || 0 }}</span>
                   </div>
                 </div>
@@ -148,7 +169,7 @@
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
-import { deleteArticle, getUserArticleList, updateArticle } from "@/api/article";
+import { deleteArticle, getUserArticleList, getUserArticleStatistics, updateArticle } from "@/api/article";
 import { Search, View, Message, Pointer, Edit, Delete, Collection } from "@element-plus/icons-vue";
 import { useUserStore } from "@/stores/userStore";
 
@@ -163,7 +184,7 @@ const loadingMore = ref(false);
 // 当前页码
 const currentPage = ref(1);
 // 页面大小
-const pageSize = ref(10);
+const pageSize = ref(20);
 // 是否还有更多数据
 const hasMore = ref(true);
 // 搜索关键词
@@ -352,9 +373,6 @@ const loadArticles = async (reset = false) => {
     const total = result.data ? result.data.total || 0 : 0;
     // console.log("加载数据:", { currentPage: currentPage.value, newArticlesCount: newArticles.length, total });
 
-    // 更新总数量统计
-    totalCount.value = total;
-
     if (reset) {
       // 初次加载或筛选条件改变时
       articles.value = newArticles;
@@ -366,12 +384,6 @@ const loadArticles = async (reset = false) => {
       // 合并新数据后更新筛选选项
       updateDateFiltersFromArticles(articles.value);
     }
-
-    // 重新计算各状态数量（基于所有已加载的文章）
-    publishedCount.value = articles.value.filter((item) => item.editStatus === 0 && item.examineStatus === 1).length;
-    reviewingCount.value = articles.value.filter((item) => item.editStatus === 0 && item.examineStatus === 0).length;
-    draftCount.value = articles.value.filter((item) => item.editStatus === 1).length;
-    garbageCount.value = articles.value.filter((item) => item.editStatus === 2).length;
 
     // 判断是否还有更多数据
     hasMore.value = articles.value.length < total;
@@ -404,7 +416,9 @@ const handleDeleteToDraftArticle = async (articleId) => {
   updateArticle(ArticleDto)
     .then((res) => {
       ElMessage.success("文章删除成功");
-      loadArticles();
+      // 重新加载文章列表和统计数据
+      loadArticles(true);
+      loadStatistics();
     })
     .catch((err) => {
       ElMessage.error("文章删除失败");
@@ -420,7 +434,9 @@ const handleRecyleToDraftArticle = async (articleId) => {
   updateArticle(ArticleDto)
     .then((res) => {
       ElMessage.success("文章回收成功");
-      loadArticles();
+      // 重新加载文章列表和统计数据
+      loadArticles(true);
+      loadStatistics();
     })
     .catch((err) => {
       ElMessage.error("文章回收失败");
@@ -438,7 +454,9 @@ const handleDeleteArticle = async (articleId) => {
     await deleteArticle(articleId)
       .then(() => {
         ElMessage.success("文章删除成功");
-        loadArticles();
+        // 重新加载文章列表和统计数据
+        loadArticles(true);
+        loadStatistics();
       })
       .catch((err) => {
         ElMessage.error("文章删除失败");
@@ -493,9 +511,33 @@ const updateDateFiltersFromArticles = (articleList) => {
   availableYears.value = years;
 };
 
+// 加载文章状态统计数据
+const loadStatistics = async () => {
+  try {
+    const res = await getUserArticleStatistics();
+    const statistics = res.data.data || {};
+
+    // 更新统计数据
+    totalCount.value = statistics.totalCount || 0;
+    publishedCount.value = statistics.publishedCount || 0;
+    reviewingCount.value = statistics.reviewingCount || 0;
+    draftCount.value = statistics.draftCount || 0;
+    garbageCount.value = statistics.garbageCount || 0;
+  } catch (error) {
+    console.error("加载统计数据失败:", error);
+    // 如果统计接口失败，使用默认值
+    totalCount.value = 0;
+    publishedCount.value = 0;
+    reviewingCount.value = 0;
+    draftCount.value = 0;
+    garbageCount.value = 0;
+  }
+};
+
 // 组件挂载时的处理
 onMounted(async () => {
-  await loadArticles(true);
+  // 同时加载文章列表和统计数据
+  await Promise.all([loadArticles(true), loadStatistics()]);
 });
 
 // 组件卸载时的处理
@@ -608,6 +650,32 @@ onUnmounted(() => {
               object-fit: cover;
               border-radius: 4px;
               margin-bottom: 12px;
+
+              .loading-text {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+                height: 100%;
+                font-size: 16px;
+                color: #606266;
+                background-color: #f5f5f5;
+              }
+
+              // 错误占位图标样式
+              .error {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+                height: 100%;
+                background-color: #f5f5f5;
+
+                .el-icon {
+                  font-size: 40px;
+                  color: #909399;
+                }
+              }
             }
 
             .article-info {
@@ -761,6 +829,7 @@ onUnmounted(() => {
     0% {
       transform: rotate(0deg);
     }
+
     100% {
       transform: rotate(360deg);
     }

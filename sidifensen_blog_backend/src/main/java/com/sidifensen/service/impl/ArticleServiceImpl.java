@@ -23,6 +23,7 @@ import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.enums.MessageTypeEnum;
 import com.sidifensen.domain.enums.VisibleRangeEnum;
 import com.sidifensen.domain.result.ImageAuditResult;
+import com.sidifensen.domain.vo.ArticleStatisticsVo;
 import com.sidifensen.domain.vo.ArticleVo;
 import com.sidifensen.domain.vo.ColumnVo;
 import com.sidifensen.domain.vo.PageVo;
@@ -38,7 +39,6 @@ import com.sidifensen.utils.SecurityUtils;
 import com.sidifensen.utils.TextAuditUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
@@ -116,9 +116,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .eq(userId != 0, Article::getUserId, userId)
                 .eq(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatus()), Article::getExamineStatus,
                         articleStatusDto.getExamineStatus())
-                .eq(Article::getEditStatus, ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus())
-                        ? articleStatusDto.getEditStatus()
-                        : EditStatusEnum.PUBLISHED.getCode())
+                // .eq(Article::getEditStatus,
+                // ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus())
+                // ? articleStatusDto.getEditStatus()
+                // : EditStatusEnum.PUBLISHED.getCode())
+                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus()), Article::getEditStatus,
+                        articleStatusDto.getEditStatus())
                 .eq(ObjectUtil.isNotEmpty(articleStatusDto.getVisibleRange()), Article::getVisibleRange,
                         articleStatusDto.getVisibleRange())
                 .eq(ObjectUtil.isNotEmpty(articleStatusDto.getReprintType()), Article::getReprintType,
@@ -166,6 +169,43 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }).toList();
 
         return new PageVo<>(articleVoList, page.getTotal());
+    }
+
+    @Override
+    public ArticleStatisticsVo getUserArticleStatistics() {
+        Integer userId = SecurityUtils.getUserId();
+
+        // 查询用户的所有文章
+        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
+                .eq(Article::getUserId, userId);
+        List<Article> articles = articleMapper.selectList(qw);
+
+        // 统计各种状态的数量
+        long totalCount = articles.size();
+        long publishedCount = articles.stream()
+                .filter(article -> article.getEditStatus() == EditStatusEnum.PUBLISHED.getCode()
+                        && article.getExamineStatus() == ExamineStatusEnum.PASS.getCode())
+                .count();
+        long reviewingCount = articles.stream()
+                .filter(article -> article.getEditStatus() == EditStatusEnum.PUBLISHED.getCode()
+                        && article.getExamineStatus() == ExamineStatusEnum.WAIT.getCode())
+                .count();
+        long draftCount = articles.stream()
+                .filter(article -> article.getEditStatus() == EditStatusEnum.DRAFT.getCode())
+                .count();
+        long garbageCount = articles.stream()
+                .filter(article -> article.getEditStatus() == EditStatusEnum.RECYCLE.getCode())
+                .count();
+
+        // 构建返回对象
+        ArticleStatisticsVo statisticsVo = new ArticleStatisticsVo();
+        statisticsVo.setTotalCount(totalCount);
+        statisticsVo.setPublishedCount(publishedCount);
+        statisticsVo.setReviewingCount(reviewingCount);
+        statisticsVo.setDraftCount(draftCount);
+        statisticsVo.setGarbageCount(garbageCount);
+
+        return statisticsVo;
     }
 
     @Override
