@@ -125,6 +125,16 @@ public class SysUser implements Serializable {
     @TableLogic
     private Integer isDeleted;
 
+    /**
+     * 粉丝数
+     */
+    private Integer fansCount;
+
+    /**
+     * 关注数
+     */
+    private Integer followCount;
+
     // 角色信息
     @TableField(exist = false)
     private List<SysRole> sysRoles = new ArrayList<>();
@@ -136,6 +146,5 @@ public class SysUser implements Serializable {
     // 权限信息
     @TableField(exist = false)
     private List<SysPermission> sysPermissions = new ArrayList<>();
-
 
 }

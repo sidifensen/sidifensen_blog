@@ -73,14 +73,7 @@
                       </div>
                       <div class="tag-list">
                         <div class="available-tags-section">
-                          <el-tag
-                            v-for="tag in getTagsByCategory(activeCategory)"
-                            :key="tag"
-                            :class="{ 'tag-item-active': tags.includes(tag) }"
-                            :disabled="tags.length >= 5 && !tags.includes(tag)"
-                            class="available-tag"
-                            size="small"
-                            @click="toggleTag(tag)">
+                          <el-tag v-for="tag in getTagsByCategory(activeCategory)" :key="tag" :class="{ 'tag-item-active': tags.includes(tag) }" :disabled="tags.length >= 5 && !tags.includes(tag)" class="available-tag" size="small" @click="toggleTag(tag)">
                             {{ tag }}
                           </el-tag>
                         </div>
@@ -1120,11 +1113,6 @@ const handleSaveDraft = async () => {
         height: calc(100vh - 168px);
         margin: auto;
         border-radius: 8px;
-        :deep(img) {
-          width: auto !important;
-          max-width: 100% !important;
-          height: auto !important;
-        }
         // 文章标题区域样式
         .article-title-container {
           width: 100%;
@@ -1156,6 +1144,31 @@ const handleSaveDraft = async () => {
           padding: 16px;
           background: var(--el-bg-color);
           border: none;
+          :deep(img) {
+            width: auto !important;
+            max-width: 100% !important;
+            height: auto !important;
+          }
+
+          // 表格样式 - 简单有效的滚动解决方案
+          :deep(table) {
+            min-width: 100% !important;
+            max-width: 100% !important;
+            border-collapse: collapse;
+            margin: 16px 0;
+            border-radius: 4px;
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+            p {
+              text-align: center;
+            }
+
+            // 自定义滚动条样式，确保可见
+            &::-webkit-scrollbar {
+              height: 10px;
+            }
+          }
         }
         // 发布文章设置样式
         .publish-settings {
@@ -1490,7 +1503,6 @@ const handleSaveDraft = async () => {
           // 文章类型设置
           .reprint-type-setting {
             display: flex;
-            align-items: center;
             margin-bottom: 16px;
             :deep(.el-radio) {
               width: auto; // 留足够宽度
@@ -1528,7 +1540,8 @@ const handleSaveDraft = async () => {
         width: 60px;
         height: 60px;
         font-size: 30px;
-        background: var(--el-bg-color);
+        backdrop-filter: blur(2px);
+        background-color: color-mix(in srgb, var(--el-bg-color) 50%, transparent);
         border: 1px solid var(--el-border-color);
         border-radius: 50%;
         cursor: pointer;
@@ -1537,8 +1550,12 @@ const handleSaveDraft = async () => {
           height: 50px;
           font-size: 24px;
         }
+
         &:hover {
-          background: var(--el-hover-bg-color);
+          background: var(--el-color-primary);
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
         }
       }
     }

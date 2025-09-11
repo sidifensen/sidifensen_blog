@@ -24,7 +24,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { ElMessage } from "element-plus";
-import { getArticleDetail } from "@/api/article";
+import { getArticleDetail, getUserArticleStatistics } from "@/api/article";
 import { getUserInfo } from "@/api/user";
 import UserInfoCard from "./components/UserInfoCard.vue";
 import ArticleContent from "./components/ArticleContent.vue";
@@ -46,6 +46,10 @@ const fetchUserInfo = async () => {
     userLoading.value = true;
     const response = await getUserInfo(userId);
     userInfo.value = response.data.data;
+
+    // 获取用户文章统计信息
+    const statisticsResponse = await getUserArticleStatistics();
+    userInfo.value.articleCount = statisticsResponse.data.data.totalCount || 0;
   } catch (error) {
     ElMessage.error("获取用户信息失败");
   } finally {

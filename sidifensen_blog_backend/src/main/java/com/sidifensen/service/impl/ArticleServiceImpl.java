@@ -45,10 +45,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -109,7 +106,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public PageVo<List<ArticleVo>> getUserArticleList(Integer pageNum, Integer pageSize,
-            ArticleStatusDto articleStatusDto) {
+                                                      ArticleStatusDto articleStatusDto) {
         Integer userId = SecurityUtils.getUserId();
         Page<Article> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
@@ -175,26 +172,27 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public ArticleStatisticsVo getUserArticleStatistics() {
         Integer userId = SecurityUtils.getUserId();
 
-        // 查询用户的所有文章
+        // 一次查询获取用户所有文章的编辑状态和审核状态
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
+                .select(Article::getEditStatus, Article::getExamineStatus)
                 .eq(Article::getUserId, userId);
         List<Article> articles = articleMapper.selectList(qw);
 
         // 统计各种状态的数量
         long totalCount = articles.size();
         long publishedCount = articles.stream()
-                .filter(article -> article.getEditStatus() == EditStatusEnum.PUBLISHED.getCode()
-                        && article.getExamineStatus() == ExamineStatusEnum.PASS.getCode())
+                .filter(article -> Objects.equals(article.getEditStatus(), EditStatusEnum.PUBLISHED.getCode())
+                        && Objects.equals(article.getExamineStatus(), ExamineStatusEnum.PASS.getCode()))
                 .count();
         long reviewingCount = articles.stream()
-                .filter(article -> article.getEditStatus() == EditStatusEnum.PUBLISHED.getCode()
-                        && article.getExamineStatus() == ExamineStatusEnum.WAIT.getCode())
+                .filter(article -> Objects.equals(article.getEditStatus(), EditStatusEnum.PUBLISHED.getCode())
+                        && Objects.equals(article.getExamineStatus(), ExamineStatusEnum.WAIT.getCode()))
                 .count();
         long draftCount = articles.stream()
-                .filter(article -> article.getEditStatus() == EditStatusEnum.DRAFT.getCode())
+                .filter(article -> Objects.equals(article.getEditStatus(), EditStatusEnum.DRAFT.getCode()))
                 .count();
         long garbageCount = articles.stream()
-                .filter(article -> article.getEditStatus() == EditStatusEnum.RECYCLE.getCode())
+                .filter(article -> Objects.equals(article.getEditStatus(), EditStatusEnum.RECYCLE.getCode()))
                 .count();
 
         // 构建返回对象
@@ -252,20 +250,20 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
             MessageDto messageDto = new MessageDto();
             messageDto.setType(MessageTypeEnum.SYSTEM.getCode());
+            // 先更新文章的审核状态
+            Article updateArticle = new Article();
+            updateArticle.setId(articleDto.getId());
             // 进行自动审核
             if (sidifensenConfig.isArticleAutoAudit()) {
                 ImageAuditResult auditResult = textAuditUtils
                         .auditTextWithDetailsSplit(articleDto.getTitle() + " " + articleDto.getContent());
 
-                // 先更新文章的审核状态
-                Article updateArticle = new Article();
-                updateArticle.setId(articleDto.getId());
 
                 if (auditResult.getStatus().equals(ExamineStatusEnum.PASS.getCode())) {
                     // 文字审核通过，更新审核状态为通过
                     updateArticle.setExamineStatus(ExamineStatusEnum.PASS.getCode());
                     articleMapper.updateById(updateArticle);
-                    log.info("文章审核通过，ID: {}", String.valueOf(articleDto.getId()));
+                    log.info("文章审核通过，ID: {}", articleDto.getId());
 
                     // 文字审核通过，更新文章所属的专栏
                     if (ObjectUtil.isNotEmpty(articleDto.getColumnIds())) {
@@ -311,6 +309,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                             RabbitMQConstants.Examine_Routing_Key, sendEmail);
                 }
             } else {
+                updateArticle.setExamineStatus(ExamineStatusEnum.WAIT.getCode());
+                articleMapper.updateById(updateArticle);
                 // 没有开启自动审核, 需要人工审核，发送消息给管理员
                 messageDto.setContent(
                         MessageConstants.ArticleNeedReview(articleDto.getId(), articleDto.getTitle(), null));

@@ -28,7 +28,7 @@
           </el-sub-menu>
         </el-menu>
       </el-aside>
-      <el-main>
+      <el-main class="main">
         <router-view class="router-view"></router-view>
       </el-main>
     </el-container>
@@ -101,8 +101,13 @@ watch(
         }
       }
     }
-    .router-view {
-      height: 100%;
+    .main {
+      @media screen and (max-width: 768px) {
+        padding: 10px;
+      }
+      .router-view {
+        height: 100%;
+      }
     }
   }
 }

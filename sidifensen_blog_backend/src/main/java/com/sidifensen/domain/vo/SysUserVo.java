@@ -45,11 +45,21 @@ public class SysUserVo {
      * 头像
      */
     private String avatar;
-
+    
     /**
      * 状态 0-正常 1-禁用
      */
     private Integer status;
+    
+    /**
+     * 粉丝数   
+     */
+    private Integer fansCount;
+
+    /**
+     * 关注数
+     */
+    private Integer followCount;
 
     /**
      * 注册方式 0-用户名/邮箱 1-gitee 2-github 3-QQ
@@ -95,5 +105,6 @@ public class SysUserVo {
      * 更新时间
      */
     private Date updateTime;
+
 
 }

@@ -25,42 +25,61 @@
 
           <!-- 文章元信息 -->
           <div class="article-meta">
-            <div class="meta-left">
-              <span class="reprint-type">
-                <el-tag :type="article.reprintType === 0 ? 'success' : 'warning'" size="small" effect="light">
-                  {{ article.reprintType === 0 ? "原创" : "转载" }}
-                </el-tag>
-              </span>
-              <span class="publish-time">
-                <el-icon>
-                  <Clock />
-                </el-icon>
-                {{ article.createTime }}
-              </span>
-              <span class="read-count">
-                <el-icon>
-                  <View />
-                </el-icon>
-                {{ article.readCount || 0 }} 阅读
-              </span>
-              <span class="like-count">
-                <svg-icon name="like" width="16px" height="16px" color="#909399" />
-                {{ article.likeCount || 0 }} 点赞
-              </span>
-              <span class="collect-count">
-                <el-icon>
-                  <Star />
-                </el-icon>
-                {{ article.collectCount || 0 }} 收藏
-              </span>
+            <!-- 第一行：基础信息 -->
+            <div class="meta-row first-row">
+              <div class="basic-info">
+                <span class="reprint-type">
+                  <el-tag :type="article.reprintType === 0 ? 'success' : 'warning'" size="small" effect="light">
+                    {{ article.reprintType === 0 ? "原创" : "转载" }}
+                  </el-tag>
+                </span>
+                <span class="publish-time">
+                  <el-icon>
+                    <Clock />
+                  </el-icon>
+                  {{ article.createTime }}
+                </span>
+              </div>
+              <div class="stats-info">
+                <span class="read-count">
+                  <el-icon>
+                    <View />
+                  </el-icon>
+                  {{ article.readCount || 0 }} 阅读
+                </span>
+                <span class="like-count">
+                  <svg-icon name="like" width="16px" height="16px" color="#909399" />
+                  {{ article.likeCount || 0 }} 点赞
+                </span>
+                <span class="collect-count">
+                  <el-icon>
+                    <Star />
+                  </el-icon>
+                  {{ article.collectCount || 0 }} 收藏
+                </span>
+              </div>
             </div>
-            <div class="meta-right">
-              <el-tag v-for="tag in tagList" :key="tag" size="small" effect="light">
-                {{ tag }}
-              </el-tag>
-              <el-tag v-for="column in article.columns || []" :key="column.id" type="success" size="small" effect="light">
-                {{ column.name }}
-              </el-tag>
+
+            <!-- 第二行：标签信息 -->
+            <div class="meta-row second-row tags-row">
+              <div class="article-tags">
+                <span>文章标签：</span>
+                <div class="tags-container">
+                  <el-tag v-for="tag in tagList" :key="tag" size="small" effect="light"> {{ tag }} </el-tag>
+                </div>
+              </div>
+            </div>
+
+            <!-- 第三行：专栏信息 -->
+            <div class="meta-row third-row columns-row">
+              <div class="article-columns">
+                <span>文章专栏：</span>
+                <div class="columns-container">
+                  <el-tag v-for="column in article.columns || []" :key="column.id" type="success" size="small" effect="light">
+                    {{ column.name }}
+                  </el-tag>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -95,12 +114,19 @@
       </el-button>
     </div>
   </div>
+
+  <!-- 返回顶部按钮 -->
+  <div class="back-to-top" @click="scrollToTop">
+    <el-icon>
+      <ArrowUp />
+    </el-icon>
+  </div>
 </template>
 
 <script setup>
 import { computed } from "vue";
 import { ElMessage } from "element-plus";
-import { Clock, View, Star, StarFilled, Collection, CollectionTag, ChatLineRound, Picture, Loading } from "@element-plus/icons-vue";
+import { Clock, View, Star, StarFilled, ChatLineRound, ArrowUp } from "@element-plus/icons-vue";
 
 // Props 定义
 const props = defineProps({
@@ -114,58 +140,10 @@ const props = defineProps({
   },
 });
 
-// 渲染富文本内容，处理图片加载状态
+// 渲染富文本内容
 const renderContent = computed(() => {
   if (!props.article?.content) return "";
-
-  // 将img标签替换为带加载和错误处理的结构
-  let content = props.article.content;
-
-  // 匹配所有img标签并替换
-  content = content.replace(/<img([^>]+)>/g, (match, attributes) => {
-    // 提取src属性
-    const srcMatch = attributes.match(/src\s*=\s*["']([^"']+)["']/);
-    const altMatch = attributes.match(/alt\s*=\s*["']([^"']*)["']/);
-
-    const src = srcMatch ? srcMatch[1] : "";
-    const alt = altMatch ? altMatch[1] : "图片";
-
-    if (!src) return match; // 如果没有src，保持原样
-
-    // 生成唯一ID用于图片容器
-    const imageId = "img_" + Math.random().toString(36).substr(2, 9);
-
-    return `
-      <div class="image-container" id="${imageId}">
-        <div class="loading-placeholder" id="loading_${imageId}" style="display: flex;">
-          <svg class="loading-icon" viewBox="0 0 1024 1024" width="32" height="32">
-            <path d="M512 1024c-69.1 0-136.2-13.5-199.3-40.2C251.7 958 197 921 150.3 874.4c-46.7-46.7-83.7-101.4-109.9-162.4C13.5 648.2 0 581.1 0 512s13.5-136.2 40.2-199.3C66.4 251.7 103.4 197 150.1 150.3s101.4-83.7 162.4-109.9C375.8 13.5 442.9 0 512 0s136.2 13.5 199.3 40.2C772.3 66.4 827 103.4 873.7 150.1s83.7 101.4 109.9 162.4C1010.5 375.8 1024 442.9 1024 512s-13.5 136.2-40.2 199.3C957.6 772.3 920.6 827 873.9 873.7s-101.4 83.7-162.4 109.9C648.2 1010.5 581.1 1024 512 1024zM512 92.4c-231.3 0-419.6 188.3-419.6 419.6S280.7 931.6 512 931.6 931.6 743.3 931.6 512 743.3 92.4 512 92.4z" fill="currentColor"/>
-            <path d="M744.7 821.8c13.6-15.6 32.7-23.6 52.6-18.8 19.9 4.8 36.1 19.2 42.8 39.1 6.7 19.9 2.3 41.7-11.3 57.3-13.6 15.6-32.7 23.6-52.6 18.8-19.9-4.8-36.1-19.2-42.8-39.1-6.7-19.9-2.3-41.7 11.3-57.3z" fill="currentColor"/>
-          </svg>
-          <span>加载中...</span>
-        </div>
-        <div class="error-placeholder" id="error_${imageId}" style="display: none;">
-          <svg class="error-icon" viewBox="0 0 1024 1024" width="40" height="40">
-            <path d="M832 64H192C87 64 0 151 0 256v512c0 105 87 192 192 192h640c105 0 192-87 192-192V256c0-105-87-192-192-192zm96 704c0 53-43 96-96 96H192c-53 0-96-43-96-96V256c0-53 43-96 96-96h640c53 0 96 43 96 96v512z" fill="currentColor"/>
-            <path d="M304 456c52.9 0 96-43.1 96-96s-43.1-96-96-96-96 43.1-96 96 43.1 96 96 96zm0-128c17.7 0 32 14.3 32 32s-14.3 32-32 32-32-14.3-32-32 14.3-32 32-32z" fill="currentColor"/>
-            <path d="M864 736H160c-17.7 0-32-14.3-32-32s14.3-32 32-32h704c17.7 0 32 14.3 32 32s-14.3 32-32 32z" fill="currentColor"/>
-            <path d="M864 608H160c-17.7 0-32-14.3-32-32s14.3-32 32-32h704c17.7 0 32 14.3 32 32s-14.3 32-32 32z" fill="currentColor"/>
-          </svg>
-          <span>图片加载失败</span>
-        </div>
-        <img 
-          src="${src}" 
-          alt="${alt}"
-          loading="lazy"
-          style="width: 100%; height: auto; display: none;"
-          onload="this.style.display='block'; document.getElementById('loading_${imageId}').style.display='none';"
-          onerror="document.getElementById('loading_${imageId}').style.display='none'; document.getElementById('error_${imageId}').style.display='flex';"
-        />
-      </div>
-    `;
-  });
-
-  return content;
+  return props.article.content;
 });
 
 // 处理标签列表
@@ -187,6 +165,12 @@ const handleCollect = () => {
 // 评论文章
 const handleComment = () => {
   ElMessage.info("评论功能开发中...");
+};
+
+// 返回顶部
+const scrollToTop = () => {
+  // 滚动到页面顶部
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
 </script>
 
@@ -218,45 +202,90 @@ const handleComment = () => {
 
     // 文章元信息
     .article-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--el-border-color-lighter);
+      margin-bottom: 16px;
 
-      .meta-left {
+      // 元信息行样式
+      .meta-row {
         display: flex;
-        gap: 20px;
+        align-items: center;
         color: var(--el-text-color-secondary);
         font-size: 14px;
 
-        .reprint-type {
-          display: flex;
-          align-items: center;
-        }
+        // 第一行：基础信息
+        &.first-row {
+          gap: 20px;
+          margin-bottom: 8px;
 
-        .publish-time,
-        .read-count,
-        .like-count,
-        .collect-count {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          line-height: 1;
-          // 确保文字垂直居中
-          span,
-          & {
+          .basic-info {
             display: flex;
+            gap: 20px;
             align-items: center;
-            line-height: 1;
+
+            .reprint-type {
+              align-items: center;
+              display: flex;
+            }
+
+            .publish-time {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+              line-height: 1;
+            }
+          }
+
+          .stats-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+
+            .read-count,
+            .like-count,
+            .collect-count {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+              line-height: 1;
+            }
           }
         }
-      }
 
-      .meta-right {
-        display: flex;
-        gap: 8px;
+        // 第二行：标签信息
+        &.second-row.tags-row {
+          margin-bottom: 8px;
+
+          .article-tags {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            .tags-container {
+              display: flex;
+              gap: 6px;
+              flex-wrap: wrap;
+            }
+          }
+        }
+
+        // 第三行：专栏信息
+        &.third-row.columns-row {
+          .article-columns {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            .label {
+              flex-shrink: 0;
+              font-weight: 500;
+            }
+
+            .columns-container {
+              display: flex;
+              gap: 6px;
+              flex-wrap: wrap;
+            }
+          }
+        }
       }
     }
 
@@ -283,77 +312,7 @@ const handleComment = () => {
         margin-bottom: 16px;
       }
 
-      // 文章内容中的图片容器
-      :deep(.image-container) {
-        position: relative;
-        display: block;
-        width: 100%;
-        margin: 16px 0;
-        background-color: #f5f5f5;
-        border-radius: 4px;
-        overflow: hidden;
-
-        img {
-          width: 100%;
-          height: auto;
-          display: block;
-          border-radius: 4px;
-        }
-
-        // 加载中样式
-        .loading-placeholder {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          min-height: 200px;
-          background-color: #f5f5f5;
-          color: #606266;
-          font-size: 14px;
-
-          .loading-icon {
-            color: #606266;
-            margin-bottom: 8px;
-            animation: spin 2s linear infinite;
-          }
-
-          @keyframes spin {
-            from {
-              transform: rotate(0deg);
-            }
-            to {
-              transform: rotate(360deg);
-            }
-          }
-
-          span {
-            margin-top: 8px;
-          }
-        }
-
-        // 错误占位图标样式
-        .error-placeholder {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          min-height: 200px;
-          background-color: #f5f5f5;
-          color: #909399;
-          font-size: 14px;
-
-          .error-icon {
-            color: #909399;
-            margin-bottom: 8px;
-          }
-
-          span {
-            margin-top: 8px;
-          }
-        }
-      }
-
-      :deep(img:not(.image-container img)) {
+      :deep(img) {
         width: 100%;
         border-radius: 4px;
       }
@@ -374,10 +333,92 @@ const handleComment = () => {
         border-radius: 3px;
       }
 
+      // 引用
       :deep(blockquote) {
-        padding: 0 1em;
+        margin: 0;
+        padding: 1px 1em;
+        background-color: var(--el-fill-color-light);
         color: var(--el-text-color-secondary);
         border-left: 0.25em solid var(--el-border-color);
+        p {
+          margin: 5px;
+        }
+      }
+
+      // 表格样式 - 简单有效的滚动解决方案
+      :deep(table) {
+        min-width: 100% !important;
+        max-width: 100% !important;
+        border-collapse: collapse;
+        margin: 16px 0;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        p {
+          text-align: center;
+        }
+
+        // 自定义滚动条样式，确保可见
+        &::-webkit-scrollbar {
+          height: 10px;
+        }
+      }
+
+      :deep(th) {
+        border: 1px solid var(--el-border-color);
+        background: var(--el-fill-color-light);
+      }
+
+      :deep(td) {
+        border: 1px solid var(--el-border-color);
+      }
+
+      // 任务列表样式
+      :deep(li[data-type="taskItem"]) {
+        display: flex;
+        align-items: center; // 改为center实现垂直居中
+        gap: 8px;
+        margin-bottom: 8px;
+        list-style: none;
+        pointer-events: none; // 在最外层禁用所有点击事件
+
+        label {
+          display: flex;
+          align-items: center;
+
+          input[type="checkbox"] {
+            margin: 0;
+            width: 16px;
+            height: 16px;
+          }
+        }
+
+        div {
+          flex: 1;
+          margin: 0;
+          display: flex;
+          align-items: center; // 确保内容区域也垂直居中
+
+          p {
+            margin: 0;
+            line-height: 1.4; // 稍微调整行高
+          }
+        }
+      }
+
+      // 任务列表容器样式
+      :deep(ul:has(li[data-type="taskItem"])) {
+        padding-left: 0;
+        margin: 16px 0;
+      }
+
+      // 无序列表
+      :deep(ul) {
+        padding-left: 15px;
+      }
+      // 有序列表
+      :deep(ol) {
+        padding-left: 15px;
       }
     }
   }
@@ -395,6 +436,8 @@ const handleComment = () => {
   gap: 20px;
   padding: 16px 24px;
   background: var(--el-bg-color);
+  backdrop-filter: blur(2px);
+  background-color: color-mix(in srgb, var(--el-bg-color) 50%, transparent);
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 24px;
   box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.15);
@@ -409,6 +452,37 @@ const handleComment = () => {
   }
 }
 
+// 返回顶部按钮样式
+.back-to-top {
+  position: fixed;
+  right: 22px;
+  bottom: 150px; // 避免与底部操作栏重叠
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 65px;
+  height: 65px;
+  font-size: 24px;
+  backdrop-filter: blur(2px);
+  background-color: color-mix(in srgb, var(--el-bg-color) 50%, transparent);
+  border: 1px solid var(--el-border-color);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: var(--el-color-primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
+  }
+
+  .el-icon {
+    font-size: 20px;
+  }
+}
+
 // 响应式设计
 @media (max-width: 768px) {
   .article-content {
@@ -420,33 +494,91 @@ const handleComment = () => {
       }
 
       .article-meta {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+        .meta-row {
+          // 第一行在手机端分两行显示
+          &.first-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
 
-        .meta-left {
-          gap: 15px;
-          flex-wrap: wrap;
+            .basic-info {
+              gap: 15px;
+              flex-wrap: wrap;
+            }
+
+            .stats-info {
+              gap: 15px;
+              width: 100%;
+            }
+          }
+
+          // 第二行：标签信息独占一行
+          &.second-row.tags-row {
+            .article-tags {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 8px;
+
+              .tags-container {
+                gap: 8px;
+              }
+            }
+          }
+
+          // 第三行：专栏信息独占一行
+          &.third-row.columns-row {
+            .article-columns {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 8px;
+
+              .columns-container {
+                gap: 8px;
+              }
+            }
+          }
         }
       }
 
       .article-body {
         font-size: 15px;
 
-        :deep(img) {
-          width: 100%;
-          max-width: 100%;
-          border-radius: 4px;
-        }
-
-        :deep(pre) {
-          max-width: 100%;
-          overflow-x: auto;
-        }
-
+        // 移动端表格样式优化
         :deep(table) {
-          max-width: 100%;
-          overflow-x: auto;
+          min-width: 100%; // 移动端不设置固定最小宽度
+          font-size: 14px; // 适当缩小字体
+
+          // 移动端滚动条样式优化
+          &::-webkit-scrollbar {
+            height: 6px; // 移动端滚动条更细
+          }
+
+          &::-webkit-scrollbar-track {
+            background: var(--el-fill-color-light);
+            border-radius: 3px;
+          }
+
+          &::-webkit-scrollbar-thumb {
+            background: var(--el-color-primary-light-5);
+            border-radius: 3px;
+
+            &:hover {
+              background: var(--el-color-primary);
+            }
+          }
+        }
+
+        :deep(td, th) {
+          min-width: 80px; // 移动端减小最小宽度
+          padding: 6px 8px; // 减小内边距
+          font-size: 14px; // 稍微缩小字体
+          white-space: normal; // 允许文本换行
+          word-break: break-word; // 长单词可以断开
+        }
+
+        :deep(th) {
+          font-size: 14px;
+          font-weight: 600;
         }
       }
     }
@@ -454,7 +586,7 @@ const handleComment = () => {
 
   // 移动端操作栏调整
   .article-actions {
-    bottom: 56px;
+    bottom: 30px;
     padding: 12px 20px;
     gap: 16px;
     max-width: 320px;
@@ -465,6 +597,19 @@ const handleComment = () => {
         font-size: 14px;
         padding: 8px 16px;
       }
+    }
+  }
+
+  // 移动端返回顶部按钮调整
+  .back-to-top {
+    right: 15px;
+    bottom: 120px; // 为移动端底部操作栏留出更多空间
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+
+    .el-icon {
+      font-size: 18px;
     }
   }
 }

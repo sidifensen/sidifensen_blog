@@ -232,6 +232,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         sysUserVo.setIntroduction(sysUser.getIntroduction());
         sysUserVo.setAvatar(sysUser.getAvatar());
         sysUserVo.setSex(sysUser.getSex());
+        sysUserVo.setFansCount(sysUser.getFansCount());
+        sysUserVo.setFollowCount(sysUser.getFollowCount());
         return sysUserVo;
     }
 

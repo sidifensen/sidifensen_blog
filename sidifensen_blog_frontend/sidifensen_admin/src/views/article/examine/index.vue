@@ -16,28 +16,8 @@
         </div>
       </div>
       <div class="card-second">
-        <el-date-picker
-          v-model="searchCreateTimeStart"
-          type="datetime"
-          format="YYYY-MM-DD HH:mm:ss"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          placeholder="创建时间开始"
-          :prefix-icon="Calendar"
-          size="small"
-          class="search-input"
-          clearable
-          @change="handleSearch" />
-        <el-date-picker
-          v-model="searchCreateTimeEnd"
-          type="datetime"
-          format="YYYY-MM-DD HH:mm:ss"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          placeholder="创建时间结束"
-          :prefix-icon="Calendar"
-          size="small"
-          class="search-input"
-          clearable
-          @change="handleSearch" />
+        <el-date-picker v-model="searchCreateTimeStart" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间开始" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
+        <el-date-picker v-model="searchCreateTimeEnd" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间结束" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
       </div>
       <div class="card-third">
         <el-button type="primary" plain round @click="handleBatchAudit" :disabled="selectedArticles.length === 0" :loading="batchAuditLoading"> 批量审核 </el-button>
@@ -310,7 +290,7 @@
                 <span class="stat-value">{{ currentArticle?.readCount || 0 }}</span>
               </div>
               <div class="stat-item">
-                <el-icon class="stat-icon"><Star /></el-icon>
+                <svg-icon name="like" width="16px" height="16px" color="#909399" />
                 <span class="stat-label">点赞</span>
                 <span class="stat-value">{{ currentArticle?.likeCount || 0 }}</span>
               </div>
@@ -320,7 +300,7 @@
                 <span class="stat-value">{{ currentArticle?.commentCount || 0 }}</span>
               </div>
               <div class="stat-item">
-                <el-icon class="stat-icon"><Collection /></el-icon>
+                <el-icon class="stat-icon"><Star /></el-icon>
                 <span class="stat-label">收藏</span>
                 <span class="stat-value">{{ currentArticle?.collectCount || 0 }}</span>
               </div>

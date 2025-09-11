@@ -121,22 +121,20 @@
                     <span>{{ article.readCount || 0 }}</span>
                   </div>
                   <div class="stat-item">
-                    <el-icon>
-                      <Pointer />
-                    </el-icon>
+                    <svg-icon name="like" width="16px" height="16px" color="#909399" />
                     <span>{{ article.likeCount || 0 }}</span>
                   </div>
                   <div class="stat-item">
                     <el-icon>
-                      <Message />
+                      <Star />
                     </el-icon>
-                    <span>{{ article.commentCount || 0 }}</span>
+                    <span>{{ article.collectCount || 0 }}</span>
                   </div>
                   <div class="stat-item">
                     <el-icon>
-                      <Collection />
+                      <ChatLineRound />
                     </el-icon>
-                    <span>{{ article.collectCount || 0 }}</span>
+                    <span>{{ article.commentCount || 0 }}</span>
                   </div>
                 </div>
                 <div class="article-actions">
@@ -170,7 +168,7 @@ import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import { deleteArticle, getUserArticleList, getUserArticleStatistics, updateArticle } from "@/api/article";
-import { Search, View, Message, Pointer, Edit, Delete, Collection } from "@element-plus/icons-vue";
+import { Search, View, Message, Pointer, Edit, Delete, Star, ChatLineRound } from "@element-plus/icons-vue";
 import { useUserStore } from "@/stores/userStore";
 
 const router = useRouter();
@@ -603,7 +601,7 @@ onUnmounted(() => {
       flex: 1;
       overflow-y: auto;
       position: relative;
-      max-height: calc(100vh - 240px);
+      max-height: calc(100vh - 240px); // 无限滚动时需要设置最大高度
 
       // 加载容器
       .loading-container,
@@ -839,24 +837,27 @@ onUnmounted(() => {
 // 响应式设计
 @media screen and (max-width: 768px) {
   .article-manage-container {
+    height: calc(100vh);
     .main-content {
-      padding: 10px;
-
       .filter-buttons {
         justify-content: center;
+        gap: 5px;
+        margin-bottom: 0px;
 
         .filter-btn {
           min-width: auto;
-          padding: 5px 10px;
+          padding: 10px;
           font-size: 13px;
         }
       }
 
       .advanced-filter {
+        padding: 5px;
+        margin-bottom: 5px;
         .filter-row {
           flex-direction: column;
           align-items: stretch;
-          gap: 10px;
+          gap: 5px;
 
           .filter-item {
             .filter-select,
@@ -868,12 +869,9 @@ onUnmounted(() => {
       }
 
       .article-list-container {
-        .article-table {
-          .article-title-cell {
-            .article-title {
-              font-size: 13px;
-            }
-          }
+        max-height: calc(100vh - 48px); // 无限滚动时需要设置最大高度
+        .article-cards {
+          padding: 5px;
         }
       }
     }

@@ -9,6 +9,8 @@ create table sys_user
     introduction     varchar(200) comment '简介',
     avatar           varchar(400) comment '头像',
     status           tinyint      not null default 0 comment '状态 0-正常 1-禁用',
+    fans_count       int          not null default 0 comment '粉丝数',
+    follow_count     int          not null default 0 comment '关注数',
     register_type    tinyint               default 0 comment '注册方式 0-用户名/邮箱 1-gitee 2-github 3-QQ',
     register_ip      varchar(100) comment '注册ip',
     register_address varchar(100) comment '注册地址',
@@ -19,8 +21,8 @@ create table sys_user
     create_time      datetime     not null comment '创建时间',
     update_time      datetime     not null comment '更新时间',
     is_deleted       tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index idx_username (username),
-    index idx_email (email)
+    index            idx_username (username),
+    index            idx_email (email)
 );
 
 
@@ -41,7 +43,7 @@ create table sys_user_role
     id      int primary key auto_increment comment '主键id',
     user_id int not null comment '用户id',
     role_id int not null comment '角色id',
-    index user_id (user_id)
+    index   user_id (user_id)
 );
 
 create table sys_menu
@@ -64,7 +66,7 @@ create table sys_role_menu
     id      int primary key auto_increment comment '主键id',
     role_id int not null comment '角色id',
     menu_id int not null comment '菜单id',
-    index idx_role_id (role_id)
+    index   idx_role_id (role_id)
 );
 
 create table sys_permission
@@ -83,7 +85,7 @@ create table sys_role_permission
     id            int primary key auto_increment comment '主键id',
     role_id       int not null comment '角色id',
     permission_id int not null comment '权限id',
-    index idx_role_id (role_id)
+    index         idx_role_id (role_id)
 );
 
 create table photo
@@ -95,7 +97,7 @@ create table photo
     create_time    datetime     not null comment '创建时间',
     update_time    datetime     not null comment '更新时间',
     is_deleted     tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index idx_deleted_id_examine_status (is_deleted, examine_status)
+    index          idx_deleted_id_examine_status (is_deleted, examine_status)
 );
 
 create table album
@@ -108,8 +110,8 @@ create table album
     create_time datetime    not null comment '创建时间',
     update_time datetime    not null comment '更新时间',
     is_deleted  tinyint     not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index idx_show_status (show_status),
-    index idx_user_id (user_id)
+    index       idx_show_status (show_status),
+    index       idx_user_id (user_id)
 );
 
 create table album_photo
@@ -117,7 +119,7 @@ create table album_photo
     id       int primary key auto_increment comment '主键id',
     album_id int not null comment '相册id',
     photo_id int not null comment '图片id',
-    index idx_album_id (album_id)
+    index    idx_album_id (album_id)
 );
 
 
@@ -132,8 +134,8 @@ create table message
     create_time datetime not null comment '创建时间',
     update_time datetime not null comment '更新时间',
     is_deleted  tinyint  not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index idx_sender_id_type (sender_id, type),
-    index idx_receiver_id_type (receiver_id, type)
+    index       idx_sender_id_type (sender_id, type),
+    index       idx_receiver_id_type (receiver_id, type)
 );
 
 create table article
@@ -157,8 +159,8 @@ create table article
     create_time    datetime     not null comment '创建时间',
     update_time    datetime     not null comment '更新时间',
     is_deleted     tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index idx_user_id_examine_edit_visible_status_create_time (user_id, examine_status, edit_status, visible_range, create_time),
-    index idx_examine_edit_visible_status_create_time (examine_status, edit_status, visible_range, create_time)
+    index          idx_user_id_examine_edit_visible_status_create_time (user_id, examine_status, edit_status, visible_range, create_time),
+    index          idx_examine_edit_visible_status_create_time (examine_status, edit_status, visible_range, create_time)
 );
 
 create table tag
@@ -183,7 +185,7 @@ create table `column`
     create_time   datetime    not null comment '创建时间',
     update_time   datetime    not null comment '更新时间',
     is_deleted    tinyint     not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index idx_user_id (user_id)
+    index         idx_user_id (user_id)
 );
 
 create table article_column
@@ -195,6 +197,6 @@ create table article_column
     create_time datetime not null comment '创建时间',
     update_time datetime not null comment '更新时间',
     is_deleted  tinyint  not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index idx_article_id (article_id),
-    index idx_column_id (column_id)
+    index       idx_article_id (article_id),
+    index       idx_column_id (column_id)
 );
