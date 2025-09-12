@@ -16,8 +16,10 @@
         <div class="user-card-content" v-if="userInfo">
           <!-- 用户基本信息 -->
           <div class="user-basic-info">
-            <el-avatar :size="80" :src="userInfo.avatar" />
-            <h3 class="nickname">{{ userInfo.nickname }}</h3>
+            <el-avatar :size="80" :src="userInfo.avatar" class="clickable-avatar" @click="goToUserHomepage" />
+            <h3 class="nickname clickable-nickname" @click="goToUserHomepage">
+              {{ userInfo.nickname }}
+            </h3>
             <p class="introduction">{{ userInfo.introduction || "这个人很懒，什么都没写~" }}</p>
           </div>
 
@@ -52,8 +54,12 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import { Message, Plus } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
+
+// 路由
+const router = useRouter();
 
 // Props 定义
 const props = defineProps({
@@ -89,6 +95,13 @@ const handleFollow = async () => {
 const handleMessage = () => {
   ElMessage.info("私信功能开发中...");
 };
+
+// 跳转到用户主页
+const goToUserHomepage = () => {
+  if (props.userInfo?.id) {
+    router.push(`/user/${props.userInfo.id}`);
+  }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -123,6 +136,27 @@ const handleMessage = () => {
         font-size: 18px;
         font-weight: 600;
         color: var(--el-text-color-primary);
+      }
+
+      // 可点击的头像样式
+      .clickable-avatar {
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        &:hover {
+          transform: scale(1.05);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+      }
+
+      // 可点击的昵称样式
+      .clickable-nickname {
+        cursor: pointer;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: var(--el-color-primary);
+        }
       }
 
       .introduction {
