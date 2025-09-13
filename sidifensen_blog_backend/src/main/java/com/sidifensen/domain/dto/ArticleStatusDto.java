@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * <p>
@@ -23,6 +24,11 @@ import java.util.Date;
 public class ArticleStatusDto implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    /**
+     * 用户id
+     */
+    private Integer userId;
 
     /**
      * 搜索内容
@@ -79,5 +85,9 @@ public class ArticleStatusDto implements Serializable {
      */
     private Integer month;
 
+    /**
+     * 审核状态列表 支持多个审核状态查询
+     */
+    private List<Integer> examineStatusList;
 
 }

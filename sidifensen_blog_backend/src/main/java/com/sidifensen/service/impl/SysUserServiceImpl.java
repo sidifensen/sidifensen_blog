@@ -237,6 +237,57 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return sysUserVo;
     }
 
+    @Override
+    public SysUserVo getUserInfoById(Integer userId) {
+        SysUser sysUser = sysUserMapper.selectById(userId);
+        if (sysUser == null) {
+            throw new BlogException(BlogConstants.NotFoundUser); // 用户不存在
+        }
+        SysUserVo sysUserVo = new SysUserVo();
+        sysUserVo.setId(sysUser.getId());
+        sysUserVo.setNickname(sysUser.getNickname());
+        sysUserVo.setUsername(sysUser.getUsername());
+        sysUserVo.setEmail(sysUser.getEmail());
+        sysUserVo.setIntroduction(sysUser.getIntroduction());
+        sysUserVo.setAvatar(sysUser.getAvatar());
+        sysUserVo.setSex(sysUser.getSex());
+        sysUserVo.setFansCount(sysUser.getFansCount());
+        sysUserVo.setFollowCount(sysUser.getFollowCount());
+        sysUserVo.setCreateTime(sysUser.getCreateTime());
+        String loginAddress = processLoginAddress(sysUser.getLoginAddress());
+        sysUserVo.setLoginAddress(loginAddress);
+        return sysUserVo;
+    }
+
+    /**
+     * 处理登录地址显示
+     * 如果不是中国开头的，截取第一个-之前的内容
+     * 如果是中国开头的，截取第二段文字（江西、上海等省份）
+     * 
+     * @param loginAddress 原始登录地址，格式如：中国-广东-广州 或 美国-纽约
+     * @return 处理后的地址
+     */
+    private String processLoginAddress(String loginAddress) {
+        if (ObjectUtil.isEmpty(loginAddress)) {
+            return loginAddress;
+        }
+
+        // 按-分割地址
+        String[] addressParts = loginAddress.split("-");
+
+        if (addressParts.length == 0) {
+            return loginAddress;
+        }
+
+        // 如果是中国开头，返回第二段（省份）
+        if ("中国".equals(addressParts[0]) && addressParts.length > 1) {
+            return addressParts[1];
+        }
+
+        // 否则返回第一段（国家）
+        return addressParts[0];
+    }
+
     // 管理员登录
     @Override
     public String adminLogin(AdminLoginDto adminLoginDto) {

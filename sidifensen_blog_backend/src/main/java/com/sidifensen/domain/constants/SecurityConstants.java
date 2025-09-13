@@ -20,19 +20,21 @@ public class SecurityConstants {
             "/user/verifyReset",
             "/user/resetPassword",
             "/user/admin/login",
+            "/user/info/{userId:\\d+}",
             "/album/listAll",
-            "/album/get/{albumId:\\d+}",  // 限制albumId只能是数字
+            "/album/get/{albumId:\\d+}", // 限制albumId只能是数字
             "/oauth/gitee/login",
             "/oauth/gitee/callback",
             "/oauth/github/login",
             "/oauth/github/callback",
             "/user/oauthLogin",
+            "/article/list", // 获取文章列表
+            "/article/get/{articleId:\\d+}", // 获取文章详情，限制articleId只能是数字
             "/favicon.ico"
     };
 
     // 允许的用户代理列表（可根据需要扩展）
     public static final List<String> Allowed_User_Agents = Arrays.asList(
-            "Mozilla", "Chrome", "Firefox", "Safari", "Edge"
-    );
+            "Mozilla", "Chrome", "Firefox", "Safari", "Edge");
 
 }

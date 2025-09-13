@@ -25,7 +25,7 @@ import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { ElMessage } from "element-plus";
 import { getArticleDetail, getUserArticleStatistics } from "@/api/article";
-import { getUserInfo } from "@/api/user";
+import { getUserInfoById } from "@/api/user";
 import UserInfoCard from "./components/UserInfoCard.vue";
 import ArticleContent from "./components/ArticleContent.vue";
 import ArticleCatalog from "./components/ArticleCatalog.vue";
@@ -44,7 +44,7 @@ const articleLoading = ref(false);
 const fetchUserInfo = async () => {
   try {
     userLoading.value = true;
-    const response = await getUserInfo(userId);
+    const response = await getUserInfoById(userId);
     userInfo.value = response.data.data;
 
     // 获取用户文章统计信息

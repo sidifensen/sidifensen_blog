@@ -106,23 +106,36 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public PageVo<List<ArticleVo>> getUserArticleList(Integer pageNum, Integer pageSize,
-                                                      ArticleStatusDto articleStatusDto) {
-        Integer userId = SecurityUtils.getUserId();
+            ArticleStatusDto articleStatusDto) {
+        Integer currentUserId = SecurityUtils.getUserId(); // 当前登录用户ID
+        Integer targetUserId = ObjectUtil.isNotEmpty(articleStatusDto.getUserId()) ? articleStatusDto.getUserId()
+                : currentUserId; // 目标用户ID
+
         Page<Article> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
-                .eq(userId != 0, Article::getUserId, userId)
-                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatus()), Article::getExamineStatus,
-                        articleStatusDto.getExamineStatus())
-                // .eq(Article::getEditStatus,
-                // ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus())
-                // ? articleStatusDto.getEditStatus()
-                // : EditStatusEnum.PUBLISHED.getCode())
-                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus()), Article::getEditStatus,
-                        articleStatusDto.getEditStatus())
-                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getVisibleRange()), Article::getVisibleRange,
-                        articleStatusDto.getVisibleRange())
-                .eq(ObjectUtil.isNotEmpty(articleStatusDto.getReprintType()), Article::getReprintType,
-                        articleStatusDto.getReprintType())
+                .eq(targetUserId != 0, Article::getUserId, targetUserId);
+
+        // 权限控制：只有查看自己的文章时才能看到私有内容和审核状态
+        if (!currentUserId.equals(targetUserId)) {
+            // 如果当前的用户id不等于要查看他人文章时的限制条件
+            qw.eq(Article::getVisibleRange, 0) // 只能查看全部可见的文章
+                    .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode()) // 只能查看审核通过的文章
+                    .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode()); // 只能查看已发布的文章
+        } else {
+            // 查看自己文章时，应用用户指定的筛选条件
+            qw.eq(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatus()), Article::getExamineStatus,
+                    articleStatusDto.getExamineStatus())
+                    .in(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatusList()), Article::getExamineStatus,
+                            articleStatusDto.getExamineStatusList())
+                    .eq(ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus()), Article::getEditStatus,
+                            articleStatusDto.getEditStatus())
+                    .eq(ObjectUtil.isNotEmpty(articleStatusDto.getVisibleRange()), Article::getVisibleRange,
+                            articleStatusDto.getVisibleRange());
+        }
+
+        // 通用筛选条件（对所有用户都适用）
+        qw.eq(ObjectUtil.isNotEmpty(articleStatusDto.getReprintType()), Article::getReprintType,
+                articleStatusDto.getReprintType())
                 .and(ObjectUtil.isNotEmpty(articleStatusDto.getKeyword()), wrapper -> wrapper
                         .like(Article::getTag, articleStatusDto.getKeyword()) // 标签
                         .or()
@@ -212,9 +225,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (ObjectUtil.isEmpty(article)) {
             throw new BlogException(BlogConstants.NotFoundArticle);
         }
-        if (article.getUserId() != SecurityUtils.getUserId()) {
-            throw new BlogException(BlogConstants.CannotHandleOthersArticle);
-        }
         ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
 
         // 如果文章状态为已发布, 则查询文章所属的专栏
@@ -257,7 +267,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             if (sidifensenConfig.isArticleAutoAudit()) {
                 ImageAuditResult auditResult = textAuditUtils
                         .auditTextWithDetailsSplit(articleDto.getTitle() + " " + articleDto.getContent());
-
 
                 if (auditResult.getStatus().equals(ExamineStatusEnum.PASS.getCode())) {
                     // 文字审核通过，更新审核状态为通过

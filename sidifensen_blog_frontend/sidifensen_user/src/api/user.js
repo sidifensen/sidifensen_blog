@@ -72,7 +72,15 @@ export function info() {
   });
 }
 
-// 根据用户ID获取用户详情信息
+// 根据用户ID获取用户信息
+export function getUserInfoById(userId) {
+  return request({
+    url: `/user/info/${userId}`,
+    method: "get",
+  });
+}
+
+// 根据用户ID获取用户详情信息（管理端）
 export function getUserInfo(userId) {
   return request({
     url: `/user/admin/${userId}`,

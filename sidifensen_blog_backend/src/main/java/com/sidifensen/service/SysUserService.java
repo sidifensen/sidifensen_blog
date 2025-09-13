@@ -69,6 +69,14 @@ public interface SysUserService extends IService<SysUser> {
      */
     SysUserVo info();
 
+    /**
+     * 根据用户ID获取用户信息
+     *
+     * @param userId 用户ID
+     * @return SysUserVo 用户信息
+     */
+    SysUserVo getUserInfoById(Integer userId);
+
     // 管理端
 
     // 管理员登录

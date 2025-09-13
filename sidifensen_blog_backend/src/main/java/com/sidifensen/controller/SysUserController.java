@@ -122,6 +122,18 @@ public class SysUserController {
         return Result.success(sysUserVo);
     }
 
+    /**
+     * 根据用户ID获取用户信息
+     *
+     * @param userId 用户ID
+     * @return
+     */
+    @GetMapping("/info/{userId}")
+    public Result getUserInfoById(@PathVariable Integer userId) {
+        SysUserVo sysUserVo = sysUserService.getUserInfoById(userId);
+        return Result.success(sysUserVo);
+    }
+
     // 管理端
 
     /**

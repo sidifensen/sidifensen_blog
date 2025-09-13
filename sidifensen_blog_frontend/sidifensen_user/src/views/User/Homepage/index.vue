@@ -25,8 +25,17 @@
                   <el-avatar :size="120" :src="userInfo.avatar" class="user-avatar" />
                   <div class="user-details">
                     <h2 class="username">{{ userInfo.nickname }}</h2>
-                    <p class="user-intro">{{ userInfo.introduction || "这个人很懒，什么都没写~" }}</p>
+                    <div class="user-intro-container">
+                      <p class="user-intro" :class="{ expanded: isIntroExpanded }">个人介绍: {{ userInfo.introduction || "这个人很懒，什么都没写~" }}</p>
+                      <button v-if="userInfo.introduction && userInfo.introduction.length > 50" class="intro-expand-btn" @click="toggleIntroExpand">
+                        <el-icon>
+                          <ArrowDown v-if="!isIntroExpanded" />
+                          <ArrowUp v-else />
+                        </el-icon>
+                      </button>
+                    </div>
                     <div class="user-meta">
+                      <span class="login-address" v-if="userInfo.loginAddress">IP属地：{{ userInfo.loginAddress }}</span>
                       <span class="join-time">加入时间：{{ userInfo.createTime }}</span>
                     </div>
                   </div>
@@ -75,14 +84,32 @@
             <!-- 文章筛选标签 -->
             <div class="article-filters">
               <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-                <el-tab-pane label="全部文章" name="all" />
-                <el-tab-pane label="原创" name="original" />
-                <el-tab-pane label="转载" name="repost" />
+                <el-tab-pane label="文章" name="article">
+                  <!-- 文章筛选条件 -->
+                  <div class="filter-controls">
+                    <!-- 可见范围筛选 -->
+                    <div v-if="isCurrentUser" class="visibility-filter">
+                      <el-select v-model="visibilityType" @change="handleVisibilityChange" placeholder="可见范围" size="default">
+                        <el-option label="全部可见" value="all" />
+                        <el-option label="仅我可见" value="private" />
+                        <el-option label="审核中&失败" value="pending" />
+                      </el-select>
+                    </div>
+                    <!-- 排序筛选条件 -->
+                    <div class="sort-filters">
+                      <el-radio-group v-model="sortType" @change="handleSortChange">
+                        <el-radio value="time">时间排序</el-radio>
+                        <el-radio value="views">阅读量排序</el-radio>
+                      </el-radio-group>
+                    </div>
+                  </div>
+                </el-tab-pane>
+                <el-tab-pane label="专栏" name="column" />
               </el-tabs>
             </div>
 
             <!-- 文章列表 -->
-            <div class="article-list-section" ref="listContainer" @scroll="handleScroll">
+            <div v-if="activeTab === 'article'" class="article-list-section" ref="listContainer" @scroll="handleScroll">
               <div v-if="articleLoading" class="loading-container">
                 <el-skeleton animated :count="5">
                   <template #template>
@@ -120,14 +147,25 @@
                   <!-- 文章内容 -->
                   <div class="article-content">
                     <h3 class="article-title">{{ article.title }}</h3>
-                    <p class="article-summary">{{ article.summary }}</p>
+                    <p class="article-description">{{ article.description }}</p>
 
                     <!-- 文章元信息 -->
                     <div class="article-meta">
-                      <span class="article-type">{{ getArticleType(article.type) }}</span>
-                      <span class="article-date">{{ article.createTime }}</span>
-                      <span class="article-views">{{ article.viewCount }} 阅读</span>
-                      <span class="article-comments">{{ article.commentCount }} 评论</span>
+                      <!-- 第一行：文章类型、审核状态、发布时间 -->
+                      <div class="article-meta-primary">
+                        <span class="article-type">{{ getArticleType(article.type) }}</span>
+                        <span v-if="isCurrentUser && article.examineStatus !== 1" class="article-examine-status" :class="'status-' + article.examineStatus">
+                          {{ getExamineStatus(article.examineStatus) }}
+                        </span>
+                        <span class="article-date">{{ article.createTime }}</span>
+                      </div>
+                      <!-- 第二行：统计数据 -->
+                      <div class="article-meta-stats">
+                        <span class="article-readCount">{{ article.readCount }} 阅读</span>
+                        <span class="article-likes">{{ article.likeCount || 0 }} 点赞</span>
+                        <span class="article-favorites">{{ article.collectCount || 0 }} 收藏</span>
+                        <span class="article-comments">{{ article.commentCount }} 评论</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -137,6 +175,13 @@
                   <div class="loading-spinner"></div>
                   <span>加载更多...</span>
                 </div>
+              </div>
+            </div>
+
+            <!-- 专栏列表 -->
+            <div v-if="activeTab === 'column'" class="column-list-section">
+              <div class="empty-state">
+                <el-empty description="专栏功能开发中..." />
               </div>
             </div>
           </div>
@@ -172,8 +217,8 @@
 import { ref, reactive, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
-import { Plus, Message, Trophy, View, User } from "@element-plus/icons-vue";
-import { getUserInfo } from "@/api/user";
+import { Plus, Message, Trophy, View, User, Star, StarFilled, ArrowDown, ArrowUp } from "@element-plus/icons-vue";
+import { getUserInfoById } from "@/api/user";
 import { getUserArticleList } from "@/api/article";
 import { useUserStore } from "@/stores/userStore";
 
@@ -183,18 +228,21 @@ const router = useRouter();
 const userStore = useUserStore();
 
 // 响应式数据
-const userLoading = ref(false);
-const articleLoading = ref(false);
-const loadingMore = ref(false);
-const followLoading = ref(false);
-const userInfo = ref(null);
-const articleList = ref([]);
-const total = ref(0);
-const totalViews = ref(0);
-const activeTab = ref("all");
-const isFollowed = ref(false);
-const hasMore = ref(true);
-const currentPage = ref(1);
+const userLoading = ref(false); // 用户信息加载状态
+const articleLoading = ref(false); // 文章列表加载状态
+const loadingMore = ref(false); // 加载更多数据状态
+const followLoading = ref(false); // 关注操作加载状态
+const userInfo = ref(null); // 用户信息数据
+const articleList = ref([]); // 文章列表数据
+const total = ref(0); // 文章总数
+const totalViews = ref(0); // 总阅读量
+const activeTab = ref("article"); // 当前激活的标签页
+const sortType = ref("time"); // 排序类型：time-时间排序，views-阅读量排序
+const visibilityType = ref("all"); // 可见范围类型：all-全部可见，private-仅我可见，pending-审核中&失败
+const isFollowed = ref(false); // 是否已关注该用户
+const hasMore = ref(true); // 是否还有更多数据可加载
+const currentPage = ref(1); // 当前页码
+const isIntroExpanded = ref(false); // 个人介绍是否展开
 
 // 每页数据量
 const pageSize = ref(10);
@@ -212,7 +260,7 @@ const fetchUserInfo = async () => {
   try {
     userLoading.value = true;
     const userId = route.params.userId;
-    const res = await getUserInfo(userId);
+    const res = await getUserInfoById(userId);
     userInfo.value = res.data.data;
   } catch (error) {
     ElMessage.error("获取用户信息失败");
@@ -242,8 +290,30 @@ const fetchArticleList = async (reset = false) => {
     // 构建查询参数
     const articleStatusDto = {
       userId: parseInt(userId),
-      type: activeTab.value === "all" ? null : activeTab.value === "original" ? 0 : 1,
     };
+
+    // 根据当前标签页设置不同的查询参数
+    if (activeTab.value === "article") {
+      // 文章标签页，根据排序类型设置orderBy
+      articleStatusDto.orderBy = sortType.value === "time" ? 0 : 1;
+
+      // 根据可见范围类型设置查询条件
+      if (visibilityType.value === "all") {
+        // 全部可见：查询全部可见且审核通过的文章
+        articleStatusDto.visibleRange = 0;
+        articleStatusDto.examineStatus = 1;
+      } else if (visibilityType.value === "private") {
+        // 仅我可见：查询私有文章
+        articleStatusDto.visibleRange = 1;
+      } else if (visibilityType.value === "pending") {
+        // 审核中&失败：
+        articleStatusDto.examineStatusList = [0, 2]; // 0-审核中, 2-审核失败
+      }
+    } else if (activeTab.value === "column") {
+      // 专栏标签页的查询逻辑（暂时使用默认排序）
+      articleStatusDto.orderBy = 0;
+      // TODO: 这里可以添加专栏相关的查询参数
+    }
 
     const res = await getUserArticleList(currentPage.value, pageSize.value, articleStatusDto);
     const newArticles = res.data.data.data || [];
@@ -287,6 +357,26 @@ const handleTabChange = (tabName) => {
   fetchArticleList(true);
 };
 
+// 处理排序条件变化
+const handleSortChange = (value) => {
+  sortType.value = value;
+  // 重置页码和文章列表，重新加载数据
+  currentPage.value = 1;
+  articleList.value = [];
+  hasMore.value = true;
+  fetchArticleList(true);
+};
+
+// 处理可见范围变化
+const handleVisibilityChange = (value) => {
+  visibilityType.value = value;
+  // 重置页码和文章列表，重新加载数据
+  currentPage.value = 1;
+  articleList.value = [];
+  hasMore.value = true;
+  fetchArticleList(true);
+};
+
 // 关注用户
 const handleFollow = async () => {
   try {
@@ -306,6 +396,11 @@ const handleMessage = () => {
   ElMessage.info("私信功能开发中...");
 };
 
+// 切换个人介绍展开状态
+const toggleIntroExpand = () => {
+  isIntroExpanded.value = !isIntroExpanded.value;
+};
+
 // 跳转至文章详情页
 const goToArticle = (articleId) => {
   const userId = route.params.userId;
@@ -317,9 +412,18 @@ const getArticleType = (type) => {
   const typeMap = {
     0: "原创",
     1: "转载",
-    2: "翻译",
   };
   return typeMap[type] || "原创";
+};
+
+// 获取审核状态
+const getExamineStatus = (status) => {
+  const statusMap = {
+    0: "待审核",
+    1: "审核通过",
+    2: "审核未通过",
+  };
+  return statusMap[status] || "审核通过";
 };
 
 // 处理滚动事件 - 自定义无限滚动
@@ -372,20 +476,15 @@ $bg-color: #f5f7fa;
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 10px;
 }
 
 // 用户主页容器
 .user-homepage {
-  min-height: 100%;
-  height: 100%;
-  background-color: $bg-color;
+  height: calc(100vh - 48px);
 
-  // 用户信息区域
   .user-profile-section {
-    // background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    background: var(--el-bg-color-page);
-    padding: 40px 0;
+    padding: 10px 0 0 0px;
     color: var(--el-text-color-primary);
 
     .user-profile-card {
@@ -393,7 +492,7 @@ $bg-color: #f5f7fa;
       backdrop-filter: blur(10px);
       border-radius: 16px;
       padding: 30px;
-      border: 1px solid var(--el-border-color-light);
+      border: 1px solid var(--el-border-color);
       box-shadow: 0 2px 12px var(--el-border-color-light);
 
       // 骨架屏样式
@@ -423,29 +522,110 @@ $bg-color: #f5f7fa;
 
           .user-details {
             flex: 1;
+            min-width: 0; // 允许flex子元素收缩到内容宽度以下
+            overflow: hidden; // 防止内容溢出
 
             .username {
-              font-size: 28px;
+              font-size: 24px;
               font-weight: 700;
               margin: 0 0 8px 0;
               color: var(--el-text-color-primary);
             }
 
-            .user-intro {
-              font-size: 16px;
+            // 个人介绍容器
+            .user-intro-container {
+              position: relative;
               margin: 0 0 12px 0;
-              color: var(--el-text-color-primary);
-              line-height: 1.5;
+
+              // 个人介绍文本
+              .user-intro {
+                font-size: 15px;
+                margin: 0;
+                color: var(--el-text-color-primary);
+                line-height: 1.5;
+                word-wrap: break-word;
+                word-break: break-all;
+                overflow-wrap: break-word;
+                max-width: 100%;
+
+                // 手机端：默认限制两行，并为箭头按钮预留空间
+                @media (max-width: 768px) {
+                  display: -webkit-box; // 使用webkit-box布局
+                  -webkit-line-clamp: 2; // 限制两行
+                  line-clamp: 2;
+                  -webkit-box-orient: vertical; // 垂直方向排列
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  padding-right: 32px; // 为箭头按钮预留空间
+
+                  // 展开状态：显示全部内容，移除右侧padding
+                  &.expanded {
+                    display: block;
+                    -webkit-line-clamp: unset;
+                    line-clamp: unset;
+                    overflow: visible;
+                    padding-right: 0;
+                  }
+                }
+              }
+
+              // 展开/收起按钮
+              .intro-expand-btn {
+                display: none;
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 4px;
+                margin-left: 8px;
+                color: var(--el-color-primary);
+                transition: all 0.3s ease;
+                border-radius: 50%;
+
+                &:hover {
+                  background-color: var(--el-color-primary-light-9);
+                  transform: scale(1.1);
+                }
+
+                .el-icon {
+                  font-size: 14px;
+                }
+
+                // 只在手机端显示
+                @media (max-width: 768px) {
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  position: absolute;
+                  right: 4px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  width: 20px;
+                  height: 20px;
+                  background-color: rgba(255, 255, 255, 0.9);
+                  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                }
+              }
             }
 
             .user-meta {
-              font-size: 14px;
-              color: var(--el-text-color-primary);
+              font-size: 13px;
+              color: var(--el-text-color-regular);
+              display: flex;
+              // flex-wrap: wrap;
+              gap: 10px;
 
-              .join-time {
+              .join-time,
+              .login-address {
                 display: inline-flex;
                 align-items: center;
                 gap: 4px;
+                white-space: nowrap;
+              }
+
+              // 手机端分两行显示
+              @media (max-width: 768px) {
+                font-size: 10px;
+                // flex-direction: column;
               }
             }
           }
@@ -455,10 +635,10 @@ $bg-color: #f5f7fa;
         .user-stats {
           display: flex;
           justify-content: space-around;
-          margin-bottom: 30px;
-          padding: 20px 0;
-          border-top: 1px solid var(--el-border-color-light);
-          border-bottom: 1px solid var(--el-border-color-light);
+          padding: 10px 0;
+          border-top: 1px solid var(--el-border-color);
+          border-bottom: 1px solid var(--el-border-color);
+          margin-bottom: 10px;
 
           .stat-item {
             text-align: center;
@@ -496,13 +676,12 @@ $bg-color: #f5f7fa;
 
   // 内容区域
   .content-section {
-    padding: 40px 0;
-    background: var(--el-bg-color-page);
+    padding: 20px 0;
 
     .content-layout {
       display: grid;
       grid-template-columns: 1fr 300px;
-      gap: 30px;
+      gap: 20px;
     }
   }
 
@@ -513,7 +692,8 @@ $bg-color: #f5f7fa;
       background: var(--el-bg-color-page);
       border-radius: 8px;
       padding: 20px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
+      border: 1px solid var(--el-border-color);
       box-shadow: 0 2px 12px var(--el-border-color-light);
 
       :deep(.el-tabs__header) {
@@ -523,6 +703,42 @@ $bg-color: #f5f7fa;
       :deep(.el-tabs__nav-wrap::after) {
         display: none;
       }
+
+      // 筛选控件整体样式
+      .filter-controls {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--el-border-color-light);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+
+        // 可见范围筛选器样式
+        .visibility-filter {
+          .el-select {
+            width: 100px;
+          }
+        }
+
+        // 排序筛选器样式
+        .sort-filters {
+          .el-radio-group {
+            display: flex;
+            gap: 24px;
+
+            .el-radio {
+              margin-right: 0;
+              font-size: 14px;
+              color: var(--el-text-color-regular);
+
+              &.is-checked {
+                color: var(--el-color-primary);
+              }
+            }
+          }
+        }
+      }
     }
 
     // 文章列表区域
@@ -530,6 +746,7 @@ $bg-color: #f5f7fa;
       background: var(--el-bg-color-page);
       border-radius: 8px;
       padding: 20px;
+      border: 1px solid var(--el-border-color);
       box-shadow: 0 2px 12px var(--el-border-color-light);
       max-height: 800px; // 设置最大高度以支持滚动
       overflow-y: auto; // 启用垂直滚动
@@ -556,6 +773,21 @@ $bg-color: #f5f7fa;
           flex-direction: column;
           gap: 8px;
         }
+      }
+
+      // 自定义滚动条样式，增加 border-radius
+      &::-webkit-scrollbar {
+        width: 8px;
+        border-radius: 8px; // 增大滚动条圆角
+        background: transparent;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: var(--el-border-color-light);
+        border-radius: 12px; // 滚动条滑块圆角更大
+      }
+      &::-webkit-scrollbar-track {
+        background: transparent;
+        border-radius: 12px;
       }
 
       // 文章列表
@@ -635,7 +867,7 @@ $bg-color: #f5f7fa;
               overflow: hidden;
             }
 
-            .article-summary {
+            .article-description {
               font-size: 14px;
               color: var(--el-text-color-regular);
               margin: 0 0 12px 0;
@@ -649,11 +881,45 @@ $bg-color: #f5f7fa;
 
             // 文章元信息
             .article-meta {
-              display: flex;
-              align-items: center;
-              gap: 16px;
               font-size: 13px;
               color: var(--el-text-color-secondary);
+
+              // 第一行：文章类型、审核状态、发布时间
+              .article-meta-primary {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 8px;
+              }
+
+              // 第二行：统计数据
+              .article-meta-stats {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+              }
+
+              // 桌面端单行显示
+              @media (min-width: 769px) {
+                .article-meta-primary {
+                  margin-bottom: 0;
+                }
+
+                .article-meta-primary,
+                .article-meta-stats {
+                  display: inline-flex;
+                }
+
+                .article-meta-stats {
+                  margin-left: 10px;
+                }
+
+                .article-meta-stats::before {
+                  content: "•";
+                  margin-right: 10px;
+                  color: var(--el-text-color-placeholder);
+                }
+              }
 
               .article-type {
                 background-color: #f0f9ff;
@@ -663,8 +929,32 @@ $bg-color: #f5f7fa;
                 font-size: 12px;
               }
 
+              // 审核状态样式
+              .article-examine-status {
+                padding: 2px 8px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: 500;
+
+                // 待审核状态 - 橙色
+                &.status-0 {
+                  background-color: #fff7ed;
+                  color: #ea580c;
+                  border: 1px solid #fed7aa;
+                }
+
+                // 审核未通过状态 - 红色
+                &.status-2 {
+                  background-color: #fef2f2;
+                  color: #dc2626;
+                  border: 1px solid #fecaca;
+                }
+              }
+
               .article-date,
-              .article-views,
+              .article-readCount,
+              .article-likes,
+              .article-favorites,
               .article-comments {
                 display: flex;
                 align-items: center;
@@ -694,6 +984,21 @@ $bg-color: #f5f7fa;
         }
       }
     }
+
+    // 专栏列表区域
+    .column-list-section {
+      background: var(--el-bg-color-page);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 12px var(--el-border-color-light);
+      min-height: 400px;
+
+      // 空状态
+      .empty-state {
+        padding: 60px 0;
+        text-align: center;
+      }
+    }
   }
 
   // 右侧边栏
@@ -704,6 +1009,7 @@ $bg-color: #f5f7fa;
       border-radius: 8px;
       padding: 20px;
       margin-bottom: 20px;
+      border: 1px solid var(--el-border-color);
       box-shadow: 0 2px 12px var(--el-border-color-light);
 
       .card-title {
@@ -759,7 +1065,7 @@ $bg-color: #f5f7fa;
           .user-basic-info {
             flex-direction: column;
             text-align: center;
-            gap: 16px;
+            gap: 5px;
           }
 
           .user-stats {
@@ -774,19 +1080,32 @@ $bg-color: #f5f7fa;
 
 @media (max-width: 768px) {
   .user-homepage {
+    font-size: 10px;
     .user-profile-section {
-      padding: 20px 0;
+      padding: 5px 0;
 
       .user-profile-card {
-        padding: 20px;
+        padding: 10px;
+        .user-profile-content {
+          .user-basic-info {
+            margin-bottom: 5px;
+          }
+        }
       }
     }
 
     .content-section {
-      padding: 20px 0;
+      padding: 5px 0;
     }
 
     .main-content {
+      .article-filters {
+        padding: 0px 10px 10px 10px;
+        .filter-controls {
+          margin-top: 5px;
+          padding-top: 5px;
+        }
+      }
       .article-list-section {
         .article-list {
           .article-item {
@@ -795,11 +1114,14 @@ $bg-color: #f5f7fa;
 
             .article-cover {
               width: 100%;
-              height: 200px;
+              height: 180px;
             }
           }
         }
       }
+    }
+    .sidebar {
+      display: none;
     }
   }
 
