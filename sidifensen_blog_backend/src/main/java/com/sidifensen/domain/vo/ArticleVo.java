@@ -39,6 +39,11 @@ public class ArticleVo implements Serializable {
     private String nickname;
 
     /**
+     * 用户头像
+     */
+    private String avatar;
+
+    /**
      * 标签
      */
     private String tag;

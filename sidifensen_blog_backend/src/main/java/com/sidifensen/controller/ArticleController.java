@@ -38,6 +38,19 @@ public class ArticleController {
     }
 
     /**
+     * 获取全部已发布审核通过全部人可见的文章列表（按更新时间倒序）
+     *
+     * @param pageNum  页码
+     * @param pageSize 页大小
+     * @return 全部文章列表
+     */
+    @GetMapping("/listAll")
+    public Result getAllArticleList(@NotNull Integer pageNum, @NotNull Integer pageSize) {
+        PageVo<List<ArticleVo>> articleVoList = articleService.getAllArticleList(pageNum, pageSize);
+        return Result.success(articleVoList);
+    }
+
+    /**
      * 获取用户文章列表
      *
      * @return 用户文章列表

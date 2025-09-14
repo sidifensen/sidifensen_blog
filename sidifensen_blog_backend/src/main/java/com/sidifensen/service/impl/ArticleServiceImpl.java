@@ -96,10 +96,39 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .orderByDesc(Article::getCreateTime);
 
         List<Article> articleList = articleMapper.selectPage(page, qw).getRecords();
+
         List<ArticleVo> articleVoList = articleList.stream().map(article -> {
             ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
             return articleVo;
-        }).toList();
+        }).collect(Collectors.toList());
+
+        return new PageVo<>(articleVoList, page.getTotal());
+    }
+
+    @Override
+    public PageVo<List<ArticleVo>> getAllArticleList(Integer pageNum, Integer pageSize) {
+        Page<Article> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
+                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
+                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                .eq(Article::getVisibleRange, VisibleRangeEnum.ALL.getCode())
+                .orderByDesc(Article::getUpdateTime);
+
+        List<Article> articleList = articleMapper.selectPage(page, qw).getRecords();
+        List<ArticleVo> articleVoList = articleList.stream().map(article -> {
+            ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
+            return articleVo;
+        }).collect(Collectors.toList());
+
+        //添加用户昵称
+        if (!articleVoList.isEmpty()) {
+            List<Integer> userIds = articleVoList.stream().map(ArticleVo::getUserId).collect(Collectors.toList());
+            List<SysUser> users = sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIds));
+            Map<Integer, String> userIdToNicknameMap = users.stream().collect(Collectors.toMap(SysUser::getId, SysUser::getNickname));
+            Map<Integer, String> userIdToAvatarMap = users.stream().collect(Collectors.toMap(SysUser::getId, SysUser::getAvatar));
+            articleVoList.forEach(articleVo -> articleVo.setNickname(userIdToNicknameMap.get(articleVo.getUserId())));
+            articleVoList.forEach(articleVo -> articleVo.setAvatar(userIdToAvatarMap.get(articleVo.getUserId())));
+        }
 
         return new PageVo<>(articleVoList, page.getTotal());
     }

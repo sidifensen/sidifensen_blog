@@ -136,12 +136,15 @@ onMounted(async () => {
 
 @media (max-width: 768px) {
   .article-detail {
-    padding: 10px 0;
+    padding: 0;
 
     .article-container {
-      padding: 0 10px;
+      padding: 0;
       gap: 10px;
       width: 100%;
+      .main-content {
+        border-radius: 0;
+      }
     }
   }
 }

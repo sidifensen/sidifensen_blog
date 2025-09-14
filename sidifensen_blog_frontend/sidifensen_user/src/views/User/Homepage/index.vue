@@ -142,8 +142,9 @@
                           <el-icon>
                             <Picture />
                           </el-icon>
-                        </div> </template
-                    ></el-image>
+                        </div>
+                      </template>
+                    </el-image>
 
                     <!-- 文章内容 -->
                     <div class="article-content">
@@ -888,8 +889,8 @@ $bg-color: #f5f7fa;
 
           // 文章封面
           .article-cover {
-            width: 120px;
-            height: 90px;
+            width: 160px;
+            height: 100px;
             border-radius: 6px;
             transition: transform 0.3s ease;
 

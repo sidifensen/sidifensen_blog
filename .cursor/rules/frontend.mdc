@@ -54,39 +54,83 @@ src/
 
 ```vue
 <script setup>
-// 1. 导入依赖
-import { ref, reactive, computed, onMounted } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import { storeToRefs } from "pinia";
+// 1. 导入依赖 - 按照功能分组
+import { ref, reactive, computed, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
+import { Plus, Message, Trophy, View } from "@element-plus/icons-vue";
+import { getUserInfoById } from "@/api/user";
+import { getUserArticleList, getUserArticleStatisticsById } from "@/api/article";
+import { useUserStore } from "@/stores/userStore";
 
-// 2. 定义 props 和 emits
-const props = defineProps({
-  title: String,
-  data: Array,
-});
+// 2. 路由和状态管理
+const route = useRoute();
+const router = useRouter();
+const userStore = useUserStore();
 
-const emit = defineEmits(["update", "delete"]);
-
-// 3. 响应式数据
-const isLoading = ref(false);
-const formData = reactive({
-  name: "",
-  email: "",
-});
+// 3. 响应式数据 - 按功能分组并添加注释
+const userLoading = ref(false); // 用户信息加载状态
+const articleLoading = ref(false); // 文章列表加载状态
+const userInfo = ref(null); // 用户信息数据
+const articleList = ref([]); // 文章列表数据
+const articleStatistics = ref(null); // 文章统计信息
+const activeTab = ref("article"); // 当前激活的标签页
+const currentPage = ref(1); // 当前页码
+const hasMore = ref(true); // 是否还有更多数据可加载
 
 // 4. 计算属性
-const filteredData = computed(() => {
-  return props.data?.filter((item) => item.active) || [];
+const isCurrentUser = computed(() => {
+  return userStore.user?.id === parseInt(route.params.userId);
 });
 
-// 5. 方法定义
-const handleSubmit = () => {
-  // 处理提交逻辑
+// 5. 方法定义 - 按功能分组
+// 获取用户信息
+const fetchUserInfo = async () => {
+  try {
+    userLoading.value = true;
+    const userId = route.params.userId;
+    const res = await getUserInfoById(userId);
+    userInfo.value = res.data.data;
+  } catch (error) {
+    ElMessage.error("获取用户信息失败");
+    console.error("获取用户信息失败:", error);
+  } finally {
+    userLoading.value = false;
+  }
 };
 
-// 6. 生命周期
+// 获取文章统计信息
+const fetchArticleStatistics = async () => {
+  try {
+    const userId = route.params.userId;
+    const res = await getUserArticleStatisticsById(userId);
+    articleStatistics.value = res.data.data;
+  } catch (error) {
+    console.error("获取文章统计信息失败:", error);
+  }
+};
+
+// 6. 事件监听和生命周期
+// 监听路由参数变化
+watch(
+  () => route.params.userId,
+  (newUserId) => {
+    if (newUserId) {
+      // 重置数据
+      currentPage.value = 1;
+      articleList.value = [];
+      hasMore.value = true;
+      fetchUserInfo();
+      fetchArticleStatistics();
+    }
+  },
+  { immediate: true }
+);
+
+// 组件挂载
 onMounted(() => {
-  // 初始化逻辑
+  fetchUserInfo();
+  fetchArticleStatistics();
 });
 </script>
 ```
@@ -106,87 +150,337 @@ onMounted(() => {
 
 ```vue
 <template>
-  <div class="user-profile">
-    <!-- 用户信息卡片 -->
-    <div class="user-card">
-      <div class="avatar-section">
-        <img class="avatar" :src="user.avatar" alt="头像" />
-        <div class="user-info">
-          <h3 class="username">{{ user.name }}</h3>
-          <p class="user-role">{{ user.role }}</p>
+  <div class="user-homepage">
+    <!-- 用户信息区域 -->
+    <div class="user-profile-section">
+      <div class="container">
+        <!-- 用户基本信息卡片 -->
+        <div class="user-profile-card">
+          <div class="user-profile-content" v-if="userInfo">
+            <!-- 用户头像和基本信息 -->
+            <div class="user-basic-info">
+              <el-avatar :size="120" :src="userInfo.avatar" class="user-avatar" />
+              <div class="user-details">
+                <h2 class="username">{{ userInfo.nickname }}</h2>
+                <p class="user-intro">{{ userInfo.introduction || "这个人很懒，什么都没写~" }}</p>
+              </div>
+            </div>
+
+            <!-- 用户统计信息 -->
+            <div class="user-stats">
+              <div class="stat-item">
+                <span class="stat-number">{{ articleStatistics?.publishedCount || 0 }}</span>
+                <span class="stat-label">文章</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">{{ userInfo.fansCount || 0 }}</span>
+                <span class="stat-label">粉丝</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 操作按钮区域 -->
-    <div class="action-buttons">
-      <el-button type="primary">编辑资料</el-button>
-      <el-button>修改密码</el-button>
+    <!-- 内容区域 -->
+    <div class="content-section">
+      <div class="container">
+        <div class="content-layout">
+          <!-- 左侧主要内容 -->
+          <div class="main-content">
+            <!-- 文章列表区域 -->
+            <div class="article-list-section">
+              <div class="article-list">
+                <div v-for="article in articleList" :key="article.id" class="article-item">
+                  <!-- 文章封面 -->
+                  <el-image :src="article.coverUrl" class="article-cover" />
+
+                  <!-- 文章内容 -->
+                  <div class="article-content">
+                    <h3 class="article-title">{{ article.title }}</h3>
+                    <p class="article-description">{{ article.description }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 右侧边栏 -->
+          <div class="sidebar">
+            <!-- 个人成就 -->
+            <div class="sidebar-card">
+              <h4 class="card-title">个人成就</h4>
+              <div class="achievements">
+                <div class="achievement-item">
+                  <el-icon class="achievement-icon"><Trophy /></el-icon>
+                  <span>创作达人</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-// 用户资料页面主容器
-.user-profile {
-  padding: 24px;
-  max-width: 800px;
+// 全局变量
+$primary-color: #409eff;
+$text-primary: #303133;
+$text-regular: #606266;
+$border-color: #dcdfe6;
+
+// 工具类
+.container {
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 0 10px;
+}
 
-  // 用户信息卡片区域
-  .user-card {
-    background: var(--el-bg-color);
-    border-radius: 8px;
-    padding: 24px;
-    margin-bottom: 24px;
-    box-shadow: var(--el-box-shadow-light);
+// 用户主页容器
+.user-homepage {
+  background: url("@/assets/img/homepage1.jpg") no-repeat center center;
+  background-size: cover;
+  background-attachment: fixed;
+  min-height: calc(100vh - 48px);
 
-    // 头像和信息区域
-    .avatar-section {
-      display: flex;
-      align-items: center;
-      gap: 16px;
+  // 用户信息区域
+  .user-profile-section {
+    padding: 10px 0 0 0px;
+    color: var(--el-text-color-primary);
 
-      // 用户头像样式
-      .avatar {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid var(--el-border-color-light);
-      }
+    // 用户信息卡片
+    .user-profile-card {
+      background: var(--el-border-color-lighter);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      padding: 30px;
+      border: 1px solid var(--el-border-color);
+      box-shadow: 0 2px 12px var(--el-border-color-light);
 
-      // 用户信息文字区域
-      .user-info {
-        flex: 1;
+      // 用户信息内容
+      .user-profile-content {
+        // 用户基本信息
+        .user-basic-info {
+          display: flex;
+          align-items: center;
+          gap: 24px;
+          margin-bottom: 30px;
 
-        // 用户名样式
-        .username {
-          margin: 0 0 8px 0;
-          font-size: 24px;
-          font-weight: 600;
-          color: var(--el-text-color-primary);
+          // 用户头像样式
+          .user-avatar {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+          }
+
+          // 用户详情
+          .user-details {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+
+            // 用户名样式
+            .username {
+              font-size: 24px;
+              font-weight: 700;
+              margin: 0 0 8px 0;
+              color: var(--el-text-color-primary);
+            }
+
+            // 用户介绍样式
+            .user-intro {
+              font-size: 14px;
+              margin: 0;
+              color: var(--el-text-color-primary);
+              line-height: 1.4;
+              word-wrap: break-word;
+            }
+          }
         }
 
-        // 用户角色样式
-        .user-role {
-          margin: 0;
-          font-size: 14px;
-          color: var(--el-text-color-regular);
+        // 统计信息
+        .user-stats {
+          display: flex;
+          justify-content: space-around;
+          padding: 20px 0;
+          border-top: 1px solid var(--el-border-color);
+
+          // 统计项目
+          .stat-item {
+            text-align: center;
+
+            // 统计数字
+            .stat-number {
+              display: block;
+              font-size: 24px;
+              font-weight: 700;
+              color: var(--el-text-color-primary);
+              margin-bottom: 4px;
+            }
+
+            // 统计标签
+            .stat-label {
+              font-size: 14px;
+              color: var(--el-text-color-primary);
+            }
+          }
         }
       }
     }
   }
 
-  // 操作按钮区域
-  .action-buttons {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
+  // 内容区域
+  .content-section {
+    padding: 20px 0;
 
-    // 按钮样式调整
-    .el-button {
-      min-width: 120px;
+    // 内容布局（栅格）
+    .content-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+
+      // 响应式：小屏幕单列布局
+      @media (max-width: 992px) {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+
+  // 主要内容区域
+  .main-content {
+    // 文章列表区域
+    .article-list-section {
+      background: var(--el-bg-color-page);
+      border-radius: 8px;
+      padding: 20px;
+      border: 1px solid var(--el-border-color);
+      box-shadow: 0 2px 12px var(--el-border-color-light);
+      max-height: 580px;
+      overflow-y: auto;
+
+      // 文章列表
+      .article-list {
+        // 文章项目
+        .article-item {
+          display: flex;
+          gap: 16px;
+          padding: 20px 0;
+          border-bottom: 1px solid var(--el-border-color-light);
+          cursor: pointer;
+          transition: all 0.3s ease;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          &:hover {
+            background-color: var(--el-bg-color-page);
+            transform: translateX(4px);
+          }
+
+          // 文章封面
+          .article-cover {
+            width: 120px;
+            height: 90px;
+            border-radius: 6px;
+            transition: transform 0.3s ease;
+
+            &:hover {
+              transform: scale(1.05);
+            }
+          }
+
+          // 文章内容
+          .article-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+
+            // 文章标题
+            .article-title {
+              font-size: 18px;
+              font-weight: 600;
+              color: var(--el-text-color-primary);
+              margin: 0 0 8px 0;
+              line-height: 1.4;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+            }
+
+            // 文章描述
+            .article-description {
+              font-size: 14px;
+              color: var(--el-text-color-regular);
+              margin: 0;
+              line-height: 1.5;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 右侧边栏
+  .sidebar {
+    // 侧边栏卡片
+    .sidebar-card {
+      background: var(--el-bg-color-page);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid var(--el-border-color);
+      box-shadow: 0 2px 12px var(--el-border-color-light);
+
+      // 卡片标题
+      .card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--el-text-color-primary);
+        margin: 0 0 16px 0;
+        padding-bottom: 8px;
+        border-bottom: 2px solid var(--el-color-primary);
+      }
+
+      // 个人成就
+      .achievements {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        // 成就项目
+        .achievement-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 12px;
+          background-color: var(--el-bg-color-page);
+          border-radius: 6px;
+
+          // 成就图标
+          .achievement-icon {
+            color: var(--el-color-primary);
+          }
+
+          // 成就文字
+          span {
+            font-size: 14px;
+            color: var(--el-text-color-regular);
+          }
+        }
+      }
+    }
+
+    // 响应式：小屏幕隐藏侧边栏
+    @media (max-width: 768px) {
+      display: none;
     }
   }
 }
@@ -194,6 +488,10 @@ onMounted(() => {
 ```
 
 ### 5. API 请求规范
+
+- **响应数据结构**：后端返回的数据结构是嵌套的，需要通过 `res.data.data` 来获取实际数据
+- **错误处理**：使用 try-catch 包装 API 请求，并提供用户友好的错误提示
+- **加载状态**：为每个请求设置对应的 loading 状态，提升用户体验
 
 ```javascript
 // api/article.js
@@ -213,6 +511,22 @@ export const createArticle = (data) => {
     method: "post",
     data,
   });
+};
+
+// 组件中使用API的标准写法
+const fetchData = async () => {
+  try {
+    loading.value = true;
+    const res = await getArticleList(params);
+    // 重要：响应数据结构是 res.data.data
+    articleList.value = res.data.data;
+    total.value = res.data.total; // 分页信息在 res.data 层级
+  } catch (error) {
+    ElMessage.error("获取数据失败");
+    console.error("API请求失败:", error);
+  } finally {
+    loading.value = false;
+  }
 };
 ```
 
@@ -319,10 +633,91 @@ export const formatTime = (date, format = "YYYY-MM-DD HH:mm:ss") => {
 ### 10. 性能优化规范
 
 - 使用 `v-memo` 缓存复杂计算
-- 大列表使用虚拟滚动
-- 图片懒加载
+- 大列表使用虚拟滚动或自定义无限滚动
+- 图片懒加载使用 Element Plus 的 `el-image` 组件
 - 路由懒加载
 - 组件懒加载使用 `defineAsyncComponent`
+- 使用骨架屏提升加载体验
+- 合理使用 `v-show` 和 `v-if` 控制组件渲染
+
+### 11. 无限滚动和加载状态
+
+```javascript
+// 无限滚动实现示例
+const handleScroll = () => {
+  if (!listContainer.value || articleLoading.value || loadingMore.value || !hasMore.value) {
+    return;
+  }
+
+  const container = listContainer.value;
+
+  // 当滚动到底部附近时加载更多
+  if (container.scrollTop + container.clientHeight >= container.scrollHeight - 100) {
+    fetchArticleList();
+  }
+};
+
+// 加载状态管理
+const fetchArticleList = async (reset = false) => {
+  try {
+    // 设置加载状态
+    if (reset) {
+      articleLoading.value = true;
+    } else {
+      loadingMore.value = true;
+    }
+
+    // API 请求逻辑
+    const res = await getUserArticleList(currentPage.value, pageSize.value, params);
+
+    // 数据处理
+    if (reset) {
+      articleList.value = res.data.data;
+    } else {
+      articleList.value = [...articleList.value, ...res.data.data];
+    }
+
+    // 判断是否还有更多数据
+    hasMore.value = articleList.value.length < total.value;
+  } finally {
+    articleLoading.value = false;
+    loadingMore.value = false;
+  }
+};
+```
+
+### 12. 响应式设计规范
+
+- 使用 CSS Grid 和 Flexbox 布局
+- 移动端优先的响应式设计
+- 合理的断点设置：768px（平板）、992px（桌面）
+- 移动端优化背景图片处理（background-attachment: scroll）
+- 小屏幕下隐藏次要内容（如侧边栏）
+
+````scss
+// 响应式布局示例
+.content-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+
+  // 平板和手机端单列布局
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// 移动端特殊处理
+@media (max-width: 768px) {
+  .user-homepage {
+    // 移动端优化背景图片显示
+    background-attachment: scroll;
+
+    .sidebar {
+      display: none; // 隐藏侧边栏
+    }
+  }
+}
 
 ## Element Plus 使用规范
 
@@ -330,27 +725,68 @@ export const formatTime = (date, format = "YYYY-MM-DD HH:mm:ss") => {
 
 ```vue
 <template>
-  <!-- 表单 -->
-  <el-form :model="form" :rules="rules" ref="formRef">
-    <el-form-item label="标题" prop="title">
-      <el-input v-model="form.title" placeholder="请输入标题" />
-    </el-form-item>
-  </el-form>
+  <!-- 骨架屏加载 -->
+  <el-skeleton :loading="userLoading" animated>
+    <template #template>
+      <div class="skeleton-profile">
+        <el-skeleton-item variant="circle" style="width: 120px; height: 120px" />
+        <div class="skeleton-info">
+          <el-skeleton-item variant="h3" style="width: 200px; margin: 16px 0" />
+          <el-skeleton-item variant="text" style="width: 300px" />
+        </div>
+      </div>
+    </template>
+    <template #default>
+      <!-- 实际内容 -->
+    </template>
+  </el-skeleton>
 
-  <!-- 表格 -->
-  <el-table :data="tableData" stripe>
-    <el-table-column prop="title" label="标题" />
-    <el-table-column label="操作">
-      <template #default="{ row }">
-        <el-button type="primary" @click="handleEdit(row)">编辑</el-button>
-      </template>
-    </el-table-column>
-  </el-table>
+  <!-- 头像组件 -->
+  <el-avatar :size="120" :src="userInfo.avatar" class="user-avatar" />
 
-  <!-- 分页 -->
-  <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" layout="prev, pager, next, sizes, total" @current-change="handlePageChange" />
+  <!-- 图片组件（支持懒加载和错误处理） -->
+  <el-image :src="article.coverUrl" class="article-cover">
+    <template #placeholder>
+      <div class="loading-text">加载中...</div>
+    </template>
+    <template #error>
+      <div class="error">
+        <el-icon><Picture /></el-icon>
+      </div>
+    </template>
+  </el-image>
+
+  <!-- 标签页 -->
+  <el-tabs v-model="activeTab" @tab-change="handleTabChange">
+    <el-tab-pane label="文章" name="article">
+      <!-- 筛选条件 -->
+      <div class="filter-controls">
+        <el-select v-model="visibilityType" @change="handleVisibilityChange">
+          <el-option label="全部可见" value="all" />
+          <el-option label="仅我可见" value="private" />
+        </el-select>
+
+        <el-radio-group v-model="sortType" @change="handleSortChange">
+          <el-radio value="time">时间排序</el-radio>
+          <el-radio value="views">阅读量排序</el-radio>
+        </el-radio-group>
+      </div>
+    </el-tab-pane>
+    <el-tab-pane label="专栏" name="column" />
+  </el-tabs>
+
+  <!-- 空状态 -->
+  <el-empty description="暂无文章" />
+
+  <!-- 按钮 -->
+  <el-button type="primary" :icon="Plus" @click="handleFollow" :loading="followLoading">
+    {{ isFollowed ? "已关注" : "关注" }}
+  </el-button>
+
+  <!-- 图标 -->
+  <el-icon class="achievement-icon"><Trophy /></el-icon>
 </template>
-```
+````
 
 ### 2. 消息提示
 
@@ -376,124 +812,652 @@ ElMessageBox.confirm("确定要删除吗？", "提示", {
 
 ```vue
 <template>
-  <div class="article-list">
-    <!-- 搜索表单 -->
-    <el-form :model="searchForm" inline>
-      <el-form-item label="标题">
-        <el-input v-model="searchForm.title" placeholder="请输入标题" />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="handleSearch">搜索</el-button>
-        <el-button @click="handleReset">重置</el-button>
-      </el-form-item>
-    </el-form>
+  <div class="user-homepage">
+    <!-- 用户信息区域 -->
+    <div class="user-profile-section">
+      <div class="container">
+        <!-- 用户基本信息卡片 -->
+        <div class="user-profile-card">
+          <el-skeleton :loading="userLoading" animated>
+            <template #template>
+              <div class="skeleton-profile">
+                <el-skeleton-item variant="circle" style="width: 120px; height: 120px" />
+                <div class="skeleton-info">
+                  <el-skeleton-item variant="h3" style="width: 200px; margin: 16px 0" />
+                  <el-skeleton-item variant="text" style="width: 300px" />
+                </div>
+              </div>
+            </template>
+            <template #default>
+              <div class="user-profile-content" v-if="userInfo">
+                <!-- 用户头像和基本信息 -->
+                <div class="user-basic-info">
+                  <el-avatar :size="120" :src="userInfo.avatar" class="user-avatar" />
+                  <div class="user-details">
+                    <h2 class="username">{{ userInfo.nickname }}</h2>
+                    <p class="user-intro">{{ userInfo.introduction || "这个人很懒，什么都没写~" }}</p>
+                  </div>
+                </div>
 
-    <!-- 数据表格 -->
-    <el-table v-loading="loading" :data="tableData" stripe>
-      <el-table-column prop="title" label="标题" />
-      <el-table-column prop="createTime" label="创建时间" />
-      <el-table-column label="操作" width="200">
-        <template #default="{ row }">
-          <el-button type="primary" size="small" @click="handleEdit(row)"> 编辑 </el-button>
-          <el-button type="danger" size="small" @click="handleDelete(row)"> 删除 </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+                <!-- 用户统计信息 -->
+                <div class="user-stats">
+                  <div class="stat-item">
+                    <span class="stat-number">{{ articleStatistics?.publishedCount || 0 }}</span>
+                    <span class="stat-label">文章</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-number">{{ userInfo.fansCount || 0 }}</span>
+                    <span class="stat-label">粉丝</span>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </el-skeleton>
+        </div>
+      </div>
+    </div>
 
-    <!-- 分页 -->
-    <el-pagination v-model:current-page="pagination.pageNum" v-model:page-size="pagination.pageSize" :total="pagination.total" layout="prev, pager, next, sizes, total" @current-change="fetchData" @size-change="fetchData" />
+    <!-- 内容区域 -->
+    <div class="content-section">
+      <div class="container">
+        <div class="content-layout">
+          <!-- 左侧主要内容 -->
+          <div class="main-content">
+            <!-- 文章筛选标签 -->
+            <div class="article-filters">
+              <el-tabs v-model="activeTab" @tab-change="handleTabChange">
+                <el-tab-pane label="文章" name="article">
+                  <!-- 筛选条件 -->
+                  <div class="filter-controls">
+                    <el-select v-model="visibilityType" @change="handleVisibilityChange">
+                      <el-option label="全部可见" value="all" />
+                      <el-option label="仅我可见" value="private" />
+                    </el-select>
+
+                    <el-radio-group v-model="sortType" @change="handleSortChange">
+                      <el-radio value="time">时间排序</el-radio>
+                      <el-radio value="views">阅读量排序</el-radio>
+                    </el-radio-group>
+                  </div>
+                </el-tab-pane>
+              </el-tabs>
+            </div>
+
+            <!-- 文章列表 -->
+            <div class="article-list-section" ref="listContainer" @scroll="handleScroll">
+              <div v-if="articleLoading" class="loading-container">
+                <el-skeleton animated :count="5">
+                  <template #template>
+                    <div class="article-skeleton">
+                      <el-skeleton-item variant="image" style="width: 100px; height: 80px" />
+                      <div class="skeleton-content">
+                        <el-skeleton-item variant="h3" style="width: 70%" />
+                        <el-skeleton-item variant="text" style="width: 100%" />
+                      </div>
+                    </div>
+                  </template>
+                </el-skeleton>
+              </div>
+
+              <div v-else-if="articleList.length === 0" class="empty-state">
+                <el-empty description="暂无文章" />
+              </div>
+
+              <div v-else class="article-list">
+                <div v-for="article in articleList" :key="article.id" class="article-item" @click="goToArticle(article.id)">
+                  <!-- 文章封面 -->
+                  <el-image :src="article.coverUrl" class="article-cover">
+                    <template #placeholder>
+                      <div class="loading-text">加载中...</div>
+                    </template>
+                    <template #error>
+                      <div class="error">
+                        <el-icon><Picture /></el-icon>
+                      </div>
+                    </template>
+                  </el-image>
+
+                  <!-- 文章内容 -->
+                  <div class="article-content">
+                    <h3 class="article-title">{{ article.title }}</h3>
+                    <p class="article-description">{{ article.description }}</p>
+
+                    <!-- 文章元信息 -->
+                    <div class="article-meta">
+                      <span class="article-date">{{ article.createTime }}</span>
+                      <span class="article-readCount">{{ article.readCount }} 阅读</span>
+                      <span class="article-likes">{{ article.likeCount || 0 }} 点赞</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 加载更多指示器 -->
+                <div v-if="loadingMore" class="loading-more">
+                  <div class="loading-spinner"></div>
+                  <span>加载更多...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
-import { ElMessage, ElMessageBox } from "element-plus";
-import { getArticleList, deleteArticle } from "@/api/article";
+import { ref, reactive, computed, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
+import { Plus, Message, Trophy, View, Picture } from "@element-plus/icons-vue";
+import { getUserInfoById } from "@/api/user";
+import { getUserArticleList, getUserArticleStatisticsById } from "@/api/article";
+import { useUserStore } from "@/stores/userStore";
 
-// 响应式数据
-const loading = ref(false);
-const tableData = ref([]);
-const searchForm = reactive({
-  title: "",
-});
-const pagination = reactive({
-  pageNum: 1,
-  pageSize: 10,
-  total: 0,
+// 路由和状态管理
+const route = useRoute();
+const router = useRouter();
+const userStore = useUserStore();
+
+// 响应式数据 - 按功能分组并添加注释
+const userLoading = ref(false); // 用户信息加载状态
+const articleLoading = ref(false); // 文章列表加载状态
+const loadingMore = ref(false); // 加载更多数据状态
+const userInfo = ref(null); // 用户信息数据
+const articleList = ref([]); // 文章列表数据
+const articleStatistics = ref(null); // 文章统计信息
+const activeTab = ref("article"); // 当前激活的标签页
+const sortType = ref("time"); // 排序类型
+const visibilityType = ref("all"); // 可见范围类型
+const currentPage = ref(1); // 当前页码
+const pageSize = ref(10); // 每页数据量
+const hasMore = ref(true); // 是否还有更多数据可加载
+const total = ref(0); // 总数据量
+
+// 文章列表容器引用
+const listContainer = ref(null);
+
+// 计算属性
+const isCurrentUser = computed(() => {
+  return userStore.user?.id === parseInt(route.params.userId);
 });
 
-// 方法
-const fetchData = async () => {
+// 获取用户信息
+const fetchUserInfo = async () => {
   try {
-    loading.value = true;
-    const { data } = await getArticleList({
-      ...searchForm,
-      pageNum: pagination.pageNum,
-      pageSize: pagination.pageSize,
-    });
-    tableData.value = data.records;
-    pagination.total = data.total;
+    userLoading.value = true;
+    const userId = route.params.userId;
+    const res = await getUserInfoById(userId);
+    userInfo.value = res.data.data; // 注意数据结构：res.data.data
   } catch (error) {
-    ElMessage.error("获取数据失败");
+    ElMessage.error("获取用户信息失败");
+    console.error("获取用户信息失败:", error);
   } finally {
-    loading.value = false;
+    userLoading.value = false;
   }
 };
 
-const handleSearch = () => {
-  pagination.pageNum = 1;
-  fetchData();
-};
-
-const handleReset = () => {
-  Object.keys(searchForm).forEach((key) => {
-    searchForm[key] = "";
-  });
-  handleSearch();
-};
-
-const handleEdit = (row) => {
-  // 编辑逻辑
-};
-
-const handleDelete = async (row) => {
+// 获取文章统计信息
+const fetchArticleStatistics = async () => {
   try {
-    await ElMessageBox.confirm("确定要删除这篇文章吗？", "提示", {
-      type: "warning",
-    });
-    await deleteArticle(row.id);
-    ElMessage.success("删除成功");
-    fetchData();
+    const userId = route.params.userId;
+    const res = await getUserArticleStatisticsById(userId);
+    articleStatistics.value = res.data.data; // 注意数据结构：res.data.data
   } catch (error) {
-    if (error !== "cancel") {
-      ElMessage.error("删除失败");
-    }
+    console.error("获取文章统计信息失败:", error);
   }
 };
 
-// 生命周期
+// 获取文章列表
+const fetchArticleList = async (reset = false) => {
+  if (!hasMore.value || articleLoading.value || loadingMore.value) {
+    return;
+  }
+
+  try {
+    // 设置加载状态
+    if (reset) {
+      articleLoading.value = true;
+    } else {
+      loadingMore.value = true;
+    }
+
+    const userId = route.params.userId;
+    const articleStatusDto = {
+      userId: parseInt(userId),
+      orderBy: sortType.value === "time" ? 0 : 1,
+    };
+
+    // 根据可见范围设置查询条件
+    if (visibilityType.value === "all") {
+      articleStatusDto.visibleRange = 0;
+      articleStatusDto.examineStatus = 1;
+    } else if (visibilityType.value === "private") {
+      articleStatusDto.visibleRange = 1;
+    }
+
+    const res = await getUserArticleList(currentPage.value, pageSize.value, articleStatusDto);
+    const newArticles = res.data.data || []; // 重要：响应数据结构是 res.data.data
+    total.value = res.data.total || 0; // 分页信息在 res.data 层级
+
+    if (reset) {
+      articleList.value = newArticles;
+    } else {
+      articleList.value = [...articleList.value, ...newArticles];
+    }
+
+    // 判断是否还有更多数据
+    hasMore.value = articleList.value.length < total.value;
+
+    // 更新页码
+    if (hasMore.value && newArticles.length > 0) {
+      currentPage.value++;
+    }
+  } catch (error) {
+    ElMessage.error("获取文章列表失败");
+    console.error("获取文章列表失败:", error);
+  } finally {
+    articleLoading.value = false;
+    loadingMore.value = false;
+  }
+};
+
+// 切换文章筛选标签
+const handleTabChange = (tabName) => {
+  activeTab.value = tabName;
+  currentPage.value = 1;
+  articleList.value = [];
+  hasMore.value = true;
+  fetchArticleList(true);
+};
+
+// 处理排序条件变化
+const handleSortChange = (value) => {
+  sortType.value = value;
+  currentPage.value = 1;
+  articleList.value = [];
+  hasMore.value = true;
+  fetchArticleList(true);
+};
+
+// 处理可见范围变化
+const handleVisibilityChange = (value) => {
+  visibilityType.value = value;
+  currentPage.value = 1;
+  articleList.value = [];
+  hasMore.value = true;
+  fetchArticleList(true);
+};
+
+// 处理滚动事件 - 自定义无限滚动
+const handleScroll = () => {
+  if (!listContainer.value || articleLoading.value || loadingMore.value || !hasMore.value) {
+    return;
+  }
+
+  const container = listContainer.value;
+
+  // 当滚动到底部附近时加载更多
+  if (container.scrollTop + container.clientHeight >= container.scrollHeight - 100) {
+    fetchArticleList();
+  }
+};
+
+// 跳转至文章详情页
+const goToArticle = (articleId) => {
+  const userId = route.params.userId;
+  router.push(`/user/${userId}/article/${articleId}`);
+};
+
+// 监听路由参数变化
+watch(
+  () => route.params.userId,
+  (newUserId) => {
+    if (newUserId) {
+      // 重置数据
+      currentPage.value = 1;
+      articleList.value = [];
+      hasMore.value = true;
+      fetchUserInfo();
+      fetchArticleStatistics();
+      fetchArticleList(true);
+    }
+  },
+  { immediate: true }
+);
+
+// 组件挂载
 onMounted(() => {
-  fetchData();
+  fetchUserInfo();
+  fetchArticleStatistics();
+  fetchArticleList(true);
 });
 </script>
 
 <style lang="scss" scoped>
-// 文章列表页面容器
-.article-list {
-  padding: 20px;
+// 用户主页容器
+.user-homepage {
+  background: url("@/assets/img/homepage1.jpg") no-repeat center center;
+  background-size: cover;
+  background-attachment: fixed;
+  min-height: calc(100vh - 48px);
 
-  // 搜索表单区域
-  .el-form {
-    margin-bottom: 20px;
-    padding: 20px;
-    background-color: var(--el-bg-color-page);
-    border-radius: 4px;
+  // 工具类
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 10px;
   }
 
-  // 分页组件区域
-  .el-pagination {
-    margin-top: 20px;
-    text-align: right;
+  // 用户信息区域
+  .user-profile-section {
+    padding: 10px 0 0 0px;
+    color: var(--el-text-color-primary);
+
+    // 用户信息卡片
+    .user-profile-card {
+      background: var(--el-border-color-lighter);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      padding: 30px;
+      border: 1px solid var(--el-border-color);
+      box-shadow: 0 2px 12px var(--el-border-color-light);
+
+      // 骨架屏样式
+      .skeleton-profile {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+
+        .skeleton-info {
+          flex: 1;
+        }
+      }
+
+      // 用户信息内容
+      .user-profile-content {
+        // 用户基本信息
+        .user-basic-info {
+          display: flex;
+          align-items: center;
+          gap: 24px;
+          margin-bottom: 30px;
+
+          .user-avatar {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+          }
+
+          .user-details {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+
+            .username {
+              font-size: 24px;
+              font-weight: 700;
+              margin: 0 0 8px 0;
+              color: var(--el-text-color-primary);
+            }
+
+            .user-intro {
+              font-size: 14px;
+              margin: 0;
+              color: var(--el-text-color-primary);
+              line-height: 1.4;
+              word-wrap: break-word;
+            }
+          }
+        }
+
+        // 统计信息
+        .user-stats {
+          display: flex;
+          justify-content: space-around;
+          padding: 20px 0;
+          border-top: 1px solid var(--el-border-color);
+
+          .stat-item {
+            text-align: center;
+
+            .stat-number {
+              display: block;
+              font-size: 24px;
+              font-weight: 700;
+              color: var(--el-text-color-primary);
+              margin-bottom: 4px;
+            }
+
+            .stat-label {
+              font-size: 14px;
+              color: var(--el-text-color-primary);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 内容区域
+  .content-section {
+    padding: 20px 0;
+
+    .content-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  }
+
+  // 主要内容区域
+  .main-content {
+    // 文章筛选标签
+    .article-filters {
+      background: var(--el-bg-color-page);
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      border: 1px solid var(--el-border-color);
+      box-shadow: 0 2px 12px var(--el-border-color-light);
+
+      // 筛选控件样式
+      .filter-controls {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--el-border-color-light);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+    }
+
+    // 文章列表区域
+    .article-list-section {
+      background: var(--el-bg-color-page);
+      border-radius: 8px;
+      padding: 20px;
+      border: 1px solid var(--el-border-color);
+      box-shadow: 0 2px 12px var(--el-border-color-light);
+      max-height: 580px;
+      overflow-y: auto;
+
+      // 加载容器样式
+      .loading-container {
+        padding: 20px 0;
+      }
+
+      // 骨架屏样式
+      .article-skeleton {
+        display: flex;
+        gap: 16px;
+        padding: 20px 0;
+        border-bottom: 1px solid var(--el-border-color-light);
+
+        .skeleton-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+      }
+
+      // 空状态
+      .empty-state {
+        padding: 60px 0;
+        text-align: center;
+      }
+
+      // 文章列表
+      .article-list {
+        .article-item {
+          display: flex;
+          gap: 16px;
+          padding: 20px 0;
+          border-bottom: 1px solid var(--el-border-color-light);
+          cursor: pointer;
+          transition: all 0.3s ease;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          &:hover {
+            background-color: var(--el-bg-color-page);
+            transform: translateX(4px);
+          }
+
+          // 文章封面
+          .article-cover {
+            width: 120px;
+            height: 90px;
+            border-radius: 6px;
+            transition: transform 0.3s ease;
+
+            &:hover {
+              transform: scale(1.05);
+            }
+
+            .loading-text {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: 100%;
+              height: 100%;
+              font-size: 12px;
+              color: var(--el-text-color-regular);
+              background-color: var(--el-bg-color-page);
+            }
+
+            .error {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: 100%;
+              height: 100%;
+              background-color: var(--el-bg-color-page);
+
+              .el-icon {
+                font-size: 24px;
+                color: var(--el-text-color-placeholder);
+              }
+            }
+          }
+
+          // 文章内容
+          .article-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+
+            .article-title {
+              font-size: 18px;
+              font-weight: 600;
+              color: var(--el-text-color-primary);
+              margin: 0 0 8px 0;
+              line-height: 1.4;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+            }
+
+            .article-description {
+              font-size: 14px;
+              color: var(--el-text-color-regular);
+              margin: 0 0 12px 0;
+              line-height: 1.5;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+            }
+
+            // 文章元信息
+            .article-meta {
+              font-size: 13px;
+              color: var(--el-text-color-secondary);
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            }
+          }
+        }
+
+        // 加载更多指示器
+        .loading-more {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 30px;
+          color: var(--el-text-color-regular);
+
+          .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #409eff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+          }
+        }
+      }
+    }
+  }
+}
+
+// 加载动画
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .user-homepage {
+    background-attachment: scroll;
+
+    .user-profile-card {
+      padding: 15px;
+    }
+
+    .article-list-section {
+      .article-item {
+        flex-direction: column;
+        gap: 12px;
+
+        .article-cover {
+          width: 100%;
+          height: 180px;
+        }
+      }
+    }
   }
 }
 </style>
@@ -542,3 +1506,148 @@ onMounted(() => {
    - XSS 防护
    - CSRF 防护
    - 敏感信息不要暴露在前端
+
+## 项目特色功能规范
+
+### 1. 背景图片和毛玻璃效果
+
+```scss
+// 页面背景图片设置
+.page-container {
+  background: url("@/assets/img/background.jpg") no-repeat center center;
+  background-size: cover;
+  background-attachment: fixed; // 桌面端固定背景
+
+  // 移动端优化
+  @media (max-width: 768px) {
+    background-attachment: scroll; // 移动端使用scroll避免兼容性问题
+  }
+}
+
+// 毛玻璃卡片效果
+.glass-card {
+  background: var(--el-border-color-lighter);
+  backdrop-filter: blur(10px); // 毛玻璃效果
+  border: 1px solid var(--el-border-color);
+  box-shadow: 0 2px 12px var(--el-border-color-light);
+}
+```
+
+### 2. 动态文本展开收起
+
+```vue
+<template>
+  <div class="text-container">
+    <p class="text-content" :class="{ expanded: isExpanded }">
+      {{ longText }}
+    </p>
+    <button v-if="needExpandButton" class="expand-btn" @click="toggleExpand">
+      <el-icon>
+        <ArrowDown v-if="!isExpanded" />
+        <ArrowUp v-else />
+      </el-icon>
+    </button>
+  </div>
+</template>
+
+<style lang="scss" scoped>
+.text-content {
+  // 默认限制行数
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  // 展开状态
+  &.expanded {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+}
+
+.expand-btn {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  // 按钮样式...
+}
+</style>
+```
+
+### 3. 自定义滚动条样式
+
+```scss
+// 滚动容器自定义滚动条
+.scroll-container {
+  overflow-y: auto;
+
+  // Webkit 浏览器滚动条样式
+  &::-webkit-scrollbar {
+    width: 8px;
+    border-radius: 8px;
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--el-border-color);
+    border-radius: 12px;
+
+    &:hover {
+      background: var(--el-border-color-dark);
+    }
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 12px;
+  }
+}
+```
+
+### 4. 返回顶部功能
+
+```vue
+<template>
+  <div v-show="showBackToTop" class="back-to-top" @click="scrollToTop">
+    <el-icon><ArrowUp /></el-icon>
+  </div>
+</template>
+
+<script setup>
+// 监听滚动显示/隐藏返回顶部按钮
+const handleScroll = () => {
+  const container = listContainer.value;
+  showBackToTop.value = container.scrollTop > 200;
+};
+
+// 返回顶部方法
+const scrollToTop = () => {
+  if (listContainer.value) {
+    listContainer.value.scrollTo({ top: 0, behavior: "smooth" });
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+.back-to-top {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  width: 50px;
+  height: 50px;
+  backdrop-filter: blur(2px);
+  background-color: color-mix(in srgb, var(--el-bg-color) 90%, transparent);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: var(--el-color-primary);
+    color: white;
+    transform: translateY(-2px);
+  }
+}
+</style>
+```

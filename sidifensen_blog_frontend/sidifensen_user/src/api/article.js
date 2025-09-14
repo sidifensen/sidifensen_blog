@@ -67,3 +67,19 @@ export function getUserArticleStatisticsById(userId) {
     method: "get",
   });
 }
+
+// 获取所有文章列表
+export function getAllArticleList(pageNum, pageSize) {
+  return request({
+    url: `/article/listAll?pageNum=${pageNum}&pageSize=${pageSize}`,
+    method: "get",
+  });
+}
+
+// 获取文章列表（通用）
+export function getArticleList(pageNum, pageSize) {
+  return request({
+    url: `/article/list?pageNum=${pageNum}&pageSize=${pageSize}`,
+    method: "get",
+  });
+}
