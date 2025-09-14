@@ -29,6 +29,7 @@ public class SecurityConstants {
             "/oauth/github/callback",
             "/user/oauthLogin",
             "/article/list", // 获取文章列表
+            "/article/user/list", // 获取用户文章列表
             "/article/get/{articleId:\\d+}", // 获取文章详情，限制articleId只能是数字
             "/favicon.ico"
     };

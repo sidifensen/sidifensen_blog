@@ -365,11 +365,13 @@ const scrollToTop = () => {
       }
 
       :deep(th) {
+        padding: 5px;
         border: 1px solid var(--el-border-color);
         background: var(--el-fill-color-light);
       }
 
       :deep(td) {
+        padding: 5px;
         border: 1px solid var(--el-border-color);
       }
 
@@ -414,11 +416,11 @@ const scrollToTop = () => {
 
       // 无序列表
       :deep(ul) {
-        padding-left: 15px;
+        // padding-left: 15px;
       }
       // 有序列表
       :deep(ol) {
-        padding-left: 15px;
+        // padding-left: 15px;
       }
     }
   }

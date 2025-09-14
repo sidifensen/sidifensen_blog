@@ -59,3 +59,11 @@ export function getUserArticleStatistics() {
     method: "get",
   });
 }
+
+// 获取指定用户的文章统计
+export function getUserArticleStatisticsById(userId) {
+  return request({
+    url: `/article/user/${userId}/statistics`,
+    method: "get",
+  });
+}

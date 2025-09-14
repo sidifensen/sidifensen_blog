@@ -185,6 +185,23 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public ArticleStatisticsVo getUserArticleStatistics() {
         Integer userId = SecurityUtils.getUserId();
 
+        // 直接查询已发布文章数量
+        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
+                .eq(Article::getUserId, userId)
+                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode());
+
+        long publishedCount = articleMapper.selectCount(qw);
+
+        // 构建返回对象，只填充已发布文章数量
+        ArticleStatisticsVo statisticsVo = new ArticleStatisticsVo();
+        statisticsVo.setPublishedCount(publishedCount);
+
+        return statisticsVo;
+    }
+
+    @Override
+    public ArticleStatisticsVo getUserArticleStatisticsById(Integer userId) {
         // 一次查询获取用户所有文章的编辑状态和审核状态
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
                 .select(Article::getEditStatus, Article::getExamineStatus)

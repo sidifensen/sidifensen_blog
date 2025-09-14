@@ -61,6 +61,18 @@ public class ArticleController {
     }
 
     /**
+     * 获取指定用户的文章统计
+     *
+     * @param userId 用户ID
+     * @return 用户文章统计
+     */
+    @GetMapping("/user/{userId}/statistics")
+    public Result getUserArticleStatisticsById(@PathVariable Integer userId) {
+        ArticleStatisticsVo statisticsVo = articleService.getUserArticleStatisticsById(userId);
+        return Result.success(statisticsVo);
+    }
+
+    /**
      * 获取用户文章详情
      *
      * @return 用户文章详情

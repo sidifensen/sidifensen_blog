@@ -16,11 +16,15 @@
         <div class="user-card-content" v-if="userInfo">
           <!-- 用户基本信息 -->
           <div class="user-basic-info">
-            <el-avatar :size="80" :src="userInfo.avatar" class="clickable-avatar" @click="goToUserHomepage" />
+            <div class="avatar-container" @mousemove="handleMouseMove" @mouseleave="handleMouseLeave" @click="goToUserHomepage">
+              <div class="avatar-wrapper" ref="avatarWrapper">
+                <el-avatar :size="100" :src="userInfo.avatar" class="clickable-avatar" />
+                <div class="shine-effect" ref="shineEffect"></div>
+              </div>
+            </div>
             <h3 class="nickname clickable-nickname" @click="goToUserHomepage">
               {{ userInfo.nickname }}
             </h3>
-            <p class="introduction">{{ userInfo.introduction || "这个人很懒，什么都没写~" }}</p>
           </div>
 
           <!-- 用户统计信息 -->
@@ -73,6 +77,10 @@ const props = defineProps({
   },
 });
 
+// 头像3D效果相关
+const avatarWrapper = ref(null);
+const shineEffect = ref(null);
+
 // 关注状态
 const isFollowed = ref(false);
 const followLoading = ref(false);
@@ -94,6 +102,54 @@ const handleFollow = async () => {
 // 发送私信
 const handleMessage = () => {
   ElMessage.info("私信功能开发中...");
+};
+
+// 处理鼠标移动事件 - 3D效果和闪光
+const handleMouseMove = (event) => {
+  if (!avatarWrapper.value || !shineEffect.value) return;
+
+  const rect = event.currentTarget.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+
+  // 计算旋转角度 (限制在-20到20度之间)
+  const rotateX = ((y - centerY) / centerY) * -20;
+  const rotateY = ((x - centerX) / centerX) * 20;
+
+  // 应用3D变换
+  avatarWrapper.value.style.transform = `
+    perspective(1000px) 
+    rotateX(${rotateX}deg) 
+    rotateY(${rotateY}deg) 
+    translateZ(20px)
+  `;
+
+  // 计算闪光位置
+  const shineX = (x / rect.width) * 100;
+  const shineY = (y / rect.height) * 100;
+
+  // 应用闪光效果
+  shineEffect.value.style.background = `
+    radial-gradient(circle at ${shineX}% ${shineY}%, 
+    rgba(255, 255, 255, 0.8) 0%, 
+    rgba(255, 255, 255, 0.3) 30%, 
+    transparent 60%)
+  `;
+  shineEffect.value.style.opacity = "1";
+};
+
+// 处理鼠标离开事件 - 重置效果
+const handleMouseLeave = () => {
+  if (!avatarWrapper.value || !shineEffect.value) return;
+
+  // 重置3D变换
+  avatarWrapper.value.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)";
+
+  // 隐藏闪光效果
+  shineEffect.value.style.opacity = "0";
 };
 
 // 跳转到用户主页
@@ -138,14 +194,64 @@ const goToUserHomepage = () => {
         color: var(--el-text-color-primary);
       }
 
-      // 可点击的头像样式
-      .clickable-avatar {
+      // 头像容器 - 3D效果区域
+      .avatar-container {
         cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        padding: 20px;
+        perspective: 1000px;
 
+        // 头像包装器 - 3D变换载体
+        .avatar-wrapper {
+          position: relative;
+          display: inline-block;
+          border-radius: 50%;
+          transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+          transform-style: preserve-3d;
+          overflow: hidden;
+
+          // 头像本体
+          .clickable-avatar {
+            display: block;
+            position: relative;
+            z-index: 1;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+
+            &:hover {
+              box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+            }
+          }
+
+          // 闪光效果层
+          .shine-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 2;
+            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 0%, transparent 60%);
+            mix-blend-mode: overlay;
+          }
+
+          // 3D变换时的额外效果
+          &:hover {
+            .clickable-avatar {
+              filter: brightness(1.1) contrast(1.05);
+            }
+          }
+        }
+
+        // 鼠标悬停时的容器效果
         &:hover {
-          transform: scale(1.05);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          .avatar-wrapper {
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+          }
         }
       }
 
@@ -157,13 +263,6 @@ const goToUserHomepage = () => {
         &:hover {
           color: var(--el-color-primary);
         }
-      }
-
-      .introduction {
-        margin: 0;
-        font-size: 14px;
-        color: var(--el-text-color-regular);
-        line-height: 1.5;
       }
     }
 

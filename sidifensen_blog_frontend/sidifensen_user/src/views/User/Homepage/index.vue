@@ -26,7 +26,7 @@
                   <div class="user-details">
                     <h2 class="username">{{ userInfo.nickname }}</h2>
                     <div class="user-intro-container">
-                      <p class="user-intro" :class="{ expanded: isIntroExpanded }">个人介绍: {{ userInfo.introduction || "这个人很懒，什么都没写~" }}</p>
+                      <p class="user-intro" :class="{ expanded: isIntroExpanded }">{{ userInfo.introduction || "这个人很懒，什么都没写~" }}</p>
                       <button v-if="userInfo.introduction && userInfo.introduction.length > 50" class="intro-expand-btn" @click="toggleIntroExpand">
                         <el-icon>
                           <ArrowDown v-if="!isIntroExpanded" />
@@ -44,7 +44,7 @@
                 <!-- 用户统计信息 -->
                 <div class="user-stats">
                   <div class="stat-item">
-                    <span class="stat-number">{{ userInfo.articleCount || 0 }}</span>
+                    <span class="stat-number">{{ articleStatistics?.publishedCount || 0 }}</span>
                     <span class="stat-label">文章</span>
                   </div>
                   <div class="stat-item">
@@ -109,72 +109,81 @@
             </div>
 
             <!-- 文章列表 -->
-            <div v-if="activeTab === 'article'" class="article-list-section" ref="listContainer" @scroll="handleScroll">
-              <div v-if="articleLoading" class="loading-container">
-                <el-skeleton animated :count="5">
-                  <template #template>
-                    <div class="article-skeleton">
-                      <el-skeleton-item variant="image" style="width: 100px; height: 80px" />
-                      <div class="skeleton-content">
-                        <el-skeleton-item variant="h3" style="width: 70%" />
-                        <el-skeleton-item variant="text" style="width: 100%" />
-                        <el-skeleton-item variant="text" style="width: 60%" />
+            <div v-if="activeTab === 'article'" class="article-list-wrapper">
+              <div class="article-list-section" ref="listContainer" @scroll="handleScroll">
+                <div v-if="articleLoading" class="loading-container">
+                  <el-skeleton animated :count="5">
+                    <template #template>
+                      <div class="article-skeleton">
+                        <el-skeleton-item variant="image" style="width: 100px; height: 80px" />
+                        <div class="skeleton-content">
+                          <el-skeleton-item variant="h3" style="width: 70%" />
+                          <el-skeleton-item variant="text" style="width: 100%" />
+                          <el-skeleton-item variant="text" style="width: 60%" />
+                        </div>
                       </div>
-                    </div>
-                  </template>
-                </el-skeleton>
-              </div>
-
-              <div v-else-if="articleList.length === 0" class="empty-state">
-                <el-empty description="暂无文章" />
-              </div>
-
-              <div v-else class="article-list">
-                <div v-for="article in articleList" :key="article.id" class="article-item" @click="goToArticle(article.id)">
-                  <!-- 文章封面 -->
-                  <el-image :src="article.coverUrl" class="article-cover">
-                    <template #placeholder>
-                      <div class="loading-text">加载中...</div>
                     </template>
-                    <template #error>
-                      <div class="error">
-                        <el-icon>
-                          <Picture />
-                        </el-icon>
-                      </div> </template
-                  ></el-image>
+                  </el-skeleton>
+                </div>
 
-                  <!-- 文章内容 -->
-                  <div class="article-content">
-                    <h3 class="article-title">{{ article.title }}</h3>
-                    <p class="article-description">{{ article.description }}</p>
+                <div v-else-if="articleList.length === 0" class="empty-state">
+                  <el-empty description="暂无文章" />
+                </div>
 
-                    <!-- 文章元信息 -->
-                    <div class="article-meta">
-                      <!-- 第一行：文章类型、审核状态、发布时间 -->
-                      <div class="article-meta-primary">
-                        <span class="article-type">{{ getArticleType(article.type) }}</span>
-                        <span v-if="isCurrentUser && article.examineStatus !== 1" class="article-examine-status" :class="'status-' + article.examineStatus">
-                          {{ getExamineStatus(article.examineStatus) }}
-                        </span>
-                        <span class="article-date">{{ article.createTime }}</span>
-                      </div>
-                      <!-- 第二行：统计数据 -->
-                      <div class="article-meta-stats">
-                        <span class="article-readCount">{{ article.readCount }} 阅读</span>
-                        <span class="article-likes">{{ article.likeCount || 0 }} 点赞</span>
-                        <span class="article-favorites">{{ article.collectCount || 0 }} 收藏</span>
-                        <span class="article-comments">{{ article.commentCount }} 评论</span>
+                <div v-else class="article-list">
+                  <div v-for="article in articleList" :key="article.id" class="article-item" @click="goToArticle(article.id)">
+                    <!-- 文章封面 -->
+                    <el-image :src="article.coverUrl" class="article-cover">
+                      <template #placeholder>
+                        <div class="loading-text">加载中...</div>
+                      </template>
+                      <template #error>
+                        <div class="error">
+                          <el-icon>
+                            <Picture />
+                          </el-icon>
+                        </div> </template
+                    ></el-image>
+
+                    <!-- 文章内容 -->
+                    <div class="article-content">
+                      <h3 class="article-title">{{ article.title }}</h3>
+                      <p class="article-description">{{ article.description }}</p>
+
+                      <!-- 文章元信息 -->
+                      <div class="article-meta">
+                        <!-- 第一行：文章类型、审核状态、发布时间 -->
+                        <div class="article-meta-primary">
+                          <span class="article-type">{{ getArticleType(article.type) }}</span>
+                          <span v-if="isCurrentUser && article.examineStatus !== 1" class="article-examine-status" :class="'status-' + article.examineStatus">
+                            {{ getExamineStatus(article.examineStatus) }}
+                          </span>
+                          <span class="article-date">{{ article.createTime }}</span>
+                        </div>
+                        <!-- 第二行：统计数据 -->
+                        <div class="article-meta-stats">
+                          <span class="article-readCount">{{ article.readCount }} 阅读</span>
+                          <span class="article-likes">{{ article.likeCount || 0 }} 点赞</span>
+                          <span class="article-favorites">{{ article.collectCount || 0 }} 收藏</span>
+                          <span class="article-comments">{{ article.commentCount }} 评论</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- 加载更多指示器 -->
-                <div v-if="loadingMore" class="loading-more">
-                  <div class="loading-spinner"></div>
-                  <span>加载更多...</span>
+                  <!-- 加载更多指示器 -->
+                  <div v-if="loadingMore" class="loading-more">
+                    <div class="loading-spinner"></div>
+                    <span>加载更多...</span>
+                  </div>
                 </div>
+              </div>
+
+              <!-- 返回顶部按钮 - 放在wrapper内部，但在滚动容器外部 -->
+              <div v-show="showBackToTop" class="back-to-top" @click="scrollToTop">
+                <el-icon>
+                  <ArrowUp />
+                </el-icon>
               </div>
             </div>
 
@@ -192,7 +201,7 @@
             <div class="sidebar-card">
               <h4 class="card-title">个人成就</h4>
               <div class="achievements">
-                <div class="achievement-item" v-if="userInfo?.articleCount >= 10">
+                <div class="achievement-item" v-if="articleStatistics?.publishedCount >= 10">
                   <el-icon class="achievement-icon"><Trophy /></el-icon>
                   <span>创作达人</span>
                 </div>
@@ -219,7 +228,7 @@ import { useRoute, useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { Plus, Message, Trophy, View, User, Star, StarFilled, ArrowDown, ArrowUp } from "@element-plus/icons-vue";
 import { getUserInfoById } from "@/api/user";
-import { getUserArticleList } from "@/api/article";
+import { getUserArticleList, getUserArticleStatisticsById } from "@/api/article";
 import { useUserStore } from "@/stores/userStore";
 
 // 路由和状态管理
@@ -236,6 +245,7 @@ const userInfo = ref(null); // 用户信息数据
 const articleList = ref([]); // 文章列表数据
 const total = ref(0); // 文章总数
 const totalViews = ref(0); // 总阅读量
+const articleStatistics = ref(null); // 文章统计信息
 const activeTab = ref("article"); // 当前激活的标签页
 const sortType = ref("time"); // 排序类型：time-时间排序，views-阅读量排序
 const visibilityType = ref("all"); // 可见范围类型：all-全部可见，private-仅我可见，pending-审核中&失败
@@ -243,6 +253,7 @@ const isFollowed = ref(false); // 是否已关注该用户
 const hasMore = ref(true); // 是否还有更多数据可加载
 const currentPage = ref(1); // 当前页码
 const isIntroExpanded = ref(false); // 个人介绍是否展开
+const showBackToTop = ref(false); // 是否显示返回顶部按钮
 
 // 每页数据量
 const pageSize = ref(10);
@@ -267,6 +278,17 @@ const fetchUserInfo = async () => {
     console.error("获取用户信息失败:", error);
   } finally {
     userLoading.value = false;
+  }
+};
+
+// 获取文章统计信息
+const fetchArticleStatistics = async () => {
+  try {
+    const userId = route.params.userId;
+    const res = await getUserArticleStatisticsById(userId);
+    articleStatistics.value = res.data.data;
+  } catch (error) {
+    console.error("获取文章统计信息失败:", error);
   }
 };
 
@@ -401,6 +423,14 @@ const toggleIntroExpand = () => {
   isIntroExpanded.value = !isIntroExpanded.value;
 };
 
+// 返回顶部 - 滚动到文章列表顶部
+const scrollToTop = () => {
+  // 滚动到文章列表容器顶部
+  if (listContainer.value) {
+    listContainer.value.scrollTo({ top: 0, behavior: "smooth" });
+  }
+};
+
 // 跳转至文章详情页
 const goToArticle = (articleId) => {
   const userId = route.params.userId;
@@ -434,6 +464,10 @@ const handleScroll = () => {
   }
 
   const container = listContainer.value;
+
+  // 控制返回顶部按钮的显示/隐藏
+  showBackToTop.value = container.scrollTop > 200;
+
   // 当滚动到底部附近时加载更多
   if (container.scrollTop + container.clientHeight >= container.scrollHeight - 100) {
     fetchArticleList();
@@ -450,6 +484,7 @@ watch(
       articleList.value = [];
       hasMore.value = true;
       fetchUserInfo();
+      fetchArticleStatistics();
       fetchArticleList(true);
     }
   },
@@ -459,6 +494,7 @@ watch(
 // 组件挂载
 onMounted(() => {
   fetchUserInfo();
+  fetchArticleStatistics();
   fetchArticleList(true);
 });
 </script>
@@ -481,7 +517,11 @@ $bg-color: #f5f7fa;
 
 // 用户主页容器
 .user-homepage {
-  height: calc(100vh - 48px);
+  background: url("@/assets/img/homepage1.jpg") no-repeat center center;
+  background-size: cover;
+  background-attachment: fixed;
+  min-height: calc(100vh - 48px);
+  overflow-y: scroll;
 
   .user-profile-section {
     padding: 10px 0 0 0px;
@@ -490,7 +530,7 @@ $bg-color: #f5f7fa;
     .user-profile-card {
       background: var(--el-border-color-lighter);
       backdrop-filter: blur(10px);
-      border-radius: 16px;
+      border-radius: 8px;
       padding: 30px;
       border: 1px solid var(--el-border-color);
       box-shadow: 0 2px 12px var(--el-border-color-light);
@@ -539,10 +579,10 @@ $bg-color: #f5f7fa;
 
               // 个人介绍文本
               .user-intro {
-                font-size: 15px;
+                font-size: 14px;
                 margin: 0;
                 color: var(--el-text-color-primary);
-                line-height: 1.5;
+                line-height: 1;
                 word-wrap: break-word;
                 word-break: break-all;
                 overflow-wrap: break-word;
@@ -676,7 +716,7 @@ $bg-color: #f5f7fa;
 
   // 内容区域
   .content-section {
-    padding: 20px 0;
+    padding: 10px 0;
 
     .content-layout {
       display: grid;
@@ -691,7 +731,7 @@ $bg-color: #f5f7fa;
     .article-filters {
       background: var(--el-bg-color-page);
       border-radius: 8px;
-      padding: 20px;
+      padding: 15px;
       margin-bottom: 10px;
       border: 1px solid var(--el-border-color);
       box-shadow: 0 2px 12px var(--el-border-color-light);
@@ -741,6 +781,43 @@ $bg-color: #f5f7fa;
       }
     }
 
+    // 文章列表包装器
+    .article-list-wrapper {
+      position: relative; // 为返回顶部按钮提供定位参考
+
+      // 返回顶部按钮样式 - 固定在文章列表容器的右下角，不随滚动移动
+      .back-to-top {
+        position: absolute;
+        right: 20px;
+        bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+        backdrop-filter: blur(2px);
+        background-color: color-mix(in srgb, var(--el-bg-color) 90%, transparent);
+        border: 1px solid var(--el-border-color);
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        z-index: 100;
+
+        &:hover {
+          background: var(--el-color-primary);
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
+        }
+
+        .el-icon {
+          font-size: 18px;
+        }
+      }
+    }
+
     // 文章列表区域
     .article-list-section {
       background: var(--el-bg-color-page);
@@ -748,7 +825,7 @@ $bg-color: #f5f7fa;
       padding: 20px;
       border: 1px solid var(--el-border-color);
       box-shadow: 0 2px 12px var(--el-border-color-light);
-      max-height: 800px; // 设置最大高度以支持滚动
+      max-height: 580px; // 设置最大高度以支持滚动
       overflow-y: auto; // 启用垂直滚动
 
       // 加载容器样式
@@ -782,7 +859,7 @@ $bg-color: #f5f7fa;
         background: transparent;
       }
       &::-webkit-scrollbar-thumb {
-        background: var(--el-border-color-light);
+        background: var(--el-border-color);
         border-radius: 12px; // 滚动条滑块圆角更大
       }
       &::-webkit-scrollbar-track {
@@ -1063,8 +1140,8 @@ $bg-color: #f5f7fa;
       .user-profile-card {
         .user-profile-content {
           .user-basic-info {
-            flex-direction: column;
-            text-align: center;
+            // flex-direction: column;
+            // text-align: center;
             gap: 5px;
           }
 
@@ -1081,6 +1158,9 @@ $bg-color: #f5f7fa;
 @media (max-width: 768px) {
   .user-homepage {
     font-size: 10px;
+    // 移动端优化背景图片显示
+    background-attachment: scroll; // 移动端使用scroll避免兼容性问题
+
     .user-profile-section {
       padding: 5px 0;
 
@@ -1089,23 +1169,42 @@ $bg-color: #f5f7fa;
         .user-profile-content {
           .user-basic-info {
             margin-bottom: 5px;
+            .user-avatar {
+              width: 70px;
+              height: 70px;
+            }
           }
         }
       }
     }
 
     .content-section {
-      padding: 5px 0;
+      padding: 0;
     }
 
     .main-content {
       .article-filters {
         padding: 0px 10px 10px 10px;
+        margin-bottom: 5px;
         .filter-controls {
           margin-top: 5px;
           padding-top: 5px;
         }
       }
+      .article-list-wrapper {
+        // 移动端返回顶部按钮调整
+        .back-to-top {
+          width: 40px;
+          height: 40px;
+          right: 15px;
+          bottom: 15px;
+
+          .el-icon {
+            font-size: 16px;
+          }
+        }
+      }
+
       .article-list-section {
         .article-list {
           .article-item {

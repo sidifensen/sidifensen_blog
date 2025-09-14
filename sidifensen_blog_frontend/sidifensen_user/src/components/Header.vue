@@ -36,9 +36,43 @@
           <el-avatar v-if="user.avatar" style="cursor: pointer" :size="40" :src="user.avatar" />
           <el-avatar v-else style="cursor: pointer" :size="40" :icon="UserFilled" />
           <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item>个人设置</el-dropdown-item>
-              <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
+            <el-dropdown-menu class="user-dropdown-menu">
+              <!-- 用户信息卡片 -->
+              <div class="user-info-section">
+                <!-- 用户名 -->
+                <div class="user-name">
+                  <span class="nickname">{{ user.nickname }}</span>
+                </div>
+
+                <!-- 统计数据 -->
+                <div class="user-stats">
+                  <div class="stat-item">
+                    <span class="stat-number">{{ user.fansCount || 0 }}</span>
+                    <span class="stat-label">粉丝</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-number">{{ user.followCount || 0 }}</span>
+                    <span class="stat-label">关注</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 分割线 -->
+              <el-divider style="margin: 12px 0" />
+
+              <!-- 操作按钮 -->
+              <el-dropdown-item @click="goToUserHomepage" class="action-item">
+                <el-icon><User /></el-icon>
+                <span>个人主页</span>
+              </el-dropdown-item>
+              <el-dropdown-item class="action-item">
+                <el-icon><Setting /></el-icon>
+                <span>个人设置</span>
+              </el-dropdown-item>
+              <el-dropdown-item @click="logout" class="action-item">
+                <el-icon><SwitchButton /></el-icon>
+                <span>退出登录</span>
+              </el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -84,7 +118,7 @@ import { info, oauthLogin } from "@/api/user";
 import { SetJwt } from "@/utils/Auth";
 // 引入ElMessage
 import { ElMessage } from "element-plus";
-import { UserFilled } from "@element-plus/icons-vue";
+import { UserFilled, User, Setting, SwitchButton } from "@element-plus/icons-vue";
 
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
@@ -149,6 +183,13 @@ const getUserInfo = async () => {
 
 const logout = () => {
   userStore.clearUser();
+};
+
+// 跳转到用户主页
+const goToUserHomepage = () => {
+  if (user.value?.id) {
+    router.push(`/user/${user.value.id}`);
+  }
 };
 
 // 头部是否可见
@@ -319,6 +360,80 @@ onBeforeUnmount(() => {
     // margin-right: 10px;
     display: none;
     cursor: pointer;
+  }
+}
+
+.user-dropdown-menu {
+  min-width: 250px !important;
+  padding: 16px !important;
+
+  // 用户信息区域
+  .user-info-section {
+    // 用户名区域
+    .user-name {
+      text-align: center;
+
+      .nickname {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--el-text-color-primary);
+      }
+    }
+
+    // 统计数据区域
+    .user-stats {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 60px;
+      padding: 16px 0;
+
+      .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+
+        .stat-number {
+          font-size: 20px;
+          font-weight: 700;
+          color: var(--el-text-color-primary);
+        }
+
+        .stat-label {
+          font-size: 14px;
+          color: var(--el-text-color-secondary);
+        }
+      }
+    }
+  }
+
+  // 分割线样式调整
+  .el-divider {
+    border-color: var(--el-border-color-lighter);
+  }
+
+  // 操作按钮样式
+  .action-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--el-bg-color-page);
+      color: var(--el-color-primary);
+    }
+
+    .el-icon {
+      font-size: 16px;
+    }
+
+    span {
+      font-size: 14px;
+    }
   }
 }
 

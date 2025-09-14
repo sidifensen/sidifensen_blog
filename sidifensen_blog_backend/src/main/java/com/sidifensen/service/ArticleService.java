@@ -30,6 +30,9 @@ public interface ArticleService extends IService<Article> {
     // 获取用户文章状态统计
     ArticleStatisticsVo getUserArticleStatistics();
 
+    // 获取指定用户的文章统计
+    ArticleStatisticsVo getUserArticleStatisticsById(Integer userId);
+
     // 获取文章详情
     ArticleVo getArticle(Integer articleId);
 

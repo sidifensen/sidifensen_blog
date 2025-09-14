@@ -39,33 +39,35 @@
 <td valign="top" width="50%">
 
 ### 🔧 后端技术栈
+
 - **核心框架**: Spring Boot 3.3.9
 - **开发语言**: Java 21
 - **安全框架**: Spring Security + JWT
 - **数据库**: MySQL 8.1.0
-- **ORM框架**: MyBatis-Plus 3.5.9
+- **ORM 框架**: MyBatis-Plus 3.5.9
 - **缓存中间件**: Redis
 - **消息队列**: RabbitMQ
 - **文件存储**: MinIO RELEASE.2025-04-08T15-41-24Z
 - **模板引擎**: Thymeleaf
 - **第三方登录**: JustAuth 1.16.22
 - **内容安全**: 阿里云图片内容检测
-- **工具库**: 
+- **工具库**:
   - Lombok 1.18.36 (代码简化)
   - Hutool 5.8.32 (工具库)
-  - FastJSON 2.0.49 (JSON处理)
+  - FastJSON 2.0.49 (JSON 处理)
   - Easy-Captcha 1.6.2 (验证码)
 
 </td>
 <td valign="top" width="50%">
 
 ### 🎨 前端技术栈
+
 - **核心框架**: Vue 3.5.13
 - **构建工具**: Vite 6.2.4
-- **UI组件库**: Element Plus 2.10.2
+- **UI 组件库**: Element Plus 2.10.2
 - **状态管理**: Pinia 3.0.1
 - **路由管理**: Vue Router 4.5.0
-- **HTTP客户端**: Axios 1.10.0
+- **HTTP 客户端**: Axios 1.10.0
 - **样式预处理**: Sass
 - **图标库**: Element Plus Icons + SVG Icons
 - **富文本编辑器**: AiEditor 1.4.0
@@ -82,7 +84,7 @@
 ### 🏗️ 架构特点
 
 - **微服务架构**: 前后端完全分离，独立部署
-- **RESTful API**: 标准化的 API 接口设计  
+- **RESTful API**: 标准化的 API 接口设计
 - **响应式设计**: 支持多终端适配
 - **高可用部署**: Docker 容器化部署
 - **安全防护**: 多层安全防护机制
@@ -146,6 +148,7 @@
 <td valign="top" width="50%">
 
 ### 🔐 用户系统
+
 - **多种登录方式**: 账号密码 + 第三方 OAuth 登录
 - **权限管理**: 基于角色的访问控制 (RBAC)
 - **安全防护**: JWT 认证 + Spring Security
@@ -153,6 +156,7 @@
 - **图形验证码**: 防止恶意注册和登录
 
 ### 📝 内容管理
+
 - **富文本编辑**: 支持 Markdown + 所见即所得编辑
 - **文章分类**: 多级分类和标签系统
 - **图片管理**: MinIO 对象存储 + 图片安全检测
@@ -160,6 +164,7 @@
 - **SEO 优化**: 友好的 URL 结构和 Meta 信息
 
 ### 🎨 用户界面
+
 - **响应式设计**: 完美适配桌面、平板、手机
 - **暗黑模式**: 支持明暗主题切换
 - **加载动画**: 优雅的加载和过渡效果
@@ -170,6 +175,7 @@
 <td valign="top" width="50%">
 
 ### 🔧 管理后台
+
 - **仪表盘**: 数据统计和系统监控
 - **用户管理**: 用户列表、角色权限管理
 - **内容管理**: 文章、分类、标签的 CRUD 操作
@@ -177,6 +183,7 @@
 - **系统设置**: 站点配置、邮件配置等
 
 ### ⚡ 性能优化
+
 - **Redis 缓存**: 热点数据缓存，提升响应速度
 - **异步处理**: RabbitMQ 消息队列处理耗时任务
 - **CDN 支持**: 静态资源 CDN 加速
@@ -184,6 +191,7 @@
 - **图片优化**: 图片压缩和懒加载
 
 ### 🚀 部署运维
+
 - **Docker 支持**: 一键容器化部署
 - **多环境配置**: 开发、测试、生产环境分离
 - **日志管理**: 结构化日志记录和分析
@@ -198,16 +206,16 @@
 
 ### 📋 环境要求
 
-| 组件 | 版本要求 | 说明 |
-|------|----------|------|
-| ☕ JDK | 21+ | 后端运行环境 |
-| 🟢 Node.js | 18+ | 前端构建环境 |
-| 🐬 MySQL | 8.0+ | 主数据库 |
-| 🔴 Redis | 6.0+ | 缓存数据库 |
-| 🐰 RabbitMQ | 3.8+ | 消息队列 |
-| ☁️ MinIO | RELEASE.2025-04-08T15-41-24Z | 对象存储 |
-| 🐳 Docker | 20.0+ | 容器化部署 (推荐) |
-| 🐳 Docker Compose | 1.29+ | 容器编排 |
+| 组件              | 版本要求                     | 说明              |
+| ----------------- | ---------------------------- | ----------------- |
+| ☕ JDK            | 21+                          | 后端运行环境      |
+| 🟢 Node.js        | 18+                          | 前端构建环境      |
+| 🐬 MySQL          | 8.0+                         | 主数据库          |
+| 🔴 Redis          | 6.0+                         | 缓存数据库        |
+| 🐰 RabbitMQ       | 3.8+                         | 消息队列          |
+| ☁️ MinIO          | RELEASE.2025-04-08T15-41-24Z | 对象存储          |
+| 🐳 Docker         | 20.0+                        | 容器化部署 (推荐) |
+| 🐳 Docker Compose | 1.29+                        | 容器编排          |
 
 ### 💾 数据库初始化
 
@@ -278,7 +286,7 @@ npm run dev
 
 # 管理端启动 (新开终端)
 cd sidifensen_blog_frontend/sidifensen_admin
-npm install  
+npm install
 npm run dev
 # 访问 http://localhost:5174
 ```
@@ -292,14 +300,16 @@ npm run dev
 启动成功后，可通过以下地址访问：
 
 #### 传统方式启动
+
 - 📱 **用户端**: http://localhost:5173 (博客前台)
 - 🔧 **管理端**: http://localhost:5174 (后台管理)
-- 🔌 **后端API**: http://localhost:8080 (REST API)
+- 🔌 **后端 API**: http://localhost:8080 (REST API)
 
 #### Docker Compose 方式启动（推荐）
+
 - 📱 **用户端**: http://localhost:7000 (博客前台)
 - 🔧 **管理端**: http://localhost:8000 (后台管理)
-- 🔌 **后端API**: http://localhost:5000 (REST API)
+- 🔌 **后端 API**: http://localhost:5000 (REST API)
 - ☁️ **MinIO 控制台**: http://localhost:9001 (对象存储管理)
 - 🐰 **RabbitMQ 控制台**: http://localhost:15672 (消息队列管理)
 
@@ -372,7 +382,7 @@ npm run build
 chmod +x docker.sh
 ./docker.sh
 
-# 管理端部署  
+# 管理端部署
 cd ../sidifensen_admin
 npm run build
 chmod +x docker.sh
@@ -383,20 +393,20 @@ chmod +x docker.sh
 
 部署完成后，可通过以下地址访问：
 
-| 服务 | 地址 | 说明 |
-|------|------|------|
-| 📱 用户端 | http://your-domain:7000 | 博客前台展示 |
-| 🔧 管理端 | http://your-domain:8000 | 后台管理系统 |
-| 🔌 后端API | http://your-domain:5000 | REST API 接口 |
-| ☁️ MinIO | http://your-domain:9001 | 对象存储管理 |
-| 🐰 RabbitMQ | http://your-domain:15672 | 消息队列管理 |
+| 服务        | 地址                     | 说明          |
+| ----------- | ------------------------ | ------------- |
+| 📱 用户端   | http://your-domain:7000  | 博客前台展示  |
+| 🔧 管理端   | http://your-domain:8000  | 后台管理系统  |
+| 🔌 后端 API | http://your-domain:5000  | REST API 接口 |
+| ☁️ MinIO    | http://your-domain:9001  | 对象存储管理  |
+| 🐰 RabbitMQ | http://your-domain:15672 | 消息队列管理  |
 
 ### ⚙️ 配置说明
 
 **重要配置项：**
 
 - 数据库连接信息
-- Redis 连接配置  
+- Redis 连接配置
 - RabbitMQ 连接配置
 - MinIO 存储配置
 - 阿里云内容安全配置
@@ -414,7 +424,7 @@ chmod +x docker.sh
 @RestController
 @RequestMapping("/api/articles")
 public class ArticleController {
-    
+
     @GetMapping
     public Result<PageInfo<Article>> getArticles(
         @RequestParam(defaultValue = "1") Integer pageNum,
@@ -426,6 +436,7 @@ public class ArticleController {
 ```
 
 **开发要点：**
+
 - 📋 遵循 Spring Boot 最佳实践和阿里巴巴 Java 开发手册
 - 🗃️ 使用 MyBatis-Plus 简化数据库操作，支持分页和条件构造器
 - 🏗️ 采用三层架构：Controller → Service → Mapper
@@ -448,23 +459,24 @@ public class ArticleController {
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { getArticles } from '@/api/article'
+import { ref, onMounted } from "vue";
+import { getArticles } from "@/api/article";
 
-const articles = ref([])
+const articles = ref([]);
 
 const loadArticles = async () => {
-  const { data } = await getArticles()
-  articles.value = data.list
-}
+  const { data } = await getArticles();
+  articles.value = data.list;
+};
 
 onMounted(() => {
-  loadArticles()
-})
+  loadArticles();
+});
 </script>
 ```
 
 **开发要点：**
+
 - 🎯 使用 Vue 3 Composition API，代码更加清晰和可复用
 - 🗃️ Pinia 状态管理，支持状态持久化
 - 🎨 Element Plus 组件库，确保 UI 一致性
@@ -497,6 +509,7 @@ onMounted(() => {
 发现 Bug 或有新功能建议？请通过 [GitHub Issues](https://github.com/your-username/sidifensen_blog/issues) 提交。
 
 **Bug 报告请包含：**
+
 - 🔍 详细的问题描述
 - 🔄 重现步骤
 - 💻 运行环境信息
@@ -520,8 +533,9 @@ onMounted(() => {
 ### 🌟 如果这个项目对你有帮助，请给一个 Star ⭐
 
 **💡 这是一个设计精良、功能完整的现代化博客系统，适合：**
+
 - 🎓 学习 Spring Boot + Vue 3 全栈开发
-- 🚀 快速搭建个人博客网站  
+- 🚀 快速搭建个人博客网站
 - 📚 作为企业级项目开发参考
 - 🔧 二次开发和功能扩展
 
