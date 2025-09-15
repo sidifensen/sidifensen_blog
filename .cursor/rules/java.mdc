@@ -86,7 +86,35 @@ com.sidifensen/
 
 - 统一异常处理使用 `@RestControllerAdvice`
 - 业务异常使用自定义 `BlogException`
-- 异常信息定义在常量类中
+- **🔥 重要：所有异常的报错信息都必须统一定义在 `BlogConstants` 常量类中，禁止在代码中硬编码异常信息**
+- 异常信息按业务模块分组，便于维护和国际化
+- 异常信息命名规范：使用驼峰命名，语义明确
+
+#### 异常信息管理示例
+
+```java
+// BlogConstants.java 中定义异常信息
+public class BlogConstants {
+    // 用户相关异常
+    public static final String NotFoundUser = "该用户不存在";
+    public static final String UserDisabled = "账号被禁用";
+
+    // 文章相关异常
+    public static final String NotFoundArticle = "文章不存在";
+    public static final String CannotHandleOthersArticle = "不能操作别人的文章";
+
+    // 评论相关异常
+    public static final String NotFoundComment = "评论不存在";
+    public static final String NotFoundParentComment = "父评论不存在";
+    public static final String CannotReplyUnApprovedComment = "无法回复未审核通过的评论";
+}
+
+// Service 中正确使用方式
+throw new BlogException(BlogConstants.NotFoundUser);
+
+// ❌ 错误方式 - 禁止硬编码
+throw new BlogException("该用户不存在");
+```
 
 ### 7. 工具类规范
 

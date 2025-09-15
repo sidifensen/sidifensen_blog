@@ -28,8 +28,8 @@ import java.io.IOException;
 /**
  * @author sdifensen
  * @date 2023/12/14
- * 该接口在请求前执行一次，获取request中的数据，其中token就在请求头里
- * 获取token，根据token从redis中获取用户信息
+ *       该接口在请求前执行一次，获取request中的数据，其中token就在请求头里
+ *       获取token，根据token从redis中获取用户信息
  */
 @Component
 @Slf4j
@@ -48,7 +48,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private SidifensenConfig sidifensenConfig;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         // 如果是不需要登录的接口，则直接放行
         for (String url : SecurityConstants.No_Need_Auth_Urls) {
             AntPathRequestMatcher matcher = new AntPathRequestMatcher(url);
@@ -57,27 +58,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
         }
-        
-//        // 检查请求来源 - 防止简单的API工具直接访问
-//        String userAgent = request.getHeader("User-Agent");
-//        if (!isValidUserAgent(userAgent)) {
-//            log.warn("检测到可疑请求来源，User-Agent: {}", userAgent);
-//            WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.IllegalRequest).toJson());
-//            return;
-//        }
-//
-//        // 检查Referer头
-//        String referer = request.getHeader("Referer");
-//        if (referer == null || !isValidReferer(referer)) {
-//            log.warn("检测到可疑请求来源，Referer: {}", referer);
-//            WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.IllegalRequest).toJson());
-//            return;
-//        }
+
+        // 检查是否是可选登录的接口
+        boolean isOptionalAuth = false;
+        for (String url : SecurityConstants.Optional_Auth_Urls) {
+            AntPathRequestMatcher matcher = new AntPathRequestMatcher(url);
+            if (matcher.matches(request)) {
+                isOptionalAuth = true;
+                break;
+            }
+        }
+
+        // // 检查请求来源 - 防止简单的API工具直接访问
+        // String userAgent = request.getHeader("User-Agent");
+        // if (!isValidUserAgent(userAgent)) {
+        // log.warn("检测到可疑请求来源，User-Agent: {}", userAgent);
+        // WebUtils.Unauthorized(response,
+        // Result.unauthorized(BlogConstants.IllegalRequest).toJson());
+        // return;
+        // }
+        //
+        // // 检查Referer头
+        // String referer = request.getHeader("Referer");
+        // if (referer == null || !isValidReferer(referer)) {
+        // log.warn("检测到可疑请求来源，Referer: {}", referer);
+        // WebUtils.Unauthorized(response,
+        // Result.unauthorized(BlogConstants.IllegalRequest).toJson());
+        // return;
+        // }
 
         // 从请求头中获取jwt
         String jwt = request.getHeader("Authorization");
         if (ObjectUtil.isEmpty(jwt)) {
-            //请先登录
+            // 如果是可选认证接口且没有token，直接放行（不设置SecurityContext）
+            if (isOptionalAuth) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            // 请先登录
             log.error("用户访问接口{}, 提示:请先登录", request.getRequestURI());
             WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.LoginRequired).toJson());
             return;
@@ -86,7 +104,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 解析并验证jwt
             Integer id = jwtUtils.parseToken(jwt);
             if (ObjectUtil.isEmpty(id)) {
-                //登录过期
+                // 如果是可选认证接口且token无效，直接放行（不设置SecurityContext）
+                if (isOptionalAuth) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+                // 登录过期
                 log.error("用户访问接口{},提示:登录过期", request.getRequestURI());
                 WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.LoginExpired).toJson());
                 return;
@@ -95,12 +118,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // 根据id查询用户信息
                 SysUser sysUser = sysUserMapper.selectById(id);
                 if (ObjectUtil.isEmpty(sysUser)) {
+                    // 如果是可选认证接口且用户不存在，直接放行（不设置SecurityContext）
+                    if (isOptionalAuth) {
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
                     // 用户不存在
                     log.error("用户访问接口{}, 提示:用户不存在", request.getRequestURI());
                     WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.NotFoundUser).toJson());
                     return;
                 }
                 if (sysUser.getStatus() == StatusEnum.DISABLE.getStatus()) {
+                    // 如果是可选认证接口且用户被禁用，直接放行（不设置SecurityContext）
+                    if (isOptionalAuth) {
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
                     // 用户已被禁用
                     log.error("用户id: {}, 访问接口{}, 提示:用户已被禁用", sysUser.getId(), request.getRequestURI());
                     WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.UserDisabled).toJson());
@@ -110,12 +143,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 LoginUser loginUser = userDetailsService.handleLogin(sysUser);
                 if (ObjectUtil.isNotEmpty(loginUser)) {
                     // 鉴权，跳转的时候需要访问 /index 页面
-                    UsernamePasswordAuthenticationToken authenticationToken =
-                            new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
+                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                            loginUser, null, loginUser.getAuthorities());
                     // 将用户信息存储到SecurityContext中，SecurityContext存储到SecurityContextHolder中
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
             } catch (Exception e) {
+                // 如果是可选认证接口且发生异常，直接放行（不设置SecurityContext）
+                if (isOptionalAuth) {
+                    log.warn("可选认证接口查询用户信息时发生异常，用户ID: {}, 错误信息: {}, 继续放行", id, e.getMessage());
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 log.error("查询用户信息时发生异常，用户ID: {}, 错误信息: {}", id, e.getMessage(), e);
                 WebUtils.Unauthorized(response, Result.unauthorized("系统内部错误").toJson());
                 return;
@@ -165,6 +204,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         return false;
     }
-
 
 }

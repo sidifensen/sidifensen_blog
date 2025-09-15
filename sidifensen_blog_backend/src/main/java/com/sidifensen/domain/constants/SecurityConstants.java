@@ -22,7 +22,6 @@ public class SecurityConstants {
             "/user/admin/login",
             "/user/info/{userId:\\d+}",
             "/album/listAll",
-            "/album/get/{albumId:\\d+}", // 限制albumId只能是数字
             "/oauth/gitee/login",
             "/oauth/gitee/callback",
             "/oauth/github/login",
@@ -30,8 +29,18 @@ public class SecurityConstants {
             "/user/oauthLogin",
             "/article/list", // 获取文章列表
             "/article/user/list", // 获取用户文章列表
-            "/article/get/{articleId:\\d+}", // 获取文章详情，限制articleId只能是数字
+            "/article/user/statistics",
+            "/article/incrReadCount/{articleId:\\d+}",
             "/favicon.ico"
+    };
+
+    /**
+     * 可选登录的接口（有token就认证，没有token也不报错）
+     */
+    public static final String[] Optional_Auth_Urls = {
+            "/article/get/{articleId:\\d+}", // 获取文章详情，限制articleId只能是数字
+            "/comment/list", // 获取评论列表，使用查询参数
+            "/comment/reply/list", // 获取回复列表，使用查询参数
     };
 
     // 允许的用户代理列表（可根据需要扩展）

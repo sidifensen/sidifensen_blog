@@ -128,4 +128,14 @@ public class ArticleVo implements Serializable {
      */
     private Date updateTime;
 
+    /**
+     * 当前用户是否已点赞
+     */
+    private Boolean isLiked;
+
+    /**
+     * 当前用户是否已收藏
+     */
+    private Boolean isCollected;
+
 }

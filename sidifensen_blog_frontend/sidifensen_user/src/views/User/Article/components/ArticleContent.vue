@@ -98,7 +98,7 @@
   <!-- 文章底部操作栏 -->
   <div class="article-actions" v-if="article">
     <div class="action-item">
-      <el-button :type="article.isLiked ? 'primary' : 'default'" @click="handleLike">
+      <el-button :type="article.isLiked ? 'primary' : 'default'" :loading="likeLoading" @click="handleLike">
         <svg-icon name="like" width="16px" height="16px" margin-right="6px" :color="article.isLiked ? '#ffffff' : '#909399'" />
         {{ article.likeCount || 0 }}
       </el-button>
@@ -110,7 +110,7 @@
     </div>
     <div class="action-item">
       <el-button :icon="ChatLineRound" @click="handleComment">
-        {{ article.commentCount || 0 }}
+        {{ commentTotal || article.commentCount || 0 }}
       </el-button>
     </div>
   </div>
@@ -121,12 +121,17 @@
       <ArrowUp />
     </el-icon>
   </div>
+
+  <!-- 评论抽屉 -->
+  <CommentDrawer v-if="article?.id" v-model:visible="commentDrawerVisible" :article-id="article.id" ref="commentDrawerRef" />
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { Clock, View, Star, StarFilled, ChatLineRound, ArrowUp } from "@element-plus/icons-vue";
+import { toggleLike, isLiked } from "@/api/like";
+import CommentDrawer from "@/components/Comment/CommentDrawer.vue";
 
 // Props 定义
 const props = defineProps({
@@ -139,6 +144,15 @@ const props = defineProps({
     default: false,
   },
 });
+
+// Emits 定义
+const emit = defineEmits(["updateArticle"]);
+
+// 响应式数据
+const likeLoading = ref(false); // 点赞加载状态
+const commentDrawerVisible = ref(false); // 评论抽屉显示状态
+const commentTotal = ref(0); // 评论总数
+const commentDrawerRef = ref(null); // 评论抽屉引用
 
 // 渲染富文本内容
 const renderContent = computed(() => {
@@ -153,8 +167,44 @@ const tagList = computed(() => {
 });
 
 // 点赞文章
-const handleLike = () => {
-  ElMessage.info("点赞功能开发中...");
+const handleLike = async () => {
+  if (!props.article?.id) {
+    ElMessage.warning("文章信息异常");
+    return;
+  }
+
+  if (likeLoading.value) {
+    return; // 防止重复点击
+  }
+
+  try {
+    likeLoading.value = true;
+
+    // 调用后端接口切换点赞状态
+    await toggleLike(0, props.article.id); // 0表示文章类型
+
+    // 更新本地文章数据
+    const updatedArticle = { ...props.article };
+    if (updatedArticle.isLiked) {
+      // 取消点赞
+      updatedArticle.isLiked = false;
+      updatedArticle.likeCount = Math.max(0, (updatedArticle.likeCount || 0) - 1);
+      ElMessage.success("取消点赞成功");
+    } else {
+      // 点赞
+      updatedArticle.isLiked = true;
+      updatedArticle.likeCount = (updatedArticle.likeCount || 0) + 1;
+      ElMessage.success("点赞成功");
+    }
+
+    // 通知父组件更新文章数据
+    emit("updateArticle", updatedArticle);
+  } catch (error) {
+    console.error("点赞操作失败:", error);
+    ElMessage.error("点赞操作失败，请重试");
+  } finally {
+    likeLoading.value = false;
+  }
 };
 
 // 收藏文章
@@ -164,7 +214,7 @@ const handleCollect = () => {
 
 // 评论文章
 const handleComment = () => {
-  ElMessage.info("评论功能开发中...");
+  commentDrawerVisible.value = true;
 };
 
 // 返回顶部
@@ -414,13 +464,10 @@ const scrollToTop = () => {
         margin: 16px 0;
       }
 
-      // 无序列表
-      :deep(ul) {
-        // padding-left: 15px;
-      }
-      // 有序列表
+      // 无序列表和有序列表
+      :deep(ul),
       :deep(ol) {
-        // padding-left: 15px;
+        padding-left: 15px;
       }
     }
   }

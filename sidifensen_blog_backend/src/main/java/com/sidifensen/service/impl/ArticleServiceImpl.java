@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.config.SidifensenConfig;
@@ -20,6 +21,7 @@ import com.sidifensen.domain.entity.Column;
 import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.enums.EditStatusEnum;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
+import com.sidifensen.domain.enums.LikeTypeEnum;
 import com.sidifensen.domain.enums.MessageTypeEnum;
 import com.sidifensen.domain.enums.VisibleRangeEnum;
 import com.sidifensen.domain.result.ImageAuditResult;
@@ -33,6 +35,7 @@ import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.ColumnMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.ArticleService;
+import com.sidifensen.service.LikeService;
 import com.sidifensen.service.MessageService;
 import com.sidifensen.utils.MyThreadFactory;
 import com.sidifensen.utils.SecurityUtils;
@@ -84,6 +87,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private RabbitTemplate rabbitTemplate;
     @Resource
     private SysUserMapper sysUserMapper;
+    @Resource
+    private LikeService likeService;
 
     @Override
     public PageVo<List<ArticleVo>> getArticleList(Integer pageNum, Integer pageSize) {
@@ -120,12 +125,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             return articleVo;
         }).collect(Collectors.toList());
 
-        //添加用户昵称
+        // 添加用户昵称
         if (!articleVoList.isEmpty()) {
             List<Integer> userIds = articleVoList.stream().map(ArticleVo::getUserId).collect(Collectors.toList());
-            List<SysUser> users = sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIds));
-            Map<Integer, String> userIdToNicknameMap = users.stream().collect(Collectors.toMap(SysUser::getId, SysUser::getNickname));
-            Map<Integer, String> userIdToAvatarMap = users.stream().collect(Collectors.toMap(SysUser::getId, SysUser::getAvatar));
+            List<SysUser> users = sysUserMapper
+                    .selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIds));
+            Map<Integer, String> userIdToNicknameMap = users.stream()
+                    .collect(Collectors.toMap(SysUser::getId, SysUser::getNickname));
+            Map<Integer, String> userIdToAvatarMap = users.stream()
+                    .collect(Collectors.toMap(SysUser::getId, SysUser::getAvatar));
             articleVoList.forEach(articleVo -> articleVo.setNickname(userIdToNicknameMap.get(articleVo.getUserId())));
             articleVoList.forEach(articleVo -> articleVo.setAvatar(userIdToAvatarMap.get(articleVo.getUserId())));
         }
@@ -284,7 +292,26 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 articleVo.setColumns(BeanUtil.copyToList(columns, ColumnVo.class));
             }
         }
+
+        Boolean isLiked = likeService.isLiked(LikeTypeEnum.ARTICLE.getCode(), articleId);
+        articleVo.setIsLiked(isLiked);
+
+        // TODO: 添加收藏状态查询（需要实现收藏服务）
+        // Boolean isCollected = collectService.isCollectedByUser(currentUserId,
+        // articleId);
+        // articleVo.setIsCollected(isCollected);
+        articleVo.setIsCollected(false); // 暂时设置为false
+
         return articleVo;
+    }
+
+    @Override
+    public void incrReadCount(Integer articleId) {
+        LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<Article>()
+                .eq(Article::getId, articleId)
+                .setSql("read_count = read_count + 1");
+
+        articleMapper.update(null, updateWrapper);
     }
 
     @Override

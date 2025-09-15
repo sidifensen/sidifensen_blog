@@ -9,7 +9,7 @@
 
       <!-- 中间文章内容 -->
       <div class="main-content">
-        <ArticleContent :article="articleInfo" :loading="articleLoading" />
+        <ArticleContent :article="articleInfo" :loading="articleLoading" @updateArticle="handleUpdateArticle" />
       </div>
 
       <!-- 右侧文章目录 -->
@@ -24,7 +24,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { ElMessage } from "element-plus";
-import { getArticleDetail, getUserArticleStatistics } from "@/api/article";
+import { getArticleDetail, getUserArticleStatistics, increaseReadCount } from "@/api/article";
 import { getUserInfoById } from "@/api/user";
 import UserInfoCard from "./components/UserInfoCard.vue";
 import ArticleContent from "./components/ArticleContent.vue";
@@ -63,11 +63,29 @@ const fetchArticleDetail = async () => {
     articleLoading.value = true;
     const response = await getArticleDetail(articleId);
     articleInfo.value = response.data.data;
+
+    // 文章详情获取成功后，增加阅读量
+    await increaseArticleReadCount();
   } catch (error) {
     ElMessage.error("获取文章详情失败");
   } finally {
     articleLoading.value = false;
   }
+};
+
+// 增加文章阅读量
+const increaseArticleReadCount = async () => {
+  try {
+    await increaseReadCount(articleId);
+  } catch (error) {
+    // 增加阅读量失败不影响用户体验，只记录错误但不显示提示
+    console.error("增加文章阅读量失败:", error);
+  }
+};
+
+// 处理文章信息更新
+const handleUpdateArticle = (updatedArticle) => {
+  articleInfo.value = updatedArticle;
 };
 
 // 页面初始化

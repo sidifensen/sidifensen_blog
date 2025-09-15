@@ -83,3 +83,11 @@ export function getArticleList(pageNum, pageSize) {
     method: "get",
   });
 }
+
+// 增加文章阅读量
+export function increaseReadCount(articleId) {
+  return request({
+    url: `/article/incrReadCount/${articleId}`,
+    method: "post",
+  });
+}

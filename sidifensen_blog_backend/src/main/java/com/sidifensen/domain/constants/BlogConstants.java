@@ -50,4 +50,21 @@ public class BlogConstants {
     public static final String AddColumnError = "添加专栏失败";
     public static final String UpdateColumnError = "更新专栏失败";
     public static final String DeleteColumnError = "删除专栏失败";
+
+    // 评论相关错误信息
+    public static final String NotFoundComment = "评论不存在";
+    public static final String NotFoundParentComment = "父评论不存在";
+    public static final String CannotReplyUnApprovedComment = "无法回复未审核通过的评论";
+    public static final String AddCommentError = "评论发表失败";
+    public static final String CannotDeleteOthersComment = "无权限删除此评论";
+    public static final String DeleteCommentError = "评论删除失败";
+    public static final String ArticleIdRequired = "文章ID不能为空";
+    public static final String CommentIdRequired = "评论ID不能为空";
+    public static final String CommentExamineStatusError = "审核状态错误";
+    public static final String CommentAuditError = "审核失败";
+    public static final String UpdateArticleCommentCountError = "更新文章评论数失败";
+
+    // 点赞相关错误信息
+    public static final String LikeTypeError = "点赞类型错误";
+    public static final String UpdateArticleLikeCountError = "更新文章点赞数失败";
 }
