@@ -3,7 +3,7 @@ package com.sidifensen.domain.result;
 /**
  * 图片审核结果类
  */
-public class ImageAuditResult {
+public class AuditResult {
     /**
      * 审核状态 0 待审核 1 审核通过 2 审核不通过
      */
@@ -13,7 +13,7 @@ public class ImageAuditResult {
      */
     private final String errorMessage;
 
-    public ImageAuditResult(Integer status, String errorMessage) {
+    public AuditResult(Integer status, String errorMessage) {
         this.status = status;
         this.errorMessage = errorMessage;
     }

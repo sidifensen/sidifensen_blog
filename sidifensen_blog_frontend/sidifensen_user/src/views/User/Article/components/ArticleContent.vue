@@ -473,12 +473,11 @@ const scrollToTop = () => {
   }
 }
 
-// 文章底部操作栏 - 固定在视窗底部，但限制在文章内容区域宽度内
+// 文章底部操作栏 - 固定在视窗底部，使用稳定的居中定位
 .article-actions {
   position: fixed;
   bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: calc(50vw - 200px); // 使用vw单位避免滚动条影响，200px是操作栏最大宽度的一半
   z-index: 999;
   display: flex;
   justify-content: center;
@@ -635,6 +634,8 @@ const scrollToTop = () => {
 
   // 移动端操作栏调整
   .article-actions {
+    left: 50%;
+    transform: translateX(-50%);
     bottom: 30px;
     padding: 12px 20px;
     gap: 16px;

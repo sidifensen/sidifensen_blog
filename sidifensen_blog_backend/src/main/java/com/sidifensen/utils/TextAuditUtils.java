@@ -10,7 +10,7 @@ import com.aliyun.teaopenapi.models.Params;
 import com.aliyun.teautil.Common;
 import com.aliyun.teautil.models.RuntimeOptions;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
-import com.sidifensen.domain.result.ImageAuditResult;
+import com.sidifensen.domain.result.AuditResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -128,42 +128,42 @@ public class TextAuditUtils {
      * @param textContent 文字内容
      * @return 审核结果详情
      */
-    public ImageAuditResult auditTextWithDetailsSplit(String textContent) {
+    public AuditResult auditTextWithDetailsSplit(String textContent) {
         // 去除标签，只保留纯文本内容进行审核
         String cleanTextContent = removeHtmlTags(textContent);
-        
+
         // 检查文本长度，如果不超过一万字，直接调用原方法
         if (cleanTextContent.length() <= 10000) {
             return auditTextWithDetails(textContent);
         }
-        
+
         // 文本超过一万字，需要拆分审核
         List<String> textSegments = splitTextIntoSegments(cleanTextContent, 9000); // 设置为9000字，留一些余量
-        
+
         // 存储所有分段的审核结果
-        List<ImageAuditResult> segmentResults = new ArrayList<>();
-        
+        List<AuditResult> segmentResults = new ArrayList<>();
+
         // 对每个分段进行审核
         for (int i = 0; i < textSegments.size(); i++) {
             String segment = textSegments.get(i);
             log.info("正在审核第 {} 段文本，长度: {} 字", i + 1, segment.length());
-            
+
             try {
                 // 调用单段审核方法
-                ImageAuditResult segmentResult = auditSingleTextSegment(segment);
+                AuditResult segmentResult = auditSingleTextSegment(segment);
                 segmentResults.add(segmentResult);
-                
+
                 // 如果某一段审核失败，立即返回失败结果
                 if (segmentResult.getStatus().equals(ExamineStatusEnum.NO_PASS.getCode())) {
                     log.warn("第 {} 段文本审核不通过: {}", i + 1, segmentResult.getErrorMessage());
-                    return new ImageAuditResult(ExamineStatusEnum.NO_PASS.getCode(), "第 " + (i + 1) + " 段文本审核不通过: " + segmentResult.getErrorMessage());
+                    return new AuditResult(ExamineStatusEnum.NO_PASS.getCode(), "第 " + (i + 1) + " 段文本审核不通过: " + segmentResult.getErrorMessage());
                 }
             } catch (Exception e) {
                 log.error("第 {} 段文本审核过程中发生异常: {}", i + 1, e.getMessage());
-                return new ImageAuditResult(ExamineStatusEnum.WAIT.getCode(), "第 " + (i + 1) + " 段文本审核过程中发生错误: " + e.getMessage());
+                return new AuditResult(ExamineStatusEnum.WAIT.getCode(), "第 " + (i + 1) + " 段文本审核过程中发生错误: " + e.getMessage());
             }
         }
-        
+
         // 汇总所有分段的审核结果
         return aggregateAuditResults(segmentResults);
     }
@@ -177,17 +177,17 @@ public class TextAuditUtils {
      */
     private List<String> splitTextIntoSegments(String text, int maxLength) {
         List<String> segments = new ArrayList<>();
-        
+
         if (text == null || text.isEmpty()) {
             return segments;
         }
-        
+
         int textLength = text.length();
         int startIndex = 0;
-        
+
         while (startIndex < textLength) {
             int endIndex = Math.min(startIndex + maxLength, textLength);
-            
+
             // 如果不是最后一段，尝试在合适的位置断开（避免在词语中间断开）
             if (endIndex < textLength) {
                 // 向前查找合适的断点（句号、换行符、空格等）
@@ -196,15 +196,15 @@ public class TextAuditUtils {
                     endIndex = breakPoint;
                 }
             }
-            
+
             String segment = text.substring(startIndex, endIndex).trim();
             if (!segment.isEmpty()) {
                 segments.add(segment);
             }
-            
+
             startIndex = endIndex;
         }
-        
+
         log.info("文本拆分完成，总长度: {} 字，拆分为 {} 段", textLength, segments.size());
         return segments;
     }
@@ -220,7 +220,7 @@ public class TextAuditUtils {
     private int findOptimalBreakPoint(String text, int startIndex, int endIndex) {
         // 优先级：句号 > 换行符 > 感叹号/问号 > 分号/冒号 > 逗号 > 空格
         char[] breakChars = {'.', '。', '\n', '\r', '!', '！', '?', '？', ';', '；', ':', '：', ',', '，', ' ', '\t'};
-        
+
         int segmentLength = endIndex - startIndex;
         // 从结束位置向前查找，寻找最近的断点字符
         for (int i = endIndex - 1; i > startIndex + segmentLength / 2; i--) { // 至少要保证有一半长度
@@ -231,7 +231,7 @@ public class TextAuditUtils {
                 }
             }
         }
-        
+
         // 如果找不到合适的断点，就在最大长度处断开
         return endIndex;
     }
@@ -242,7 +242,7 @@ public class TextAuditUtils {
      * @param textSegment 文本段
      * @return 审核结果
      */
-    private ImageAuditResult auditSingleTextSegment(String textSegment) {
+    private AuditResult auditSingleTextSegment(String textSegment) {
         try {
             Client client = createClient();
             Params params = createApiInfo();
@@ -362,11 +362,11 @@ public class TextAuditUtils {
                 }
             }
 
-            return new ImageAuditResult(status, errorMessage.toString());
+            return new AuditResult(status, errorMessage.toString());
         } catch (com.aliyun.tea.TeaException e) {
             log.error("文本段审核失败:{}", e);
             // 审核服务异常,需要人工审核
-            return new ImageAuditResult(2, "文本段审核过程中发生错误: " + e.getMessage());
+            return new AuditResult(2, "文本段审核过程中发生错误: " + e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -378,18 +378,18 @@ public class TextAuditUtils {
      * @param segmentResults 分段审核结果列表
      * @return 汇总后的审核结果
      */
-    private ImageAuditResult aggregateAuditResults(List<ImageAuditResult> segmentResults) {
+    private AuditResult aggregateAuditResults(List<AuditResult> segmentResults) {
         if (segmentResults.isEmpty()) {
-            return new ImageAuditResult(ExamineStatusEnum.PASS.getCode(), "审核通过");
+            return new AuditResult(ExamineStatusEnum.PASS.getCode(), "审核通过");
         }
 
         // 检查是否有审核不通过的分段
         StringBuilder allMessages = new StringBuilder();
         Integer finalStatus = ExamineStatusEnum.PASS.getCode(); // 默认通过
-        
+
         for (int i = 0; i < segmentResults.size(); i++) {
-            ImageAuditResult result = segmentResults.get(i);
-            
+            AuditResult result = segmentResults.get(i);
+
             // 如果有任何一段不通过，整体就不通过
             if (result.getStatus().equals(ExamineStatusEnum.NO_PASS.getCode())) {
                 finalStatus = ExamineStatusEnum.NO_PASS.getCode();
@@ -410,13 +410,13 @@ public class TextAuditUtils {
         // 如果所有分段都通过，返回通过结果
         if (finalStatus.equals(ExamineStatusEnum.PASS.getCode())) {
             log.info("所有文本分段审核通过，共 {} 段", segmentResults.size());
-            return new ImageAuditResult(ExamineStatusEnum.PASS.getCode(), "所有文本分段审核通过（共 " + segmentResults.size() + " 段）");
+            return new AuditResult(ExamineStatusEnum.PASS.getCode(), "所有文本分段审核通过（共 " + segmentResults.size() + " 段）");
         }
 
         // 返回汇总的审核结果
         String message = allMessages.toString();
         log.info("文本分段审核汇总结果: 状态={}, 信息={}", finalStatus, message);
-        return new ImageAuditResult(finalStatus, message);
+        return new AuditResult(finalStatus, message);
     }
 
     /**
@@ -425,7 +425,7 @@ public class TextAuditUtils {
      * @param textContent 文字内容
      * @return 审核结果详情
      */
-    public ImageAuditResult auditTextWithDetails(String textContent) {
+    public AuditResult auditTextWithDetails(String textContent) {
         // 去除标签，只保留纯文本内容进行审核
         String cleanTextContent = removeHtmlTags(textContent);
 
@@ -549,11 +549,11 @@ public class TextAuditUtils {
             }
 
             log.info("文字内容审核结果:{} ;状态:{} ; 原因:{}", elements, status, errorMessage);
-            return new ImageAuditResult(status, errorMessage.toString());
+            return new AuditResult(status, errorMessage.toString());
         } catch (com.aliyun.tea.TeaException e) {
             log.error("文字内容审核失败:{}", e);
             // 审核服务异常,需要人工审核
-            return new ImageAuditResult(ExamineStatusEnum.WAIT.getCode(), "文字内容审核过程中发生错误: " + e.getMessage());
+            return new AuditResult(ExamineStatusEnum.WAIT.getCode(), "文字内容审核过程中发生错误: " + e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -569,7 +569,7 @@ public class TextAuditUtils {
 
         // 先处理HTML注释
         result = result.replaceAll("<!--.*?-->", "");
-        
+
         //        // 使用正则表达式去除所有HTML标签（包括自定义属性）
         //        result = result.replaceAll("<[^>]*>", "");
 

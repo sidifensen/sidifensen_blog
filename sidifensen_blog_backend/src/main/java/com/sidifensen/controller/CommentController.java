@@ -1,5 +1,6 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.TimeConsuming;
 import com.sidifensen.domain.dto.CommentDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.CommentVo;
@@ -21,6 +22,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/comment")
+@TimeConsuming
 public class CommentController {
 
     @Resource

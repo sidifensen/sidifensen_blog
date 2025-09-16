@@ -104,7 +104,8 @@ aliyun:
 sidifensen:
   jwt: ${SIDIFENSEN_JWT_SECRET:sidifensen} # jwt 密钥
   PhotoAutoAudit: ${SIDIFENSEN_PHOTO_AUTO_AUDIT:false} # 是否开启图片自动审核
-  ArticleAutoAudit: ${SIDIFENSEN_ARTICLE_AUTO_AUDIT:true} # 是否开启文章自动审核
+  ArticleAutoAudit: ${SIDIFENSEN_ARTICLE_AUTO_AUDIT:false} # 是否开启文章自动审核
+  CommentAutoAudit: ${SIDIFENSEN_COMMENT_AUTO_AUDIT:false} # 是否开启评论自动审核
   AllowOrigins:
     - http://localhost:7000
     - http://localhost:8000

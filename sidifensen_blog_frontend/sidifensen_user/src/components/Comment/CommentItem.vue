@@ -28,7 +28,7 @@
           <!-- 点赞按钮 -->
           <div class="action-item like-action">
             <el-button text size="small" :class="{ 'is-liked': comment.isLiked }" @click="handleLike">
-              <svg-icon name="like" width="13px" height="13px" margin-right="7px" color="#909399" />
+              <svg-icon name="like" width="13px" height="13px" margin-right="7px" :color="comment.isLiked ? '#409EFF' : '#909399'" />
               <span>{{ comment.likeCount || 0 }}</span>
             </el-button>
           </div>
@@ -60,11 +60,11 @@
 
         <!-- 回复表单 -->
         <div v-if="showReplyForm" class="reply-form">
-          <CommentForm :article-id="articleId" :parent-id="comment.id" :reply-user-id="comment.userId" :placeholder="`回复 ${comment.nickname}：`" @comment-added="handleReplyAdded" @cancel="hideReplyForm" />
+          <CommentForm :article-id="articleId" :parent-id="isReply ? comment.parentId : comment.id" :reply-user-id="comment.userId" :reply-user-nickname="comment.nickname" :placeholder="`回复 ${comment.nickname}：`" @comment-added="handleReplyAdded" @cancel="hideReplyForm" />
         </div>
 
-        <!-- 回复列表 -->
-        <div v-if="showReplies && replyList.length > 0" class="reply-list">
+        <!-- 回复列表（只在父评论中显示） -->
+        <div v-if="!isReply && showReplies && replyList.length > 0" class="reply-list">
           <CommentItem v-for="reply in replyList" :key="reply.id" :comment="reply" :article-id="articleId" :is-reply="true" @reply-added="handleSubReplyAdded" @comment-deleted="handleReplyDeleted" />
 
           <!-- 加载更多回复 -->
@@ -132,6 +132,11 @@ onMounted(() => {
   if (props.comment.children && props.comment.children.length > 0) {
     replyList.value = props.comment.children;
     hasMoreReplies.value = props.comment.replyCount > props.comment.children.length;
+    // 后端返回的children只是前2条数据，不是完整的第1页
+    // 所以从第1页开始加载，但会过滤重复数据
+    currentPage.value = 1;
+    // 默认显示初始的子评论
+    showReplies.value = true;
   }
 });
 
@@ -155,6 +160,7 @@ const toggleReplies = async () => {
 
   // 如果是首次展开且没有加载过回复，则加载回复
   if (showReplies.value && replyList.value.length === 0) {
+    currentPage.value = 1; // 从第一页开始加载
     await fetchReplies(true);
   }
 };
@@ -175,16 +181,16 @@ const fetchReplies = async (reset = false) => {
     if (reset) {
       replyList.value = newReplies;
     } else {
-      replyList.value = [...replyList.value, ...newReplies];
+      // 过滤重复数据，避免重复添加
+      const filteredReplies = newReplies.filter((newReply) => !replyList.value.some((existingReply) => existingReply.id === newReply.id));
+      replyList.value = [...replyList.value, ...filteredReplies];
     }
 
     // 判断是否还有更多数据
     hasMoreReplies.value = replyList.value.length < replyTotal.value;
 
     // 更新页码
-    if (hasMoreReplies.value && newReplies.length > 0) {
-      currentPage.value++;
-    }
+    currentPage.value++;
   } catch (error) {
     ElMessage.error("获取回复失败");
     console.error("获取回复失败:", error);
@@ -203,32 +209,45 @@ const loadMoreReplies = () => {
 
 // 处理回复添加
 const handleReplyAdded = (newReply) => {
-  // 添加新回复到列表
-  replyList.value.push(newReply);
-
-  // 更新总回复数量
-  props.comment.replyCount = (props.comment.replyCount || 0) + 1;
-
-  // 显示回复列表
-  showReplies.value = true;
-
   // 隐藏回复表单
   hideReplyForm();
 
-  // 通知父组件
-  emit("reply-added", props.comment.id, newReply);
+  // 如果是子评论的回复，直接向上传递给父组件处理
+  if (props.isReply) {
+    // 子评论的回复应该与子评论并列，所以传递父评论的ID
+    emit("reply-added", props.comment.parentId, newReply);
+  } else {
+    // 父评论的回复，添加到当前评论的回复列表中
+    const existingReply = replyList.value.find((reply) => reply.id === newReply.id);
+    if (!existingReply) {
+      // 添加新回复到列表
+      replyList.value.push(newReply);
+      // 注意：不在这里更新 replyCount，由 CommentDrawer 统一处理
+    }
+
+    // 显示回复列表
+    showReplies.value = true;
+
+    // 通知父组件
+    emit("reply-added", props.comment.id, newReply);
+  }
 };
 
 // 处理子回复添加
 const handleSubReplyAdded = (commentId, newReply) => {
-  // 子回复添加到当前评论的回复列表中
-  replyList.value.push(newReply);
+  // 如果是当前评论的子回复，才添加到列表中
+  if (commentId === props.comment.id) {
+    // 检查回复是否已存在，避免重复添加
+    const existingReply = replyList.value.find((reply) => reply.id === newReply.id);
+    if (!existingReply) {
+      // 子回复添加到当前评论的回复列表中
+      replyList.value.push(newReply);
+      // 注意：不在这里更新 replyCount，由 CommentDrawer 统一处理
+    }
+  }
 
-  // 更新总回复数量
-  props.comment.replyCount = (props.comment.replyCount || 0) + 1;
-
-  // 通知父组件
-  emit("reply-added", props.comment.id, newReply);
+  // 通知父组件（继续向上传递事件）
+  emit("reply-added", commentId, newReply);
 };
 
 // 处理回复删除
@@ -402,7 +421,7 @@ const handleDelete = async () => {
       // 回复表单
       .reply-form {
         margin-bottom: 16px;
-        padding: 12px;
+        padding: 0;
         background: var(--el-bg-color-page);
         border-radius: 6px;
         border: 1px solid var(--el-border-color-light);

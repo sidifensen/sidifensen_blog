@@ -19,12 +19,8 @@ import com.sidifensen.domain.entity.Article;
 import com.sidifensen.domain.entity.ArticleColumn;
 import com.sidifensen.domain.entity.Column;
 import com.sidifensen.domain.entity.SysUser;
-import com.sidifensen.domain.enums.EditStatusEnum;
-import com.sidifensen.domain.enums.ExamineStatusEnum;
-import com.sidifensen.domain.enums.LikeTypeEnum;
-import com.sidifensen.domain.enums.MessageTypeEnum;
-import com.sidifensen.domain.enums.VisibleRangeEnum;
-import com.sidifensen.domain.result.ImageAuditResult;
+import com.sidifensen.domain.enums.*;
+import com.sidifensen.domain.result.AuditResult;
 import com.sidifensen.domain.vo.ArticleStatisticsVo;
 import com.sidifensen.domain.vo.ArticleVo;
 import com.sidifensen.domain.vo.ColumnVo;
@@ -143,7 +139,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public PageVo<List<ArticleVo>> getUserArticleList(Integer pageNum, Integer pageSize,
-            ArticleStatusDto articleStatusDto) {
+                                                      ArticleStatusDto articleStatusDto) {
         Integer currentUserId = SecurityUtils.getUserId(); // 当前登录用户ID
         Integer targetUserId = ObjectUtil.isNotEmpty(articleStatusDto.getUserId()) ? articleStatusDto.getUserId()
                 : currentUserId; // 目标用户ID
@@ -161,7 +157,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         } else {
             // 查看自己文章时，应用用户指定的筛选条件
             qw.eq(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatus()), Article::getExamineStatus,
-                    articleStatusDto.getExamineStatus())
+                            articleStatusDto.getExamineStatus())
                     .in(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatusList()), Article::getExamineStatus,
                             articleStatusDto.getExamineStatusList())
                     .eq(ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus()), Article::getEditStatus,
@@ -172,7 +168,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         // 通用筛选条件（对所有用户都适用）
         qw.eq(ObjectUtil.isNotEmpty(articleStatusDto.getReprintType()), Article::getReprintType,
-                articleStatusDto.getReprintType())
+                        articleStatusDto.getReprintType())
                 .and(ObjectUtil.isNotEmpty(articleStatusDto.getKeyword()), wrapper -> wrapper
                         .like(Article::getTag, articleStatusDto.getKeyword()) // 标签
                         .or()
@@ -338,7 +334,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             updateArticle.setId(articleDto.getId());
             // 进行自动审核
             if (sidifensenConfig.isArticleAutoAudit()) {
-                ImageAuditResult auditResult = textAuditUtils
+                AuditResult auditResult = textAuditUtils
                         .auditTextWithDetailsSplit(articleDto.getTitle() + " " + articleDto.getContent());
 
                 if (auditResult.getStatus().equals(ExamineStatusEnum.PASS.getCode())) {

@@ -1,12 +1,12 @@
 <template>
-  <el-drawer v-model="drawerVisible" :title="`评论 ${commentTotal}`" direction="rtl" size="420px" :z-index="2000" :modal="true" :show-close="true" :close-on-click-modal="true" :close-on-press-escape="true" :append-to-body="true" class="comment-drawer">
+  <el-drawer v-model="drawerVisible" :title="`评论 ${commentTotal}`" direction="rtl" width="420px" :z-index="2000" :modal="true" :show-close="true" :close-on-click-modal="true" :close-on-press-escape="true" :append-to-body="true" class="comment-drawer">
     <!-- 抽屉头部自定义 -->
     <template #header="{ titleId, titleClass }">
       <div class="drawer-header">
-        <h3 :id="titleId" :class="titleClass" class="drawer-title">
+        <div :id="titleId" :class="titleClass" class="drawer-title">
           <el-icon><ChatDotRound /></el-icon>
           <span>评论 {{ commentTotal }}</span>
-        </h3>
+        </div>
       </div>
     </template>
 
@@ -46,7 +46,7 @@
 
         <!-- 评论列表 -->
         <div v-else class="comment-items">
-          <CommentItem v-for="comment in commentList" :key="comment.id" :comment="comment" :article-id="articleId" :compact="true" @reply-added="handleReplyAdded" @comment-deleted="handleCommentDeleted" />
+          <CommentItem v-for="comment in commentList" :key="comment.id" :comment="comment" :article-id="articleId" @reply-added="handleReplyAdded" @comment-deleted="handleCommentDeleted" />
         </div>
 
         <!-- 加载更多 -->
@@ -82,10 +82,8 @@ const props = defineProps({
   },
 });
 
-// Emits
 const emit = defineEmits(["update:visible"]);
 
-// 响应式数据
 const loading = ref(false); // 初始加载状态
 const loadingMore = ref(false); // 加载更多状态
 const commentList = ref([]); // 评论列表
@@ -170,19 +168,33 @@ const handleCommentAdded = (newComment) => {
 
 // 处理回复添加
 const handleReplyAdded = (commentId, newReply) => {
-  // 找到对应的评论并更新其回复数
+  // 找到对应的父评论并更新其回复数
   const comment = commentList.value.find((c) => c.id === commentId);
   if (comment) {
-    comment.replyCount = (comment.replyCount || 0) + 1;
-    // 如果回复列表已加载，添加新回复
+    // 检查回复是否已存在，避免重复添加
+    let replyAdded = false;
+
     if (comment.children) {
-      comment.children.push(newReply);
+      const existingReply = comment.children.find((reply) => reply.id === newReply.id);
+      if (!existingReply) {
+        // 将新回复添加到父评论的子回复列表中
+        comment.children.push(newReply);
+        replyAdded = true;
+      }
+    } else {
+      // 如果回复列表未加载，创建children数组并添加回复
+      comment.children = [newReply];
+      replyAdded = true;
+    }
+
+    // 只有确实添加了新回复才更新计数
+    if (replyAdded) {
+      comment.replyCount = (comment.replyCount || 0) + 1;
+      // 更新总评论数
+      commentTotal.value++;
     }
   }
   ElMessage.success("回复发表成功");
-
-  // 更新总评论数
-  commentTotal.value++;
 };
 
 // 处理评论删除
@@ -200,51 +212,57 @@ const handleCommentDeleted = (commentId) => {
 const goToLogin = () => {
   router.push("/login");
 };
-
-// 暴露方法给父组件
-defineExpose({
-  refreshComments: () => fetchCommentList(true),
-});
 </script>
 
+<!-- 全局样式覆盖 Element Plus Drawer 头部间距 -->
+<style lang="scss">
+.comment-drawer .el-drawer__header {
+  margin-bottom: 0 !important;
+  padding: 20px 24px 16px 24px !important;
+  border-bottom: 1px solid var(--el-border-color-light) !important;
+  background: var(--el-bg-color) !important;
+}
+
+.comment-drawer .el-drawer__body {
+  padding: 0 !important;
+}
+
+/* 响应式设计 - 移动端和平板端样式 */
+@media (max-width: 768px) {
+  .comment-drawer {
+    width: 80vw !important;
+    max-width: 80vw !important;
+  }
+
+  .comment-drawer .el-drawer__header {
+    padding: 15px 16px 12px 16px !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 992px) {
+  .comment-drawer {
+    width: 60vw !important;
+    max-width: 60vw !important;
+  }
+}
+</style>
 <style lang="scss" scoped>
 // 评论抽屉样式
-:deep(.comment-drawer) {
-  .el-drawer {
+.comment-drawer {
+  :deep(.el-drawer) {
     background: var(--el-bg-color-page);
     border-left: 1px solid var(--el-border-color-light);
     box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1);
   }
 
-  .el-drawer__header {
-    padding: 20px 24px 16px 24px;
-    margin-bottom: 0;
-    border-bottom: 1px solid var(--el-border-color-light);
-    background: var(--el-bg-color);
-
-    .drawer-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      .drawer-title {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 18px;
-        font-weight: 700;
-        margin: 0;
-        color: var(--el-text-color-primary);
-
-        .el-icon {
-          color: var(--el-color-primary);
-          font-size: 20px;
-        }
-      }
-    }
+  :deep(.el-drawer__header) {
+    padding: 20px 24px 16px 24px !important;
+    margin-bottom: 0 !important;
+    border-bottom: 1px solid var(--el-border-color-light) !important;
+    background: var(--el-bg-color) !important;
   }
 
-  .el-drawer__close-btn {
+  :deep(.el-drawer__close-btn) {
     color: var(--el-text-color-regular);
     font-size: 18px;
 
@@ -253,12 +271,34 @@ defineExpose({
     }
   }
 
-  .el-drawer__body {
-    padding: 0;
+  :deep(.el-drawer__body) {
+    padding: 0 !important;
     display: flex;
     flex-direction: column;
     height: 100%;
     background: var(--el-bg-color-page);
+  }
+}
+
+// 抽屉头部内容样式
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .drawer-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--el-text-color-primary);
+
+    .el-icon {
+      color: var(--el-color-primary);
+      font-size: 20px;
+    }
   }
 }
 
@@ -271,7 +311,7 @@ defineExpose({
 
   // 发表评论区域
   .comment-form-section {
-    padding: 20px 24px;
+    padding: 10px;
     border-bottom: 1px solid var(--el-border-color-light);
     flex-shrink: 0;
     background: var(--el-bg-color);
@@ -324,7 +364,7 @@ defineExpose({
 
     // 评论项目
     .comment-items {
-      // 评论项目之间的间距由CommentItem组件内部控制
+      margin: 0;
     }
 
     // 加载更多
@@ -396,11 +436,6 @@ defineExpose({
         }
       }
 
-      .reply-form {
-        padding: 8px;
-        margin-bottom: 12px;
-      }
-
       .reply-list {
         padding-left: 12px;
 
@@ -414,19 +449,13 @@ defineExpose({
 
 // 响应式设计
 @media (max-width: 768px) {
-  :deep(.comment-drawer) {
-    .el-drawer {
-      width: 90vw !important;
-    }
-  }
-
   .drawer-content {
     .comment-form-section {
-      padding: 12px 16px;
+      padding: 10px;
     }
 
     .comment-list-section {
-      padding: 12px 16px;
+      padding: 8px 16px;
     }
   }
 }

@@ -54,7 +54,7 @@
           AND c.parent_id = #{parentId}
           AND c.examine_status = 1
           AND c.is_deleted = 0
-        ORDER BY c.create_time ASC
+        ORDER BY c.create_time DESC
         LIMIT #{offset}, #{limit}
     </select>
 

@@ -111,8 +111,8 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Like> implements Li
     @Override
     public Boolean isLiked(Integer type, Integer typeId) {
         Integer userId = SecurityUtils.getUserId();
-        if (userId == null || userId == 0) {
-            throw new BlogException(BlogConstants.LoginRequired);
+        if (userId == 0) {
+            return false;
         }
 
         LambdaQueryWrapper<Like> queryWrapper = new LambdaQueryWrapper<>();

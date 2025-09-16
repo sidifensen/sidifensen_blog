@@ -11,7 +11,7 @@ import com.aliyun.teautil.Common;
 import com.aliyun.teautil.models.RuntimeOptions;
 import com.sidifensen.domain.constants.ImageAuditConstants;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
-import com.sidifensen.domain.result.ImageAuditResult;
+import com.sidifensen.domain.result.AuditResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -81,7 +81,7 @@ public class ImageAuditUtils {
      * @param imageUrl 图片URL地址
      * @return 审核结果详情
      */
-    public ImageAuditResult auditImageWithDetails(String imageUrl) {
+    public AuditResult auditImageWithDetails(String imageUrl) {
         try {
             // 对URL进行编码处理，解决URL中包含特殊字符导致无法下载的问题
             String encodedImageUrl = encodeImageUrl(imageUrl);
@@ -156,11 +156,11 @@ public class ImageAuditUtils {
             }
 
             log.info("图片:{} ,审核结果:{} , 错误信息:{}", imageUrl, results, errorMessage);
-            return new ImageAuditResult(status, errorMessage.toString());
+            return new AuditResult(status, errorMessage.toString());
         } catch (com.aliyun.tea.TeaException e) {
             log.error("图片:{} ,审核失败:{}", imageUrl, e);
             // 审核服务异常,需要人工审核
-            ImageAuditResult imageAuditResult = new ImageAuditResult(2, "图片审核过程中发生错误: " + e.getMessage());
+            AuditResult imageAuditResult = new AuditResult(2, "图片审核过程中发生错误: " + e.getMessage());
             return imageAuditResult;
         } catch (Exception e) {
             throw new RuntimeException(e);

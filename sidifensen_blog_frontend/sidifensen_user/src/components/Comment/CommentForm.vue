@@ -8,7 +8,7 @@
     <!-- 表单内容 -->
     <div class="form-content">
       <!-- 文本输入框 -->
-      <el-input v-model="commentContent" :placeholder="placeholder" type="textarea" :rows="3" :maxlength="500" show-word-limit resize="none" @keydown.ctrl.enter="handleSubmit" @keydown.meta.enter="handleSubmit" />
+      <el-input v-model="commentContent" :placeholder="placeholder" type="textarea" :rows="3" :maxlength="255" show-word-limit resize="none" @keydown.ctrl.enter="handleSubmit" @keydown.meta.enter="handleSubmit" />
 
       <!-- 表单操作栏 -->
       <div class="form-actions">
@@ -48,6 +48,10 @@ const props = defineProps({
   },
   replyUserId: {
     type: Number,
+    default: null,
+  },
+  replyUserNickname: {
+    type: String,
     default: null,
   },
   placeholder: {
@@ -97,7 +101,7 @@ const handleSubmit = async () => {
 
     // 提交评论
     const res = await addComment(commentData);
-    const commentId = res.data.data; // 注意数据结构：res.data.data
+    const commentId = res.data.data;
 
     // 构建新评论对象（用于界面显示）
     const newComment = {
@@ -108,7 +112,7 @@ const handleSubmit = async () => {
       nickname: userStore.user.nickname,
       avatar: userStore.user.avatar,
       replyUserId: props.replyUserId,
-      replyUserNickname: props.replyUserId ? userStore.user.nickname : null,
+      replyUserNickname: props.replyUserNickname, // 被回复用户的昵称
       content: content,
       examineStatus: 1,
       likeCount: 0,
@@ -117,10 +121,9 @@ const handleSubmit = async () => {
       isLiked: false,
       children: [],
     };
+    console.log("newComment", newComment);
 
-    // 清空表单
     commentContent.value = "";
-
     // 通知父组件
     emit("comment-added", newComment);
   } catch (error) {
@@ -236,7 +239,7 @@ const handleCancel = () => {
         gap: 8px;
 
         .form-tips {
-          text-align: center;
+          display: none;
         }
 
         .form-buttons {

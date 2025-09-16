@@ -14,6 +14,7 @@ public class SidifensenConfig {
     private List<String> allowOrigins;
     private boolean photoAutoAudit;
     private boolean articleAutoAudit;
+    private boolean commentAutoAudit;
 
     public List<String> getAllowOrigins() {
         return this.allowOrigins;
@@ -25,6 +26,10 @@ public class SidifensenConfig {
 
     public boolean isArticleAutoAudit() {
         return this.articleAutoAudit;
+    }
+
+    public boolean isCommentAutoAudit() {
+        return this.commentAutoAudit;
     }
 
 }

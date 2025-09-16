@@ -19,7 +19,7 @@ import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.enums.MessageTypeEnum;
 import com.sidifensen.domain.enums.UploadEnum;
-import com.sidifensen.domain.result.ImageAuditResult;
+import com.sidifensen.domain.result.AuditResult;
 import com.sidifensen.domain.vo.PhotoVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.AlbumMapper;
@@ -140,7 +140,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             Integer status = 0;
             // 图片自动审核
             if (sidifensenConfig.isPhotoAutoAudit()) {
-                ImageAuditResult imageAuditResult = imageAuditUtils.auditImageWithDetails(url);
+                AuditResult imageAuditResult = imageAuditUtils.auditImageWithDetails(url);
                 status = imageAuditResult.getStatus();
                 // 根据审核结果设置审核状态
                 Photo updatePhoto = setPhotoExamineStatus(photo, status);
@@ -190,7 +190,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 Integer status = 0;
                 // 图片自动审核
                 if (sidifensenConfig.isPhotoAutoAudit()) {
-                    ImageAuditResult imageAuditResult = imageAuditUtils.auditImageWithDetails(url);
+                    AuditResult imageAuditResult = imageAuditUtils.auditImageWithDetails(url);
                     status = imageAuditResult.getStatus();
                     // 根据审核结果设置审核状态
                     Photo updatePhoto = setPhotoExamineStatus(photo, status);
