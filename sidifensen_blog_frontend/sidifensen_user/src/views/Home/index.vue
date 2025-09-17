@@ -16,14 +16,16 @@
           <div class="article-list">
             <article v-for="article in articles" :key="article.id" class="article-card">
               <div class="article-image">
-                <img :src="article.image" alt="{{ article.title }}">
+                <img :src="article.image" alt="{{ article.title }}" />
               </div>
               <div class="article-content">
                 <div class="article-meta">
                   <span class="category">{{ article.category }}</span>
                   <span class="date">{{ article.date }}</span>
                 </div>
-                <h3><router-link :to="'/article/' + article.id">{{ article.title }}</router-link></h3>
+                <h3>
+                  <router-link :to="'/article/' + article.id">{{ article.title }}</router-link>
+                </h3>
                 <p>{{ article.excerpt }}</p>
                 <router-link :to="'/article/' + article.id" class="read-more">阅读更多</router-link>
               </div>
@@ -74,35 +76,35 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 
 // 模拟文章数据
 const articles = ref([
   {
     id: 1,
-    title: 'Vue 3 组合式API入门教程',
-    excerpt: '本文介绍Vue 3的组合式API，包括setup函数、ref、reactive等核心概念...',
-    image: 'http://115.190.116.72:40000/sidifensen-blog/album/1/1/d888b05f9a4345e7b49c59d569e851d3.webp',
-    category: '前端开发',
-    date: '2023-06-15'
+    title: "Vue 3 组合式API入门教程",
+    excerpt: "本文介绍Vue 3的组合式API，包括setup函数、ref、reactive等核心概念...",
+    image: "http://115.190.116.72:40000/sidifensen-blog/album/1/1/d888b05f9a4345e7b49c59d569e851d3.webp",
+    category: "前端开发",
+    date: "2023-06-15",
   },
   {
     id: 2,
-    title: 'TypeScript高级类型使用技巧',
-    excerpt: '深入探讨TypeScript中的高级类型特性，如泛型、条件类型、映射类型等...',
-    image: 'http://115.190.116.72:40000/sidifensen-blog/album/1/2/658334308098465fbe66b5d4b3266ef9.webp',
-    category: '前端开发',
-    date: '2023-06-10'
+    title: "TypeScript高级类型使用技巧",
+    excerpt: "深入探讨TypeScript中的高级类型特性，如泛型、条件类型、映射类型等...",
+    image: "http://115.190.116.72:40000/sidifensen-blog/album/1/2/658334308098465fbe66b5d4b3266ef9.webp",
+    category: "前端开发",
+    date: "2023-06-10",
   },
   {
     id: 3,
-    title: 'React性能优化实践指南',
-    excerpt: '分享React应用性能优化的实用技巧，包括组件懒加载、memo、useCallback等...',
-    image: 'http://115.190.116.72:40000/sidifensen-blog/album/1/3/1d29f054b0f34070a6889dc49bf35ae3.webp',
-    category: '前端开发',
-    date: '2023-06-05'
-  }
+    title: "React性能优化实践指南",
+    excerpt: "分享React应用性能优化的实用技巧，包括组件懒加载、memo、useCallback等...",
+    image: "http://115.190.116.72:40000/sidifensen-blog/album/1/3/1d29f054b0f34070a6889dc49bf35ae3.webp",
+    category: "前端开发",
+    date: "2023-06-05",
+  },
 ]);
 
 const isMenuOpen = ref(false);
@@ -122,7 +124,7 @@ const closeMenu = () => {
 // 加载更多文章
 const loadMoreArticles = () => {
   // 这里可以添加加载更多文章的逻辑
-  console.log('加载更多文章');
+  console.log("加载更多文章");
 };
 
 // 组件挂载时执行
@@ -290,7 +292,7 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       padding-bottom: 10px;
 
       &::after {
-        content: '';
+        content: "";
         position: absolute;
         bottom: 0;
         left: 0;

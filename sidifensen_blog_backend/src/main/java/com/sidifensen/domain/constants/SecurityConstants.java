@@ -22,14 +22,17 @@ public class SecurityConstants {
             "/user/admin/login",
             "/user/info/{userId:\\d+}",
             "/album/listAll",
+            "/album/get/{albumId:\\d+}",
             "/oauth/gitee/login",
             "/oauth/gitee/callback",
             "/oauth/github/login",
             "/oauth/github/callback",
             "/user/oauthLogin",
             "/article/list", // 获取文章列表
+            "/article/listAll",
             "/article/user/list", // 获取用户文章列表
             "/article/user/statistics",
+            "/article/user/{userId:\\d+}/statistics",
             "/article/incrReadCount/{articleId:\\d+}",
             "/favicon.ico"
     };
