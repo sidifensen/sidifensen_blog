@@ -1,5 +1,5 @@
 <template>
-  <el-drawer v-model="drawerVisible" :title="`评论 ${commentTotal}`" direction="rtl" width="420px" :z-index="2000" :modal="true" :show-close="true" :close-on-click-modal="true" :close-on-press-escape="true" :append-to-body="true" class="comment-drawer">
+  <el-drawer v-model="drawerVisible" :title="`评论 ${commentTotal}`" direction="rtl" width="420px" :z-index="2000" :modal="true" :show-close="true" :close-on-click-modal="true" :close-on-press-escape="true" :append-to-body="true" :lock-scroll="false" class="comment-drawer">
     <!-- 抽屉头部自定义 -->
     <template #header="{ titleId, titleClass }">
       <div class="drawer-header">

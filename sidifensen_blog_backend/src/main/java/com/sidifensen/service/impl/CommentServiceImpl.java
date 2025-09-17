@@ -17,6 +17,7 @@ import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.enums.MessageTypeEnum;
 import com.sidifensen.domain.result.AuditResult;
+import com.sidifensen.domain.vo.AdminCommentVo;
 import com.sidifensen.domain.vo.CommentVo;
 import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.exception.BlogException;
@@ -500,6 +501,169 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         vo.setLikeCount(Math.toIntExact(likeCountMap.getOrDefault(comment.getId(), 0L)));
         // 设置当前用户是否点赞
         vo.setIsLiked(userLikedIds.contains(comment.getId()));
+
+        return vo;
+    }
+
+    @Override
+    public PageVo<List<AdminCommentVo>> adminGetCommentList(Integer pageNum, Integer pageSize,
+                                                            Integer examineStatus, Integer userId,
+                                                            Integer articleId, String keyword) {
+        if (pageNum == null || pageNum <= 0) {
+            pageNum = 1;
+        }
+        if (pageSize == null || pageSize <= 0) {
+            pageSize = 10;
+        }
+
+        // 构建查询条件
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<Comment>()
+                .eq(Comment::getIsDeleted, 0)
+                .orderByDesc(Comment::getCreateTime);
+
+        // 根据审核状态筛选
+        if (examineStatus != null) {
+            queryWrapper.eq(Comment::getExamineStatus, examineStatus);
+        }
+
+        // 根据用户ID筛选
+        if (userId != null && userId > 0) {
+            queryWrapper.eq(Comment::getUserId, userId);
+        }
+
+        // 根据文章ID筛选
+        if (articleId != null && articleId > 0) {
+            queryWrapper.eq(Comment::getArticleId, articleId);
+        }
+
+        // 根据关键词搜索评论内容
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            queryWrapper.like(Comment::getContent, keyword.trim());
+        }
+
+        // 查询总数
+        Long total = count(queryWrapper);
+
+        // 分页查询
+        Integer offset = (pageNum - 1) * pageSize;
+        queryWrapper.last("LIMIT " + offset + ", " + pageSize);
+        List<Comment> comments = list(queryWrapper);
+
+        if (comments.isEmpty()) {
+            return new PageVo<>(new ArrayList<>(), total);
+        }
+
+        // 批量构建AdminCommentVo
+        List<AdminCommentVo> result = batchBuildAdminCommentVos(comments);
+
+        return new PageVo<>(result, total);
+    }
+
+    /**
+     * 批量构建管理员评论VO对象
+     *
+     * @param comments 评论列表
+     * @return AdminCommentVo列表
+     */
+    private List<AdminCommentVo> batchBuildAdminCommentVos(List<Comment> comments) {
+        if (comments.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 收集需要查询的用户ID和文章ID
+        Set<Integer> userIds = new HashSet<>();
+        Set<Integer> articleIds = new HashSet<>();
+        Set<Integer> commentIds = new HashSet<>();
+
+        comments.forEach(comment -> {
+            userIds.add(comment.getUserId());
+            articleIds.add(comment.getArticleId());
+            commentIds.add(comment.getId());
+            if (comment.getReplyUserId() != null) {
+                userIds.add(comment.getReplyUserId());
+            }
+        });
+
+        // 批量查询用户信息
+        final Map<Integer, SysUser> userMap;
+        if (!userIds.isEmpty()) {
+            LambdaQueryWrapper<SysUser> userWrapper = new LambdaQueryWrapper<SysUser>()
+                    .in(SysUser::getId, userIds)
+                    .select(SysUser::getId, SysUser::getNickname, SysUser::getAvatar);
+            List<SysUser> users = sysUserMapper.selectList(userWrapper);
+            userMap = users.stream().collect(Collectors.toMap(SysUser::getId, u -> u));
+        } else {
+            userMap = new HashMap<>();
+        }
+
+        // 批量查询文章信息
+        final Map<Integer, Article> articleMap;
+        if (!articleIds.isEmpty()) {
+            LambdaQueryWrapper<Article> articleWrapper = new LambdaQueryWrapper<Article>()
+                    .in(Article::getId, articleIds)
+                    .select(Article::getId, Article::getTitle);
+            List<Article> articles = articleMapper.selectList(articleWrapper);
+            articleMap = articles.stream().collect(Collectors.toMap(Article::getId, a -> a));
+        } else {
+            articleMap = new HashMap<>();
+        }
+
+        // 批量查询点赞统计
+        final Map<Integer, Long> likeCountMap;
+        if (!commentIds.isEmpty()) {
+            LambdaQueryWrapper<Like> likeCountWrapper = new LambdaQueryWrapper<Like>()
+                    .eq(Like::getType, 1)
+                    .in(Like::getTypeId, commentIds)
+                    .select(Like::getTypeId);
+            List<Like> likes = likeMapper.selectList(likeCountWrapper);
+            likeCountMap = likes.stream()
+                    .collect(Collectors.groupingBy(Like::getTypeId, Collectors.counting()));
+        } else {
+            likeCountMap = new HashMap<>();
+        }
+
+        // 构建结果
+        return comments.stream()
+                .map(comment -> buildAdminCommentVo(comment, userMap, articleMap, likeCountMap))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 构建管理员评论VO对象
+     *
+     * @param comment      评论实体
+     * @param userMap      用户信息映射
+     * @param articleMap   文章信息映射
+     * @param likeCountMap 点赞数映射
+     * @return 管理员评论VO
+     */
+    private AdminCommentVo buildAdminCommentVo(Comment comment, Map<Integer, SysUser> userMap,
+                                               Map<Integer, Article> articleMap, Map<Integer, Long> likeCountMap) {
+        AdminCommentVo vo = BeanUtil.copyProperties(comment, AdminCommentVo.class);
+
+        // 设置用户信息
+        SysUser user = userMap.get(comment.getUserId());
+        if (user != null) {
+            vo.setNickname(user.getNickname());
+            vo.setAvatar(user.getAvatar());
+        }
+
+        // 设置回复用户信息
+        if (comment.getReplyUserId() != null) {
+            SysUser replyUser = userMap.get(comment.getReplyUserId());
+            if (replyUser != null) {
+                vo.setReplyUserNickname(replyUser.getNickname());
+            }
+        }
+
+        // 设置文章信息
+        Article article = articleMap.get(comment.getArticleId());
+        if (article != null) {
+            vo.setArticleTitle(article.getTitle());
+        }
+
+        // 设置点赞数
+        vo.setLikeCount(Math.toIntExact(likeCountMap.getOrDefault(comment.getId(), 0L)));
 
         return vo;
     }

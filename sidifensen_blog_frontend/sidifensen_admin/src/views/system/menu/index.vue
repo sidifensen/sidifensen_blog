@@ -131,7 +131,6 @@
 
 <script setup>
 import { ref, onMounted, watch } from "vue";
-import { ElMessage, ElMessageBox } from "element-plus";
 import { Search, Plus, Edit, Delete, Avatar } from "@element-plus/icons-vue";
 import { getAllMenuList, addMenu, updateMenu, deleteMenu, queryMenu } from "@/api/menu";
 import { addRoleMenu, getRolesByMenu } from "@/api/role-menu";

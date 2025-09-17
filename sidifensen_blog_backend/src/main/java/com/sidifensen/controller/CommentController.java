@@ -3,6 +3,7 @@ package com.sidifensen.controller;
 import com.sidifensen.aspect.TimeConsuming;
 import com.sidifensen.domain.dto.CommentDto;
 import com.sidifensen.domain.result.Result;
+import com.sidifensen.domain.vo.AdminCommentVo;
 import com.sidifensen.domain.vo.CommentVo;
 import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.service.ICommentService;
@@ -15,8 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 评论控制器
- *
  * @author sidifensen
  * @since 2025-09-15
  */
@@ -85,6 +84,30 @@ public class CommentController {
     }
 
     /**
+     * 管理员获取所有评论列表
+     *
+     * @param pageNum       页码
+     * @param pageSize      页大小
+     * @param examineStatus 审核状态（可选）0-待审核 1-审核通过 2-审核未通过
+     * @param userId        用户id（可选）
+     * @param articleId     文章id（可选）
+     * @param keyword       关键词搜索（可选）
+     * @return 评论列表
+     */
+    @PreAuthorize("hasAuthority('comment:list')")
+    @GetMapping("/admin/list")
+    public Result<PageVo<List<AdminCommentVo>>> adminGetCommentList(@NotNull Integer pageNum,
+                                                                    @NotNull Integer pageSize,
+                                                                    Integer examineStatus,
+                                                                    Integer userId,
+                                                                    Integer articleId,
+                                                                    String keyword) {
+        PageVo<List<AdminCommentVo>> commentList = commentService.adminGetCommentList(
+                pageNum, pageSize, examineStatus, userId, articleId, keyword);
+        return Result.success(commentList);
+    }
+
+    /**
      * 管理员审核评论
      *
      * @param commentId     评论id
@@ -111,4 +134,5 @@ public class CommentController {
         commentService.adminDeleteComment(commentId);
         return Result.success();
     }
+
 }

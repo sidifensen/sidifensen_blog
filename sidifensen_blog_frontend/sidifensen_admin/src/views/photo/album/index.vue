@@ -15,70 +15,100 @@
         </div>
       </div>
       <div class="card-second">
-        <el-date-picker
-          v-model="searchCreateTimeStart"
-          type="datetime"
-          format="YYYY-MM-DD HH:mm:ss"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          placeholder="创建时间开始"
-          :prefix-icon="Calendar"
-          size="small"
-          class="search-input"
-          clearable
-          @change="handleSearch" />
-        <el-date-picker
-          v-model="searchCreateTimeEnd"
-          type="datetime"
-          format="YYYY-MM-DD HH:mm:ss"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          placeholder="创建时间结束"
-          :prefix-icon="Calendar"
-          size="small"
-          class="search-input"
-          clearable
-          @change="handleSearch" />
+        <el-date-picker v-model="searchCreateTimeStart" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间开始" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
+        <el-date-picker v-model="searchCreateTimeEnd" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间结束" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
       </div>
 
-      <!-- 相册表格 -->
-      <el-table v-loading="loading" :data="paginatedAlbumList" class="table" style="height: 100%">
-        <el-table-column prop="id" label="相册id" width="70" />
-        <el-table-column prop="coverUrl" label="相册封面" width="200">
-          <template #default="{ row }">
-            <div style="display: flex; align-items: center">
-              <el-image preview-teleported :src="row.coverUrl" style="width: 200px; height: 100px" :preview-src-list="[row.coverUrl]" fit="cover" />
+      <!-- 桌面端表格视图 -->
+      <div v-if="!isMobileView" class="desktop-view">
+        <el-table v-loading="loading" :data="paginatedAlbumList" class="table" style="height: 100%">
+          <el-table-column prop="id" label="相册id" width="70" />
+          <el-table-column prop="coverUrl" label="相册封面" width="200">
+            <template #default="{ row }">
+              <div style="display: flex; align-items: center">
+                <el-image preview-teleported :src="row.coverUrl" style="width: 200px; height: 100px" :preview-src-list="[row.coverUrl]" fit="cover" />
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="name" label="相册名称" />
+          <el-table-column prop="userName" label="用户名" />
+          <el-table-column prop="showStatus" label="状态">
+            <template #default="{ row }">
+              <el-switch
+                v-model="row.showStatus"
+                size="large"
+                active-color="#42b983"
+                inactive-color="#cccccc"
+                active-text="正常"
+                inactive-text="禁用"
+                :active-value="0"
+                :inactive-value="1"
+                inline-prompt
+                :loading="switchLoading"
+                :before-change="() => handleStatusChange(row.id, row.showStatus === 0 ? 1 : 0)"
+              />
+            </template>
+          </el-table-column>
+          <el-table-column prop="createTime" label="创建时间" sortable width="120" />
+          <el-table-column prop="updateTime" label="更新时间" sortable width="120" />
+          <el-table-column label="操作" width="230">
+            <template #default="{ row }">
+              <div class="table-actions">
+                <el-button type="info" size="small" @click="handleAlbumDetail(row.id)" :icon="InfoFilled" class="detail-button">详情</el-button>
+                <el-button type="primary" size="small" @click="handleEditAlbum(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
+                <el-button type="danger" size="small" @click="handleDeleteAlbum(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+
+      <!-- 移动端卡片视图 -->
+      <div v-else class="mobile-view">
+        <div class="album-cards" v-loading="loading">
+          <div v-for="album in paginatedAlbumList" :key="album.id" class="album-card animate-fade-in">
+            <div class="album-cover-section">
+              <el-image preview-teleported :src="album.coverUrl" :preview-src-list="[album.coverUrl]" fit="cover" class="album-cover" lazy loading="lazy" />
             </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="name" label="相册名称" />
-        <el-table-column prop="userName" label="用户名" />
-        <el-table-column prop="showStatus" label="状态">
-          <template #default="{ row }">
-            <el-switch
-              v-model="row.showStatus"
-              size="large"
-              active-color="#42b983"
-              inactive-color="#cccccc"
-              active-text="正常"
-              inactive-text="禁用"
-              :active-value="0"
-              :inactive-value="1"
-              inline-prompt
-              :loading="switchLoading"
-              :before-change="() => handleStatusChange(row.id, row.showStatus === 0 ? 1 : 0)" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" sortable width="120" />
-        <el-table-column prop="updateTime" label="更新时间" sortable width="120" />
-        <el-table-column label="操作" width="230">
-          <template #default="{ row }">
-            <div class="table-actions">
-              <el-button type="info" size="small" @click="handleAlbumDetail(row.id)" :icon="InfoFilled" class="detail-button">详情</el-button>
-              <el-button type="primary" size="small" @click="handleEditAlbum(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
-              <el-button type="danger" size="small" @click="handleDeleteAlbum(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
+            <div class="album-info">
+              <div class="album-header">
+                <div class="album-id">ID: {{ album.id }}</div>
+                <div class="album-name">{{ album.name }}</div>
+                <div class="album-username">{{ album.userName }}</div>
+              </div>
+              <div class="album-meta">
+                <div class="meta-item">
+                  <span class="label">创建时间:</span>
+                  <span>{{ album.createTime }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="label">更新时间:</span>
+                  <span>{{ album.updateTime }}</span>
+                </div>
+              </div>
+              <div class="album-status-section">
+                <el-switch
+                  v-model="album.showStatus"
+                  active-color="#42b983"
+                  inactive-color="#cccccc"
+                  active-text="正常"
+                  inactive-text="禁用"
+                  :active-value="0"
+                  :inactive-value="1"
+                  inline-prompt
+                  :loading="switchLoading"
+                  :before-change="() => handleStatusChange(album.id, album.showStatus === 0 ? 1 : 0)"
+                />
+              </div>
+              <div class="album-actions">
+                <el-button text bg type="info" size="small" @click="handleAlbumDetail(album.id)" :icon="InfoFilled">详情</el-button>
+                <el-button text bg type="primary" size="small" @click="handleEditAlbum(album)" :icon="Edit">编辑</el-button>
+                <el-button text bg type="danger" size="small" @click="handleDeleteAlbum(album.id)" :icon="Delete">删除</el-button>
+              </div>
             </div>
-          </template>
-        </el-table-column>
-      </el-table>
+          </div>
+        </div>
+      </div>
 
       <!-- 分页 -->
       <div class="pagination-container">
@@ -91,8 +121,8 @@
       <el-form ref="albumFormRef" :model="albumForm" :rules="rules" class="editForm">
         <el-form-item prop="name" label="相册名称">
           <el-input v-model="albumForm.name" placeholder="请输入相册名称" />
-        </el-form-item>
-      </el-form>
+        </el-form-item> </el-form
+      >=;
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>
@@ -106,7 +136,7 @@
       <el-card v-if="albumDetail" class="album-detail-card animate-fade-in">
         <div class="album-detail-header">
           <div class="album-cover-container">
-            <el-image :src="albumDetail.coverUrl" fit="cover" style="width: 180px; height: 180px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1)" />
+            <el-image :src="albumDetail.coverUrl" fit="cover" style="width: 100%; height: 180px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1)" />
           </div>
           <div class="album-info">
             <h3 class="album-title">{{ albumDetail.name }}</h3>
@@ -167,7 +197,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from "vue";
+import { ref, onMounted, onUnmounted, watch, computed } from "vue";
 import { Search, Plus, InfoFilled, Edit, Delete, Avatar } from "@element-plus/icons-vue";
 import { adminList, adminUpdateAlbum, adminDeleteAlbum, adminSearchAlbum, adminGetAlbumDetail } from "@/api/album";
 import { getUserList } from "@/api/user";
@@ -213,6 +243,14 @@ const getUsers = async () => {
   userList.value = res.data.data;
 };
 
+// 移动端检测
+const isMobileView = ref(false);
+
+// 监听窗口大小变化
+const handleResize = () => {
+  isMobileView.value = window.innerWidth <= 768;
+};
+
 // 获取相册列表
 const getAlbums = async () => {
   loading.value = true;
@@ -232,6 +270,13 @@ const getAlbums = async () => {
 onMounted(() => {
   getAlbums();
   getUsers();
+  handleResize();
+  window.addEventListener("resize", handleResize);
+});
+
+// 组件卸载时移除监听
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
 });
 
 // 更新分页数据
@@ -707,88 +752,216 @@ const handleDetailDialogClose = () => {
     }
   }
 
-  //表格
-  .table {
+  // 桌面端表格视图
+  .desktop-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .table {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-top: 16px;
+      max-height: calc(100vh - 240px);
+
+      :deep(.el-tag__content) {
+        display: flex;
+        align-items: center;
+      }
+
+      :deep(.el-table__header-wrapper) {
+        background-color: var(--el-bg-color);
+        th {
+          font-weight: 600;
+          color: #475569;
+        }
+      }
+
+      :deep(.el-table__body-wrapper) {
+        tr {
+          td {
+            color: #64748b;
+            padding: 12px 0;
+          }
+        }
+      }
+
+      :deep(.el-table__fixed-right) {
+        box-shadow: -3px 0 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .table-actions {
+        height: 30px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        @media screen and (max-width: 480px) {
+          gap: 4px;
+        }
+        .detail-button {
+          background-color: #f5f5f5;
+          color: #606266;
+          border-color: #dcdfe6;
+          border-radius: 6px;
+          transition: all 0.3s ease;
+          &:hover {
+            background-color: #e9e9e9;
+            border-color: #c0c4cc;
+            transform: translateY(-2px);
+          }
+        }
+        .edit-button {
+          margin-left: 0;
+          background-color: #e0f2fe;
+          color: #0284c7;
+          border-color: #e0f2fe;
+          border-radius: 6px;
+          transition: all 0.3s ease;
+
+          &:hover {
+            background-color: #bae6fd;
+            border-color: #bae6fd;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+          }
+        }
+        .delete-button {
+          margin-left: 0 !important;
+          background-color: #fee2e2;
+          color: #ef4444;
+          border-color: #fee2e2;
+          border-radius: 6px;
+          transition: all 0.3s ease;
+
+          &:hover {
+            background-color: #fecaca;
+            border-color: #fecaca;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+          }
+        }
+      }
+    }
+  }
+
+  // 移动端卡片视图
+  .mobile-view {
     flex: 1;
     display: flex;
     flex-direction: column;
     margin-top: 16px;
-    max-height: calc(100vh - 220px);
+    overflow-y: auto;
+    // 为分页容器预留空间，避免遮挡
+    padding-bottom: 30px;
 
-    :deep(.el-tag__content) {
-      display: flex;
-      align-items: center;
-    }
+    .album-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      padding: 10px;
 
-    :deep(.el-table__header-wrapper) {
-      background-color: var(--el-bg-color);
-      th {
-        font-weight: 600;
-        color: #475569;
-      }
-    }
-
-    :deep(.el-table__body-wrapper) {
-      tr {
-        td {
-          color: #64748b;
-          padding: 12px 0;
-        }
-      }
-    }
-
-    :deep(.el-table__fixed-right) {
-      box-shadow: -3px 0 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .table-actions {
-      height: 30px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
       @media screen and (max-width: 480px) {
-        gap: 4px;
+        grid-template-columns: 1fr;
+        gap: 12px;
       }
-      .detail-button {
-        background-color: #f5f5f5;
-        color: #606266;
-        border-color: #dcdfe6;
-        border-radius: 6px;
+
+      .album-card {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         transition: all 0.3s ease;
-        &:hover {
-          background-color: #e9e9e9;
-          border-color: #c0c4cc;
-          transform: translateY(-2px);
-        }
-      }
-      .edit-button {
-        margin-left: 0;
-        background-color: #e0f2fe;
-        color: #0284c7;
-        border-color: #e0f2fe;
-        border-radius: 6px;
-        transition: all 0.3s ease;
+        background: var(--el-bg-color);
 
         &:hover {
-          background-color: #bae6fd;
-          border-color: #bae6fd;
-          transform: translateY(-2px);
-          box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+          transform: translateY(-4px);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
         }
-      }
-      .delete-button {
-        margin-left: 0 !important;
-        background-color: #fee2e2;
-        color: #ef4444;
-        border-color: #fee2e2;
-        border-radius: 6px;
-        transition: all 0.3s ease;
 
-        &:hover {
-          background-color: #fecaca;
-          border-color: #fecaca;
-          transform: translateY(-2px);
-          box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        .album-cover-section {
+          position: relative;
+
+          .album-cover {
+            width: 100%;
+            height: 140px;
+            border-radius: 8px 8px 0 0;
+          }
+        }
+
+        .album-info {
+          padding: 12px;
+          background-color: var(--el-bg-color);
+          border-radius: 0 0 8px 8px;
+
+          .album-header {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 8px;
+
+            .album-id {
+              font-size: 11px;
+              color: #999;
+            }
+
+            .album-name {
+              font-size: 14px;
+              font-weight: 600;
+              color: #333;
+              line-height: 1.4;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+            }
+
+            .album-username {
+              font-size: 12px;
+              color: #666;
+            }
+          }
+
+          .album-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 8px;
+
+            .meta-item {
+              font-size: 10px;
+              color: #666;
+
+              .label {
+                font-weight: 500;
+                margin-right: 4px;
+              }
+            }
+          }
+
+          .album-status-section {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 8px;
+            border-top: 1px solid var(--el-border-color-lighter);
+            border-bottom: 1px solid var(--el-border-color-lighter);
+          }
+
+          .album-actions {
+            display: flex;
+            gap: 6px;
+            justify-content: space-between;
+
+            .el-button {
+              font-size: 10px;
+              padding: 4px 8px;
+              height: auto;
+              border-radius: 4px;
+              flex: 1;
+              min-width: 0;
+            }
+          }
         }
       }
     }
@@ -887,7 +1060,7 @@ const handleDetailDialogClose = () => {
 
       .table {
         margin-top: 0;
-        max-height: calc(100vh - 180px);
+        max-height: calc(100vh - 240px);
       }
 
       .pagination-container {
@@ -944,8 +1117,16 @@ const handleDetailDialogClose = () => {
 // 相册详情样式
 :deep(.album-detail) {
   width: 1200px !important;
-  @media screen and (max-width: 767px) {
+  @media screen and (max-width: 768px) {
     width: 90% !important;
+  }
+}
+
+.album-detail-card {
+  @media screen and (max-width: 768px) {
+    :deep(.el-card__body) {
+      padding: 10px;
+    }
   }
 }
 .album-detail-header {

@@ -36,7 +36,6 @@
 
 <script setup>
 import { ref } from "vue";
-import { ElMessage } from "element-plus";
 import { User, Lock } from "@element-plus/icons-vue";
 import { login, info } from "@/api/user";
 import { SetJwt } from "@/utils/Auth";

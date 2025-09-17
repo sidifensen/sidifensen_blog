@@ -16,28 +16,8 @@
         </div>
       </div>
       <div class="card-second">
-        <el-date-picker
-          v-model="searchCreateTimeStart"
-          type="datetime"
-          format="YYYY-MM-DD HH:mm:ss"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          placeholder="创建时间开始"
-          :prefix-icon="Calendar"
-          size="small"
-          class="search-input"
-          clearable
-          @change="handleSearch" />
-        <el-date-picker
-          v-model="searchCreateTimeEnd"
-          type="datetime"
-          format="YYYY-MM-DD HH:mm:ss"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          placeholder="创建时间结束"
-          :prefix-icon="Calendar"
-          size="small"
-          class="search-input"
-          clearable
-          @change="handleSearch" />
+        <el-date-picker v-model="searchCreateTimeStart" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间开始" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
+        <el-date-picker v-model="searchCreateTimeEnd" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间结束" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
       </div>
       <div class="card-third">
         <el-button type="primary" plain round @click="handleBatchAudit" :disabled="selectedPhotos.length === 0" :loading="batchAuditLoading"> 批量审核 </el-button>
@@ -49,10 +29,10 @@
       <div v-if="!isMobileView" class="desktop-view">
         <el-table v-loading="loading" :data="paginatedPhotoList" class="table" style="height: 100%" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="30" />
-          <el-table-column prop="url" label="图片" width="330">
+          <el-table-column prop="url" label="图片" width="350">
             <template #default="{ row }">
               <div style="display: flex; align-items: center">
-                <el-image preview-teleported :src="row.url" style="width: 400px; height: 200px" :preview-src-list="[row.url]" fit="cover" />
+                <el-image preview-teleported :src="row.url" style="width: 320px; height: 200px" :preview-src-list="[row.url]" fit="cover" />
               </div>
             </template>
           </el-table-column>
@@ -506,7 +486,7 @@ const handleBatchDelete = () => {
       display: flex;
       flex-direction: column;
       margin-top: 16px;
-      max-height: calc(100vh - 220px);
+      max-height: calc(100vh - 270px);
 
       :deep(.el-tag__content) {
         display: flex;
@@ -606,12 +586,17 @@ const handleBatchDelete = () => {
       display: flex;
       flex-direction: column;
       gap: 12px;
-      padding: 10px;
+      padding: 5px;
 
       .photo-card {
         transition: all 0.3s ease;
         border-radius: 8px;
         margin-bottom: 12px;
+
+        // 调整移动端卡片内部padding
+        :deep(.el-card__body) {
+          padding: 8px;
+        }
 
         &:hover {
           transform: translateY(-2px);
@@ -621,16 +606,17 @@ const handleBatchDelete = () => {
         .photo-card-content {
           display: flex;
           flex-direction: column;
-          padding: 16px;
+          padding: 8px;
           gap: 12px;
 
           .photo-header-section {
             display: flex;
+            flex-direction: column;
             gap: 12px;
 
             .photo-cover {
-              width: 120px;
-              height: 120px;
+              width: 100%;
+              height: 180px;
               border-radius: 6px;
               flex-shrink: 0;
               object-fit: cover;
@@ -666,6 +652,7 @@ const handleBatchDelete = () => {
                   display: inline-block;
                   padding: 2px 8px;
                   border-radius: 12px;
+                  margin-bottom: 0;
                   font-size: 11px;
                   font-weight: 500;
 

@@ -1037,7 +1037,6 @@ const getEditStatusType = (editStatus) => {
             .article-header-section {
               display: flex;
               flex-direction: column;
-              gap: 12px;
 
               // 移动端文章封面容器
               .article-cover-mobile {
@@ -1080,7 +1079,6 @@ const getEditStatusType = (editStatus) => {
                 width: 100%;
                 display: flex;
                 flex-direction: column;
-                gap: 8px;
 
                 // 文章头部信息（ID和状态）
                 .article-header {
@@ -1178,7 +1176,6 @@ const getEditStatusType = (editStatus) => {
                   display: flex;
                   flex-direction: column;
                   gap: 8px;
-                  margin-top: 8px;
 
                   // 元数据项通用样式
                   .meta-item {

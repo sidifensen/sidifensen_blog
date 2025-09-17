@@ -215,47 +215,37 @@ create table `like`
 create table comment
 (
     id             int primary key auto_increment comment '评论id',
-    parent_id      int               default 0 comment '父级评论id',
-    article_id     int      not null comment '文章id',
-    user_id        int      not null comment '评论用户id',
-    reply_user_id  int               default null comment '回复的用户id',
-    content        varchar(255)     not null comment '评论内容',
-    examine_status tinyint  not null default 0 comment '审核状态 0-待审核 1-审核通过 2-审核未通过',
-    like_count     int      not null default 0 comment '点赞数',
-    reply_count    int      not null default 0 comment '回复数',
-    create_time    datetime not null comment '创建时间',
-    is_deleted     tinyint  not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index idx_article_id_parent_id_examine_status_create_time (article_id, parent_id, examine_status, create_time)
+    parent_id      int                   default 0 comment '父级评论id',
+    article_id     int          not null comment '文章id',
+    user_id        int          not null comment '评论用户id',
+    reply_user_id  int                   default null comment '回复的用户id',
+    content        varchar(255) not null comment '评论内容',
+    examine_status tinyint      not null default 0 comment '审核状态 0-待审核 1-审核通过 2-审核未通过',
+    like_count     int          not null default 0 comment '点赞数',
+    reply_count    int          not null default 0 comment '回复数',
+    create_time    datetime     not null comment '创建时间',
+    is_deleted     tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
+    index idx_article_id_parent_id_examine_status_create_time (article_id, parent_id, examine_status, create_time desc)
 );
 
--- 收藏夹表
-create table collection_folder
+create table favorite
 (
-    id           int primary key auto_increment comment '收藏夹id',
-    user_id      int         not null comment '用户id',
-    name         varchar(20) not null comment '收藏夹名称',
-    description  varchar(100) comment '收藏夹描述',
-    cover_url    varchar(400) comment '收藏夹封面',
-    show_status  tinyint     not null default 0 comment '展示状态 0-公开 1-私密',
-    sort         int         not null default 0 comment '排序',
-    article_count int        not null default 0 comment '文章数量',
-    create_time  datetime    not null comment '创建时间',
-    update_time  datetime    not null comment '更新时间',
-    is_deleted   tinyint     not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index idx_user_id_sort (user_id, sort)
+    id            int primary key auto_increment comment '收藏夹id',
+    user_id       int         not null comment '用户id',
+    name          varchar(20) not null comment '收藏夹名称',
+    show_status   tinyint     not null default 0 comment '展示状态 0-公开 1-私密',
+    article_count int         not null default 0 comment '文章数量',
+    create_time   datetime    not null comment '创建时间',
+    is_deleted    tinyint     not null default 0 comment '是否删除 0-未删除 1-已删除',
+    index idx_user_status_time (user_id, show_status, create_time desc)
 );
 
--- 收藏关系表
-create table collection_article
+create table favorite_article
 (
     id          int primary key auto_increment comment '主键id',
-    folder_id   int      not null comment '收藏夹id',
-    user_id     int      not null comment '收藏用户id',
+    favorite_id int      not null comment '收藏夹id',
     article_id  int      not null comment '被收藏的文章id',
-    sort        int      not null default 0 comment '排序',
-    create_time datetime not null comment '收藏时间',
+    create_time datetime not null comment '创建时间',
     is_deleted  tinyint  not null default 0 comment '是否删除 0-未删除 1-已删除',
-    unique index idx_folder_article (folder_id, article_id),
-    index idx_user_id_create_time (user_id, create_time),
-    index idx_article_id_create_time (article_id, create_time)
+    index idx_favorite_time (favorite_id, create_time desc)
 );
