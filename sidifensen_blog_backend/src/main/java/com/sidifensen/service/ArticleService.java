@@ -21,14 +21,14 @@ import java.util.List;
  */
 public interface ArticleService extends IService<Article> {
 
-    // 获取文章列表
-    PageVo<List<ArticleVo>> getArticleList(Integer pageNum, Integer pageSize);
-
     // 获取全部已发布审核通过全部人可见的文章列表（按更新时间倒序）
     PageVo<List<ArticleVo>> getAllArticleList(Integer pageNum, Integer pageSize);
 
     // 获取用户文章列表
     PageVo<List<ArticleVo>> getUserArticleList(Integer pageNum, Integer pageSize, ArticleStatusDto articleStatusDto);
+
+    // 获取文章列表(文章管理)
+    PageVo<List<ArticleVo>> getArticleMangeList(Integer pageNum, Integer pageSize, ArticleStatusDto articleStatusDto);
 
     // 获取用户文章状态统计
     ArticleStatisticsVo getUserArticleStatistics();

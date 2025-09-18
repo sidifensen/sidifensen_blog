@@ -167,7 +167,7 @@
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
-import { deleteArticle, getUserArticleList, getUserArticleStatistics, updateArticle } from "@/api/article";
+import { deleteArticle, getArticleManageList, getUserArticleStatistics, updateArticle } from "@/api/article";
 import { Search, View, Message, Pointer, Edit, Delete, Star, ChatLineRound } from "@element-plus/icons-vue";
 import { useUserStore } from "@/stores/userStore";
 
@@ -365,7 +365,7 @@ const loadArticles = async (reset = false) => {
       }
     }
     // 发送请求获取文章列表
-    const response = await getUserArticleList(currentPage.value, pageSize.value, params);
+    const response = await getArticleManageList(currentPage.value, pageSize.value, params);
     const result = response.data || {};
     const newArticles = result.data ? result.data.data || [] : [];
     const total = result.data ? result.data.total || 0 : 0;

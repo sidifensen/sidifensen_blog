@@ -35,6 +35,15 @@ export function getUserArticleList(pageNum, pageSize, articleStatusDto) {
   });
 }
 
+// 获取用户文章列表(文章管理)
+export function getArticleManageList(pageNum, pageSize, articleStatusDto) {
+  return request({
+    url: `/article/manage/list?pageNum=${pageNum}&pageSize=${pageSize}`,
+    method: "post",
+    data: articleStatusDto,
+  });
+}
+
 // 更新文章状态
 export function updateArticle(data) {
   return request({
@@ -72,14 +81,6 @@ export function getUserArticleStatisticsById(userId) {
 export function getAllArticleList(pageNum, pageSize) {
   return request({
     url: `/article/listAll?pageNum=${pageNum}&pageSize=${pageSize}`,
-    method: "get",
-  });
-}
-
-// 获取文章列表（通用）
-export function getArticleList(pageNum, pageSize) {
-  return request({
-    url: `/article/list?pageNum=${pageNum}&pageSize=${pageSize}`,
     method: "get",
   });
 }

@@ -27,17 +27,6 @@ public class ArticleController {
     private ArticleService articleService;
 
     /**
-     * 获取文章列表
-     *
-     * @return 文章列表
-     */
-    @GetMapping("/list")
-    public Result getArticleList(@NotNull Integer pageNum, @NotNull Integer pageSize) {
-        PageVo<List<ArticleVo>> articleVoList = articleService.getArticleList(pageNum, pageSize);
-        return Result.success(articleVoList);
-    }
-
-    /**
      * 获取全部已发布审核通过全部人可见的文章列表（按更新时间倒序）
      *
      * @param pageNum  页码
@@ -57,13 +46,25 @@ public class ArticleController {
      */
     @PostMapping("/user/list")
     public Result getUserArticleList(@NotNull Integer pageNum, @NotNull Integer pageSize,
-            @RequestBody ArticleStatusDto articleStatusDto) {
+                                     @RequestBody ArticleStatusDto articleStatusDto) {
         PageVo<List<ArticleVo>> articleVoList = articleService.getUserArticleList(pageNum, pageSize, articleStatusDto);
         return Result.success(articleVoList);
     }
 
     /**
-     * 获取用户文章状态统计
+     * 获取用户文章列表(文章管理)
+     *
+     * @return 用户文章列表
+     */
+    @PostMapping("/manage/list")
+    public Result getArticleMangeList(@NotNull Integer pageNum, @NotNull Integer pageSize,
+                                      @RequestBody ArticleStatusDto articleStatusDto) {
+        PageVo<List<ArticleVo>> articleVoList = articleService.getArticleMangeList(pageNum, pageSize, articleStatusDto);
+        return Result.success(articleVoList);
+    }
+
+    /**
+     * 获取当前用户文章状态统计(文章管理)
      *
      * @return 用户文章状态统计
      */

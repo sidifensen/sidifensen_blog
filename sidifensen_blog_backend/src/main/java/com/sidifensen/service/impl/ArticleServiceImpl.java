@@ -87,26 +87,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private LikeService likeService;
 
     @Override
-    public PageVo<List<ArticleVo>> getArticleList(Integer pageNum, Integer pageSize) {
-        Page<Article> page = new Page<>(pageNum, pageSize);
-        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
-                .eq(Article::getUserId, SecurityUtils.getUserId())
-                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
-                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
-                .eq(Article::getVisibleRange, VisibleRangeEnum.ALL.getCode())
-                .orderByDesc(Article::getCreateTime);
-
-        List<Article> articleList = articleMapper.selectPage(page, qw).getRecords();
-
-        List<ArticleVo> articleVoList = articleList.stream().map(article -> {
-            ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
-            return articleVo;
-        }).collect(Collectors.toList());
-
-        return new PageVo<>(articleVoList, page.getTotal());
-    }
-
-    @Override
     public PageVo<List<ArticleVo>> getAllArticleList(Integer pageNum, Integer pageSize) {
         Page<Article> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
@@ -140,6 +120,57 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public PageVo<List<ArticleVo>> getUserArticleList(Integer pageNum, Integer pageSize,
                                                       ArticleStatusDto articleStatusDto) {
+        Integer currentUserId = SecurityUtils.getUserId(); // 当前登录用户ID
+
+        Page<Article> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
+                .eq(Article::getUserId, articleStatusDto.getUserId());
+
+        // 权限控制：只有查看自己的文章时才能看到私有内容和审核状态
+        if (!currentUserId.equals(articleStatusDto.getUserId())) {
+            // 如果当前的用户id不等于要查看他人文章时的限制条件
+            qw.eq(Article::getVisibleRange, 0) // 只能查看全部可见的文章
+                    .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode()) // 只能查看审核通过的文章
+                    .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode()); // 只能查看已发布的文章
+        } else {
+            // 查看自己文章时，应用用户指定的筛选条件
+            qw.eq(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatus()), Article::getExamineStatus,
+                            articleStatusDto.getExamineStatus())
+                    .in(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatusList()), Article::getExamineStatus,
+                            articleStatusDto.getExamineStatusList())
+                    .eq(ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus()), Article::getEditStatus,
+                            articleStatusDto.getEditStatus())
+                    .eq(ObjectUtil.isNotEmpty(articleStatusDto.getVisibleRange()), Article::getVisibleRange,
+                            articleStatusDto.getVisibleRange());
+        }
+
+        // 通用筛选条件（对所有用户都适用）
+        qw.eq(ObjectUtil.isNotEmpty(articleStatusDto.getReprintType()), Article::getReprintType,
+                        articleStatusDto.getReprintType())
+                .and(ObjectUtil.isNotEmpty(articleStatusDto.getKeyword()), wrapper -> wrapper
+                        .like(Article::getTag, articleStatusDto.getKeyword()) // 标签
+                        .or()
+                        .like(Article::getTitle, articleStatusDto.getKeyword()) // 标题
+                        .or()
+                        .like(Article::getDescription, articleStatusDto.getKeyword())); // 描述
+
+        if (ObjectUtil.isEmpty(articleStatusDto.getOrderBy()) || articleStatusDto.getOrderBy() == 0) {
+            qw.orderByDesc(Article::getCreateTime);
+        } else {
+            qw.orderByDesc(Article::getReadCount);
+        }
+
+        List<Article> articleList = articleMapper.selectPage(page, qw).getRecords();
+        List<ArticleVo> articleVoList = articleList.stream().map(article -> {
+            ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
+            return articleVo;
+        }).toList();
+
+        return new PageVo<>(articleVoList, page.getTotal());
+    }
+
+    @Override
+    public PageVo<List<ArticleVo>> getArticleMangeList(Integer pageNum, Integer pageSize, ArticleStatusDto articleStatusDto) {
         Integer currentUserId = SecurityUtils.getUserId(); // 当前登录用户ID
         Integer targetUserId = ObjectUtil.isNotEmpty(articleStatusDto.getUserId()) ? articleStatusDto.getUserId()
                 : currentUserId; // 目标用户ID
@@ -218,30 +249,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public ArticleStatisticsVo getUserArticleStatistics() {
         Integer userId = SecurityUtils.getUserId();
 
-        // 直接查询已发布文章数量
-        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
-                .eq(Article::getUserId, userId)
-                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
-                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode());
-
-        long publishedCount = articleMapper.selectCount(qw);
-
-        // 构建返回对象，只填充已发布文章数量
-        ArticleStatisticsVo statisticsVo = new ArticleStatisticsVo();
-        statisticsVo.setPublishedCount(publishedCount);
-
-        return statisticsVo;
-    }
-
-    @Override
-    public ArticleStatisticsVo getUserArticleStatisticsById(Integer userId) {
-        // 一次查询获取用户所有文章的编辑状态和审核状态
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
                 .select(Article::getEditStatus, Article::getExamineStatus)
                 .eq(Article::getUserId, userId);
         List<Article> articles = articleMapper.selectList(qw);
 
-        // 统计各种状态的数量
+        // 统计各种状态的文章数量
         long totalCount = articles.size();
         long publishedCount = articles.stream()
                 .filter(article -> Objects.equals(article.getEditStatus(), EditStatusEnum.PUBLISHED.getCode())
@@ -265,6 +278,22 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         statisticsVo.setReviewingCount(reviewingCount);
         statisticsVo.setDraftCount(draftCount);
         statisticsVo.setGarbageCount(garbageCount);
+
+        return statisticsVo;
+    }
+
+    @Override
+    public ArticleStatisticsVo getUserArticleStatisticsById(Integer userId) {
+        // 直接查询已发布的文章数量
+        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
+                .eq(Article::getUserId, userId)
+                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode());
+        long publishedCount = articleMapper.selectCount(qw);
+
+        // 构建返回对象
+        ArticleStatisticsVo statisticsVo = new ArticleStatisticsVo();
+        statisticsVo.setPublishedCount(publishedCount);
 
         return statisticsVo;
     }
