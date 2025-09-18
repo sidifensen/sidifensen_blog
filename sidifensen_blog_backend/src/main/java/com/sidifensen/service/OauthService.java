@@ -69,6 +69,7 @@ public class OauthService {
             }
             // 登录
             SysUser sysUser = new SysUser();
+            sysUser.setId(user.getId());
             sysUser.setPassword(password);
             sysUserMapper.updateById(sysUser);
             ipService.setLoginIp(sysUser.getId(), ip);

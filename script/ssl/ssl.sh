@@ -9,7 +9,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 COMPOSE_FILE="$SCRIPT_DIR/docker-compose-ssl.yml"
-DOMAINS=("sidifensen.com" "www.sidifensen.com" "admin.sidifensen.com" "image.sidifensen.com" "minio.sidifensen.com")
+DOMAINS=("sidifensen.com" "www.sidifensen.com" "admin.sidifensen.com" "image.sidifensen.com" "minio.sidifensen.com" "api.sidifensen.com" )
 EMAIL="1848221808@qq.com"
 
 # 颜色定义
@@ -422,19 +422,20 @@ setup_certificates() {
     docker stop temp-nginx 2>/dev/null || true
     docker rm temp-nginx 2>/dev/null || true
     
-    # 使用临时的HTTP配置
-    cat > "$SCRIPT_DIR/nginx-temp.conf" << 'EOF'
+    # 使用临时的HTTP配置（动态生成 server_name）
+    log_info "生成临时nginx配置，域名: ${DOMAINS[*]}"
+    cat > "$SCRIPT_DIR/nginx-temp.conf" << EOF
 server {
     listen 80;
-    server_name sidifensen.com www.sidifensen.com admin.sidifensen.com image.sidifensen.com minio.sidifensen.com;
+    server_name $(IFS=' '; echo "${DOMAINS[*]}");
     
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
-        try_files $uri =404;
+        try_files \$uri =404;
     }
     
     location / {
-        return 200 'SSL Setup in Progress - Server Time: $time_iso8601';
+        return 200 'SSL Setup in Progress - Server Time: \$time_iso8601';
         add_header Content-Type text/plain;
     }
 }

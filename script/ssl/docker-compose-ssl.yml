@@ -61,13 +61,12 @@ services:
       MINIO_SKIP_CLIENT: "true"
       # HTTPS 配置
       MINIO_SERVER_URL: ${MINIO_PUBLIC_POINT}
-      MINIO_BROWSER_REDIRECT_URL: ${MINIO_CONSOLE_PUBLIC_POINT}
+      # MINIO_BROWSER_REDIRECT_URL: ${MINIO_CONSOLE_PUBLIC_POINT}  # 注释掉自动重定向
     ports:
       - "${MINIO_API_PORT}:9000"
       - "${MINIO_CONSOLE_PORT}:9001"
     volumes:
       - minio_data:/data
-      # 挂载 SSL 证书（通过 Nginx 代理，MinIO 本身不需要证书）
     command: server /data --console-address ":9001" --quiet
     networks:
       - sidifensen-network

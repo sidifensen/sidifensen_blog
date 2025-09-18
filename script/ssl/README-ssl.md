@@ -2,7 +2,7 @@
 
 ## 概述
 
-这是一个基于 `ssl.sh` 脚本开发的交互式 SSL 证书管理系统，提供了友好的菜单界面和用户体验，让 SSL 证书的管理变得更加简单直观。。
+这是一个基于 `ssl.sh` 脚本开发的交互式 SSL 证书管理系统，为 Sidifensen Blog 项目提供完整的 HTTPS 支持。该系统集成了 Let's Encrypt 免费 SSL 证书申请、自动续期、Docker 服务管理等功能，通过友好的菜单界面让 SSL 证书管理变得简单直观。
 
 ## 主要特性
 
@@ -45,18 +45,21 @@ cd script\ssl
 
 # 在命令行中运行（推荐使用Git Bash或WSL）
 bash ssl.sh
+
+# 或者使用Windows批处理脚本启动服务
+start.bat
 ```
 
 ### 3. Docker 服务管理
 
 ```bash
-# 启动SSL生产环境
+# Linux/macOS 启动SSL生产环境
 sudo bash start.sh  # 选择 1
 
 # 停止服务
 sudo bash start.sh  # 选择 2
 
-# Windows环境
+# Windows环境启动服务
 start.bat
 ```
 
@@ -128,7 +131,7 @@ start.bat
 ### 默认配置
 
 ```bash
-DOMAINS=("sidifensen.com" "www.sidifensen.com" "admin.sidifensen.com" "image.sidifensen.com" "minio.sidifensen.com")
+DOMAINS=("sidifensen.com" "www.sidifensen.com" "admin.sidifensen.com" "image.sidifensen.com" "minio.sidifensen.com" "api.sidifensen.com")
 EMAIL="1848221808@qq.com"
 COMPOSE_FILE="$SCRIPT_DIR/docker-compose-ssl.yml"
 ```
@@ -140,6 +143,7 @@ COMPOSE_FILE="$SCRIPT_DIR/docker-compose-ssl.yml"
 - `sidifensen.com` - 主站域名
 - `www.sidifensen.com` - WWW 主站
 - `admin.sidifensen.com` - 管理后台
+- `api.sidifensen.com` - API 接口服务（备用域名）
 - `image.sidifensen.com` - MinIO 文件存储 API（图片、文件访问）
 - `minio.sidifensen.com` - MinIO 管理控制台
 
@@ -164,10 +168,10 @@ SSL 环境使用 `docker-compose-ssl.yml` 文件，包含以下服务：
 
 ```nginx
 # 主站和用户端
-sidifensen.com, www.sidifensen.com → frontend-user:80
+sidifensen.com, www.sidifensen.com → sidifensen-user:80
 
 # 管理后台
-admin.sidifensen.com → frontend-admin:80
+admin.sidifensen.com → sidifensen-admin:80
 
 # MinIO 文件存储 API
 image.sidifensen.com → minio:9000
@@ -175,7 +179,7 @@ image.sidifensen.com → minio:9000
 # MinIO 管理控制台
 minio.sidifensen.com → minio:9001
 
-# API 接口代理
+# API 接口代理（在所有域名下）
 /api/ → backend:5000
 ```
 
@@ -299,6 +303,19 @@ MINIO_CONSOLE_PUBLIC_POINT=https://minio.sidifensen.com  # 管理控制台
 - **网络访问**: 需要访问 Let's Encrypt 服务器
 - **端口开放**: 80 端口用于证书验证，443 端口用于 HTTPS 服务
 
+### 支持的操作系统
+
+- **Linux**: Ubuntu 18.04+, CentOS 7+, Debian 9+
+- **Windows**: Windows 10/11 (需要 WSL 2 或 Git Bash)
+- **macOS**: macOS 10.14+ (需要安装 Docker Desktop)
+
+### 网络要求
+
+- **公网 IP**: 服务器需要有公网 IP 地址
+- **域名解析**: 所有域名必须正确解析到服务器 IP
+- **防火墙**: 开放 80 (HTTP) 和 443 (HTTPS) 端口
+- **带宽**: 建议至少 10Mbps 上下行带宽
+
 ## 日志和监控
 
 ### 自动续期日志
@@ -313,6 +330,32 @@ MINIO_CONSOLE_PUBLIC_POINT=https://minio.sidifensen.com  # 管理控制台
 - 服务运行状态
 - 端口占用情况
 - DNS 解析状态
+
+### 日志查看命令
+
+```bash
+# 查看续期日志
+tail -f /var/log/ssl-renewal.log
+
+# 查看 Docker 服务日志
+docker-compose -f docker-compose-ssl.yml logs nginx-gateway
+docker-compose -f docker-compose-ssl.yml logs backend
+
+# 查看系统日志中的 SSL 相关信息
+journalctl -u docker -f | grep ssl
+```
+
+### 监控脚本
+
+系统提供了内置的监控功能，可以通过以下方式查看：
+
+```bash
+# 运行SSL管理脚本
+sudo ./ssl.sh
+
+# 选择 [2] SSL证书管理
+# 选择 [1] 检查证书状态
+```
 
 ## 故障排除
 
@@ -410,9 +453,145 @@ MINIO_CONSOLE_PUBLIC_POINT=https://minio.sidifensen.com  # 管理控制台
 3. 使用"--skip-dns-check"跳过 DNS 检查
 4. 手动执行 certbot 命令进行调试
 
+## 最佳实践
+
+### 🔒 安全建议
+
+1. **定期检查证书状态**
+
+   ```bash
+   # 每月检查一次证书有效期
+   sudo ./ssl.sh
+   # 选择 [2] SSL证书管理 → [1] 检查证书状态
+   ```
+
+2. **备份证书文件**
+
+   ```bash
+   # 备份 Let's Encrypt 证书目录
+   sudo tar -czf ssl-backup-$(date +%Y%m%d).tar.gz /etc/letsencrypt/
+   ```
+
+3. **监控证书过期时间**
+
+   - 设置证书过期提醒（30 天、7 天、1 天）
+   - 使用自动续期功能，推荐每周检查一次
+
+4. **安全头配置**
+   - 系统已配置 HSTS、X-Frame-Options 等安全头
+   - 定期检查 SSL 配置安全性：[SSL Labs Test](https://www.ssllabs.com/ssltest/)
+
+### ⚡ 性能优化
+
+1. **证书缓存优化**
+
+   ```nginx
+   # nginx-ssl.conf 中已配置
+   ssl_session_cache shared:SSL:10m;
+   ssl_session_timeout 10m;
+   ```
+
+2. **HTTP/2 支持**
+
+   - 系统默认启用 HTTP/2
+   - 提升网站加载速度
+
+3. **OCSP Stapling**
+   ```nginx
+   # 可在 nginx-ssl.conf 中添加
+   ssl_stapling on;
+   ssl_stapling_verify on;
+   ```
+
+### 🔧 维护建议
+
+1. **定期更新系统**
+
+   ```bash
+   # 更新 Docker 镜像
+   docker-compose -f docker-compose-ssl.yml pull
+   docker-compose -f docker-compose-ssl.yml up -d
+   ```
+
+2. **日志清理**
+
+   ```bash
+   # 清理过期日志（保留最近30天）
+   find /var/log -name "ssl-renewal.log*" -mtime +30 -delete
+   ```
+
+3. **容器健康检查**
+
+   ```bash
+   # 检查所有服务状态
+   docker-compose -f docker-compose-ssl.yml ps
+
+   # 检查服务健康状况
+   docker-compose -f docker-compose-ssl.yml logs --tail=50
+   ```
+
+### 📋 运维清单
+
+#### 每日检查
+
+- [ ] 服务运行状态正常
+- [ ] 网站 HTTPS 访问正常
+- [ ] 错误日志无异常
+
+#### 每周检查
+
+- [ ] 证书有效期检查（剩余天数 > 30）
+- [ ] 自动续期任务运行正常
+- [ ] 备份证书文件
+
+#### 每月检查
+
+- [ ] 更新 Docker 镜像
+- [ ] 检查系统安全更新
+- [ ] 清理过期日志文件
+- [ ] SSL 配置安全性测试
+
+### 🚨 应急处理
+
+1. **证书过期紧急处理**
+
+   ```bash
+   # 立即续期证书
+   sudo ./ssl.sh
+   # 选择 [2] SSL证书管理 → [3] 手动续期证书
+
+   # 重启 Nginx 服务
+   docker-compose -f docker-compose-ssl.yml restart nginx-gateway
+   ```
+
+2. **服务异常恢复**
+
+   ```bash
+   # 快速重启所有服务
+   sudo ./start.sh
+   # 选择 [5] 重启服务
+   ```
+
+3. **回滚操作**
+   ```bash
+   # 如果新证书有问题，可以回滚到备份
+   sudo tar -xzf ssl-backup-YYYYMMDD.tar.gz -C /
+   docker-compose -f docker-compose-ssl.yml restart nginx-gateway
+   ```
+
 ## 更新日志
 
-### v2.2.0 (当前版本)
+### v2.3.0 (当前版本)
+
+- 🌐 新增 `api.sidifensen.com` API 备用域名支持
+- 🔧 优化交互式界面，增强用户体验
+- 📝 完善文档说明，新增快速开始指南
+- 🔒 加强证书安全配置，支持 TLS 1.3
+- 🐛 修复容器名称映射问题
+- ⚡ 优化脚本性能，减少执行时间
+- 📋 更新环境变量配置说明
+
+### v2.2.0
 
 - 🌐 新增 MinIO HTTPS 支持
 - 📁 配置 `image.sidifensen.com` 作为文件存储 API 域名
@@ -455,7 +634,31 @@ MINIO_CONSOLE_PUBLIC_POINT=https://minio.sidifensen.com  # 管理控制台
 
 ## 快速开始
 
-### 1. DNS 配置
+### 1. 前置准备
+
+#### 环境要求
+
+- **操作系统**: Linux (推荐 Ubuntu/CentOS) 或 Windows (WSL/Git Bash)
+- **权限**: Root 权限（Linux）或管理员权限（Windows）
+- **依赖软件**:
+  - Docker 20.10+
+  - Docker Compose 1.29+
+  - OpenSSL
+  - curl
+
+#### 检查依赖
+
+```bash
+# 检查 Docker 版本
+docker --version
+docker-compose --version
+
+# 检查网络工具
+curl --version
+openssl version
+```
+
+### 2. DNS 配置
 
 确保以下域名都解析到你的服务器 IP：
 
@@ -463,34 +666,81 @@ MINIO_CONSOLE_PUBLIC_POINT=https://minio.sidifensen.com  # 管理控制台
 sidifensen.com          → 服务器IP
 www.sidifensen.com      → 服务器IP
 admin.sidifensen.com    → 服务器IP
+api.sidifensen.com      → 服务器IP
 image.sidifensen.com    → 服务器IP
 minio.sidifensen.com    → 服务器IP
 ```
 
-### 2. 申请 SSL 证书
+**验证 DNS 解析**:
 
 ```bash
-cd script/ssl
-sudo ./ssl.sh
-# 选择 [1] 首次设置SSL证书
-# 选择 [a] 全部域名
+# 检查域名解析
+nslookup sidifensen.com
+dig sidifensen.com
+
+# 检查服务器公网IP
+curl ifconfig.me
 ```
 
-### 3. 启动服务
+### 3. 环境配置
+
+```bash
+# 进入SSL脚本目录
+cd script/ssl
+
+# 复制环境变量文件
+cp env.example .env
+
+# 根据实际情况编辑配置
+vim .env  # 或使用其他编辑器
+```
+
+### 4. 申请 SSL 证书
+
+```bash
+# 运行SSL管理脚本
+sudo ./ssl.sh
+
+# 按照交互式菜单操作：
+# 选择 [1] 首次设置SSL证书
+# 输入或确认邮箱地址
+# 选择 [a] 全部域名
+# 等待证书申请完成
+```
+
+### 5. 启动服务
 
 ```bash
 # 启动完整的 HTTPS 服务
 sudo ./start.sh
 # 选择 [1] 启动SSL生产环境
+
+# Windows 用户可以使用
+start.bat
 ```
 
-### 4. 访问测试
+### 6. 访问测试
 
-- 主站：https://sidifensen.com
-- 管理后台：https://admin.sidifensen.com
-- MinIO 文件：https://image.sidifensen.com
-- MinIO 控制台：https://minio.sidifensen.com
+- **主站**: https://sidifensen.com
+- **管理后台**: https://admin.sidifensen.com
+- **MinIO 文件存储**: https://image.sidifensen.com
+- **MinIO 控制台**: https://minio.sidifensen.com
+
+### 7. 设置自动续期
+
+```bash
+# 再次运行SSL管理脚本
+sudo ./ssl.sh
+
+# 选择 [3] 设置自动续期
+# 推荐选择 [1] 每周日凌晨2点
+```
 
 ---
 
-**注意**: 使用前请确保已正确配置域名解析，并且服务器防火墙允许 80 和 443 端口访问。
+**⚠️ 重要提示**:
+
+- 使用前请确保已正确配置域名解析
+- 服务器防火墙必须开放 80 和 443 端口
+- 首次申请证书需要域名能正常访问到服务器
+- 建议在非生产时间进行证书操作
