@@ -1,7 +1,9 @@
 package com.sidifensen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.sidifensen.domain.dto.CommentAuditDto;
 import com.sidifensen.domain.dto.CommentDto;
+import com.sidifensen.domain.dto.CommentSearchDto;
 import com.sidifensen.domain.entity.Comment;
 import com.sidifensen.domain.vo.AdminCommentVo;
 import com.sidifensen.domain.vo.CommentVo;
@@ -15,7 +17,7 @@ import java.util.List;
  * @author sidifensen
  * @since 2025-09-15
  */
-public interface ICommentService extends IService<Comment> {
+public interface CommentService extends IService<Comment> {
 
     /**
      * 发表评论
@@ -55,25 +57,39 @@ public interface ICommentService extends IService<Comment> {
     /**
      * 管理员获取所有评论列表
      *
-     * @param pageNum       页码
-     * @param pageSize      页大小
-     * @param examineStatus 审核状态（可选）0-待审核 1-审核通过 2-审核未通过
-     * @param userId        用户id（可选）
-     * @param articleId     文章id（可选）
-     * @param keyword       关键词搜索（可选）
      * @return 评论列表
      */
-    PageVo<List<AdminCommentVo>> adminGetCommentList(Integer pageNum, Integer pageSize,
-                                                     Integer examineStatus, Integer userId,
-                                                     Integer articleId, String keyword);
+    List<AdminCommentVo> adminGetCommentList();
+
+    /**
+     * 管理员根据用户ID获取评论列表
+     *
+     * @param userId 用户ID
+     * @return 用户评论列表
+     */
+    List<AdminCommentVo> adminGetCommentsByUserId(Integer userId);
+
+    /**
+     * 管理员搜索评论
+     *
+     * @param commentSearchDto 搜索条件
+     * @return 搜索结果
+     */
+    List<AdminCommentVo> adminSearchComment(CommentSearchDto commentSearchDto);
 
     /**
      * 管理员审核评论
      *
-     * @param commentId     评论id
-     * @param examineStatus 审核状态
+     * @param commentAuditDto 评论审核信息
      */
-    void auditComment(Integer commentId, Integer examineStatus);
+    void adminExamineComment(CommentAuditDto commentAuditDto);
+
+    /**
+     * 管理员批量审核评论
+     *
+     * @param commentAuditDtos 评论审核信息列表
+     */
+    void adminExamineBatchComment(List<CommentAuditDto> commentAuditDtos);
 
     /**
      * 管理员删除评论
@@ -81,5 +97,12 @@ public interface ICommentService extends IService<Comment> {
      * @param commentId 评论id
      */
     void adminDeleteComment(Integer commentId);
+
+    /**
+     * 管理员批量删除评论
+     *
+     * @param commentIds 评论ID列表
+     */
+    void adminDeleteBatchComment(List<Integer> commentIds);
 
 }

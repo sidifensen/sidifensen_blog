@@ -16,6 +16,7 @@ public class BlogConstants {
     public static final String LoginRequired = "请先登录";
     public static final String LoginExpired = "登录已过期，请重新登录";
     public static final String NewPasswordSameAsOld = "新密码不能与原密码相同";
+    public static final String UserIdRequired = "用户ID不能为空";
 
     public static final String CannotGetRequestInfo = "无法获取请求信息";
     public static final String IllegalRequest = "非法请求";
@@ -62,9 +63,14 @@ public class BlogConstants {
     public static final String CommentIdRequired = "评论ID不能为空";
     public static final String CommentExamineStatusError = "审核状态错误";
     public static final String CommentAuditError = "审核失败";
+    public static final String CommentDeleteError = "评论删除失败";
     public static final String UpdateArticleCommentCountError = "更新文章评论数失败";
 
     // 点赞相关错误信息
     public static final String LikeTypeError = "点赞类型错误";
     public static final String UpdateArticleLikeCountError = "更新文章点赞数失败";
+
+    // 阅读记录相关错误信息
+    public static final String UpdateArticleReadCountError = "更新文章阅读数失败";
+    public static final String SaveReadRecordError = "保存阅读记录失败";
 }

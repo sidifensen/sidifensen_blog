@@ -249,3 +249,20 @@ create table favorite_article
     is_deleted  tinyint  not null default 0 comment '是否删除 0-未删除 1-已删除',
     index idx_favorite_time (favorite_id, create_time desc)
 );
+
+create table history
+(
+    id          int primary key auto_increment comment '历史id',
+    article_id  int      not null comment '文章id',
+    user_id     int               default null comment '用户id',
+    ip_address  varchar(64)       default null comment '访客IP地址',
+    fingerprint varchar(32)       default null comment '浏览器指纹',
+    view_time   datetime not null comment '浏览时间',
+    is_deleted  tinyint  not null default 0 comment '是否删除 0-未删除 1-已删除',
+    -- 核心业务查询索引：登录用户去重检查
+    index idx_article_user (article_id, user_id),
+    -- 核心业务查询索引：未登录用户指纹去重检查
+    index idx_article_fingerprint (article_id, fingerprint),
+    -- 用户查询索引：查询某用户的浏览历史
+    index idx_user_view_time (user_id, view_time desc)
+);

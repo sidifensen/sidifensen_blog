@@ -30,9 +30,12 @@ import com.sidifensen.mapper.ArticleColumnMapper;
 import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.ColumnMapper;
 import com.sidifensen.mapper.SysUserMapper;
+import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.ArticleService;
+import com.sidifensen.service.HistoryService;
 import com.sidifensen.service.LikeService;
 import com.sidifensen.service.MessageService;
+import com.sidifensen.utils.IpUtils;
 import com.sidifensen.utils.MyThreadFactory;
 import com.sidifensen.utils.SecurityUtils;
 import com.sidifensen.utils.TextAuditUtils;
@@ -85,6 +88,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private SysUserMapper sysUserMapper;
     @Resource
     private LikeService likeService;
+
+    @Resource
+    private HistoryService historyService;
+
+    @Resource
+    private IpUtils ipUtils;
+
+    @Resource
+    private RedisComponent redisComponent;
 
     @Override
     public PageVo<List<ArticleVo>> getAllArticleList(Integer pageNum, Integer pageSize) {
@@ -170,7 +182,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public PageVo<List<ArticleVo>> getArticleMangeList(Integer pageNum, Integer pageSize, ArticleStatusDto articleStatusDto) {
+    public PageVo<List<ArticleVo>> getArticleMangeList(Integer pageNum, Integer pageSize,
+                                                       ArticleStatusDto articleStatusDto) {
         Integer currentUserId = SecurityUtils.getUserId(); // 当前登录用户ID
         Integer targetUserId = ObjectUtil.isNotEmpty(articleStatusDto.getUserId()) ? articleStatusDto.getUserId()
                 : currentUserId; // 目标用户ID
@@ -332,11 +345,29 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public void incrReadCount(Integer articleId) {
-        LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<Article>()
-                .eq(Article::getId, articleId)
-                .setSql("read_count = read_count + 1");
+        // 获取当前用户ID（可能为空，表示未登录用户）
+        Integer userId = SecurityUtils.getUserId() == 0 ? null : SecurityUtils.getUserId();
 
-        articleMapper.update(null, updateWrapper);
+        // 获取客户端IP地址
+        String ipAddress = ipUtils.getIp();
+
+        // 检查并记录浏览，如果用户/访客已浏览过，则不增加阅读量
+        boolean shouldIncrement = historyService.checkAndRecordRead(
+                articleId, userId, ipAddress);
+
+        if (shouldIncrement) {
+            // 用户/访客首次阅读，增加阅读量
+            LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<Article>()
+                    .eq(Article::getId, articleId)
+                    .setSql("read_count = read_count + 1");
+
+            int updateResult = articleMapper.update(null, updateWrapper);
+            if (updateResult <= 0) {
+                log.error("更新文章阅读量失败，文章ID: {}", articleId);
+                throw new BlogException(BlogConstants.UpdateArticleReadCountError);
+            }
+        }
+
     }
 
     @Override
@@ -472,6 +503,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         articleMapper.deleteById(articleId);
         articleColumnMapper.delete(new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, articleId));
+
+        // 清除文章的所有浏览记录
+        redisComponent.clearArticleReads(articleId);
     }
 
     @Override
@@ -510,203 +544,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
 
         return articleVoList;
-    }
-
-    @Override
-    public ArticleVo adminGetArticle(Integer articleId) {
-        Article article = articleMapper.selectById(articleId);
-        if (article == null) {
-            throw new BlogException(BlogConstants.NotFoundArticle);
-        }
-        ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
-
-        // 获取用户信息
-        if (article.getUserId() != null) {
-            SysUser user = sysUserMapper.selectById(article.getUserId());
-            if (user != null) {
-                articleVo.setNickname(user.getNickname());
-            }
-        }
-
-        // 获取专栏信息
-        List<ArticleColumn> articleColumns = articleColumnMapper
-                .selectList(new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, article.getId()));
-        if (ObjectUtil.isNotEmpty(articleColumns)) {
-            List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId)
-                    .collect(Collectors.toList());
-            List<Column> columns = columnMapper.selectByIds(columnIds);
-            articleVo.setColumns(BeanUtil.copyToList(columns, ColumnVo.class));
-        }
-        return articleVo;
-    }
-
-    @Override
-    public void adminUpdateArticle(ArticleDto articleDto) {
-        Article article = BeanUtil.copyProperties(articleDto, Article.class);
-        if (articleMapper.updateById(article) < 1) {
-            throw new BlogException(BlogConstants.UpdateArticleError);
-        }
-    }
-
-    @Override
-    public void adminDeleteArticle(Integer articleId) {
-        if (articleMapper.deleteById(articleId) < 1) {
-            throw new BlogException(BlogConstants.DeleteArticleError);
-        }
-    }
-
-    @Override
-    public void adminExamineArticle(ArticleAuditDto articleAuditDto) {
-
-        Article article = articleMapper.selectOne(
-                new LambdaQueryWrapper<Article>()
-                        .select(Article::getUserId, Article::getTitle)
-                        .eq(Article::getId, articleAuditDto.getArticleId()));
-
-        if (ObjectUtil.isEmpty(article)) {
-            throw new BlogException(BlogConstants.NotFoundArticle);
-        }
-        Integer examineStatus = articleAuditDto.getExamineStatus();
-        String examineReason = articleAuditDto.getExamineReason();
-
-        // 更新文章审核状态
-        Article updateArticle = new Article();
-        updateArticle.setId(articleAuditDto.getArticleId());
-        updateArticle.setExamineStatus(examineStatus);
-        articleMapper.updateById(updateArticle);
-
-        // 发送消息给用户
-        MessageDto messageDto = new MessageDto();
-        messageDto.setReceiverId(article.getUserId());
-
-        // 根据审核状态发送不同的消息
-        if (examineStatus.equals(ExamineStatusEnum.PASS.getCode())) {
-            // 审核通过
-            messageDto
-                    .setContent(MessageConstants.ArticleAuditPass(articleAuditDto.getArticleId(), article.getTitle()));
-        } else if (examineStatus.equals(ExamineStatusEnum.NO_PASS.getCode())) {
-            // 审核不通过
-            messageDto.setContent(MessageConstants.ArticleAuditNotPass(articleAuditDto.getArticleId(),
-                    article.getTitle(), examineReason));
-        }
-
-        messageService.sendToUser(messageDto);
-    }
-
-    // 管理员搜索文章
-    @Override
-    public List<ArticleVo> adminSearchArticle(ArticleDto articleDto) {
-        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(ObjectUtil.isNotEmpty(articleDto.getUserId()), Article::getUserId, articleDto.getUserId())
-                .like(ObjectUtil.isNotEmpty(articleDto.getTitle()), Article::getTitle, articleDto.getTitle())
-                .like(ObjectUtil.isNotEmpty(articleDto.getDescription()), Article::getDescription,
-                        articleDto.getDescription())
-                .like(ObjectUtil.isNotEmpty(articleDto.getTag()), Article::getTag, articleDto.getTag())
-                .eq(ObjectUtil.isNotEmpty(articleDto.getExamineStatus()), Article::getExamineStatus,
-                        articleDto.getExamineStatus())
-                .eq(ObjectUtil.isNotEmpty(articleDto.getEditStatus()), Article::getEditStatus,
-                        articleDto.getEditStatus())
-                .eq(ObjectUtil.isNotEmpty(articleDto.getVisibleRange()), Article::getVisibleRange,
-                        articleDto.getVisibleRange())
-                .eq(ObjectUtil.isNotEmpty(articleDto.getReprintType()), Article::getReprintType,
-                        articleDto.getReprintType())
-                .ge(ObjectUtil.isNotEmpty(articleDto.getCreateTimeStart()), Article::getCreateTime,
-                        articleDto.getCreateTimeStart())
-                .le(ObjectUtil.isNotEmpty(articleDto.getCreateTimeEnd()), Article::getCreateTime,
-                        articleDto.getCreateTimeEnd())
-                .orderByDesc(Article::getCreateTime);
-
-        List<Article> articles = this.list(queryWrapper);
-        List<ArticleVo> articleVos = BeanUtil.copyToList(articles, ArticleVo.class);
-
-        // 用userId把nickname查询出来
-        HashMap<Integer, String> userMap = new HashMap<>();
-        // 查询所有用户信息
-        List<SysUser> users = sysUserMapper.selectList(null);
-        for (SysUser user : users) {
-            userMap.put(user.getId(), user.getNickname());
-        }
-        // 将用户昵称设置到ArticleVo中
-        for (ArticleVo articleVo : articleVos) {
-            articleVo.setNickname(userMap.get(articleVo.getUserId()));
-        }
-
-        return articleVos;
-    }
-
-    @Override
-    public void adminDeleteBatchArticle(List<ArticleAuditDto> articleAuditDtos) {
-        List<Integer> articleIds = articleAuditDtos.stream()
-                .map(ArticleAuditDto::getArticleId)
-                .toList();
-
-        // 批量删除文章
-        this.removeByIds(articleIds);
-    }
-
-    @Override
-    public void adminExamineBatchArticle(List<ArticleAuditDto> articleAuditDtos) {
-        if (ObjectUtil.isEmpty(articleAuditDtos)) {
-            return;
-        }
-
-        // 提取所有文章ID
-        List<Integer> articleIds = articleAuditDtos.stream()
-                .map(ArticleAuditDto::getArticleId)
-                .toList();
-
-        // 批量查询文章信息（只查询需要的字段）
-        List<Article> articles = articleMapper.selectList(new LambdaQueryWrapper<Article>()
-                .select(Article::getId, Article::getUserId, Article::getTitle)
-                .in(Article::getId, articleIds));
-
-        if (articles.size() != articleIds.size()) {
-            throw new BlogException(BlogConstants.NotFoundArticle);
-        }
-
-        // 创建文章ID到文章的映射
-        Map<Integer, Article> articleMap = articles.stream()
-                .collect(Collectors.toMap(Article::getId, article -> article));
-
-        // 准备批量更新的数据
-        List<Article> updateArticles = new ArrayList<>();
-        List<MessageDto> messages = new ArrayList<>();
-
-        for (ArticleAuditDto auditDto : articleAuditDtos) {
-            Article article = articleMap.get(auditDto.getArticleId());
-            Integer examineStatus = auditDto.getExamineStatus();
-            String examineReason = auditDto.getExamineReason();
-
-            // 准备更新的文章对象
-            Article updateArticle = new Article();
-            updateArticle.setId(auditDto.getArticleId());
-            updateArticle.setExamineStatus(examineStatus);
-            updateArticles.add(updateArticle);
-
-            // 准备消息通知
-            String messageContent;
-            if (examineStatus.equals(ExamineStatusEnum.PASS.getCode())) {
-                messageContent = MessageConstants.ArticleAuditPass(auditDto.getArticleId(), article.getTitle());
-            } else if (examineStatus.equals(ExamineStatusEnum.NO_PASS.getCode())) {
-                messageContent = MessageConstants.ArticleAuditNotPass(auditDto.getArticleId(), article.getTitle(),
-                        examineReason);
-            } else {
-                continue; // 跳过无效状态
-            }
-
-            MessageDto messageDto = new MessageDto();
-            messageDto.setContent(messageContent);
-            messageDto.setReceiverId(article.getUserId());
-            messages.add(messageDto);
-        }
-
-        // 批量更新文章状态
-        this.updateBatchById(updateArticles);
-
-        // 批量发送所有消息
-        if (!messages.isEmpty()) {
-            messageService.sendBatchToUsers(messages);
-        }
     }
 
     @Override
@@ -785,6 +622,206 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
 
         return articleVos;
+    }
+
+    @Override
+    public ArticleVo adminGetArticle(Integer articleId) {
+        Article article = articleMapper.selectById(articleId);
+        if (article == null) {
+            throw new BlogException(BlogConstants.NotFoundArticle);
+        }
+        ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
+
+        // 获取用户信息
+        if (article.getUserId() != null) {
+            SysUser user = sysUserMapper.selectById(article.getUserId());
+            if (user != null) {
+                articleVo.setNickname(user.getNickname());
+            }
+        }
+
+        // 获取专栏信息
+        List<ArticleColumn> articleColumns = articleColumnMapper
+                .selectList(new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, article.getId()));
+        if (ObjectUtil.isNotEmpty(articleColumns)) {
+            List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId)
+                    .collect(Collectors.toList());
+            List<Column> columns = columnMapper.selectByIds(columnIds);
+            articleVo.setColumns(BeanUtil.copyToList(columns, ColumnVo.class));
+        }
+        return articleVo;
+    }
+
+    @Override
+    public void adminUpdateArticle(ArticleDto articleDto) {
+        Article article = BeanUtil.copyProperties(articleDto, Article.class);
+        if (articleMapper.updateById(article) < 1) {
+            throw new BlogException(BlogConstants.UpdateArticleError);
+        }
+    }
+
+
+    // 管理员搜索文章
+    @Override
+    public List<ArticleVo> adminSearchArticle(ArticleDto articleDto) {
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ObjectUtil.isNotEmpty(articleDto.getUserId()), Article::getUserId, articleDto.getUserId())
+                .like(ObjectUtil.isNotEmpty(articleDto.getTitle()), Article::getTitle, articleDto.getTitle())
+                .like(ObjectUtil.isNotEmpty(articleDto.getDescription()), Article::getDescription,
+                        articleDto.getDescription())
+                .like(ObjectUtil.isNotEmpty(articleDto.getTag()), Article::getTag, articleDto.getTag())
+                .eq(ObjectUtil.isNotEmpty(articleDto.getExamineStatus()), Article::getExamineStatus,
+                        articleDto.getExamineStatus())
+                .eq(ObjectUtil.isNotEmpty(articleDto.getEditStatus()), Article::getEditStatus,
+                        articleDto.getEditStatus())
+                .eq(ObjectUtil.isNotEmpty(articleDto.getVisibleRange()), Article::getVisibleRange,
+                        articleDto.getVisibleRange())
+                .eq(ObjectUtil.isNotEmpty(articleDto.getReprintType()), Article::getReprintType,
+                        articleDto.getReprintType())
+                .ge(ObjectUtil.isNotEmpty(articleDto.getCreateTimeStart()), Article::getCreateTime,
+                        articleDto.getCreateTimeStart())
+                .le(ObjectUtil.isNotEmpty(articleDto.getCreateTimeEnd()), Article::getCreateTime,
+                        articleDto.getCreateTimeEnd())
+                .orderByDesc(Article::getCreateTime);
+
+        List<Article> articles = this.list(queryWrapper);
+        List<ArticleVo> articleVos = BeanUtil.copyToList(articles, ArticleVo.class);
+
+        // 用userId把nickname查询出来
+        HashMap<Integer, String> userMap = new HashMap<>();
+        // 查询所有用户信息
+        List<SysUser> users = sysUserMapper.selectList(null);
+        for (SysUser user : users) {
+            userMap.put(user.getId(), user.getNickname());
+        }
+        // 将用户昵称设置到ArticleVo中
+        for (ArticleVo articleVo : articleVos) {
+            articleVo.setNickname(userMap.get(articleVo.getUserId()));
+        }
+
+        return articleVos;
+    }
+
+    @Override
+    public void adminExamineArticle(ArticleAuditDto articleAuditDto) {
+
+        Article article = articleMapper.selectOne(
+                new LambdaQueryWrapper<Article>()
+                        .select(Article::getUserId, Article::getTitle)
+                        .eq(Article::getId, articleAuditDto.getArticleId()));
+
+        if (ObjectUtil.isEmpty(article)) {
+            throw new BlogException(BlogConstants.NotFoundArticle);
+        }
+        Integer examineStatus = articleAuditDto.getExamineStatus();
+        String examineReason = articleAuditDto.getExamineReason();
+
+        // 更新文章审核状态
+        Article updateArticle = new Article();
+        updateArticle.setId(articleAuditDto.getArticleId());
+        updateArticle.setExamineStatus(examineStatus);
+        articleMapper.updateById(updateArticle);
+
+        // 发送消息给用户
+        MessageDto messageDto = new MessageDto();
+        messageDto.setReceiverId(article.getUserId());
+
+        // 根据审核状态发送不同的消息
+        if (examineStatus.equals(ExamineStatusEnum.PASS.getCode())) {
+            // 审核通过
+            messageDto
+                    .setContent(MessageConstants.ArticleAuditPass(articleAuditDto.getArticleId(), article.getTitle()));
+        } else if (examineStatus.equals(ExamineStatusEnum.NO_PASS.getCode())) {
+            // 审核不通过
+            messageDto.setContent(MessageConstants.ArticleAuditNotPass(articleAuditDto.getArticleId(),
+                    article.getTitle(), examineReason));
+        }
+
+        messageService.sendToUser(messageDto);
+    }
+
+    @Override
+    public void adminExamineBatchArticle(List<ArticleAuditDto> articleAuditDtos) {
+        if (ObjectUtil.isEmpty(articleAuditDtos)) {
+            return;
+        }
+
+        // 提取所有文章ID
+        List<Integer> articleIds = articleAuditDtos.stream()
+                .map(ArticleAuditDto::getArticleId)
+                .toList();
+
+        // 批量查询文章信息（只查询需要的字段）
+        List<Article> articles = articleMapper.selectList(new LambdaQueryWrapper<Article>()
+                .select(Article::getId, Article::getUserId, Article::getTitle)
+                .in(Article::getId, articleIds));
+
+        if (articles.size() != articleIds.size()) {
+            throw new BlogException(BlogConstants.NotFoundArticle);
+        }
+
+        // 创建文章ID到文章的映射
+        Map<Integer, Article> articleMap = articles.stream()
+                .collect(Collectors.toMap(Article::getId, article -> article));
+
+        // 准备批量更新的数据
+        List<Article> updateArticles = new ArrayList<>();
+        List<MessageDto> messages = new ArrayList<>();
+
+        for (ArticleAuditDto auditDto : articleAuditDtos) {
+            Article article = articleMap.get(auditDto.getArticleId());
+            Integer examineStatus = auditDto.getExamineStatus();
+            String examineReason = auditDto.getExamineReason();
+
+            // 准备更新的文章对象
+            Article updateArticle = new Article();
+            updateArticle.setId(auditDto.getArticleId());
+            updateArticle.setExamineStatus(examineStatus);
+            updateArticles.add(updateArticle);
+
+            // 准备消息通知
+            String messageContent;
+            if (examineStatus.equals(ExamineStatusEnum.PASS.getCode())) {
+                messageContent = MessageConstants.ArticleAuditPass(auditDto.getArticleId(), article.getTitle());
+            } else if (examineStatus.equals(ExamineStatusEnum.NO_PASS.getCode())) {
+                messageContent = MessageConstants.ArticleAuditNotPass(auditDto.getArticleId(), article.getTitle(),
+                        examineReason);
+            } else {
+                continue; // 跳过无效状态
+            }
+
+            MessageDto messageDto = new MessageDto();
+            messageDto.setContent(messageContent);
+            messageDto.setReceiverId(article.getUserId());
+            messages.add(messageDto);
+        }
+
+        // 批量更新文章状态
+        this.updateBatchById(updateArticles);
+
+        // 批量发送所有消息
+        if (!messages.isEmpty()) {
+            messageService.sendBatchToUsers(messages);
+        }
+    }
+
+    @Override
+    public void adminDeleteArticle(Integer articleId) {
+        if (articleMapper.deleteById(articleId) < 1) {
+            throw new BlogException(BlogConstants.DeleteArticleError);
+        }
+
+        // 清除文章的所有浏览记录
+        redisComponent.clearArticleReads(articleId);
+    }
+
+    @Override
+    public void adminDeleteBatchArticle(List<Integer> articleIds) {
+        // 批量删除文章
+        this.removeByIds(articleIds);
+
+        // 批量清除文章的所有浏览记录
+        redisComponent.batchClearArticleReads(articleIds);
     }
 
 }

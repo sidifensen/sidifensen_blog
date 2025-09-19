@@ -163,6 +163,19 @@ public class ArticleController {
         return Result.success(articleVoList);
     }
 
+
+    /**
+     * 管理员根据用户ID获取文章列表
+     *
+     * @return 管理员根据用户ID获取文章列表
+     */
+    @PreAuthorize("hasAuthority('article:user:list')")
+    @GetMapping("/admin/user/{userId}")
+    public Result adminGetArticlesByUserId(@PathVariable Integer userId) {
+        List<ArticleVo> articleVoList = articleService.adminGetArticlesByUserId(userId);
+        return Result.success(articleVoList);
+    }
+
     /**
      * 管理员获取文章详情
      *
@@ -188,30 +201,6 @@ public class ArticleController {
     }
 
     /**
-     * 管理员删除文章
-     *
-     * @return 管理员删除文章
-     */
-    @PreAuthorize("hasAuthority('article:delete')")
-    @DeleteMapping("/admin/{articleId}")
-    public Result adminDeleteArticle(@PathVariable Integer articleId) {
-        articleService.adminDeleteArticle(articleId);
-        return Result.success();
-    }
-
-    /**
-     * 管理员审核文章
-     *
-     * @return 管理员审核文章
-     */
-    @PreAuthorize("hasAuthority('article:examine')")
-    @PutMapping("/admin/examine")
-    public Result adminExamineArticle(@RequestBody ArticleAuditDto articleAuditDto) {
-        articleService.adminExamineArticle(articleAuditDto);
-        return Result.success();
-    }
-
-    /**
      * 管理员搜索文章
      *
      * @return 管理员搜索文章
@@ -224,14 +213,14 @@ public class ArticleController {
     }
 
     /**
-     * 管理员批量删除文章
+     * 管理员审核文章
      *
-     * @return 管理员批量删除文章
+     * @return 管理员审核文章
      */
-    @PreAuthorize("hasAuthority('article:delete')")
-    @DeleteMapping("/admin/delete/batch")
-    public Result adminDeleteBatchArticle(@RequestBody List<ArticleAuditDto> articleAuditDtos) {
-        articleService.adminDeleteBatchArticle(articleAuditDtos);
+    @PreAuthorize("hasAuthority('article:examine')")
+    @PutMapping("/admin/examine")
+    public Result adminExamineArticle(@RequestBody ArticleAuditDto articleAuditDto) {
+        articleService.adminExamineArticle(articleAuditDto);
         return Result.success();
     }
 
@@ -248,15 +237,28 @@ public class ArticleController {
     }
 
     /**
-     * 管理员根据用户ID获取文章列表
+     * 管理员删除文章
      *
-     * @return 管理员根据用户ID获取文章列表
+     * @return 管理员删除文章
      */
-    @PreAuthorize("hasAuthority('article:user:list')")
-    @GetMapping("/admin/user/{userId}")
-    public Result adminGetArticlesByUserId(@PathVariable Integer userId) {
-        List<ArticleVo> articleVoList = articleService.adminGetArticlesByUserId(userId);
-        return Result.success(articleVoList);
+    @PreAuthorize("hasAuthority('article:delete')")
+    @DeleteMapping("/admin/{articleId}")
+    public Result adminDeleteArticle(@PathVariable Integer articleId) {
+        articleService.adminDeleteArticle(articleId);
+        return Result.success();
+    }
+
+    /**
+     * 管理员批量删除文章
+     *
+     * @param articleIds 文章ID列表
+     * @return 管理员批量删除文章
+     */
+    @PreAuthorize("hasAuthority('article:delete')")
+    @DeleteMapping("/admin/delete/batch")
+    public Result adminDeleteBatchArticle(@RequestBody List<Integer> articleIds) {
+        articleService.adminDeleteBatchArticle(articleIds);
+        return Result.success();
     }
 
 }

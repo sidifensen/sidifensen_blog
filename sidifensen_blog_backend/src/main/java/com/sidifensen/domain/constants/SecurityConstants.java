@@ -31,7 +31,6 @@ public class SecurityConstants {
             "/article/listAll",
             "/article/user/list",
             "/article/user/{userId:\\d+}/statistics",
-            "/article/incrReadCount/{articleId:\\d+}",
             "/favicon.ico"
     };
 
@@ -42,6 +41,7 @@ public class SecurityConstants {
             "/article/get/{articleId:\\d+}", // 获取文章详情，限制articleId只能是数字
             "/comment/list", // 获取评论列表，使用查询参数
             "/comment/reply/list", // 获取回复列表，使用查询参数
+            "/article/incrReadCount/{articleId:\\d+}",// 增加文章阅读数
     };
 
     // 允许的用户代理列表（可根据需要扩展）

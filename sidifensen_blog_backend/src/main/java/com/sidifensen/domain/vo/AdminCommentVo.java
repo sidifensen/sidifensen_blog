@@ -90,8 +90,4 @@ public class AdminCommentVo implements Serializable {
      */
     private Date createTime;
 
-    /**
-     * 更新时间
-     */
-    private Date updateTime;
 }

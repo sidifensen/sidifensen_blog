@@ -1,13 +1,9 @@
 package com.sidifensen.mapper;
 
-import com.sidifensen.domain.entity.FavoriteArticle;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.sidifensen.domain.entity.FavoriteArticle;
 
 /**
- * <p>
- *  Mapper 接口
- * </p>
- *
  * @author sidifensen
  * @since 2025-09-16
  */

@@ -45,6 +45,9 @@ public interface ArticleService extends IService<Article> {
     // 新增文章
     void addArticle(ArticleDto articleDto);
 
+    // 保存草稿
+    void saveDraft(ArticleDto articleDto);
+
     // 更新文章
     void updateArticle(ArticleDto articleDto);
 
@@ -54,30 +57,27 @@ public interface ArticleService extends IService<Article> {
     // 管理员获取文章列表
     List<ArticleVo> adminGetArticleList();
 
+    // 管理员根据用户ID获取文章列表
+    List<ArticleVo> adminGetArticlesByUserId(Integer userId);
+
     // 管理员获取文章详情
     ArticleVo adminGetArticle(Integer articleId);
 
     // 管理员更新文章
     void adminUpdateArticle(ArticleDto articleDto);
 
-    // 管理员删除文章
-    void adminDeleteArticle(Integer articleId);
+    // 管理员搜索文章
+    List<ArticleVo> adminSearchArticle(ArticleDto articleDto);
 
     // 管理员审核文章
     void adminExamineArticle(ArticleAuditDto articleAuditDto);
 
-    // 保存草稿
-    void saveDraft(ArticleDto articleDto);
-
-    // 管理员搜索文章
-    List<ArticleVo> adminSearchArticle(ArticleDto articleDto);
-
-    // 管理员批量删除文章
-    void adminDeleteBatchArticle(List<ArticleAuditDto> articleAuditDtos);
-
     // 管理员批量审核文章
     void adminExamineBatchArticle(List<ArticleAuditDto> articleAuditDtos);
 
-    // 管理员根据用户ID获取文章列表
-    List<ArticleVo> adminGetArticlesByUserId(Integer userId);
+    // 管理员删除文章
+    void adminDeleteArticle(Integer articleId);
+
+    // 管理员批量删除文章
+    void adminDeleteBatchArticle(List<Integer> articleIds);
 }

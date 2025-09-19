@@ -1,12 +1,14 @@
 package com.sidifensen.controller;
 
 import com.sidifensen.aspect.TimeConsuming;
+import com.sidifensen.domain.dto.CommentAuditDto;
 import com.sidifensen.domain.dto.CommentDto;
+import com.sidifensen.domain.dto.CommentSearchDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.AdminCommentVo;
 import com.sidifensen.domain.vo.CommentVo;
 import com.sidifensen.domain.vo.PageVo;
-import com.sidifensen.service.ICommentService;
+import com.sidifensen.service.CommentService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -25,7 +27,7 @@ import java.util.List;
 public class CommentController {
 
     @Resource
-    private ICommentService commentService;
+    private CommentService commentService;
 
     /**
      * 发表评论
@@ -60,9 +62,7 @@ public class CommentController {
      * @return 评论列表
      */
     @GetMapping("/list")
-    public Result<PageVo<List<CommentVo>>> getCommentList(@NotNull Integer articleId,
-                                                          @NotNull Integer pageNum,
-                                                          @NotNull Integer pageSize) {
+    public Result<PageVo<List<CommentVo>>> getCommentList(@NotNull Integer articleId, @NotNull Integer pageNum, @NotNull Integer pageSize) {
         PageVo<List<CommentVo>> commentList = commentService.getCommentList(articleId, pageNum, pageSize);
         return Result.success(commentList);
     }
@@ -76,9 +76,7 @@ public class CommentController {
      * @return 回复列表
      */
     @GetMapping("/reply/list")
-    public Result<PageVo<List<CommentVo>>> getReplyList(@NotNull Integer commentId,
-                                                        @NotNull Integer pageNum,
-                                                        @NotNull Integer pageSize) {
+    public Result<PageVo<List<CommentVo>>> getReplyList(@NotNull Integer commentId, @NotNull Integer pageNum, @NotNull Integer pageSize) {
         PageVo<List<CommentVo>> replyList = commentService.getReplyList(commentId, pageNum, pageSize);
         return Result.success(replyList);
     }
@@ -86,39 +84,64 @@ public class CommentController {
     /**
      * 管理员获取所有评论列表
      *
-     * @param pageNum       页码
-     * @param pageSize      页大小
-     * @param examineStatus 审核状态（可选）0-待审核 1-审核通过 2-审核未通过
-     * @param userId        用户id（可选）
-     * @param articleId     文章id（可选）
-     * @param keyword       关键词搜索（可选）
      * @return 评论列表
      */
     @PreAuthorize("hasAuthority('comment:list')")
     @GetMapping("/admin/list")
-    public Result<PageVo<List<AdminCommentVo>>> adminGetCommentList(@NotNull Integer pageNum,
-                                                                    @NotNull Integer pageSize,
-                                                                    Integer examineStatus,
-                                                                    Integer userId,
-                                                                    Integer articleId,
-                                                                    String keyword) {
-        PageVo<List<AdminCommentVo>> commentList = commentService.adminGetCommentList(
-                pageNum, pageSize, examineStatus, userId, articleId, keyword);
+    public Result<List<AdminCommentVo>> adminGetCommentList() {
+        List<AdminCommentVo> commentList = commentService.adminGetCommentList();
+        return Result.success(commentList);
+    }
+
+    /**
+     * 管理员根据用户ID获取评论列表
+     *
+     * @param userId 用户ID
+     * @return 用户评论列表
+     */
+    @PreAuthorize("hasAuthority('comment:user:list')")
+    @GetMapping("/admin/user/{userId}")
+    public Result<List<AdminCommentVo>> adminGetCommentsByUserId(@PathVariable Integer userId) {
+        List<AdminCommentVo> commentList = commentService.adminGetCommentsByUserId(userId);
+        return Result.success(commentList);
+    }
+
+    /**
+     * 管理员搜索评论
+     *
+     * @param commentSearchDto 搜索条件
+     * @return 搜索结果
+     */
+    @PreAuthorize("hasAuthority('comment:search')")
+    @PostMapping("/admin/search")
+    public Result<List<AdminCommentVo>> adminSearchComment(@RequestBody CommentSearchDto commentSearchDto) {
+        List<AdminCommentVo> commentList = commentService.adminSearchComment(commentSearchDto);
         return Result.success(commentList);
     }
 
     /**
      * 管理员审核评论
      *
-     * @param commentId     评论id
-     * @param examineStatus 审核状态 0-待审核 1-审核通过 2-审核未通过
+     * @param commentAuditDto 评论审核信息
      * @return 操作结果
      */
-    @PreAuthorize("hasAuthority('comment:audit')")
-    @PutMapping("/admin/audit/{commentId}")
-    public Result<Void> auditComment(@PathVariable Integer commentId,
-                                     @NotNull Integer examineStatus) {
-        commentService.auditComment(commentId, examineStatus);
+    @PreAuthorize("hasAuthority('comment:examine')")
+    @PutMapping("/admin/examine")
+    public Result<Void> adminExamineComment(@RequestBody CommentAuditDto commentAuditDto) {
+        commentService.adminExamineComment(commentAuditDto);
+        return Result.success();
+    }
+
+    /**
+     * 管理员批量审核评论
+     *
+     * @param commentAuditDtos 评论审核信息列表
+     * @return 操作结果
+     */
+    @PreAuthorize("hasAuthority('comment:examine')")
+    @PutMapping("/admin/examine/batch")
+    public Result<Void> adminExamineBatchComment(@RequestBody List<CommentAuditDto> commentAuditDtos) {
+        commentService.adminExamineBatchComment(commentAuditDtos);
         return Result.success();
     }
 
@@ -132,6 +155,19 @@ public class CommentController {
     @DeleteMapping("/admin/{commentId}")
     public Result<Void> adminDeleteComment(@PathVariable Integer commentId) {
         commentService.adminDeleteComment(commentId);
+        return Result.success();
+    }
+
+    /**
+     * 管理员批量删除评论
+     *
+     * @param commentIds 评论ID列表
+     * @return 操作结果
+     */
+    @PreAuthorize("hasAuthority('comment:delete')")
+    @DeleteMapping("/admin/delete/batch")
+    public Result<Void> adminDeleteBatchComment(@RequestBody List<Integer> commentIds) {
+        commentService.adminDeleteBatchComment(commentIds);
         return Result.success();
     }
 

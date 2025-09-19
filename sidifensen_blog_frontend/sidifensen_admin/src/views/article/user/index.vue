@@ -794,10 +794,8 @@ const handleBatchDelete = () => {
     .then(async () => {
       batchDeleteLoading.value = true;
       try {
-        const data = selectedArticles.value.map((article) => ({
-          articleId: article.id,
-        }));
-        await adminDeleteBatchArticle(data);
+        const articleIds = selectedArticles.value.map((article) => article.id);
+        await adminDeleteBatchArticle(articleIds);
         ElMessage.success("批量删除成功");
         await refreshArticleList();
       } catch (error) {

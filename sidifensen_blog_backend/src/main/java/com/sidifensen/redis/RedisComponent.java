@@ -34,7 +34,7 @@ public class RedisComponent {
     // 保存登录验证码
     public String saveCheckCode(String checkCode) {
         String checkCodeKey = UUID.randomUUID().toString().replace("-", "");
-        redisUtils.set(RedisConstants.CheckCode + checkCodeKey, checkCode, 5, TimeUnit.MINUTES);
+        redisUtils.set(RedisConstants.CheckCode + checkCodeKey, checkCode, RedisConstants.CHECK_CODE_EXPIRE_TIME, TimeUnit.SECONDS);
         return checkCodeKey;
     }
 
@@ -50,7 +50,7 @@ public class RedisComponent {
 
     // 保存邮箱验证码
     public void saveEmailCheckCode(String email, String type, String checkCode) {
-        redisUtils.set(RedisConstants.EmailCheckCode + type + ":" + email, checkCode, 5, TimeUnit.MINUTES);
+        redisUtils.set(RedisConstants.EmailCheckCode + type + ":" + email, checkCode, RedisConstants.EMAIL_CHECK_CODE_EXPIRE_TIME, TimeUnit.SECONDS);
     }
 
     // 获取邮箱验证码
@@ -66,7 +66,7 @@ public class RedisComponent {
     // 保存相册
     public void saveAlbum(Integer albumId, AlbumVo albumVo) {
         executorService.execute(() -> {
-            redisUtils.hset(RedisConstants.Albums, albumId, albumVo, 7, TimeUnit.DAYS);
+            redisUtils.hset(RedisConstants.Albums, albumId, albumVo, RedisConstants.ALBUM_EXPIRE_TIME, TimeUnit.SECONDS);
         });
     }
 
@@ -99,14 +99,14 @@ public class RedisComponent {
 
             // 单独存储照片列表
             if (albumVo.getPhotos() != null && !albumVo.getPhotos().isEmpty()) {
-                redisUtils.hset(RedisConstants.AlbumPhotos, albumId, albumVo.getPhotos(), 7, TimeUnit.DAYS);
+                redisUtils.hset(RedisConstants.AlbumPhotos, albumId, albumVo.getPhotos(), RedisConstants.ALBUM_EXPIRE_TIME, TimeUnit.SECONDS);
             }
         });
     }
 
     // 保存相册照片关联
     public void saveAlbumPhotos(Integer albumId, List<PhotoVo> photos) {
-        redisUtils.hset(RedisConstants.AlbumPhotos, albumId, photos, 7, TimeUnit.DAYS);
+        redisUtils.hset(RedisConstants.AlbumPhotos, albumId, photos, RedisConstants.ALBUM_EXPIRE_TIME, TimeUnit.SECONDS);
     }
 
     // 获取相册详情
@@ -132,7 +132,7 @@ public class RedisComponent {
     // 保存用户相册
     public void saveUserAlbum(Integer userId, List<Integer> albumIds) {
         executorService.execute(() -> {
-            redisUtils.hset(RedisConstants.UserAlbums, userId, albumIds, 7, TimeUnit.DAYS);
+            redisUtils.hset(RedisConstants.UserAlbums, userId, albumIds, RedisConstants.ALBUM_EXPIRE_TIME, TimeUnit.SECONDS);
         });
     }
 
@@ -157,17 +157,77 @@ public class RedisComponent {
 
     // 保存所有相册
     public void saveAllAlbum(Map map) {
-        redisUtils.hmset(RedisConstants.Albums, map, 7, TimeUnit.DAYS);
+        redisUtils.hmset(RedisConstants.Albums, map, RedisConstants.ALBUM_EXPIRE_TIME, TimeUnit.SECONDS);
     }
 
     //保存所有用户相册
     public void saveAllUserAlbum(Map map) {
-        redisUtils.hmset(RedisConstants.UserAlbums, map, 7, TimeUnit.DAYS);
+        redisUtils.hmset(RedisConstants.UserAlbums, map, RedisConstants.ALBUM_EXPIRE_TIME, TimeUnit.SECONDS);
     }
 
     // 保存所有相册详情
     public void saveAllAlbumPhotos(Map map) {
-        redisUtils.hmset(RedisConstants.AlbumPhotos, map, 7, TimeUnit.DAYS);
+        redisUtils.hmset(RedisConstants.AlbumPhotos, map, RedisConstants.ALBUM_EXPIRE_TIME, TimeUnit.SECONDS);
+    }
+
+    // ==================== 浏览历史相关方法 ====================
+    
+    /**
+     * 检查用户是否已浏览过文章
+     * @param articleId 文章ID
+     * @param identifier 用户标识符
+     * @return true-已浏览过，false-未浏览过
+     */
+    public boolean hasReadArticle(Integer articleId, String identifier) {
+        String redisKey = RedisConstants.History + articleId;
+        return redisUtils.sHasKey(redisKey, identifier);
+    }
+    
+    /**
+     * 记录用户浏览文章
+     * @param articleId 文章ID
+     * @param identifier 用户标识符
+     */
+    public void recordArticleRead(Integer articleId, String identifier) {
+        String redisKey = RedisConstants.History + articleId;
+        redisUtils.sSetAndTime(redisKey, RedisConstants.HISTORY_EXPIRE_TIME, identifier);
+    }
+    
+    /**
+     * 移除用户浏览记录
+     * @param articleId 文章ID
+     * @param identifier 用户标识符
+     */
+    public void removeArticleRead(Integer articleId, String identifier) {
+        String redisKey = RedisConstants.History + articleId;
+        redisUtils.setRemove(redisKey, identifier);
+    }
+    
+    /**
+     * 清除文章的所有浏览记录
+     * @param articleId 文章ID
+     */
+    public void clearArticleReads(Integer articleId) {
+        String redisKey = RedisConstants.History + articleId;
+        redisUtils.del(redisKey);
+    }
+    
+    /**
+     * 批量清除多篇文章的所有浏览记录
+     * @param articleIds 文章ID列表
+     */
+    public void batchClearArticleReads(List<Integer> articleIds) {
+        if (articleIds == null || articleIds.isEmpty()) {
+            return;
+        }
+        
+        // 构建所有需要删除的Redis key
+        String[] redisKeys = articleIds.stream()
+                .map(articleId -> RedisConstants.History + articleId)
+                .toArray(String[]::new);
+        
+        // 批量删除
+        redisUtils.del(redisKeys);
     }
 
 

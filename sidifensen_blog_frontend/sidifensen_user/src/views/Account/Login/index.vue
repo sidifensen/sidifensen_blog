@@ -3,7 +3,6 @@
     <h2>登录</h2>
     <el-form-item prop="username">
       <el-input clearable placeholder="请输入用户名" maxlength="20" v-model="formData.username">
-
         <template #prefix>
           <el-icon><User /></el-icon>
         </template>
@@ -30,7 +29,7 @@
       <el-checkbox v-model="formData.rememberMe">记住密码</el-checkbox>
       <el-button class="forgetPassword" type="primary" link @click="router.push('/reset')">忘记密码</el-button>
     </div>
-    <el-button style="margin-bottom: 20px;" type="primary" plain @click="loginBtn">登录</el-button>
+    <el-button style="margin-bottom: 20px" type="primary" plain @click="loginBtn">登录</el-button>
     <!-- 分割线 -->
     <el-divider>没有账号</el-divider>
     <el-button type="success" plain @click="router.push('/register')">注册</el-button>
@@ -41,7 +40,7 @@
       <el-link underline="never" :href="giteeLogin">
         <svg-icon @click="giteeLogin" name="gitee" width="35px" height="35px" color="#4E86F1" cursor="pointer" />
       </el-link>
-      <el-link underline="never" :href="githubLogin"> 
+      <el-link underline="never" :href="githubLogin">
         <svg-icon name="github" width="36px" height="36px" color="#4E86F1" cursor="pointer" />
       </el-link>
     </div>
@@ -124,8 +123,8 @@ const loginBtn = () => {
           SetJwt(res.data.data);
           info().then((res) => {
             userStore.user = res.data.data;
-          })
-          router.push({name: "index"});
+          });
+          router.push({ name: "Home" });
         })
         .catch(() => {
           //刷新验证码

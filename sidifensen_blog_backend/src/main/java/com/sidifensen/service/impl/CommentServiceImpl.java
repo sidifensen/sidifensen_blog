@@ -8,7 +8,9 @@ import com.sidifensen.config.SidifensenConfig;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.MessageConstants;
 import com.sidifensen.domain.constants.RabbitMQConstants;
+import com.sidifensen.domain.dto.CommentAuditDto;
 import com.sidifensen.domain.dto.CommentDto;
+import com.sidifensen.domain.dto.CommentSearchDto;
 import com.sidifensen.domain.dto.MessageDto;
 import com.sidifensen.domain.entity.Article;
 import com.sidifensen.domain.entity.Comment;
@@ -25,7 +27,7 @@ import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.CommentMapper;
 import com.sidifensen.mapper.LikeMapper;
 import com.sidifensen.mapper.SysUserMapper;
-import com.sidifensen.service.ICommentService;
+import com.sidifensen.service.CommentService;
 import com.sidifensen.service.MessageService;
 import com.sidifensen.utils.SecurityUtils;
 import com.sidifensen.utils.TextAuditUtils;
@@ -46,7 +48,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements ICommentService {
+public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements CommentService {
 
     @Resource
     private CommentMapper commentMapper;
@@ -506,57 +508,75 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
-    public PageVo<List<AdminCommentVo>> adminGetCommentList(Integer pageNum, Integer pageSize,
-                                                            Integer examineStatus, Integer userId,
-                                                            Integer articleId, String keyword) {
-        if (pageNum == null || pageNum <= 0) {
-            pageNum = 1;
-        }
-        if (pageSize == null || pageSize <= 0) {
-            pageSize = 10;
+    public List<AdminCommentVo> adminGetCommentList() {
+        // 构建查询条件 - 获取所有未删除的评论
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<Comment>()
+                .orderByDesc(Comment::getCreateTime);
+
+        List<Comment> comments = list(queryWrapper);
+
+        if (comments.isEmpty()) {
+            return new ArrayList<>();
         }
 
+        // 批量构建AdminCommentVo
+        return batchBuildAdminCommentVos(comments);
+    }
+
+
+    @Override
+    public List<AdminCommentVo> adminGetCommentsByUserId(Integer userId) {
+        if (userId == null || userId <= 0) {
+            throw new BlogException(BlogConstants.UserIdRequired);
+        }
+
+        // 验证用户是否存在
+        SysUser user = sysUserMapper.selectById(userId);
+        if (user == null) {
+            throw new BlogException(BlogConstants.NotFoundUser);
+        }
+
+        // 查询该用户的所有评论（包括已删除的）
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<Comment>()
+                .eq(Comment::getUserId, userId)
+                .eq(Comment::getIsDeleted, 0)
+                .orderByDesc(Comment::getCreateTime);
+
+        List<Comment> comments = list(queryWrapper);
+
+        if (comments.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 批量构建AdminCommentVo
+        return batchBuildAdminCommentVos(comments);
+    }
+
+    @Override
+    public List<AdminCommentVo> adminSearchComment(CommentSearchDto commentSearchDto) {
         // 构建查询条件
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<Comment>()
                 .eq(Comment::getIsDeleted, 0)
                 .orderByDesc(Comment::getCreateTime);
 
-        // 根据审核状态筛选
-        if (examineStatus != null) {
-            queryWrapper.eq(Comment::getExamineStatus, examineStatus);
-        }
+        queryWrapper
+                // 根据审核状态筛选
+                .eq(commentSearchDto.getExamineStatus() != null, Comment::getExamineStatus, commentSearchDto.getExamineStatus())
+                // 根据用户ID筛选
+                .eq(commentSearchDto.getUserId() != null && commentSearchDto.getUserId() > 0, Comment::getUserId, commentSearchDto.getUserId())
+                // 根据文章ID筛选
+                .eq(commentSearchDto.getArticleId() != null && commentSearchDto.getArticleId() > 0, Comment::getArticleId, commentSearchDto.getArticleId())
+                // 根据关键词搜索评论内容
+                .like(commentSearchDto.getKeyword() != null && !commentSearchDto.getKeyword().trim().isEmpty(), Comment::getContent, commentSearchDto.getKeyword() != null ? commentSearchDto.getKeyword().trim() : null);
 
-        // 根据用户ID筛选
-        if (userId != null && userId > 0) {
-            queryWrapper.eq(Comment::getUserId, userId);
-        }
-
-        // 根据文章ID筛选
-        if (articleId != null && articleId > 0) {
-            queryWrapper.eq(Comment::getArticleId, articleId);
-        }
-
-        // 根据关键词搜索评论内容
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            queryWrapper.like(Comment::getContent, keyword.trim());
-        }
-
-        // 查询总数
-        Long total = count(queryWrapper);
-
-        // 分页查询
-        Integer offset = (pageNum - 1) * pageSize;
-        queryWrapper.last("LIMIT " + offset + ", " + pageSize);
         List<Comment> comments = list(queryWrapper);
 
         if (comments.isEmpty()) {
-            return new PageVo<>(new ArrayList<>(), total);
+            return new ArrayList<>();
         }
 
         // 批量构建AdminCommentVo
-        List<AdminCommentVo> result = batchBuildAdminCommentVos(comments);
-
-        return new PageVo<>(result, total);
+        return batchBuildAdminCommentVos(comments);
     }
 
     /**
@@ -669,32 +689,55 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
-    @Transactional
-    public void auditComment(Integer commentId, Integer examineStatus) {
-        if (commentId == null || commentId <= 0) {
+    public void adminExamineComment(CommentAuditDto commentAuditDto) {
+        if (commentAuditDto == null || commentAuditDto.getCommentId() == null || commentAuditDto.getCommentId() <= 0) {
             throw new BlogException(BlogConstants.CommentIdRequired);
         }
 
+        Integer examineStatus = commentAuditDto.getExamineStatus();
         if (examineStatus == null || examineStatus < 0 || examineStatus > 2) {
             throw new BlogException(BlogConstants.CommentExamineStatusError);
         }
 
-        Comment comment = getById(commentId);
+        Comment comment = getById(commentAuditDto.getCommentId());
         if (comment == null || comment.getIsDeleted() == 1) {
             throw new BlogException(BlogConstants.NotFoundComment);
         }
 
         comment.setExamineStatus(examineStatus);
+        // 如果审核未通过且有原因，可以记录原因（这里暂时不保存到数据库）
         boolean updated = updateById(comment);
         if (!updated) {
             throw new BlogException(BlogConstants.CommentAuditError);
         }
 
-        log.info("管理员审核评论，评论ID：{}，审核状态：{}", commentId, examineStatus);
+        log.info("管理员审核评论，评论ID：{}，审核状态：{}，原因：{}",
+                commentAuditDto.getCommentId(), examineStatus, commentAuditDto.getExamineReason());
     }
 
     @Override
-    @Transactional
+    public void adminExamineBatchComment(List<CommentAuditDto> commentAuditDtos) {
+        if (commentAuditDtos == null || commentAuditDtos.isEmpty()) {
+            throw new BlogException(BlogConstants.CommentIdRequired);
+        }
+
+        for (CommentAuditDto commentAuditDto : commentAuditDtos) {
+            if (commentAuditDto.getCommentId() == null || commentAuditDto.getCommentId() <= 0) {
+                continue; // 跳过无效的评论ID
+            }
+
+            try {
+                adminExamineComment(commentAuditDto);
+            } catch (Exception e) {
+                log.error("批量审核评论失败，评论ID：{}，错误：{}", commentAuditDto.getCommentId(), e.getMessage());
+                // 继续处理其他评论，不中断整个批量操作
+            }
+        }
+
+        log.info("管理员批量审核评论，共处理{}条评论", commentAuditDtos.size());
+    }
+
+    @Override
     public void adminDeleteComment(Integer commentId) {
         if (commentId == null || commentId <= 0) {
             throw new BlogException(BlogConstants.CommentIdRequired);
@@ -729,6 +772,54 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         }
 
         log.info("管理员删除评论及其所有子评论，评论ID：{}，删除数量：{}", commentId, deletedCommentCount);
+    }
+
+    @Override
+    public void adminDeleteBatchComment(List<Integer> commentIds) {
+        if (commentIds == null || commentIds.isEmpty()) {
+            throw new BlogException(BlogConstants.CommentIdRequired);
+        }
+
+        // 过滤无效的评论ID
+        List<Integer> validCommentIds = commentIds.stream()
+                .filter(id -> id != null && id > 0)
+                .collect(Collectors.toList());
+
+        if (validCommentIds.isEmpty()) {
+            throw new BlogException(BlogConstants.CommentIdRequired);
+        }
+
+        // 验证评论是否存在
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<Comment>()
+                .in(Comment::getId, validCommentIds)
+                .eq(Comment::getIsDeleted, 0);
+        
+        List<Comment> existingComments = list(queryWrapper);
+        
+        if (existingComments.isEmpty()) {
+            throw new BlogException(BlogConstants.NotFoundComment);
+        }
+
+        // 获取实际存在的评论ID
+        List<Integer> existingCommentIds = existingComments.stream()
+                .map(Comment::getId)
+                .collect(Collectors.toList());
+
+        // 查找所有需要删除的子评论（递归查找）
+        Set<Integer> allCommentIdsToDelete = new HashSet<>(existingCommentIds);
+        for (Integer commentId : existingCommentIds) {
+            collectChildCommentIds(commentId, allCommentIdsToDelete);
+        }
+
+        // 批量逻辑删除所有相关评论（MyBatis-Plus 自动处理逻辑删除）
+        if (!allCommentIdsToDelete.isEmpty()) {
+            boolean deleted = removeByIds(allCommentIdsToDelete);
+            if (!deleted) {
+                throw new BlogException(BlogConstants.CommentDeleteError);
+            }
+        }
+
+        log.info("管理员批量删除评论成功，删除评论数量：{}（包含子评论）", allCommentIdsToDelete.size());
     }
 
     /**
@@ -773,6 +864,26 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
         // 删除当前评论
         removeById(commentId);
+    }
+
+    /**
+     * 递归收集评论及其所有子评论的ID
+     *
+     * @param commentId 评论ID
+     * @param commentIds 收集的评论ID集合
+     */
+    private void collectChildCommentIds(Integer commentId, Set<Integer> commentIds) {
+        // 查询子评论
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<Comment>()
+                .eq(Comment::getParentId, commentId)
+                .eq(Comment::getIsDeleted, 0);
+        List<Comment> childComments = list(queryWrapper);
+
+        // 递归收集子评论ID
+        for (Comment childComment : childComments) {
+            commentIds.add(childComment.getId());
+            collectChildCommentIds(childComment.getId(), commentIds);
+        }
     }
 
 }
