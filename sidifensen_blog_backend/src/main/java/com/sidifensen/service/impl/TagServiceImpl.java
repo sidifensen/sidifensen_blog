@@ -48,4 +48,12 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
         );
         return tagVos;
     }
+
+    @Override
+    public void deleteTag(Integer id) {
+        int i = tagMapper.deleteById(id);
+        if (i <= 0) {
+            throw new BlogException(BlogConstants.DeleteTagError);
+        }
+    }
 }

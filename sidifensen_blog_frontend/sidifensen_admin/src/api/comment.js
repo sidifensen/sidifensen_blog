@@ -67,3 +67,11 @@ export function getUserListWithCommentCount() {
     method: "get",
   });
 }
+
+// 获取评论统计数据
+export function getCommentStatistics() {
+  return request({
+    url: "/comment/admin/statistics",
+    method: "get",
+  });
+}

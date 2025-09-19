@@ -20,4 +20,6 @@ public interface TagService extends IService<Tag> {
     void addTag(TagDto tagDto);
 
     Map<String, List<String>> listTag();
+
+    void deleteTag(Integer id);
 }

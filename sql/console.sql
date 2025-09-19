@@ -240,13 +240,14 @@ create table favorite
     index idx_user_status_time (user_id, show_status, create_time desc)
 );
 
-create table favorite_article
+create table article_favorite
 (
     id          int primary key auto_increment comment '主键id',
-    favorite_id int      not null comment '收藏夹id',
     article_id  int      not null comment '被收藏的文章id',
+    favorite_id int      not null comment '收藏夹id',
     create_time datetime not null comment '创建时间',
     is_deleted  tinyint  not null default 0 comment '是否删除 0-未删除 1-已删除',
+    index idx_article_time (article_id, create_time desc),
     index idx_favorite_time (favorite_id, create_time desc)
 );
 

@@ -567,7 +567,10 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                 // 根据文章ID筛选
                 .eq(commentSearchDto.getArticleId() != null && commentSearchDto.getArticleId() > 0, Comment::getArticleId, commentSearchDto.getArticleId())
                 // 根据关键词搜索评论内容
-                .like(commentSearchDto.getKeyword() != null && !commentSearchDto.getKeyword().trim().isEmpty(), Comment::getContent, commentSearchDto.getKeyword() != null ? commentSearchDto.getKeyword().trim() : null);
+                .like(commentSearchDto.getKeyword() != null && !commentSearchDto.getKeyword().trim().isEmpty(), Comment::getContent, commentSearchDto.getKeyword() != null ? commentSearchDto.getKeyword().trim() : null)
+                // 根据创建时间范围筛选
+                .ge(commentSearchDto.getCreateTimeStart() != null, Comment::getCreateTime, commentSearchDto.getCreateTimeStart())
+                .le(commentSearchDto.getCreateTimeEnd() != null, Comment::getCreateTime, commentSearchDto.getCreateTimeEnd());
 
         List<Comment> comments = list(queryWrapper);
 
@@ -884,6 +887,12 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             commentIds.add(childComment.getId());
             collectChildCommentIds(childComment.getId(), commentIds);
         }
+    }
+
+    @Override
+    public Long getCommentTotalCount() {
+        return this.count(new LambdaQueryWrapper<Comment>()
+                .eq(Comment::getIsDeleted, 0)); // 只统计未删除的评论
     }
 
 }

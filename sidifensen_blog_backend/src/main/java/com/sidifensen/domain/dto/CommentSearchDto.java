@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 评论搜索数据传输对象
@@ -44,5 +45,15 @@ public class CommentSearchDto implements Serializable {
      * 关键词搜索（可选）
      */
     private String keyword;
+
+    /**
+     * 创建时间开始（用于搜索）
+     */
+    private Date createTimeStart;
+
+    /**
+     * 创建时间结束（用于搜索）
+     */
+    private Date createTimeEnd;
 
 }

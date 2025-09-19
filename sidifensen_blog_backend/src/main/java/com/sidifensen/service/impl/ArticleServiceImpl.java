@@ -824,4 +824,37 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         redisComponent.batchClearArticleReads(articleIds);
     }
 
+    @Override
+    public ArticleStatisticsVo getAdminStatistics() {
+        // 查询所有文章总数
+        Long totalCount = this.count();
+
+        // 查询已发布数量 (editStatus=0 && examineStatus=1)
+        Long publishedCount = this.count(new LambdaQueryWrapper<Article>()
+                .eq(Article::getEditStatus, 0)
+                .eq(Article::getExamineStatus, 1));
+
+        // 查询审核中数量 (editStatus=0 && examineStatus=0)
+        Long reviewingCount = this.count(new LambdaQueryWrapper<Article>()
+                .eq(Article::getEditStatus, 0)
+                .eq(Article::getExamineStatus, 0));
+
+        // 查询草稿箱数量 (editStatus=1)
+        Long draftCount = this.count(new LambdaQueryWrapper<Article>()
+                .eq(Article::getEditStatus, 1));
+
+        // 查询回收站数量 (editStatus=2)
+        Long garbageCount = this.count(new LambdaQueryWrapper<Article>()
+                .eq(Article::getEditStatus, 2));
+
+        ArticleStatisticsVo statisticsVo = new ArticleStatisticsVo();
+        statisticsVo.setTotalCount(totalCount);
+        statisticsVo.setPublishedCount(publishedCount);
+        statisticsVo.setReviewingCount(reviewingCount);
+        statisticsVo.setDraftCount(draftCount);
+        statisticsVo.setGarbageCount(garbageCount);
+
+        return statisticsVo;
+    }
+
 }

@@ -11,7 +11,7 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 
+ * 文章收藏关联表
  * </p>
  *
  * @author sidifensen
@@ -20,8 +20,8 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("favorite_article")
-public class FavoriteArticle implements Serializable {
+@TableName("article_favorite")
+public class ArticleFavorite implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -32,14 +32,14 @@ public class FavoriteArticle implements Serializable {
     private Integer id;
 
     /**
-     * 收藏夹id
-     */
-    private Integer favoriteId;
-
-    /**
      * 被收藏的文章id
      */
     private Integer articleId;
+
+    /**
+     * 收藏夹id
+     */
+    private Integer favoriteId;
 
     /**
      * 创建时间

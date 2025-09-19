@@ -33,6 +33,14 @@ export function getUserListWithArticleCount() {
   });
 }
 
+// 获取用户列表（包含评论数量）
+export function getUserListWithCommentCount() {
+  return request({
+    url: "/user/admin/listWithCommentCount",
+    method: "get",
+  });
+}
+
 // 修改用户
 export function updateUser(data) {
   return request({
@@ -63,6 +71,14 @@ export function queryUser(data) {
 export function getUserDetail(userId) {
   return request({
     url: `/user/admin/${userId}`,
+    method: "get",
+  });
+}
+
+// 获取用户总数统计
+export function getUserTotalCount() {
+  return request({
+    url: "/user/admin/count",
     method: "get",
   });
 }

@@ -171,4 +171,16 @@ public class CommentController {
         return Result.success();
     }
 
+    /**
+     * 管理员获取评论总数统计
+     *
+     * @return 评论总数
+     */
+    @PreAuthorize("hasAuthority('comment:list')")
+    @GetMapping("/admin/statistics")
+    public Result<Long> getCommentStatistics() {
+        Long totalCount = commentService.getCommentTotalCount();
+        return Result.success(totalCount);
+    }
+
 }

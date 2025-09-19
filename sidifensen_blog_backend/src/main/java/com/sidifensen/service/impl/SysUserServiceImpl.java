@@ -12,9 +12,11 @@ import com.sidifensen.domain.enums.StatusEnum;
 import com.sidifensen.domain.vo.SysUserDetailVo;
 import com.sidifensen.domain.vo.SysUserVo;
 import com.sidifensen.domain.vo.SysUserWithArticleCountVo;
+import com.sidifensen.domain.vo.SysUserWithCommentCountVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.AlbumMapper;
 import com.sidifensen.mapper.ArticleMapper;
+import com.sidifensen.mapper.CommentMapper;
 import com.sidifensen.mapper.PhotoMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.redis.RedisComponent;
@@ -90,6 +92,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Resource
     private ArticleMapper articleMapper;
+
+    @Resource
+    private CommentMapper commentMapper;
 
     @Override
     public String login(LoginDto loginDto) {
@@ -351,6 +356,23 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         return sysUserVos;
     }
 
+    // 管理端获取用户列表（包含评论数量）
+    @Override
+    public List<SysUserWithCommentCountVo> listUserWithCommentCount() {
+        List<SysUser> sysUsers = sysUserMapper.selectList(null);
+        List<SysUserWithCommentCountVo> sysUserVos = BeanUtil.copyToList(sysUsers, SysUserWithCommentCountVo.class);
+
+        // 为每个用户设置评论数量
+        for (SysUserWithCommentCountVo userVo : sysUserVos) {
+            LambdaQueryWrapper<Comment> commentQuery = new LambdaQueryWrapper<Comment>()
+                    .eq(Comment::getUserId, userVo.getId());
+            Integer commentCount = Math.toIntExact(commentMapper.selectCount(commentQuery));
+            userVo.setCommentCount(commentCount);
+        }
+
+        return sysUserVos;
+    }
+
     // 管理端更新用户信息
     @Override
     public void updateUser(SysUserDto sysUserDto) {
@@ -405,6 +427,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         SysUser sysUserDetail = sysUserDetailsService.setUserDetail(sysUser);
         SysUserDetailVo sysUserDetailVo = BeanUtil.copyProperties(sysUserDetail, SysUserDetailVo.class);
         return sysUserDetailVo;
+    }
+
+    // 管理端获取用户总数统计
+    @Override
+    public Long getUserTotalCount() {
+        return sysUserMapper.selectCount(new LambdaQueryWrapper<SysUser>()
+                .eq(SysUser::getIsDeleted, 0)); // 只统计未删除的用户
     }
 
 }

@@ -40,6 +40,7 @@ public class BlogConstants {
     public static final String DeleteMessageError = "消息删除失败";
 
     public static final String AddTagError = "添加标签失败";
+    public static final String DeleteTagError = "删除标签失败";
     public static final String AddArticleError = "添加文章失败";
     public static final String DeleteArticleError = "删除文章失败";
     public static final String CannotHandleOthersArticle = "不能操作别人的文章";

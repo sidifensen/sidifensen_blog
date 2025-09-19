@@ -5,6 +5,7 @@ import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysUserDetailVo;
 import com.sidifensen.domain.vo.SysUserVo;
 import com.sidifensen.domain.vo.SysUserWithArticleCountVo;
+import com.sidifensen.domain.vo.SysUserWithCommentCountVo;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.SysUserService;
 import com.wf.captcha.ArithmeticCaptcha;
@@ -184,6 +185,18 @@ public class SysUserController {
     }
 
     /**
+     * 管理端获取用户列表（包含评论数量）
+     *
+     * @return
+     */
+    @PreAuthorize("hasAuthority('system:user:list')")
+    @GetMapping("/admin/listWithCommentCount")
+    public Result listUserWithCommentCount() {
+        List<SysUserWithCommentCountVo> sysUserVos = sysUserService.listUserWithCommentCount();
+        return Result.success(sysUserVos);
+    }
+
+    /**
      * 管理端修改用户
      *
      * @return
@@ -227,6 +240,18 @@ public class SysUserController {
     public Result getUserInfo(@PathVariable Integer userId) {
         SysUserDetailVo sysUserDetailVo = sysUserService.getUserInfo(userId);
         return Result.success(sysUserDetailVo);
+    }
+
+    /**
+     * 管理端获取用户总数统计
+     *
+     * @return 用户总数
+     */
+    @PreAuthorize("hasAuthority('system:user:list')")
+    @GetMapping("/admin/count")
+    public Result getUserTotalCount() {
+        Long totalCount = sysUserService.getUserTotalCount();
+        return Result.success(totalCount);
     }
 
 }

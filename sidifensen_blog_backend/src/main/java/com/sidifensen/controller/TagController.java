@@ -5,6 +5,7 @@ import com.sidifensen.domain.dto.TagDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.service.TagService;
 import jakarta.annotation.Resource;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class TagController {
     /**
      * 新增标签
      */
+    @PreAuthorize("hasAuthority('tag:add')")
     @PostMapping("/add")
     public Result addTag(@RequestBody TagDto tagDto) {
         tagService.addTag(tagDto);
@@ -43,9 +45,10 @@ public class TagController {
     /**
      * 删除标签
      */
+    @PreAuthorize("hasAuthority('tag:delete')")
     @DeleteMapping("/delete")
     public Result deleteTag(@RequestParam Integer id) {
-        tagService.removeById(id);
+        tagService.deleteTag(id);
         return Result.success();
     }
 

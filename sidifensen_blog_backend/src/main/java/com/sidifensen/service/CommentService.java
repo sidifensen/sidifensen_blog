@@ -105,4 +105,11 @@ public interface CommentService extends IService<Comment> {
      */
     void adminDeleteBatchComment(List<Integer> commentIds);
 
+    /**
+     * 获取评论总数统计
+     *
+     * @return 评论总数
+     */
+    Long getCommentTotalCount();
+
 }

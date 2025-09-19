@@ -261,4 +261,16 @@ public class ArticleController {
         return Result.success();
     }
 
+    /**
+     * 管理员获取文章统计数据
+     *
+     * @return 文章统计数据
+     */
+    @PreAuthorize("hasAuthority('article:list')")
+    @GetMapping("/admin/statistics")
+    public Result getAdminStatistics() {
+        ArticleStatisticsVo statisticsVo = articleService.getAdminStatistics();
+        return Result.success(statisticsVo);
+    }
+
 }

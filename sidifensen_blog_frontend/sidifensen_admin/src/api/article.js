@@ -38,7 +38,7 @@ export function adminDeleteBatchArticle(data) {
   return request({
     url: `/article/admin/delete/batch`,
     method: "delete",
-    data
+    data,
   });
 }
 
@@ -56,7 +56,7 @@ export function adminExamineBatchArticle(data) {
   return request({
     url: `/article/admin/examine/batch`,
     method: "put",
-    data
+    data,
   });
 }
 
@@ -65,7 +65,7 @@ export function adminSearchArticle(data) {
   return request({
     url: `/article/admin/search`,
     method: "post",
-    data
+    data,
   });
 }
 
@@ -73,6 +73,14 @@ export function adminSearchArticle(data) {
 export function adminGetArticlesByUserId(userId) {
   return request({
     url: `/article/admin/user/${userId}`,
+    method: "get",
+  });
+}
+
+// 获取文章统计数据
+export function getArticleStatistics() {
+  return request({
+    url: "/article/admin/statistics",
     method: "get",
   });
 }

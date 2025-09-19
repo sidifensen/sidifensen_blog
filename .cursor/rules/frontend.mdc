@@ -49,6 +49,7 @@ src/
 - 事件名使用 kebab-case
 - 组件标签使用 PascalCase
 - **⚠️ 重要：确保所有 HTML 标签都正确闭合，避免未闭合标签导致的页面渲染问题和布局错乱**
+- **🚫 禁止导入 Element Plus 消息组件：不要在每个 Vue 文件中导入 `import { ElMessage, ElMessageBox } from "element-plus"`，这会导致样式不生效。这些组件已经全局注册，可以直接使用**
 
 ### 3. Composition API 规范
 
@@ -57,7 +58,7 @@ src/
 // 1. 导入依赖 - 按照功能分组
 import { ref, reactive, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ElMessage } from "element-plus";
+// 注意：ElMessage 已全局注册，无需导入
 import { Plus, Message, Trophy, View } from "@element-plus/icons-vue";
 import { getUserInfoById } from "@/api/user";
 import { getUserArticleList, getUserArticleStatisticsById } from "@/api/article";
@@ -790,19 +791,47 @@ const fetchArticleList = async (reset = false) => {
 
 ### 2. 消息提示
 
+- **⚠️ 重要警告：禁止在每个 Vue 文件中单独导入 `import { ElMessage, ElMessageBox } from "element-plus"`，这会导致样式不生效**
+- **✅ 正确做法：Element Plus 的消息提示组件已经在全局注册，可以直接使用，无需导入**
+
 ```javascript
+// ❌ 错误做法 - 禁止在组件中导入
 import { ElMessage, ElMessageBox } from "element-plus";
 
+// ✅ 正确做法 - 直接使用全局注册的组件
 // 成功提示
 ElMessage.success("操作成功");
+
+// 错误提示
+ElMessage.error("操作失败");
+
+// 警告提示
+ElMessage.warning("请注意");
+
+// 信息提示
+ElMessage.info("提示信息");
 
 // 确认对话框
 ElMessageBox.confirm("确定要删除吗？", "提示", {
   confirmButtonText: "确定",
   cancelButtonText: "取消",
   type: "warning",
-}).then(() => {
-  // 确认操作
+})
+  .then(() => {
+    // 确认操作
+  })
+  .catch(() => {
+    // 取消操作
+  });
+
+// 输入对话框
+ElMessageBox.prompt("请输入邮箱", "提示", {
+  confirmButtonText: "确定",
+  cancelButtonText: "取消",
+  inputPattern: /[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?/,
+  inputErrorMessage: "邮箱格式不正确",
+}).then(({ value }) => {
+  // 处理输入值
 });
 ```
 
@@ -948,7 +977,6 @@ ElMessageBox.confirm("确定要删除吗？", "提示", {
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ElMessage } from "element-plus";
 import { Plus, Message, Trophy, View, Picture } from "@element-plus/icons-vue";
 import { getUserInfoById } from "@/api/user";
 import { getUserArticleList, getUserArticleStatisticsById } from "@/api/article";

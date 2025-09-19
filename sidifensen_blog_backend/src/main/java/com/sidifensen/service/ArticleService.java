@@ -80,4 +80,7 @@ public interface ArticleService extends IService<Article> {
 
     // 管理员批量删除文章
     void adminDeleteBatchArticle(List<Integer> articleIds);
+
+    // 管理员获取文章统计数据
+    ArticleStatisticsVo getAdminStatistics();
 }
