@@ -5,7 +5,7 @@
       <svg-icon name="menu" width="50px" height="50px" cursor="pointer" />
     </div>
     <a class="logo" href="/"><el-text size="large" class="logo-text">sidifensen</el-text></a>
-    <a href="/creation"><el-text  class="creation-center">创作中心</el-text></a>
+    <a href="/creation"><el-text class="creation-center">创作中心</el-text></a>
     <div class="right">
       <Dark />
       <div v-if="user" class="user-info">
@@ -39,7 +39,7 @@
               <el-icon><Management /></el-icon>
               <span class="menu-text">管理</span>
             </template>
-            <el-menu-item index="/creation/contentmanage"> 内容管理 </el-menu-item>
+            <el-menu-item index="/creation/articlemanage"> 内容管理 </el-menu-item>
             <el-menu-item index="/creation/columnmanage"> 专栏管理 </el-menu-item>
             <el-menu-item index="/creation/commentmanage"> 评论管理 </el-menu-item>
           </el-sub-menu>

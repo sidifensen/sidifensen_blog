@@ -2,8 +2,11 @@ package com.sidifensen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.ColumnDto;
+import com.sidifensen.domain.dto.ColumnFilterDto;
 import com.sidifensen.domain.entity.Column;
 import com.sidifensen.domain.vo.ColumnVo;
+import com.sidifensen.domain.vo.PageVo;
+import com.sidifensen.domain.vo.UserColumnManageVo;
 
 import java.util.List;
 
@@ -24,5 +27,15 @@ public interface ColumnService extends IService<Column> {
 
     // 删除专栏
     void deleteColumn(Integer id);
+
+    /**
+     * 获取用户专栏列表(专栏管理)
+     *
+     * @param pageNum          页码
+     * @param pageSize         页大小
+     * @param columnFilterDto  专栏筛选条件
+     * @return 用户专栏列表
+     */
+    PageVo<List<UserColumnManageVo>> getUserColumnManageList(Integer pageNum, Integer pageSize, ColumnFilterDto columnFilterDto);
 
 }

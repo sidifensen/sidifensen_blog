@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory,createWebHashHistory } from "vue-router";
+import { createRouter, createWebHistory, createWebHashHistory } from "vue-router";
 import { useUserStore } from "@/stores/userStore";
 import { RemoveJwt } from "@/utils/Auth";
 import { GetJwt } from "@/utils/Auth";
@@ -16,6 +16,7 @@ const router = createRouter({
     {
       path: "/",
       name: "layout",
+      redirect: "/home",
       component: () => import("@/components/Layout.vue"),
       children: [], // 动态路由将在这里添加
     },
@@ -95,7 +96,7 @@ router.beforeEach(async (to, from, next) => {
 
   // 如果用户已登录且访问登录页，则跳转到主页
   if (to.path === "/login") {
-    next({ path: "/" });
+    next({ path: "/home" });
     return;
   }
 

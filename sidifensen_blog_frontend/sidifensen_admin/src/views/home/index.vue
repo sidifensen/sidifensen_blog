@@ -175,7 +175,7 @@
             <el-icon><ChatLineRound /></el-icon>
             评论审核
           </el-button>
-          <el-button type="warning" size="large" @click="navigateTo('/user/manage')">
+          <el-button type="warning" size="large" @click="navigateTo('/system/user')">
             <el-icon><User /></el-icon>
             用户管理
           </el-button>
@@ -275,7 +275,7 @@ const getPercentage = (value, total) => {
 // 计算系统运行时间
 const calculateRunTime = () => {
   // 假设系统启动时间（实际项目中应该从后端获取）
-  const startTime = new Date("2025-08-04");
+  const startTime = new Date("2025-09-17");
   const now = new Date();
   const diff = now - startTime;
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));

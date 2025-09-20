@@ -32,12 +32,19 @@
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="content" label="评论内容" min-width="200">
             <template #default="{ row }">
-              <el-tooltip :content="row.content" placement="top-start">
+              <el-tooltip :content="row.content" placement="top-start" :popper-style="{ maxWidth: '300px', wordWrap: 'break-word', whiteSpace: 'normal' }">
                 <div class="comment-content">{{ row.content }}</div>
               </el-tooltip>
             </template>
           </el-table-column>
-          <el-table-column prop="nickname" label="评论用户" width="120" />
+          <el-table-column prop="nickname" label="评论用户" width="100" />
+          <el-table-column prop="articleTitle" label="所属文章" min-width="170">
+            <template #default="{ row }">
+              <el-tooltip :content="row.articleTitle" placement="top-start" :popper-style="{ maxWidth: '300px', wordWrap: 'break-word', whiteSpace: 'normal' }"">
+                <div class="article-title">{{ row.articleTitle }}</div>
+              </el-tooltip>
+            </template>
+          </el-table-column>
           <el-table-column prop="articleId" label="文章ID" width="80" />
           <el-table-column prop="parentId" label="父评论ID" width="100">
             <template #default="{ row }">
@@ -45,7 +52,7 @@
               <span v-else class="no-parent">主评论</span>
             </template>
           </el-table-column>
-          <el-table-column prop="replyUserNickname" label="回复用户" width="120">
+          <el-table-column prop="replyUserNickname" label="回复用户" width="100">
             <template #default="{ row }">
               <span v-if="row.replyUserNickname">{{ row.replyUserNickname }}</span>
               <span v-else class="no-reply">无回复</span>
@@ -60,8 +67,8 @@
           </el-table-column>
           <el-table-column prop="likeCount" label="点赞量" width="80" />
           <el-table-column prop="replyCount" label="回复数" width="80" />
-          <el-table-column prop="createTime" label="创建时间" sortable width="150" />
-          <el-table-column label="操作" width="350">
+          <el-table-column prop="createTime" label="创建时间" sortable width="110" />
+          <el-table-column label="操作" width="320">
             <template #default="{ row }">
               <div class="table-actions">
                 <el-button type="info" @click="handleViewComment(row)" :icon="View" class="view-button" size="small">查看</el-button>
@@ -97,7 +104,13 @@
                     <span class="author-name">{{ comment.nickname }}</span>
                   </div>
 
-                  <!-- 文章和回复信息 -->
+                  <!-- 文章信息 -->
+                  <div class="comment-article-mobile" v-if="comment.articleTitle">
+                    <span class="article-label">文章:</span>
+                    <span class="article-name">{{ comment.articleTitle }}</span>
+                  </div>
+
+                  <!-- 其他元信息 -->
                   <div class="comment-meta-mobile">
                     <div class="meta-item">
                       <span class="label">文章ID:</span>
@@ -731,7 +744,6 @@ const handleBatchDelete = () => {
 
         // 评论内容样式
         .comment-content {
-          max-width: 200px;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
@@ -877,6 +889,7 @@ const handleBatchDelete = () => {
                   align-items: center;
                   flex-wrap: wrap;
                   gap: 8px;
+                  margin-bottom: 5px;
 
                   // 评论ID样式
                   .comment-id {
@@ -915,6 +928,27 @@ const handleBatchDelete = () => {
                   .author-name {
                     color: #555;
                     font-weight: 500;
+                  }
+                }
+
+                // 移动端文章信息样式
+                .comment-article-mobile {
+                  font-size: 13px;
+                  color: #666;
+                  margin-bottom: 8px;
+                  display: flex;
+                  align-items: center;
+
+                  .article-label {
+                    font-weight: 500;
+                    color: #888;
+                    margin-right: 4px;
+                  }
+
+                  .article-name {
+                    color: #555;
+                    font-weight: 500;
+                    flex: 1;
                   }
                 }
 
@@ -1507,6 +1541,20 @@ const handleBatchDelete = () => {
           align-self: center;
           width: 100px;
           height: 100px;
+
+          // 确保头像图片保持正圆形
+          .detail-avatar-img {
+            width: 100px !important;
+            height: 100px !important;
+            border-radius: 50% !important;
+          }
+
+          // 无头像占位也保持正圆形
+          .no-avatar-detail {
+            width: 100px !important;
+            height: 100px !important;
+            border-radius: 50% !important;
+          }
         }
       }
 

@@ -3,11 +3,13 @@ package com.sidifensen.controller;
 import com.sidifensen.aspect.TimeConsuming;
 import com.sidifensen.domain.dto.CommentAuditDto;
 import com.sidifensen.domain.dto.CommentDto;
+import com.sidifensen.domain.dto.CommentFilterDto;
 import com.sidifensen.domain.dto.CommentSearchDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.AdminCommentVo;
 import com.sidifensen.domain.vo.CommentVo;
 import com.sidifensen.domain.vo.PageVo;
+import com.sidifensen.domain.vo.UserCommentManageVo;
 import com.sidifensen.service.CommentService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -64,6 +66,21 @@ public class CommentController {
     @GetMapping("/list")
     public Result<PageVo<List<CommentVo>>> getCommentList(@NotNull Integer articleId, @NotNull Integer pageNum, @NotNull Integer pageSize) {
         PageVo<List<CommentVo>> commentList = commentService.getCommentList(articleId, pageNum, pageSize);
+        return Result.success(commentList);
+    }
+
+    /**
+     * 获取用户评论列表(评论管理)
+     *
+     * @param pageNum          页码
+     * @param pageSize         页大小
+     * @param commentFilterDto 评论筛选条件
+     * @return 用户评论列表
+     */
+    @PostMapping("/manage/list")
+    public Result<PageVo<List<UserCommentManageVo>>> getUserCommentManageList(@NotNull Integer pageNum, @NotNull Integer pageSize,
+                                                                              @RequestBody CommentFilterDto commentFilterDto) {
+        PageVo<List<UserCommentManageVo>> commentList = commentService.getUserCommentManageList(pageNum, pageSize, commentFilterDto);
         return Result.success(commentList);
     }
 

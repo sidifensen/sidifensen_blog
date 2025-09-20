@@ -94,3 +94,25 @@ export const adminDeleteComment = (commentId) => {
     method: "delete",
   });
 };
+
+/**
+ * 获取用户评论管理列表
+ * @param {number} pageNum 页码
+ * @param {number} pageSize 页大小
+ * @param {Object} commentFilterDto 评论筛选条件
+ * @param {string} commentFilterDto.keyword 搜索关键词
+ * @param {number} commentFilterDto.year 年份筛选
+ * @param {number} commentFilterDto.month 月份筛选
+ * @returns {Promise}
+ */
+export const getUserCommentManageList = (pageNum, pageSize, commentFilterDto) => {
+  return request({
+    url: "/comment/manage/list",
+    method: "post",
+    params: {
+      pageNum,
+      pageSize,
+    },
+    data: commentFilterDto,
+  });
+};

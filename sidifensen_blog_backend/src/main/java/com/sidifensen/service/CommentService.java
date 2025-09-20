@@ -3,11 +3,13 @@ package com.sidifensen.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.CommentAuditDto;
 import com.sidifensen.domain.dto.CommentDto;
+import com.sidifensen.domain.dto.CommentFilterDto;
 import com.sidifensen.domain.dto.CommentSearchDto;
 import com.sidifensen.domain.entity.Comment;
 import com.sidifensen.domain.vo.AdminCommentVo;
 import com.sidifensen.domain.vo.CommentVo;
 import com.sidifensen.domain.vo.PageVo;
+import com.sidifensen.domain.vo.UserCommentManageVo;
 
 import java.util.List;
 
@@ -111,5 +113,15 @@ public interface CommentService extends IService<Comment> {
      * @return 评论总数
      */
     Long getCommentTotalCount();
+
+    /**
+     * 获取用户评论列表(评论管理)
+     *
+     * @param pageNum          页码
+     * @param pageSize         页大小
+     * @param commentFilterDto 评论筛选条件
+     * @return 用户评论列表
+     */
+    PageVo<List<UserCommentManageVo>> getUserCommentManageList(Integer pageNum, Integer pageSize, CommentFilterDto commentFilterDto);
 
 }

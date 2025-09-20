@@ -638,7 +638,7 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 
     // 文章卡片样式
     .article-card {
-      background-color: $white;
+      background-color: var(--el-bg-color);
       border-radius: 12px;
       overflow: hidden;
       box-shadow: $shadow;
@@ -730,7 +730,7 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
           line-height: 1.4;
 
           .article-title-link {
-            color: $text-color;
+            color: var(--el-text-color);
             text-decoration: none;
             transition: color 0.3s ease;
             font-weight: 600;
@@ -766,7 +766,7 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
           align-items: center;
           justify-content: space-between;
           padding-top: 12px;
-          border-top: 1px solid #f0f0f0;
+          border-top: 1px solid var(--el-border-color);
 
           .read-count,
           .like-count,
@@ -987,8 +987,6 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         padding: 18px;
 
         .article-stats {
-          flex-direction: column;
-          align-items: flex-start;
           gap: 10px;
 
           .read-more {

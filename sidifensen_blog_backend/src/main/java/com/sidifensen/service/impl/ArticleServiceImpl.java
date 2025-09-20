@@ -221,11 +221,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                         .like(Article::getDescription, articleStatusDto.getKeyword())); // 描述
 
         // 添加根据年月查询的条件
-        if (ObjectUtil.isNotEmpty(articleStatusDto.getYear())) {
+        if (ObjectUtil.isNotEmpty(articleStatusDto.getYear()) || ObjectUtil.isNotEmpty(articleStatusDto.getMonth())) {
             if (ObjectUtil.isNotEmpty(articleStatusDto.getMonth())) {
-                // 如果指定了年份和月份，查询该月
-                LocalDateTime firstDayOfMonth = LocalDateTime.of(articleStatusDto.getYear(),
-                        articleStatusDto.getMonth(), 1, 0, 0, 0);
+                // 确定年份：如果有指定年份则使用，否则使用当前年份
+                int year = ObjectUtil.isNotEmpty(articleStatusDto.getYear()) ? 
+                          articleStatusDto.getYear() : LocalDateTime.now().getYear();
+                
+                // 查询指定年份的指定月份
+                LocalDateTime firstDayOfMonth = LocalDateTime.of(year, articleStatusDto.getMonth(), 1, 0, 0, 0);
                 LocalDateTime lastDayOfMonth = firstDayOfMonth.with(TemporalAdjusters.lastDayOfMonth())
                         .with(LocalTime.MAX);
                 qw.between(Article::getCreateTime, firstDayOfMonth, lastDayOfMonth);
@@ -417,6 +420,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                             newArticleColumn.setColumnId(columnId);
                             newArticleColumn.setSort(sort + 1); // 最大排序值加1
                             articleColumnMapper.insert(newArticleColumn);
+                            
+                            // 增加专栏的文章数量
+                            Column column = columnMapper.selectById(columnId);
+                            if (column != null) {
+                                column.setArticleCount(column.getArticleCount() + 1);
+                                columnMapper.updateById(column);
+                            }
                         });
                     }
                 } else if (auditResult.getStatus().equals(ExamineStatusEnum.NO_PASS.getCode())) {
@@ -501,6 +511,23 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (article.getUserId() != SecurityUtils.getUserId()) {
             throw new BlogException(BlogConstants.CannotHandleOthersArticle);
         }
+        
+        // 如果文章已审核通过，需要减少相关专栏的文章数量
+        if (article.getExamineStatus().equals(ExamineStatusEnum.PASS.getCode())) {
+            List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
+                    new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleId)
+            );
+            
+            // 减少每个专栏的文章数量
+            articleColumns.forEach(articleColumn -> {
+                Column column = columnMapper.selectById(articleColumn.getColumnId());
+                if (column != null && column.getArticleCount() > 0) {
+                    column.setArticleCount(column.getArticleCount() - 1);
+                    columnMapper.updateById(column);
+                }
+            });
+        }
+        
         articleMapper.deleteById(articleId);
         articleColumnMapper.delete(new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, articleId));
 
@@ -807,9 +834,31 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public void adminDeleteArticle(Integer articleId) {
+        // 获取文章信息
+        Article article = articleMapper.selectById(articleId);
+        
+        // 如果文章已审核通过，需要减少相关专栏的文章数量
+        if (article != null && article.getExamineStatus().equals(ExamineStatusEnum.PASS.getCode())) {
+            List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
+                    new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleId)
+            );
+            
+            // 减少每个专栏的文章数量
+            articleColumns.forEach(articleColumn -> {
+                Column column = columnMapper.selectById(articleColumn.getColumnId());
+                if (column != null && column.getArticleCount() > 0) {
+                    column.setArticleCount(column.getArticleCount() - 1);
+                    columnMapper.updateById(column);
+                }
+            });
+        }
+        
         if (articleMapper.deleteById(articleId) < 1) {
             throw new BlogException(BlogConstants.DeleteArticleError);
         }
+        
+        // 删除文章与专栏的关联关系
+        articleColumnMapper.delete(new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleId));
 
         // 清除文章的所有浏览记录
         redisComponent.clearArticleReads(articleId);
@@ -817,8 +866,32 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public void adminDeleteBatchArticle(List<Integer> articleIds) {
+        // 批量处理专栏文章数量
+        articleIds.forEach(articleId -> {
+            Article article = articleMapper.selectById(articleId);
+            
+            // 如果文章已审核通过，需要减少相关专栏的文章数量
+            if (article != null && article.getExamineStatus().equals(ExamineStatusEnum.PASS.getCode())) {
+                List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
+                        new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleId)
+                );
+                
+                // 减少每个专栏的文章数量
+                articleColumns.forEach(articleColumn -> {
+                    Column column = columnMapper.selectById(articleColumn.getColumnId());
+                    if (column != null && column.getArticleCount() > 0) {
+                        column.setArticleCount(column.getArticleCount() - 1);
+                        columnMapper.updateById(column);
+                    }
+                });
+            }
+        });
+        
         // 批量删除文章
         this.removeByIds(articleIds);
+        
+        // 删除文章与专栏的关联关系
+        articleColumnMapper.delete(new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, articleIds));
 
         // 批量清除文章的所有浏览记录
         redisComponent.batchClearArticleReads(articleIds);

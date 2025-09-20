@@ -65,6 +65,34 @@
         </div>
       </div>
 
+      <!-- 时间筛选区域 -->
+      <div class="card-time-filters">
+        <div class="time-filter-group">
+          <el-date-picker
+            v-model="searchStartTime"
+            type="date"
+            placeholder="开始时间"
+            size="small"
+            class="time-input"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
+            clearable
+            @change="handleSearch"
+          />
+          <el-date-picker
+            v-model="searchEndTime"
+            type="date"
+            placeholder="结束时间"
+            size="small"
+            class="time-input"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
+            clearable
+            @change="handleSearch"
+          />
+        </div>
+      </div>
+
       <div class="card-second">
         <el-input v-model="searchKeyword" placeholder="搜索评论内容" class="search-input" size="small" clearable @input="handleSearch">
           <template #prefix>
@@ -84,16 +112,16 @@
         <el-table v-loading="loading" :data="paginatedCommentList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
           <el-table-column type="selection" width="30" />
           <el-table-column prop="id" label="ID" width="60" />
-          <el-table-column prop="content" label="评论内容" min-width="200">
+          <el-table-column prop="content" label="评论内容" min-width="300">
             <template #default="{ row }">
-              <el-tooltip :content="row.content" placement="top-start">
+              <el-tooltip :content="row.content" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"">
                 <div class="comment-content">{{ row.content }}</div>
               </el-tooltip>
             </template>
           </el-table-column>
-          <el-table-column prop="articleTitle" label="所属文章" min-width="150">
+          <el-table-column prop="articleTitle" label="所属文章" min-width="170">
             <template #default="{ row }">
-              <el-tooltip :content="row.articleTitle" placement="top-start">
+              <el-tooltip :content="row.articleTitle" placement="top-start" :popper-style="{ maxWidth: '300px', wordWrap: 'break-word', whiteSpace: 'normal' }"">
                 <div class="article-title">{{ row.articleTitle }}</div>
               </el-tooltip>
             </template>
@@ -141,13 +169,33 @@
                     </div>
                   </div>
                   <div class="comment-content-mobile">{{ comment.content }}</div>
+                  
+                  <!-- 评论用户信息 -->
+                  <div class="comment-author-mobile" v-if="comment.nickname">
+                    <span class="author-label">评论用户:</span>
+                    <span class="author-name">{{ comment.nickname }}</span>
+                  </div>
+
+                  <!-- 文章信息 -->
                   <div class="comment-article-mobile" v-if="comment.articleTitle">
                     <span class="article-label">文章:</span>
                     <span class="article-name">{{ comment.articleTitle }}</span>
                   </div>
-                  <div class="comment-reply-mobile" v-if="comment.replyUserNickname">
-                    <span class="reply-label">回复:</span>
-                    <span class="reply-name">{{ comment.replyUserNickname }}</span>
+
+                  <!-- 其他元信息 -->
+                  <div class="comment-meta-mobile">
+                    <div class="meta-item" v-if="comment.articleId">
+                      <span class="label">文章ID:</span>
+                      <span>{{ comment.articleId }}</span>
+                    </div>
+                    <div class="meta-item" v-if="comment.parentId">
+                      <span class="label">父评论:</span>
+                      <span>#{{ comment.parentId }}</span>
+                    </div>
+                    <div class="meta-item" v-if="comment.replyUserNickname">
+                      <span class="label">回复用户:</span>
+                      <span>{{ comment.replyUserNickname }}</span>
+                    </div>
                   </div>
                   <div class="comment-meta">
                     <div class="stats-row">
@@ -314,6 +362,8 @@ const detailLoading = ref(false);
 // 搜索条件
 const searchExamineStatus = ref("");
 const searchKeyword = ref("");
+const searchStartTime = ref("");
+const searchEndTime = ref("");
 
 // 选中的评论
 const selectedComments = ref([]);
@@ -365,6 +415,8 @@ const handleBackToUsers = () => {
   // 重置搜索条件
   searchExamineStatus.value = "";
   searchKeyword.value = "";
+  searchStartTime.value = "";
+  searchEndTime.value = "";
   selectedComments.value = [];
 };
 
@@ -414,6 +466,8 @@ const handleSearch = async () => {
       userId: currentUser.value.id,
       examineStatus: searchExamineStatus.value,
       keyword: searchKeyword.value,
+      startTime: searchStartTime.value,
+      endTime: searchEndTime.value,
     });
     commentList.value = res.data.data;
     total.value = commentList.value.length;
@@ -431,7 +485,7 @@ const refreshCommentList = async () => {
   if (!currentUser.value) return;
 
   // 检查是否有任何搜索条件
-  const hasSearchConditions = searchExamineStatus.value || searchKeyword.value;
+  const hasSearchConditions = searchExamineStatus.value || searchKeyword.value || searchStartTime.value || searchEndTime.value;
 
   if (hasSearchConditions) {
     await handleSearch();
@@ -657,7 +711,7 @@ onUnmounted(() => {
         gap: 10px;
 
         .search-input {
-          width: 240px;
+          width: 200px;
           border-radius: 8px;
 
           :deep(.el-input__wrapper) {
@@ -677,6 +731,36 @@ onUnmounted(() => {
             &:focus-within {
               box-shadow: 0 0 0 3px rgba(230, 162, 60, 0.2);
               border-color: #e6a23c;
+            }
+          }
+        }
+      }
+    }
+
+    // 时间筛选区域
+    .card-time-filters {
+      display: flex;
+      justify-content: flex-end;
+      padding: 10px 10px 0 10px;
+
+      .time-filter-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .time-input {
+          width: 160px;
+          border-radius: 8px;
+
+          :deep(.el-date-editor.el-input) {
+            .el-input__wrapper {
+              border-radius: 8px;
+              transition: all 0.3s ease;
+
+              &:focus-within {
+                box-shadow: 0 0 0 3px rgba(230, 162, 60, 0.2);
+                border-color: #e6a23c;
+              }
             }
           }
         }
@@ -889,7 +973,6 @@ onUnmounted(() => {
 
       // 评论内容样式
       .comment-content {
-        max-width: 200px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -902,10 +985,8 @@ onUnmounted(() => {
 
       // 文章标题样式
       .article-title {
-        max-width: 150px;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
         cursor: pointer;
 
         &:hover {
@@ -1047,6 +1128,7 @@ onUnmounted(() => {
                 align-items: center;
                 flex-wrap: wrap;
                 gap: 8px;
+                margin-bottom: 5px;
 
                 .comment-id {
                   font-size: 12px;
@@ -1071,6 +1153,27 @@ onUnmounted(() => {
                 overflow: hidden;
               }
 
+              // 移动端评论用户信息
+              .comment-author-mobile {
+                font-size: 13px;
+                color: #666;
+                margin-bottom: 8px;
+                display: flex;
+                align-items: center;
+
+                .author-label {
+                  font-weight: 500;
+                  color: #888;
+                  margin-right: 4px;
+                }
+
+                .author-name {
+                  color: #555;
+                  font-weight: 500;
+                  flex: 1;
+                }
+              }
+
               // 移动端文章信息
               .comment-article-mobile {
                 font-size: 13px;
@@ -1088,28 +1191,32 @@ onUnmounted(() => {
                 .article-name {
                   color: #555;
                   font-weight: 500;
+                  flex: 1;
+                  word-break: break-all; // 强制断词
                 }
               }
 
-              // 移动端回复信息
-              .comment-reply-mobile {
-                font-size: 13px;
-                color: #666;
-                margin-bottom: 8px;
+              // 移动端评论元信息
+              .comment-meta-mobile {
                 display: flex;
-                align-items: center;
+                flex-direction: column;
+                gap: 4px;
+                margin-bottom: 8px;
 
-                .reply-label {
-                  font-weight: 500;
-                  color: #888;
-                  margin-right: 4px;
-                }
+                .meta-item {
+                  font-size: 12px;
+                  color: #666;
+                  display: flex;
+                  align-items: center;
 
-                .reply-name {
-                  color: #555;
-                  font-weight: 500;
+                  .label {
+                    font-weight: 500;
+                    margin-right: 4px;
+                    color: #888;
+                  }
                 }
               }
+
 
               // 评论元信息
               .comment-meta {
@@ -1544,10 +1651,41 @@ onUnmounted(() => {
   }
 }
 
+// Tooltip 样式优化
+:deep(.comment-tooltip) {
+  max-width: 400px !important;
+  word-wrap: break-word !important;
+  white-space: normal !important;
+  line-height: 1.4 !important;
+
+  @media screen and (max-width: 768px) {
+    max-width: 80vw !important;
+  }
+
+  @media screen and (max-width: 480px) {
+    max-width: 90vw !important;
+  }
+}
+
+:deep(.article-tooltip) {
+  max-width: 300px !important;
+  word-wrap: break-word !important;
+  white-space: normal !important;
+  line-height: 1.4 !important;
+
+  @media screen and (max-width: 768px) {
+    max-width: 70vw !important;
+  }
+
+  @media screen and (max-width: 480px) {
+    max-width: 80vw !important;
+  }
+}
+
 // 响应式设计
 @media screen and (max-width: 1400px) {
   .management-container .card .card-header .card-actions .search-input {
-    width: 180px;
+    width: 140px;
   }
 }
 
@@ -1563,6 +1701,15 @@ onUnmounted(() => {
 
       .search-input {
         width: 100%;
+      }
+    }
+  }
+
+  // 时间筛选区域响应式
+  .management-container .card .card-time-filters {
+    .time-filter-group {
+      .time-input {
+        width: 140px;
       }
     }
   }
@@ -1590,6 +1737,23 @@ onUnmounted(() => {
 
       .card-title {
         font-size: 16px;
+      }
+    }
+
+    // 移动端时间筛选器
+    .card-time-filters {
+      padding: 8px;
+
+      .time-filter-group {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        width: 100%;
+
+        .time-input {
+          flex: 1;
+          width: auto !important;
+        }
       }
     }
 

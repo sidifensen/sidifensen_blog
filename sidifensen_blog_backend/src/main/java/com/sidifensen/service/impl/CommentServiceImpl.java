@@ -1,17 +1,16 @@
 package com.sidifensen.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.config.SidifensenConfig;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.MessageConstants;
 import com.sidifensen.domain.constants.RabbitMQConstants;
-import com.sidifensen.domain.dto.CommentAuditDto;
-import com.sidifensen.domain.dto.CommentDto;
-import com.sidifensen.domain.dto.CommentSearchDto;
-import com.sidifensen.domain.dto.MessageDto;
+import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.entity.Article;
 import com.sidifensen.domain.entity.Comment;
 import com.sidifensen.domain.entity.Like;
@@ -22,6 +21,7 @@ import com.sidifensen.domain.result.AuditResult;
 import com.sidifensen.domain.vo.AdminCommentVo;
 import com.sidifensen.domain.vo.CommentVo;
 import com.sidifensen.domain.vo.PageVo;
+import com.sidifensen.domain.vo.UserCommentManageVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.CommentMapper;
@@ -37,6 +37,9 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -108,23 +111,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         // 保存成功后进行文字内容审核
         auditComment(comment, commentDto.getContent());
 
-        // 如果是回复评论，更新父评论的回复数
-        if (commentDto.getParentId() != null && commentDto.getParentId() > 0) {
-            LambdaUpdateWrapper<Comment> replyUpdateWrapper = new LambdaUpdateWrapper<>();
-            replyUpdateWrapper.eq(Comment::getId, commentDto.getParentId())
-                    .setIncrBy(Comment::getReplyCount, 1);
-            commentMapper.update(null, replyUpdateWrapper);
-        }
-
-        // 更新文章评论数（所有评论都增加文章评论数）
-        LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(Article::getId, commentDto.getArticleId())
-                .setIncrBy(Article::getCommentCount, 1);
-        boolean updateResult = articleMapper.update(null, updateWrapper) > 0;
-        if (!updateResult) {
-            log.warn("更新文章评论数失败，文章ID：{}", commentDto.getArticleId());
-        }
-
         return comment.getId();
     }
 
@@ -155,6 +141,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                     updateComment.setExamineStatus(ExamineStatusEnum.PASS.getCode());
                     updateById(updateComment);
                     log.info("评论文字审核通过，评论ID: {}, 用户ID: {}", commentId, userId);
+
+                    // 审核通过后更新统计数据
+                    updateCommentStatistics(comment);
 
                 } else if (auditResult.getStatus().equals(ExamineStatusEnum.NO_PASS.getCode())) {
                     // 审核不通过，发送消息给用户
@@ -207,6 +196,34 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             sendEmail.put("text", String.format(MessageConstants.COMMENT_NEED_REVIEW, commentId, "未开启自动审核"));
             rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange,
                     RabbitMQConstants.Examine_Routing_Key, sendEmail);
+        }
+    }
+
+    /**
+     * 更新评论统计数据
+     * 在评论审核通过时调用，增加文章评论数和父评论回复数
+     *
+     * @param comment 评论对象
+     */
+    private void updateCommentStatistics(Comment comment) {
+        // 如果是回复评论，更新父评论的回复数
+        if (comment.getParentId() != null && comment.getParentId() > 0) {
+            LambdaUpdateWrapper<Comment> replyUpdateWrapper = new LambdaUpdateWrapper<>();
+            replyUpdateWrapper.eq(Comment::getId, comment.getParentId())
+                    .setIncrBy(Comment::getReplyCount, 1);
+            int replyUpdateResult = commentMapper.update(null, replyUpdateWrapper);
+            if (replyUpdateResult < 0) {
+                log.warn("更新父评论回复数失败，父评论ID：{}，评论ID：{}", comment.getParentId(), comment.getId());
+            }
+        }
+
+        // 更新文章评论数（所有审核通过的评论都增加文章评论数）
+        LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Article::getId, comment.getArticleId())
+                .setIncrBy(Article::getCommentCount, 1);
+        int articleUpdateResult = articleMapper.update(null, updateWrapper);
+        if (articleUpdateResult < 0) {
+            log.warn("更新文章评论数失败，文章ID：{}，评论ID：{}", comment.getArticleId(), comment.getId());
         }
     }
 
@@ -714,6 +731,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             throw new BlogException(BlogConstants.CommentAuditError);
         }
 
+        // 如果审核通过，更新统计数据
+        if (examineStatus.equals(ExamineStatusEnum.PASS.getCode())) {
+            updateCommentStatistics(comment);
+        }
+
         log.info("管理员审核评论，评论ID：{}，审核状态：{}，原因：{}",
                 commentAuditDto.getCommentId(), examineStatus, commentAuditDto.getExamineReason());
     }
@@ -796,9 +818,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<Comment>()
                 .in(Comment::getId, validCommentIds)
                 .eq(Comment::getIsDeleted, 0);
-        
+
         List<Comment> existingComments = list(queryWrapper);
-        
+
         if (existingComments.isEmpty()) {
             throw new BlogException(BlogConstants.NotFoundComment);
         }
@@ -872,7 +894,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     /**
      * 递归收集评论及其所有子评论的ID
      *
-     * @param commentId 评论ID
+     * @param commentId  评论ID
      * @param commentIds 收集的评论ID集合
      */
     private void collectChildCommentIds(Integer commentId, Set<Integer> commentIds) {
@@ -893,6 +915,78 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     public Long getCommentTotalCount() {
         return this.count(new LambdaQueryWrapper<Comment>()
                 .eq(Comment::getIsDeleted, 0)); // 只统计未删除的评论
+    }
+
+    @Override
+    public PageVo<List<UserCommentManageVo>> getUserCommentManageList(Integer pageNum, Integer pageSize, CommentFilterDto commentFilterDto) {
+        Integer currentUserId = SecurityUtils.getUserId(); // 当前登录用户ID
+
+        Page<Comment> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Comment> qw = new LambdaQueryWrapper<Comment>()
+                .eq(Comment::getUserId, currentUserId) // 只查询当前用户的评论
+                .eq(Comment::getExamineStatus, ExamineStatusEnum.PASS.getCode()) // 只返回审核通过的评论
+                .orderByDesc(Comment::getCreateTime); // 按创建时间倒序
+
+        // 添加关键词搜索条件
+        if (ObjectUtil.isNotEmpty(commentFilterDto.getKeyword())) {
+            qw.like(Comment::getContent, commentFilterDto.getKeyword());
+        }
+
+        // 添加根据年月查询的条件
+        if (ObjectUtil.isNotEmpty(commentFilterDto.getYear()) || ObjectUtil.isNotEmpty(commentFilterDto.getMonth())) {
+            if (ObjectUtil.isNotEmpty(commentFilterDto.getMonth())) {
+                // 确定年份：如果有指定年份则使用，否则使用当前年份
+                int year = ObjectUtil.isNotEmpty(commentFilterDto.getYear()) ? 
+                          commentFilterDto.getYear() : LocalDateTime.now().getYear();
+                
+                // 查询指定年份的指定月份
+                LocalDateTime firstDayOfMonth = LocalDateTime.of(year, commentFilterDto.getMonth(), 1, 0, 0, 0);
+                LocalDateTime lastDayOfMonth = firstDayOfMonth.with(TemporalAdjusters.lastDayOfMonth())
+                        .with(LocalTime.MAX);
+                qw.between(Comment::getCreateTime, firstDayOfMonth, lastDayOfMonth);
+            } else {
+                // 如果只指定了年份，查询整年
+                LocalDateTime firstDayOfYear = LocalDateTime.of(commentFilterDto.getYear(), 1, 1, 0, 0, 0);
+                LocalDateTime lastDayOfYear = LocalDateTime.of(commentFilterDto.getYear(), 12, 31, 23, 59, 59);
+                qw.between(Comment::getCreateTime, firstDayOfYear, lastDayOfYear);
+            }
+        }
+
+        List<Comment> comments = commentMapper.selectPage(page, qw).getRecords();
+
+        // 转换为 UserCommentManageVo
+        List<UserCommentManageVo> userCommentManageVos = comments.stream().map(comment -> {
+            UserCommentManageVo vo = new UserCommentManageVo();
+
+            // 设置评论基本信息
+            vo.setId(comment.getId());
+            vo.setContent(comment.getContent());
+            vo.setCreateTime(comment.getCreateTime());
+            vo.setLikeCount(comment.getLikeCount());
+            vo.setReplyCount(comment.getReplyCount());
+            vo.setArticleId(comment.getArticleId());
+
+            // 获取回复用户信息（如果存在）
+            if (ObjectUtil.isNotEmpty(comment.getReplyUserId())) {
+                SysUser replyUser = sysUserMapper.selectById(comment.getReplyUserId());
+                if (ObjectUtil.isNotEmpty(replyUser)) {
+                    vo.setReplyUserId(replyUser.getId());
+                    vo.setReplyUserNickname(replyUser.getNickname());
+                    vo.setReplyUserAvatar(replyUser.getAvatar());
+                }
+            }
+
+            // 获取文章信息
+            Article article = articleMapper.selectById(comment.getArticleId());
+            if (ObjectUtil.isNotEmpty(article)) {
+                vo.setArticleTitle(article.getTitle());
+                vo.setArticleCoverUrl(article.getCoverUrl());
+            }
+
+            return vo;
+        }).collect(Collectors.toList());
+
+        return new PageVo<>(userCommentManageVos, page.getTotal());
     }
 
 }
