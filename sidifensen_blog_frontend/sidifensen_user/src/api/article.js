@@ -92,3 +92,11 @@ export function increaseReadCount(articleId) {
     method: "post",
   });
 }
+
+// 获取创作中心统计数据
+export function getCreationStatistics() {
+  return request({
+    url: "/article/creation/statistics",
+    method: "get",
+  });
+}

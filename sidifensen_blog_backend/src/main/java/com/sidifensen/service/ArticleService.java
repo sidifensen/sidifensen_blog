@@ -7,6 +7,7 @@ import com.sidifensen.domain.dto.ArticleStatusDto;
 import com.sidifensen.domain.entity.Article;
 import com.sidifensen.domain.vo.ArticleStatisticsVo;
 import com.sidifensen.domain.vo.ArticleVo;
+import com.sidifensen.domain.vo.CreationStatisticsVo;
 import com.sidifensen.domain.vo.PageVo;
 
 import java.util.List;
@@ -83,4 +84,7 @@ public interface ArticleService extends IService<Article> {
 
     // 管理员获取文章统计数据
     ArticleStatisticsVo getAdminStatistics();
+
+    // 获取创作中心统计数据
+    CreationStatisticsVo getCreationStatistics();
 }

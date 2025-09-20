@@ -6,6 +6,7 @@ import com.sidifensen.domain.dto.ArticleStatusDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.ArticleStatisticsVo;
 import com.sidifensen.domain.vo.ArticleVo;
+import com.sidifensen.domain.vo.CreationStatisticsVo;
 import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.service.ArticleService;
 import jakarta.annotation.Resource;
@@ -83,6 +84,17 @@ public class ArticleController {
     @GetMapping("/user/{userId}/statistics")
     public Result getUserArticleStatisticsById(@PathVariable Integer userId) {
         ArticleStatisticsVo statisticsVo = articleService.getUserArticleStatisticsById(userId);
+        return Result.success(statisticsVo);
+    }
+
+    /**
+     * 获取创作中心统计数据
+     *
+     * @return 创作中心统计数据
+     */
+    @GetMapping("/creation/statistics")
+    public Result getCreationStatistics() {
+        CreationStatisticsVo statisticsVo = articleService.getCreationStatistics();
         return Result.success(statisticsVo);
     }
 

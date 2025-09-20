@@ -15,26 +15,17 @@ import com.sidifensen.domain.dto.ArticleAuditDto;
 import com.sidifensen.domain.dto.ArticleDto;
 import com.sidifensen.domain.dto.ArticleStatusDto;
 import com.sidifensen.domain.dto.MessageDto;
-import com.sidifensen.domain.entity.Article;
-import com.sidifensen.domain.entity.ArticleColumn;
-import com.sidifensen.domain.entity.Column;
-import com.sidifensen.domain.entity.SysUser;
+import com.sidifensen.domain.entity.*;
 import com.sidifensen.domain.enums.*;
 import com.sidifensen.domain.result.AuditResult;
-import com.sidifensen.domain.vo.ArticleStatisticsVo;
-import com.sidifensen.domain.vo.ArticleVo;
-import com.sidifensen.domain.vo.ColumnVo;
-import com.sidifensen.domain.vo.PageVo;
+import com.sidifensen.domain.vo.*;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.ArticleColumnMapper;
 import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.ColumnMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.redis.RedisComponent;
-import com.sidifensen.service.ArticleService;
-import com.sidifensen.service.HistoryService;
-import com.sidifensen.service.LikeService;
-import com.sidifensen.service.MessageService;
+import com.sidifensen.service.*;
 import com.sidifensen.utils.IpUtils;
 import com.sidifensen.utils.MyThreadFactory;
 import com.sidifensen.utils.SecurityUtils;
@@ -97,6 +88,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Resource
     private RedisComponent redisComponent;
+
+    @Resource
+    private ColumnService columnService;
+
+    @Resource
+    private CommentService commentService;
 
     @Override
     public PageVo<List<ArticleVo>> getAllArticleList(Integer pageNum, Integer pageSize) {
@@ -224,9 +221,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (ObjectUtil.isNotEmpty(articleStatusDto.getYear()) || ObjectUtil.isNotEmpty(articleStatusDto.getMonth())) {
             if (ObjectUtil.isNotEmpty(articleStatusDto.getMonth())) {
                 // 确定年份：如果有指定年份则使用，否则使用当前年份
-                int year = ObjectUtil.isNotEmpty(articleStatusDto.getYear()) ? 
-                          articleStatusDto.getYear() : LocalDateTime.now().getYear();
-                
+                int year = ObjectUtil.isNotEmpty(articleStatusDto.getYear()) ?
+                        articleStatusDto.getYear() : LocalDateTime.now().getYear();
+
                 // 查询指定年份的指定月份
                 LocalDateTime firstDayOfMonth = LocalDateTime.of(year, articleStatusDto.getMonth(), 1, 0, 0, 0);
                 LocalDateTime lastDayOfMonth = firstDayOfMonth.with(TemporalAdjusters.lastDayOfMonth())
@@ -420,7 +417,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                             newArticleColumn.setColumnId(columnId);
                             newArticleColumn.setSort(sort + 1); // 最大排序值加1
                             articleColumnMapper.insert(newArticleColumn);
-                            
+
                             // 增加专栏的文章数量
                             Column column = columnMapper.selectById(columnId);
                             if (column != null) {
@@ -511,13 +508,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (article.getUserId() != SecurityUtils.getUserId()) {
             throw new BlogException(BlogConstants.CannotHandleOthersArticle);
         }
-        
+
         // 如果文章已审核通过，需要减少相关专栏的文章数量
         if (article.getExamineStatus().equals(ExamineStatusEnum.PASS.getCode())) {
             List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
                     new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleId)
             );
-            
+
             // 减少每个专栏的文章数量
             articleColumns.forEach(articleColumn -> {
                 Column column = columnMapper.selectById(articleColumn.getColumnId());
@@ -527,7 +524,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 }
             });
         }
-        
+
         articleMapper.deleteById(articleId);
         articleColumnMapper.delete(new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, articleId));
 
@@ -836,13 +833,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public void adminDeleteArticle(Integer articleId) {
         // 获取文章信息
         Article article = articleMapper.selectById(articleId);
-        
+
         // 如果文章已审核通过，需要减少相关专栏的文章数量
         if (article != null && article.getExamineStatus().equals(ExamineStatusEnum.PASS.getCode())) {
             List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
                     new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleId)
             );
-            
+
             // 减少每个专栏的文章数量
             articleColumns.forEach(articleColumn -> {
                 Column column = columnMapper.selectById(articleColumn.getColumnId());
@@ -852,11 +849,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 }
             });
         }
-        
+
         if (articleMapper.deleteById(articleId) < 1) {
             throw new BlogException(BlogConstants.DeleteArticleError);
         }
-        
+
         // 删除文章与专栏的关联关系
         articleColumnMapper.delete(new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleId));
 
@@ -869,13 +866,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 批量处理专栏文章数量
         articleIds.forEach(articleId -> {
             Article article = articleMapper.selectById(articleId);
-            
+
             // 如果文章已审核通过，需要减少相关专栏的文章数量
             if (article != null && article.getExamineStatus().equals(ExamineStatusEnum.PASS.getCode())) {
                 List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
                         new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleId)
                 );
-                
+
                 // 减少每个专栏的文章数量
                 articleColumns.forEach(articleColumn -> {
                     Column column = columnMapper.selectById(articleColumn.getColumnId());
@@ -886,10 +883,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 });
             }
         });
-        
+
         // 批量删除文章
         this.removeByIds(articleIds);
-        
+
         // 删除文章与专栏的关联关系
         articleColumnMapper.delete(new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, articleIds));
 
@@ -928,6 +925,57 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         statisticsVo.setGarbageCount(garbageCount);
 
         return statisticsVo;
+    }
+
+    @Override
+    public CreationStatisticsVo getCreationStatistics() {
+        Integer userId = SecurityUtils.getUserId();
+
+        // 获取文章统计信息
+        ArticleStatisticsVo articleStatistics = getUserArticleStatistics();
+
+        // 获取专栏数量
+        Long columnCount = columnMapper.selectCount(new LambdaQueryWrapper<Column>()
+                .eq(Column::getUserId, userId));
+
+        // 获取评论数量 
+        Long commentCount = 0L;
+        try {
+            commentCount = commentService.count(
+                    new LambdaQueryWrapper<Comment>()
+                            .eq(Comment::getUserId, userId)
+            );
+        } catch (Exception e) {
+            // 如果Comment实体类或方法不存在，设为0
+            commentCount = 0L;
+        }
+
+        // 获取总阅读量
+        Long totalReadCount = articleMapper.selectList(
+                new LambdaQueryWrapper<Article>()
+                        .eq(Article::getUserId, userId)
+                        .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
+        ).stream().mapToLong(Article::getReadCount).sum();
+
+        // 获取总点赞数 - 暂时设为0，后续可以实现
+        Long totalLikeCount = 0L;
+
+        // 获取用户信息（粉丝数、关注数）
+        SysUser user = sysUserMapper.selectById(userId);
+        Long fansCount = user != null ? user.getFansCount() : 0L;
+        Long followCount = user != null ? user.getFollowCount() : 0L;
+
+        // 构建返回对象
+        CreationStatisticsVo creationStatistics = new CreationStatisticsVo();
+        creationStatistics.setArticleStatistics(articleStatistics);
+        creationStatistics.setColumnCount(columnCount);
+        creationStatistics.setCommentCount(commentCount);
+        creationStatistics.setTotalReadCount(totalReadCount);
+        creationStatistics.setTotalLikeCount(totalLikeCount);
+        creationStatistics.setFansCount(fansCount);
+        creationStatistics.setFollowCount(followCount);
+
+        return creationStatistics;
     }
 
 }
