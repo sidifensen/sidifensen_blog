@@ -65,6 +65,13 @@ public class Column implements Serializable {
     private Integer showStatus;
 
     /**
+     * 审核状态 0-待审核 1-审核通过 2-审核未通过
+     */
+    @Min(value = 0, message = "审核状态错误")
+    @Max(value = 2, message = "审核状态错误")
+    private Integer examineStatus;
+
+    /**
      * 关注数
      */
     private Integer focusCount;

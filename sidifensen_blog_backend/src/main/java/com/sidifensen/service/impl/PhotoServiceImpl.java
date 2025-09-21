@@ -127,6 +127,16 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         return url;
     }
 
+    @Override
+    public String uploadColumn(MultipartFile file, Integer columnId) {
+        // 拼接userId/columnId作为目录名
+        Integer userId = SecurityUtils.getUserId();
+        String dirName = userId + "/" + columnId + "/";
+        String url = fileUploadUtils.upload(UploadEnum.COLUMN, file, dirName);
+        auditAndUpdate(userId, url, columnId);
+        return url;
+    }
+
     // 相册图片审核
     private void auditAndUpdate(Integer userId, String url, Integer albumId) {
         executorService.execute(() -> {

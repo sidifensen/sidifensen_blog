@@ -180,12 +180,13 @@ create table `column`
     description   varchar(200) comment '专栏描述',
     cover_url     varchar(400) comment '专栏封面',
     show_status   tinyint     not null default 0 comment '展示状态 0-公开 1-私密',
+    examine_status tinyint     not null default 0 comment '审核状态 0-待审核 1-审核通过 2-审核未通过',  
     focus_count   int         not null default 0 comment '关注数',
     article_count int         not null default 0 comment '文章数',
     create_time   datetime    not null comment '创建时间',
     update_time   datetime    not null comment '更新时间',
     is_deleted    tinyint     not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index idx_user_id (user_id)
+    index idx_user_id_examine_status (user_id,examine_status),
 );
 
 create table article_column

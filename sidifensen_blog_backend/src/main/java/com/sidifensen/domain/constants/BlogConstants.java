@@ -48,10 +48,15 @@ public class BlogConstants {
     public static final String NotFoundArticle = "文章不存在";
     public static final String NotFoundTag = "标签不存在";
 
+    public static final String NotFoundColumn = "专栏不存在";
     public static final String CannotHandleOthersColumn = "不能操作别人的专栏";
     public static final String AddColumnError = "添加专栏失败";
     public static final String UpdateColumnError = "更新专栏失败";
     public static final String DeleteColumnError = "删除专栏失败";
+    public static final String ExamineColumnError = "审核专栏失败";
+    public static final String BatchExamineColumnError = "批量审核专栏失败";
+    public static final String BatchDeleteColumnError = "批量删除专栏失败";
+    public static final String ColumnIdsEmpty = "专栏ID列表不能为空";
 
     // 评论相关错误信息
     public static final String NotFoundComment = "评论不存在";

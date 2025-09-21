@@ -7,7 +7,6 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * <p>
@@ -61,16 +60,11 @@ public class ColumnDto implements Serializable {
     @Max(value = 1, message = "展示状态错误")
     private Integer showStatus;
 
-
     /**
-     * 创建时间
+     * 审核状态 0-待审核 1-审核通过 2-审核未通过
      */
-    private Date createTime;
-
-    /**
-     * 更新时间
-     */
-    private Date updateTime;
-
+    @Min(value = 0, message = "审核状态错误")
+    @Max(value = 2, message = "审核状态错误")
+    private Integer examineStatus;
 
 }

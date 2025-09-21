@@ -21,9 +21,12 @@ public interface PhotoService extends IService<Photo> {
 
     // 上传图片到相册
     void uploadAlbum(MultipartFile file, Integer albumId);
-
+    
     // 上传文章图片
     String uploadArticle(MultipartFile file);
+
+    // 上传图片到专栏
+    String uploadColumn(MultipartFile file, Integer columnId);
 
     // 删除图片
     void delete(Integer photoId);

@@ -106,7 +106,7 @@ watch(
         padding: 10px;
       }
       .router-view {
-        // height: 100%;
+        height: 100%;
       }
     }
   }

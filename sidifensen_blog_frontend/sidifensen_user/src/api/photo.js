@@ -25,6 +25,18 @@ export function uploadArticlePhoto(file) {
   });
 }
 
+// 上传专栏图片
+export function uploadColumnPhoto(file, columnId) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("columnId", columnId);
+  return request({
+    url: "/photo/uploadColumn",
+    method: "post",
+    data: formData,
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+}
 
 // 修改图片展示状态
 export function changeShowStatus(data) {

@@ -3,6 +3,7 @@ package com.sidifensen.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.ColumnDto;
 import com.sidifensen.domain.dto.ColumnFilterDto;
+import com.sidifensen.domain.dto.ColumnSearchDto;
 import com.sidifensen.domain.entity.Column;
 import com.sidifensen.domain.vo.ColumnVo;
 import com.sidifensen.domain.vo.PageVo;
@@ -19,6 +20,15 @@ public interface ColumnService extends IService<Column> {
     // 获取专栏列表
     List<ColumnVo> getColumnList();
 
+    // 根据用户ID获取专栏列表
+    List<ColumnVo> getColumnListByUserId(Integer userId);
+
+    // 搜索专栏列表
+    PageVo<List<ColumnVo>> searchColumnList(Integer pageNum, Integer pageSize, String keyword);
+
+    // 获取用户专栏列表(专栏管理)
+    PageVo<List<UserColumnManageVo>> getUserColumnManageList(Integer pageNum, Integer pageSize, ColumnFilterDto columnFilterDto);
+
     // 增加专栏
     void addColumn(ColumnDto columnDto);
 
@@ -28,14 +38,28 @@ public interface ColumnService extends IService<Column> {
     // 删除专栏
     void deleteColumn(Integer id);
 
-    /**
-     * 获取用户专栏列表(专栏管理)
-     *
-     * @param pageNum          页码
-     * @param pageSize         页大小
-     * @param columnFilterDto  专栏筛选条件
-     * @return 用户专栏列表
-     */
-    PageVo<List<UserColumnManageVo>> getUserColumnManageList(Integer pageNum, Integer pageSize, ColumnFilterDto columnFilterDto);
+    // 管理员获取专栏列表
+    List<UserColumnManageVo> adminGetColumnList(ColumnFilterDto columnFilterDto);
+
+    // 管理员根据用户ID获取专栏列表
+    List<UserColumnManageVo> adminGetColumnsByUserId(Integer userId);
+    
+    // 管理员搜索专栏
+    List<UserColumnManageVo> adminSearchColumn(ColumnSearchDto columnSearchDto);
+
+    // 管理员审核专栏
+    void adminExamineColumn(Integer columnId, Integer examineStatus);
+
+    // 管理员批量审核专栏
+    void adminBatchExamineColumn(List<Integer> columnIds, Integer examineStatus);
+
+    // 管理员删除专栏
+    void adminDeleteColumn(Integer columnId);
+
+    // 管理员批量删除专栏
+    void adminBatchDeleteColumn(List<Integer> columnIds);
+
+
+
 
 }

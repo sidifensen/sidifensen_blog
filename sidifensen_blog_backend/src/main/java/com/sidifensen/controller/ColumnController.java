@@ -3,6 +3,7 @@ package com.sidifensen.controller;
 
 import com.sidifensen.domain.dto.ColumnDto;
 import com.sidifensen.domain.dto.ColumnFilterDto;
+import com.sidifensen.domain.dto.ColumnSearchDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.ColumnVo;
 import com.sidifensen.domain.vo.PageVo;
@@ -11,6 +12,7 @@ import com.sidifensen.service.ColumnService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,6 +36,34 @@ public class ColumnController {
     @GetMapping("/list")
     public Result<List<ColumnVo>> getColumnList() {
         List<ColumnVo> columnList = columnService.getColumnList();
+        return Result.success(columnList);
+    }
+
+    /**
+     * 根据用户ID获取专栏列表
+     *
+     * @param userId 用户ID
+     * @return 专栏列表
+     */
+    @GetMapping("/list/{userId}")
+    public Result<List<ColumnVo>> getColumnListByUserId(@PathVariable Integer userId) {
+        List<ColumnVo> columnList = columnService.getColumnListByUserId(userId);
+        return Result.success(columnList);
+    }
+
+    /**
+     * 搜索专栏列表
+     *
+     * @param pageNum  页码
+     * @param pageSize 页大小
+     * @param keyword  搜索关键词
+     * @return 专栏列表
+     */
+    @GetMapping("/search")
+    public Result<PageVo<List<ColumnVo>>> searchColumnList(@NotNull Integer pageNum, 
+                                                          @NotNull Integer pageSize, 
+                                                          String keyword) {
+        PageVo<List<ColumnVo>> columnList = columnService.searchColumnList(pageNum, pageSize, keyword);
         return Result.success(columnList);
     }
 
@@ -97,6 +127,99 @@ public class ColumnController {
     @DeleteMapping("/{id}")
     public Result<Void> deleteColumn(@PathVariable Integer id) {
         columnService.deleteColumn(id);
+        return Result.success();
+    }
+
+    /**
+     * 管理员获取专栏列表
+     *
+     * @param columnFilterDto 专栏筛选条件
+     * @return 专栏列表
+     */
+    @PreAuthorize("hasAuthority('column:list')")
+    @PostMapping("/admin/list")
+    public Result<List<UserColumnManageVo>> adminGetColumnList(@RequestBody ColumnFilterDto columnFilterDto) {
+        List<UserColumnManageVo> columnList = columnService.adminGetColumnList(columnFilterDto);
+        return Result.success(columnList);
+    }
+
+    /**
+     * 管理员根据用户ID获取专栏列表
+     *
+     * @param userId 用户ID
+     * @return 用户专栏列表
+     */
+    @PreAuthorize("hasAuthority('column:user:list')")
+    @GetMapping("/admin/user/{userId}")
+    public Result<List<UserColumnManageVo>> adminGetColumnsByUserId(@PathVariable Integer userId) {
+        List<UserColumnManageVo> columnList = columnService.adminGetColumnsByUserId(userId);
+        return Result.success(columnList);
+    }
+
+    /**
+     * 管理员搜索专栏
+     *
+     * @param columnSearchDto 专栏搜索条件
+     * @return 搜索结果
+     */
+    @PreAuthorize("hasAuthority('column:search')")
+    @PostMapping("/admin/search")
+    public Result<List<UserColumnManageVo>> adminSearchColumn(@RequestBody ColumnSearchDto columnSearchDto) {
+        List<UserColumnManageVo> columnList = columnService.adminSearchColumn(columnSearchDto);
+        return Result.success(columnList);
+    }
+
+    /**
+     * 管理员审核专栏
+     *
+     * @param columnId      专栏ID
+     * @param examineStatus 审核状态 1-审核通过 2-审核未通过
+     * @return 操作结果
+     */
+    @PreAuthorize("hasAuthority('column:examine')")
+    @PutMapping("/admin/{columnId}/examine")
+    public Result<Void> adminExamineColumn(@PathVariable Integer columnId, @RequestParam Integer examineStatus) {
+        columnService.adminExamineColumn(columnId, examineStatus);
+        return Result.success();
+    }
+
+    /**
+     * 管理员批量审核专栏
+     *
+     * @param columnIds     专栏ID列表
+     * @param examineStatus 审核状态 1-审核通过 2-审核未通过
+     * @return 操作结果
+     */
+    @PreAuthorize("hasAuthority('column:examine')")
+    @PutMapping("/admin/batch/examine")
+    public Result<Void> adminBatchExamineColumn(@RequestBody List<Integer> columnIds, @RequestParam Integer examineStatus) {
+        columnService.adminBatchExamineColumn(columnIds, examineStatus);
+        return Result.success();
+    }
+
+    /**
+     * 管理员删除专栏
+     *
+     * @param columnId 专栏ID
+     * @return 操作结果
+     */
+    @PreAuthorize("hasAuthority('column:delete')")
+    @DeleteMapping("/admin/{columnId}")
+    public Result<Void> adminDeleteColumn(@PathVariable Integer columnId) {
+        columnService.adminDeleteColumn(columnId);
+        return Result.success();
+    }
+
+    /**
+     * 管理员批量删除专栏
+     *
+     * @param columnIds 专栏ID列表
+     * @return 操作结果
+     */
+    @PreAuthorize("hasAuthority('column:delete')")
+    @DeleteMapping("/admin/batch")
+    public Result<Void> adminBatchDeleteColumn(@RequestBody List<Integer> columnIds) {
+        columnService.adminBatchDeleteColumn(columnIds);
         return Result.success();
     }
 }

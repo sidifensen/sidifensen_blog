@@ -45,6 +45,16 @@ public class PhotoController {
         return Result.success();
     }
 
+        /**
+     * 上传照片到专栏
+     */
+    @PostMapping("/uploadColumn")
+    public Result uploadColumn(@RequestParam("file") MultipartFile file,
+                              @RequestParam("columnId") Integer columnId) {
+        String url = photoService.uploadColumn(file, columnId);
+        return Result.success(url);
+    }
+
     /**
      * 删除照片
      */

@@ -140,14 +140,106 @@
         </div>
       </div>
     </div>
+
+    <!-- 编辑专栏对话框 -->
+    <el-dialog v-model="editDialogVisible" title="编辑专栏" width="600px" :close-on-click-modal="false" :close-on-press-escape="false">
+      <el-form ref="editFormRef" :model="editForm" :rules="editFormRules" label-width="100px" class="edit-column-form">
+        <!-- 专栏名称 -->
+        <el-form-item label="专栏名称" prop="name">
+          <el-input v-model="editForm.name" placeholder="请输入专栏名称" maxlength="50" show-word-limit />
+        </el-form-item>
+
+        <!-- 专栏描述 -->
+        <el-form-item label="专栏描述" prop="description">
+          <el-input v-model="editForm.description" type="textarea" :rows="4" placeholder="请输入专栏描述（可选）" maxlength="200" show-word-limit />
+        </el-form-item>
+
+        <!-- 专栏封面 -->
+        <el-form-item label="专栏封面" prop="coverUrl">
+          <div class="cover-upload-container">
+            <el-upload ref="uploadRef" class="cover-uploader" :action="''" :http-request="handleUploadCover" :show-file-list="false" :before-upload="beforeUploadCover" accept="image/*" drag>
+              <div v-if="editForm.coverUrl" class="cover-preview">
+                <el-image :src="editForm.coverUrl" class="preview-image">
+                  <template #placeholder>
+                    <div class="loading-text">加载中...</div>
+                  </template>
+                  <template #error>
+                    <div class="error-placeholder">
+                      <el-icon><Picture /></el-icon>
+                      <span>加载失败</span>
+                    </div>
+                  </template>
+                </el-image>
+                <div class="cover-mask">
+                  <div class="cover-actions">
+                    <el-button type="primary" size="small" :loading="uploadLoading">
+                      <el-icon><Picture /></el-icon>
+                      {{ uploadLoading ? "上传中..." : "更换封面" }}
+                    </el-button>
+                    <el-button type="danger" size="small" @click.stop="handleRemoveCover">
+                      <el-icon><Delete /></el-icon>
+                      删除封面
+                    </el-button>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="upload-placeholder">
+                <el-icon v-if="!uploadLoading" class="upload-icon"><Plus /></el-icon>
+                <div v-if="uploadLoading" class="uploading">
+                  <div class="loading-spinner"></div>
+                  <span>上传中...</span>
+                </div>
+                <div v-else class="upload-text">
+                  <div>点击或将图片拖拽到这里上传</div>
+                  <div class="upload-tip">支持 JPG、PNG、GIF 格式，文件大小不超过 5MB</div>
+                </div>
+              </div>
+            </el-upload>
+          </div>
+        </el-form-item>
+
+        <!-- 展示状态 -->
+        <el-form-item label="展示状态" prop="showStatus">
+          <el-radio-group v-model="editForm.showStatus">
+            <el-radio :value="0">
+              <el-icon><View /></el-icon>
+              公开
+            </el-radio>
+            <el-radio :value="1">
+              <el-icon><Hide /></el-icon>
+              私密
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <!-- 排序值 -->
+        <el-form-item label="排序值" prop="sort">
+          <el-input-number v-model="editForm.sort" :min="1" :max="9999" controls-position="right" placeholder="请输入排序值" class="sort-input" />
+          <div class="form-tip">
+            <el-icon><InfoFilled /></el-icon>
+            <span>数值越小排序越靠前</span>
+          </div>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="handleCancelEdit" :disabled="editSubmitting">取消</el-button>
+          <el-button type="primary" @click="handleSubmitEdit" :loading="editSubmitting">
+            {{ editSubmitting ? "保存中..." : "保存" }}
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
-import { Search, Picture, Document, Star, ArrowUp, ArrowDown } from "@element-plus/icons-vue";
+import { Search, Picture, Document, Star, ArrowUp, ArrowDown, View, Hide, InfoFilled, Plus, Delete } from "@element-plus/icons-vue";
 import { getUserColumnManageList, updateColumn, deleteColumn } from "@/api/column";
+import { uploadColumnPhoto } from "@/api/photo";
 import { useUserStore } from "@/stores/userStore";
 import { formatTime } from "@/utils/formatTime";
 
@@ -176,6 +268,35 @@ const selectedYear = ref(null);
 const selectedMonth = ref(null);
 const availableYears = ref([]);
 const showStatus = ref(null);
+
+// 编辑专栏相关
+const editDialogVisible = ref(false);
+const editSubmitting = ref(false);
+const editFormRef = ref(null);
+const uploadRef = ref(null);
+const uploadLoading = ref(false);
+const editForm = ref({
+  id: null,
+  name: "",
+  description: "",
+  coverUrl: "",
+  showStatus: 0,
+  sort: 1,
+});
+
+// 编辑表单验证规则
+const editFormRules = {
+  name: [
+    { required: true, message: "请输入专栏名称", trigger: "blur" },
+    { min: 1, max: 50, message: "专栏名称长度应在1-50个字符", trigger: "blur" },
+  ],
+  description: [{ max: 200, message: "专栏描述不能超过200个字符", trigger: "blur" }],
+  showStatus: [{ required: true, message: "请选择展示状态", trigger: "change" }],
+  sort: [
+    { required: true, message: "请输入排序值", trigger: "blur" },
+    { type: "number", min: 1, max: 9999, message: "排序值应在1-9999之间", trigger: "blur" },
+  ],
+};
 
 // 加载专栏列表
 const loadColumns = async (reset = false) => {
@@ -427,10 +548,145 @@ const handleSortDown = async (column) => {
   }
 };
 
-// 编辑专栏
+// 上传前检查
+const beforeUploadCover = (file) => {
+  // 检查文件类型
+  const isImage = file.type.startsWith("image/");
+  if (!isImage) {
+    ElMessage.error("只能上传图片文件！");
+    return false;
+  }
+
+  // 检查文件大小（5MB）
+  const isLt5M = file.size / 1024 / 1024 < 5;
+  if (!isLt5M) {
+    ElMessage.error("图片大小不能超过 5MB！");
+    return false;
+  }
+
+  return true;
+};
+
+// 处理图片上传
+const handleUploadCover = async (options) => {
+  const { file } = options;
+
+  try {
+    uploadLoading.value = true;
+
+    // 调用专栏上传接口，需要传入专栏ID
+    const res = await uploadColumnPhoto(file, editForm.value.id);
+
+    // 更新表单数据
+    editForm.value.coverUrl = res.data.data;
+
+    ElMessage.success("封面上传成功");
+  } catch (error) {
+    console.error("封面上传失败:", error);
+    ElMessage.error("封面上传失败，请重试");
+  } finally {
+    uploadLoading.value = false;
+  }
+};
+
+// 删除封面
+const handleRemoveCover = (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  editForm.value.coverUrl = "";
+  ElMessage.success("封面已删除");
+};
+
+// 编辑专栏 - 打开编辑对话框
 const handleEditColumn = (column) => {
-  // 这里可以跳转到编辑页面或者打开编辑对话框
-  ElMessage.info("编辑专栏功能待开发");
+  // 填充编辑表单数据
+  editForm.value = {
+    id: column.id,
+    name: column.name,
+    description: column.description || "",
+    coverUrl: column.coverUrl || "",
+    showStatus: column.showStatus,
+    sort: column.sort,
+  };
+
+  // 显示编辑对话框
+  editDialogVisible.value = true;
+
+  // 重置表单验证状态
+  if (editFormRef.value) {
+    editFormRef.value.clearValidate();
+  }
+};
+
+// 提交编辑专栏
+const handleSubmitEdit = async () => {
+  if (!editFormRef.value) return;
+
+  try {
+    // 验证表单
+    const valid = await editFormRef.value.validate();
+    if (!valid) return;
+
+    editSubmitting.value = true;
+
+    // 提交更新请求
+    await updateColumn(editForm.value);
+
+    ElMessage.success("专栏更新成功");
+
+    // 关闭对话框
+    editDialogVisible.value = false;
+
+    // 重新加载专栏列表
+    currentPage.value = 1;
+    columns.value = [];
+    hasMore.value = true;
+    loadColumns(true);
+  } catch (error) {
+    console.error("更新专栏失败:", error);
+    ElMessage.error("更新专栏失败，请重试");
+  } finally {
+    editSubmitting.value = false;
+  }
+};
+
+// 取消编辑专栏
+const handleCancelEdit = async () => {
+  // 检查表单是否有未保存的修改
+  const originalColumn = columns.value.find((c) => c.id === editForm.value.id);
+  const hasChanges =
+    originalColumn &&
+    (originalColumn.name !== editForm.value.name || (originalColumn.description || "") !== editForm.value.description || (originalColumn.coverUrl || "") !== editForm.value.coverUrl || originalColumn.showStatus !== editForm.value.showStatus || originalColumn.sort !== editForm.value.sort);
+
+  if (hasChanges) {
+    try {
+      await ElMessageBox.confirm("您有未保存的修改，确定要放弃吗？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      });
+    } catch {
+      return; // 用户取消了放弃操作，继续编辑
+    }
+  }
+
+  editDialogVisible.value = false;
+
+  // 重置表单数据
+  editForm.value = {
+    id: null,
+    name: "",
+    description: "",
+    coverUrl: "",
+    showStatus: 0,
+    sort: 1,
+  };
+
+  // 清空表单验证
+  if (editFormRef.value) {
+    editFormRef.value.clearValidate();
+  }
 };
 
 // 删除专栏
@@ -745,6 +1001,198 @@ onUnmounted(() => {
     100% {
       transform: rotate(360deg);
     }
+  }
+}
+
+// 编辑专栏对话框样式
+:deep(.el-dialog) {
+  .edit-column-form {
+    // 封面上传容器
+    .cover-upload-container {
+      .cover-uploader {
+        width: 100%;
+
+        :deep(.el-upload) {
+          width: 100%;
+          border: 1px dashed var(--el-border-color);
+          border-radius: 6px;
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+          transition: var(--el-transition-duration-fast);
+
+          &:hover {
+            border-color: var(--el-color-primary);
+          }
+        }
+
+        :deep(.el-upload-dragger) {
+          padding: 0;
+          width: 100%;
+          height: auto;
+          background-color: transparent;
+          border: none;
+        }
+
+        .cover-preview {
+          position: relative;
+          width: 100%;
+          height: 200px;
+
+          .preview-image {
+            width: 100%;
+            height: 100%;
+            border-radius: 6px;
+          }
+
+          .loading-text {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            font-size: 14px;
+            color: var(--el-text-color-secondary);
+            background-color: var(--el-fill-color-light);
+            border-radius: 6px;
+          }
+
+          .error-placeholder {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            color: var(--el-text-color-placeholder);
+            background-color: var(--el-fill-color-light);
+            border-radius: 6px;
+
+            .el-icon {
+              font-size: 32px;
+              margin-bottom: 8px;
+            }
+
+            span {
+              font-size: 14px;
+            }
+          }
+
+          .cover-mask {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+
+            &:hover {
+              opacity: 1;
+            }
+
+            .cover-actions {
+              display: flex;
+              gap: 8px;
+            }
+          }
+        }
+
+        .upload-placeholder {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          height: 200px;
+          color: var(--el-text-color-secondary);
+
+          .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: var(--el-color-primary);
+          }
+
+          .uploading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+
+            .loading-spinner {
+              width: 32px;
+              height: 32px;
+              border: 3px solid var(--el-border-color);
+              border-top: 3px solid var(--el-color-primary);
+              border-radius: 50%;
+              animation: spin 1s linear infinite;
+            }
+
+            span {
+              font-size: 14px;
+              color: var(--el-color-primary);
+            }
+          }
+
+          .upload-text {
+            text-align: center;
+
+            div:first-child {
+              font-size: 16px;
+              margin-bottom: 8px;
+            }
+
+            .upload-tip {
+              font-size: 12px;
+              color: var(--el-text-color-placeholder);
+            }
+          }
+        }
+      }
+    }
+
+    // 排序输入框
+    .sort-input {
+      width: 200px;
+    }
+
+    // 表单提示信息
+    .form-tip {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+
+      .el-icon {
+        font-size: 14px;
+      }
+    }
+
+    // 单选按钮组样式
+    .el-radio-group {
+      .el-radio {
+        display: flex;
+        align-items: center;
+        margin-right: 24px;
+
+        .el-icon {
+          margin-right: 4px;
+        }
+      }
+    }
+  }
+
+  // 对话框底部按钮
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
   }
 }
 
