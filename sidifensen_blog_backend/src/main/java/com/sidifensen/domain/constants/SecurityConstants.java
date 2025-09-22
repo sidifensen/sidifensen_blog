@@ -31,6 +31,8 @@ public class SecurityConstants {
             "/article/listAll",
             "/article/user/list",
             "/article/user/{userId:\\d+}/statistics",
+            "/column/list/{userId:\\d+}",
+            "/column/detail/{columnId:\\d+}",
             "/favicon.ico"
     };
 

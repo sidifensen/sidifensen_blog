@@ -133,7 +133,7 @@
                 <div v-else class="article-list">
                   <div v-for="article in articleList" :key="article.id" class="article-item" @click="goToArticle(article.id)">
                     <!-- 文章封面 -->
-                    <el-image :src="article.coverUrl" class="article-cover">
+                    <el-image :src="article.coverUrl || ''" class="article-cover">
                       <template #placeholder>
                         <div class="loading-text">加载中...</div>
                       </template>
@@ -189,9 +189,82 @@
             </div>
 
             <!-- 专栏列表 -->
-            <div v-if="activeTab === 'column'" class="column-list-section">
-              <div class="empty-state">
-                <el-empty description="专栏功能开发中..." />
+            <div v-if="activeTab === 'column'" class="column-list-wrapper">
+              <div class="column-list-section" ref="listContainer" @scroll="handleScroll">
+                <div v-if="columnLoading" class="loading-container">
+                  <el-skeleton animated :count="3">
+                    <template #template>
+                      <div class="column-skeleton">
+                        <el-skeleton-item variant="image" style="width: 120px; height: 90px" />
+                        <div class="skeleton-content">
+                          <el-skeleton-item variant="h3" style="width: 60%" />
+                          <el-skeleton-item variant="text" style="width: 100%" />
+                          <el-skeleton-item variant="text" style="width: 40%" />
+                        </div>
+                      </div>
+                    </template>
+                  </el-skeleton>
+                </div>
+
+                <div v-else-if="columnList.length === 0" class="empty-state">
+                  <el-empty description="暂无专栏" />
+                </div>
+
+                <div v-else class="column-list">
+                  <div v-for="column in columnList" :key="column.id" class="column-item" @click="goToColumn(column.id)">
+                    <!-- 专栏封面 -->
+                    <el-image :src="column.coverUrl || ''" class="column-cover">
+                      <template #placeholder>
+                        <div class="loading-text">加载中...</div>
+                      </template>
+                      <template #error>
+                        <div class="error">
+                          <el-icon>
+                            <Collection />
+                          </el-icon>
+                        </div>
+                      </template>
+                    </el-image>
+
+                    <!-- 专栏内容 -->
+                    <div class="column-content">
+                      <h3 class="column-title">{{ column.name }}</h3>
+                      <p class="column-description">{{ column.description || "暂无描述" }}</p>
+
+                      <!-- 专栏元信息 -->
+                      <div class="column-meta">
+                        <!-- 第一行：统计数据 -->
+                        <div class="column-meta-stats">
+                          <span class="column-articles">
+                            <el-icon><Document /></el-icon>
+                            {{ column.articleCount || 0 }} 文章
+                          </span>
+                          <span class="column-focus">
+                            <el-icon><Star /></el-icon>
+                            {{ column.focusCount || 0 }} 关注
+                          </span>
+                        </div>
+                        <!-- 第二行：创建时间 -->
+                        <div class="column-meta-time">
+                          <span class="column-date">创建于 {{ column.createTime }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 加载更多指示器 -->
+                  <div v-if="loadingMore" class="loading-more">
+                    <div class="loading-spinner"></div>
+                    <span>加载更多...</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 返回顶部按钮 - 放在wrapper内部，但在滚动容器外部 -->
+              <div v-show="showBackToTop" class="back-to-top" @click="scrollToTop">
+                <el-icon>
+                  <ArrowUp />
+                </el-icon>
               </div>
             </div>
           </div>
@@ -227,9 +300,10 @@
 import { ref, reactive, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
-import { Plus, Message, Trophy, View, User, Star, StarFilled, ArrowDown, ArrowUp } from "@element-plus/icons-vue";
+import { Plus, Message, Trophy, View, User, Star, StarFilled, ArrowDown, ArrowUp, Picture, Document, Collection } from "@element-plus/icons-vue";
 import { getUserInfoById } from "@/api/user";
 import { getUserArticleList, getUserArticleStatisticsById } from "@/api/article";
+import { getUserColumnList } from "@/api/column";
 import { useUserStore } from "@/stores/userStore";
 
 // 路由和状态管理
@@ -240,11 +314,14 @@ const userStore = useUserStore();
 // 响应式数据
 const userLoading = ref(false); // 用户信息加载状态
 const articleLoading = ref(false); // 文章列表加载状态
+const columnLoading = ref(false); // 专栏列表加载状态
 const loadingMore = ref(false); // 加载更多数据状态
 const followLoading = ref(false); // 关注操作加载状态
 const userInfo = ref(null); // 用户信息数据
 const articleList = ref([]); // 文章列表数据
+const columnList = ref([]); // 专栏列表数据
 const total = ref(0); // 文章总数
+const columnTotal = ref(0); // 专栏总数
 const totalViews = ref(0); // 总阅读量
 const articleStatistics = ref(null); // 文章统计信息
 const activeTab = ref("article"); // 当前激活的标签页
@@ -252,7 +329,9 @@ const sortType = ref("time"); // 排序类型：time-时间排序，views-阅读
 const visibilityType = ref("all"); // 可见范围类型：all-全部可见，private-仅我可见，pending-审核中&失败
 const isFollowed = ref(false); // 是否已关注该用户
 const hasMore = ref(true); // 是否还有更多数据可加载
+const columnHasMore = ref(true); // 专栏是否还有更多数据可加载
 const currentPage = ref(1); // 当前页码
+const columnCurrentPage = ref(1); // 专栏当前页码
 const isIntroExpanded = ref(false); // 个人介绍是否展开
 const showBackToTop = ref(false); // 是否显示返回顶部按钮
 
@@ -315,27 +394,20 @@ const fetchArticleList = async (reset = false) => {
       userId: parseInt(userId),
     };
 
-    // 根据当前标签页设置不同的查询参数
-    if (activeTab.value === "article") {
-      // 文章标签页，根据排序类型设置orderBy
-      articleStatusDto.orderBy = sortType.value === "time" ? 0 : 1;
+    // 文章标签页，根据排序类型设置orderBy
+    articleStatusDto.orderBy = sortType.value === "time" ? 0 : 1;
 
-      // 根据可见范围类型设置查询条件
-      if (visibilityType.value === "all") {
-        // 全部可见：查询全部可见且审核通过的文章
-        articleStatusDto.visibleRange = 0;
-        articleStatusDto.examineStatus = 1;
-      } else if (visibilityType.value === "private") {
-        // 仅我可见：查询私有文章
-        articleStatusDto.visibleRange = 1;
-      } else if (visibilityType.value === "pending") {
-        // 审核中&失败：
-        articleStatusDto.examineStatusList = [0, 2]; // 0-审核中, 2-审核失败
-      }
-    } else if (activeTab.value === "column") {
-      // 专栏标签页的查询逻辑（暂时使用默认排序）
-      articleStatusDto.orderBy = 0;
-      // TODO: 这里可以添加专栏相关的查询参数
+    // 根据可见范围类型设置查询条件
+    if (visibilityType.value === "all") {
+      // 全部可见：查询全部可见且审核通过的文章
+      articleStatusDto.visibleRange = 0;
+      articleStatusDto.examineStatus = 1;
+    } else if (visibilityType.value === "private") {
+      // 仅我可见：查询私有文章
+      articleStatusDto.visibleRange = 1;
+    } else if (visibilityType.value === "pending") {
+      // 审核中&失败：
+      articleStatusDto.examineStatusList = [0, 2]; // 0-审核中, 2-审核失败
     }
 
     const res = await getUserArticleList(currentPage.value, pageSize.value, articleStatusDto);
@@ -370,14 +442,68 @@ const fetchArticleList = async (reset = false) => {
   }
 };
 
+// 获取专栏列表
+const fetchColumnList = async (reset = false) => {
+  // 如果没有更多数据或者已经在加载中，则不再请求
+  if (!columnHasMore.value || columnLoading.value || loadingMore.value) {
+    return;
+  }
+
+  try {
+    // 设置加载状态
+    if (reset) {
+      columnLoading.value = true;
+    } else {
+      loadingMore.value = true;
+    }
+
+    const userId = route.params.userId;
+    const res = await getUserColumnList(columnCurrentPage.value, pageSize.value, parseInt(userId));
+    const newColumns = res.data.data.data || [];
+    columnTotal.value = res.data.data.total || 0;
+
+    if (reset) {
+      // 初次加载或筛选条件改变时
+      columnList.value = newColumns;
+    } else {
+      // 无限滚动时加载下一页数据
+      columnList.value = [...columnList.value, ...newColumns];
+    }
+
+    // 判断是否还有更多数据
+    columnHasMore.value = columnList.value.length < columnTotal.value;
+
+    // 更新页码
+    if (columnHasMore.value && newColumns.length > 0) {
+      columnCurrentPage.value++;
+    }
+  } catch (error) {
+    ElMessage.error("获取专栏列表失败");
+    console.error("获取专栏列表失败:", error);
+  } finally {
+    // 重置加载状态
+    columnLoading.value = false;
+    loadingMore.value = false;
+  }
+};
+
 // 切换文章筛选标签
 const handleTabChange = (tabName) => {
   activeTab.value = tabName;
-  // 重置页码和文章列表，重新加载数据
-  currentPage.value = 1;
-  articleList.value = [];
-  hasMore.value = true;
-  fetchArticleList(true);
+
+  if (tabName === "article") {
+    // 重置文章页码和列表，重新加载数据
+    currentPage.value = 1;
+    articleList.value = [];
+    hasMore.value = true;
+    fetchArticleList(true);
+  } else if (tabName === "column") {
+    // 重置专栏页码和列表，重新加载数据
+    columnCurrentPage.value = 1;
+    columnList.value = [];
+    columnHasMore.value = true;
+    fetchColumnList(true);
+  }
 };
 
 // 处理排序条件变化
@@ -438,6 +564,11 @@ const goToArticle = (articleId) => {
   router.push(`/user/${userId}/article/${articleId}`);
 };
 
+// 跳转至专栏详情页
+const goToColumn = (columnId) => {
+  router.push(`/column/${columnId}`);
+};
+
 // 获取文章类型
 const getArticleType = (type) => {
   const typeMap = {
@@ -459,8 +590,7 @@ const getExamineStatus = (status) => {
 
 // 处理滚动事件 - 自定义无限滚动
 const handleScroll = () => {
-  // 如果没有列表容器或正在加载中或加载更多中或没有更多内容时,不用加载下一页了
-  if (!listContainer.value || articleLoading.value || loadingMore.value || !hasMore.value) {
+  if (!listContainer.value || loadingMore.value) {
     return;
   }
 
@@ -471,7 +601,17 @@ const handleScroll = () => {
 
   // 当滚动到底部附近时加载更多
   if (container.scrollTop + container.clientHeight >= container.scrollHeight - 100) {
-    fetchArticleList();
+    if (activeTab.value === "article") {
+      // 文章页面的无限滚动
+      if (!articleLoading.value && hasMore.value) {
+        fetchArticleList();
+      }
+    } else if (activeTab.value === "column") {
+      // 专栏页面的无限滚动
+      if (!columnLoading.value && columnHasMore.value) {
+        fetchColumnList();
+      }
+    }
   }
 };
 
@@ -480,10 +620,15 @@ watch(
   () => route.params.userId,
   (newUserId) => {
     if (newUserId) {
-      // 重置数据
+      // 重置所有数据
       currentPage.value = 1;
+      columnCurrentPage.value = 1;
       articleList.value = [];
+      columnList.value = [];
       hasMore.value = true;
+      columnHasMore.value = true;
+      activeTab.value = "article"; // 重置到文章标签页
+
       fetchUserInfo();
       fetchArticleStatistics();
       fetchArticleList(true);
@@ -1063,18 +1208,255 @@ $bg-color: #f5f7fa;
       }
     }
 
+    // 专栏列表包装器
+    .column-list-wrapper {
+      position: relative; // 为返回顶部按钮提供定位参考
+
+      // 返回顶部按钮样式 - 固定在专栏列表容器的右下角，不随滚动移动
+      .back-to-top {
+        position: absolute;
+        right: 20px;
+        bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+        backdrop-filter: blur(2px);
+        background-color: color-mix(in srgb, var(--el-bg-color) 90%, transparent);
+        border: 1px solid var(--el-border-color);
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        z-index: 100;
+
+        &:hover {
+          background: var(--el-color-primary);
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
+        }
+
+        .el-icon {
+          font-size: 18px;
+        }
+      }
+    }
+
     // 专栏列表区域
     .column-list-section {
       background: var(--el-bg-color-page);
       border-radius: 8px;
       padding: 20px;
+      border: 1px solid var(--el-border-color);
       box-shadow: 0 2px 12px var(--el-border-color-light);
-      min-height: 400px;
+      max-height: 580px; // 设置最大高度以支持滚动
+      overflow-y: auto; // 启用垂直滚动
+
+      // 加载容器样式
+      .loading-container {
+        padding: 20px 0;
+      }
+
+      // 骨架屏样式
+      .column-skeleton {
+        display: flex;
+        gap: 16px;
+        padding: 20px 0;
+        border-bottom: 1px solid var(--el-border-color-light);
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .skeleton-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+      }
+
+      // 自定义滚动条样式，增加 border-radius
+      &::-webkit-scrollbar {
+        width: 8px;
+        border-radius: 8px; // 增大滚动条圆角
+        background: transparent;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: var(--el-border-color);
+        border-radius: 12px; // 滚动条滑块圆角更大
+      }
+      &::-webkit-scrollbar-track {
+        background: transparent;
+        border-radius: 12px;
+      }
+
+      // 专栏列表
+      .column-list {
+        .column-item {
+          display: flex;
+          gap: 16px;
+          padding: 20px 0;
+          border-bottom: 1px solid var(--el-border-color-light);
+          cursor: pointer;
+          transition: all 0.3s ease;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          &:hover {
+            background-color: var(--el-bg-color-page);
+            transform: translateX(4px);
+          }
+
+          // 专栏封面
+          .column-cover {
+            width: 120px;
+            height: 90px;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+
+            &:hover {
+              transform: scale(1.05);
+            }
+
+            .loading-text {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: 100%;
+              height: 100%;
+              font-size: 12px;
+              color: var(--el-text-color-regular);
+              background-color: var(--el-bg-color-page);
+            }
+
+            // 错误占位图标样式
+            .error {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: 100%;
+              height: 100%;
+              background-color: var(--el-bg-color-page);
+
+              .el-icon {
+                font-size: 24px;
+                color: var(--el-text-color-placeholder);
+              }
+            }
+          }
+
+          // 专栏内容
+          .column-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+
+            .column-title {
+              font-size: 18px;
+              font-weight: 600;
+              color: var(--el-text-color-primary);
+              margin: 0 0 8px 0;
+              line-height: 1.4;
+              display: -webkit-box;
+              -webkit-line-clamp: 1;
+              line-clamp: 1;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+            }
+
+            .column-description {
+              font-size: 14px;
+              color: var(--el-text-color-regular);
+              margin: 0 0 12px 0;
+              line-height: 1.5;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+            }
+
+            // 专栏元信息
+            .column-meta {
+              display: flex;
+              align-items: center;
+              font-size: 13px;
+              color: var(--el-text-color-secondary);
+
+              // 第一行：统计数据
+              .column-meta-stats {
+                gap: 16px;
+                margin-bottom: 8px;
+
+                .column-articles,
+                .column-focus {
+                  display: flex;
+                  align-items: center;
+                  gap: 4px;
+
+                  .el-icon {
+                    font-size: 14px;
+                  }
+                }
+              }
+
+              // 第二行：创建时间
+              .column-meta-time {
+                .column-date {
+                  color: var(--el-text-color-placeholder);
+                }
+              }
+
+              // 桌面端单行显示
+              @media (min-width: 769px) {
+                .column-meta-stats {
+                  margin-bottom: 0;
+                }
+
+                .column-meta-stats,
+                .column-meta-time {
+                  display: inline-flex;
+                }
+
+                .column-meta-time {
+                  margin-left: 16px;
+                }
+
+                .column-meta-time::before {
+                  content: "•";
+                  margin-right: 8px;
+                  color: var(--el-text-color-placeholder);
+                }
+              }
+            }
+          }
+        }
+      }
 
       // 空状态
       .empty-state {
         padding: 60px 0;
         text-align: center;
+      }
+
+      // 加载更多指示器
+      .loading-more {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        color: var(--el-text-color-primary);
+
+        .loading-spinner {
+          margin-right: 10px;
+        }
       }
     }
   }
@@ -1213,6 +1595,35 @@ $bg-color: #f5f7fa;
             gap: 12px;
 
             .article-cover {
+              width: 100%;
+              height: 180px;
+            }
+          }
+        }
+      }
+
+      // 专栏列表移动端样式
+      .column-list-wrapper {
+        // 移动端返回顶部按钮调整
+        .back-to-top {
+          width: 40px;
+          height: 40px;
+          right: 15px;
+          bottom: 15px;
+
+          .el-icon {
+            font-size: 16px;
+          }
+        }
+      }
+
+      .column-list-section {
+        .column-list {
+          .column-item {
+            flex-direction: column;
+            gap: 12px;
+
+            .column-cover {
               width: 100%;
               height: 180px;
             }

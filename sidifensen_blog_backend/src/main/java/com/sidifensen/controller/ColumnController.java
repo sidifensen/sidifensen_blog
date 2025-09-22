@@ -1,10 +1,12 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.domain.dto.ColumnArticleSortDto;
 import com.sidifensen.domain.dto.ColumnDto;
 import com.sidifensen.domain.dto.ColumnFilterDto;
 import com.sidifensen.domain.dto.ColumnSearchDto;
 import com.sidifensen.domain.result.Result;
+import com.sidifensen.domain.vo.ColumnDetailVo;
 import com.sidifensen.domain.vo.ColumnVo;
 import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.UserColumnManageVo;
@@ -29,7 +31,7 @@ public class ColumnController {
     private ColumnService columnService;
 
     /**
-     * 获取用户专栏列表
+     * 获取用户专栏列表(新增文章)
      *
      * @return 专栏列表
      */
@@ -42,14 +44,32 @@ public class ColumnController {
     /**
      * 根据用户ID获取专栏列表
      *
-     * @param userId 用户ID
+     * @param userId   用户ID
+     * @param pageNum  页码
+     * @param pageSize 页大小
      * @return 专栏列表
      */
     @GetMapping("/list/{userId}")
-    public Result<List<ColumnVo>> getColumnListByUserId(@PathVariable Integer userId) {
-        List<ColumnVo> columnList = columnService.getColumnListByUserId(userId);
+    public Result<PageVo<List<ColumnVo>>> getColumnListByUserId(@PathVariable Integer userId,
+                                                                @NotNull Integer pageNum,
+                                                                @NotNull Integer pageSize) {
+        PageVo<List<ColumnVo>> columnList = columnService.getColumnListByUserId(userId, pageNum, pageSize);
         return Result.success(columnList);
     }
+
+
+    /**
+     * 获取专栏详情（包含专栏内的文章列表）
+     *
+     * @param columnId 专栏ID
+     * @return 专栏详情
+     */
+    @GetMapping("/detail/{columnId}")
+    public Result<ColumnDetailVo> getColumnDetail(@PathVariable Integer columnId) {
+        ColumnDetailVo columnDetail = columnService.getColumnDetail(columnId);
+        return Result.success(columnDetail);
+    }
+
 
     /**
      * 搜索专栏列表
@@ -60,9 +80,9 @@ public class ColumnController {
      * @return 专栏列表
      */
     @GetMapping("/search")
-    public Result<PageVo<List<ColumnVo>>> searchColumnList(@NotNull Integer pageNum, 
-                                                          @NotNull Integer pageSize, 
-                                                          String keyword) {
+    public Result<PageVo<List<ColumnVo>>> searchColumnList(@NotNull Integer pageNum,
+                                                           @NotNull Integer pageSize,
+                                                           String keyword) {
         PageVo<List<ColumnVo>> columnList = columnService.searchColumnList(pageNum, pageSize, keyword);
         return Result.success(columnList);
     }
@@ -70,9 +90,9 @@ public class ColumnController {
     /**
      * 获取用户专栏列表(专栏管理)
      *
-     * @param pageNum          页码
-     * @param pageSize         页大小
-     * @param columnFilterDto  专栏筛选条件
+     * @param pageNum         页码
+     * @param pageSize        页大小
+     * @param columnFilterDto 专栏筛选条件
      * @return 用户专栏列表
      */
     @PostMapping("/manage/list")
@@ -81,18 +101,6 @@ public class ColumnController {
         PageVo<List<UserColumnManageVo>> columnList = columnService.getUserColumnManageList(pageNum, pageSize, columnFilterDto);
         return Result.success(columnList);
     }
-
-    /**
-     * 获取专栏详情
-     *
-     * @param id 专栏ID
-     * @return 专栏详情
-     */
-//    @GetMapping("/{id}")
-//    public Result<ColumnVo> getColumn(@PathVariable Integer id) {
-//        ColumnVo columnVo = columnService.getColumn(id);
-//        return Result.success(columnVo);
-//    }
 
     /**
      * 增加专栏
@@ -127,6 +135,34 @@ public class ColumnController {
     @DeleteMapping("/{id}")
     public Result<Void> deleteColumn(@PathVariable Integer id) {
         columnService.deleteColumn(id);
+        return Result.success();
+    }
+
+    /**
+     * 调整专栏内文章排序
+     *
+     * @param columnId 专栏ID
+     * @param sortList 文章排序列表
+     * @return 操作结果
+     */
+    @PutMapping("/{columnId}/article/sort")
+    public Result<Void> updateColumnArticleSort(@PathVariable Integer columnId,
+                                                @RequestBody @Valid List<ColumnArticleSortDto> sortList) {
+        columnService.updateColumnArticleSort(columnId, sortList);
+        return Result.success();
+    }
+
+    /**
+     * 从专栏中删除文章
+     *
+     * @param columnId  专栏ID
+     * @param articleId 文章ID
+     * @return 操作结果
+     */
+    @DeleteMapping("/{columnId}/article/{articleId}")
+    public Result<Void> removeArticleFromColumn(@PathVariable Integer columnId,
+                                                @PathVariable Integer articleId) {
+        columnService.removeArticleFromColumn(columnId, articleId);
         return Result.success();
     }
 

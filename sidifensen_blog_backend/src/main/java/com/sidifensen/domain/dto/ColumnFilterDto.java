@@ -44,4 +44,9 @@ public class ColumnFilterDto implements Serializable {
      */
     private Integer examineStatus;
 
+    /**
+     * 用户ID筛选
+     */
+    private Integer userId;
+
 }

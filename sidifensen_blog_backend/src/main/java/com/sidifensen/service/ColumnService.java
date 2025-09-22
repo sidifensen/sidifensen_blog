@@ -1,10 +1,12 @@
 package com.sidifensen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.sidifensen.domain.dto.ColumnArticleSortDto;
 import com.sidifensen.domain.dto.ColumnDto;
 import com.sidifensen.domain.dto.ColumnFilterDto;
 import com.sidifensen.domain.dto.ColumnSearchDto;
 import com.sidifensen.domain.entity.Column;
+import com.sidifensen.domain.vo.ColumnDetailVo;
 import com.sidifensen.domain.vo.ColumnVo;
 import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.UserColumnManageVo;
@@ -21,7 +23,11 @@ public interface ColumnService extends IService<Column> {
     List<ColumnVo> getColumnList();
 
     // 根据用户ID获取专栏列表
-    List<ColumnVo> getColumnListByUserId(Integer userId);
+    PageVo<List<ColumnVo>> getColumnListByUserId(Integer userId, Integer pageNum, Integer pageSize);
+
+
+    // 获取专栏详情（包含专栏内的文章列表）
+    ColumnDetailVo getColumnDetail(Integer columnId);
 
     // 搜索专栏列表
     PageVo<List<ColumnVo>> searchColumnList(Integer pageNum, Integer pageSize, String keyword);
@@ -37,6 +43,12 @@ public interface ColumnService extends IService<Column> {
 
     // 删除专栏
     void deleteColumn(Integer id);
+
+    // 调整专栏内文章排序
+    void updateColumnArticleSort(Integer columnId, List<ColumnArticleSortDto> sortList);
+
+    // 从专栏中删除文章
+    void removeArticleFromColumn(Integer columnId, Integer articleId);
 
     // 管理员获取专栏列表
     List<UserColumnManageVo> adminGetColumnList(ColumnFilterDto columnFilterDto);

@@ -57,6 +57,8 @@ public class BlogConstants {
     public static final String BatchExamineColumnError = "批量审核专栏失败";
     public static final String BatchDeleteColumnError = "批量删除专栏失败";
     public static final String ColumnIdsEmpty = "专栏ID列表不能为空";
+    public static final String ArticleNotInColumn = "文章不在该专栏中";
+    public static final String RemoveArticleFromColumnError = "从专栏中移除文章失败";
 
     // 评论相关错误信息
     public static final String NotFoundComment = "评论不存在";

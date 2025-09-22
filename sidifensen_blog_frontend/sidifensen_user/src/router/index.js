@@ -68,6 +68,12 @@ const router = createRouter({
           meta: { title: "文章详情" },
         },
         {
+          path: "user/:userId/column/:columnId",
+          name: "Column",
+          component: () => import("@/views/User/Column/index.vue"),
+          meta: { title: "专栏详情" },
+        },
+        {
           path: "account",
           name: "Account",
           component: () => import("@/views/Account/index.vue"),
