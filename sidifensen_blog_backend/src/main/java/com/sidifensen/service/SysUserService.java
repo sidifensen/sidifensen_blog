@@ -7,6 +7,7 @@ import com.sidifensen.domain.vo.SysUserDetailVo;
 import com.sidifensen.domain.vo.SysUserVo;
 import com.sidifensen.domain.vo.SysUserWithArticleCountVo;
 import com.sidifensen.domain.vo.SysUserWithCommentCountVo;
+import com.sidifensen.domain.vo.SysUserWithColumnCountVo;
 
 import java.util.List;
 
@@ -94,6 +95,9 @@ public interface SysUserService extends IService<SysUser> {
 
     // 管理端获取用户列表（包含评论数量）
     List<SysUserWithCommentCountVo> listUserWithCommentCount();
+
+    // 管理端获取用户列表（包含专栏数量）
+    List<SysUserWithColumnCountVo> listUserWithColumnCount();
 
     // 管理端更新用户
     void updateUser(SysUserDto sysUserDto);

@@ -81,7 +81,7 @@
             <div class="column-card-content">
               <!-- 专栏封面和基本信息 -->
               <div class="column-info">
-                <el-image :src="column.coverUrl" alt="专栏封面" class="column-cover">
+                <el-image :src="column.coverUrl || ''" alt="专栏封面" class="column-cover" @click="goToColumnDetail(column)">
                   <template #placeholder>
                     <div class="loading-text">加载中...</div>
                   </template>
@@ -95,7 +95,7 @@
                 </el-image>
 
                 <div class="column-details">
-                  <h4 class="column-title">{{ column.name }}</h4>
+                  <h4 class="column-title" @click="goToColumnDetail(column)">{{ column.name }}</h4>
                   <el-tooltip v-if="column.description && column.description.length > 50" :content="column.description" placement="top">
                     <p class="column-description">{{ column.description }}</p>
                   </el-tooltip>
@@ -900,8 +900,8 @@ const handleUploadCover = async (options) => {
   try {
     uploadLoading.value = true;
 
-    // 调用专栏上传接口，需要传入专栏ID
-    const res = await uploadColumnPhoto(file, editForm.value.id);
+    // 调用专栏上传接口
+    const res = await uploadColumnPhoto(file);
 
     // 更新表单数据
     editForm.value.coverUrl = res.data.data;
@@ -1089,9 +1089,8 @@ const handleCreateUploadCover = async (options) => {
   try {
     createUploadLoading.value = true;
 
-    // 上传封面，这里先创建一个临时专栏ID为null的情况，实际应该在创建专栏成功后再上传
-    // 为了简化，这里直接使用编辑时的上传逻辑，但传null作为专栏ID
-    const res = await uploadColumnPhoto(file, null);
+    // 上传封面
+    const res = await uploadColumnPhoto(file);
 
     // 更新表单数据
     createForm.value.coverUrl = res.data.data;
@@ -1335,6 +1334,20 @@ const resetManageData = () => {
   removeLoading.value = null;
 };
 
+// 跳转到专栏详情页面
+const goToColumnDetail = (column) => {
+  // 获取专栏作者ID，如果没有则使用当前用户ID
+  const userId = column.userId || userStore.user?.id;
+  if (!userId) {
+    ElMessage.warning("无法获取用户信息");
+    return;
+  }
+
+  // 跳转到专栏详情页面
+  const routeUrl = router.resolve(`/user/${userId}/column/${column.id}`);
+  window.open(routeUrl.href, "_blank");
+};
+
 // 组件挂载时的处理
 onMounted(() => {
   loadColumns(true);
@@ -1512,6 +1525,13 @@ onUnmounted(() => {
                 height: 100px;
                 border-radius: 6px;
                 flex-shrink: 0;
+                cursor: pointer;
+                transition: all 0.3s ease;
+
+                &:hover {
+                  transform: scale(1.05);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                }
 
                 .loading-text {
                   display: flex;
@@ -1553,9 +1573,14 @@ onUnmounted(() => {
                   text-overflow: ellipsis;
                   display: -webkit-box;
                   -webkit-line-clamp: 2;
-                  line-clamp: 2;
                   -webkit-box-orient: vertical;
                   line-height: 1.4;
+                  cursor: pointer;
+                  transition: color 0.3s ease;
+
+                  &:hover {
+                    color: var(--el-color-primary);
+                  }
                 }
 
                 .column-description {
@@ -1567,7 +1592,6 @@ onUnmounted(() => {
                   text-overflow: ellipsis;
                   display: -webkit-box;
                   -webkit-line-clamp: 2;
-                  line-clamp: 2;
                   -webkit-box-orient: vertical;
                 }
               }
@@ -2265,13 +2289,11 @@ onUnmounted(() => {
                   .column-title {
                     font-size: 15px;
                     -webkit-line-clamp: 1;
-                    line-clamp: 1;
                   }
 
                   .column-description {
                     font-size: 13px;
                     -webkit-line-clamp: 1;
-                    line-clamp: 1;
                   }
                 }
               }

@@ -1252,7 +1252,7 @@ $bg-color: #f5f7fa;
       padding: 20px;
       border: 1px solid var(--el-border-color);
       box-shadow: 0 2px 12px var(--el-border-color-light);
-      max-height: 580px; // 设置最大高度以支持滚动
+      max-height: 650px; // 设置最大高度以支持滚动
       overflow-y: auto; // 启用垂直滚动
 
       // 加载容器样式

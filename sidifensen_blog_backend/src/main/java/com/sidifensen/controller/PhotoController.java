@@ -45,13 +45,12 @@ public class PhotoController {
         return Result.success();
     }
 
-        /**
-     * 上传照片到专栏
+    /**
+     * 上传专栏图片
      */
     @PostMapping("/uploadColumn")
-    public Result uploadColumn(@RequestParam("file") MultipartFile file,
-                              @RequestParam("columnId") Integer columnId) {
-        String url = photoService.uploadColumn(file, columnId);
+    public Result uploadColumn(@RequestParam("file") MultipartFile file) {
+        String url = photoService.uploadColumn(file);
         return Result.success(url);
     }
 

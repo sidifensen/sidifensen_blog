@@ -1,6 +1,7 @@
 package com.sidifensen.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -14,6 +15,7 @@ import com.sidifensen.domain.dto.ColumnSearchDto;
 import com.sidifensen.domain.entity.Article;
 import com.sidifensen.domain.entity.ArticleColumn;
 import com.sidifensen.domain.entity.Column;
+import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.enums.ShowStatusEnum;
 import com.sidifensen.domain.vo.*;
@@ -21,6 +23,7 @@ import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.ArticleColumnMapper;
 import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.ColumnMapper;
+import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.ColumnService;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
@@ -29,7 +32,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -51,6 +57,48 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
     @Resource
     private ArticleMapper articleMapper;
 
+    @Resource
+    private SysUserMapper sysUserMapper;
+
+    /**
+     * 为专栏管理VO设置作者昵称
+     * @param userColumnManageVos 专栏管理VO列表
+     * @param columns 对应的专栏实体列表
+     */
+    private void setAuthorNicknames(List<UserColumnManageVo> userColumnManageVos, List<Column> columns) {
+        if (ObjectUtil.isEmpty(userColumnManageVos) || ObjectUtil.isEmpty(columns)) {
+            return;
+        }
+
+        // 创建专栏ID到用户ID的映射
+        Map<Integer, Integer> columnIdToUserIdMap = columns.stream()
+                .collect(Collectors.toMap(Column::getId, Column::getUserId, (existing, replacement) -> existing));
+
+        // 提取所有唯一的用户ID
+        List<Integer> userIds = columns.stream()
+                .map(Column::getUserId)
+                .filter(ObjectUtil::isNotEmpty)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (ObjectUtil.isEmpty(userIds)) {
+            return;
+        }
+
+        // 批量查询用户信息
+        List<SysUser> users = sysUserMapper.selectBatchIds(userIds);
+        Map<Integer, String> userIdToNicknameMap = users.stream()
+                .collect(Collectors.toMap(SysUser::getId, SysUser::getNickname, (existing, replacement) -> existing));
+
+        // 为每个VO设置昵称
+        userColumnManageVos.forEach(vo -> {
+            Integer userId = columnIdToUserIdMap.get(vo.getId());
+            if (userId != null) {
+                String nickname = userIdToNicknameMap.get(userId);
+                vo.setNickname(nickname);
+            }
+        });
+    }
 
     @Override
     public List<ColumnVo> getColumnList() {
@@ -121,7 +169,7 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
             // 构建文章查询条件
             LambdaQueryWrapper<Article> articleQueryWrapper = new LambdaQueryWrapper<Article>()
                     .in(Article::getId, articleIds);
-            
+
             // 如果不是专栏作者，只能看到审核通过的文章
             if (currentUserId == null || !currentUserId.equals(column.getUserId())) {
                 articleQueryWrapper.eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode());
@@ -358,6 +406,9 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
         // 转换为 UserColumnManageVo
         List<UserColumnManageVo> userColumnManageVos = BeanUtil.copyToList(columns, UserColumnManageVo.class);
 
+        // 设置作者昵称
+        setAuthorNicknames(userColumnManageVos, columns);
+
         return new PageVo<>(userColumnManageVos, page.getTotal());
     }
 
@@ -410,6 +461,9 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
         // 转换为 UserColumnManageVo
         List<UserColumnManageVo> userColumnManageVos = BeanUtil.copyToList(columns, UserColumnManageVo.class);
 
+        // 设置作者昵称
+        setAuthorNicknames(userColumnManageVos, columns);
+
         return userColumnManageVos;
     }
 
@@ -423,6 +477,9 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
 
         // 转换为 UserColumnManageVo
         List<UserColumnManageVo> userColumnManageVos = BeanUtil.copyToList(columns, UserColumnManageVo.class);
+
+        // 设置作者昵称
+        setAuthorNicknames(userColumnManageVos, columns);
 
         return userColumnManageVos;
     }
@@ -467,6 +524,9 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
 
         // 转换为 UserColumnManageVo
         List<UserColumnManageVo> userColumnManageVos = BeanUtil.copyToList(columns, UserColumnManageVo.class);
+
+        // 设置作者昵称
+        setAuthorNicknames(userColumnManageVos, columns);
 
         return userColumnManageVos;
     }
@@ -522,6 +582,28 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
     }
 
     @Override
+    public void adminUpdateColumn(ColumnDto columnDto) {
+        if (ObjectUtil.isEmpty(columnDto) || ObjectUtil.isEmpty(columnDto.getId())) {
+            throw new BlogException(BlogConstants.ColumnIdEmpty);
+        }
+
+        // 验证专栏是否存在
+        Column existColumn = columnMapper.selectById(columnDto.getId());
+        if (ObjectUtil.isEmpty(existColumn)) {
+            throw new BlogException(BlogConstants.NotFoundColumn);
+        }
+
+        // 转换为实体对象
+        Column column = BeanUtil.copyProperties(columnDto, Column.class);
+        column.setUpdateTime(new Date());
+
+        // 更新专栏信息
+        if (columnMapper.updateById(column) <= 0) {
+            throw new BlogException(BlogConstants.UpdateColumnError);
+        }
+    }
+
+    @Override
     public void adminDeleteColumn(Integer columnId) {
         Column column = columnMapper.selectById(columnId);
         if (ObjectUtil.isEmpty(column)) {
@@ -549,5 +631,57 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
         if (columnMapper.deleteBatchIds(columnIds) <= 0) {
             throw new BlogException(BlogConstants.BatchDeleteColumnError);
         }
+    }
+
+    @Override
+    public ColumnStatisticsVo getColumnStatistics() {
+        ColumnStatisticsVo statistics = new ColumnStatisticsVo();
+
+        // 专栏总数
+        Long totalCount = columnMapper.selectCount(null);
+        statistics.setTotalColumns(Math.toIntExact(totalCount));
+
+        // 按审核状态统计
+        LambdaQueryWrapper<Column> pendingQuery = new LambdaQueryWrapper<Column>()
+                .eq(Column::getExamineStatus, 0);
+        Long pendingCount = columnMapper.selectCount(pendingQuery);
+        statistics.setPendingColumns(Math.toIntExact(pendingCount));
+
+        LambdaQueryWrapper<Column> approvedQuery = new LambdaQueryWrapper<Column>()
+                .eq(Column::getExamineStatus, 1);
+        Long approvedCount = columnMapper.selectCount(approvedQuery);
+        statistics.setApprovedColumns(Math.toIntExact(approvedCount));
+
+        LambdaQueryWrapper<Column> rejectedQuery = new LambdaQueryWrapper<Column>()
+                .eq(Column::getExamineStatus, 2);
+        Long rejectedCount = columnMapper.selectCount(rejectedQuery);
+        statistics.setRejectedColumns(Math.toIntExact(rejectedCount));
+
+        // 按展示状态统计
+        LambdaQueryWrapper<Column> publicQuery = new LambdaQueryWrapper<Column>()
+                .eq(Column::getShowStatus, 0);
+        Long publicCount = columnMapper.selectCount(publicQuery);
+        statistics.setPublicColumns(Math.toIntExact(publicCount));
+
+        LambdaQueryWrapper<Column> privateQuery = new LambdaQueryWrapper<Column>()
+                .eq(Column::getShowStatus, 1);
+        Long privateCount = columnMapper.selectCount(privateQuery);
+        statistics.setPrivateColumns(Math.toIntExact(privateCount));
+
+        // 本月新增专栏数
+        LambdaQueryWrapper<Column> monthlyQuery = new LambdaQueryWrapper<Column>()
+                .ge(Column::getCreateTime, DateUtil.beginOfMonth(new Date()))
+                .le(Column::getCreateTime, DateUtil.endOfMonth(new Date()));
+        Long monthlyCount = columnMapper.selectCount(monthlyQuery);
+        statistics.setMonthlyNewColumns(Math.toIntExact(monthlyCount));
+
+        // 今日新增专栏数
+        LambdaQueryWrapper<Column> dailyQuery = new LambdaQueryWrapper<Column>()
+                .ge(Column::getCreateTime, DateUtil.beginOfDay(new Date()))
+                .le(Column::getCreateTime, DateUtil.endOfDay(new Date()));
+        Long dailyCount = columnMapper.selectCount(dailyQuery);
+        statistics.setDailyNewColumns(Math.toIntExact(dailyCount));
+
+        return statistics;
     }
 }

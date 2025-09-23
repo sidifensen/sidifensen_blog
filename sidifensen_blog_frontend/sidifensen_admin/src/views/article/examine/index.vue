@@ -510,7 +510,6 @@ const handleViewArticle = async (articleId) => {
     if (res && res.data && res.data.data) {
       currentArticle.value = res.data.data;
       dialogVisible.value = true; // 数据加载成功后再显示对话框
-      ElMessage.success("文章详情加载成功");
     } else {
       throw new Error("文章数据为空或格式错误");
     }

@@ -55,7 +55,7 @@
             <h4 class="card-title">作者其他专栏</h4>
             <div class="other-columns">
               <div v-for="column in otherColumns" :key="column.id" class="other-column-item" @click="goToColumn(column.id)">
-                <el-image :src="column.coverUrl" class="other-column-cover">
+                <el-image :src="column.coverUrl || ''" class="other-column-cover">
                   <template #error>
                     <div class="error">
                       <el-icon><Picture /></el-icon>
@@ -89,7 +89,7 @@
 
               <template #default>
                 <div class="column-info" v-if="columnInfo">
-                  <el-image :src="columnInfo.coverUrl" class="column-cover">
+                  <el-image :src="columnInfo.coverUrl || ''" class="column-cover">
                     <template #placeholder>
                       <div class="loading-text">加载中...</div>
                     </template>
@@ -122,8 +122,8 @@
                         {{ columnInfo.articleCount || 0 }} 篇文章
                       </span>
                       <span class="stat-item">
-                        <el-icon><View /></el-icon>
-                        {{ formatNumber(columnInfo.readCount || 0) }} 阅读
+                        <el-icon><Star /></el-icon>
+                        {{ formatNumber(columnInfo.focusCount || 0) }} 关注
                       </span>
                       <span class="stat-item">
                         <el-icon><Calendar /></el-icon>
@@ -145,7 +145,6 @@
                 <el-radio-group v-model="sortType" @change="handleSortChange" size="small">
                   <el-radio value="sort">按顺序</el-radio>
                   <el-radio value="time">按时间</el-radio>
-                  <el-radio value="views">按阅读量</el-radio>
                 </el-radio-group>
               </div>
             </div>
@@ -178,7 +177,7 @@
                   <div class="article-index">{{ index + 1 }}</div>
 
                   <!-- 文章封面 -->
-                  <el-image :src="article.coverUrl" class="article-cover">
+                  <el-image :src="article.coverUrl || ''" class="article-cover">
                     <template #placeholder>
                       <div class="loading-text">加载中...</div>
                     </template>
@@ -224,8 +223,8 @@
                 <span class="info-value">{{ columnInfo.articleCount || 0 }}</span>
               </div>
               <div class="info-item">
-                <span class="info-label">总阅读量</span>
-                <span class="info-value">{{ formatNumber(columnInfo.readCount || 0) }}</span>
+                <span class="info-label">关注数</span>
+                <span class="info-value">{{ formatNumber(columnInfo.focusCount || 0) }}</span>
               </div>
               <div class="info-item">
                 <span class="info-label">创建时间</span>
@@ -268,7 +267,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Plus, Message, ArrowDown, ArrowUp, Picture, Document, View, Calendar, Star, TrendCharts, Reading } from "@element-plus/icons-vue";
 import { getColumnDetail, getUserColumnList } from "@/api/column";
@@ -283,7 +282,6 @@ const userStore = useUserStore();
 // 响应式数据
 const columnLoading = ref(false); // 专栏信息加载状态
 const articleLoading = ref(false); // 文章列表加载状态
-const loadingMore = ref(false); // 加载更多数据状态
 const followLoading = ref(false); // 关注操作加载状态
 
 const columnInfo = ref(null); // 专栏信息
@@ -291,18 +289,11 @@ const authorInfo = ref(null); // 作者信息
 const articleList = ref([]); // 文章列表
 const otherColumns = ref([]); // 作者其他专栏
 
-const sortType = ref("sort"); // 排序类型：sort-按顺序，time-按时间，views-按阅读量
-const currentPage = ref(1); // 当前页码
-const pageSize = ref(10); // 每页数据量
-const hasMore = ref(true); // 是否还有更多数据
-const total = ref(0); // 总数据量
+const sortType = ref("sort"); // 排序类型：sort-按顺序，time-按时间
 
 const isDescExpanded = ref(false); // 专栏描述是否展开
 const showBackToTop = ref(false); // 是否显示返回顶部按钮
 const isFollowed = ref(false); // 是否已关注作者
-
-// DOM 引用
-const listContainer = ref(null);
 
 // 计算属性
 const isCurrentUser = computed(() => {
@@ -328,27 +319,8 @@ const fetchColumnDetail = async () => {
     columnLoading.value = true;
     const columnId = route.params.columnId;
     const res = await getColumnDetail(columnId);
-    const data = res.data.data;
-
-    // 根据API返回结构，专栏信息和文章列表都在同一个对象中
-    columnInfo.value = {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      coverUrl: data.coverUrl,
-      articleCount: data.articleCount,
-      readCount: data.focusCount, // 使用focusCount作为阅读量
-      createTime: data.createTime,
-      updateTime: data.updateTime,
-    };
-
-    // 专栏详情不再包含作者信息，作者信息通过单独的API获取
-
-    articleList.value = data.articles || [];
-    total.value = data.articles?.length || 0;
-
-    // 如果有文章，设置hasMore为false（专栏文章通常一次性返回）
-    hasMore.value = false;
+    columnInfo.value = res.data.data;
+    articleList.value = res.data.data.articles || [];
   } catch (error) {
     ElMessage.error("获取专栏信息失败");
     console.error("获取专栏信息失败:", error);
@@ -368,8 +340,6 @@ const fetchAuthorInfo = async () => {
     console.error("获取作者信息失败:", error);
   }
 };
-
-// 注意：extractAuthorFromColumn函数已移除，作者信息现在通过fetchAuthorInfo单独获取
 
 // 获取作者其他专栏
 const fetchOtherColumns = async () => {
@@ -392,8 +362,6 @@ const handleSortChange = (value) => {
   // 根据排序类型重新排序文章列表
   if (value === "time") {
     articleList.value.sort((a, b) => new Date(b.createTime) - new Date(a.createTime));
-  } else if (value === "views") {
-    articleList.value.sort((a, b) => (b.readCount || 0) - (a.readCount || 0));
   } else {
     // 按顺序排序（恢复原始顺序）
     fetchColumnDetail();
@@ -910,7 +878,7 @@ onUnmounted(() => {
           .article-item {
             display: flex;
             gap: 16px;
-            padding: 20px 0;
+            padding: 10px 0;
             border-bottom: 1px solid var(--el-border-color-light);
             cursor: pointer;
             transition: all 0.3s ease;

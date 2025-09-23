@@ -7,6 +7,7 @@ import com.sidifensen.domain.dto.ColumnFilterDto;
 import com.sidifensen.domain.dto.ColumnSearchDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.ColumnDetailVo;
+import com.sidifensen.domain.vo.ColumnStatisticsVo;
 import com.sidifensen.domain.vo.ColumnVo;
 import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.UserColumnManageVo;
@@ -234,6 +235,19 @@ public class ColumnController {
     }
 
     /**
+     * 管理员更新专栏
+     *
+     * @param columnDto 专栏信息
+     * @return 操作结果
+     */
+    @PreAuthorize("hasAuthority('column:update')")
+    @PutMapping("/admin/update")
+    public Result<Void> adminUpdateColumn(@RequestBody @Valid ColumnDto columnDto) {
+        columnService.adminUpdateColumn(columnDto);
+        return Result.success();
+    }
+
+    /**
      * 管理员删除专栏
      *
      * @param columnId 专栏ID
@@ -257,5 +271,17 @@ public class ColumnController {
     public Result<Void> adminBatchDeleteColumn(@RequestBody List<Integer> columnIds) {
         columnService.adminBatchDeleteColumn(columnIds);
         return Result.success();
+    }
+
+    /**
+     * 管理员获取专栏统计数据
+     *
+     * @return 专栏统计数据
+     */
+    @PreAuthorize("hasAuthority('column:list')")
+    @GetMapping("/admin/statistics")
+    public Result<ColumnStatisticsVo> getColumnStatistics() {
+        ColumnStatisticsVo statistics = columnService.getColumnStatistics();
+        return Result.success(statistics);
     }
 }

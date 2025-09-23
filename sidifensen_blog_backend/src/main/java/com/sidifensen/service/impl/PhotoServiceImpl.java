@@ -119,7 +119,6 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
 
     @Override
     public String uploadArticle(MultipartFile file) {
-        // 拼接userId/albumId作为目录名
         Integer userId = SecurityUtils.getUserId();
         String dirName = userId + "/";
         String url = fileUploadUtils.upload(UploadEnum.ARTICLE, file, dirName);
@@ -128,12 +127,11 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     }
 
     @Override
-    public String uploadColumn(MultipartFile file, Integer columnId) {
-        // 拼接userId/columnId作为目录名
+    public String uploadColumn(MultipartFile file) {
         Integer userId = SecurityUtils.getUserId();
-        String dirName = userId + "/" + columnId + "/";
+        String dirName = userId + "/";
         String url = fileUploadUtils.upload(UploadEnum.COLUMN, file, dirName);
-        auditAndUpdate(userId, url, columnId);
+        auditAndUpdate(userId, url);
         return url;
     }
 
@@ -186,7 +184,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         });
     }
 
-    // 图片审核(文章)
+    // 图片审核(文章和专栏)
     private void auditAndUpdate(Integer userId, String url) {
         executorService.execute(() -> {
             try {

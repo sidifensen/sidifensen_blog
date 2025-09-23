@@ -13,10 +13,12 @@ import com.sidifensen.domain.vo.SysUserDetailVo;
 import com.sidifensen.domain.vo.SysUserVo;
 import com.sidifensen.domain.vo.SysUserWithArticleCountVo;
 import com.sidifensen.domain.vo.SysUserWithCommentCountVo;
+import com.sidifensen.domain.vo.SysUserWithColumnCountVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.AlbumMapper;
 import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.CommentMapper;
+import com.sidifensen.mapper.ColumnMapper;
 import com.sidifensen.mapper.PhotoMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.redis.RedisComponent;
@@ -95,6 +97,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Resource
     private CommentMapper commentMapper;
+
+    @Resource
+    private ColumnMapper columnMapper;
 
     @Override
     public String login(LoginDto loginDto) {
@@ -368,6 +373,22 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                     .eq(Comment::getUserId, userVo.getId());
             Integer commentCount = Math.toIntExact(commentMapper.selectCount(commentQuery));
             userVo.setCommentCount(commentCount);
+        }
+
+        return sysUserVos;
+    }
+
+    @Override
+    public List<SysUserWithColumnCountVo> listUserWithColumnCount() {
+        List<SysUser> sysUsers = sysUserMapper.selectList(null);
+        List<SysUserWithColumnCountVo> sysUserVos = BeanUtil.copyToList(sysUsers, SysUserWithColumnCountVo.class);
+
+        // 为每个用户设置专栏数量
+        for (SysUserWithColumnCountVo userVo : sysUserVos) {
+            LambdaQueryWrapper<Column> columnQuery = new LambdaQueryWrapper<Column>()
+                    .eq(Column::getUserId, userVo.getId());
+            Integer columnCount = Math.toIntExact(columnMapper.selectCount(columnQuery));
+            userVo.setColumnCount(columnCount);
         }
 
         return sysUserVos;

@@ -1,9 +1,9 @@
 <template>
   <div class="management-container">
     <!-- 用户列表视图 -->
-    <div v-if="!showComments" class="card">
+    <div v-if="!showColumns" class="card">
       <div class="card-header">
-        <h2 class="card-title">用户评论管理</h2>
+        <h2 class="card-title">用户专栏管理</h2>
         <div class="card-actions">
           <el-input v-model="searchUserKeyword" placeholder="搜索用户名" class="search-input" size="small" clearable @input="handleUserSearch">
             <template #prefix>
@@ -35,13 +35,13 @@
                     <span class="username">{{ user.username }}</span>
                     <span v-if="user.nickname" class="nickname">({{ user.nickname }})</span>
                   </div>
-                  <div class="comment-count">
-                    <span class="comment-count-label">评论数量:</span>
-                    <span class="comment-count-value">{{ user.commentCount || 0 }}</span>
+                  <div class="column-count">
+                    <span class="column-count-label">专栏数量:</span>
+                    <span class="column-count-value">{{ user.columnCount || 0 }}</span>
                   </div>
                 </div>
                 <div class="user-actions">
-                  <el-button type="primary" size="default" @click="handleViewUserComments(user)" :icon="ChatDotRound" class="view-comments-btn"> 查看评论 </el-button>
+                  <el-button type="primary" size="default" @click="handleViewUserColumns(user)" :icon="Collection" class="view-columns-btn"> 查看专栏 </el-button>
                 </div>
               </div>
             </div>
@@ -50,17 +50,17 @@
       </div>
     </div>
 
-    <!-- 用户评论列表视图 -->
+    <!-- 用户专栏列表视图 -->
     <div v-else class="card">
       <div class="card-header">
-        <h2 class="card-title">{{ currentUser?.nickname || currentUser?.username }}的评论</h2>
+        <h2 class="card-title">{{ currentUser?.nickname || currentUser?.username }}的专栏</h2>
         <div class="card-actions">
           <el-button @click="handleBackToUsers" :icon="ArrowLeft" size="small">返回用户列表</el-button>
           <el-select v-model="searchExamineStatus" placeholder="审核状态" filterable clearable size="small" class="search-input" @change="handleSearch">
+            <el-option label="全部" value="" />
             <el-option label="待审核" value="0" />
             <el-option label="审核通过" value="1" />
             <el-option label="审核不通过" value="2" />
-            <el-option label="全部" value="" />
           </el-select>
         </div>
       </div>
@@ -68,33 +68,13 @@
       <!-- 时间筛选区域 -->
       <div class="card-time-filters">
         <div class="time-filter-group">
-          <el-date-picker
-            v-model="searchStartTime"
-            type="datetime"
-            placeholder="开始时间"
-            size="small"
-            class="time-input"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            clearable
-            @change="handleSearch"
-          />
-          <el-date-picker
-            v-model="searchEndTime"
-            type="datetime"
-            placeholder="结束时间"
-            size="small"
-            class="time-input"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            clearable
-            @change="handleSearch"
-          />
+          <el-date-picker v-model="searchStartTime" type="datetime" placeholder="开始时间" size="small" class="time-input" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" clearable @change="handleSearch" />
+          <el-date-picker v-model="searchEndTime" type="datetime" placeholder="结束时间" size="small" class="time-input" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" clearable @change="handleSearch" />
         </div>
       </div>
 
       <div class="card-second">
-        <el-input v-model="searchKeyword" placeholder="搜索评论内容" class="search-input" size="small" clearable @input="handleSearch">
+        <el-input v-model="searchKeyword" placeholder="搜索专栏名称或描述" class="search-input" size="small" clearable @input="handleSearch">
           <template #prefix>
             <el-icon><Search /></el-icon>
           </template>
@@ -102,53 +82,63 @@
       </div>
 
       <div class="card-third">
-        <el-button type="primary" plain round @click="handleBatchAudit" :disabled="selectedComments.length === 0" :loading="batchAuditLoading"> 批量审核 </el-button>
-        <el-button type="warning" plain round @click="handleBatchReject" :disabled="selectedComments.length === 0" :loading="batchRejectLoading"> 批量拒绝 </el-button>
-        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedComments.length === 0" :loading="batchDeleteLoading"> 批量删除 </el-button>
+        <el-button type="primary" plain round @click="handleBatchAudit" :disabled="selectedColumns.length === 0" :loading="batchAuditLoading"> 批量审核 </el-button>
+        <el-button type="warning" plain round @click="handleBatchReject" :disabled="selectedColumns.length === 0" :loading="batchRejectLoading"> 批量拒绝 </el-button>
+        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedColumns.length === 0" :loading="batchDeleteLoading"> 批量删除 </el-button>
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table v-loading="loading" :data="paginatedCommentList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
+        <el-table v-loading="loading" :data="paginatedColumnList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
           <el-table-column type="selection" width="30" />
           <el-table-column prop="id" label="ID" width="60" />
-          <el-table-column prop="content" label="评论内容" min-width="300">
+          <el-table-column prop="coverUrl" label="封面" width="120">
             <template #default="{ row }">
-              <el-tooltip :content="row.content" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"">
-                <div class="comment-content">{{ row.content }}</div>
+              <div class="column-cover-container">
+                <el-image v-if="row.coverUrl" :src="row.coverUrl" class="column-cover" :preview-src-list="[row.coverUrl]" fit="cover" preview-teleported />
+                <div v-else class="no-cover">暂无封面</div>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="name" label="专栏名称" min-width="200">
+            <template #default="{ row }">
+              <el-tooltip :content="row.name" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
+                <div class="column-name">{{ row.name }}</div>
               </el-tooltip>
             </template>
           </el-table-column>
-          <el-table-column prop="articleTitle" label="所属文章" min-width="170">
+          <el-table-column prop="description" label="专栏描述" min-width="300">
             <template #default="{ row }">
-              <el-tooltip :content="row.articleTitle" placement="top-start" :popper-style="{ maxWidth: '300px', wordWrap: 'break-word', whiteSpace: 'normal' }"">
-                <div class="article-title">{{ row.articleTitle }}</div>
+              <el-tooltip :content="row.description" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
+                <div class="column-description">{{ row.description || "暂无描述" }}</div>
               </el-tooltip>
             </template>
           </el-table-column>
-          <el-table-column prop="replyUserNickname" label="回复对象" width="120">
+          <el-table-column prop="showStatus" label="展示状态" width="80">
             <template #default="{ row }">
-              <span v-if="row.replyUserNickname">{{ row.replyUserNickname }}</span>
-              <span v-else class="no-reply">无</span>
+              <div class="column-status" :class="row.showStatus === 0 ? 'status-public' : 'status-private'">
+                {{ row.showStatus === 0 ? "公开" : "私密" }}
+              </div>
             </template>
           </el-table-column>
           <el-table-column prop="examineStatus" label="审核状态" width="80">
             <template #default="{ row }">
-              <div class="comment-status" :class="row.examineStatus === 0 ? 'status-unaudited' : row.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
+              <div class="column-status" :class="row.examineStatus === 0 ? 'status-unaudited' : row.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
                 {{ row.examineStatus === 0 ? "待审核" : row.examineStatus === 1 ? "已审核" : "未通过" }}
               </div>
             </template>
           </el-table-column>
-          <el-table-column prop="likeCount" label="点赞量" width="80" />
-          <el-table-column prop="replyCount" label="回复数" width="80" />
+          <el-table-column prop="focusCount" label="关注数" width="80" />
+          <el-table-column prop="articleCount" label="文章数" width="80" />
           <el-table-column prop="createTime" label="创建时间" sortable width="110" />
-          <el-table-column label="操作" width="320">
+          <el-table-column label="操作" width="400">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button type="info" @click="handleViewComment(row)" :icon="View" class="view-button" size="small">查看</el-button>
-                <el-button type="primary" @click="handleAuditComment(row.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
-                <el-button type="warning" @click="handleRejectComment(row.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
-                <el-button type="danger" @click="handleDeleteComment(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
+                <el-button type="info" @click="handleViewColumn(row)" :icon="View" class="view-button" size="small">查看</el-button>
+                <el-button type="success" @click="handleEditColumn(row)" :icon="Edit" class="edit-button" size="small">修改</el-button>
+                <el-button type="primary" @click="handleAuditColumn(row.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
+                <el-button type="warning" @click="handleRejectColumn(row.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
+                <el-button type="danger" @click="handleDeleteColumn(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </template>
           </el-table-column>
@@ -157,71 +147,65 @@
 
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
-        <div class="comment-cards">
-          <el-card v-for="comment in paginatedCommentList" :key="comment.id" class="comment-card">
-            <div class="comment-card-content">
-              <div class="comment-header-section">
-                <div class="comment-info">
-                  <div class="comment-header">
-                    <div class="comment-id">#{{ comment.id }}</div>
-                    <div class="comment-status" :class="comment.examineStatus === 0 ? 'status-unaudited' : comment.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-                      {{ comment.examineStatus === 0 ? "待审核" : comment.examineStatus === 1 ? "已审核" : "未通过" }}
+        <div class="column-cards">
+          <el-card v-for="column in paginatedColumnList" :key="column.id" class="column-card">
+            <div class="column-card-content">
+              <div class="column-header-section">
+                <div class="column-cover-mobile">
+                  <el-image v-if="column.coverUrl" :src="column.coverUrl" class="column-cover-img" :preview-src-list="[column.coverUrl]" fit="cover" preview-teleported />
+                  <div v-else class="no-cover-mobile">暂无封面</div>
+                </div>
+
+                <div class="column-info">
+                  <div class="column-header">
+                    <div class="column-id">#{{ column.id }}</div>
+                    <div class="column-status" :class="column.examineStatus === 0 ? 'status-unaudited' : column.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
+                      {{ column.examineStatus === 0 ? "待审核" : column.examineStatus === 1 ? "已审核" : "未通过" }}
                     </div>
                   </div>
-                  <div class="comment-content-mobile">{{ comment.content }}</div>
-                  
-                  <!-- 评论用户信息 -->
-                  <div class="comment-author-mobile" v-if="comment.nickname">
-                    <span class="author-label">评论用户:</span>
-                    <span class="author-name">{{ comment.nickname }}</span>
-                  </div>
+                  <div class="column-name-mobile">{{ column.name }}</div>
 
-                  <!-- 文章信息 -->
-                  <div class="comment-article-mobile" v-if="comment.articleTitle">
-                    <span class="article-label">文章:</span>
-                    <span class="article-name">{{ comment.articleTitle }}</span>
+                  <!-- 专栏描述 -->
+                  <div class="column-description-mobile" v-if="column.description">
+                    <span class="description-label">描述:</span>
+                    <span class="description-content">{{ column.description }}</span>
                   </div>
 
                   <!-- 其他元信息 -->
-                  <div class="comment-meta-mobile">
-                    <div class="meta-item" v-if="comment.articleId">
-                      <span class="label">文章ID:</span>
-                      <span>{{ comment.articleId }}</span>
-                    </div>
-                    <div class="meta-item" v-if="comment.parentId">
-                      <span class="label">父评论:</span>
-                      <span>#{{ comment.parentId }}</span>
-                    </div>
-                    <div class="meta-item" v-if="comment.replyUserNickname">
-                      <span class="label">回复用户:</span>
-                      <span>{{ comment.replyUserNickname }}</span>
+                  <div class="column-meta-mobile">
+                    <div class="meta-item">
+                      <span class="label">展示状态:</span>
+                      <span :class="column.showStatus === 0 ? 'status-public' : 'status-private'">
+                        {{ column.showStatus === 0 ? "公开" : "私密" }}
+                      </span>
                     </div>
                   </div>
-                  <div class="comment-meta">
+                  <div class="column-meta">
                     <div class="stats-row">
                       <div class="meta-item stat-item">
-                        <span class="label">点赞:</span>
-                        <span>{{ comment.likeCount || 0 }}</span>
+                        <span class="label">关注:</span>
+                        <span>{{ column.focusCount || 0 }}</span>
                       </div>
                       <div class="meta-item stat-item">
-                        <span class="label">回复:</span>
-                        <span>{{ comment.replyCount || 0 }}</span>
+                        <span class="label">文章:</span>
+                        <span>{{ column.articleCount || 0 }}</span>
                       </div>
                     </div>
                     <div class="time-row">
                       <div class="meta-item time-item">
                         <span class="label">创建:</span>
-                        <span>{{ comment.createTime }}</span>
+                        <span>{{ column.createTime }}</span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="comment-actions">
-                <el-button type="info" @click="handleViewComment(comment)" :icon="View" class="view-button" size="small">查看</el-button>
-                <el-button type="primary" @click="handleAuditComment(comment.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
-                <el-button type="warning" @click="handleRejectComment(comment.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
-                <el-button type="danger" @click="handleDeleteComment(comment.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
+              <div class="column-actions">
+                <el-button type="info" @click="handleViewColumn(column)" :icon="View" class="view-button" size="small">查看</el-button>
+                <el-button type="success" @click="handleEditColumn(column)" :icon="Edit" class="edit-button" size="small">修改</el-button>
+                <el-button type="primary" @click="handleAuditColumn(column.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
+                <el-button type="warning" @click="handleRejectColumn(column.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
+                <el-button type="danger" @click="handleDeleteColumn(column.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </div>
           </el-card>
@@ -234,52 +218,55 @@
       </div>
     </div>
 
-    <!-- 评论详情对话框 -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="70%" class="comment-detail-dialog" :close-on-click-modal="false" :close-on-press-escape="true" draggable align-center @close="handleDialogClose">
-      <div v-if="currentComment" class="comment-detail" v-loading="detailLoading">
-        <!-- 评论基本信息 -->
-        <div class="comment-info-section">
-          <div class="comment-detail-header">
-            <!-- 左侧：评论信息 -->
-            <div class="comment-detail-info">
-              <div class="comment-title-section">
-                <h2 class="comment-title-detail">评论详情</h2>
-                <div class="comment-id-detail">#{{ currentComment?.id || "N/A" }}</div>
+    <!-- 专栏详情对话框 -->
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="70%" class="column-detail-dialog" :close-on-click-modal="false" :close-on-press-escape="true" draggable align-center @close="handleDialogClose">
+      <div v-if="currentColumn" class="column-detail" v-loading="detailLoading">
+        <!-- 专栏基本信息 -->
+        <div class="column-info-section">
+          <div class="column-detail-header">
+            <!-- 左侧：专栏信息 -->
+            <div class="column-detail-info">
+              <div class="column-title-section">
+                <h2 class="column-title-detail">专栏详情</h2>
+                <div class="column-id-detail">#{{ currentColumn?.id || "N/A" }}</div>
               </div>
 
-              <div class="comment-user-section">
-                <el-avatar :src="currentComment?.avatar" :size="40">
-                  <template #default>
-                    <el-icon><User /></el-icon>
+              <!-- 专栏封面 -->
+              <div class="column-cover-section" v-if="currentColumn?.coverUrl">
+                <el-image :src="currentColumn.coverUrl" class="column-cover" fit="cover">
+                  <template #placeholder>
+                    <div class="loading-text">加载中...</div>
                   </template>
-                </el-avatar>
-                <div class="user-info-detail">
-                  <span class="user-name-detail">{{ currentComment?.nickname || "匿名用户" }}</span>
-                  <span class="comment-time-detail">{{ currentComment?.createTime || "未知时间" }}</span>
-                </div>
+                  <template #error>
+                    <div class="error">
+                      <el-icon><Picture /></el-icon>
+                    </div>
+                  </template>
+                </el-image>
               </div>
 
-              <div class="comment-content-detail">
-                <h4>评论内容</h4>
-                <div class="content-text">{{ currentComment?.content || "暂无内容" }}</div>
+              <div class="column-name-detail">
+                <h4>专栏名称</h4>
+                <div class="name-text">{{ currentColumn?.name || "暂无名称" }}</div>
               </div>
 
-              <div class="comment-article-detail" v-if="currentComment?.articleTitle">
-                <h4>所属文章</h4>
-                <div class="article-info">{{ currentComment.articleTitle }}</div>
-              </div>
-
-              <div class="comment-reply-detail" v-if="currentComment?.replyUserNickname">
-                <h4>回复对象</h4>
-                <div class="reply-info">{{ currentComment.replyUserNickname }}</div>
+              <div class="column-description-detail" v-if="currentColumn?.description">
+                <h4>专栏描述</h4>
+                <div class="description-text">{{ currentColumn.description }}</div>
               </div>
 
               <!-- 状态信息 -->
-              <div class="comment-badges-detail">
+              <div class="column-badges-detail">
+                <div class="badge-group">
+                  <span class="badge-label">展示状态:</span>
+                  <div class="column-status" :class="(currentColumn?.showStatus || 0) === 0 ? 'status-public' : 'status-private'">
+                    {{ (currentColumn?.showStatus || 0) === 0 ? "公开" : "私密" }}
+                  </div>
+                </div>
                 <div class="badge-group">
                   <span class="badge-label">审核状态:</span>
-                  <div class="comment-status" :class="(currentComment?.examineStatus || 0) === 0 ? 'status-unaudited' : (currentComment?.examineStatus || 0) === 1 ? 'status-audited' : 'status-rejected'">
-                    {{ (currentComment?.examineStatus || 0) === 0 ? "待审核" : (currentComment?.examineStatus || 0) === 1 ? "已审核" : "未通过" }}
+                  <div class="column-status" :class="(currentColumn?.examineStatus || 0) === 0 ? 'status-unaudited' : (currentColumn?.examineStatus || 0) === 1 ? 'status-audited' : 'status-rejected'">
+                    {{ (currentColumn?.examineStatus || 0) === 0 ? "待审核" : (currentColumn?.examineStatus || 0) === 1 ? "已审核" : "未通过" }}
                   </div>
                 </div>
               </div>
@@ -287,22 +274,22 @@
           </div>
 
           <!-- 底部：统计数据 -->
-          <div class="comment-stats-detail">
+          <div class="column-stats-detail">
             <div class="stats-group">
               <div class="stat-item">
                 <el-icon class="stat-icon"><Star /></el-icon>
-                <span class="stat-label">点赞</span>
-                <span class="stat-value">{{ currentComment?.likeCount || 0 }}</span>
+                <span class="stat-label">关注</span>
+                <span class="stat-value">{{ currentColumn?.focusCount || 0 }}</span>
               </div>
               <div class="stat-item">
-                <el-icon class="stat-icon"><ChatDotRound /></el-icon>
-                <span class="stat-label">回复</span>
-                <span class="stat-value">{{ currentComment?.replyCount || 0 }}</span>
+                <el-icon class="stat-icon"><Document /></el-icon>
+                <span class="stat-label">文章</span>
+                <span class="stat-value">{{ currentColumn?.articleCount || 0 }}</span>
               </div>
               <div class="stat-item time-stat-item">
                 <el-icon class="stat-icon"><Clock /></el-icon>
                 <span class="stat-label">创建时间:</span>
-                <span class="stat-value">{{ currentComment?.createTime || "未知" }}</span>
+                <span class="stat-value">{{ currentColumn?.createTime || "未知" }}</span>
               </div>
             </div>
           </div>
@@ -311,14 +298,39 @@
 
       <!-- 加载状态 -->
       <div v-else class="loading-container">
-        <el-empty description="正在加载评论详情..." />
+        <el-empty description="正在加载专栏详情..." />
       </div>
 
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="dialogVisible = false" :icon="Close">关闭</el-button>
-          <el-button type="primary" @click="handleAuditComment(currentComment?.id)" :icon="Check" :disabled="!currentComment || (currentComment?.examineStatus || 0) === 1"> 审核通过 </el-button>
-          <el-button type="warning" @click="handleRejectComment(currentComment?.id)" :icon="Close" :disabled="!currentComment || (currentComment?.examineStatus || 0) === 2"> 审核拒绝 </el-button>
+          <el-button type="primary" @click="handleAuditColumn(currentColumn?.id)" :icon="Check" :disabled="!currentColumn || (currentColumn?.examineStatus || 0) === 1"> 审核通过 </el-button>
+          <el-button type="warning" @click="handleRejectColumn(currentColumn?.id)" :icon="Close" :disabled="!currentColumn || (currentColumn?.examineStatus || 0) === 2"> 审核拒绝 </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 修改专栏对话框 -->
+    <el-dialog v-model="editDialogVisible" title="修改专栏" width="50%" class="edit-column-dialog" :close-on-click-modal="false" :close-on-press-escape="true" draggable align-center @close="handleCancelEdit">
+      <el-form :model="editForm" label-width="80px" class="edit-form">
+        <el-form-item label="专栏名称" required>
+          <el-input v-model="editForm.name" placeholder="请输入专栏名称" maxlength="30" show-word-limit clearable />
+        </el-form-item>
+        <el-form-item label="专栏描述">
+          <el-input v-model="editForm.description" type="textarea" placeholder="请输入专栏描述" :rows="4" maxlength="200" show-word-limit />
+        </el-form-item>
+        <el-form-item label="展示状态">
+          <el-radio-group v-model="editForm.showStatus">
+            <el-radio :value="0">公开</el-radio>
+            <el-radio :value="1">私密</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="handleCancelEdit" :disabled="editLoading">取消</el-button>
+          <el-button type="primary" @click="handleSaveEdit" :loading="editLoading">保存</el-button>
         </div>
       </template>
     </el-dialog>
@@ -327,12 +339,12 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from "vue";
-import { Delete, Close, Check, View, Search, ArrowLeft, User, ChatDotRound, Star, Clock } from "@element-plus/icons-vue";
-import { getUserListWithCommentCount } from "@/api/comment";
-import { adminGetCommentsByUserId, adminSearchComment, adminExamineComment, adminExamineBatchComment, adminDeleteComment, adminDeleteBatchComment } from "@/api/comment";
+import { Delete, Close, Check, View, Search, ArrowLeft, User, Collection, Star, Clock, Document, Picture, Edit } from "@element-plus/icons-vue";
+import { getUserListWithColumnCount } from "@/api/column";
+import { adminGetColumnsByUserId, adminSearchColumn, adminExamineColumn, adminBatchExamineColumn, adminDeleteColumn, adminBatchDeleteColumn, adminUpdateColumn } from "@/api/column";
 
 // 视图状态
-const showComments = ref(false);
+const showColumns = ref(false);
 const currentUser = ref(null);
 
 // 用户列表数据
@@ -347,17 +359,27 @@ const filteredUserList = computed(() => {
   return userList.value.filter((user) => user.username.toLowerCase().includes(keyword) || user.nickname?.toLowerCase().includes(keyword));
 });
 
-// 评论列表数据
-const commentList = ref([]);
-const paginatedCommentList = ref([]);
+// 专栏列表数据
+const columnList = ref([]);
+const paginatedColumnList = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
 const dialogVisible = ref(false);
-const dialogTitle = ref("评论详情");
-const currentComment = ref(null);
+const dialogTitle = ref("专栏详情");
+const currentColumn = ref(null);
 const detailLoading = ref(false);
+
+// 修改专栏相关变量
+const editDialogVisible = ref(false);
+const editForm = ref({
+  id: null,
+  name: "",
+  description: "",
+  showStatus: 0,
+});
+const editLoading = ref(false);
 
 // 搜索条件
 const searchExamineStatus = ref("");
@@ -365,8 +387,8 @@ const searchKeyword = ref("");
 const searchStartTime = ref("");
 const searchEndTime = ref("");
 
-// 选中的评论
-const selectedComments = ref([]);
+// 选中的专栏
+const selectedColumns = ref([]);
 
 // 批量操作加载状态
 const batchAuditLoading = ref(false);
@@ -385,7 +407,7 @@ const handleResize = () => {
 const getUsers = async () => {
   userLoading.value = true;
   try {
-    const res = await getUserListWithCommentCount();
+    const res = await getUserListWithColumnCount();
     userList.value = res.data.data;
   } catch (error) {
     ElMessage.error("获取用户列表失败");
@@ -399,61 +421,61 @@ const handleUserSearch = () => {
   // 搜索逻辑已在computed中处理
 };
 
-// 查看用户评论
-const handleViewUserComments = async (user) => {
+// 查看用户专栏
+const handleViewUserColumns = async (user) => {
   currentUser.value = user;
-  showComments.value = true;
-  await getUserComments(user.id);
+  showColumns.value = true;
+  await getUserColumns(user.id);
 };
 
 // 返回用户列表
 const handleBackToUsers = () => {
-  showComments.value = false;
+  showColumns.value = false;
   currentUser.value = null;
-  commentList.value = [];
-  paginatedCommentList.value = [];
+  columnList.value = [];
+  paginatedColumnList.value = [];
   // 重置搜索条件
   searchExamineStatus.value = "";
   searchKeyword.value = "";
   searchStartTime.value = "";
   searchEndTime.value = "";
-  selectedComments.value = [];
+  selectedColumns.value = [];
 };
 
-// 获取用户评论列表
-const getUserComments = async (userId) => {
+// 获取用户专栏列表
+const getUserColumns = async (userId) => {
   loading.value = true;
   try {
-    const res = await adminGetCommentsByUserId(userId);
-    commentList.value = res.data.data.sort((a, b) => b.id - a.id);
-    total.value = commentList.value.length;
+    const res = await adminGetColumnsByUserId(userId);
+    columnList.value = res.data.data.sort((a, b) => b.id - a.id);
+    total.value = columnList.value.length;
     currentPage.value = 1;
-    updatePaginatedCommentList();
+    updatePaginatedColumnList();
   } catch (error) {
-    ElMessage.error("获取用户评论列表失败");
+    ElMessage.error("获取用户专栏列表失败");
   } finally {
     loading.value = false;
   }
 };
 
 // 更新分页数据
-const updatePaginatedCommentList = () => {
+const updatePaginatedColumnList = () => {
   const startIndex = (currentPage.value - 1) * pageSize.value;
   const endIndex = startIndex + pageSize.value;
-  paginatedCommentList.value = commentList.value.slice(startIndex, endIndex);
+  paginatedColumnList.value = columnList.value.slice(startIndex, endIndex);
 };
 
 // 处理分页大小变化
 const handleSizeChange = (size) => {
   pageSize.value = size;
   currentPage.value = 1;
-  updatePaginatedCommentList();
+  updatePaginatedColumnList();
 };
 
 // 处理当前页码变化
 const handleCurrentChange = (current) => {
   currentPage.value = current;
-  updatePaginatedCommentList();
+  updatePaginatedColumnList();
 };
 
 // 处理搜索
@@ -462,26 +484,29 @@ const handleSearch = async () => {
 
   loading.value = true;
   try {
-    const res = await adminSearchComment({
+    // 构建搜索参数
+    const searchData = {
       userId: currentUser.value.id,
-      examineStatus: searchExamineStatus.value,
+      examineStatus: searchExamineStatus.value ? parseInt(searchExamineStatus.value) : undefined,
       keyword: searchKeyword.value,
       createTimeStart: searchStartTime.value,
       createTimeEnd: searchEndTime.value,
-    });
-    commentList.value = res.data.data;
-    total.value = commentList.value.length;
+    };
+
+    const res = await adminSearchColumn(searchData);
+    columnList.value = res.data.data;
+    total.value = columnList.value.length;
     currentPage.value = 1;
-    updatePaginatedCommentList();
+    updatePaginatedColumnList();
   } catch (error) {
-    ElMessage.error("搜索评论失败");
+    ElMessage.error("搜索专栏失败");
   } finally {
     loading.value = false;
   }
 };
 
 // 智能刷新列表
-const refreshCommentList = async () => {
+const refreshColumnList = async () => {
   if (!currentUser.value) return;
 
   // 检查是否有任何搜索条件
@@ -490,34 +515,76 @@ const refreshCommentList = async () => {
   if (hasSearchConditions) {
     await handleSearch();
   } else {
-    await getUserComments(currentUser.value.id);
+    await getUserColumns(currentUser.value.id);
   }
 };
 
 // 表格多选
-const handleSelectionChange = (comments) => {
-  selectedComments.value = comments;
+const handleSelectionChange = (columns) => {
+  selectedColumns.value = columns;
 };
 
 // 对话框关闭处理
 const handleDialogClose = () => {
-  currentComment.value = null;
+  currentColumn.value = null;
   detailLoading.value = false;
 };
 
-// 查看评论详情
-const handleViewComment = (comment) => {
-  currentComment.value = comment;
-  dialogTitle.value = "评论详情";
+// 查看专栏详情
+const handleViewColumn = (column) => {
+  currentColumn.value = column;
+  dialogTitle.value = "专栏详情";
   dialogVisible.value = true;
 };
 
-// 处理单个评论审核
-const handleAuditComment = async (commentId) => {
+// 修改专栏
+const handleEditColumn = (column) => {
+  editForm.value = {
+    id: column.id,
+    name: column.name,
+    description: column.description || "",
+    showStatus: column.showStatus,
+  };
+  editDialogVisible.value = true;
+};
+
+// 保存专栏修改
+const handleSaveEdit = async () => {
+  if (!editForm.value.name.trim()) {
+    ElMessage.warning("专栏名称不能为空");
+    return;
+  }
+
+  editLoading.value = true;
   try {
-    await adminExamineComment({ commentId: commentId, examineStatus: 1 });
+    await adminUpdateColumn(editForm.value);
+    ElMessage.success("修改成功");
+    editDialogVisible.value = false;
+    await refreshColumnList();
+  } catch (error) {
+    ElMessage.error("修改失败");
+  } finally {
+    editLoading.value = false;
+  }
+};
+
+// 取消修改
+const handleCancelEdit = () => {
+  editDialogVisible.value = false;
+  editForm.value = {
+    id: null,
+    name: "",
+    description: "",
+    showStatus: 0,
+  };
+};
+
+// 处理单个专栏审核
+const handleAuditColumn = async (columnId) => {
+  try {
+    await adminExamineColumn(columnId, 1);
     ElMessage.success("审核成功");
-    await refreshCommentList();
+    await refreshColumnList();
     if (dialogVisible.value) {
       dialogVisible.value = false;
     }
@@ -528,7 +595,7 @@ const handleAuditComment = async (commentId) => {
 
 // 处理批量审核
 const handleBatchAudit = () => {
-  ElMessageBox.confirm(`确定要审核通过选中的 ${selectedComments.value.length} 条评论吗？`, "确认", {
+  ElMessageBox.confirm(`确定要审核通过选中的 ${selectedColumns.value.length} 个专栏吗？`, "确认", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "info",
@@ -536,13 +603,10 @@ const handleBatchAudit = () => {
     .then(async () => {
       batchAuditLoading.value = true;
       try {
-        const data = selectedComments.value.map((comment) => ({
-          commentId: comment.id,
-          examineStatus: 1,
-        }));
-        await adminExamineBatchComment(data);
+        const columnIds = selectedColumns.value.map((column) => column.id);
+        await adminBatchExamineColumn(columnIds, 1);
         ElMessage.success("批量审核成功");
-        await refreshCommentList();
+        await refreshColumnList();
       } catch (error) {
         ElMessage.error("批量审核失败");
       } finally {
@@ -554,12 +618,12 @@ const handleBatchAudit = () => {
     });
 };
 
-// 处理单个评论拒绝
-const handleRejectComment = async (commentId) => {
+// 处理单个专栏拒绝
+const handleRejectColumn = async (columnId) => {
   try {
-    await adminExamineComment({ commentId: commentId, examineStatus: 2 });
+    await adminExamineColumn(columnId, 2);
     ElMessage.success("拒绝成功");
-    await refreshCommentList();
+    await refreshColumnList();
     if (dialogVisible.value) {
       dialogVisible.value = false;
     }
@@ -570,7 +634,7 @@ const handleRejectComment = async (commentId) => {
 
 // 处理批量拒绝
 const handleBatchReject = () => {
-  ElMessageBox.confirm(`确定要拒绝选中的 ${selectedComments.value.length} 条评论吗？`, "确认", {
+  ElMessageBox.confirm(`确定要拒绝选中的 ${selectedColumns.value.length} 个专栏吗？`, "确认", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
@@ -578,13 +642,10 @@ const handleBatchReject = () => {
     .then(async () => {
       batchRejectLoading.value = true;
       try {
-        const data = selectedComments.value.map((comment) => ({
-          commentId: comment.id,
-          examineStatus: 2,
-        }));
-        await adminExamineBatchComment(data);
+        const columnIds = selectedColumns.value.map((column) => column.id);
+        await adminBatchExamineColumn(columnIds, 2);
         ElMessage.success("批量拒绝成功");
-        await refreshCommentList();
+        await refreshColumnList();
       } catch (error) {
         ElMessage.error("批量拒绝失败");
       } finally {
@@ -596,18 +657,18 @@ const handleBatchReject = () => {
     });
 };
 
-// 处理删除单个评论
-const handleDeleteComment = (commentId) => {
-  ElMessageBox.confirm("确定要删除该评论吗？", "警告", {
+// 处理删除单个专栏
+const handleDeleteColumn = (columnId) => {
+  ElMessageBox.confirm("确定要删除该专栏吗？", "警告", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
   })
     .then(async () => {
       try {
-        await adminDeleteComment(commentId);
+        await adminDeleteColumn(columnId);
         ElMessage.success("删除成功");
-        await refreshCommentList();
+        await refreshColumnList();
         if (dialogVisible.value) {
           dialogVisible.value = false;
         }
@@ -622,7 +683,7 @@ const handleDeleteComment = (commentId) => {
 
 // 处理批量删除
 const handleBatchDelete = () => {
-  ElMessageBox.confirm(`确定要删除选中的 ${selectedComments.value.length} 条评论吗？`, "警告", {
+  ElMessageBox.confirm(`确定要删除选中的 ${selectedColumns.value.length} 个专栏吗？`, "警告", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
@@ -630,10 +691,10 @@ const handleBatchDelete = () => {
     .then(async () => {
       batchDeleteLoading.value = true;
       try {
-        const commentIds = selectedComments.value.map((comment) => comment.id);
-        await adminDeleteBatchComment(commentIds);
+        const columnIds = selectedColumns.value.map((column) => column.id);
+        await adminBatchDeleteColumn(columnIds);
         ElMessage.success("批量删除成功");
-        await refreshCommentList();
+        await refreshColumnList();
       } catch (error) {
         ElMessage.error("批量删除失败");
       } finally {
@@ -659,7 +720,7 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
-// 用户评论管理主容器
+// 用户专栏管理主容器
 .management-container {
   height: 100%;
   box-sizing: border-box;
@@ -796,7 +857,7 @@ onUnmounted(() => {
     }
   }
 
-  // 用户列表视图 - 当 showComments = false 时显示
+  // 用户列表视图 - 当 showColumns = false 时显示
   .user-list-container {
     flex: 1;
     margin-top: 16px;
@@ -881,18 +942,18 @@ onUnmounted(() => {
                 }
               }
 
-              .comment-count {
+              .column-count {
                 display: flex;
                 align-items: center;
                 gap: 4px;
                 font-size: 13px;
 
-                .comment-count-label {
+                .column-count-label {
                   color: #606266;
                   font-weight: 500;
                 }
 
-                .comment-count-value {
+                .column-count-value {
                   background: linear-gradient(45deg, #e6a23c, #d19d00);
                   color: white;
                   padding: 2px 8px;
@@ -913,7 +974,7 @@ onUnmounted(() => {
               display: flex;
               justify-content: flex-start;
 
-              .view-comments-btn {
+              .view-columns-btn {
                 border-radius: 8px;
                 font-weight: 500;
                 transition: all 0.3s ease;
@@ -938,13 +999,13 @@ onUnmounted(() => {
     flex-direction: column;
     padding-bottom: 60px; // 为分页容器预留空间
 
-    // 评论表格
+    // 专栏表格
     .table {
       flex: 1;
       display: flex;
       flex-direction: column;
       margin-top: 16px;
-      max-height: calc(100vh - 280px);
+      max-height: calc(100vh - 300px);
 
       // 表格头部样式
       :deep(.el-table__header-wrapper) {
@@ -971,8 +1032,8 @@ onUnmounted(() => {
         }
       }
 
-      // 评论内容样式
-      .comment-content {
+      // 专栏名称样式
+      .column-name {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -983,8 +1044,8 @@ onUnmounted(() => {
         }
       }
 
-      // 文章标题样式
-      .article-title {
+      // 专栏描述样式
+      .column-description {
         overflow: hidden;
         text-overflow: ellipsis;
         cursor: pointer;
@@ -994,10 +1055,40 @@ onUnmounted(() => {
         }
       }
 
-      // 无回复提示
-      .no-reply {
-        color: #999;
-        font-size: 12px;
+      // 专栏封面容器样式
+      .column-cover-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+
+        // 有封面图片样式
+        .column-cover {
+          width: 100px;
+          height: 60px;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+
+          &:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          }
+        }
+
+        // 无封面占位样式
+        .no-cover {
+          width: 100px;
+          height: 60px;
+          background-color: #f5f5f5;
+          border: 1px dashed #ddd;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          color: #999;
+        }
       }
 
       // 表格操作按钮组
@@ -1011,6 +1102,7 @@ onUnmounted(() => {
 
         // 通用按钮样式
         .view-button,
+        .edit-button,
         .examine-button,
         .reject-button,
         .delete-button {
@@ -1032,6 +1124,19 @@ onUnmounted(() => {
             background-color: #dbeafe;
             border-color: #dbeafe;
             box-shadow: 0 2px 8px rgba(3, 105, 161, 0.3);
+          }
+        }
+
+        // 修改按钮
+        .edit-button {
+          background-color: #f0fdf4;
+          color: #16a34a;
+          border-color: #f0fdf4;
+
+          &:hover {
+            background-color: #dcfce7;
+            border-color: #dcfce7;
+            box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);
           }
         }
 
@@ -1086,15 +1191,15 @@ onUnmounted(() => {
     padding-bottom: 60px;
     overflow-y: auto;
 
-    // 评论卡片列表容器
-    .comment-cards {
+    // 专栏卡片列表容器
+    .column-cards {
       display: flex;
       flex-direction: column;
       gap: 12px;
       padding: 10px;
 
-      // 单个评论卡片
-      .comment-card {
+      // 单个专栏卡片
+      .column-card {
         transition: all 0.3s ease;
         border-radius: 8px;
         margin-bottom: 12px;
@@ -1104,25 +1209,61 @@ onUnmounted(() => {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        // 评论卡片内容容器
-        .comment-card-content {
+        // 专栏卡片内容容器
+        .column-card-content {
           display: flex;
           flex-direction: column;
           gap: 12px;
 
-          // 评论头部区域
-          .comment-header-section {
+          // 专栏头部区域
+          .column-header-section {
             display: flex;
             flex-direction: column;
 
-            // 评论信息区域
-            .comment-info {
+            // 移动端专栏封面容器
+            .column-cover-mobile {
+              width: 100%;
+              margin-bottom: 8px;
+
+              // 封面图片样式
+              .column-cover-img {
+                width: 100%;
+                height: 120px;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                object-fit: cover;
+
+                &:hover {
+                  transform: scale(1.02);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                }
+              }
+
+              // 无封面占位样式
+              .no-cover-mobile {
+                width: 100%;
+                height: 120px;
+                background-color: #f5f5f5;
+                border: 1px dashed #ddd;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                color: #999;
+                text-align: center;
+              }
+            }
+
+            // 专栏信息区域
+            .column-info {
               width: 100%;
               display: flex;
               flex-direction: column;
 
-              // 评论头部 - ID和状态
-              .comment-header {
+              // 专栏头部 - ID和状态
+              .column-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -1130,7 +1271,7 @@ onUnmounted(() => {
                 gap: 8px;
                 margin-bottom: 5px;
 
-                .comment-id {
+                .column-id {
                   font-size: 12px;
                   color: #666;
                   background-color: #f5f5f5;
@@ -1139,65 +1280,50 @@ onUnmounted(() => {
                 }
               }
 
-              // 移动端评论内容
-              .comment-content-mobile {
-                font-size: 14px;
-                font-weight: 500;
+              // 移动端专栏名称
+              .column-name-mobile {
+                font-size: 16px;
+                font-weight: 600;
                 color: #333;
                 line-height: 1.4;
                 margin-bottom: 8px;
                 display: -webkit-box;
-                -webkit-line-clamp: 3;
-                line-clamp: 3;
+                -webkit-line-clamp: 2;
+                line-clamp: 2;
                 -webkit-box-orient: vertical;
                 overflow: hidden;
               }
 
-              // 移动端评论用户信息
-              .comment-author-mobile {
+              // 移动端专栏描述
+              .column-description-mobile {
                 font-size: 13px;
                 color: #666;
                 margin-bottom: 8px;
                 display: flex;
-                align-items: center;
+                align-items: flex-start;
 
-                .author-label {
+                .description-label {
                   font-weight: 500;
                   color: #888;
                   margin-right: 4px;
+                  flex-shrink: 0;
                 }
 
-                .author-name {
+                .description-content {
                   color: #555;
-                  font-weight: 500;
+                  font-weight: 400;
                   flex: 1;
+                  word-break: break-all;
+                  display: -webkit-box;
+                  -webkit-line-clamp: 2;
+                  line-clamp: 2;
+                  -webkit-box-orient: vertical;
+                  overflow: hidden;
                 }
               }
 
-              // 移动端文章信息
-              .comment-article-mobile {
-                font-size: 13px;
-                color: #666;
-                margin-bottom: 6px;
-                display: flex;
-                align-items: center;
-
-                .article-label {
-                  font-weight: 500;
-                  color: #888;
-                  margin-right: 4px;
-                }
-
-                .article-name {
-                  color: #555;
-                  font-weight: 500;
-                  flex: 1;
-                  word-break: break-all; // 强制断词
-                }
-              }
-
-              // 移动端评论元信息
-              .comment-meta-mobile {
+              // 移动端专栏元信息
+              .column-meta-mobile {
                 display: flex;
                 flex-direction: column;
                 gap: 4px;
@@ -1214,12 +1340,21 @@ onUnmounted(() => {
                     margin-right: 4px;
                     color: #888;
                   }
+
+                  .status-public {
+                    color: #67c23a;
+                    font-weight: 500;
+                  }
+
+                  .status-private {
+                    color: #e6a23c;
+                    font-weight: 500;
+                  }
                 }
               }
 
-
-              // 评论元信息
-              .comment-meta {
+              // 专栏元信息
+              .column-meta {
                 display: flex;
                 flex-direction: column;
                 gap: 8px;
@@ -1278,15 +1413,16 @@ onUnmounted(() => {
             }
           }
 
-          // 评论操作按钮
-          .comment-actions {
+          // 专栏操作按钮
+          .column-actions {
             display: flex;
-            gap: 4px;
+            gap: 3px;
             justify-content: center;
             padding-top: 8px;
             border-top: 1px solid #f0f0f0;
 
             .el-button {
+              margin-left: 0;
               font-size: 12px;
               padding: 6px 10px;
               height: auto;
@@ -1299,8 +1435,8 @@ onUnmounted(() => {
     }
   }
 
-  // 通用的评论状态样式
-  .comment-status {
+  // 通用的专栏状态样式
+  .column-status {
     display: inline-block;
     padding: 2px 8px;
     border-radius: 12px;
@@ -1318,6 +1454,16 @@ onUnmounted(() => {
     }
 
     &.status-rejected {
+      background-color: #fdf6ec;
+      color: #e6a23c;
+    }
+
+    &.status-public {
+      background-color: #f0f9eb;
+      color: #67c23a;
+    }
+
+    &.status-private {
       background-color: #fdf6ec;
       color: #e6a23c;
     }
@@ -1339,8 +1485,8 @@ onUnmounted(() => {
   }
 }
 
-// 评论详情对话框样式
-:deep(.comment-detail-dialog) {
+// 专栏详情对话框样式
+:deep(.column-detail-dialog) {
   border-radius: 16px;
 
   .el-dialog__header {
@@ -1401,26 +1547,26 @@ onUnmounted(() => {
   }
 }
 
-// 评论详情容器
-.comment-detail {
-  .comment-info-section {
+// 专栏详情容器
+.column-detail {
+  .column-info-section {
     margin-bottom: 24px;
 
-    .comment-detail-header {
+    .column-detail-header {
       display: flex;
       gap: 24px;
       align-items: flex-start;
 
-      .comment-detail-info {
+      .column-detail-info {
         flex: 1;
 
-        .comment-title-section {
+        .column-title-section {
           display: flex;
           align-items: center;
           gap: 12px;
           margin-bottom: 16px;
 
-          .comment-title-detail {
+          .column-title-detail {
             margin: 0;
             font-size: 20px;
             font-weight: 700;
@@ -1429,7 +1575,7 @@ onUnmounted(() => {
             flex: 1;
           }
 
-          .comment-id-detail {
+          .column-id-detail {
             background: linear-gradient(45deg, #e6a23c, #d19d00);
             color: white;
             padding: 4px 12px;
@@ -1440,34 +1586,43 @@ onUnmounted(() => {
           }
         }
 
-        .comment-user-section {
-          display: flex;
-          align-items: center;
-          gap: 12px;
+        .column-cover-section {
           margin-bottom: 16px;
-          padding: 12px;
-          background-color: var(--el-border-color-light);
-          border-radius: 8px;
 
-          .user-info-detail {
-            display: flex;
-            flex-direction: column;
+          .column-cover {
+            width: 200px;
+            height: 120px;
+            border-radius: 8px;
+            border: 1px solid var(--el-border-color);
 
-            .user-name-detail {
-              font-weight: 600;
+            .loading-text {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: 100%;
+              height: 100%;
+              font-size: 12px;
               color: var(--el-text-color-regular);
-              font-size: 16px;
+              background-color: var(--el-bg-color-page);
             }
 
-            .comment-time-detail {
-              font-size: 12px;
-              color: var(--el-text-color-secondary);
-              margin-top: 2px;
+            .error {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: 100%;
+              height: 100%;
+              background-color: var(--el-bg-color-page);
+
+              .el-icon {
+                font-size: 24px;
+                color: var(--el-text-color-placeholder);
+              }
             }
           }
         }
 
-        .comment-content-detail {
+        .column-name-detail {
           margin-bottom: 16px;
 
           h4 {
@@ -1477,7 +1632,29 @@ onUnmounted(() => {
             color: #2c3e50;
           }
 
-          .content-text {
+          .name-text {
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #333;
+            border-left: 4px solid #e6a23c;
+            font-weight: 600;
+            font-size: 16px;
+          }
+        }
+
+        .column-description-detail {
+          margin-bottom: 16px;
+
+          h4 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+          }
+
+          .description-text {
             padding: 12px;
             background-color: #f8f9fa;
             border-radius: 8px;
@@ -1487,45 +1664,7 @@ onUnmounted(() => {
           }
         }
 
-        .comment-article-detail {
-          margin-bottom: 16px;
-
-          h4 {
-            margin: 0 0 8px 0;
-            font-size: 14px;
-            font-weight: 600;
-            color: #2c3e50;
-          }
-
-          .article-info {
-            padding: 8px 12px;
-            background-color: #e3f2fd;
-            border-radius: 6px;
-            color: #1976d2;
-            font-weight: 500;
-          }
-        }
-
-        .comment-reply-detail {
-          margin-bottom: 16px;
-
-          h4 {
-            margin: 0 0 8px 0;
-            font-size: 14px;
-            font-weight: 600;
-            color: #2c3e50;
-          }
-
-          .reply-info {
-            padding: 8px 12px;
-            background-color: #f3e5f5;
-            border-radius: 6px;
-            color: #7b1fa2;
-            font-weight: 500;
-          }
-        }
-
-        .comment-badges-detail {
+        .column-badges-detail {
           display: flex;
           flex-direction: column;
           gap: 12px;
@@ -1548,7 +1687,7 @@ onUnmounted(() => {
       }
     }
 
-    .comment-stats-detail {
+    .column-stats-detail {
       border-top: 1px solid #e9ecef;
       padding-top: 20px;
       margin-top: 20px;
@@ -1569,7 +1708,7 @@ onUnmounted(() => {
           border: 1px solid #dee2e6;
           transition: all 0.3s ease;
           flex: 1;
-          min-width: 160px;
+          min-width: 180px;
           max-width: 200px;
 
           &:hover {
@@ -1589,6 +1728,7 @@ onUnmounted(() => {
           }
 
           .stat-value {
+            flex: 1;
             font-size: 14px;
             font-weight: 700;
             color: #495057;
@@ -1652,7 +1792,7 @@ onUnmounted(() => {
 }
 
 // Tooltip 样式优化
-:deep(.comment-tooltip) {
+:deep(.column-tooltip) {
   max-width: 400px !important;
   word-wrap: break-word !important;
   white-space: normal !important;
@@ -1667,18 +1807,104 @@ onUnmounted(() => {
   }
 }
 
-:deep(.article-tooltip) {
-  max-width: 300px !important;
-  word-wrap: break-word !important;
-  white-space: normal !important;
-  line-height: 1.4 !important;
+// 修改专栏对话框样式
+:deep(.edit-column-dialog) {
+  border-radius: 16px;
 
-  @media screen and (max-width: 768px) {
-    max-width: 70vw !important;
+  .el-dialog__header {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    color: white;
+    border-radius: 16px 16px 0 0;
+    padding: 20px 24px;
+
+    .el-dialog__title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .el-dialog__headerbtn {
+      position: absolute;
+      top: 50%;
+      right: 20px;
+      transform: translateY(-50%);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-50%) scale(1.1);
+      }
+
+      .el-dialog__close {
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+
+        &:hover {
+          color: #ff6b6b;
+        }
+      }
+    }
   }
 
-  @media screen and (max-width: 480px) {
-    max-width: 80vw !important;
+  .el-dialog__body {
+    padding: 24px;
+  }
+
+  @media screen and (max-width: 767px) {
+    width: 95% !important;
+
+    .el-dialog__body {
+      padding: 16px;
+    }
+  }
+}
+
+.edit-form {
+  .el-form-item__label {
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .el-input__wrapper {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:focus-within {
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+      border-color: #16a34a;
+    }
+  }
+
+  .el-textarea__inner {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+      border-color: #16a34a;
+    }
+  }
+
+  .el-radio-group {
+    .el-radio {
+      margin-right: 20px;
+
+      .el-radio__input.is-checked + .el-radio__label {
+        color: #16a34a;
+      }
+
+      .el-radio__input.is-checked .el-radio__inner {
+        border-color: #16a34a;
+        background-color: #16a34a;
+      }
+    }
   }
 }
 
@@ -1821,7 +2047,7 @@ onUnmounted(() => {
               }
             }
 
-            .comment-count {
+            .column-count {
               justify-content: center;
               margin-top: 8px;
             }
@@ -1831,7 +2057,7 @@ onUnmounted(() => {
             width: 100%;
             margin-top: 12px;
 
-            .view-comments-btn {
+            .view-columns-btn {
               width: 100%;
               font-size: 14px;
             }
@@ -1841,13 +2067,13 @@ onUnmounted(() => {
     }
   }
 
-  .comment-detail .comment-info-section {
-    .comment-detail-header {
+  .column-detail .column-info-section {
+    .column-detail-header {
       flex-direction: column;
       gap: 16px;
     }
 
-    .comment-stats-detail .stats-group {
+    .column-stats-detail .stats-group {
       flex-direction: column;
 
       .stat-item {

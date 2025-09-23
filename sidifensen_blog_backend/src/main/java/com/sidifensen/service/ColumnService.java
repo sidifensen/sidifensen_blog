@@ -7,6 +7,7 @@ import com.sidifensen.domain.dto.ColumnFilterDto;
 import com.sidifensen.domain.dto.ColumnSearchDto;
 import com.sidifensen.domain.entity.Column;
 import com.sidifensen.domain.vo.ColumnDetailVo;
+import com.sidifensen.domain.vo.ColumnStatisticsVo;
 import com.sidifensen.domain.vo.ColumnVo;
 import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.UserColumnManageVo;
@@ -65,13 +66,16 @@ public interface ColumnService extends IService<Column> {
     // 管理员批量审核专栏
     void adminBatchExamineColumn(List<Integer> columnIds, Integer examineStatus);
 
+    // 管理员更新专栏
+    void adminUpdateColumn(ColumnDto columnDto);
+
     // 管理员删除专栏
     void adminDeleteColumn(Integer columnId);
 
     // 管理员批量删除专栏
     void adminBatchDeleteColumn(List<Integer> columnIds);
 
-
-
+    // 管理员获取专栏统计数据
+    ColumnStatisticsVo getColumnStatistics();
 
 }

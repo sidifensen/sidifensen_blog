@@ -6,6 +6,7 @@ import com.sidifensen.domain.vo.SysUserDetailVo;
 import com.sidifensen.domain.vo.SysUserVo;
 import com.sidifensen.domain.vo.SysUserWithArticleCountVo;
 import com.sidifensen.domain.vo.SysUserWithCommentCountVo;
+import com.sidifensen.domain.vo.SysUserWithColumnCountVo;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.SysUserService;
 import com.wf.captcha.ArithmeticCaptcha;
@@ -193,6 +194,18 @@ public class SysUserController {
     @GetMapping("/admin/listWithCommentCount")
     public Result listUserWithCommentCount() {
         List<SysUserWithCommentCountVo> sysUserVos = sysUserService.listUserWithCommentCount();
+        return Result.success(sysUserVos);
+    }
+
+    /**
+     * 管理端获取用户列表（包含专栏数量）
+     *
+     * @return
+     */
+    @PreAuthorize("hasAuthority('system:user:list')")
+    @GetMapping("/admin/listWithColumnCount")
+    public Result listUserWithColumnCount() {
+        List<SysUserWithColumnCountVo> sysUserVos = sysUserService.listUserWithColumnCount();
         return Result.success(sysUserVos);
     }
 

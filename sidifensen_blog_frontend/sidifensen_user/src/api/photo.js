@@ -26,10 +26,9 @@ export function uploadArticlePhoto(file) {
 }
 
 // 上传专栏图片
-export function uploadColumnPhoto(file, columnId) {
+export function uploadColumnPhoto(file) {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("columnId", columnId);
   return request({
     url: "/photo/uploadColumn",
     method: "post",

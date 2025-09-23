@@ -66,6 +66,11 @@ public class UserColumnManageVo implements Serializable {
     private Integer sort;
 
     /**
+     * 作者昵称
+     */
+    private String nickname;
+
+    /**
      * 创建时间
      */
     private Date createTime;
