@@ -274,6 +274,19 @@ public class ColumnController {
     }
 
     /**
+     * 管理员获取专栏详情（包含专栏内的文章列表）
+     *
+     * @param columnId 专栏ID
+     * @return 专栏详情
+     */
+    @PreAuthorize("hasAuthority('column:detail')")
+    @GetMapping("/admin/detail/{columnId}")
+    public Result<ColumnDetailVo> adminGetColumnDetail(@PathVariable Integer columnId) {
+        ColumnDetailVo columnDetail = columnService.adminGetColumnDetail(columnId);
+        return Result.success(columnDetail);
+    }
+
+    /**
      * 管理员获取专栏统计数据
      *
      * @return 专栏统计数据

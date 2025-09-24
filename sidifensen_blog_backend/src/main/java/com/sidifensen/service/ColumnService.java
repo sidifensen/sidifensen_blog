@@ -75,6 +75,9 @@ public interface ColumnService extends IService<Column> {
     // 管理员批量删除专栏
     void adminBatchDeleteColumn(List<Integer> columnIds);
 
+    // 管理员获取专栏详情（包含专栏内的文章列表）
+    ColumnDetailVo adminGetColumnDetail(Integer columnId);
+
     // 管理员获取专栏统计数据
     ColumnStatisticsVo getColumnStatistics();
 

@@ -124,6 +124,9 @@
 
   <!-- 评论抽屉 -->
   <CommentDrawer v-if="article?.id" v-model:visible="commentDrawerVisible" :article-id="article.id" ref="commentDrawerRef" />
+
+  <!-- 收藏对话框 -->
+  <FavoriteDialog v-if="article?.id" v-model="favoriteDialogVisible" :article-id="article.id" @success="handleFavoriteSuccess" />
 </template>
 
 <script setup>
@@ -132,6 +135,7 @@ import { ElMessage } from "element-plus";
 import { Clock, View, Star, StarFilled, ChatLineRound, ArrowUp } from "@element-plus/icons-vue";
 import { toggleLike, isLiked } from "@/api/like";
 import CommentDrawer from "@/components/Comment/CommentDrawer.vue";
+import FavoriteDialog from "./FavoriteDialog.vue";
 
 // Props 定义
 const props = defineProps({
@@ -153,6 +157,7 @@ const likeLoading = ref(false); // 点赞加载状态
 const commentDrawerVisible = ref(false); // 评论抽屉显示状态
 const commentTotal = ref(0); // 评论总数
 const commentDrawerRef = ref(null); // 评论抽屉引用
+const favoriteDialogVisible = ref(false); // 收藏对话框显示状态
 
 // 渲染富文本内容
 const renderContent = computed(() => {
@@ -209,7 +214,34 @@ const handleLike = async () => {
 
 // 收藏文章
 const handleCollect = () => {
-  ElMessage.info("收藏功能开发中...");
+  if (!props.article?.id) {
+    ElMessage.warning("文章信息异常");
+    return;
+  }
+  favoriteDialogVisible.value = true;
+};
+
+// 处理收藏成功
+const handleFavoriteSuccess = (result) => {
+  console.log("收藏操作成功:", result);
+
+  // 更新文章的收藏状态和收藏数
+  const updatedArticle = { ...props.article };
+
+  if (result.action === "add") {
+    // 如果之前没有收藏过任何收藏夹，现在收藏了
+    if (!updatedArticle.isCollected) {
+      updatedArticle.isCollected = true;
+      updatedArticle.collectCount = (updatedArticle.collectCount || 0) + 1;
+    }
+  } else if (result.action === "remove") {
+    // 这里需要检查是否还有其他收藏夹收藏了这篇文章
+    // 为了简化，我们暂时不更新状态，让页面刷新时重新获取
+    // 如果需要精确控制，可以在后端返回当前文章的总收藏状态
+  }
+
+  // 通知父组件更新文章数据
+  emit("updateArticle", updatedArticle);
 };
 
 // 评论文章

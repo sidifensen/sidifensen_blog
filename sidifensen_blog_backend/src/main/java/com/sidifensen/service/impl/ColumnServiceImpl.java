@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
+import com.sidifensen.domain.constants.MDCConstants;
 import com.sidifensen.domain.dto.ColumnArticleSortDto;
 import com.sidifensen.domain.dto.ColumnDto;
 import com.sidifensen.domain.dto.ColumnFilterDto;
@@ -24,28 +25,36 @@ import com.sidifensen.mapper.ArticleColumnMapper;
 import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.ColumnMapper;
 import com.sidifensen.mapper.SysUserMapper;
+import com.sidifensen.service.ArticleColumnService;
 import com.sidifensen.service.ColumnService;
+import com.sidifensen.utils.MDCUtils;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * <p>
- * 服务实现类
+ * 专栏服务实现类
+ * 使用MDC进行日志追踪，所有数据库操作使用MyBatis-Plus
  * </p>
  *
  * @author sidifensen
  * @since 2025-08-26
  */
 @Service
+@Slf4j
 public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> implements ColumnService {
 
     @Resource
@@ -59,6 +68,9 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
 
     @Resource
     private SysUserMapper sysUserMapper;
+
+    @Resource
+    private ArticleColumnService articleColumnService;
 
     /**
      * 为专栏管理VO设置作者昵称
@@ -301,14 +313,24 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
             throw new BlogException(BlogConstants.ArticleNotInColumn);
         }
 
-        // 3. 批量更新排序
+        // 3. 批量更新排序 
+        
+        Map<Integer, ArticleColumn> articleColumnMap = existingArticleColumns.stream()
+                .collect(Collectors.toMap(ArticleColumn::getArticleId, Function.identity()));
+        
+        // 构建批量更新列表
+        List<ArticleColumn> updateList = new ArrayList<>();
         for (ColumnArticleSortDto sortDto : sortList) {
-            articleColumnMapper.update(null,
-                    new LambdaUpdateWrapper<ArticleColumn>()
-                            .eq(ArticleColumn::getColumnId, columnId)
-                            .eq(ArticleColumn::getArticleId, sortDto.getArticleId())
-                            .set(ArticleColumn::getSort, sortDto.getSort())
-            );
+            ArticleColumn articleColumn = articleColumnMap.get(sortDto.getArticleId());
+            if (articleColumn != null) {
+                // 更新排序值
+                articleColumn.setSort(sortDto.getSort());
+                updateList.add(articleColumn);
+            }
+        }
+        
+        if (!updateList.isEmpty()) {
+            articleColumnService.updateBatchById(updateList);
         }
     }
 
@@ -683,5 +705,62 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
         statistics.setDailyNewColumns(Math.toIntExact(dailyCount));
 
         return statistics;
+    }
+
+    @Override
+    public ColumnDetailVo adminGetColumnDetail(Integer columnId) {
+        // 1. 获取专栏基本信息
+        Column column = columnMapper.selectById(columnId);
+        if (column == null) {
+            throw new BlogException(BlogConstants.NotFoundColumn);
+        }
+
+        // 2. 管理员可以查看任何专栏，无需权限检查
+
+        // 3. 构建专栏详情基本信息
+        ColumnDetailVo columnDetailVo = BeanUtil.copyProperties(column, ColumnDetailVo.class);
+
+        // 4. 获取专栏内的文章列表（从文章专栏关联表查询）
+        List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
+                new LambdaQueryWrapper<ArticleColumn>()
+                        .eq(ArticleColumn::getColumnId, columnId)
+                        .orderByAsc(ArticleColumn::getSort) // 按专栏内排序
+        );
+
+        if (ObjectUtil.isNotEmpty(articleColumns)) {
+            // 获取文章ID列表
+            List<Integer> articleIds = articleColumns.stream()
+                    .map(ArticleColumn::getArticleId)
+                    .toList();
+
+            // 管理员可以查看所有文章，包括未审核的文章
+            LambdaQueryWrapper<Article> articleQueryWrapper = new LambdaQueryWrapper<Article>()
+                    .in(Article::getId, articleIds);
+
+            List<Article> articles = articleMapper.selectList(articleQueryWrapper);
+
+            // 构建文章VO列表，保持专栏内的排序
+            List<ColumnArticleVo> columnArticles = articleColumns.stream()
+                    .map(articleColumn -> {
+                        // 找到对应的文章
+                        Article article = articles.stream()
+                                .filter(a -> a.getId().equals(articleColumn.getArticleId()))
+                                .findFirst()
+                                .orElse(null);
+
+                        if (article != null) {
+                            ColumnArticleVo columnArticleVo = BeanUtil.copyProperties(article, ColumnArticleVo.class);
+                            columnArticleVo.setSort(articleColumn.getSort()); // 设置在专栏中的排序
+                            return columnArticleVo;
+                        }
+                        return null;
+                    })
+                    .filter(ObjectUtil::isNotNull) // 过滤空值
+                    .toList();
+
+            columnDetailVo.setArticles(columnArticles);
+        }
+
+        return columnDetailVo;
     }
 }

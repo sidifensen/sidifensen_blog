@@ -105,6 +105,7 @@
                   </div>
                 </el-tab-pane>
                 <el-tab-pane label="专栏" name="column" />
+                <el-tab-pane label="收藏" name="favorite" />
               </el-tabs>
             </div>
 
@@ -257,6 +258,22 @@
                     <div class="loading-spinner"></div>
                     <span>加载更多...</span>
                   </div>
+                </div>
+              </div>
+
+              <!-- 返回顶部按钮 - 放在wrapper内部，但在滚动容器外部 -->
+              <div v-show="showBackToTop" class="back-to-top" @click="scrollToTop">
+                <el-icon>
+                  <ArrowUp />
+                </el-icon>
+              </div>
+            </div>
+
+            <!-- 收藏列表 -->
+            <div v-if="activeTab === 'favorite'" class="favorite-list-wrapper">
+              <div class="favorite-list-section">
+                <div class="empty-state">
+                  <el-empty description="收藏功能开发中..." />
                 </div>
               </div>
 
@@ -503,6 +520,9 @@ const handleTabChange = (tabName) => {
     columnList.value = [];
     columnHasMore.value = true;
     fetchColumnList(true);
+  } else if (tabName === "favorite") {
+    // 收藏页面暂时无需处理，内容为空
+    console.log("切换到收藏页面");
   }
 };
 
@@ -1459,6 +1479,59 @@ $bg-color: #f5f7fa;
         }
       }
     }
+
+    // 收藏列表包装器
+    .favorite-list-wrapper {
+      position: relative; // 为返回顶部按钮提供定位参考
+
+      // 返回顶部按钮样式 - 固定在收藏列表容器的右下角，不随滚动移动
+      .back-to-top {
+        position: absolute;
+        right: 20px;
+        bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+        backdrop-filter: blur(2px);
+        background-color: color-mix(in srgb, var(--el-bg-color) 90%, transparent);
+        border: 1px solid var(--el-border-color);
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        z-index: 100;
+
+        &:hover {
+          background: var(--el-color-primary);
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
+        }
+
+        .el-icon {
+          font-size: 18px;
+        }
+      }
+    }
+
+    // 收藏列表区域
+    .favorite-list-section {
+      background: var(--el-bg-color-page);
+      border-radius: 8px;
+      padding: 20px;
+      border: 1px solid var(--el-border-color);
+      box-shadow: 0 2px 12px var(--el-border-color-light);
+      min-height: 400px; // 设置最小高度
+
+      // 空状态
+      .empty-state {
+        padding: 60px 0;
+        text-align: center;
+      }
+    }
   }
 
   // 右侧边栏
@@ -1627,6 +1700,21 @@ $bg-color: #f5f7fa;
               width: 100%;
               height: 180px;
             }
+          }
+        }
+      }
+
+      // 收藏列表移动端样式
+      .favorite-list-wrapper {
+        // 移动端返回顶部按钮调整
+        .back-to-top {
+          width: 40px;
+          height: 40px;
+          right: 15px;
+          bottom: 15px;
+
+          .el-icon {
+            font-size: 16px;
           }
         }
       }

@@ -237,3 +237,4 @@ public class Article implements Serializable {
 9. 注意防止 SQL 注入和 XSS 攻击
 10. 遵循 RESTful API 设计规范
 11. **🚀 项目部署：代码修改完成后，开发者会手动重新启动 Spring Boot 项目，无需 AI 协助编译或运行**
+12. 数据交互应该使用mybatisplus而不是mybatis

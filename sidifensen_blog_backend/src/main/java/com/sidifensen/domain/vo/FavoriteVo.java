@@ -1,6 +1,5 @@
-package com.sidifensen.domain.entity;
+package com.sidifensen.domain.vo;
 
-import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -10,24 +9,22 @@ import java.util.Date;
 
 /**
  * <p>
- *
+ * 收藏夹视图对象
  * </p>
  *
  * @author sidifensen
- * @since 2025-09-16
+ * @since 2025-09-24
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("favorite")
-public class Favorite implements Serializable {
+public class FavoriteVo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
      * 收藏夹id
      */
-    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
     /**
@@ -53,14 +50,11 @@ public class Favorite implements Serializable {
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
-     * 是否删除 0-未删除 1-已删除
+     * 当前文章是否被该收藏夹收藏（仅在通过文章ID查询收藏夹列表时有效）
      */
-    @TableLogic
-    private Integer isDeleted;
-
+    private Boolean isCollected;
 
 }

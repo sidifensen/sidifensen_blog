@@ -167,22 +167,61 @@
           </div>
         </template>
         <div class="quick-actions">
-          <el-button type="primary" size="large" @click="navigateTo('/article/examine')">
-            <el-icon><Document /></el-icon>
-            文章审核
-          </el-button>
-          <el-button type="success" size="large" @click="navigateTo('/comment/examine')">
-            <el-icon><ChatLineRound /></el-icon>
-            评论审核
-          </el-button>
-          <el-button type="warning" size="large" @click="navigateTo('/system/user')">
-            <el-icon><User /></el-icon>
-            用户管理
-          </el-button>
-          <el-button type="info" size="large" @click="navigateTo('/photo/examine')">
-            <el-icon><Picture /></el-icon>
-            图片审核
-          </el-button>
+          <div class="action-button-wrapper">
+            <el-button class="action-button article-btn" size="large" @click="navigateTo('/article/examine')">
+              <div class="button-content">
+                <div class="button-icon">
+                  <el-icon><Document /></el-icon>
+                </div>
+                <div class="button-text">
+                  <span class="button-title">文章审核</span>
+                  <span class="button-subtitle">审核待发布文章</span>
+                </div>
+              </div>
+            </el-button>
+          </div>
+
+          <div class="action-button-wrapper">
+            <el-button class="action-button comment-btn" size="large" @click="navigateTo('/comment/examine')">
+              <div class="button-content">
+                <div class="button-icon">
+                  <el-icon><ChatLineRound /></el-icon>
+                </div>
+                <div class="button-text">
+                  <span class="button-title">评论审核</span>
+                  <span class="button-subtitle">管理用户评论</span>
+                </div>
+              </div>
+            </el-button>
+          </div>
+
+          <div class="action-button-wrapper">
+            <el-button class="action-button user-btn" size="large" @click="navigateTo('/system/user')">
+              <div class="button-content">
+                <div class="button-icon">
+                  <el-icon><User /></el-icon>
+                </div>
+                <div class="button-text">
+                  <span class="button-title">用户管理</span>
+                  <span class="button-subtitle">管理系统用户</span>
+                </div>
+              </div>
+            </el-button>
+          </div>
+
+          <div class="action-button-wrapper">
+            <el-button class="action-button photo-btn" size="large" @click="navigateTo('/photo/examine')">
+              <div class="button-content">
+                <div class="button-icon">
+                  <el-icon><Picture /></el-icon>
+                </div>
+                <div class="button-text">
+                  <span class="button-title">图片审核</span>
+                  <span class="button-subtitle">审核上传图片</span>
+                </div>
+              </div>
+            </el-button>
+          </div>
         </div>
       </el-card>
     </div>
@@ -496,17 +535,162 @@ onMounted(() => {
   // 快速操作区域
   .quick-actions-section {
     .quick-actions {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
 
-      .el-button {
-        flex: 1;
-        min-width: 140px;
-        height: 50px;
+      // 按钮包装器
+      .action-button-wrapper {
+        position: relative;
+        overflow: hidden;
+        border-radius: 16px;
+        transition: all 0.3s ease;
 
-        .el-icon {
-          margin-right: 8px;
+        &:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+        }
+      }
+
+      // 自定义按钮样式
+      .action-button {
+        width: 100%;
+        height: 80px;
+        border: none;
+        border-radius: 16px;
+        padding: 0;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        cursor: pointer;
+
+        // 按钮内容布局
+        .button-content {
+          display: flex;
+          align-items: center;
+          padding: 20px;
+          height: 100%;
+          position: relative;
+          z-index: 2;
+
+          // 按钮图标
+          .button-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            margin-right: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+
+            .el-icon {
+              font-size: 24px;
+              color: white;
+            }
+          }
+
+          // 按钮文字
+          .button-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            flex: 1;
+
+            .button-title {
+              font-size: 16px;
+              font-weight: 600;
+              color: white;
+              margin-bottom: 4px;
+              line-height: 1.2;
+            }
+
+            .button-subtitle {
+              font-size: 12px;
+              color: rgba(255, 255, 255, 0.8);
+              line-height: 1.2;
+            }
+          }
+        }
+
+        // 背景装饰效果
+        &::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 100px;
+          height: 100px;
+          border-radius: 50%;
+          opacity: 0.1;
+          transition: all 0.3s ease;
+          transform: translate(30px, -30px);
+        }
+
+        &:hover {
+          &::before {
+            transform: translate(20px, -20px);
+            opacity: 0.2;
+          }
+
+          .button-content {
+            .button-icon {
+              transform: scale(1.1);
+              background: rgba(255, 255, 255, 0.3);
+            }
+          }
+        }
+
+        // 文章审核按钮样式
+        &.article-btn {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+          &::before {
+            background: radial-gradient(circle, #a8b9ff 0%, transparent 70%);
+          }
+        }
+
+        // 评论审核按钮样式
+        &.comment-btn {
+          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+
+          &::before {
+            background: radial-gradient(circle, #7dd3fc 0%, transparent 70%);
+          }
+        }
+
+        // 用户管理按钮样式
+        &.user-btn {
+          background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+
+          &::before {
+            background: radial-gradient(circle, #6ee7b7 0%, transparent 70%);
+          }
+        }
+
+        // 图片审核按钮样式
+        &.photo-btn {
+          background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+
+          &::before {
+            background: radial-gradient(circle, #fbbf24 0%, transparent 70%);
+          }
+        }
+
+        // 活跃状态
+        &:active {
+          transform: scale(0.98);
+        }
+
+        // 禁用Element Plus默认样式
+        &.el-button {
+          &:hover,
+          &:focus {
+            color: white;
+            border-color: transparent;
+          }
         }
       }
     }
@@ -562,9 +746,42 @@ onMounted(() => {
 
     .quick-actions-section {
       .quick-actions {
-        .el-button {
-          flex: 1 1 calc(50% - 8px);
-          min-width: auto;
+        grid-template-columns: 1fr;
+        gap: 16px;
+
+        .action-button-wrapper {
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+          }
+        }
+
+        .action-button {
+          height: 70px;
+
+          .button-content {
+            padding: 16px;
+
+            .button-icon {
+              width: 40px;
+              height: 40px;
+              margin-right: 12px;
+
+              .el-icon {
+                font-size: 20px;
+              }
+            }
+
+            .button-text {
+              .button-title {
+                font-size: 14px;
+              }
+
+              .button-subtitle {
+                font-size: 11px;
+              }
+            }
+          }
         }
       }
     }

@@ -294,6 +294,77 @@
             </div>
           </div>
         </div>
+
+        <!-- 专栏文章列表 -->
+        <div class="column-articles-section" v-if="currentColumn?.articles && currentColumn.articles.length > 0">
+          <h3 class="articles-title">
+            <el-icon class="title-icon"><Document /></el-icon>
+            专栏文章列表 ({{ currentColumn.articles.length }} 篇)
+          </h3>
+          <div class="articles-list">
+            <div v-for="(article, index) in currentColumn.articles" :key="article.id" class="article-item">
+              <div class="article-index">{{ index + 1 }}</div>
+              <div class="article-cover-mini" v-if="article.coverUrl">
+                <el-image :src="article.coverUrl" class="cover-img" fit="cover">
+                  <template #placeholder>
+                    <div class="loading-text">加载中...</div>
+                  </template>
+                  <template #error>
+                    <div class="error">
+                      <el-icon><Picture /></el-icon>
+                    </div>
+                  </template>
+                </el-image>
+              </div>
+              <div v-else class="article-no-cover">
+                <el-icon><Document /></el-icon>
+              </div>
+              <div class="article-info">
+                <div class="article-title-detail">{{ article.title }}</div>
+                <div class="article-description-detail" v-if="article.description">
+                  {{ article.description }}
+                </div>
+                <div class="article-meta-detail">
+                  <div class="meta-item">
+                    <el-icon class="meta-icon"><View /></el-icon>
+                    <span>{{ article.readCount || 0 }} 阅读</span>
+                  </div>
+                  <div class="meta-item">
+                    <svg-icon name="like" width="14px" height="14px" color="#909399" />
+                    <span>{{ article.likeCount || 0 }} 点赞</span>
+                  </div>
+                  <div class="meta-item">
+                    <el-icon class="meta-icon"><ChatDotRound /></el-icon>
+                    <span>{{ article.commentCount || 0 }} 评论</span>
+                  </div>
+                  <div class="meta-item">
+                    <el-icon class="meta-icon"><Star /></el-icon>
+                    <span>{{ article.collectCount || 0 }} 收藏</span>
+                  </div>
+                  <div class="meta-item">
+                    <el-icon class="meta-icon"><Clock /></el-icon>
+                    <span>{{ article.createTime }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="article-status" :class="article.examineStatus === 0 ? 'status-unaudited' : article.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
+                      {{ article.examineStatus === 0 ? "待审核" : article.examineStatus === 1 ? "已审核" : "未通过" }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 无文章提示 -->
+        <div v-else-if="currentColumn && Array.isArray(currentColumn.articles) && currentColumn.articles.length === 0" class="no-articles">
+          <el-empty description="该专栏暂无文章" />
+        </div>
+
+        <!-- 文章数据为null或undefined的情况 -->
+        <div v-else-if="currentColumn && !currentColumn.articles" class="no-articles">
+          <el-empty description="该专栏暂无文章数据" />
+        </div>
       </div>
 
       <!-- 加载状态 -->
@@ -339,9 +410,9 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from "vue";
-import { Delete, Close, Check, View, Search, ArrowLeft, User, Collection, Star, Clock, Document, Picture, Edit } from "@element-plus/icons-vue";
+import { Delete, Close, Check, View, Search, ArrowLeft, User, Collection, Star, Clock, Document, Picture, Edit, ChatDotRound } from "@element-plus/icons-vue";
 import { getUserListWithColumnCount } from "@/api/column";
-import { adminGetColumnsByUserId, adminSearchColumn, adminExamineColumn, adminBatchExamineColumn, adminDeleteColumn, adminBatchDeleteColumn, adminUpdateColumn } from "@/api/column";
+import { adminGetColumnsByUserId, adminSearchColumn, adminExamineColumn, adminBatchExamineColumn, adminDeleteColumn, adminBatchDeleteColumn, adminUpdateColumn, adminGetColumnDetail } from "@/api/column";
 
 // 视图状态
 const showColumns = ref(false);
@@ -447,7 +518,7 @@ const getUserColumns = async (userId) => {
   loading.value = true;
   try {
     const res = await adminGetColumnsByUserId(userId);
-    columnList.value = res.data.data.sort((a, b) => b.id - a.id);
+    columnList.value = res.data.data.sort((a, b) => a.id - b.id);
     total.value = columnList.value.length;
     currentPage.value = 1;
     updatePaginatedColumnList();
@@ -531,10 +602,21 @@ const handleDialogClose = () => {
 };
 
 // 查看专栏详情
-const handleViewColumn = (column) => {
+const handleViewColumn = async (column) => {
   currentColumn.value = column;
   dialogTitle.value = "专栏详情";
   dialogVisible.value = true;
+  detailLoading.value = true;
+
+  try {
+    const res = await adminGetColumnDetail(column.id);
+    currentColumn.value = res.data.data;
+  } catch (error) {
+    ElMessage.error("获取专栏详情失败");
+    console.error("获取专栏详情失败:", error);
+  } finally {
+    detailLoading.value = false;
+  }
 };
 
 // 修改专栏
@@ -1047,8 +1129,11 @@ onUnmounted(() => {
       // 专栏描述样式
       .column-description {
         overflow: hidden;
-        text-overflow: ellipsis;
         cursor: pointer;
+        display: -webkit-box; 
+        text-overflow: ellipsis;
+        -webkit-line-clamp: 2; 
+        -webkit-box-orient: vertical;
 
         &:hover {
           color: #e6a23c;
@@ -1099,6 +1184,11 @@ onUnmounted(() => {
         flex-wrap: wrap;
         height: 100%;
         min-height: 60px;
+        gap: 5px;
+
+        :deep(.el-button) {
+          margin-left: 0;
+        }
 
         // 通用按钮样式
         .view-button,
@@ -1634,10 +1724,10 @@ onUnmounted(() => {
 
           .name-text {
             padding: 12px;
-            background-color: #f8f9fa;
+            background-color: var(--el-bg-color-page);
             border-radius: 8px;
             line-height: 1.6;
-            color: #333;
+            color: var(--el-text-color-primary);
             border-left: 4px solid #e6a23c;
             font-weight: 600;
             font-size: 16px;
@@ -1656,10 +1746,10 @@ onUnmounted(() => {
 
           .description-text {
             padding: 12px;
-            background-color: #f8f9fa;
+            background-color: var(--el-bg-color-page);
             border-radius: 8px;
             line-height: 1.6;
-            color: #333;
+            color: var(--el-text-color-primary);
             border-left: 4px solid #e6a23c;
           }
         }
@@ -1758,6 +1848,303 @@ onUnmounted(() => {
       }
     }
   }
+}
+
+// 专栏文章列表区域
+.column-articles-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+
+  .articles-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e6a23c;
+
+    .title-icon {
+      color: #e6a23c;
+      font-size: 18px;
+    }
+  }
+
+  .articles-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-height: 450px;
+    overflow-y: auto;
+    padding: 0;
+    background: var(--el-bg-color);
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+
+    // 自定义滚动条
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #e6a23c, #d19d00);
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+
+      &:hover {
+        background: linear-gradient(180deg, #d19d00, #b8860b);
+      }
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #f8f9fa;
+      border-radius: 4px;
+    }
+
+    .article-item {
+      display: flex;
+      gap: 16px;
+      padding: 16px 20px;
+      background-color: var(--el-bg-color);
+      border-bottom: 1px solid #f0f0f0;
+      transition: all 0.3s ease;
+      position: relative;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        border-bottom-color: #e6a23c;
+        box-shadow: inset 0 0 0 1px rgba(230, 162, 60, 0.1);
+
+        .article-index {
+          transform: scale(1.1);
+          box-shadow: 0 4px 12px rgba(230, 162, 60, 0.3);
+        }
+
+        .article-cover-mini .cover-img {
+          transform: scale(1.05);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+      }
+
+      &:nth-child(odd) {
+        background-color: var(--el-bg-color);
+      }
+
+      .article-index {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(135deg, #e6a23c, #d19d00);
+        color: white;
+        border-radius: 50%;
+        font-size: 13px;
+        font-weight: 700;
+        flex-shrink: 0;
+        align-self: flex-start;
+        margin-top: 2px;
+        box-shadow: 0 2px 8px rgba(230, 162, 60, 0.2);
+        transition: all 0.3s ease;
+      }
+
+      .article-cover-mini {
+        flex-shrink: 0;
+
+        .cover-img {
+          width: 48px;
+          height: 36px;
+          border-radius: 6px;
+          border: 2px solid #f0f0f0;
+          transition: all 0.3s ease;
+          object-fit: cover;
+        }
+
+        .loading-text {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 48px;
+          height: 36px;
+          font-size: 9px;
+          color: #999;
+          background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+          border-radius: 6px;
+          border: 2px solid #f0f0f0;
+        }
+
+        .error {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 48px;
+          height: 36px;
+          background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+          border-radius: 6px;
+          border: 2px solid #f0f0f0;
+
+          .el-icon {
+            font-size: 14px;
+            color: #ccc;
+          }
+        }
+      }
+
+      .article-no-cover {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 36px;
+        background: linear-gradient(135deg, #f1f3f4, #e8eaed);
+        border: 2px dashed #d0d7de;
+        border-radius: 6px;
+        flex-shrink: 0;
+
+        .el-icon {
+          font-size: 16px;
+          color: #8c959f;
+        }
+      }
+
+      .article-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 0;
+
+        .article-title-detail {
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--el-text-color-primary);
+          line-height: 1.4;
+          margin-bottom: 4px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          word-break: break-word;
+          cursor: pointer;
+          transition: color 0.3s ease;
+
+          &:hover {
+            color: #e6a23c;
+          }
+        }
+
+        .article-description-detail {
+          font-size: 12px;
+          color: #718096;
+          line-height: 1.4;
+          margin-bottom: 6px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          word-break: break-word;
+        }
+
+        .article-meta-detail {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          align-items: center;
+
+          .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: #a0aec0;
+            background: rgba(160, 174, 192, 0.1);
+            padding: 3px 8px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+
+            &:hover {
+              background: rgba(230, 162, 60, 0.1);
+              color: #e6a23c;
+
+              .meta-icon {
+                color: #e6a23c;
+              }
+            }
+
+            .meta-icon {
+              font-size: 12px;
+              color: #cbd5e0;
+              transition: color 0.3s ease;
+            }
+
+            .article-status {
+              display: inline-block;
+              padding: 3px 8px;
+              border-radius: 12px;
+              font-size: 10px;
+              font-weight: 600;
+              letter-spacing: 0.5px;
+
+              &.status-unaudited {
+                background: linear-gradient(135deg, #fed7d7, #feb2b2);
+                color: #c53030;
+                border: 1px solid rgba(197, 48, 48, 0.2);
+              }
+
+              &.status-audited {
+                background: linear-gradient(135deg, #c6f6d5, #9ae6b4);
+                color: #22543d;
+                border: 1px solid rgba(34, 84, 61, 0.2);
+              }
+
+              &.status-rejected {
+                background: linear-gradient(135deg, #feebc8, #fbd38d);
+                color: #c05621;
+                border: 1px solid rgba(192, 86, 33, 0.2);
+              }
+            }
+
+            span {
+              font-weight: 500;
+            }
+          }
+        }
+      }
+
+      // 添加左侧装饰线
+      &::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 3px;
+        height: 100%;
+        background: linear-gradient(180deg, #e6a23c, #d19d00);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      &:hover::before {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+// 无文章提示
+.no-articles {
+  margin-top: 24px;
+  padding: 40px 0;
+  text-align: center;
+  border-top: 1px solid #e9ecef;
 }
 
 .loading-container {
@@ -2074,11 +2461,90 @@ onUnmounted(() => {
     }
 
     .column-stats-detail .stats-group {
-      flex-direction: column;
 
       .stat-item {
         min-width: auto;
         max-width: none;
+      }
+    }
+  }
+
+  // 移动端文章列表布局优化
+  .column-articles-section {
+    .articles-list {
+      .article-item {
+        // 移动端改为横向布局
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+
+        .article-index {
+          width: 20px;
+          height: 20px;
+          font-size: 11px;
+          margin-top: 0;
+          align-self: flex-start;
+        }
+
+        .article-cover-mini {
+          .cover-img {
+            width: 160px;
+            height: 100px;
+          }
+
+          .loading-text,
+          .error {
+            width: 32px;
+            height: 24px;
+            font-size: 8px;
+          }
+        }
+
+        .article-no-cover {
+          width: 32px;
+          height: 24px;
+
+          .el-icon {
+            font-size: 12px;
+          }
+        }
+
+        .article-info {
+          gap: 4px;
+
+          .article-title-detail {
+            font-size: 13px;
+            -webkit-line-clamp: 1;
+            line-clamp: 1;
+          }
+
+          .article-description-detail {
+            font-size: 11px;
+            -webkit-line-clamp: 1;
+            line-clamp: 1;
+          }
+
+          .article-meta-detail {
+            gap: 4px;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+
+            .meta-item {
+              font-size: 10px;
+              padding: 2px 6px;
+              flex-shrink: 0;
+
+              .meta-icon {
+                font-size: 10px;
+              }
+
+              .article-status {
+                font-size: 9px;
+                padding: 2px 6px;
+              }
+            }
+          }
+        }
       }
     }
   }

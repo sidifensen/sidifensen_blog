@@ -90,3 +90,11 @@ export function adminUpdateColumn(data) {
     data: data,
   });
 }
+
+// 管理员获取专栏详情（包含文章列表）
+export function adminGetColumnDetail(columnId) {
+  return request({
+    url: `/column/admin/detail/${columnId}`,
+    method: "get",
+  });
+}
