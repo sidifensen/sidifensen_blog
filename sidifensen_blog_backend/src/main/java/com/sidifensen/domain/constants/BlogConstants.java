@@ -86,6 +86,7 @@ public class BlogConstants {
     // 收藏夹相关错误信息
     public static final String NotFoundFavorite = "收藏夹不存在";
     public static final String CannotHandleOthersFavorite = "不能操作别人的收藏夹";
+    public static final String CannotAccessPrivateFavorite = "无权限访问私密收藏夹";
     public static final String AddFavoriteError = "添加收藏夹失败";
     public static final String FavoriteNameRequired = "收藏夹名称不能为空";
     public static final String AddArticleToFavoriteError = "添加文章到收藏夹失败";
@@ -94,4 +95,10 @@ public class BlogConstants {
     public static final String UpdateFavoriteArticleCountError = "更新收藏夹文章数失败";
     public static final String ArticleNotInFavorite = "文章不在该收藏夹中";
     public static final String RemoveArticleFromFavoriteError = "从收藏夹中移除文章失败";
+
+    // 关注相关错误信息
+    public static final String CannotFollowSelf = "不能关注自己";
+    public static final String FollowError = "关注失败";
+    public static final String UnfollowError = "取消关注失败";
+    public static final String FollowedUserIdRequired = "被关注用户ID不能为空";
 }

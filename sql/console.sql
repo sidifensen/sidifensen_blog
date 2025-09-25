@@ -267,3 +267,15 @@ create table history
     -- 用户查询索引：查询某用户的浏览历史
     index idx_user_view_time (user_id, view_time desc)
 );
+
+create table follow
+(
+    id          int primary key auto_increment comment '关注id',
+    follower_id int      not null comment '关注者用户id',
+    followed_id int      not null comment '被关注者用户id',
+    create_time datetime not null comment '关注时间',
+    -- 查询某用户的关注列表
+    index idx_follower_time (follower_id, create_time desc),
+    -- 查询某用户的粉丝列表
+    index idx_followed_time (followed_id, create_time desc)
+);

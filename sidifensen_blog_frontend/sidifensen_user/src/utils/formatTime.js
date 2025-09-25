@@ -62,6 +62,21 @@ export const formatDate = (date, format = "YYYY-MM-DD HH:mm:ss") => {
 };
 
 /**
+ * 格式化日期为中文本地化格式
+ * @param {Date|string} dateString 日期字符串或日期对象
+ * @returns {string} 格式化后的日期 (YYYY/MM/DD)
+ */
+export const formatDateCN = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+};
+
+/**
  * 获取友好的时间显示
  * @param {Date|string} date 日期
  * @returns {string} 友好的时间显示

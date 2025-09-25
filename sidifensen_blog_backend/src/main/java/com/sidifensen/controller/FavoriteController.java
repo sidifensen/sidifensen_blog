@@ -2,6 +2,7 @@ package com.sidifensen.controller;
 
 import com.sidifensen.domain.dto.AddFavoriteDto;
 import com.sidifensen.domain.result.Result;
+import com.sidifensen.domain.vo.ArticleVo;
 import com.sidifensen.domain.vo.FavoriteVo;
 import com.sidifensen.service.FavoriteService;
 import jakarta.annotation.Resource;
@@ -84,4 +85,29 @@ public class FavoriteController {
         List<FavoriteVo> favoriteList = favoriteService.getFavoriteListByArticleId(articleId);
         return Result.success(favoriteList);
     }
+
+    /**
+     * 根据用户ID获取收藏夹列表
+     *
+     * @param userId 用户ID，可选参数
+     * @return 收藏夹列表
+     */
+    @GetMapping("/listByUser")
+    public Result<List<FavoriteVo>> getFavoriteListByUserId(@RequestParam(required = false) Integer userId) {
+        List<FavoriteVo> favoriteList = favoriteService.getFavoriteListByUserId(userId);
+        return Result.success(favoriteList);
+    }
+
+    /**
+     * 根据收藏夹ID获取收藏夹中的文章列表
+     *
+     * @param favoriteId 收藏夹ID
+     * @return 文章列表
+     */
+    @GetMapping("/articles")
+    public Result<List<ArticleVo>> getArticleListByFavoriteId(@RequestParam @NotNull Integer favoriteId) {
+        List<ArticleVo> articleList = favoriteService.getArticleListByFavoriteId(favoriteId);
+        return Result.success(articleList);
+    }
+
 }

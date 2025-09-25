@@ -39,7 +39,7 @@
               </div>
               <div class="favorite-meta">
                 <span class="article-count">{{ favorite.articleCount || 0 }} 篇文章</span>
-                <span class="create-time">{{ formatDate(favorite.createTime) }}</span>
+                <span class="create-time">{{ formatDateCN(favorite.createTime) }}</span>
               </div>
             </div>
 
@@ -68,6 +68,7 @@
 import { ref, reactive, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
 import { Plus } from "@element-plus/icons-vue";
 import { getFavoriteListByArticle, addFavorite, addArticleToFavorite, removeArticleFromFavorite } from "@/api/favorite";
+import { formatDateCN } from "@/utils/formatTime";
 
 // Props 定义
 const props = defineProps({
@@ -124,17 +125,6 @@ const dialogWidth = computed(() => {
     return "500px";
   }
 });
-
-// 格式化日期
-const formatDate = (dateString) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-};
 
 // 获取收藏夹列表
 const fetchFavoriteList = async () => {
@@ -480,12 +470,12 @@ onUnmounted(() => {
         margin-bottom: 20px;
 
         .el-form-item__label {
-          width: 70px !important;
+          width: 80px !important;
           font-size: 14px;
         }
 
         .el-form-item__content {
-          margin-left: 70px !important;
+          margin-left: 10px !important;
         }
       }
     }

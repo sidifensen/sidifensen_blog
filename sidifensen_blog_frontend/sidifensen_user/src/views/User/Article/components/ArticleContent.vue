@@ -134,7 +134,7 @@ import { computed, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { Clock, View, Star, StarFilled, ChatLineRound, ArrowUp } from "@element-plus/icons-vue";
 import { toggleLike, isLiked } from "@/api/like";
-import CommentDrawer from "@/components/Comment/CommentDrawer.vue";
+import CommentDrawer from "@/views/User/Article/components/CommentDrawer.vue";
 import FavoriteDialog from "./FavoriteDialog.vue";
 
 // Props 定义

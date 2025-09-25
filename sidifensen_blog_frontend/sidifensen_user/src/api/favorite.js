@@ -74,3 +74,33 @@ export const removeArticleFromFavorite = (articleId, favoriteId) => {
     },
   });
 };
+
+/**
+ * 根据用户ID获取收藏夹列表
+ * @param {number} userId 用户ID，可选参数
+ * @returns {Promise} 返回收藏夹列表
+ */
+export const getFavoriteListByUserId = (userId) => {
+  return request({
+    url: "/favorite/listByUser",
+    method: "get",
+    params: {
+      userId,
+    },
+  });
+};
+
+/**
+ * 根据收藏夹ID获取收藏夹中的文章列表
+ * @param {number} favoriteId 收藏夹ID
+ * @returns {Promise} 返回文章列表
+ */
+export const getArticleListByFavoriteId = (favoriteId) => {
+  return request({
+    url: "/favorite/articles",
+    method: "get",
+    params: {
+      favoriteId,
+    },
+  });
+};

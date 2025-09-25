@@ -44,6 +44,8 @@ public class SecurityConstants {
             "/comment/list", // 获取评论列表，使用查询参数
             "/comment/reply/list", // 获取回复列表，使用查询参数
             "/article/incrReadCount/{articleId:\\d+}",// 增加文章阅读数
+            "/favorite/listByUser",// 获取用户收藏夹列表
+            "/favorite/articles",// 获取收藏夹文章列表
     };
 
     // 允许的用户代理列表（可根据需要扩展）

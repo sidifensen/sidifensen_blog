@@ -1,79 +1,7 @@
 <template>
   <div class="user-homepage">
     <!-- 用户信息区域 -->
-    <div class="user-profile-section">
-      <div class="container">
-        <!-- 用户基本信息卡片 -->
-        <div class="user-profile-card">
-          <el-skeleton :loading="userLoading" animated>
-            <template #template>
-              <div class="skeleton-profile">
-                <el-skeleton-item variant="circle" style="width: 120px; height: 120px" />
-                <div class="skeleton-info">
-                  <el-skeleton-item variant="h3" style="width: 200px; margin: 16px 0" />
-                  <el-skeleton-item variant="text" style="width: 300px" />
-                  <el-skeleton-item variant="text" style="width: 250px; margin-top: 8px" />
-                </div>
-              </div>
-            </template>
-
-            <!-- 实际用户信息 -->
-            <template #default>
-              <div class="user-profile-content" v-if="userInfo">
-                <!-- 用户头像和基本信息 -->
-                <div class="user-basic-info">
-                  <el-avatar :size="120" :src="userInfo.avatar" class="user-avatar" />
-                  <div class="user-details">
-                    <h2 class="username">{{ userInfo.nickname }}</h2>
-                    <div class="user-intro-container">
-                      <p class="user-intro" :class="{ expanded: isIntroExpanded }">{{ userInfo.introduction || "这个人很懒，什么都没写~" }}</p>
-                      <button v-if="userInfo.introduction && userInfo.introduction.length > 50" class="intro-expand-btn" @click="toggleIntroExpand">
-                        <el-icon>
-                          <ArrowDown v-if="!isIntroExpanded" />
-                          <ArrowUp v-else />
-                        </el-icon>
-                      </button>
-                    </div>
-                    <div class="user-meta">
-                      <span class="login-address" v-if="userInfo.loginAddress">IP属地：{{ userInfo.loginAddress }}</span>
-                      <span class="join-time">加入时间：{{ userInfo.createTime }}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 用户统计信息 -->
-                <div class="user-stats">
-                  <div class="stat-item">
-                    <span class="stat-number">{{ articleStatistics?.publishedCount || 0 }}</span>
-                    <span class="stat-label">文章</span>
-                  </div>
-                  <div class="stat-item">
-                    <span class="stat-number">{{ userInfo.fansCount || 0 }}</span>
-                    <span class="stat-label">粉丝</span>
-                  </div>
-                  <div class="stat-item">
-                    <span class="stat-number">{{ userInfo.followCount || 0 }}</span>
-                    <span class="stat-label">关注</span>
-                  </div>
-                  <div class="stat-item">
-                    <span class="stat-number">{{ totalViews }}</span>
-                    <span class="stat-label">阅读量</span>
-                  </div>
-                </div>
-
-                <!-- 操作按钮 -->
-                <div class="user-actions" v-if="!isCurrentUser">
-                  <el-button type="primary" :icon="Plus" @click="handleFollow" :loading="followLoading">
-                    {{ isFollowed ? "已关注" : "关注" }}
-                  </el-button>
-                  <el-button :icon="Message" @click="handleMessage">私信</el-button>
-                </div>
-              </div>
-            </template>
-          </el-skeleton>
-        </div>
-      </div>
-    </div>
+    <UserProfileCard :user-info="userInfo" :user-loading="userLoading" :article-statistics="articleStatistics" :total-views="totalViews" :is-current-user="isCurrentUser" :is-followed="isFollowed" :follow-loading="followLoading" @follow="handleFollow" @message="handleMessage" />
 
     <!-- 内容区域 -->
     <div class="content-section">
@@ -110,180 +38,13 @@
             </div>
 
             <!-- 文章列表 -->
-            <div v-if="activeTab === 'article'" class="article-list-wrapper">
-              <div class="article-list-section" ref="listContainer" @scroll="handleScroll">
-                <div v-if="articleLoading" class="loading-container">
-                  <el-skeleton animated :count="5">
-                    <template #template>
-                      <div class="article-skeleton">
-                        <el-skeleton-item variant="image" style="width: 100px; height: 80px" />
-                        <div class="skeleton-content">
-                          <el-skeleton-item variant="h3" style="width: 70%" />
-                          <el-skeleton-item variant="text" style="width: 100%" />
-                          <el-skeleton-item variant="text" style="width: 60%" />
-                        </div>
-                      </div>
-                    </template>
-                  </el-skeleton>
-                </div>
-
-                <div v-else-if="articleList.length === 0" class="empty-state">
-                  <el-empty description="暂无文章" />
-                </div>
-
-                <div v-else class="article-list">
-                  <div v-for="article in articleList" :key="article.id" class="article-item" @click="goToArticle(article.id)">
-                    <!-- 文章封面 -->
-                    <el-image :src="article.coverUrl || ''" class="article-cover">
-                      <template #placeholder>
-                        <div class="loading-text">加载中...</div>
-                      </template>
-                      <template #error>
-                        <div class="error">
-                          <el-icon>
-                            <Picture />
-                          </el-icon>
-                        </div>
-                      </template>
-                    </el-image>
-
-                    <!-- 文章内容 -->
-                    <div class="article-content">
-                      <h3 class="article-title">{{ article.title }}</h3>
-                      <p class="article-description">{{ article.description }}</p>
-
-                      <!-- 文章元信息 -->
-                      <div class="article-meta">
-                        <!-- 第一行：文章类型、审核状态、发布时间 -->
-                        <div class="article-meta-primary">
-                          <span class="article-type">{{ getArticleType(article.type) }}</span>
-                          <span v-if="isCurrentUser && article.examineStatus !== 1" class="article-examine-status" :class="'status-' + article.examineStatus">
-                            {{ getExamineStatus(article.examineStatus) }}
-                          </span>
-                          <span class="article-date">{{ article.createTime }}</span>
-                        </div>
-                        <!-- 第二行：统计数据 -->
-                        <div class="article-meta-stats">
-                          <span class="article-readCount">{{ article.readCount }} 阅读</span>
-                          <span class="article-likes">{{ article.likeCount || 0 }} 点赞</span>
-                          <span class="article-favorites">{{ article.collectCount || 0 }} 收藏</span>
-                          <span class="article-comments">{{ article.commentCount }} 评论</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- 加载更多指示器 -->
-                  <div v-if="loadingMore" class="loading-more">
-                    <div class="loading-spinner"></div>
-                    <span>加载更多...</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 返回顶部按钮 - 放在wrapper内部，但在滚动容器外部 -->
-              <div v-show="showBackToTop" class="back-to-top" @click="scrollToTop">
-                <el-icon>
-                  <ArrowUp />
-                </el-icon>
-              </div>
-            </div>
+            <ArticleList v-if="activeTab === 'article'" :article-list="articleList" :article-loading="articleLoading" :loading-more="loadingMore" :is-current-user="isCurrentUser" @article-click="goToArticle" />
 
             <!-- 专栏列表 -->
-            <div v-if="activeTab === 'column'" class="column-list-wrapper">
-              <div class="column-list-section" ref="listContainer" @scroll="handleScroll">
-                <div v-if="columnLoading" class="loading-container">
-                  <el-skeleton animated :count="3">
-                    <template #template>
-                      <div class="column-skeleton">
-                        <el-skeleton-item variant="image" style="width: 120px; height: 90px" />
-                        <div class="skeleton-content">
-                          <el-skeleton-item variant="h3" style="width: 60%" />
-                          <el-skeleton-item variant="text" style="width: 100%" />
-                          <el-skeleton-item variant="text" style="width: 40%" />
-                        </div>
-                      </div>
-                    </template>
-                  </el-skeleton>
-                </div>
-
-                <div v-else-if="columnList.length === 0" class="empty-state">
-                  <el-empty description="暂无专栏" />
-                </div>
-
-                <div v-else class="column-list">
-                  <div v-for="column in columnList" :key="column.id" class="column-item" @click="goToColumn(column.id)">
-                    <!-- 专栏封面 -->
-                    <el-image :src="column.coverUrl || ''" class="column-cover">
-                      <template #placeholder>
-                        <div class="loading-text">加载中...</div>
-                      </template>
-                      <template #error>
-                        <div class="error">
-                          <el-icon>
-                            <Collection />
-                          </el-icon>
-                        </div>
-                      </template>
-                    </el-image>
-
-                    <!-- 专栏内容 -->
-                    <div class="column-content">
-                      <h3 class="column-title">{{ column.name }}</h3>
-                      <p class="column-description">{{ column.description || "暂无描述" }}</p>
-
-                      <!-- 专栏元信息 -->
-                      <div class="column-meta">
-                        <!-- 第一行：统计数据 -->
-                        <div class="column-meta-stats">
-                          <span class="column-articles">
-                            <el-icon><Document /></el-icon>
-                            {{ column.articleCount || 0 }} 文章
-                          </span>
-                          <span class="column-focus">
-                            <el-icon><Star /></el-icon>
-                            {{ column.focusCount || 0 }} 关注
-                          </span>
-                        </div>
-                        <!-- 第二行：创建时间 -->
-                        <div class="column-meta-time">
-                          <span class="column-date">创建于 {{ column.createTime }}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- 加载更多指示器 -->
-                  <div v-if="loadingMore" class="loading-more">
-                    <div class="loading-spinner"></div>
-                    <span>加载更多...</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 返回顶部按钮 - 放在wrapper内部，但在滚动容器外部 -->
-              <div v-show="showBackToTop" class="back-to-top" @click="scrollToTop">
-                <el-icon>
-                  <ArrowUp />
-                </el-icon>
-              </div>
-            </div>
+            <ColumnList v-if="activeTab === 'column'" :column-list="columnList" :column-loading="columnLoading" :loading-more="loadingMore" @column-click="goToColumn" />
 
             <!-- 收藏列表 -->
-            <div v-if="activeTab === 'favorite'" class="favorite-list-wrapper">
-              <div class="favorite-list-section">
-                <div class="empty-state">
-                  <el-empty description="收藏功能开发中..." />
-                </div>
-              </div>
-
-              <!-- 返回顶部按钮 - 放在wrapper内部，但在滚动容器外部 -->
-              <div v-show="showBackToTop" class="back-to-top" @click="scrollToTop">
-                <el-icon>
-                  <ArrowUp />
-                </el-icon>
-              </div>
-            </div>
+            <FavoriteList v-if="activeTab === 'favorite'" :favorite-list="favoriteList" :favorite-loading="favoriteLoading" @toggle-favorite="toggleFavorite" @article-click="goToArticle" />
           </div>
 
           <!-- 右侧边栏 -->
@@ -310,18 +71,29 @@
         </div>
       </div>
     </div>
+
+    <!-- 返回顶部按钮 - 统一在父组件管理 -->
+    <div v-show="showBackToTop" class="back-to-top" @click="scrollToTop">
+      <el-icon>
+        <ArrowUp />
+      </el-icon>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ElMessage } from "element-plus";
-import { Plus, Message, Trophy, View, User, Star, StarFilled, ArrowDown, ArrowUp, Picture, Document, Collection } from "@element-plus/icons-vue";
+import { Trophy, View, User, ArrowUp } from "@element-plus/icons-vue";
 import { getUserInfoById } from "@/api/user";
 import { getUserArticleList, getUserArticleStatisticsById } from "@/api/article";
 import { getUserColumnList } from "@/api/column";
+import { getFavoriteListByUserId, getArticleListByFavoriteId } from "@/api/favorite";
 import { useUserStore } from "@/stores/userStore";
+import UserProfileCard from "./components/UserProfileCard.vue";
+import ArticleList from "./components/ArticleList.vue";
+import ColumnList from "./components/ColumnList.vue";
+import FavoriteList from "./components/FavoriteList.vue";
 
 // 路由和状态管理
 const route = useRoute();
@@ -332,11 +104,13 @@ const userStore = useUserStore();
 const userLoading = ref(false); // 用户信息加载状态
 const articleLoading = ref(false); // 文章列表加载状态
 const columnLoading = ref(false); // 专栏列表加载状态
+const favoriteLoading = ref(false); // 收藏夹加载状态
 const loadingMore = ref(false); // 加载更多数据状态
 const followLoading = ref(false); // 关注操作加载状态
 const userInfo = ref(null); // 用户信息数据
 const articleList = ref([]); // 文章列表数据
 const columnList = ref([]); // 专栏列表数据
+const favoriteList = ref([]); // 收藏夹列表数据
 const total = ref(0); // 文章总数
 const columnTotal = ref(0); // 专栏总数
 const totalViews = ref(0); // 总阅读量
@@ -349,14 +123,10 @@ const hasMore = ref(true); // 是否还有更多数据可加载
 const columnHasMore = ref(true); // 专栏是否还有更多数据可加载
 const currentPage = ref(1); // 当前页码
 const columnCurrentPage = ref(1); // 专栏当前页码
-const isIntroExpanded = ref(false); // 个人介绍是否展开
 const showBackToTop = ref(false); // 是否显示返回顶部按钮
 
 // 每页数据量
 const pageSize = ref(10);
-
-// 文章列表容器引用
-const listContainer = ref(null);
 
 // 计算属性
 const isCurrentUser = computed(() => {
@@ -504,6 +274,50 @@ const fetchColumnList = async (reset = false) => {
   }
 };
 
+// 获取收藏夹列表
+const fetchFavoriteList = async () => {
+  try {
+    favoriteLoading.value = true;
+    const userId = route.params.userId;
+    const res = await getFavoriteListByUserId(parseInt(userId));
+    favoriteList.value = (res.data.data || []).map((favorite) => ({
+      ...favorite,
+      expanded: false, // 默认收起
+      loading: false, // 加载状态
+      articles: [], // 文章列表
+    }));
+  } catch (error) {
+    ElMessage.error("获取收藏夹列表失败");
+    console.error("获取收藏夹列表失败:", error);
+  } finally {
+    favoriteLoading.value = false;
+  }
+};
+
+// 获取收藏夹中的文章列表
+const fetchFavoriteArticleList = async (favorite) => {
+  try {
+    favorite.loading = true;
+    const res = await getArticleListByFavoriteId(favorite.id);
+    favorite.articles = res.data.data || [];
+  } catch (error) {
+    ElMessage.error("获取收藏夹文章失败");
+    console.error("获取收藏夹文章失败:", error);
+  } finally {
+    favorite.loading = false;
+  }
+};
+
+// 切换收藏夹展开状态
+const toggleFavorite = async (favorite) => {
+  favorite.expanded = !favorite.expanded;
+
+  // 如果展开并且还没加载过文章，则加载文章
+  if (favorite.expanded && favorite.articles.length === 0) {
+    await fetchFavoriteArticleList(favorite);
+  }
+};
+
 // 切换文章筛选标签
 const handleTabChange = (tabName) => {
   activeTab.value = tabName;
@@ -521,8 +335,8 @@ const handleTabChange = (tabName) => {
     columnHasMore.value = true;
     fetchColumnList(true);
   } else if (tabName === "favorite") {
-    // 收藏页面暂时无需处理，内容为空
-    console.log("切换到收藏页面");
+    // 加载收藏夹数据
+    fetchFavoriteList();
   }
 };
 
@@ -565,17 +379,10 @@ const handleMessage = () => {
   ElMessage.info("私信功能开发中...");
 };
 
-// 切换个人介绍展开状态
-const toggleIntroExpand = () => {
-  isIntroExpanded.value = !isIntroExpanded.value;
-};
-
-// 返回顶部 - 滚动到文章列表顶部
+// 返回顶部 - 统一滚动到页面顶部
 const scrollToTop = () => {
-  // 滚动到文章列表容器顶部
-  if (listContainer.value) {
-    listContainer.value.scrollTo({ top: 0, behavior: "smooth" });
-  }
+  // 所有标签页都滚动到页面顶部
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 // 跳转至文章详情页
@@ -589,46 +396,30 @@ const goToColumn = (columnId) => {
   router.push(`/column/${columnId}`);
 };
 
-// 获取文章类型
-const getArticleType = (type) => {
-  const typeMap = {
-    0: "原创",
-    1: "转载",
-  };
-  return typeMap[type] || "原创";
-};
+// 处理页面滚动事件 - 统一所有标签页的滚动监听
+const handlePageScroll = () => {
+  // 控制返回顶部按钮的显示/隐藏
+  showBackToTop.value = window.scrollY > 200;
 
-// 获取审核状态
-const getExamineStatus = (status) => {
-  const statusMap = {
-    0: "待审核",
-    1: "审核通过",
-    2: "审核未通过",
-  };
-  return statusMap[status] || "审核通过";
-};
-
-// 处理滚动事件 - 自定义无限滚动
-const handleScroll = () => {
-  if (!listContainer.value || loadingMore.value) {
+  // 收藏夹标签页不需要无限滚动
+  if (activeTab.value === "favorite") {
     return;
   }
 
-  const container = listContainer.value;
+  // 当滚动到页面底部附近时加载更多
+  const scrollHeight = document.documentElement.scrollHeight;
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  const clientHeight = window.innerHeight;
 
-  // 控制返回顶部按钮的显示/隐藏
-  showBackToTop.value = container.scrollTop > 200;
-
-  // 当滚动到底部附近时加载更多
-  if (container.scrollTop + container.clientHeight >= container.scrollHeight - 100) {
+  if (scrollTop + clientHeight >= scrollHeight - 100) {
     if (activeTab.value === "article") {
       // 文章页面的无限滚动
-      if (!articleLoading.value && hasMore.value) {
+      if (!articleLoading.value && !loadingMore.value && hasMore.value) {
         fetchArticleList();
       }
     } else if (activeTab.value === "column") {
       // 专栏页面的无限滚动
-      if (!columnLoading.value && columnHasMore.value) {
+      if (!columnLoading.value && !loadingMore.value && columnHasMore.value) {
         fetchColumnList();
       }
     }
@@ -645,6 +436,7 @@ watch(
       columnCurrentPage.value = 1;
       articleList.value = [];
       columnList.value = [];
+      favoriteList.value = [];
       hasMore.value = true;
       columnHasMore.value = true;
       activeTab.value = "article"; // 重置到文章标签页
@@ -662,6 +454,15 @@ onMounted(() => {
   fetchUserInfo();
   fetchArticleStatistics();
   fetchArticleList(true);
+
+  // 添加页面滚动监听
+  window.addEventListener("scroll", handlePageScroll);
+});
+
+// 组件卸载
+onUnmounted(() => {
+  // 移除页面滚动监听
+  window.removeEventListener("scroll", handlePageScroll);
 });
 </script>
 
@@ -687,198 +488,7 @@ $bg-color: #f5f7fa;
   background-size: cover;
   background-attachment: fixed;
   min-height: calc(100vh - 48px);
-  overflow-y: scroll;
-
-  .user-profile-section {
-    padding: 10px 0 0 0px;
-    color: var(--el-text-color-primary);
-
-    .user-profile-card {
-      background: var(--el-border-color-lighter);
-      backdrop-filter: blur(10px);
-      border-radius: 8px;
-      padding: 30px;
-      border: 1px solid var(--el-border-color);
-      box-shadow: 0 2px 12px var(--el-border-color-light);
-
-      // 骨架屏样式
-      .skeleton-profile {
-        display: flex;
-        align-items: center;
-        gap: 24px;
-
-        .skeleton-info {
-          flex: 1;
-        }
-      }
-
-      // 用户信息内容
-      .user-profile-content {
-        // 用户基本信息
-        .user-basic-info {
-          display: flex;
-          align-items: center;
-          gap: 24px;
-          margin-bottom: 30px;
-
-          .user-avatar {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-          }
-
-          .user-details {
-            flex: 1;
-            min-width: 0; // 允许flex子元素收缩到内容宽度以下
-            overflow: hidden; // 防止内容溢出
-
-            .username {
-              font-size: 24px;
-              font-weight: 700;
-              margin: 0 0 8px 0;
-              color: var(--el-text-color-primary);
-            }
-
-            // 个人介绍容器
-            .user-intro-container {
-              position: relative;
-              margin: 0 0 12px 0;
-
-              // 个人介绍文本
-              .user-intro {
-                font-size: 14px;
-                margin: 0;
-                color: var(--el-text-color-primary);
-                line-height: 1;
-                word-wrap: break-word;
-                word-break: break-all;
-                overflow-wrap: break-word;
-                max-width: 100%;
-
-                // 手机端：默认限制两行，并为箭头按钮预留空间
-                @media (max-width: 768px) {
-                  display: -webkit-box; // 使用webkit-box布局
-                  -webkit-line-clamp: 2; // 限制两行
-                  line-clamp: 2;
-                  -webkit-box-orient: vertical; // 垂直方向排列
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  padding-right: 32px; // 为箭头按钮预留空间
-
-                  // 展开状态：显示全部内容，移除右侧padding
-                  &.expanded {
-                    display: block;
-                    -webkit-line-clamp: unset;
-                    line-clamp: unset;
-                    overflow: visible;
-                    padding-right: 0;
-                  }
-                }
-              }
-
-              // 展开/收起按钮
-              .intro-expand-btn {
-                display: none;
-                background: none;
-                border: none;
-                cursor: pointer;
-                padding: 4px;
-                margin-left: 8px;
-                color: var(--el-color-primary);
-                transition: all 0.3s ease;
-                border-radius: 50%;
-
-                &:hover {
-                  background-color: var(--el-color-primary-light-9);
-                  transform: scale(1.1);
-                }
-
-                .el-icon {
-                  font-size: 14px;
-                }
-
-                // 只在手机端显示
-                @media (max-width: 768px) {
-                  display: inline-flex;
-                  align-items: center;
-                  justify-content: center;
-                  position: absolute;
-                  right: 4px;
-                  top: 50%;
-                  transform: translateY(-50%);
-                  width: 20px;
-                  height: 20px;
-                  background-color: rgba(255, 255, 255, 0.9);
-                  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                }
-              }
-            }
-
-            .user-meta {
-              font-size: 13px;
-              color: var(--el-text-color-regular);
-              display: flex;
-              // flex-wrap: wrap;
-              gap: 10px;
-
-              .join-time,
-              .login-address {
-                display: inline-flex;
-                align-items: center;
-                gap: 4px;
-                white-space: nowrap;
-              }
-
-              // 手机端分两行显示
-              @media (max-width: 768px) {
-                font-size: 10px;
-                // flex-direction: column;
-              }
-            }
-          }
-        }
-
-        // 统计信息
-        .user-stats {
-          display: flex;
-          justify-content: space-around;
-          padding: 10px 0;
-          border-top: 1px solid var(--el-border-color);
-          border-bottom: 1px solid var(--el-border-color);
-          margin-bottom: 10px;
-
-          .stat-item {
-            text-align: center;
-
-            .stat-number {
-              display: block;
-              font-size: 24px;
-              font-weight: 700;
-              color: var(--el-text-color-primary);
-              margin-bottom: 4px;
-            }
-
-            .stat-label {
-              font-size: 14px;
-              color: var(--el-text-color-primary);
-            }
-          }
-        }
-
-        // 操作按钮
-        .user-actions {
-          display: flex;
-          gap: 16px;
-          justify-content: center;
-
-          .el-button {
-            padding: 12px 24px;
-            font-size: 14px;
-            border-radius: 20px;
-          }
-        }
-      }
-    }
-  }
+  overflow-y: auto; // 改为auto，只在需要时显示滚动条
 
   // 内容区域
   .content-section {
@@ -946,592 +556,6 @@ $bg-color: #f5f7fa;
         }
       }
     }
-
-    // 文章列表包装器
-    .article-list-wrapper {
-      position: relative; // 为返回顶部按钮提供定位参考
-
-      // 返回顶部按钮样式 - 固定在文章列表容器的右下角，不随滚动移动
-      .back-to-top {
-        position: absolute;
-        right: 20px;
-        bottom: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
-        backdrop-filter: blur(2px);
-        background-color: color-mix(in srgb, var(--el-bg-color) 90%, transparent);
-        border: 1px solid var(--el-border-color);
-        border-radius: 50%;
-        cursor: pointer;
-        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        z-index: 100;
-
-        &:hover {
-          background: var(--el-color-primary);
-          color: white;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
-        }
-
-        .el-icon {
-          font-size: 18px;
-        }
-      }
-    }
-
-    // 文章列表区域
-    .article-list-section {
-      background: var(--el-bg-color-page);
-      border-radius: 8px;
-      padding: 20px;
-      border: 1px solid var(--el-border-color);
-      box-shadow: 0 2px 12px var(--el-border-color-light);
-      max-height: 580px; // 设置最大高度以支持滚动
-      overflow-y: auto; // 启用垂直滚动
-
-      // 加载容器样式
-      .loading-container {
-        padding: 20px 0;
-      }
-
-      // 骨架屏样式
-      .article-skeleton {
-        display: flex;
-        gap: 16px;
-        padding: 20px 0;
-        border-bottom: 1px solid var(--el-border-color-light);
-
-        &:last-child {
-          border-bottom: none;
-        }
-
-        .skeleton-content {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-      }
-
-      // 自定义滚动条样式，增加 border-radius
-      &::-webkit-scrollbar {
-        width: 8px;
-        border-radius: 8px; // 增大滚动条圆角
-        background: transparent;
-      }
-      &::-webkit-scrollbar-thumb {
-        background: var(--el-border-color);
-        border-radius: 12px; // 滚动条滑块圆角更大
-      }
-      &::-webkit-scrollbar-track {
-        background: transparent;
-        border-radius: 12px;
-      }
-
-      // 文章列表
-      .article-list {
-        .article-item {
-          display: flex;
-          gap: 16px;
-          padding: 20px 0;
-          border-bottom: 1px solid var(--el-border-color-light);
-          cursor: pointer;
-          transition: all 0.3s ease;
-
-          &:last-child {
-            border-bottom: none;
-          }
-
-          &:hover {
-            background-color: var(--el-bg-color-page);
-            transform: translateX(4px);
-          }
-
-          // 文章封面
-          .article-cover {
-            width: 160px;
-            height: 100px;
-            border-radius: 6px;
-            transition: transform 0.3s ease;
-
-            &:hover {
-              transform: scale(1.05);
-            }
-
-            .loading-text {
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              width: 100%;
-              height: 100%;
-              font-size: 16px;
-              color: var(--el-text-color-primary);
-              background-color: var(--el-bg-color-page);
-            }
-
-            // 错误占位图标样式
-            .error {
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              width: 100%;
-              height: 100%;
-              background-color: var(--el-bg-color-page);
-
-              .el-icon {
-                font-size: 40px;
-                color: var(--el-text-color-primary);
-              }
-            }
-          }
-
-          // 文章内容
-          .article-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-
-            .article-title {
-              font-size: 18px;
-              font-weight: 600;
-              color: var(--el-text-color-primary);
-              margin: 0 0 8px 0;
-              line-height: 1.4;
-              display: -webkit-box;
-              -webkit-line-clamp: 2;
-              line-clamp: 2;
-              -webkit-box-orient: vertical;
-              overflow: hidden;
-            }
-
-            .article-description {
-              font-size: 14px;
-              color: var(--el-text-color-regular);
-              margin: 0 0 12px 0;
-              line-height: 1.5;
-              display: -webkit-box;
-              -webkit-line-clamp: 2;
-              line-clamp: 2;
-              -webkit-box-orient: vertical;
-              overflow: hidden;
-            }
-
-            // 文章元信息
-            .article-meta {
-              font-size: 13px;
-              color: var(--el-text-color-secondary);
-
-              // 第一行：文章类型、审核状态、发布时间
-              .article-meta-primary {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                margin-bottom: 8px;
-              }
-
-              // 第二行：统计数据
-              .article-meta-stats {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-              }
-
-              // 桌面端单行显示
-              @media (min-width: 769px) {
-                .article-meta-primary {
-                  margin-bottom: 0;
-                }
-
-                .article-meta-primary,
-                .article-meta-stats {
-                  display: inline-flex;
-                }
-
-                .article-meta-stats {
-                  margin-left: 10px;
-                }
-
-                .article-meta-stats::before {
-                  content: "•";
-                  margin-right: 10px;
-                  color: var(--el-text-color-placeholder);
-                }
-              }
-
-              .article-type {
-                background-color: #f0f9ff;
-                color: $primary-color;
-                padding: 2px 8px;
-                border-radius: 12px;
-                font-size: 12px;
-              }
-
-              // 审核状态样式
-              .article-examine-status {
-                padding: 2px 8px;
-                border-radius: 12px;
-                font-size: 12px;
-                font-weight: 500;
-
-                // 待审核状态 - 橙色
-                &.status-0 {
-                  background-color: #fff7ed;
-                  color: #ea580c;
-                  border: 1px solid #fed7aa;
-                }
-
-                // 审核未通过状态 - 红色
-                &.status-2 {
-                  background-color: #fef2f2;
-                  color: #dc2626;
-                  border: 1px solid #fecaca;
-                }
-              }
-
-              .article-date,
-              .article-readCount,
-              .article-likes,
-              .article-favorites,
-              .article-comments {
-                display: flex;
-                align-items: center;
-                gap: 4px;
-              }
-            }
-          }
-        }
-      }
-
-      // 空状态
-      .empty-state {
-        padding: 60px 0;
-        text-align: center;
-      }
-
-      // 加载更多指示器
-      .loading-more {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 30px;
-        color: var(--el-text-color-primary);
-
-        .loading-spinner {
-          margin-right: 10px;
-        }
-      }
-    }
-
-    // 专栏列表包装器
-    .column-list-wrapper {
-      position: relative; // 为返回顶部按钮提供定位参考
-
-      // 返回顶部按钮样式 - 固定在专栏列表容器的右下角，不随滚动移动
-      .back-to-top {
-        position: absolute;
-        right: 20px;
-        bottom: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
-        backdrop-filter: blur(2px);
-        background-color: color-mix(in srgb, var(--el-bg-color) 90%, transparent);
-        border: 1px solid var(--el-border-color);
-        border-radius: 50%;
-        cursor: pointer;
-        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        z-index: 100;
-
-        &:hover {
-          background: var(--el-color-primary);
-          color: white;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
-        }
-
-        .el-icon {
-          font-size: 18px;
-        }
-      }
-    }
-
-    // 专栏列表区域
-    .column-list-section {
-      background: var(--el-bg-color-page);
-      border-radius: 8px;
-      padding: 20px;
-      border: 1px solid var(--el-border-color);
-      box-shadow: 0 2px 12px var(--el-border-color-light);
-      max-height: 650px; // 设置最大高度以支持滚动
-      overflow-y: auto; // 启用垂直滚动
-
-      // 加载容器样式
-      .loading-container {
-        padding: 20px 0;
-      }
-
-      // 骨架屏样式
-      .column-skeleton {
-        display: flex;
-        gap: 16px;
-        padding: 20px 0;
-        border-bottom: 1px solid var(--el-border-color-light);
-
-        &:last-child {
-          border-bottom: none;
-        }
-
-        .skeleton-content {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-      }
-
-      // 自定义滚动条样式，增加 border-radius
-      &::-webkit-scrollbar {
-        width: 8px;
-        border-radius: 8px; // 增大滚动条圆角
-        background: transparent;
-      }
-      &::-webkit-scrollbar-thumb {
-        background: var(--el-border-color);
-        border-radius: 12px; // 滚动条滑块圆角更大
-      }
-      &::-webkit-scrollbar-track {
-        background: transparent;
-        border-radius: 12px;
-      }
-
-      // 专栏列表
-      .column-list {
-        .column-item {
-          display: flex;
-          gap: 16px;
-          padding: 20px 0;
-          border-bottom: 1px solid var(--el-border-color-light);
-          cursor: pointer;
-          transition: all 0.3s ease;
-
-          &:last-child {
-            border-bottom: none;
-          }
-
-          &:hover {
-            background-color: var(--el-bg-color-page);
-            transform: translateX(4px);
-          }
-
-          // 专栏封面
-          .column-cover {
-            width: 120px;
-            height: 90px;
-            border-radius: 8px;
-            transition: transform 0.3s ease;
-
-            &:hover {
-              transform: scale(1.05);
-            }
-
-            .loading-text {
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              width: 100%;
-              height: 100%;
-              font-size: 12px;
-              color: var(--el-text-color-regular);
-              background-color: var(--el-bg-color-page);
-            }
-
-            // 错误占位图标样式
-            .error {
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              width: 100%;
-              height: 100%;
-              background-color: var(--el-bg-color-page);
-
-              .el-icon {
-                font-size: 24px;
-                color: var(--el-text-color-placeholder);
-              }
-            }
-          }
-
-          // 专栏内容
-          .column-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-
-            .column-title {
-              font-size: 18px;
-              font-weight: 600;
-              color: var(--el-text-color-primary);
-              margin: 0 0 8px 0;
-              line-height: 1.4;
-              display: -webkit-box;
-              -webkit-line-clamp: 1;
-              line-clamp: 1;
-              -webkit-box-orient: vertical;
-              overflow: hidden;
-            }
-
-            .column-description {
-              font-size: 14px;
-              color: var(--el-text-color-regular);
-              margin: 0 0 12px 0;
-              line-height: 1.5;
-              display: -webkit-box;
-              -webkit-line-clamp: 2;
-              line-clamp: 2;
-              -webkit-box-orient: vertical;
-              overflow: hidden;
-            }
-
-            // 专栏元信息
-            .column-meta {
-              display: flex;
-              align-items: center;
-              font-size: 13px;
-              color: var(--el-text-color-secondary);
-
-              // 第一行：统计数据
-              .column-meta-stats {
-                gap: 16px;
-                margin-bottom: 8px;
-
-                .column-articles,
-                .column-focus {
-                  display: flex;
-                  align-items: center;
-                  gap: 4px;
-
-                  .el-icon {
-                    font-size: 14px;
-                  }
-                }
-              }
-
-              // 第二行：创建时间
-              .column-meta-time {
-                .column-date {
-                  color: var(--el-text-color-placeholder);
-                }
-              }
-
-              // 桌面端单行显示
-              @media (min-width: 769px) {
-                .column-meta-stats {
-                  margin-bottom: 0;
-                }
-
-                .column-meta-stats,
-                .column-meta-time {
-                  display: inline-flex;
-                }
-
-                .column-meta-time {
-                  margin-left: 16px;
-                }
-
-                .column-meta-time::before {
-                  content: "•";
-                  margin-right: 8px;
-                  color: var(--el-text-color-placeholder);
-                }
-              }
-            }
-          }
-        }
-      }
-
-      // 空状态
-      .empty-state {
-        padding: 60px 0;
-        text-align: center;
-      }
-
-      // 加载更多指示器
-      .loading-more {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 30px;
-        color: var(--el-text-color-primary);
-
-        .loading-spinner {
-          margin-right: 10px;
-        }
-      }
-    }
-
-    // 收藏列表包装器
-    .favorite-list-wrapper {
-      position: relative; // 为返回顶部按钮提供定位参考
-
-      // 返回顶部按钮样式 - 固定在收藏列表容器的右下角，不随滚动移动
-      .back-to-top {
-        position: absolute;
-        right: 20px;
-        bottom: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
-        backdrop-filter: blur(2px);
-        background-color: color-mix(in srgb, var(--el-bg-color) 90%, transparent);
-        border: 1px solid var(--el-border-color);
-        border-radius: 50%;
-        cursor: pointer;
-        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        z-index: 100;
-
-        &:hover {
-          background: var(--el-color-primary);
-          color: white;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
-        }
-
-        .el-icon {
-          font-size: 18px;
-        }
-      }
-    }
-
-    // 收藏列表区域
-    .favorite-list-section {
-      background: var(--el-bg-color-page);
-      border-radius: 8px;
-      padding: 20px;
-      border: 1px solid var(--el-border-color);
-      box-shadow: 0 2px 12px var(--el-border-color-light);
-      min-height: 400px; // 设置最小高度
-
-      // 空状态
-      .empty-state {
-        padding: 60px 0;
-        text-align: center;
-      }
-    }
   }
 
   // 右侧边栏
@@ -1591,23 +615,6 @@ $bg-color: #f5f7fa;
         gap: 20px;
       }
     }
-
-    .user-profile-section {
-      .user-profile-card {
-        .user-profile-content {
-          .user-basic-info {
-            // flex-direction: column;
-            // text-align: center;
-            gap: 5px;
-          }
-
-          .user-stats {
-            flex-wrap: wrap;
-            gap: 20px;
-          }
-        }
-      }
-    }
   }
 }
 
@@ -1616,23 +623,6 @@ $bg-color: #f5f7fa;
     font-size: 10px;
     // 移动端优化背景图片显示
     background-attachment: scroll; // 移动端使用scroll避免兼容性问题
-
-    .user-profile-section {
-      padding: 5px 0;
-
-      .user-profile-card {
-        padding: 10px;
-        .user-profile-content {
-          .user-basic-info {
-            margin-bottom: 5px;
-            .user-avatar {
-              width: 70px;
-              height: 70px;
-            }
-          }
-        }
-      }
-    }
 
     .content-section {
       padding: 0;
@@ -1647,103 +637,53 @@ $bg-color: #f5f7fa;
           padding-top: 5px;
         }
       }
-      .article-list-wrapper {
-        // 移动端返回顶部按钮调整
-        .back-to-top {
-          width: 40px;
-          height: 40px;
-          right: 15px;
-          bottom: 15px;
-
-          .el-icon {
-            font-size: 16px;
-          }
-        }
-      }
-
-      .article-list-section {
-        .article-list {
-          .article-item {
-            flex-direction: column;
-            gap: 12px;
-
-            .article-cover {
-              width: 100%;
-              height: 180px;
-            }
-          }
-        }
-      }
-
-      // 专栏列表移动端样式
-      .column-list-wrapper {
-        // 移动端返回顶部按钮调整
-        .back-to-top {
-          width: 40px;
-          height: 40px;
-          right: 15px;
-          bottom: 15px;
-
-          .el-icon {
-            font-size: 16px;
-          }
-        }
-      }
-
-      .column-list-section {
-        .column-list {
-          .column-item {
-            flex-direction: column;
-            gap: 12px;
-
-            .column-cover {
-              width: 100%;
-              height: 180px;
-            }
-          }
-        }
-      }
-
-      // 收藏列表移动端样式
-      .favorite-list-wrapper {
-        // 移动端返回顶部按钮调整
-        .back-to-top {
-          width: 40px;
-          height: 40px;
-          right: 15px;
-          bottom: 15px;
-
-          .el-icon {
-            font-size: 16px;
-          }
-        }
-      }
     }
     .sidebar {
       display: none;
     }
   }
+}
 
-  // 自定义加载指示器样式
-  .loading-spinner {
-    width: 20px;
-    height: 20px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #409eff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    display: inline-block;
-    vertical-align: middle;
+// 返回顶部按钮 - 统一在父组件管理
+.back-to-top {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  font-size: 20px;
+  backdrop-filter: blur(2px);
+  background-color: color-mix(in srgb, var(--el-bg-color) 90%, transparent);
+  border: 1px solid var(--el-border-color);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  z-index: 100;
+
+  &:hover {
+    background: var(--el-color-primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
   }
 
-  // 加载动画
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
+  .el-icon {
+    font-size: 18px;
+  }
 
-    100% {
-      transform: rotate(360deg);
+  // 移动端样式调整
+  @media (max-width: 768px) {
+    width: 40px;
+    height: 40px;
+    right: 15px;
+    bottom: 15px;
+
+    .el-icon {
+      font-size: 16px;
     }
   }
 }
