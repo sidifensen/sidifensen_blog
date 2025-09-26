@@ -46,4 +46,9 @@ public class ArticleStatisticsVo implements Serializable {
      */
     private Long garbageCount;
 
+    /**
+     * 总阅读量
+     */
+    private Long totalReadCount;
+
 }

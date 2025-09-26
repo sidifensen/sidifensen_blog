@@ -44,6 +44,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 /**
  * <p>
@@ -297,16 +298,23 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public ArticleStatisticsVo getUserArticleStatisticsById(Integer userId) {
-        // 直接查询已发布的文章数量
-        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
-                .eq(Article::getUserId, userId)
-                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
-                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode());
-        long publishedCount = articleMapper.selectCount(qw);
+        // 只查询已发布且审核通过的文章的阅读量字段
+        List<Article> articles = articleMapper.selectList(
+                new LambdaQueryWrapper<Article>()
+                        .select(Article::getReadCount)
+                        .eq(Article::getUserId, userId)
+                        .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                        .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
+        );
+
+        // 计算总阅读量
+        Long totalReadCount = articles.stream()
+                .mapToLong(Article::getReadCount)
+                .sum();
 
         // 构建返回对象
         ArticleStatisticsVo statisticsVo = new ArticleStatisticsVo();
-        statisticsVo.setPublishedCount(publishedCount);
+        statisticsVo.setTotalReadCount(totalReadCount);
 
         return statisticsVo;
     }

@@ -79,11 +79,3 @@ export function getUserInfoById(userId) {
     method: "get",
   });
 }
-
-// 根据用户ID获取用户详情信息（管理端）
-export function getUserInfo(userId) {
-  return request({
-    url: `/user/admin/${userId}`,
-    method: "get",
-  });
-}

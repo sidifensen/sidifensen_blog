@@ -1016,7 +1016,7 @@ const fetchUserInfo = async () => {
     userLoading.value = true;
     const userId = route.params.userId;
     const res = await getUserInfoById(userId);
-    userInfo.value = res.data.data; // 注意数据结构：res.data.data
+    userInfo.value = res.data.data; 
   } catch (error) {
     ElMessage.error("获取用户信息失败");
     console.error("获取用户信息失败:", error);
@@ -1030,7 +1030,7 @@ const fetchArticleStatistics = async () => {
   try {
     const userId = route.params.userId;
     const res = await getUserArticleStatisticsById(userId);
-    articleStatistics.value = res.data.data; // 注意数据结构：res.data.data
+    articleStatistics.value = res.data.data; 
   } catch (error) {
     console.error("获取文章统计信息失败:", error);
   }
@@ -1065,8 +1065,8 @@ const fetchArticleList = async (reset = false) => {
     }
 
     const res = await getUserArticleList(currentPage.value, pageSize.value, articleStatusDto);
-    const newArticles = res.data.data || []; // 重要：响应数据结构是 res.data.data
-    total.value = res.data.total || 0; // 分页信息在 res.data 层级
+    const newArticles = res.data.data.data || [];
+    total.value = res.data.data.total || 0; 
 
     if (reset) {
       articleList.value = newArticles;

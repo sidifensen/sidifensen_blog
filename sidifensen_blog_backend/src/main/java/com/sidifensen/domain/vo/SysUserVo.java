@@ -62,6 +62,11 @@ public class SysUserVo {
     private Integer followCount;
 
     /**
+     * 文章数
+     */
+    private Integer articleCount;
+
+    /**
      * 注册方式 0-用户名/邮箱 1-gitee 2-github 3-QQ
      */
     private Integer registerType;

@@ -121,7 +121,8 @@ $bg-color: #f5f7fa;
   padding: 20px;
   border: 1px solid var(--el-border-color);
   box-shadow: 0 2px 12px var(--el-border-color-light);
-  min-height: 580px; // 设置最小高度
+  min-height: 580px; // 设置最小高度，与父容器一致
+  height: 100%; // 占据父容器的完整高度
 
   // 加载容器样式
   .loading-container {

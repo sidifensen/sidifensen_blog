@@ -1,7 +1,7 @@
 <template>
   <div class="user-homepage">
     <!-- 用户信息区域 -->
-    <UserProfileCard :user-info="userInfo" :user-loading="userLoading" :article-statistics="articleStatistics" :total-views="totalViews" :is-current-user="isCurrentUser" :is-followed="isFollowed" :follow-loading="followLoading" @follow="handleFollow" @message="handleMessage" />
+    <UserProfileCard :user-info="userInfo" :user-loading="userLoading" :total-views="totalViews" :is-current-user="isCurrentUser" :is-followed="isFollowed" :follow-loading="followLoading" @follow="handleFollow" @message="handleMessage" />
 
     <!-- 内容区域 -->
     <div class="content-section">
@@ -9,42 +9,45 @@
         <div class="content-layout">
           <!-- 左侧主要内容 -->
           <div class="main-content">
-            <!-- 文章筛选标签 -->
-            <div class="article-filters">
+            <!-- 标签页切换 -->
+            <div class="tab-filters">
               <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-                <el-tab-pane label="文章" name="article">
-                  <!-- 文章筛选条件 -->
-                  <div class="filter-controls">
-                    <!-- 可见范围筛选 -->
-                    <div v-if="isCurrentUser" class="visibility-filter">
-                      <el-select v-model="visibilityType" @change="handleVisibilityChange" placeholder="可见范围" size="default">
-                        <el-option label="全部可见" value="all" />
-                        <el-option label="仅我可见" value="private" />
-                        <el-option label="审核中&失败" value="pending" />
-                      </el-select>
-                    </div>
-                    <!-- 排序筛选条件 -->
-                    <div class="sort-filters">
-                      <el-radio-group v-model="sortType" @change="handleSortChange">
-                        <el-radio value="time">时间排序</el-radio>
-                        <el-radio value="views">阅读量排序</el-radio>
-                      </el-radio-group>
-                    </div>
-                  </div>
-                </el-tab-pane>
+                <el-tab-pane label="文章" name="article" />
                 <el-tab-pane label="专栏" name="column" />
                 <el-tab-pane label="收藏" name="favorite" />
+                <el-tab-pane label="关注" name="follow" />
               </el-tabs>
             </div>
 
-            <!-- 文章列表 -->
-            <ArticleList v-if="activeTab === 'article'" :article-list="articleList" :article-loading="articleLoading" :loading-more="loadingMore" :is-current-user="isCurrentUser" @article-click="goToArticle" />
+            <!-- 内容区域 - 固定高度以防止抖动 -->
+            <div class="tab-content-container">
+              <!-- 内容切换过渡动画 -->
+              <transition name="tab-fade" mode="out-in">
+                <!-- 文章列表 -->
+                <ArticleList
+                  v-if="activeTab === 'article'"
+                  key="article"
+                  :article-list="articleList"
+                  :article-loading="articleLoading"
+                  :loading-more="loadingMore"
+                  :is-current-user="isCurrentUser"
+                  :sort-type="sortType"
+                  :visibility-type="visibilityType"
+                  @article-click="goToArticle"
+                  @sort-change="handleSortChange"
+                  @visibility-change="handleVisibilityChange"
+                />
 
-            <!-- 专栏列表 -->
-            <ColumnList v-if="activeTab === 'column'" :column-list="columnList" :column-loading="columnLoading" :loading-more="loadingMore" @column-click="goToColumn" />
+                <!-- 专栏列表 -->
+                <ColumnList v-else-if="activeTab === 'column'" key="column" :column-list="columnList" :column-loading="columnLoading" :loading-more="loadingMore" @column-click="goToColumn" />
 
-            <!-- 收藏列表 -->
-            <FavoriteList v-if="activeTab === 'favorite'" :favorite-list="favoriteList" :favorite-loading="favoriteLoading" @toggle-favorite="toggleFavorite" @article-click="goToArticle" />
+                <!-- 收藏列表 -->
+                <FavoriteList v-else-if="activeTab === 'favorite'" key="favorite" :favorite-list="favoriteList" :favorite-loading="favoriteLoading" @toggle-favorite="toggleFavorite" @article-click="goToArticle" />
+
+                <!-- 关注列表 -->
+                <FollowList v-else-if="activeTab === 'follow'" key="follow" />
+              </transition>
+            </div>
           </div>
 
           <!-- 右侧边栏 -->
@@ -53,7 +56,7 @@
             <div class="sidebar-card">
               <h4 class="card-title">个人成就</h4>
               <div class="achievements">
-                <div class="achievement-item" v-if="articleStatistics?.publishedCount >= 10">
+                <div class="achievement-item" v-if="userInfo?.articleCount >= 10">
                   <el-icon class="achievement-icon"><Trophy /></el-icon>
                   <span>创作达人</span>
                 </div>
@@ -86,6 +89,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Trophy, View, User, ArrowUp } from "@element-plus/icons-vue";
 import { getUserInfoById } from "@/api/user";
+import { toggleFollow, isFollowing } from "@/api/follow";
 import { getUserArticleList, getUserArticleStatisticsById } from "@/api/article";
 import { getUserColumnList } from "@/api/column";
 import { getFavoriteListByUserId, getArticleListByFavoriteId } from "@/api/favorite";
@@ -94,6 +98,7 @@ import UserProfileCard from "./components/UserProfileCard.vue";
 import ArticleList from "./components/ArticleList.vue";
 import ColumnList from "./components/ColumnList.vue";
 import FavoriteList from "./components/FavoriteList.vue";
+import FollowList from "./components/FollowList.vue";
 
 // 路由和状态管理
 const route = useRoute();
@@ -140,6 +145,11 @@ const fetchUserInfo = async () => {
     const userId = route.params.userId;
     const res = await getUserInfoById(userId);
     userInfo.value = res.data.data;
+
+    // 如果不是当前用户且已登录，检查关注状态
+    if (!isCurrentUser.value && userStore.user) {
+      await checkUserFollowStatus();
+    }
   } catch (error) {
     ElMessage.error("获取用户信息失败");
     console.error("获取用户信息失败:", error);
@@ -154,6 +164,10 @@ const fetchArticleStatistics = async () => {
     const userId = route.params.userId;
     const res = await getUserArticleStatisticsById(userId);
     articleStatistics.value = res.data.data;
+    // 更新总阅读量显示
+    if (articleStatistics.value && articleStatistics.value.totalReadCount !== undefined) {
+      totalViews.value = articleStatistics.value.totalReadCount;
+    }
   } catch (error) {
     console.error("获取文章统计信息失败:", error);
   }
@@ -217,8 +231,10 @@ const fetchArticleList = async (reset = false) => {
       currentPage.value++;
     }
 
-    // 计算总阅读量
-    totalViews.value = articleList.value.reduce((sum, article) => sum + (article.viewCount || 0), 0);
+    // 使用后端统计的总阅读量
+    if (articleStatistics.value && articleStatistics.value.totalReadCount !== undefined) {
+      totalViews.value = articleStatistics.value.totalReadCount;
+    }
   } catch (error) {
     ElMessage.error("获取文章列表失败");
     console.error("获取文章列表失败:", error);
@@ -323,20 +339,25 @@ const handleTabChange = (tabName) => {
   activeTab.value = tabName;
 
   if (tabName === "article") {
-    // 重置文章页码和列表，重新加载数据
-    currentPage.value = 1;
-    articleList.value = [];
-    hasMore.value = true;
-    fetchArticleList(true);
+    // 如果文章列表为空，重新加载数据
+    if (articleList.value.length === 0) {
+      currentPage.value = 1;
+      hasMore.value = true;
+      fetchArticleList(true);
+    }
   } else if (tabName === "column") {
-    // 重置专栏页码和列表，重新加载数据
-    columnCurrentPage.value = 1;
-    columnList.value = [];
-    columnHasMore.value = true;
-    fetchColumnList(true);
+    // 如果专栏列表为空，重新加载数据
+    if (columnList.value.length === 0) {
+      columnCurrentPage.value = 1;
+      columnHasMore.value = true;
+      fetchColumnList(true);
+    }
   } else if (tabName === "favorite") {
-    // 加载收藏夹数据
-    fetchFavoriteList();
+    // 如果收藏夹列表为空，加载收藏夹数据
+    if (favoriteList.value.length === 0) {
+      fetchFavoriteList();
+    }
+  } else if (tabName === "follow") {
   }
 };
 
@@ -360,15 +381,52 @@ const handleVisibilityChange = (value) => {
   fetchArticleList(true);
 };
 
+// 检查用户关注状态
+const checkUserFollowStatus = async () => {
+  try {
+    const followerId = userStore.user.id;
+    const followedId = parseInt(route.params.userId);
+    const res = await isFollowing(followerId, followedId);
+    isFollowed.value = res.data.data;
+  } catch (error) {
+    console.error("检查关注状态失败:", error);
+    isFollowed.value = false;
+  }
+};
+
 // 关注用户
 const handleFollow = async () => {
+  if (!userStore.user) {
+    ElMessage.warning("请先登录");
+    router.push("/login");
+    return;
+  }
+
   try {
     followLoading.value = true;
-    // TODO: 调用关注API
-    isFollowed.value = !isFollowed.value;
+    const followedId = parseInt(route.params.userId);
+    const wasFollowed = isFollowed.value;
+
+    // 调用切换关注状态接口
+    await toggleFollow(followedId);
+
+    // 切换状态
+    isFollowed.value = !wasFollowed;
+
+    // 显示操作结果
     ElMessage.success(isFollowed.value ? "关注成功" : "取消关注成功");
+
+    // 更新用户粉丝数
+    if (userInfo.value) {
+      if (isFollowed.value) {
+        userInfo.value.fansCount = (userInfo.value.fansCount || 0) + 1;
+      } else {
+        userInfo.value.fansCount = Math.max((userInfo.value.fansCount || 0) - 1, 0);
+      }
+    }
   } catch (error) {
     ElMessage.error("操作失败，请重试");
+    console.error("关注操作失败:", error);
   } finally {
     followLoading.value = false;
   }
@@ -393,7 +451,8 @@ const goToArticle = (articleId) => {
 
 // 跳转至专栏详情页
 const goToColumn = (columnId) => {
-  router.push(`/column/${columnId}`);
+  const userId = route.params.userId;
+  router.push(`/user/${userId}/column/${columnId}`);
 };
 
 // 处理页面滚动事件 - 统一所有标签页的滚动监听
@@ -440,6 +499,7 @@ watch(
       hasMore.value = true;
       columnHasMore.value = true;
       activeTab.value = "article"; // 重置到文章标签页
+      isFollowed.value = false; // 重置关注状态
 
       fetchUserInfo();
       fetchArticleStatistics();
@@ -503,8 +563,8 @@ $bg-color: #f5f7fa;
 
   // 主要内容区域
   .main-content {
-    // 文章筛选标签
-    .article-filters {
+    // 标签页切换
+    .tab-filters {
       background: var(--el-bg-color-page);
       border-radius: 8px;
       padding: 15px;
@@ -518,42 +578,6 @@ $bg-color: #f5f7fa;
 
       :deep(.el-tabs__nav-wrap::after) {
         display: none;
-      }
-
-      // 筛选控件整体样式
-      .filter-controls {
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px solid var(--el-border-color-light);
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        flex-wrap: wrap;
-
-        // 可见范围筛选器样式
-        .visibility-filter {
-          .el-select {
-            width: 100px;
-          }
-        }
-
-        // 排序筛选器样式
-        .sort-filters {
-          .el-radio-group {
-            display: flex;
-            gap: 24px;
-
-            .el-radio {
-              margin-right: 0;
-              font-size: 14px;
-              color: var(--el-text-color-regular);
-
-              &.is-checked {
-                color: var(--el-color-primary);
-              }
-            }
-          }
-        }
       }
     }
   }
@@ -603,7 +627,34 @@ $bg-color: #f5f7fa;
         }
       }
     }
+
+    // 标签页内容容器 - 固定高度防止抖动
+    .tab-content-container {
+      min-height: 620px; // 设置固定最小高度，包含筛选栏高度
+      position: relative;
+
+      // 确保子组件占据完整高度
+      > div {
+        min-height: 100%;
+      }
+    }
   }
+}
+
+// 标签页切换过渡动画
+.tab-fade-enter-active,
+.tab-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.tab-fade-enter-from,
+.tab-fade-leave-to {
+  opacity: 0;
+}
+
+.tab-fade-enter-to,
+.tab-fade-leave-from {
+  opacity: 1;
 }
 
 // 响应式设计
@@ -629,13 +680,14 @@ $bg-color: #f5f7fa;
     }
 
     .main-content {
-      .article-filters {
+      .tab-filters {
         padding: 0px 10px 10px 10px;
         margin-bottom: 5px;
-        .filter-controls {
-          margin-top: 5px;
-          padding-top: 5px;
-        }
+      }
+
+      // 移动端调整标签页内容容器高度
+      .tab-content-container {
+        min-height: 500px; // 移动端减少高度
       }
     }
     .sidebar {

@@ -8,6 +8,8 @@ import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.RabbitMQConstants;
 import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.entity.*;
+import com.sidifensen.domain.enums.EditStatusEnum;
+import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.enums.StatusEnum;
 import com.sidifensen.domain.vo.SysUserDetailVo;
 import com.sidifensen.domain.vo.SysUserVo;
@@ -19,6 +21,7 @@ import com.sidifensen.mapper.AlbumMapper;
 import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.CommentMapper;
 import com.sidifensen.mapper.ColumnMapper;
+import com.sidifensen.mapper.FollowMapper;
 import com.sidifensen.mapper.PhotoMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.redis.RedisComponent;
@@ -100,6 +103,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Resource
     private ColumnMapper columnMapper;
+
+    @Resource
+    private FollowMapper followMapper;
 
     @Override
     public String login(LoginDto loginDto) {
@@ -261,11 +267,30 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         sysUserVo.setIntroduction(sysUser.getIntroduction());
         sysUserVo.setAvatar(sysUser.getAvatar());
         sysUserVo.setSex(sysUser.getSex());
-        sysUserVo.setFansCount(sysUser.getFansCount());
-        sysUserVo.setFollowCount(sysUser.getFollowCount());
         sysUserVo.setCreateTime(sysUser.getCreateTime());
         String loginAddress = processLoginAddress(sysUser.getLoginAddress());
         sysUserVo.setLoginAddress(loginAddress);
+
+        // 实时查询粉丝数量（被关注数量）
+        LambdaQueryWrapper<Follow> fansQuery = new LambdaQueryWrapper<>();
+        fansQuery.eq(Follow::getFollowedId, userId);
+        Integer fansCount = Math.toIntExact(followMapper.selectCount(fansQuery));
+        sysUserVo.setFansCount(fansCount);
+
+        // 实时查询关注数量
+        LambdaQueryWrapper<Follow> followQuery = new LambdaQueryWrapper<>();
+        followQuery.eq(Follow::getFollowerId, userId);
+        Integer followCount = Math.toIntExact(followMapper.selectCount(followQuery));
+        sysUserVo.setFollowCount(followCount);
+
+        // 实时查询已发布且审核通过的文章数量
+        LambdaQueryWrapper<Article> articleQuery = new LambdaQueryWrapper<>();
+        articleQuery.eq(Article::getUserId, userId)
+                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode()) // 已发布
+                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode()); // 审核通过
+        Integer articleCount = Math.toIntExact(articleMapper.selectCount(articleQuery));
+        sysUserVo.setArticleCount(articleCount);
+
         return sysUserVo;
     }
 

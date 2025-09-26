@@ -40,10 +40,10 @@
 
                   <!-- 操作按钮 -->
                   <div class="author-actions" v-if="!isCurrentUser">
-                    <el-button type="primary" :icon="Plus" @click="handleFollow" :loading="followLoading" block>
-                      {{ isFollowed ? "已关注" : "关注" }}
+                    <el-button :type="isFollowed ? 'default' : 'primary'" :icon="isFollowed ? null : Plus" @click="handleFollow" :loading="followLoading" block :class="{ 'followed-btn': isFollowed }" @mouseenter="handleFollowButtonHover(true)" @mouseleave="handleFollowButtonHover(false)">
+                      {{ followButtonText }}
                     </el-button>
-                    <el-button :icon="Message" @click="handleMessage" block style="margin-top: 8px"> 私信 </el-button>
+                    <el-button :icon="Message" @click="handleMessage" block> 私信 </el-button>
                   </div>
                 </div>
               </template>
@@ -272,6 +272,7 @@ import { useRoute, useRouter } from "vue-router";
 import { Plus, Message, ArrowDown, ArrowUp, Picture, Document, View, Calendar, Star, TrendCharts, Reading } from "@element-plus/icons-vue";
 import { getColumnDetail, getUserColumnList } from "@/api/column";
 import { getUserInfoById } from "@/api/user";
+import { toggleFollow, isFollowing } from "@/api/follow";
 import { useUserStore } from "@/stores/userStore";
 
 // 路由和状态管理
@@ -294,10 +295,19 @@ const sortType = ref("sort"); // 排序类型：sort-按顺序，time-按时间
 const isDescExpanded = ref(false); // 专栏描述是否展开
 const showBackToTop = ref(false); // 是否显示返回顶部按钮
 const isFollowed = ref(false); // 是否已关注作者
+const isHoveringFollowButton = ref(false); // 关注按钮悬停状态
 
 // 计算属性
 const isCurrentUser = computed(() => {
   return userStore.user?.id === parseInt(route.params.userId);
+});
+
+// 计算关注按钮显示的文字
+const followButtonText = computed(() => {
+  if (!isFollowed.value) {
+    return "关注";
+  }
+  return isHoveringFollowButton.value ? "取消关注" : "已关注";
 });
 
 // 格式化数字显示
@@ -335,6 +345,11 @@ const fetchAuthorInfo = async () => {
     const userId = route.params.userId;
     const res = await getUserInfoById(userId);
     authorInfo.value = res.data.data;
+
+    // 如果不是当前用户且已登录，检查关注状态
+    if (!isCurrentUser.value && userStore.user) {
+      await checkUserFollowStatus();
+    }
   } catch (error) {
     ElMessage.error("获取作者信息失败");
     console.error("获取作者信息失败:", error);
@@ -397,6 +412,19 @@ const goToColumn = (columnId) => {
   router.push(`/user/${userId}/column/${columnId}`);
 };
 
+// 检查用户关注状态
+const checkUserFollowStatus = async () => {
+  try {
+    const followerId = userStore.user.id;
+    const followedId = parseInt(route.params.userId);
+    const res = await isFollowing(followerId, followedId);
+    isFollowed.value = res.data.data; // 后端返回 Boolean 值
+  } catch (error) {
+    console.error("检查关注状态失败:", error);
+    isFollowed.value = false;
+  }
+};
+
 // 关注/取消关注作者
 const handleFollow = async () => {
   if (!userStore.user) {
@@ -407,10 +435,26 @@ const handleFollow = async () => {
 
   try {
     followLoading.value = true;
-    // TODO: 实现关注/取消关注API调用
-    // await followUser(route.params.userId);
-    isFollowed.value = !isFollowed.value;
+    const followedId = parseInt(route.params.userId);
+    const wasFollowed = isFollowed.value;
+
+    // 调用切换关注状态接口
+    await toggleFollow(followedId);
+
+    // 切换状态
+    isFollowed.value = !wasFollowed;
+
+    // 显示操作结果
     ElMessage.success(isFollowed.value ? "关注成功" : "取消关注成功");
+
+    // 更新作者粉丝数
+    if (authorInfo.value) {
+      if (isFollowed.value) {
+        authorInfo.value.fansCount = (authorInfo.value.fansCount || 0) + 1;
+      } else {
+        authorInfo.value.fansCount = Math.max((authorInfo.value.fansCount || 0) - 1, 0);
+      }
+    }
   } catch (error) {
     ElMessage.error("操作失败");
     console.error("关注操作失败:", error);
@@ -429,6 +473,11 @@ const handleMessage = () => {
   ElMessage.info("私信功能开发中");
 };
 
+// 处理关注按钮悬停状态
+const handleFollowButtonHover = (isHovering) => {
+  isHoveringFollowButton.value = isHovering;
+};
+
 // 监听路由参数变化
 watch(
   () => [route.params.userId, route.params.columnId],
@@ -441,6 +490,7 @@ watch(
       otherColumns.value = [];
       isDescExpanded.value = false;
       showBackToTop.value = false;
+      isFollowed.value = false; // 重置关注状态
 
       // 获取数据
       fetchColumnDetail();
@@ -579,6 +629,21 @@ onUnmounted(() => {
           display: flex;
           flex-direction: column;
           gap: 8px;
+          :deep(.el-button) {
+            margin-left: 0;
+          }
+
+          // 已关注按钮样式
+          :deep(.followed-btn) {
+            border-color: var(--el-color-success);
+            color: var(--el-color-success);
+
+            &:hover {
+              background-color: var(--el-color-danger);
+              border-color: var(--el-color-danger);
+              color: white;
+            }
+          }
         }
       }
     }
@@ -696,12 +761,21 @@ onUnmounted(() => {
         gap: 20px;
         align-items: flex-start;
 
+        @media (max-width: 768px) {
+          flex-direction: column;
+        }
+
         .column-cover {
           width: 150px;
           height: 100px;
           border-radius: 8px;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
           flex-shrink: 0;
+
+          @media (max-width: 768px) {
+            width: 100%;
+            height: 100%;
+          }
 
           .loading-text {
             display: flex;

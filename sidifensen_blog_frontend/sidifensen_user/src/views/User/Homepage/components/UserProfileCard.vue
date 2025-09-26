@@ -42,7 +42,7 @@
               <!-- 用户统计信息 -->
               <div class="user-stats">
                 <div class="stat-item">
-                  <span class="stat-number">{{ articleStatistics?.publishedCount || 0 }}</span>
+                  <span class="stat-number">{{ userInfo.articleCount || 0 }}</span>
                   <span class="stat-label">文章</span>
                 </div>
                 <div class="stat-item">
@@ -61,8 +61,8 @@
 
               <!-- 操作按钮 -->
               <div class="user-actions" v-if="!isCurrentUser">
-                <el-button type="primary" :icon="Plus" @click="handleFollow" :loading="followLoading">
-                  {{ isFollowed ? "已关注" : "关注" }}
+                <el-button :type="isFollowed ? 'default' : 'primary'" :icon="isFollowed ? null : Plus" @click="handleFollow" :loading="followLoading" :class="{ 'followed-btn': isFollowed }" @mouseenter="handleFollowButtonHover(true)" @mouseleave="handleFollowButtonHover(false)">
+                  {{ followButtonText }}
                 </el-button>
                 <el-button :icon="Message" @click="handleMessage">私信</el-button>
               </div>
@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { Plus, Message, ArrowDown, ArrowUp } from "@element-plus/icons-vue";
 
 // 定义 props
@@ -87,10 +87,6 @@ const props = defineProps({
   userLoading: {
     type: Boolean,
     default: false,
-  },
-  articleStatistics: {
-    type: Object,
-    default: () => null,
   },
   totalViews: {
     type: Number,
@@ -116,9 +112,25 @@ const emit = defineEmits(["follow", "message"]);
 // 个人介绍展开状态
 const isIntroExpanded = ref(false);
 
+// 关注按钮文字状态
+const isHoveringFollowButton = ref(false);
+
+// 计算关注按钮显示的文字
+const followButtonText = computed(() => {
+  if (!props.isFollowed) {
+    return "关注";
+  }
+  return isHoveringFollowButton.value ? "取消关注" : "已关注";
+});
+
 // 切换个人介绍展开状态
 const toggleIntroExpand = () => {
   isIntroExpanded.value = !isIntroExpanded.value;
+};
+
+// 处理关注按钮悬停状态
+const handleFollowButtonHover = (isHovering) => {
+  isHoveringFollowButton.value = isHovering;
 };
 
 // 处理关注事件
@@ -333,6 +345,19 @@ $bg-color: #f5f7fa;
           padding: 12px 24px;
           font-size: 14px;
           border-radius: 20px;
+          width: 100px;
+        }
+
+        // 已关注按钮样式
+        :deep(.followed-btn) {
+          border-color: var(--el-color-success);
+          color: var(--el-color-success);
+
+          &:hover {
+            background-color: var(--el-color-danger);
+            border-color: var(--el-color-danger);
+            color: white;
+          }
         }
       }
     }

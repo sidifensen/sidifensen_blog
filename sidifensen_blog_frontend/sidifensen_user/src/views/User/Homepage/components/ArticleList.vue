@@ -1,5 +1,27 @@
 <template>
   <div class="article-list-wrapper">
+    <!-- 文章筛选标签 -->
+    <div class="article-filters">
+      <!-- 文章筛选条件 -->
+      <div class="filter-controls">
+        <!-- 可见范围筛选 -->
+        <div v-if="isCurrentUser" class="visibility-filter">
+          <el-select v-model="visibilityType" @change="handleVisibilityChange" placeholder="可见范围" size="default">
+            <el-option label="全部可见" value="all" />
+            <el-option label="仅我可见" value="private" />
+            <el-option label="审核中&失败" value="pending" />
+          </el-select>
+        </div>
+        <!-- 排序筛选条件 -->
+        <div class="sort-filters">
+          <el-radio-group v-model="sortType" @change="handleSortChange">
+            <el-radio value="time">时间排序</el-radio>
+            <el-radio value="views">阅读量排序</el-radio>
+          </el-radio-group>
+        </div>
+      </div>
+    </div>
+
     <div class="article-list-section">
       <div v-if="articleLoading" class="loading-container">
         <el-skeleton animated :count="5">
@@ -75,6 +97,9 @@
 <script setup>
 import { Picture } from "@element-plus/icons-vue";
 
+// 导入 ref 和 watch
+import { ref, watch } from "vue";
+
 // 定义 props
 const props = defineProps({
   articleList: {
@@ -93,14 +118,54 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // 筛选相关 props
+  sortType: {
+    type: String,
+    default: "time",
+  },
+  visibilityType: {
+    type: String,
+    default: "all",
+  },
 });
 
 // 定义 emits
-const emit = defineEmits(["article-click"]);
+const emit = defineEmits(["article-click", "sort-change", "visibility-change"]);
+
+// 响应式数据
+const sortType = ref(props.sortType);
+const visibilityType = ref(props.visibilityType);
+
+// 监听 props 变化，同步本地状态
+watch(
+  () => props.sortType,
+  (newValue) => {
+    sortType.value = newValue;
+  }
+);
+
+watch(
+  () => props.visibilityType,
+  (newValue) => {
+    visibilityType.value = newValue;
+  }
+);
 
 // 处理文章点击事件
 const handleArticleClick = (articleId) => {
   emit("article-click", articleId);
+};
+
+// 处理排序条件变化
+const handleSortChange = (value) => {
+  sortType.value = value;
+  emit("sort-change", value);
+};
+
+// 处理可见范围变化
+const handleVisibilityChange = (value) => {
+  visibilityType.value = value;
+  emit("visibility-change", value);
 };
 
 // 获取文章类型
@@ -135,6 +200,49 @@ $bg-color: #f5f7fa;
 // 文章列表包装器
 .article-list-wrapper {
   position: relative; // 为返回顶部按钮提供定位参考
+
+  // 文章筛选标签
+  .article-filters {
+    background: var(--el-bg-color-page);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid var(--el-border-color);
+    box-shadow: 0 2px 12px var(--el-border-color-light);
+
+    // 筛选控件整体样式
+    .filter-controls {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+
+      // 可见范围筛选器样式
+      .visibility-filter {
+        .el-select {
+          width: 100px;
+        }
+      }
+
+      // 排序筛选器样式
+      .sort-filters {
+        .el-radio-group {
+          display: flex;
+          gap: 24px;
+
+          .el-radio {
+            margin-right: 0;
+            font-size: 14px;
+            color: var(--el-text-color-regular);
+
+            &.is-checked {
+              color: var(--el-color-primary);
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 // 文章列表区域
@@ -144,7 +252,8 @@ $bg-color: #f5f7fa;
   padding: 20px;
   border: 1px solid var(--el-border-color);
   box-shadow: 0 2px 12px var(--el-border-color-light);
-  min-height: 580px; // 设置最小高度
+  min-height: 580px; // 设置最小高度，与父容器一致
+  height: 100%; // 占据父容器的完整高度
 
   // 加载容器样式
   .loading-container {

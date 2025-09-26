@@ -44,9 +44,9 @@
           </div>
 
           <!-- 操作按钮 -->
-          <div class="user-actions">
-            <el-button type="primary" :icon="Plus" @click="handleFollow" :loading="followLoading">
-              {{ isFollowed ? "已关注" : "关注" }}
+          <div class="user-actions" v-if="!isCurrentUser">
+            <el-button :type="isFollowed ? 'default' : 'primary'" :icon="isFollowed ? null : Plus" @click="handleFollow" :loading="followLoading" :class="{ 'followed-btn': isFollowed }" @mouseenter="handleFollowButtonHover(true)" @mouseleave="handleFollowButtonHover(false)">
+              {{ followButtonText }}
             </el-button>
             <el-button :icon="Message" @click="handleMessage"> 私信 </el-button>
           </div>
@@ -57,13 +57,15 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { Message, Plus } from "@element-plus/icons-vue";
-import { ElMessage } from "element-plus";
+import { toggleFollow, isFollowing } from "@/api/follow";
+import { useUserStore } from "@/stores/userStore";
 
-// 路由
+// 路由和状态管理
 const router = useRouter();
+const userStore = useUserStore();
 
 // Props 定义
 const props = defineProps({
@@ -84,16 +86,62 @@ const shineEffect = ref(null);
 // 关注状态
 const isFollowed = ref(false);
 const followLoading = ref(false);
+const isHoveringFollowButton = ref(false);
+
+// 计算属性
+const isCurrentUser = computed(() => {
+  return userStore.user?.id === props.userInfo?.id;
+});
+
+// 计算关注按钮显示的文字
+const followButtonText = computed(() => {
+  if (!isFollowed.value) {
+    return "关注";
+  }
+  return isHoveringFollowButton.value ? "取消关注" : "已关注";
+});
+
+// 检查用户关注状态
+const checkUserFollowStatus = async () => {
+  if (!userStore.user || !props.userInfo || isCurrentUser.value) {
+    return;
+  }
+
+  try {
+    const followerId = userStore.user.id;
+    const followedId = props.userInfo.id;
+    const res = await isFollowing(followerId, followedId);
+    isFollowed.value = res.data.data;
+  } catch (error) {
+    console.error("检查关注状态失败:", error);
+    isFollowed.value = false;
+  }
+};
 
 // 关注用户
 const handleFollow = async () => {
+  if (!userStore.user) {
+    ElMessage.warning("请先登录");
+    router.push("/login");
+    return;
+  }
+
   try {
     followLoading.value = true;
-    // TODO: 调用关注API
-    isFollowed.value = !isFollowed.value;
+    const followedId = props.userInfo.id;
+    const wasFollowed = isFollowed.value;
+
+    // 调用切换关注状态接口
+    await toggleFollow(followedId);
+
+    // 切换状态
+    isFollowed.value = !wasFollowed;
+
+    // 显示操作结果
     ElMessage.success(isFollowed.value ? "关注成功" : "取消关注成功");
   } catch (error) {
     ElMessage.error("操作失败，请重试");
+    console.error("关注操作失败:", error);
   } finally {
     followLoading.value = false;
   }
@@ -101,7 +149,17 @@ const handleFollow = async () => {
 
 // 发送私信
 const handleMessage = () => {
+  if (!userStore.user) {
+    ElMessage.warning("请先登录");
+    router.push("/login");
+    return;
+  }
   ElMessage.info("私信功能开发中...");
+};
+
+// 处理关注按钮悬停状态
+const handleFollowButtonHover = (isHovering) => {
+  isHoveringFollowButton.value = isHovering;
 };
 
 // 处理鼠标移动事件 - 3D效果和闪光
@@ -158,6 +216,26 @@ const goToUserHomepage = () => {
     router.push(`/user/${props.userInfo.id}`);
   }
 };
+
+// 监听用户信息变化
+watch(
+  () => props.userInfo,
+  (newUserInfo) => {
+    if (newUserInfo && !isCurrentUser.value) {
+      checkUserFollowStatus();
+    } else {
+      isFollowed.value = false;
+    }
+  },
+  { immediate: true }
+);
+
+// 组件挂载
+onMounted(() => {
+  if (props.userInfo && !isCurrentUser.value) {
+    checkUserFollowStatus();
+  }
+});
 </script>
 
 <style lang="scss" scoped>
@@ -301,6 +379,18 @@ const goToUserHomepage = () => {
 
       .el-button {
         flex: 1;
+      }
+
+      // 已关注按钮样式
+      :deep(.followed-btn) {
+        border-color: var(--el-color-success);
+        color: var(--el-color-success);
+
+        &:hover {
+          background-color: var(--el-color-danger);
+          border-color: var(--el-color-danger);
+          color: white;
+        }
       }
     }
   }

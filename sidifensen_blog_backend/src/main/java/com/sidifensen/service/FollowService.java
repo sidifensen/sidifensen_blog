@@ -2,6 +2,10 @@ package com.sidifensen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.entity.Follow;
+import com.sidifensen.domain.vo.PageVo;
+import com.sidifensen.domain.vo.SysUserVo;
+
+import java.util.List;
 
 /**
  * <p>
@@ -30,5 +34,25 @@ public interface FollowService extends IService<Follow> {
      * @return true表示已关注，false表示未关注
      */
     Boolean isFollowing(Integer followerId, Integer followedId);
+
+    /**
+     * 分页获取用户的关注列表
+     * 
+     * @param userId 用户ID
+     * @param pageNum 页码
+     * @param pageSize 每页大小
+     * @return 关注用户列表
+     */
+    PageVo<List<SysUserVo>> getFollowList(Integer userId, Integer pageNum, Integer pageSize);
+
+    /**
+     * 分页获取用户的粉丝列表
+     * 
+     * @param userId 用户ID
+     * @param pageNum 页码
+     * @param pageSize 每页大小
+     * @return 粉丝用户列表
+     */
+    PageVo<List<SysUserVo>> getFansList(Integer userId, Integer pageNum, Integer pageSize);
 
 }

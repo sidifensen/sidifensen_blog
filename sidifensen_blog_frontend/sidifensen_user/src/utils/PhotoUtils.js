@@ -6,12 +6,12 @@
 /**
  * 图片压缩函数 - 优化版本：质量压缩+尺寸调整
  * @param {File} file - 要压缩的图片文件
- * @param {number} quality - 压缩质量，默认为0.7
+ * @param {number} quality - 压缩质量，默认为0.6
  * @param {number} maxWidth - 最大宽度，默认为1200
  * @param {number} maxHeight - 最大高度，默认为1200
  * @returns {Promise<File>} - 压缩后的图片文件
  */
-export const compressImage = (file, quality = 0.7, maxWidth = 1920, maxHeight = 1080) => {
+export const compressImage = (file, quality = 0.6, maxWidth = 1920, maxHeight = 1080) => {
   return new Promise((resolve) => {
     // 读取文件
     const reader = new FileReader();
