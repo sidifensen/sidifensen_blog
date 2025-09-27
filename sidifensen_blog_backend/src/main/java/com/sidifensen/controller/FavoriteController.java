@@ -1,6 +1,7 @@
 package com.sidifensen.controller;
 
 import com.sidifensen.domain.dto.AddFavoriteDto;
+import com.sidifensen.domain.dto.UpdateFavoriteDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.ArticleVo;
 import com.sidifensen.domain.vo.FavoriteVo;
@@ -32,6 +33,18 @@ public class FavoriteController {
     @PostMapping("/add")
     public Result<String> addFavorite(@RequestBody @Valid AddFavoriteDto addFavoriteDto) {
         favoriteService.addFavorite(addFavoriteDto);
+        return Result.success();
+    }
+
+    /**
+     * 更新收藏夹
+     *
+     * @param updateFavoriteDto 收藏夹信息
+     * @return 操作结果
+     */
+    @PutMapping("/update")
+    public Result<String> updateFavorite(@RequestBody @Valid UpdateFavoriteDto updateFavoriteDto) {
+        favoriteService.updateFavorite(updateFavoriteDto);
         return Result.success();
     }
 

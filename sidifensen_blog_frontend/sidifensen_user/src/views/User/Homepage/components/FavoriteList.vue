@@ -47,10 +47,16 @@
                     </div>
                   </div>
                 </div>
-                <div class="folder-expand">
-                  <el-icon class="expand-icon" :class="{ expanded: favorite.expanded }">
-                    <ArrowDown />
-                  </el-icon>
+                <div class="folder-actions">
+                  <!-- 管理收藏夹按钮（仅当前用户可见） -->
+                  <div v-if="isCurrentUser" class="manage-btn" @click="handleEditFavorite(favorite, $event)">
+                    <el-icon><Setting /></el-icon>
+                  </div>
+                  <div class="folder-expand">
+                    <el-icon class="expand-icon" :class="{ expanded: favorite.expanded }">
+                      <ArrowDown />
+                    </el-icon>
+                  </div>
                 </div>
               </div>
 
@@ -118,11 +124,43 @@
         </div>
       </div>
     </div>
+
+    <!-- 编辑收藏夹对话框 -->
+    <el-dialog v-model="editDialogVisible" title="编辑收藏夹" :width="dialogWidth" :before-close="handleEditCancel" class="favorite-edit-dialog" :lock-scroll="false">
+      <el-form ref="editFormRef" :model="editForm" :rules="editRules" :label-width="100" label-position="left">
+        <el-form-item label="收藏夹名称" prop="name">
+          <el-input v-model="editForm.name" placeholder="请输入收藏夹名称" maxlength="20" show-word-limit />
+        </el-form-item>
+
+        <el-form-item label="展示状态" prop="showStatus">
+          <el-radio-group v-model="editForm.showStatus">
+            <el-radio :value="0">
+              <div class="radio-option">
+                <span class="radio-label">公开</span>
+              </div>
+            </el-radio>
+            <el-radio :value="1">
+              <div class="radio-option">
+                <span class="radio-label">私密</span>
+              </div>
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="handleEditCancel">取消</el-button>
+          <el-button type="primary" :loading="editLoading" @click="handleEditSubmit"> 保存 </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { Star, Collection, ArrowDown, Picture } from "@element-plus/icons-vue";
+import { Star, Collection, ArrowDown, Picture, Setting } from "@element-plus/icons-vue";
+import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
 
 // 定义 props
 const props = defineProps({
@@ -134,10 +172,56 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // 是否是当前用户的主页（用于判断是否显示管理按钮）
+  isCurrentUser: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // 定义 emits
-const emit = defineEmits(["toggle-favorite", "article-click"]);
+const emit = defineEmits(["toggle-favorite", "article-click", "update-favorite"]);
+
+// 窗口宽度响应式数据
+const windowWidth = ref(window.innerWidth);
+
+// 响应式对话框宽度
+const dialogWidth = computed(() => {
+  return windowWidth.value <= 768 ? "90%" : "400px";
+});
+
+// 监听窗口大小变化
+const handleResize = () => {
+  windowWidth.value = window.innerWidth;
+};
+
+// 组件挂载时添加监听器
+onMounted(() => {
+  window.addEventListener("resize", handleResize);
+});
+
+// 组件卸载时移除监听器
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+});
+
+// 编辑收藏夹对话框相关状态
+const editDialogVisible = ref(false);
+const editLoading = ref(false);
+const editForm = reactive({
+  id: null,
+  name: "",
+  showStatus: 0,
+});
+
+// 表单校验规则
+const editRules = {
+  name: [
+    { required: true, message: "收藏夹名称不能为空", trigger: "blur" },
+    { min: 1, max: 20, message: "收藏夹名称长度在 1 到 20 个字符", trigger: "blur" },
+  ],
+  showStatus: [{ required: true, message: "请选择展示状态", trigger: "change" }],
+};
 
 // 处理收藏夹展开/收起事件
 const handleToggleFavorite = (favorite) => {
@@ -147,6 +231,59 @@ const handleToggleFavorite = (favorite) => {
 // 处理文章点击事件
 const handleArticleClick = (articleId) => {
   emit("article-click", articleId);
+};
+
+// 处理编辑收藏夹
+const handleEditFavorite = (favorite, event) => {
+  // 阻止事件冒泡，避免触发展开/收起
+  event.stopPropagation();
+
+  // 设置表单数据
+  editForm.id = favorite.id;
+  editForm.name = favorite.name;
+  editForm.showStatus = favorite.showStatus;
+
+  // 显示对话框
+  editDialogVisible.value = true;
+};
+
+// 表单引用
+const editFormRef = ref();
+
+// 提交编辑表单
+const handleEditSubmit = async () => {
+  // 表单验证
+  if (!editFormRef.value) return;
+
+  try {
+    await editFormRef.value.validate();
+    editLoading.value = true;
+
+    // 发送更新事件到父组件
+    emit("update-favorite", { ...editForm });
+
+    // 关闭对话框
+    editDialogVisible.value = false;
+
+    ElMessage.success("收藏夹更新成功");
+  } catch (error) {
+    console.error("更新收藏夹失败:", error);
+    if (error !== false) {
+      // 不是表单验证错误
+      ElMessage.error("更新收藏夹失败");
+    }
+  } finally {
+    editLoading.value = false;
+  }
+};
+
+// 取消编辑
+const handleEditCancel = () => {
+  editDialogVisible.value = false;
+  // 重置表单
+  editForm.id = null;
+  editForm.name = "";
+  editForm.showStatus = 0;
 };
 </script>
 
@@ -338,14 +475,42 @@ $bg-color: #f5f7fa;
               }
             }
 
-            .folder-expand {
-              .expand-icon {
-                font-size: 16px;
-                color: var(--el-text-color-regular);
-                transition: transform 0.3s ease;
+            .folder-actions {
+              display: flex;
+              align-items: center;
+              gap: 8px;
 
-                &.expanded {
-                  transform: rotate(180deg);
+              .manage-btn {
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                color: var(--el-text-color-regular);
+
+                &:hover {
+                  background-color: var(--el-color-primary-light-9);
+                  color: var(--el-color-primary);
+                  transform: scale(1.1);
+                }
+
+                .el-icon {
+                  font-size: 14px;
+                }
+              }
+
+              .folder-expand {
+                .expand-icon {
+                  font-size: 16px;
+                  color: var(--el-text-color-regular);
+                  transition: transform 0.3s ease;
+
+                  &.expanded {
+                    transform: rotate(180deg);
+                  }
                 }
               }
             }
@@ -504,6 +669,87 @@ $bg-color: #f5f7fa;
   .empty-state {
     padding: 60px 0;
     text-align: center;
+  }
+}
+
+// 编辑对话框样式
+:deep(.el-dialog) {
+  border-radius: 12px;
+
+  .el-dialog__header {
+    padding: 20px 20px 10px 20px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+
+    .el-dialog__title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+    }
+  }
+
+  .el-dialog__body {
+    padding: 20px;
+
+    .el-form {
+      .el-form-item {
+        margin-bottom: 20px;
+
+        .el-form-item__label {
+          font-weight: 500;
+          color: var(--el-text-color-primary);
+        }
+
+        // 单选按钮组样式
+        .el-radio-group {
+          display: flex;
+          flex-direction: row;
+          gap: 20px;
+
+          .el-radio {
+            margin-right: 0;
+            height: auto;
+
+            .el-radio__input {
+              align-self: flex-start;
+              margin-top: 2px;
+            }
+
+            .el-radio__label {
+              padding-left: 8px;
+
+              .radio-option {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+
+                .radio-label {
+                  font-size: 14px;
+                  font-weight: 500;
+                  color: var(--el-text-color-primary);
+                  line-height: 1.4;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .el-dialog__footer {
+    padding: 10px 20px 20px 20px;
+    border-top: 1px solid var(--el-border-color-lighter);
+
+    .dialog-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+
+      .el-button {
+        padding: 8px 20px;
+        border-radius: 6px;
+      }
+    }
   }
 }
 

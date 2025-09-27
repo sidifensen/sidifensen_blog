@@ -10,7 +10,8 @@ import java.util.Date;
 
 /**
  * 浏览历史实体类
- * 用于记录用户或访客对文章的浏览历史，防止重复增加阅读量
+ * 用于记录登录用户对文章的浏览历史，防止重复增加阅读量
+ * 注：访客浏览记录仅存储在Redis缓存中，不存储到数据库
  * 
  * @author sidifensen
  * @since 2025-09-19
@@ -38,16 +39,6 @@ public class History implements Serializable {
      * 用户ID（登录用户）
      */
     private Integer userId;
-
-    /**
-     * 访客IP地址（未登录用户）
-     */
-    private String ipAddress;
-
-    /**
-     * 浏览器指纹（用于访客识别，已包含user-agent等信息）
-     */
-    private String fingerprint;
 
     /**
      * 浏览时间

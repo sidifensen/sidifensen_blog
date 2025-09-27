@@ -42,7 +42,7 @@
                 <ColumnList v-else-if="activeTab === 'column'" key="column" :column-list="columnList" :column-loading="columnLoading" :loading-more="loadingMore" @column-click="goToColumn" />
 
                 <!-- 收藏列表 -->
-                <FavoriteList v-else-if="activeTab === 'favorite'" key="favorite" :favorite-list="favoriteList" :favorite-loading="favoriteLoading" @toggle-favorite="toggleFavorite" @article-click="goToArticle" />
+                <FavoriteList v-else-if="activeTab === 'favorite'" key="favorite" :favorite-list="favoriteList" :favorite-loading="favoriteLoading" :is-current-user="isCurrentUser" @toggle-favorite="toggleFavorite" @article-click="goToArticle" @update-favorite="handleUpdateFavorite" />
 
                 <!-- 关注列表 -->
                 <FollowList v-else-if="activeTab === 'follow'" key="follow" />
@@ -92,7 +92,7 @@ import { getUserInfoById } from "@/api/user";
 import { toggleFollow, isFollowing } from "@/api/follow";
 import { getUserArticleList, getUserArticleStatisticsById } from "@/api/article";
 import { getUserColumnList } from "@/api/column";
-import { getFavoriteListByUserId, getArticleListByFavoriteId } from "@/api/favorite";
+import { getFavoriteListByUserId, getArticleListByFavoriteId, updateFavorite } from "@/api/favorite";
 import { useUserStore } from "@/stores/userStore";
 import UserProfileCard from "./components/UserProfileCard.vue";
 import ArticleList from "./components/ArticleList.vue";
@@ -331,6 +331,26 @@ const toggleFavorite = async (favorite) => {
   // 如果展开并且还没加载过文章，则加载文章
   if (favorite.expanded && favorite.articles.length === 0) {
     await fetchFavoriteArticleList(favorite);
+  }
+};
+
+// 处理更新收藏夹
+const handleUpdateFavorite = async (formData) => {
+  try {
+    await updateFavorite(formData);
+
+    // 更新本地收藏夹列表中对应的数据
+    const favoriteIndex = favoriteList.value.findIndex((f) => f.id === formData.id);
+    if (favoriteIndex !== -1) {
+      favoriteList.value[favoriteIndex].name = formData.name;
+      favoriteList.value[favoriteIndex].showStatus = formData.showStatus;
+    }
+
+    ElMessage.success("收藏夹更新成功");
+  } catch (error) {
+    console.error("更新收藏夹失败:", error);
+    ElMessage.error("更新收藏夹失败");
+    throw error; // 重新抛出错误，让子组件知道更新失败
   }
 };
 
@@ -672,8 +692,9 @@ $bg-color: #f5f7fa;
 @media (max-width: 768px) {
   .user-homepage {
     font-size: 10px;
-    // 移动端优化背景图片显示
-    background-attachment: scroll; // 移动端使用scroll避免兼容性问题
+    // background-position: center top; // 确保背景图片从顶部开始显示
+    // background-size: cover; // 确保背景图片完全覆盖
+    // min-height: 100vh; // 确保容器高度至少为视口高度
 
     .content-section {
       padding: 0;

@@ -2,6 +2,7 @@ package com.sidifensen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.AddFavoriteDto;
+import com.sidifensen.domain.dto.UpdateFavoriteDto;
 import com.sidifensen.domain.entity.Favorite;
 import com.sidifensen.domain.vo.ArticleVo;
 import com.sidifensen.domain.vo.FavoriteVo;
@@ -24,6 +25,13 @@ public interface FavoriteService extends IService<Favorite> {
      * @param addFavoriteDto 收藏夹信息
      */
     void addFavorite(AddFavoriteDto addFavoriteDto);
+
+    /**
+     * 更新收藏夹
+     * 
+     * @param updateFavoriteDto 收藏夹信息
+     */
+    void updateFavorite(UpdateFavoriteDto updateFavoriteDto);
 
     /**
      * 根据articleId把文章添加到文章-收藏夹关联表，并增加收藏夹的文章数量

@@ -240,14 +240,17 @@ $bg-color: #f5f7fa;
         // 专栏元信息
         .column-meta {
           display: flex;
+          flex-direction: row;
           align-items: center;
           font-size: 13px;
           color: var(--el-text-color-secondary);
+          gap: 16px;
 
           // 第一行：统计数据
           .column-meta-stats {
+            display: flex;
+            align-items: center;
             gap: 16px;
-            margin-bottom: 8px;
 
             .column-articles,
             .column-focus {
@@ -266,27 +269,22 @@ $bg-color: #f5f7fa;
             .column-date {
               color: var(--el-text-color-placeholder);
             }
-          }
 
-          // 桌面端单行显示
-          @media (min-width: 769px) {
-            .column-meta-stats {
-              margin-bottom: 0;
-            }
-
-            .column-meta-stats,
-            .column-meta-time {
-              display: inline-flex;
-            }
-
-            .column-meta-time {
-              margin-left: 16px;
-            }
-
-            .column-meta-time::before {
+            &::before {
               content: "•";
               margin-right: 8px;
               color: var(--el-text-color-placeholder);
+            }
+          }
+
+          // 移动端双行显示
+          @media (max-width: 768px) {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+
+            .column-meta-time::before {
+              display: none;
             }
           }
         }

@@ -42,6 +42,22 @@ export const addFavorite = (data) => {
 };
 
 /**
+ * 更新收藏夹
+ * @param {Object} data 收藏夹信息
+ * @param {number} data.id 收藏夹ID
+ * @param {string} data.name 收藏夹名称
+ * @param {number} data.showStatus 展示状态 0-公开 1-私密
+ * @returns {Promise} 返回操作结果
+ */
+export const updateFavorite = (data) => {
+  return request({
+    url: "/favorite/update",
+    method: "put",
+    data,
+  });
+};
+
+/**
  * 将文章添加到收藏夹
  * @param {number} articleId 文章ID
  * @param {number} favoriteId 收藏夹ID

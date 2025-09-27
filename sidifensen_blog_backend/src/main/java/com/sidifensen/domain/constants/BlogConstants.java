@@ -82,12 +82,14 @@ public class BlogConstants {
     // 阅读记录相关错误信息
     public static final String UpdateArticleReadCountError = "更新文章阅读数失败";
     public static final String SaveReadRecordError = "保存阅读记录失败";
+    public static final String GetUserHistoryError = "获取用户浏览历史失败";
 
     // 收藏夹相关错误信息
     public static final String NotFoundFavorite = "收藏夹不存在";
     public static final String CannotHandleOthersFavorite = "不能操作别人的收藏夹";
     public static final String CannotAccessPrivateFavorite = "无权限访问私密收藏夹";
     public static final String AddFavoriteError = "添加收藏夹失败";
+    public static final String UpdateFavoriteError = "更新收藏夹失败";
     public static final String FavoriteNameRequired = "收藏夹名称不能为空";
     public static final String AddArticleToFavoriteError = "添加文章到收藏夹失败";
     public static final String FavoriteIdRequired = "收藏夹ID不能为空";

@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="visible" :title="isAddingFavorite ? '新增收藏夹' : '收藏到'" :width="dialogWidth" :before-close="handleClose" @closed="handleDialogClosed" class="favorite-dialog" top="7vh" :close-on-click-modal="false">
+  <el-dialog v-model="visible" :title="isAddingFavorite ? '新增收藏夹' : '收藏到'" :width="dialogWidth" :before-close="handleClose" @closed="handleDialogClosed" class="favorite-dialog" top="7vh" :lock-scroll="false" :close-on-click-modal="false">
     <!-- 新增收藏夹表单 -->
     <div v-if="isAddingFavorite" class="add-favorite-form">
       <el-form :model="favoriteForm" :rules="favoriteRules" ref="favoriteFormRef" label-width="80px">

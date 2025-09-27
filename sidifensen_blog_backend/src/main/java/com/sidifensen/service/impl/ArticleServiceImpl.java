@@ -44,7 +44,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.Objects;
 
 /**
  * <p>
@@ -341,19 +340,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         Boolean isLiked = likeService.isLiked(LikeTypeEnum.ARTICLE.getCode(), articleId);
         articleVo.setIsLiked(isLiked);
-
-        // TODO: 添加收藏状态查询（需要实现收藏服务）
-        // Boolean isCollected = collectService.isCollectedByUser(currentUserId,
-        // articleId);
-        // articleVo.setIsCollected(isCollected);
-        articleVo.setIsCollected(false); // 暂时设置为false
-
         return articleVo;
     }
 
     @Override
     public void incrReadCount(Integer articleId) {
-        // 获取当前用户ID（可能为空，表示未登录用户）
+        // 获取当前用户ID
         Integer userId = SecurityUtils.getUserId() == 0 ? null : SecurityUtils.getUserId();
 
         // 获取客户端IP地址

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.AddFavoriteDto;
+import com.sidifensen.domain.dto.UpdateFavoriteDto;
 import com.sidifensen.domain.entity.Article;
 import com.sidifensen.domain.entity.ArticleFavorite;
 import com.sidifensen.domain.entity.Favorite;
@@ -62,6 +63,30 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
             throw new BlogException(BlogConstants.AddFavoriteError);
         }
 
+    }
+
+    @Override
+    public void updateFavorite(UpdateFavoriteDto updateFavoriteDto) {
+        // 校验收藏夹是否存在
+        Favorite existingFavorite = this.getById(updateFavoriteDto.getId());
+        if (existingFavorite == null) {
+            throw new BlogException(BlogConstants.NotFoundFavorite);
+        }
+
+        // 检查收藏夹是否属于当前用户
+        Integer currentUserId = SecurityUtils.getUserId();
+        if (!existingFavorite.getUserId().equals(currentUserId)) {
+            throw new BlogException(BlogConstants.CannotHandleOthersFavorite);
+        }
+
+        // 更新收藏夹信息
+        Favorite favorite = new Favorite();
+        BeanUtils.copyProperties(updateFavoriteDto, favorite);
+
+        boolean result = favoriteMapper.updateById(favorite) > 0;
+        if (!result) {
+            throw new BlogException(BlogConstants.UpdateFavoriteError);
+        }
     }
 
     @Override

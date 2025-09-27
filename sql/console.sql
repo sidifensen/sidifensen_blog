@@ -173,20 +173,20 @@ create table tag
 
 create table `column`
 (
-    id            int primary key auto_increment comment '专栏id',
-    user_id       int         not null comment '用户id',
-    sort          int         not null comment '排序',
-    name          varchar(30) not null comment '专栏名称',
-    description   varchar(200) comment '专栏描述',
-    cover_url     varchar(400) comment '专栏封面',
-    show_status   tinyint     not null default 0 comment '展示状态 0-公开 1-私密',
-    examine_status tinyint     not null default 0 comment '审核状态 0-待审核 1-审核通过 2-审核未通过',  
-    focus_count   int         not null default 0 comment '关注数',
-    article_count int         not null default 0 comment '文章数',
-    create_time   datetime    not null comment '创建时间',
-    update_time   datetime    not null comment '更新时间',
-    is_deleted    tinyint     not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index idx_user_id_examine_status (user_id,examine_status),
+    id             int primary key auto_increment comment '专栏id',
+    user_id        int         not null comment '用户id',
+    sort           int         not null comment '排序',
+    name           varchar(30) not null comment '专栏名称',
+    description    varchar(200) comment '专栏描述',
+    cover_url      varchar(400) comment '专栏封面',
+    show_status    tinyint     not null default 0 comment '展示状态 0-公开 1-私密',
+    examine_status tinyint     not null default 0 comment '审核状态 0-待审核 1-审核通过 2-审核未通过',
+    focus_count    int         not null default 0 comment '关注数',
+    article_count  int         not null default 0 comment '文章数',
+    create_time    datetime    not null comment '创建时间',
+    update_time    datetime    not null comment '更新时间',
+    is_deleted     tinyint     not null default 0 comment '是否删除 0-未删除 1-已删除',
+    index idx_user_id_examine_status (user_id, examine_status),
 );
 
 create table article_column
@@ -253,17 +253,13 @@ create table article_favorite
 
 create table history
 (
-    id          int primary key auto_increment comment '历史id',
-    article_id  int      not null comment '文章id',
-    user_id     int               default null comment '用户id',
-    ip_address  varchar(64)       default null comment '访客IP地址',
-    fingerprint varchar(32)       default null comment '浏览器指纹',
-    view_time   datetime not null comment '浏览时间',
-    is_deleted  tinyint  not null default 0 comment '是否删除 0-未删除 1-已删除',
+    id         int primary key auto_increment comment '历史id',
+    article_id int      not null comment '文章id',
+    user_id    int      not null comment '用户id',
+    view_time  datetime not null comment '浏览时间',
+    is_deleted tinyint  not null default 0 comment '是否删除 0-未删除 1-已删除',
     -- 核心业务查询索引：登录用户去重检查
     index idx_article_user (article_id, user_id),
-    -- 核心业务查询索引：未登录用户指纹去重检查
-    index idx_article_fingerprint (article_id, fingerprint),
     -- 用户查询索引：查询某用户的浏览历史
     index idx_user_view_time (user_id, view_time desc)
 );
