@@ -36,4 +36,11 @@ public interface HistoryService extends IService<History> {
      */
     PageVo<List<HistoryVo>> getUserHistoryList(Integer pageNum, Integer pageSize);
 
+    /**
+     * 清除当前用户的所有浏览记录
+     * 
+     * @return 清除的记录数量
+     */
+    int clearUserHistory();
+
 }

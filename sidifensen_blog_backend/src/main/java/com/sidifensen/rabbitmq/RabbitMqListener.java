@@ -66,5 +66,22 @@ public class RabbitMqListener {
         log.info("成功发送邮箱给管理员");
     }
 
+    // 友链审核通过通知
+    @RabbitListener(bindings = @QueueBinding(
+            exchange = @Exchange(RabbitMQConstants.Link_Approval_Exchange),
+            key = RabbitMQConstants.Link_Approval_Routing_Key,
+            value = @Queue(RabbitMQConstants.Link_Approval_Queue)))
+    public void receiveLinkApprovalEmail(Map<String, Object> message) {
+        log.info("消费者接收到友链审核通过邮件发送请求：{}", message);
+        
+        String email = (String) message.get("email");
+        String text = (String) message.get("text");
+        
+        emailUtils.sendHtmlMail(email, MailEnum.EXAMINE.getSubject(), MailEnum.EXAMINE.getTemplateName(), 
+                Map.of("text", text, "frontendUserHost", frontendUserHost));
+        
+        log.info("成功发送友链审核通过邮件给{}", email);
+    }
+
 
 }

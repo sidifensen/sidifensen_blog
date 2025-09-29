@@ -44,4 +44,22 @@ public class RabbitMQConfig {
                 .with(RabbitMQConstants.Email_Routing_Key).noargs();
     }
 
+    @Bean
+    public Exchange linkApprovalExchange() {
+        return new DirectExchange(RabbitMQConstants.Link_Approval_Exchange, true, false);
+    }
+
+    @Bean
+    public Queue linkApprovalQueue() {
+        return new Queue(RabbitMQConstants.Link_Approval_Queue, true, false, false);
+    }
+
+    @Bean
+    public Binding bindingLinkApprovalQueueToExchange() {
+        return BindingBuilder
+                .bind(linkApprovalQueue())
+                .to(linkApprovalExchange())
+                .with(RabbitMQConstants.Link_Approval_Routing_Key).noargs();
+    }
+
 }

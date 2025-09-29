@@ -32,7 +32,7 @@
       <Dark />
       <div v-if="user" class="user-info">
         <el-text size="large" class="nickname">{{ user.nickname }}</el-text>
-        <el-dropdown>
+        <el-dropdown placement="bottom-end">
           <el-avatar v-if="user.avatar" style="cursor: pointer" :size="40" :src="user.avatar" />
           <el-avatar v-else style="cursor: pointer" :size="40" :icon="UserFilled" />
           <template #dropdown>
@@ -364,8 +364,8 @@ onBeforeUnmount(() => {
 }
 
 .user-dropdown-menu {
-  min-width: 250px !important;
-  padding: 16px !important;
+  min-width: 220px !important;
+  padding: 15px !important;
 
   // 用户信息区域
   .user-info-section {

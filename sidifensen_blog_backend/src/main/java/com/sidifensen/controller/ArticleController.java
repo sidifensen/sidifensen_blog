@@ -110,18 +110,6 @@ public class ArticleController {
     }
 
     /**
-     * 增加文章阅读量
-     *
-     * @param articleId 文章ID
-     * @return 增加阅读量结果
-     */
-    @PostMapping("/incrReadCount/{articleId}")
-    public Result incrReadCount(@PathVariable Integer articleId) {
-        articleService.incrReadCount(articleId);
-        return Result.success();
-    }
-
-    /**
      * 新增文章
      *
      * @return 新增文章

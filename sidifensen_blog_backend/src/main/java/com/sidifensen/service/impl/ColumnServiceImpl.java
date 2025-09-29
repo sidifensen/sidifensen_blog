@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
-import com.sidifensen.domain.constants.MDCConstants;
 import com.sidifensen.domain.dto.ColumnArticleSortDto;
 import com.sidifensen.domain.dto.ColumnDto;
 import com.sidifensen.domain.dto.ColumnFilterDto;
@@ -27,22 +26,20 @@ import com.sidifensen.mapper.ColumnMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.ArticleColumnService;
 import com.sidifensen.service.ColumnService;
-import com.sidifensen.utils.MDCUtils;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -74,8 +71,9 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
 
     /**
      * 为专栏管理VO设置作者昵称
+     *
      * @param userColumnManageVos 专栏管理VO列表
-     * @param columns 对应的专栏实体列表
+     * @param columns             对应的专栏实体列表
      */
     private void setAuthorNicknames(List<UserColumnManageVo> userColumnManageVos, List<Column> columns) {
         if (ObjectUtil.isEmpty(userColumnManageVos) || ObjectUtil.isEmpty(columns)) {
@@ -314,10 +312,10 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
         }
 
         // 3. 批量更新排序 
-        
+
         Map<Integer, ArticleColumn> articleColumnMap = existingArticleColumns.stream()
                 .collect(Collectors.toMap(ArticleColumn::getArticleId, Function.identity()));
-        
+
         // 构建批量更新列表
         List<ArticleColumn> updateList = new ArrayList<>();
         for (ColumnArticleSortDto sortDto : sortList) {
@@ -328,7 +326,7 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
                 updateList.add(articleColumn);
             }
         }
-        
+
         if (!updateList.isEmpty()) {
             articleColumnService.updateBatchById(updateList);
         }

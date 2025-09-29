@@ -12,7 +12,7 @@ import java.util.Date;
  * 浏览历史实体类
  * 用于记录登录用户对文章的浏览历史，防止重复增加阅读量
  * 注：访客浏览记录仅存储在Redis缓存中，不存储到数据库
- * 
+ *
  * @author sidifensen
  * @since 2025-09-19
  */
@@ -43,7 +43,7 @@ public class History implements Serializable {
     /**
      * 浏览时间
      */
-    @TableField(fill = FieldFill.INSERT)
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date viewTime;
 
     /**

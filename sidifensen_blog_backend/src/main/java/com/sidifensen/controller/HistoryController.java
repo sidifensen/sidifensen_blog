@@ -6,6 +6,7 @@ import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.service.HistoryService;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,8 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 浏览历史前端控制器
- *
  * @author sidifensen
  * @since 2025-09-27
  */
@@ -36,6 +35,17 @@ public class HistoryController {
     public Result<PageVo<List<HistoryVo>>> getUserHistoryList(@NotNull Integer pageNum, @NotNull Integer pageSize) {
         PageVo<List<HistoryVo>> historyPageVo = historyService.getUserHistoryList(pageNum, pageSize);
         return Result.success(historyPageVo);
+    }
+
+    /**
+     * 清除当前用户的所有浏览记录
+     *
+     * @return 清除的记录数量
+     */
+    @DeleteMapping("/clear")
+    public Result<Integer> clearUserHistory() {
+        int clearedCount = historyService.clearUserHistory();
+        return Result.success(clearedCount);
     }
 
 }

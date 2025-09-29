@@ -33,6 +33,7 @@ public class SecurityConstants {
             "/article/user/{userId:\\d+}/statistics",
             "/column/list/{userId:\\d+}",
             "/column/detail/{columnId:\\d+}",
+            "/link/list",
             "/favicon.ico"
     };
 

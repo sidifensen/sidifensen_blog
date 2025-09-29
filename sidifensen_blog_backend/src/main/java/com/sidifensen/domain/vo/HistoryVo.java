@@ -9,7 +9,7 @@ import java.util.Date;
 
 /**
  * 浏览历史视图对象
- * 
+ *
  * @author sidifensen
  * @since 2025-09-27
  */
@@ -41,11 +41,6 @@ public class HistoryVo implements Serializable {
     private String coverUrl;
 
     /**
-     * 文章描述
-     */
-    private String description;
-
-    /**
      * 文章作者ID
      */
     private Integer authorId;
@@ -61,22 +56,8 @@ public class HistoryVo implements Serializable {
     private String authorAvatar;
 
     /**
-     * 阅读量
-     */
-    private Integer readCount;
-
-    /**
-     * 点赞数
-     */
-    private Integer likeCount;
-
-    /**
      * 浏览时间
      */
     private Date viewTime;
 
-    /**
-     * 文章创建时间
-     */
-    private Date createTime;
 }

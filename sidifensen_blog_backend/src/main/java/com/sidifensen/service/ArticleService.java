@@ -40,9 +40,6 @@ public interface ArticleService extends IService<Article> {
     // 获取文章详情
     ArticleVo getArticle(Integer articleId);
 
-    // 增加文章阅读量
-    void incrReadCount(Integer articleId);
-
     // 新增文章
     void addArticle(ArticleDto articleDto);
 

@@ -25,7 +25,7 @@ const router = createRouter({
         {
           path: "link",
           name: "Link",
-          component: () => import("@/components/404.vue"),
+          component: () => import("@/views/Link/index.vue"),
           meta: { title: "友链" },
         },
         {

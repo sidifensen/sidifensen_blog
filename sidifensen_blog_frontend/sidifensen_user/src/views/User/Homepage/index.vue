@@ -16,6 +16,8 @@
                 <el-tab-pane label="专栏" name="column" />
                 <el-tab-pane label="收藏" name="favorite" />
                 <el-tab-pane label="关注" name="follow" />
+                <!-- 历史标签页只对当前用户显示 -->
+                <el-tab-pane v-if="isCurrentUser" label="历史" name="history" />
               </el-tabs>
             </div>
 
@@ -46,6 +48,9 @@
 
                 <!-- 关注列表 -->
                 <FollowList v-else-if="activeTab === 'follow'" key="follow" />
+
+                <!-- 历史列表 -->
+                <HistoryList v-else-if="activeTab === 'history'" key="history" ref="historyListRef" />
               </transition>
             </div>
           </div>
@@ -99,6 +104,7 @@ import ArticleList from "./components/ArticleList.vue";
 import ColumnList from "./components/ColumnList.vue";
 import FavoriteList from "./components/FavoriteList.vue";
 import FollowList from "./components/FollowList.vue";
+import HistoryList from "./components/HistoryList.vue";
 
 // 路由和状态管理
 const route = useRoute();
@@ -132,6 +138,9 @@ const showBackToTop = ref(false); // 是否显示返回顶部按钮
 
 // 每页数据量
 const pageSize = ref(10);
+
+// 历史组件引用
+const historyListRef = ref(null);
 
 // 计算属性
 const isCurrentUser = computed(() => {
@@ -378,6 +387,8 @@ const handleTabChange = (tabName) => {
       fetchFavoriteList();
     }
   } else if (tabName === "follow") {
+  } else if (tabName === "history") {
+    // 历史标签页不需要预加载数据，HistoryList组件会自己处理数据加载
   }
 };
 
@@ -480,8 +491,8 @@ const handlePageScroll = () => {
   // 控制返回顶部按钮的显示/隐藏
   showBackToTop.value = window.scrollY > 200;
 
-  // 收藏夹标签页不需要无限滚动
-  if (activeTab.value === "favorite") {
+  // 收藏夹和关注标签页不需要无限滚动
+  if (activeTab.value === "favorite" || activeTab.value === "follow") {
     return;
   }
 
@@ -501,6 +512,11 @@ const handlePageScroll = () => {
       if (!columnLoading.value && !loadingMore.value && columnHasMore.value) {
         fetchColumnList();
       }
+    } else if (activeTab.value === "history") {
+      // 历史页面的无限滚动
+      if (historyListRef.value) {
+        historyListRef.value.loadMore();
+      }
     }
   }
 };
@@ -518,7 +534,12 @@ watch(
       favoriteList.value = [];
       hasMore.value = true;
       columnHasMore.value = true;
-      activeTab.value = "article"; // 重置到文章标签页
+      // 重置标签页：如果当前是历史标签且新用户不是当前用户，则切换到文章标签
+      if (activeTab.value === "history" && userStore.user?.id !== parseInt(newUserId)) {
+        activeTab.value = "article";
+      } else if (activeTab.value !== "history") {
+        activeTab.value = "article"; // 其他情况重置到文章标签页
+      }
       isFollowed.value = false; // 重置关注状态
 
       fetchUserInfo();
@@ -531,10 +552,6 @@ watch(
 
 // 组件挂载
 onMounted(() => {
-  fetchUserInfo();
-  fetchArticleStatistics();
-  fetchArticleList(true);
-
   // 添加页面滚动监听
   window.addEventListener("scroll", handlePageScroll);
 });

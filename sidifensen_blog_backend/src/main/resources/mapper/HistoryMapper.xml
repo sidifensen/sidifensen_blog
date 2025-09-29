@@ -2,4 +2,28 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sidifensen.mapper.HistoryMapper">
 
+    <!-- 分页查询用户浏览历史（关联文章和作者信息） -->
+    <select id="getUserHistoryList" resultType="com.sidifensen.domain.vo.HistoryVo">
+        SELECT h.id,
+               h.article_id as articleId,
+               h.view_time  as viewTime,
+               a.title,
+               a.cover_url  as coverUrl,
+               u.id         as authorId,
+               u.nickname   as authorNickname,
+               u.avatar     as authorAvatar
+        FROM history h
+                 INNER JOIN
+             article a ON h.article_id = a.id
+                 AND a.examine_status = 1
+                 AND a.edit_status = 0
+                 AND a.is_deleted = 0
+                 INNER JOIN
+             sys_user u ON a.user_id = u.id
+                 AND u.is_deleted = 0
+        WHERE h.user_id = #{userId}
+          AND h.is_deleted = 0
+        ORDER BY h.view_time DESC
+    </select>
+
 </mapper>

@@ -4,7 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.config.SidifensenConfig;
@@ -88,9 +87,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Resource
     private RedisComponent redisComponent;
-
-    @Resource
-    private ColumnService columnService;
 
     @Resource
     private CommentService commentService;
@@ -340,29 +336,36 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         Boolean isLiked = likeService.isLiked(LikeTypeEnum.ARTICLE.getCode(), articleId);
         articleVo.setIsLiked(isLiked);
+
+        // 获取当前用户ID
+        Integer userId = SecurityUtils.getUserId() == 0 ? null : SecurityUtils.getUserId();
+        // 获取客户端IP地址
+        String ipAddress = ipUtils.getIp();
+        // 异步增加阅读量，不阻塞用户获取文章详情
+        executorService.execute(() -> {
+            try {
+                this.incrReadCount(articleId, userId, ipAddress);
+            } catch (Exception e) {
+                log.error("异步增加文章阅读量失败，文章ID: {}, 错误: {}", articleId, e.getMessage(), e);
+            }
+        });
+
         return articleVo;
     }
 
-    @Override
-    public void incrReadCount(Integer articleId) {
-        // 获取当前用户ID
-        Integer userId = SecurityUtils.getUserId() == 0 ? null : SecurityUtils.getUserId();
-
-        // 获取客户端IP地址
-        String ipAddress = ipUtils.getIp();
-
+    private void incrReadCount(Integer articleId, Integer userId, String ipAddress) {
         // 检查并记录浏览，如果用户/访客已浏览过，则不增加阅读量
         boolean shouldIncrement = historyService.checkAndRecordRead(
                 articleId, userId, ipAddress);
 
         if (shouldIncrement) {
-            // 用户/访客首次阅读，增加阅读量
-            LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<Article>()
+            // 用户/访客首次阅读，增加阅读量（使用原子自增操作）
+            boolean updateResult = this.lambdaUpdate()
                     .eq(Article::getId, articleId)
-                    .setSql("read_count = read_count + 1");
+                    .setIncrBy(Article::getReadCount, 1)
+                    .update();
 
-            int updateResult = articleMapper.update(null, updateWrapper);
-            if (updateResult <= 0) {
+            if (!updateResult) {
                 log.error("更新文章阅读量失败，文章ID: {}", articleId);
                 throw new BlogException(BlogConstants.UpdateArticleReadCountError);
             }

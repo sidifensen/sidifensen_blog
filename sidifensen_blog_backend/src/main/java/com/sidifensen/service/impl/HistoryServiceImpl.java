@@ -4,15 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
-import com.sidifensen.domain.entity.Article;
 import com.sidifensen.domain.entity.History;
-import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.vo.HistoryVo;
 import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.exception.BlogException;
-import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.HistoryMapper;
-import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.HistoryService;
 import com.sidifensen.utils.FingerprintUtils;
@@ -43,12 +39,6 @@ public class HistoryServiceImpl extends ServiceImpl<HistoryMapper, History> impl
     @Resource
     private HistoryMapper historyMapper;
 
-    @Resource
-    private ArticleMapper articleMapper;
-
-    @Resource
-    private SysUserMapper sysUserMapper;
-
     @Override
     public boolean checkAndRecordRead(Integer articleId, Integer userId, String ipAddress) {
         try {
@@ -73,6 +63,10 @@ public class HistoryServiceImpl extends ServiceImpl<HistoryMapper, History> impl
 
             // 如果Redis中已存在该标识，说明已浏览过
             if (redisComponent.hasReadArticle(articleId, identifier)) {
+                // 对于登录用户，需要更新数据库中的浏览时间
+                if (userId != null) {
+                    updateViewTime(articleId, userId);
+                }
                 return false;
             }
 
@@ -84,8 +78,9 @@ public class HistoryServiceImpl extends ServiceImpl<HistoryMapper, History> impl
                         .eq(History::getUserId, userId));
 
                 if (count > 0) {
-                    // 数据库中存在记录，但Redis中不存在，重新加入Redis
+                    // 数据库中存在记录，但Redis中不存在，重新加入Redis，并更新浏览时间
                     redisComponent.recordArticleRead(articleId, identifier);
+                    updateViewTime(articleId, userId);
                     return false;
                 }
 
@@ -111,106 +106,64 @@ public class HistoryServiceImpl extends ServiceImpl<HistoryMapper, History> impl
         }
     }
 
+
+    /**
+     * 更新登录用户的浏览时间
+     * @param articleId 文章ID
+     * @param userId    用户ID
+     */
+    private void updateViewTime(Integer articleId, Integer userId) {
+        try {
+            boolean updateResult = this.lambdaUpdate()
+                    .eq(History::getArticleId, articleId)
+                    .eq(History::getUserId, userId)
+                    .update(new History());
+
+            if (!updateResult) {
+                log.warn("更新浏览时间失败，文章ID: {}, 用户ID: {}", articleId, userId);
+            }
+        } catch (Exception e) {
+            log.error("更新浏览时间异常，文章ID: {}, 用户ID: {}, 错误: {}", articleId, userId, e.getMessage(), e);
+        }
+    }
+
     @Override
     public PageVo<List<HistoryVo>> getUserHistoryList(Integer pageNum, Integer pageSize) {
         try {
             // 获取当前登录用户ID
             Integer userId = SecurityUtils.getUserId();
-            
+
             // 创建分页对象
-            Page<History> page = new Page<>(pageNum, pageSize);
-            
-            // 查询用户浏览历史，按浏览时间倒序
-            LambdaQueryWrapper<History> historyWrapper = new LambdaQueryWrapper<History>()
-                    .eq(History::getUserId, userId)
-                    .orderByDesc(History::getViewTime);
-            
-            // 执行分页查询
-            Page<History> historyPage = this.page(page, historyWrapper);
-            List<History> historyList = historyPage.getRecords();
-            
-            // 如果没有浏览历史，直接返回空结果
-            if (historyList.isEmpty()) {
-                return new PageVo<>(List.of(), 0L);
-            }
-            
-            // 提取文章ID列表
-            List<Integer> articleIds = historyList.stream()
-                    .map(History::getArticleId)
-                    .distinct()
-                    .toList();
-            
-            // 批量查询文章信息（只查询已审核通过的文章）
-            LambdaQueryWrapper<Article> articleWrapper = new LambdaQueryWrapper<Article>()
-                    .in(Article::getId, articleIds)
-                    .eq(Article::getExamineStatus, 1); // 1表示审核通过
-            List<Article> articles = articleMapper.selectList(articleWrapper);
-            
-            // 提取作者ID列表
-            List<Integer> authorIds = articles.stream()
-                    .map(Article::getUserId)
-                    .distinct()
-                    .toList();
-            
-            // 批量查询作者信息
-            final List<SysUser> authors;
-            if (!authorIds.isEmpty()) {
-                authors = sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>()
-                        .in(SysUser::getId, authorIds));
-            } else {
-                authors = List.of();
-            }
-            
-            // 构建VO结果列表
-            List<HistoryVo> historyVoList = historyList.stream()
-                    .map(history -> {
-                        // 查找对应的文章
-                        Article article = articles.stream()
-                                .filter(a -> a.getId().equals(history.getArticleId()))
-                                .findFirst()
-                                .orElse(null);
-                        
-                        // 如果文章不存在或已被删除，跳过该历史记录
-                        if (article == null) {
-                            return null;
-                        }
-                        
-                        // 查找对应的作者
-                        SysUser author = authors.stream()
-                                .filter(u -> u.getId().equals(article.getUserId()))
-                                .findFirst()
-                                .orElse(null);
-                        
-                        // 构建HistoryVo
-                        HistoryVo historyVo = new HistoryVo();
-                        historyVo.setId(history.getId());
-                        historyVo.setArticleId(article.getId());
-                        historyVo.setTitle(article.getTitle());
-                        historyVo.setCoverUrl(article.getCoverUrl());
-                        historyVo.setDescription(article.getDescription());
-                        historyVo.setReadCount(article.getReadCount());
-                        historyVo.setLikeCount(article.getLikeCount());
-                        historyVo.setViewTime(history.getViewTime());
-                        historyVo.setCreateTime(article.getCreateTime());
-                        
-                        // 设置作者信息
-                        if (author != null) {
-                            historyVo.setAuthorId(author.getId());
-                            historyVo.setAuthorNickname(author.getNickname());
-                            historyVo.setAuthorAvatar(author.getAvatar());
-                        }
-                        
-                        return historyVo;
-                    })
-                    .filter(vo -> vo != null) // 过滤掉空的记录
-                    .toList();
-            
+            Page<HistoryVo> page = new Page<>(pageNum, pageSize);
+
+            // 执行分页查询，使用自定义SQL一次性获取所有关联数据
+            List<HistoryVo> historyList = historyMapper.getUserHistoryList(page, userId);
+
             // 返回分页结果
-            return new PageVo<>(historyVoList, historyPage.getTotal());
-            
+            return new PageVo<>(historyList, page.getTotal());
+
         } catch (Exception e) {
             log.error("获取用户浏览历史失败，页码: {}, 页面大小: {}, 错误: {}", pageNum, pageSize, e.getMessage(), e);
             throw new BlogException(BlogConstants.GetUserHistoryError);
+        }
+    }
+
+    @Override
+    public int clearUserHistory() {
+        try {
+            // 获取当前登录用户ID
+            Integer userId = SecurityUtils.getUserId();
+
+            // 删除当前用户的所有浏览记录，直接返回删除的记录数量
+            int deletedCount = historyMapper.delete(new LambdaQueryWrapper<History>()
+                    .eq(History::getUserId, userId));
+
+            log.info("用户 {} 清除了 {} 条浏览记录", userId, deletedCount);
+            return deletedCount;
+
+        } catch (Exception e) {
+            log.error("清除用户浏览历史失败，错误: {}", e.getMessage(), e);
+            throw new BlogException(BlogConstants.ClearUserHistoryError);
         }
     }
 

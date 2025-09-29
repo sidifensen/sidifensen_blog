@@ -11,19 +11,9 @@ import com.sidifensen.domain.entity.*;
 import com.sidifensen.domain.enums.EditStatusEnum;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.enums.StatusEnum;
-import com.sidifensen.domain.vo.SysUserDetailVo;
-import com.sidifensen.domain.vo.SysUserVo;
-import com.sidifensen.domain.vo.SysUserWithArticleCountVo;
-import com.sidifensen.domain.vo.SysUserWithCommentCountVo;
-import com.sidifensen.domain.vo.SysUserWithColumnCountVo;
+import com.sidifensen.domain.vo.*;
 import com.sidifensen.exception.BlogException;
-import com.sidifensen.mapper.AlbumMapper;
-import com.sidifensen.mapper.ArticleMapper;
-import com.sidifensen.mapper.CommentMapper;
-import com.sidifensen.mapper.ColumnMapper;
-import com.sidifensen.mapper.FollowMapper;
-import com.sidifensen.mapper.PhotoMapper;
-import com.sidifensen.mapper.SysUserMapper;
+import com.sidifensen.mapper.*;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.security.SysUserDetailsService;
 import com.sidifensen.service.IpService;
@@ -270,18 +260,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         sysUserVo.setCreateTime(sysUser.getCreateTime());
         String loginAddress = processLoginAddress(sysUser.getLoginAddress());
         sysUserVo.setLoginAddress(loginAddress);
-
-        // 实时查询粉丝数量（被关注数量）
-        LambdaQueryWrapper<Follow> fansQuery = new LambdaQueryWrapper<>();
-        fansQuery.eq(Follow::getFollowedId, userId);
-        Integer fansCount = Math.toIntExact(followMapper.selectCount(fansQuery));
-        sysUserVo.setFansCount(fansCount);
-
-        // 实时查询关注数量
-        LambdaQueryWrapper<Follow> followQuery = new LambdaQueryWrapper<>();
-        followQuery.eq(Follow::getFollowerId, userId);
-        Integer followCount = Math.toIntExact(followMapper.selectCount(followQuery));
-        sysUserVo.setFollowCount(followCount);
+        sysUserVo.setFansCount(sysUser.getFansCount());
+        sysUserVo.setFollowCount(sysUser.getFollowCount());
 
         // 实时查询已发布且审核通过的文章数量
         LambdaQueryWrapper<Article> articleQuery = new LambdaQueryWrapper<>();
@@ -298,7 +278,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
      * 处理登录地址显示
      * 如果不是中国开头的，截取第一个-之前的内容
      * 如果是中国开头的，截取第二段文字（江西、上海等省份）
-     * 
+     *
      * @param loginAddress 原始登录地址，格式如：中国-广东-广州 或 美国-纽约
      * @return 处理后的地址
      */

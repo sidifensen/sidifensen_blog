@@ -275,3 +275,18 @@ create table follow
     -- 查询某用户的粉丝列表
     index idx_followed_time (followed_id, create_time desc)
 );
+
+
+create table link
+(
+    id             int primary key auto_increment comment '友链id',
+    user_id        int          not null comment '用户id',
+    name           varchar(20)  not null comment '网站名称',
+    url            varchar(100) not null comment '网站地址',
+    cover_url      varchar(100) not null comment '网站封面',
+    description    varchar(100)  not null comment '网站描述',
+    examine_status tinyint      not null default 0 comment '审核状态 0-待审核 1-审核通过 2-审核未通过',
+    email          varchar(255) not null comment '网站邮箱',
+    create_time    datetime     not null comment '创建时间',
+    is_deleted     tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除'
+);

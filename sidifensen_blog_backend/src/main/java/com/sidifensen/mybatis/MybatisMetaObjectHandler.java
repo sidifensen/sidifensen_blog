@@ -23,12 +23,13 @@ public class MybatisMetaObjectHandler implements MetaObjectHandler {
     }
 
     /**
-     * 更新时，填充 update_time 字段
+     * 更新时，填充 update_time 和 view_time 字段
      *
      * @param metaObject
      */
     @Override
     public void updateFill(MetaObject metaObject) {
+        this.strictUpdateFill(metaObject, "viewTime", Date.class, new Date());
         this.strictUpdateFill(metaObject, "updateTime", Date.class, new Date());
     }
 }

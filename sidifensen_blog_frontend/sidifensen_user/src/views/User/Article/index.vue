@@ -24,7 +24,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { ElMessage } from "element-plus";
-import { getArticleDetail, increaseReadCount } from "@/api/article";
+import { getArticleDetail } from "@/api/article";
 import { getUserInfoById } from "@/api/user";
 import UserInfoCard from "./components/UserInfoCard.vue";
 import ArticleContent from "./components/ArticleContent.vue";
@@ -60,22 +60,11 @@ const fetchArticleDetail = async () => {
     const response = await getArticleDetail(articleId);
     articleInfo.value = response.data.data;
 
-    // 文章详情获取成功后，增加阅读量
-    await increaseArticleReadCount();
+    // 注意：阅读量统计已集成到后端获取文章详情接口中，会自动异步统计，无需前端单独调用
   } catch (error) {
     ElMessage.error("获取文章详情失败");
   } finally {
     articleLoading.value = false;
-  }
-};
-
-// 增加文章阅读量
-const increaseArticleReadCount = async () => {
-  try {
-    await increaseReadCount(articleId);
-  } catch (error) {
-    // 增加阅读量失败不影响用户体验，只记录错误但不显示提示
-    console.error("增加文章阅读量失败:", error);
   }
 };
 

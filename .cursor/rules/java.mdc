@@ -1,13 +1,12 @@
 ---
 alwaysApply: true
 ---
-
 # Java Spring Boot MVC 项目规则
 
 ## 项目架构
 
 - 基于 Spring Boot 3.1.4 + Java 21 的 MVC 架构
-- 使用 MyBatis-Plus 作为 ORM 框架
+- 强制使用 MyBatis-Plus 作为 ORM 框架, 不准使用mybatis的xml
 - 采用 RESTful API 设计风格
 - 包结构遵循标准 MVC 分层架构
 - **🔧 项目启动：不需要 Cursor 帮助重新编译项目，开发者会手动重新启动项目**

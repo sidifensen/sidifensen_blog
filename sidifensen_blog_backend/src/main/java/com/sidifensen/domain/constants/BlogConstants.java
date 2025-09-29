@@ -83,6 +83,7 @@ public class BlogConstants {
     public static final String UpdateArticleReadCountError = "更新文章阅读数失败";
     public static final String SaveReadRecordError = "保存阅读记录失败";
     public static final String GetUserHistoryError = "获取用户浏览历史失败";
+    public static final String ClearUserHistoryError = "清除用户浏览历史失败";
 
     // 收藏夹相关错误信息
     public static final String NotFoundFavorite = "收藏夹不存在";
@@ -103,4 +104,16 @@ public class BlogConstants {
     public static final String FollowError = "关注失败";
     public static final String UnfollowError = "取消关注失败";
     public static final String FollowedUserIdRequired = "被关注用户ID不能为空";
+
+    // 友链相关错误信息
+    public static final String NotFoundLink = "友链不存在";
+    public static final String CannotHandleOthersLink = "不能操作别人的友链";
+    public static final String AddLinkError = "申请友链失败";
+    public static final String DeleteLinkError = "删除友链失败";
+    public static final String LinkNameRequired = "网站名称不能为空";
+    public static final String LinkUrlRequired = "网站地址不能为空";
+    public static final String LinkDescriptionRequired = "网站描述不能为空";
+    public static final String LinkEmailRequired = "网站邮箱不能为空";
+    public static final String LinkIdRequired = "友链ID不能为空";
+    public static final String GetLinkListError = "获取友链列表失败";
 }

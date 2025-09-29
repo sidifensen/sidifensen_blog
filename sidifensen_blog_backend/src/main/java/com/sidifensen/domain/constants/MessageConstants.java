@@ -11,15 +11,19 @@ import java.util.Map;
  */
 public class MessageConstants {
 
-    public static final String IMAGE_NEED_REVIEW = "图片 %d 需要人工审核";
-    public static final String ARTICLE_NEED_REVIEW = "文章 %d 需要人工审核, 原因: %s";
-    public static final String ARTICLE_AUDIT_NOT_PASS = "文章id %d 标题 %s 内容审核不通过, 原因: %s";
-    public static final String ARTICLE_AUDIT_PASS = "文章id %d 标题 %s 审核通过";
+    public static final String IMAGE_NEED_REVIEW = "图片id: %d 需要人工审核";
+    public static final String ARTICLE_NEED_REVIEW = "文章id: %d , 标题: %s 需要人工审核, 原因: %s";
+    public static final String ARTICLE_AUDIT_NOT_PASS = "文章id: %d , 标题: %s 内容审核不通过, 原因: %s";
+    public static final String ARTICLE_AUDIT_PASS = "文章id: %d , 标题: %s 审核通过";
 
     // 评论相关消息模板
-    public static final String COMMENT_NEED_REVIEW = "评论 %d 需要人工审核, 原因: %s";
-    public static final String COMMENT_AUDIT_NOT_PASS = "评论id %d 内容审核不通过, 原因: %s";
-    public static final String COMMENT_AUDIT_PASS = "评论id %d 审核通过";
+    public static final String COMMENT_NEED_REVIEW = "评论id: %d 需要人工审核, 原因: %s";
+    public static final String COMMENT_AUDIT_NOT_PASS = "评论id: %d 内容审核不通过, 原因: %s";
+    public static final String COMMENT_AUDIT_PASS = "评论id: %d 审核通过";
+
+    // 友链相关消息模板
+    public static final String LINK_NEED_REVIEW = "友链id: %d , 名称: %s 需要审核";
+    public static final String LINK_AUDIT_PASS = "友链网址: %s 审核通过";
 
     /**
      * 图片需要审核的消息
@@ -113,6 +117,30 @@ public class MessageConstants {
         Map<String, Object> map = new HashMap<>();
         map.put("text", text);
         return toJson(map);
+    }
+
+    /**
+     * 友链需要审核的消息
+     *
+     * @param linkId 友链id
+     * @param name   友链名称
+     * @return 格式化后的消息
+     */
+    public static String LinkNeedReview(Integer linkId, String name) {
+        String text = String.format(LINK_NEED_REVIEW, linkId, name);
+        Map<String, Object> map = new HashMap<>();
+        map.put("text", text);
+        return toJson(map);
+    }
+
+    /**
+     * 友链审核通过的消息
+     *
+     * @param url 友链网址
+     * @return 格式化后的消息
+     */
+    public static String LinkAuditPass(String url) {
+        return String.format(LINK_AUDIT_PASS, url);
     }
 
     /**
