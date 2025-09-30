@@ -73,7 +73,7 @@
             </template>
           </el-table-column>
           <el-table-column prop="userNickname" label="申请用户" width="120" />
-          <el-table-column prop="email" label="联系邮箱" width="150">
+          <el-table-column prop="email" label="联系邮箱" width="180">
             <template #default="{ row }">
               <el-tooltip :content="row.email" placement="top-start">
                 <div class="link-email">{{ row.email }}</div>
@@ -88,7 +88,7 @@
             </template>
           </el-table-column>
           <el-table-column prop="createTime" label="创建时间" sortable width="110" />
-          <el-table-column label="操作" width="280">
+          <el-table-column label="操作" width="230">
             <template #default="{ row }">
               <div class="table-actions">
                 <el-button type="primary" @click="handleAuditLink(row.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
@@ -1012,7 +1012,7 @@ onUnmounted(() => {
           // 友链操作按钮
           .link-actions {
             display: flex;
-            gap: px;
+            gap: 6px;
             justify-content: center;
             padding-top: 8px;
             border-top: 1px solid #f0f0f0;

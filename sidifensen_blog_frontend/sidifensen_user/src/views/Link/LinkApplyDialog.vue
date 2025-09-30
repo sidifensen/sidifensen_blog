@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="dialogVisible" title="申请友链" width="500px" :before-close="handleClose" class="link-apply-dialog">
+  <el-dialog v-model="dialogVisible" title="申请友链" width="500px" :before-close="handleClose"class="link-apply-dialog">
     <!-- 对话框头部说明 -->
     <div class="dialog-header">
       <el-icon class="header-icon"><Link /></el-icon>

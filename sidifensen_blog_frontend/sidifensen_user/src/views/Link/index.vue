@@ -108,6 +108,13 @@
                   <el-icon><Link /></el-icon>
                   <span>{{ formatUrl(link.url) }}</span>
                 </div>
+
+                <!-- 删除按钮 - 仅当前用户的友链显示 -->
+                <div v-if="isCurrentUserLink(link)" class="delete-action" @click.stop>
+                  <el-button type="danger" size="small" circle class="delete-btn" @click="handleDeleteLink(link)" :loading="deletingLinkId === link.id">
+                    <el-icon><Delete /></el-icon>
+                  </el-button>
+                </div>
               </div>
             </div>
           </div>
@@ -137,8 +144,8 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { useRouter } from "vue-router";
-import { Link, Plus, View, Picture, Loading, DocumentRemove } from "@element-plus/icons-vue";
-import { getLinkList } from "@/api/link";
+import { Link, Plus, View, Picture, Loading, DocumentRemove, Delete } from "@element-plus/icons-vue";
+import { getLinkList, deleteLink } from "@/api/link";
 import LinkApplyDialog from "@/views/Link/LinkApplyDialog.vue";
 import { useUserStore } from "@/stores/userStore";
 
@@ -160,10 +167,18 @@ const hasMore = ref(true);
 // 友链数据
 const linkList = ref([]);
 
+// 删除相关状态
+const deletingLinkId = ref(null);
+
 // 计算属性 - 判断用户是否已登录
 const isUserLoggedIn = computed(() => {
   return userStore.user && userStore.user.id;
 });
+
+// 判断是否为当前用户的友链
+const isCurrentUserLink = (link) => {
+  return userStore.user && userStore.user.id === link.userId;
+};
 
 // 获取友链列表
 const fetchLinkList = async (reset = false) => {
@@ -242,9 +257,6 @@ const handleApplySuccess = () => {
 const visitLink = (link) => {
   // 在新窗口打开链接
   window.open(link.url, "_blank", "noopener,noreferrer");
-
-  // 这里可以添加访问统计逻辑
-  console.log("访问友链:", link.name, link.url);
 };
 
 // 格式化URL显示
@@ -254,6 +266,40 @@ const formatUrl = (url) => {
     return urlObj.hostname;
   } catch {
     return url;
+  }
+};
+
+// 删除友链
+const handleDeleteLink = async (link) => {
+  try {
+    await ElMessageBox.confirm(`确定要删除友链 "${link.name}" 吗？此操作不可恢复。`, "确认删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+      confirmButtonClass: "el-button--danger",
+      lockScroll: false,
+    });
+
+    // 设置删除状态
+    deletingLinkId.value = link.id;
+
+    // 调用删除API
+    await deleteLink(link.id);
+
+    // 从列表中移除已删除的友链
+    linkList.value = linkList.value.filter((item) => item.id !== link.id);
+
+    // 更新总数
+    total.value = Math.max(0, total.value - 1);
+
+    ElMessage.success("友链删除成功");
+  } catch (error) {
+    if (error !== "cancel") {
+      ElMessage.error("删除友链失败");
+      console.error("删除友链失败:", error);
+    }
+  } finally {
+    deletingLinkId.value = null;
   }
 };
 
@@ -272,7 +318,7 @@ onUnmounted(() => {
 });
 
 // 设置页面标题
-document.title = "友情链接 - 思递分森的博客";
+document.title = "友情链接";
 </script>
 
 <style lang="scss" scoped>
@@ -546,6 +592,40 @@ document.title = "友情链接 - 思递分森的博客";
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
+            }
+          }
+
+          // 删除按钮区域
+          .delete-action {
+            position: absolute;
+            right: 12px;
+            bottom: 12px;
+            z-index: 10;
+
+            .delete-btn {
+              width: 32px;
+              height: 32px;
+              background: rgba(245, 108, 108, 0.9);
+              border: none;
+              backdrop-filter: blur(4px);
+              transition: all 0.3s ease;
+              opacity: 0.8;
+
+              &:hover {
+                opacity: 1;
+                transform: scale(1.1);
+                background: var(--el-color-danger);
+                box-shadow: 0 4px 12px rgba(245, 108, 108, 0.4);
+              }
+
+              &:active {
+                transform: scale(0.95);
+              }
+
+              .el-icon {
+                font-size: 14px;
+                color: white;
+              }
             }
           }
         }

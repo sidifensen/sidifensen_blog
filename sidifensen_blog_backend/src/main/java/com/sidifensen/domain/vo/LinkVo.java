@@ -17,6 +17,11 @@ public class LinkVo {
     private Integer id;
 
     /**
+     * 用户id
+     */
+    private Integer userId;
+
+    /**
      * 网站名称
      */
     private String name;

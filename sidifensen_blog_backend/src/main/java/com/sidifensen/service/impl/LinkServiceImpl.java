@@ -112,31 +112,25 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
 
     @Override
     public void deleteLink(Integer linkId) {
-        try {
-            // 获取当前登录用户ID
-            Integer currentUserId = SecurityUtils.getUserId();
-            if (ObjectUtil.isEmpty(currentUserId) || currentUserId == 0) {
-                throw new BlogException(BlogConstants.LoginRequired);
-            }
+        // 获取当前登录用户ID
+        Integer currentUserId = SecurityUtils.getUserId();
+        if (ObjectUtil.isEmpty(currentUserId) || currentUserId == 0) {
+            throw new BlogException(BlogConstants.LoginRequired);
+        }
 
-            // 查询友链是否存在
-            Link link = this.getById(linkId);
-            if (ObjectUtil.isEmpty(link)) {
-                throw new BlogException(BlogConstants.NotFoundLink);
-            }
+        // 查询友链是否存在
+        Link link = this.getById(linkId);
+        if (ObjectUtil.isEmpty(link)) {
+            throw new BlogException(BlogConstants.NotFoundLink);
+        }
 
-            // 权限校验：只能删除自己的友链
-            if (!link.getUserId().equals(currentUserId)) {
-                throw new BlogException(BlogConstants.CannotHandleOthersLink);
-            }
+        // 权限校验：只能删除自己的友链
+        if (!link.getUserId().equals(currentUserId)) {
+            throw new BlogException(BlogConstants.CannotHandleOthersLink);
+        }
 
-            boolean deleted = this.removeById(linkId);
-            if (!deleted) {
-                throw new BlogException(BlogConstants.DeleteLinkError);
-            }
-
-        } catch (Exception e) {
-            log.error("删除友链失败：{}", e.getMessage(), e);
+        boolean deleted = this.removeById(linkId);
+        if (!deleted) {
             throw new BlogException(BlogConstants.DeleteLinkError);
         }
     }
@@ -146,20 +140,20 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
         try {
             // 创建分页对象
             Page<Link> page = new Page<>(pageNum, pageSize);
-            
+
             // 查询审核通过的友链，按创建时间倒序排列
             LambdaQueryWrapper<Link> queryWrapper = new LambdaQueryWrapper<Link>()
                     .eq(Link::getExamineStatus, ExamineStatusEnum.PASS.getCode())
                     .orderByDesc(Link::getCreateTime);
-            
+
             Page<Link> linkPage = this.page(page, queryWrapper);
             List<Link> linkList = linkPage.getRecords();
-            
+
             // 转换为VO对象
             List<LinkVo> linkVos = BeanUtil.copyToList(linkList, LinkVo.class);
-            
+
             return new PageVo<>(linkVos, linkPage.getTotal());
-            
+
         } catch (Exception e) {
             log.error("获取友链列表失败：{}", e.getMessage(), e);
             throw new BlogException(BlogConstants.GetLinkListError);
@@ -241,7 +235,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
             List<Integer> linkIds = linkAuditDtos.stream()
                     .map(LinkAuditDto::getLinkId)
                     .collect(Collectors.toList());
-            
+
             List<Link> existingLinks = this.listByIds(linkIds);
             if (existingLinks.size() != linkIds.size()) {
                 throw new BlogException(BlogConstants.NotFoundLink);
@@ -359,6 +353,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
 
     /**
      * 发送友链审核通过邮件通知
+     *
      * @param link 友链信息
      */
     private void sendLinkApprovalEmail(Link link) {
@@ -370,19 +365,20 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
 
             // 发送邮件消息到友链审核通过专用的RabbitMQ交换机
             rabbitTemplate.convertAndSend(
-                RabbitMQConstants.Link_Approval_Exchange,
-                RabbitMQConstants.Link_Approval_Routing_Key,
-                emailMessage
+                    RabbitMQConstants.Link_Approval_Exchange,
+                    RabbitMQConstants.Link_Approval_Routing_Key,
+                    emailMessage
             );
-            
+
         } catch (Exception e) {
-            log.error("发送友链审核通过邮件失败，友链ID：{}，邮箱：{}，错误：{}", 
-                link.getId(), link.getEmail(), e.getMessage(), e);
+            log.error("发送友链审核通过邮件失败，友链ID：{}，邮箱：{}，错误：{}",
+                    link.getId(), link.getEmail(), e.getMessage(), e);
         }
     }
 
     /**
      * 批量发送友链审核通过邮件通知
+     *
      * @param linkAuditDtos 审核信息列表
      * @param existingLinks 现有友链列表
      */
@@ -391,7 +387,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
             // 创建友链ID到友链对象的映射
             Map<Integer, Link> linkMap = existingLinks.stream()
                     .collect(Collectors.toMap(Link::getId, link -> link));
-            
+
             // 筛选出审核通过的友链并发送邮件
             linkAuditDtos.stream()
                     .filter(dto -> ExamineStatusEnum.PASS.getCode().equals(dto.getExamineStatus()))
@@ -401,7 +397,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
                             sendLinkApprovalEmail(link);
                         }
                     });
-                    
+
         } catch (Exception e) {
             log.error("批量发送友链审核通过邮件失败，错误：{}", e.getMessage(), e);
         }
