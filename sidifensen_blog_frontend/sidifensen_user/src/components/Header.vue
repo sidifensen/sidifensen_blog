@@ -65,7 +65,7 @@
                 <el-icon><User /></el-icon>
                 <span>个人主页</span>
               </el-dropdown-item>
-              <el-dropdown-item class="action-item">
+              <el-dropdown-item @click="goToSetting" class="action-item">
                 <el-icon><Setting /></el-icon>
                 <span>个人设置</span>
               </el-dropdown-item>
@@ -192,6 +192,11 @@ const goToUserHomepage = () => {
   }
 };
 
+// 跳转到个人设置
+const goToSetting = () => {
+  router.push("/setting");
+};
+
 // 头部是否可见
 const isVisible = ref(true);
 // 上次滚动位置
@@ -252,8 +257,15 @@ onBeforeUnmount(() => {
   left: 0;
   z-index: 1000;
   transition: transform 0.5s ease;
-  background-color: var(--el-bg-color);
   border-bottom: 1px solid var(--el-border-color-light);
+
+  // 容器本身设置透明背景
+  background-color: transparent !important;
+  background: transparent !important;
+
+  // 使用 Element Plus 推荐的 CSS 变量设置透明背景
+  --el-menu-bg-color: transparent;
+  --el-menu-hover-bg-color: rgba(0, 0, 0, 0.05);
 
   &.hidden {
     transform: translateY(-100%);

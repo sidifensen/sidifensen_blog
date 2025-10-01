@@ -55,6 +55,15 @@ public class PhotoController {
     }
 
     /**
+     * 上传用户头像
+     */
+    @PostMapping("/uploadAvatar")
+    public Result uploadAvatar(@RequestParam("file") MultipartFile file) {
+        String url = photoService.uploadAvatar(file);
+        return Result.success(url);
+    }
+
+    /**
      * 删除照片
      */
     @DeleteMapping("/delete/{photoId}")

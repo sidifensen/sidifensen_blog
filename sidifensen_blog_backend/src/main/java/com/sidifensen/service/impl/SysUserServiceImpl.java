@@ -3,6 +3,7 @@ package com.sidifensen.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.RabbitMQConstants;
@@ -177,7 +178,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     public void sendEmailCheckCode(EmailDto emailDto) {
         String email = emailDto.getEmail();
         // 如果是重置密码, 则需要先校验邮箱是否存在
-        if (emailDto.getType().equals("reset")) {
+        if (emailDto.getType().equals("reset") || emailDto.getType().equals("resetEmail")) {
             SysUser sysUser = sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getEmail, email));
             if (ObjectUtil.isNull(sysUser)) {
                 throw new BlogException(BlogConstants.NotFoundEmail);// 邮箱不存在
@@ -221,6 +222,73 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         sysUserMapper.update(newSysUser, queryWrapper);
 
         redisComponent.cleanEmailCheckCode(resetPasswordDto.getEmail(), "reset");
+    }
+
+    @Override
+    public void verifyResetEmail(UpdateEmailDto updateEmailDto) {
+        // 获取当前登录用户ID
+        Integer userId = SecurityUtils.getUserId();
+
+        // 查询当前用户
+        SysUser currentUser = sysUserMapper.selectById(userId);
+        if (currentUser == null) {
+            throw new BlogException(BlogConstants.NotFoundUser);
+        }
+
+        // 校验验证码
+        if (!updateEmailDto.getEmailCheckCode()
+                .equals(redisComponent.getEmailCheckCode(updateEmailDto.getEmail(), "resetEmail"))) {
+            throw new BlogException(BlogConstants.CheckCodeError);
+        }
+
+        // 检查新邮箱是否已被其他用户使用
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysUser::getEmail, updateEmailDto.getEmail())
+                .ne(SysUser::getId, userId);
+        SysUser existUser = sysUserMapper.selectOne(queryWrapper);
+        if (existUser != null) {
+            throw new BlogException(BlogConstants.ExistEmail);
+        }
+    }
+
+    @Override
+    public void resetEmail(UpdateEmailDto updateEmailDto) {
+        // 获取当前登录用户ID
+        Integer userId = SecurityUtils.getUserId();
+
+        // 查询当前用户
+        SysUser currentUser = sysUserMapper.selectById(userId);
+        if (currentUser == null) {
+            throw new BlogException(BlogConstants.NotFoundUser);
+        }
+
+        // 校验验证码
+        if (!updateEmailDto.getEmailCheckCode()
+                .equals(redisComponent.getEmailCheckCode(updateEmailDto.getEmail(), "resetEmail"))) {
+            throw new BlogException(BlogConstants.CheckCodeError);
+        }
+
+        // 检查新邮箱是否已被其他用户使用
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysUser::getEmail, updateEmailDto.getEmail())
+                .ne(SysUser::getId, userId);
+        SysUser existUser = sysUserMapper.selectOne(queryWrapper);
+        if (existUser != null) {
+            throw new BlogException(BlogConstants.ExistEmail);
+        }
+
+        // 更新邮箱
+        LambdaUpdateWrapper<SysUser> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(SysUser::getId, userId)
+                .set(SysUser::getEmail, updateEmailDto.getEmail());
+
+        int result = sysUserMapper.update(null, updateWrapper);
+        if (result != 1) {
+            throw new BlogException(BlogConstants.UpdateUserInfoError);
+        }
+
+        // 清除验证码
+        redisComponent.cleanEmailCheckCode(updateEmailDto.getEmail(), "resetEmail");
     }
 
     @Override
@@ -272,6 +340,31 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         sysUserVo.setArticleCount(articleCount);
 
         return sysUserVo;
+    }
+
+    @Override
+    public void updateUserInfo(UpdateUserInfoDto updateUserInfoDto) {
+        // 获取当前登录用户ID
+        Integer userId = SecurityUtils.getUserId();
+
+        // 查询当前用户
+        SysUser currentUser = sysUserMapper.selectById(userId);
+        if (currentUser == null) {
+            throw new BlogException(BlogConstants.NotFoundUser);
+        }
+
+        LambdaUpdateWrapper<SysUser> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(SysUser::getId, userId)
+                .set(ObjectUtil.isNotEmpty(updateUserInfoDto.getNickname()), SysUser::getNickname, updateUserInfoDto.getNickname())
+                .set(ObjectUtil.isNotNull(updateUserInfoDto.getSex()), SysUser::getSex, updateUserInfoDto.getSex())
+                .set(SysUser::getIntroduction, updateUserInfoDto.getIntroduction())
+                .set(ObjectUtil.isNotEmpty(updateUserInfoDto.getAvatar()), SysUser::getAvatar, updateUserInfoDto.getAvatar());
+
+        int result = sysUserMapper.update(null, updateWrapper);
+        if (result != 1) {
+            throw new BlogException(BlogConstants.UpdateUserInfoError);
+        }
+
     }
 
     /**

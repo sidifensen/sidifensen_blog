@@ -17,6 +17,7 @@ public class BlogConstants {
     public static final String LoginExpired = "登录已过期，请重新登录";
     public static final String NewPasswordSameAsOld = "新密码不能与原密码相同";
     public static final String UserIdRequired = "用户ID不能为空";
+    public static final String UpdateUserInfoError = "更新用户信息失败";
 
     public static final String CannotGetRequestInfo = "无法获取请求信息";
     public static final String IllegalRequest = "非法请求";

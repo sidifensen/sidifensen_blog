@@ -74,6 +74,12 @@ const router = createRouter({
           meta: { title: "专栏详情" },
         },
         {
+          path: "setting",
+          name: "Setting",
+          component: () => import("@/views/Setting/index.vue"),
+          meta: { title: "个人设置" },
+        },
+        {
           path: "account",
           name: "Account",
           component: () => import("@/views/Account/index.vue"),

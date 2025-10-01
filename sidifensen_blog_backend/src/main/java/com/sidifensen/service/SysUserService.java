@@ -65,6 +65,20 @@ public interface SysUserService extends IService<SysUser> {
     void resetPassword(ResetPasswordDto resetPasswordDto);
 
     /**
+     * 修改邮箱时校验邮箱验证码
+     *
+     * @param updateEmailDto 邮箱信息
+     */
+    void verifyResetEmail(UpdateEmailDto updateEmailDto);
+
+    /**
+     * 重置邮箱
+     *
+     * @param updateEmailDto 邮箱信息
+     */
+    void resetEmail(UpdateEmailDto updateEmailDto);
+
+    /**
      * 获取用户信息
      *
      * @return UserVo 用户信息
@@ -78,6 +92,13 @@ public interface SysUserService extends IService<SysUser> {
      * @return SysUserVo 用户信息
      */
     SysUserVo getUserInfoById(Integer userId);
+
+    /**
+     * 更新当前用户信息
+     *
+     * @param updateUserInfoDto 用户信息
+     */
+    void updateUserInfo(UpdateUserInfoDto updateUserInfoDto);
 
     // 管理端
 

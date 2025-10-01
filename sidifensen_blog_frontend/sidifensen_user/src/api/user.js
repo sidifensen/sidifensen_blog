@@ -79,3 +79,30 @@ export function getUserInfoById(userId) {
     method: "get",
   });
 }
+
+// 更新当前用户信息
+export function updateUserInfo(data) {
+  return request({
+    url: "/user/info",
+    method: "put",
+    data: data,
+  });
+}
+
+// 修改邮箱时校验邮箱验证码
+export function verifyResetEmail(data) {
+  return request({
+    url: "/user/verifyResetEmail",
+    method: "post",
+    data: data,
+  });
+}
+
+// 修改邮箱
+export function updateEmail(data) {
+  return request({
+    url: "/user/resetEmail",
+    method: "put",
+    data: data,
+  });
+}

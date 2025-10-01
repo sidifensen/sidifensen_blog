@@ -135,6 +135,15 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         return url;
     }
 
+    @Override
+    public String uploadAvatar(MultipartFile file) {
+        Integer userId = SecurityUtils.getUserId();
+        String dirName = userId + "/";
+        String url = fileUploadUtils.upload(UploadEnum.USER_AVATAR, file, dirName);
+        auditAndUpdate(userId, url);
+        return url;
+    }
+
     // 相册图片审核
     private void auditAndUpdate(Integer userId, String url, Integer albumId) {
         executorService.execute(() -> {

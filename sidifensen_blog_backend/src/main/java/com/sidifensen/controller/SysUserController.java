@@ -114,6 +114,27 @@ public class SysUserController {
     }
 
     /**
+     * 修改邮箱时校验邮箱验证码
+     */
+    @PostMapping("/verifyResetEmail")
+    public Result verifyResetEmail(@RequestBody @Valid UpdateEmailDto updateEmailDto) {
+        sysUserService.verifyResetEmail(updateEmailDto);
+        return Result.success();
+    }
+
+    /**
+     * 重置邮箱
+     *
+     * @param updateEmailDto 邮箱信息
+     * @return
+     */
+    @PutMapping("/resetEmail")
+    public Result resetEmail(@Valid @RequestBody UpdateEmailDto updateEmailDto) {
+        sysUserService.resetEmail(updateEmailDto);
+        return Result.success();
+    }
+
+    /**
      * 获取用户信息
      *
      * @return
@@ -134,6 +155,18 @@ public class SysUserController {
     public Result getUserInfoById(@PathVariable Integer userId) {
         SysUserVo sysUserVo = sysUserService.getUserInfoById(userId);
         return Result.success(sysUserVo);
+    }
+
+    /**
+     * 更新当前用户信息
+     *
+     * @param updateUserInfoDto 用户信息
+     * @return
+     */
+    @PutMapping("/info")
+    public Result updateUserInfo(@Valid @RequestBody UpdateUserInfoDto updateUserInfoDto) {
+        sysUserService.updateUserInfo(updateUserInfoDto);
+        return Result.success();
     }
 
     // 管理端
