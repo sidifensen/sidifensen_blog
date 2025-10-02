@@ -12,6 +12,7 @@ public class BlogConstants {
     public static final String ExistUserName = "用户名已存在";
     public static final String ExistEmail = "邮箱已存在";
     public static final String NotFoundEmail = "邮箱不存在";
+    public static final String EmailNotMatch = "邮箱不匹配";
     public static final String CheckCodeError = "验证码错误";
     public static final String LoginRequired = "请先登录";
     public static final String LoginExpired = "登录已过期，请重新登录";

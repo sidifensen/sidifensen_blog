@@ -5,11 +5,15 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
+/**
+ * 校验邮箱验证码DTO
+ * @author sidifensen
+ */
 @Data
-public class ResetPasswordDto {
+public class VerifyEmailDto {
 
-    // 邮箱
-    @Email
+    // 原邮箱
+    @Email(message = "邮箱格式不正确")
     @NotEmpty(message = "邮箱不能为空")
     private String email;
 
@@ -18,9 +22,5 @@ public class ResetPasswordDto {
     @Length(max = 6, min = 6, message = "验证码长度必须为6位")
     private String emailCheckCode;
 
-    // 密码
-    @NotEmpty(message = "密码不能为空")
-    @Length(min = 6, max = 20, message = "密码长度必须在6-20位之间")
-    private String password;
-
 }
+

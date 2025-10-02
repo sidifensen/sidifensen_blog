@@ -47,9 +47,9 @@ export function sendEmail(data) {
 }
 
 // 重置密码时校验邮箱验证码
-export function verifyReset(data) {
+export function verifyResetPassword(data) {
   return request({
-    url: "/user/verifyReset",
+    url: "/user/verifyResetPassword",
     method: "post",
     data: data,
   });

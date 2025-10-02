@@ -18,6 +18,6 @@ public class EmailDto {
     private String email;
 
     // 发送邮箱的类型
-    @Pattern(regexp = "(register|reset|resetEmail)",message = "邮箱类型错误")
+    @Pattern(regexp = "(register|resetPassword|resetEmail)",message = "邮箱类型错误")
     private String type;
 }

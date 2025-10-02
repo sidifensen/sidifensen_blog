@@ -11,6 +11,7 @@ import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.entity.*;
 import com.sidifensen.domain.enums.EditStatusEnum;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
+import com.sidifensen.domain.enums.MailEnum;
 import com.sidifensen.domain.enums.StatusEnum;
 import com.sidifensen.domain.vo.*;
 import com.sidifensen.exception.BlogException;
@@ -137,7 +138,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     public void register(RegisterDto registerDto) {
         // 校验验证码
         if (ObjectUtil.isNotEmpty(registerDto.getEmailCheckCode()) && !registerDto.getEmailCheckCode()
-                .equals(redisComponent.getEmailCheckCode(registerDto.getEmail(), "register"))) {
+                .equals(redisComponent.getEmailCheckCode(registerDto.getEmail(), MailEnum.REGISTER.getType()))) {
             throw new BlogException(BlogConstants.CheckCodeError);
         }
 
@@ -168,7 +169,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (insert == 1) {
             ipService.setRegisterIp(user.getId(), ip);
             sysUserRoleService.setRegisterRole(user.getId());
-            redisComponent.cleanEmailCheckCode(registerDto.getEmail(), "register");
+            redisComponent.cleanEmailCheckCode(registerDto.getEmail(), MailEnum.REGISTER.getType());
             log.info("用户{}注册成功", user.getUsername());
         }
 
@@ -178,7 +179,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     public void sendEmailCheckCode(EmailDto emailDto) {
         String email = emailDto.getEmail();
         // 如果是重置密码, 则需要先校验邮箱是否存在
-        if (emailDto.getType().equals("reset") || emailDto.getType().equals("resetEmail")) {
+        if (emailDto.getType().equals(MailEnum.RESET_PASSWORD.getType()) || emailDto.getType().equals(MailEnum.RESET_EMAIL.getType())) {
             SysUser sysUser = sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getEmail, email));
             if (ObjectUtil.isNull(sysUser)) {
                 throw new BlogException(BlogConstants.NotFoundEmail);// 邮箱不存在
@@ -198,56 +199,49 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     }
 
     @Override
-    public void verifyReset(VerifyResetDto verifyResetDto) {
+    public void verifyResetPassword(VerifyResetDto verifyResetDto) {
         if (!verifyResetDto.getEmailCheckCode()
-                .equals(redisComponent.getEmailCheckCode(verifyResetDto.getEmail(), "reset"))) {
+                .equals(redisComponent.getEmailCheckCode(verifyResetDto.getEmail(), MailEnum.RESET_PASSWORD.getType()))) {
             throw new BlogException(BlogConstants.CheckCodeError); // 验证码错误
         }
     }
 
     @Override
     public void resetPassword(ResetPasswordDto resetPasswordDto) {
-        // 如果新密码与老密码相同
+        // 校验邮箱验证码
+        if (!resetPasswordDto.getEmailCheckCode()
+                .equals(redisComponent.getEmailCheckCode(resetPasswordDto.getEmail(), MailEnum.RESET_PASSWORD.getType()))) {
+            throw new BlogException(BlogConstants.CheckCodeError);
+        }
+
+        // 查询用户
         SysUser sysUser = sysUserMapper
                 .selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getEmail, resetPasswordDto.getEmail()));
         if (ObjectUtil.isNull(sysUser)) {
             throw new BlogException(BlogConstants.NotFoundEmail); // 邮箱不存在
         }
-        if (passwordEncoder.matches(resetPasswordDto.getPassword(), sysUser.getPassword())) { // security的密码加密器对比密码用matches方法
+
+        // 检查新密码是否与原密码相同
+        if (passwordEncoder.matches(resetPasswordDto.getPassword(), sysUser.getPassword())) {
             throw new BlogException(BlogConstants.NewPasswordSameAsOld); // 新密码不能与原密码相同
         }
+
+        // 更新密码
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<SysUser>().eq(SysUser::getEmail,
                 resetPasswordDto.getEmail());
         SysUser newSysUser = new SysUser().setPassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
         sysUserMapper.update(newSysUser, queryWrapper);
 
-        redisComponent.cleanEmailCheckCode(resetPasswordDto.getEmail(), "reset");
+        // 清除验证码
+        redisComponent.cleanEmailCheckCode(resetPasswordDto.getEmail(), MailEnum.RESET_PASSWORD.getType());
     }
 
     @Override
-    public void verifyResetEmail(UpdateEmailDto updateEmailDto) {
-        // 获取当前登录用户ID
-        Integer userId = SecurityUtils.getUserId();
-
-        // 查询当前用户
-        SysUser currentUser = sysUserMapper.selectById(userId);
-        if (currentUser == null) {
-            throw new BlogException(BlogConstants.NotFoundUser);
-        }
-
-        // 校验验证码
-        if (!updateEmailDto.getEmailCheckCode()
-                .equals(redisComponent.getEmailCheckCode(updateEmailDto.getEmail(), "resetEmail"))) {
+    public void verifyResetEmail(VerifyEmailDto verifyEmailDto) {
+        // 校验原邮箱的验证码
+        if (!verifyEmailDto.getEmailCheckCode()
+                .equals(redisComponent.getEmailCheckCode(verifyEmailDto.getEmail(), MailEnum.RESET_EMAIL.getType()))) {
             throw new BlogException(BlogConstants.CheckCodeError);
-        }
-
-        // 检查新邮箱是否已被其他用户使用
-        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(SysUser::getEmail, updateEmailDto.getEmail())
-                .ne(SysUser::getId, userId);
-        SysUser existUser = sysUserMapper.selectOne(queryWrapper);
-        if (existUser != null) {
-            throw new BlogException(BlogConstants.ExistEmail);
         }
     }
 
@@ -262,33 +256,37 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             throw new BlogException(BlogConstants.NotFoundUser);
         }
 
-        // 校验验证码
+        // 校验原邮箱是否是当前用户的邮箱
+        if (!currentUser.getEmail().equals(updateEmailDto.getEmail())) {
+            throw new BlogException(BlogConstants.EmailNotMatch);
+        }
+
+        // 校验原邮箱的验证码
         if (!updateEmailDto.getEmailCheckCode()
-                .equals(redisComponent.getEmailCheckCode(updateEmailDto.getEmail(), "resetEmail"))) {
+                .equals(redisComponent.getEmailCheckCode(updateEmailDto.getEmail(), MailEnum.RESET_EMAIL.getType()))) {
             throw new BlogException(BlogConstants.CheckCodeError);
         }
 
         // 检查新邮箱是否已被其他用户使用
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(SysUser::getEmail, updateEmailDto.getEmail())
-                .ne(SysUser::getId, userId);
+        queryWrapper.eq(SysUser::getEmail, updateEmailDto.getNewEmail());
         SysUser existUser = sysUserMapper.selectOne(queryWrapper);
         if (existUser != null) {
             throw new BlogException(BlogConstants.ExistEmail);
         }
 
-        // 更新邮箱
+        // 更新为新邮箱
         LambdaUpdateWrapper<SysUser> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(SysUser::getId, userId)
-                .set(SysUser::getEmail, updateEmailDto.getEmail());
+                .set(SysUser::getEmail, updateEmailDto.getNewEmail());
 
         int result = sysUserMapper.update(null, updateWrapper);
         if (result != 1) {
             throw new BlogException(BlogConstants.UpdateUserInfoError);
         }
 
-        // 清除验证码
-        redisComponent.cleanEmailCheckCode(updateEmailDto.getEmail(), "resetEmail");
+        // 清除原邮箱的验证码
+        redisComponent.cleanEmailCheckCode(updateEmailDto.getEmail(), MailEnum.RESET_EMAIL.getType());
     }
 
     @Override

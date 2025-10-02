@@ -17,7 +17,7 @@ public class SecurityConstants {
             "/user/checkCode",
             "/user/register",
             "/user/sendEmail",
-            "/user/verifyReset",
+            "/user/verifyResetPassword",
             "/user/resetPassword",
             "/user/admin/login",
             "/user/info/{userId:\\d+}",

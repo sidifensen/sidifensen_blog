@@ -55,7 +55,7 @@ public interface SysUserService extends IService<SysUser> {
      *
      * @param verifyResetDto
      */
-    void verifyReset(VerifyResetDto verifyResetDto);
+    void verifyResetPassword(VerifyResetDto verifyResetDto);
 
     /**
      * 重置密码
@@ -67,9 +67,9 @@ public interface SysUserService extends IService<SysUser> {
     /**
      * 修改邮箱时校验邮箱验证码
      *
-     * @param updateEmailDto 邮箱信息
+     * @param verifyEmailDto 邮箱校验信息
      */
-    void verifyResetEmail(UpdateEmailDto updateEmailDto);
+    void verifyResetEmail(VerifyEmailDto verifyEmailDto);
 
     /**
      * 重置邮箱

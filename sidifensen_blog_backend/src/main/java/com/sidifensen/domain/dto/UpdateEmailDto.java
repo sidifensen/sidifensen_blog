@@ -12,12 +12,17 @@ import org.hibernate.validator.constraints.Length;
 @Data
 public class UpdateEmailDto {
 
-    // 新邮箱
+    // 原邮箱
     @Email(message = "邮箱格式不正确")
-    @NotEmpty(message = "邮箱不能为空")
+    @NotEmpty(message = "原邮箱不能为空")
     private String email;
 
-    // 邮箱验证码
+    // 新邮箱
+    @Email(message = "邮箱格式不正确")
+    @NotEmpty(message = "新邮箱不能为空")
+    private String newEmail;
+
+    // 原邮箱验证码
     @NotEmpty(message = "验证码不能为空")
     @Length(max = 6, min = 6, message = "验证码长度必须为6位")
     private String emailCheckCode;

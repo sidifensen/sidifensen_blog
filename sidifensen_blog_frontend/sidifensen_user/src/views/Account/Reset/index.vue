@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2>重置密码</h2>
-    <el-steps style="margin: 0 auto; margin-bottom: 10px;" align-center :active="step" finish-status="success">
+    <el-steps style="margin: 0 auto; margin-bottom: 10px" align-center :active="step" finish-status="success">
       <el-step title="验证邮箱" />
       <el-step title="重置密码" />
     </el-steps>
@@ -26,7 +26,7 @@
             </el-button>
           </div>
         </el-form-item>
-        <el-button type="primary" plain @click="verifyResetBtn">开始重置密码</el-button>
+        <el-button type="primary" plain :disabled="!hasRequestedCode" @click="verifyResetBtn">开始重置密码</el-button>
       </el-form>
       <el-form :model="formData" :rules="rules" ref="formDataRef" v-if="step === 1">
         <el-form-item prop="password">
@@ -56,7 +56,7 @@ import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { EditPen, Lock, Message } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
-import { sendEmail, verifyReset, resetPassword } from "@/api/user";
+import { sendEmail, verifyResetPassword, resetPassword } from "@/api/user";
 
 const router = useRouter();
 const formData = ref({
@@ -69,6 +69,9 @@ const formDataRef = ref(null);
 
 // 发送邮箱验证码倒计时
 const waitTime = ref(0);
+
+// 是否已请求过验证码
+const hasRequestedCode = ref(false);
 
 // 邮箱正则表达式
 const EmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -135,10 +138,11 @@ function sendEmailBtn() {
   if (isEmailValid.value) {
     const EmailDto = ref({
       email: formData.value.email,
-      type: "reset",
+      type: "resetPassword",
     });
     sendEmail(EmailDto.value).then(() => {
       ElMessage.success(`验证码已发送到邮箱：${formData.value.email}，请注意查收`);
+      hasRequestedCode.value = true; // 标记已请求验证码
       waitTime.value = 60;
       const interval = setInterval(() => {
         if (waitTime.value === 0) {
@@ -163,7 +167,7 @@ const verifyResetBtn = () => {
       email: formData.value.email,
       emailCheckCode: formData.value.emailCheckCode,
     });
-    verifyReset(VerifyResetDto.value).then(() => {
+    verifyResetPassword(VerifyResetDto.value).then(() => {
       step.value++;
     });
   }
@@ -188,7 +192,7 @@ const resetPasswordBtn = () => {
           }
         }, 1000);
         setTimeout(() => {
-          step.value = 0;// 重置步骤
+          step.value = 0; // 重置步骤
           router.push("/login");
         }, 3000);
       });
@@ -198,7 +202,7 @@ const resetPasswordBtn = () => {
 </script>
 
 <style lang="scss" scoped>
-.el-form{
+.el-form {
   margin-bottom: 127px;
 }
 .el-steps {
@@ -209,7 +213,7 @@ const resetPasswordBtn = () => {
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-  .login{
+  .login {
     margin-top: 20px;
   }
 }

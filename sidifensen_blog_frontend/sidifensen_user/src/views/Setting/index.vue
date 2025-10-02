@@ -187,14 +187,14 @@
       <!-- 第二步：修改密码 -->
       <el-form v-if="passwordStep === 1" ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" label-width="0">
         <el-form-item prop="password">
-          <el-input v-model="passwordForm.password" type="password" placeholder="新密码" show-password>
+          <el-input v-model="passwordForm.password" placeholder="新密码">
             <template #prefix>
               <el-icon><Lock /></el-icon>
             </template>
           </el-input>
         </el-form-item>
         <el-form-item prop="repeatPassword">
-          <el-input v-model="passwordForm.repeatPassword" type="password" placeholder="确认新密码" show-password>
+          <el-input v-model="passwordForm.repeatPassword" placeholder="确认新密码">
             <template #prefix>
               <el-icon><Lock /></el-icon>
             </template>
@@ -202,20 +202,11 @@
         </el-form-item>
       </el-form>
 
-      <!-- 成功提示 -->
-      <div v-if="passwordStep === 2" class="success-message">
-        <el-result icon="success" title="密码修改成功" sub-title="您的密码已经成功修改">
-          <template #extra>
-            <p class="jump-tip">{{ jumpTime }} 秒后自动关闭</p>
-          </template>
-        </el-result>
-      </div>
-
       <!-- 对话框底部按钮 -->
-      <template #footer v-if="passwordStep < 2">
+      <template #footer>
         <div class="dialog-footer">
           <el-button @click="passwordDialogVisible = false">取消</el-button>
-          <el-button v-if="passwordStep === 0" type="primary" :loading="verifyLoading" @click="verifyEmail">下一步</el-button>
+          <el-button v-if="passwordStep === 0" type="primary" :loading="verifyLoading" :disabled="!hasRequestedPasswordCode" @click="verifyEmail">下一步</el-button>
           <el-button v-if="passwordStep === 1" type="primary" :loading="resetLoading" @click="resetPasswordSubmit">确认修改</el-button>
         </div>
       </template>
@@ -225,12 +216,35 @@
     <el-dialog v-model="emailDialogVisible" title="修改邮箱" width="500px" :close-on-click-modal="false" @close="resetEmailDialog">
       <!-- 步骤条 -->
       <el-steps :active="emailStep" finish-status="success" align-center style="margin-bottom: 30px">
+        <el-step title="验证原邮箱" />
         <el-step title="输入新邮箱" />
-        <el-step title="验证邮箱" />
       </el-steps>
 
-      <!-- 第一步：输入新邮箱并发送验证码 -->
-      <el-form v-if="emailStep === 0" ref="newEmailFormRef" :model="emailForm" :rules="emailRules" label-width="0">
+      <!-- 第一步：验证原邮箱 -->
+      <el-form v-if="emailStep === 0" ref="oldEmailFormRef" :model="emailForm" :rules="oldEmailRules" label-width="0">
+        <el-form-item prop="email">
+          <el-input v-model="emailForm.email" type="email" placeholder="原邮箱" :disabled="true">
+            <template #prefix>
+              <el-icon><Message /></el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <el-form-item prop="emailCheckCode">
+          <div class="check-code-panel">
+            <el-input v-model="emailForm.emailCheckCode" maxlength="6" placeholder="请输入验证码">
+              <template #prefix>
+                <el-icon><EditPen /></el-icon>
+              </template>
+            </el-input>
+            <el-button type="success" :disabled="emailWaitTime > 0" @click="sendOldEmailCode" style="margin-left: 10px">
+              {{ emailWaitTime > 0 ? `请稍后 ${emailWaitTime} 秒` : "获取验证码" }}
+            </el-button>
+          </div>
+        </el-form-item>
+      </el-form>
+
+      <!-- 第二步：输入新邮箱 -->
+      <el-form v-if="emailStep === 1" ref="newEmailFormRef" :model="emailForm" :rules="newEmailRules" label-width="0">
         <el-form-item prop="newEmail">
           <el-input v-model="emailForm.newEmail" type="email" placeholder="请输入新邮箱">
             <template #prefix>
@@ -238,34 +252,14 @@
             </template>
           </el-input>
         </el-form-item>
-        <el-form-item>
-          <div class="check-code-panel">
-            <el-input v-model="emailForm.emailCheckCode" maxlength="6" placeholder="请输入验证码">
-              <template #prefix>
-                <el-icon><EditPen /></el-icon>
-              </template>
-            </el-input>
-            <el-button type="success" :disabled="!isNewEmailValid || emailWaitTime > 0" @click="sendNewEmailCode" style="margin-left: 10px">
-              {{ emailWaitTime > 0 ? `请稍后 ${emailWaitTime} 秒` : "获取验证码" }}
-            </el-button>
-          </div>
-        </el-form-item>
       </el-form>
 
-      <!-- 成功提示 -->
-      <div v-if="emailStep === 1" class="success-message">
-        <el-result icon="success" title="邮箱修改成功" sub-title="您的邮箱已经成功修改">
-          <template #extra>
-            <p class="jump-tip">{{ emailJumpTime }} 秒后自动关闭</p>
-          </template>
-        </el-result>
-      </div>
-
       <!-- 对话框底部按钮 -->
-      <template #footer v-if="emailStep < 1">
+      <template #footer>
         <div class="dialog-footer">
           <el-button @click="emailDialogVisible = false">取消</el-button>
-          <el-button type="primary" :loading="emailUpdateLoading" @click="updateEmailSubmit">确认修改</el-button>
+          <el-button v-if="emailStep === 0" type="primary" :loading="emailVerifyLoading" :disabled="!hasRequestedEmailCode" @click="verifyOldEmail">下一步</el-button>
+          <el-button v-if="emailStep === 1" type="primary" :loading="emailUpdateLoading" @click="updateEmailSubmit">确认修改</el-button>
         </div>
       </template>
     </el-dialog>
@@ -275,7 +269,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from "vue";
 import { Plus, User, Message, Edit, EditPen, Lock } from "@element-plus/icons-vue";
-import { info, updateUserInfo, sendEmail, verifyReset, resetPassword, updateEmail } from "@/api/user";
+import { info, updateUserInfo, sendEmail, verifyResetPassword, resetPassword, updateEmail, verifyResetEmail } from "@/api/user";
 import { uploadArticlePhoto } from "@/api/photo";
 import { validateImageFile, compressImage } from "@/utils/PhotoUtils";
 import { useUserStore } from "@/stores/userStore";
@@ -449,14 +443,14 @@ const handleAvatarUpload = async (options) => {
 // 修改密码对话框显示状态
 const passwordDialogVisible = ref(false);
 
-// 修改密码步骤（0: 验证邮箱, 1: 修改密码, 2: 成功）
+// 修改密码步骤（0: 验证邮箱, 1: 修改密码）
 const passwordStep = ref(0);
 
 // 发送邮箱验证码倒计时
 const waitTime = ref(0);
 
-// 跳转倒计时
-const jumpTime = ref(3);
+// 标记是否在当前会话中请求过验证码
+const hasRequestedPasswordCode = ref(false);
 
 // 验证和重置加载状态
 const verifyLoading = ref(false);
@@ -540,7 +534,7 @@ const openPasswordDialog = () => {
   passwordForm.password = "";
   passwordForm.repeatPassword = "";
   waitTime.value = 0;
-  jumpTime.value = 3;
+  hasRequestedPasswordCode.value = false; // 重置验证码请求标志
 };
 
 // 重置密码对话框
@@ -551,7 +545,7 @@ const resetPasswordDialog = () => {
   passwordForm.password = "";
   passwordForm.repeatPassword = "";
   waitTime.value = 0;
-  jumpTime.value = 3;
+  hasRequestedPasswordCode.value = false; // 重置验证码请求标志
 };
 
 // 发送邮箱验证码
@@ -559,10 +553,11 @@ const sendEmailCode = async () => {
   try {
     const emailDto = {
       email: passwordForm.email,
-      type: "reset",
+      type: "resetPassword",
     };
     await sendEmail(emailDto);
     ElMessage.success(`验证码已发送到邮箱：${passwordForm.email}，请注意查收`);
+    hasRequestedPasswordCode.value = true; // 标记已请求验证码
     waitTime.value = 60;
     const interval = setInterval(() => {
       if (waitTime.value === 0) {
@@ -590,7 +585,7 @@ const verifyEmail = async () => {
       emailCheckCode: passwordForm.emailCheckCode,
     };
 
-    await verifyReset(verifyResetDto);
+    await verifyResetPassword(verifyResetDto);
     passwordStep.value = 1;
     ElMessage.success("邮箱验证成功");
   } catch (error) {
@@ -616,29 +611,17 @@ const resetPasswordSubmit = async () => {
       email: passwordForm.email,
       emailCheckCode: passwordForm.emailCheckCode,
       password: passwordForm.password,
-      repeatPassword: passwordForm.repeatPassword,
     };
 
     await resetPassword(resetData);
-    passwordStep.value = 2;
     ElMessage.success("密码修改成功");
 
-    // 开始倒计时
-    const interval = setInterval(() => {
-      jumpTime.value--;
-      if (jumpTime.value === 0) {
-        clearInterval(interval);
-      }
-    }, 1000);
-
-    // 3秒后关闭对话框
-    setTimeout(() => {
-      passwordDialogVisible.value = false;
-      resetPasswordDialog();
-    }, 3000);
+    // 关闭对话框
+    passwordDialogVisible.value = false;
+    resetPasswordDialog();
   } catch (error) {
     if (error !== false) {
-      ElMessage.error("密码修改失败");
+      ElMessage.error("密码修改失败，请检查验证码是否正确");
       console.error("密码修改失败:", error);
     }
   } finally {
@@ -650,29 +633,33 @@ const resetPasswordSubmit = async () => {
 // 修改邮箱对话框显示状态
 const emailDialogVisible = ref(false);
 
-// 修改邮箱步骤（0: 输入新邮箱并验证, 1: 成功）
+// 修改邮箱步骤（0: 验证原邮箱, 1: 输入新邮箱）
 const emailStep = ref(0);
 
 // 发送邮箱验证码倒计时
 const emailWaitTime = ref(0);
 
-// 跳转倒计时
-const emailJumpTime = ref(3);
+// 标记是否在当前会话中请求过验证码
+const hasRequestedEmailCode = ref(false);
+
+// 验证原邮箱加载状态
+const emailVerifyLoading = ref(false);
 
 // 邮箱更新加载状态
 const emailUpdateLoading = ref(false);
 
 // 修改邮箱表单数据
 const emailForm = reactive({
+  email: "",
   newEmail: "",
   emailCheckCode: "",
 });
 
-// 表单引用
-const newEmailFormRef = ref(null);
+// 原邮箱表单引用
+const oldEmailFormRef = ref(null);
 
-// 判断新邮箱是否有效
-const isNewEmailValid = computed(() => EmailRegex.test(emailForm.newEmail));
+// 新邮箱表单引用
+const newEmailFormRef = ref(null);
 
 // 验证新邮箱格式
 const validateNewEmailFormat = (rule, value, callback) => {
@@ -685,56 +672,48 @@ const validateNewEmailFormat = (rule, value, callback) => {
   }
 };
 
-// 验证新邮箱验证码
-const validateNewEmailCheckCode = (rule, value, callback) => {
-  if (!value) {
-    callback(new Error("请输入获取的验证码"));
-  } else if (!/^\d{6}$/.test(value)) {
-    callback(new Error("验证码必须是6位数字"));
-  } else {
-    callback();
-  }
+// 原邮箱表单验证规则
+const oldEmailRules = {
+  email: [{ required: true, message: "原邮箱不能为空", trigger: "blur" }],
+  emailCheckCode: [{ validator: validateEmailCheckCode, trigger: ["blur", "change"] }],
 };
 
-// 修改邮箱表单验证规则
-const emailRules = {
+// 新邮箱表单验证规则
+const newEmailRules = {
   newEmail: [{ validator: validateNewEmailFormat, trigger: ["blur", "change"] }],
-  emailCheckCode: [{ validator: validateNewEmailCheckCode, trigger: ["blur", "change"] }],
 };
 
 // 打开修改邮箱对话框
 const openEmailDialog = () => {
   emailDialogVisible.value = true;
   emailStep.value = 0;
+  emailForm.email = userInfo.value.email;
   emailForm.newEmail = "";
   emailForm.emailCheckCode = "";
   emailWaitTime.value = 0;
-  emailJumpTime.value = 3;
+  hasRequestedEmailCode.value = false; // 重置验证码请求标志
 };
 
 // 重置邮箱对话框
 const resetEmailDialog = () => {
   emailStep.value = 0;
+  emailForm.email = "";
   emailForm.newEmail = "";
   emailForm.emailCheckCode = "";
   emailWaitTime.value = 0;
-  emailJumpTime.value = 3;
+  hasRequestedEmailCode.value = false; // 重置验证码请求标志
 };
 
-// 发送新邮箱验证码
-const sendNewEmailCode = async () => {
-  if (!isNewEmailValid.value) {
-    ElMessage.warning("请输入正确的邮箱");
-    return;
-  }
-
+// 发送原邮箱验证码
+const sendOldEmailCode = async () => {
   try {
     const emailDto = {
-      email: emailForm.newEmail,
+      email: emailForm.email,
       type: "resetEmail",
     };
     await sendEmail(emailDto);
-    ElMessage.success(`验证码已发送到邮箱：${emailForm.newEmail}，请注意查收`);
+    ElMessage.success(`验证码已发送到原邮箱：${emailForm.email}，请注意查收`);
+    hasRequestedEmailCode.value = true; // 标记已请求验证码
     emailWaitTime.value = 60;
     const interval = setInterval(() => {
       if (emailWaitTime.value === 0) {
@@ -749,6 +728,35 @@ const sendNewEmailCode = async () => {
   }
 };
 
+// 验证原邮箱
+const verifyOldEmail = async () => {
+  if (!oldEmailFormRef.value) return;
+
+  try {
+    await oldEmailFormRef.value.validate();
+    emailVerifyLoading.value = true;
+
+    const verifyData = {
+      email: emailForm.email,
+      emailCheckCode: emailForm.emailCheckCode,
+    };
+
+    // 调用验证接口
+    await verifyResetEmail(verifyData);
+    ElMessage.success("原邮箱验证成功");
+
+    // 进入下一步（保留验证码，用于最终提交）
+    emailStep.value = 1;
+  } catch (error) {
+    if (error !== false) {
+      ElMessage.error("验证失败，请检查验证码是否正确");
+      console.error("验证原邮箱失败:", error);
+    }
+  } finally {
+    emailVerifyLoading.value = false;
+  }
+};
+
 // 提交修改邮箱
 const updateEmailSubmit = async () => {
   if (!newEmailFormRef.value) return;
@@ -758,12 +766,12 @@ const updateEmailSubmit = async () => {
     emailUpdateLoading.value = true;
 
     const updateData = {
-      email: emailForm.newEmail,
+      email: emailForm.email,
+      newEmail: emailForm.newEmail,
       emailCheckCode: emailForm.emailCheckCode,
     };
 
     await updateEmail(updateData);
-    emailStep.value = 1;
     ElMessage.success("邮箱修改成功");
 
     // 更新本地用户信息
@@ -773,22 +781,12 @@ const updateEmailSubmit = async () => {
     const res = await info();
     userStore.user = res.data.data;
 
-    // 开始倒计时
-    const interval = setInterval(() => {
-      emailJumpTime.value--;
-      if (emailJumpTime.value === 0) {
-        clearInterval(interval);
-      }
-    }, 1000);
-
-    // 3秒后关闭对话框
-    setTimeout(() => {
-      emailDialogVisible.value = false;
-      resetEmailDialog();
-    }, 3000);
+    // 关闭对话框
+    emailDialogVisible.value = false;
+    resetEmailDialog();
   } catch (error) {
     if (error !== false) {
-      ElMessage.error("邮箱修改失败，请检查验证码是否正确");
+      ElMessage.error("邮箱修改失败");
       console.error("邮箱修改失败:", error);
     }
   } finally {

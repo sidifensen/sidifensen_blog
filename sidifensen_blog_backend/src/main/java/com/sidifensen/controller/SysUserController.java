@@ -98,9 +98,9 @@ public class SysUserController {
     /**
      * 重置密码时校验邮箱验证码
      */
-    @PostMapping("/verifyReset")
-    public Result verifyReset(@RequestBody @Valid VerifyResetDto verifyResetDto) {
-        sysUserService.verifyReset(verifyResetDto);
+    @PostMapping("/verifyResetPassword")
+    public Result verifyResetPassword(@RequestBody @Valid VerifyResetDto verifyResetDto) {
+        sysUserService.verifyResetPassword(verifyResetDto);
         return Result.success();
     }
 
@@ -117,8 +117,8 @@ public class SysUserController {
      * 修改邮箱时校验邮箱验证码
      */
     @PostMapping("/verifyResetEmail")
-    public Result verifyResetEmail(@RequestBody @Valid UpdateEmailDto updateEmailDto) {
-        sysUserService.verifyResetEmail(updateEmailDto);
+    public Result verifyResetEmail(@RequestBody @Valid VerifyEmailDto verifyEmailDto) {
+        sysUserService.verifyResetEmail(verifyEmailDto);
         return Result.success();
     }
 

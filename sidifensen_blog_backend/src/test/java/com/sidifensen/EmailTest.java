@@ -79,7 +79,7 @@ public class EmailTest {
 
     @Test
     public void testResetPassword() {
-        emailUtil.sendHtmlMail("sidifensen@163.com", MailEnum.RESET.getSubject(), MailEnum.RESET.getTemplateName(), Map.of("checkCode", 123456));
+        emailUtil.sendHtmlMail("sidifensen@163.com", MailEnum.RESET_PASSWORD.getSubject(), MailEnum.RESET_PASSWORD.getTemplateName(), Map.of("checkCode", 123456));
 
     }
 }
