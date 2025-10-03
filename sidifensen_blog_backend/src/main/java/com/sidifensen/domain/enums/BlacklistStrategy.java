@@ -61,5 +61,16 @@ public enum BlacklistStrategy {
         }
         return null;
     }
+
+    /**
+     * 生成包含接口和访问次数的详细违规原因
+     *
+     * @param apiPath 接口路径（格式：ClassName:methodName）
+     * @param accessCount 访问次数
+     * @return 详细的违规原因
+     */
+    public String getDetailedReason(String apiPath, int accessCount) {
+        return String.format("访问接口: %s, 访问次数: %d次, %s", apiPath, accessCount, this.description);
+    }
 }
 

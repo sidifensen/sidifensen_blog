@@ -59,7 +59,8 @@ public class LinkController {
      * @return 分页友链列表
      */
     @GetMapping("/list")
-    public Result<PageVo<List<LinkVo>>> getLinkList(@RequestParam @NotNull Integer pageNum, @RequestParam @NotNull Integer pageSize) {
+    public Result<PageVo<List<LinkVo>>> getLinkList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+                                                     @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<LinkVo>> linkList = linkService.getLinkList(pageNum, pageSize);
         return Result.success(linkList);
     }

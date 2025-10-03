@@ -45,8 +45,8 @@ public class FollowController {
      * @return 是否已关注
      */
     @GetMapping("/isFollowing")
-    public Result<Boolean> isFollowing(@RequestParam @NotNull(message = "关注者ID不能为空") Integer followerId,
-                                       @RequestParam @NotNull(message = "被关注者ID不能为空") Integer followedId) {
+    public Result<Boolean> isFollowing(@RequestParam(defaultValue = "0") @NotNull(message = "关注者ID不能为空") Integer followerId,
+                                       @RequestParam(defaultValue = "0") @NotNull(message = "被关注者ID不能为空") Integer followedId) {
         Boolean isFollowing = followService.isFollowing(followerId, followedId);
         return Result.success(isFollowing);
     }

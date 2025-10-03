@@ -50,17 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        // 检查是否是不需要登录的接口
-        boolean isNoAuthRequired = false;
-        for (String url : SecurityConstants.No_Need_Auth_Urls) {
-            AntPathRequestMatcher matcher = new AntPathRequestMatcher(url);
-            if (matcher.matches(request)) {
-                isNoAuthRequired = true;
-                break;
-            }
-        }
-
-        // 检查是否是可选登录的接口
+        // 检查是否是可选认证接口（有token就认证，没有就跳过）
         boolean isOptionalAuth = false;
         for (String url : SecurityConstants.Optional_Auth_Urls) {
             AntPathRequestMatcher matcher = new AntPathRequestMatcher(url);
@@ -89,10 +79,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // }
 
         // 可选认证接口：有token就认证，没有就跳过
-        if (isNoAuthRequired || isOptionalAuth) {
+        if (isOptionalAuth) {
             String jwt = request.getHeader("Authorization");
             if (ObjectUtil.isNotEmpty(jwt)) {
-                authenticateUser(request, response);
+                try {
+                    authenticateUser(request, response);
+                } catch (Exception e) {
+                    // 可选认证失败，忽略错误继续放行
+                    log.debug("可选认证失败: {}", e.getMessage());
+                }
             }
             filterChain.doFilter(request, response);
             return;

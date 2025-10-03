@@ -64,7 +64,9 @@ public class CommentController {
      * @return 评论列表
      */
     @GetMapping("/list")
-    public Result<PageVo<List<CommentVo>>> getCommentList(@NotNull Integer articleId, @NotNull Integer pageNum, @NotNull Integer pageSize) {
+    public Result<PageVo<List<CommentVo>>> getCommentList(@NotNull Integer articleId,
+                                                          @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+                                                          @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<CommentVo>> commentList = commentService.getCommentList(articleId, pageNum, pageSize);
         return Result.success(commentList);
     }
@@ -78,7 +80,8 @@ public class CommentController {
      * @return 用户评论列表
      */
     @PostMapping("/manage/list")
-    public Result<PageVo<List<UserCommentManageVo>>> getUserCommentManageList(@NotNull Integer pageNum, @NotNull Integer pageSize,
+    public Result<PageVo<List<UserCommentManageVo>>> getUserCommentManageList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+                                                                              @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
                                                                               @RequestBody CommentFilterDto commentFilterDto) {
         PageVo<List<UserCommentManageVo>> commentList = commentService.getUserCommentManageList(pageNum, pageSize, commentFilterDto);
         return Result.success(commentList);
@@ -93,7 +96,9 @@ public class CommentController {
      * @return 回复列表
      */
     @GetMapping("/reply/list")
-    public Result<PageVo<List<CommentVo>>> getReplyList(@NotNull Integer commentId, @NotNull Integer pageNum, @NotNull Integer pageSize) {
+    public Result<PageVo<List<CommentVo>>> getReplyList(@NotNull Integer commentId,
+                                                        @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+                                                        @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<CommentVo>> replyList = commentService.getReplyList(commentId, pageNum, pageSize);
         return Result.success(replyList);
     }

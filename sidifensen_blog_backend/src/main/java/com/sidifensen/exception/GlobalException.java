@@ -49,7 +49,6 @@ public class GlobalException {
 
     @ExceptionHandler(RateLimitException.class)
     Object handleRateLimitException(RateLimitException e) {
-        log.warn("限流异常：{}", e.getMessage());
         return Result.error(e.getMessage());
     }
 

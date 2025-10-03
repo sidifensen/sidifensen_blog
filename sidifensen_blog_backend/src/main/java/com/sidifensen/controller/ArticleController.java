@@ -12,6 +12,7 @@ import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.service.ArticleService;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,7 +38,8 @@ public class ArticleController {
      * @return 全部文章列表
      */
     @GetMapping("/listAll")
-    public Result getAllArticleList(@NotNull Integer pageNum, @NotNull Integer pageSize) {
+    public Result getAllArticleList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+                                    @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<ArticleVo>> articleVoList = articleService.getAllArticleList(pageNum, pageSize);
         return Result.success(articleVoList);
     }
@@ -48,7 +50,8 @@ public class ArticleController {
      * @return 用户文章列表
      */
     @PostMapping("/user/list")
-    public Result getUserArticleList(@NotNull Integer pageNum, @NotNull Integer pageSize,
+    public Result getUserArticleList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+                                     @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
                                      @RequestBody ArticleStatusDto articleStatusDto) {
         PageVo<List<ArticleVo>> articleVoList = articleService.getUserArticleList(pageNum, pageSize, articleStatusDto);
         return Result.success(articleVoList);
@@ -60,7 +63,8 @@ public class ArticleController {
      * @return 用户文章列表
      */
     @PostMapping("/manage/list")
-    public Result getArticleMangeList(@NotNull Integer pageNum, @NotNull Integer pageSize,
+    public Result getArticleMangeList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+                                      @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
                                       @RequestBody ArticleStatusDto articleStatusDto) {
         PageVo<List<ArticleVo>> articleVoList = articleService.getArticleMangeList(pageNum, pageSize, articleStatusDto);
         return Result.success(articleVoList);

@@ -96,15 +96,21 @@ public class RateLimitAspect {
             // 根据访问次数检查是否需要加入黑名单
             BlacklistStrategy strategy = BlacklistStrategy.getStrategyByAccessCount(currentCount.intValue());
             if (strategy != null) { 
+                // 构建接口路径
+                String apiPath = className + ":" + method.getName();
+                
+                // 生成详细的违规原因（包含接口和访问次数）
+                String detailedReason = strategy.getDetailedReason(apiPath, currentCount.intValue());
+                
                 // 加入Redis黑名单（快速检查）
                 String blacklistKey = RedisConstants.Blacklist + identifier;
-                redisUtils.set(blacklistKey, strategy.getDescription(), strategy.getBanDuration(), TimeUnit.SECONDS);
+                redisUtils.set(blacklistKey, detailedReason, strategy.getBanDuration(), TimeUnit.SECONDS);
 
                 // 保存到数据库（持久化记录）
-                blacklistService.addToBlacklist(identifier, strategy.getDescription(), strategy.getBanDuration());
+                blacklistService.addToBlacklist(identifier, detailedReason, strategy.getBanDuration());
 
-                log.warn("用户加入黑名单 - 用户标识: {}, 访问次数: {}, 策略: {}, 封禁时长: {}秒",
-                        identifier, currentCount, strategy.getDescription(), strategy.getBanDuration());
+                log.warn("用户加入黑名单 - 用户标识: {}, 访问接口: {}, 访问次数: {}, 策略: {}, 封禁时长: {}秒",
+                        identifier, apiPath, currentCount, strategy.getDescription(), strategy.getBanDuration());
 
                 // 清除限流计数器
                 redisUtils.del(rateLimitKey);

@@ -122,4 +122,15 @@ public class BlogConstants {
     // 限流相关错误信息
     public static final String RateLimitExceeded = "操作繁忙，请稍候再试";
     public static final String BlacklistedUser = "您的访问已被限制，请稍后再试";
+
+    // 黑名单相关错误信息
+    public static final String NotFoundBlacklist = "黑名单记录不存在";
+    public static final String UserIdsRequired = "用户ID列表不能为空";
+    public static final String BlacklistReasonRequired = "拉黑原因不能为空";
+    public static final String BlacklistExpireTimeRequired = "到期时间不能为空";
+    public static final String BlacklistIdRequired = "黑名单ID不能为空";
+    public static final String AddBlacklistError = "添加黑名单失败";
+    public static final String UpdateBlacklistError = "更新黑名单失败";
+    public static final String DeleteBlacklistError = "删除黑名单失败";
+    public static final String BlacklistIdsRequired = "黑名单ID列表不能为空";
 }

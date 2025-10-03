@@ -52,8 +52,8 @@ public class ColumnController {
      */
     @GetMapping("/list/{userId}")
     public Result<PageVo<List<ColumnVo>>> getColumnListByUserId(@PathVariable Integer userId,
-                                                                @NotNull Integer pageNum,
-                                                                @NotNull Integer pageSize) {
+                                                                @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+                                                                @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<ColumnVo>> columnList = columnService.getColumnListByUserId(userId, pageNum, pageSize);
         return Result.success(columnList);
     }
@@ -81,8 +81,8 @@ public class ColumnController {
      * @return 专栏列表
      */
     @GetMapping("/search")
-    public Result<PageVo<List<ColumnVo>>> searchColumnList(@NotNull Integer pageNum,
-                                                           @NotNull Integer pageSize,
+    public Result<PageVo<List<ColumnVo>>> searchColumnList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+                                                           @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
                                                            String keyword) {
         PageVo<List<ColumnVo>> columnList = columnService.searchColumnList(pageNum, pageSize, keyword);
         return Result.success(columnList);
@@ -97,7 +97,8 @@ public class ColumnController {
      * @return 用户专栏列表
      */
     @PostMapping("/manage/list")
-    public Result<PageVo<List<UserColumnManageVo>>> getUserColumnManageList(@NotNull Integer pageNum, @NotNull Integer pageSize,
+    public Result<PageVo<List<UserColumnManageVo>>> getUserColumnManageList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+                                                                            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
                                                                             @RequestBody ColumnFilterDto columnFilterDto) {
         PageVo<List<UserColumnManageVo>> columnList = columnService.getUserColumnManageList(pageNum, pageSize, columnFilterDto);
         return Result.success(columnList);

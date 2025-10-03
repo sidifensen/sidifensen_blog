@@ -38,8 +38,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // 设置认证管理器
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(SecurityConstants.No_Need_Auth_Urls).permitAll()
-                .requestMatchers(SecurityConstants.Optional_Auth_Urls).permitAll() // 可选认证接口也允许访问
+                .requestMatchers(SecurityConstants.Optional_Auth_Urls).permitAll() // 可选认证接口允许访问
                 .anyRequest().authenticated());
         http.csrf(AbstractHttpConfigurer::disable);
         // 配置跨域

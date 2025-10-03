@@ -25,18 +25,7 @@
         <el-table-column prop="sort" sortable label="排序" />
         <el-table-column prop="status" label="状态">
           <template #default="{ row }">
-            <el-switch
-              v-model="row.status"
-              size="large"
-              active-color="#42b983"
-              inactive-color="#cccccc"
-              active-text="正常"
-              inactive-text="禁用"
-              :active-value="0"
-              :inactive-value="1"
-              inline-prompt
-              :loading="switchLoading"
-              :before-change="() => handleStatusChange(row.id, row.status === 0 ? 1 : 0)" />
+            <el-switch v-model="row.status" size="large" active-color="#42b983" inactive-color="#cccccc" active-text="正常" inactive-text="禁用" :active-value="0" :inactive-value="1" inline-prompt :loading="switchLoading" :before-change="() => handleStatusChange(row.id, row.status === 0 ? 1 : 0)" />
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" sortable width="120" />
@@ -280,14 +269,29 @@ const getAllMenus = async () => {
 };
 
 // 处理添加菜单
-const handleAddMenu = (row) => {
-  getAllMenus();
+const handleAddMenu = async (row) => {
+  await getAllMenus();
+
   if (row) {
     dialogTitle.value = "新增菜单";
-    // 如果传值了说明是在表格行内的新增按钮
-    menuForm.value.parentId = row.id;
+    // 如果传值了说明是在表格行内的新增按钮（添加子菜单）
+    menuForm.value = {
+      id: null,
+      name: "",
+      path: "",
+      component: "",
+      icon: "",
+      parentId: row.id,
+      sort: 0, // 子菜单排序从0开始
+      status: 0,
+    };
     dialogVisible.value = true;
   } else {
+    // 点击右上角的新增菜单按钮，计算最大排序号
+    const maxSort = allMenus.value.reduce((max, menu) => {
+      return menu.sort > max ? menu.sort : max;
+    }, 0);
+
     dialogTitle.value = "新增菜单";
     menuForm.value = {
       id: null,
@@ -296,7 +300,7 @@ const handleAddMenu = (row) => {
       component: "",
       icon: "",
       parentId: 0,
-      sort: 0,
+      sort: maxSort + 1, // 顶级菜单排序为最大值+1
       status: 0,
     };
     dialogVisible.value = true;

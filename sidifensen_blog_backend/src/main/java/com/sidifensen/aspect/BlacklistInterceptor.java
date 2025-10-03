@@ -34,7 +34,7 @@ public class BlacklistInterceptor implements HandlerInterceptor {
     private IpUtils ipUtils;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         // 获取用户标识：优先使用登录用户ID，如果未登录则使用IP地址
         String identifier;
         Integer userId = SecurityUtils.getUserId();
@@ -51,8 +51,8 @@ public class BlacklistInterceptor implements HandlerInterceptor {
             long ttl = redisUtils.getExpire(blacklistKey, TimeUnit.MINUTES);
             String violationType = (String) redisUtils.get(blacklistKey);
 
-            log.warn("黑名单用户尝试访问 - 用户标识: {}, 违规类型: {}, 剩余封禁时间: {}分钟, 请求URI: {}",
-                    identifier, violationType, ttl, request.getRequestURI());
+            log.warn("黑名单用户尝试访问 - 用户标识: {}, 违规类型: {}, 剩余封禁时间: {}分钟",
+                    identifier, violationType, ttl);
 
             throw new RateLimitException(BlogConstants.BlacklistedUser);
         }
