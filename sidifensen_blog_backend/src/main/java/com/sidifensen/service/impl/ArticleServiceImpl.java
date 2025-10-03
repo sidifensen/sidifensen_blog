@@ -341,36 +341,36 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Integer userId = SecurityUtils.getUserId() == 0 ? null : SecurityUtils.getUserId();
         // 获取客户端IP地址
         String ipAddress = ipUtils.getIp();
-        // 异步增加阅读量，不阻塞用户获取文章详情
-        executorService.execute(() -> {
-            try {
-                this.incrReadCount(articleId, userId, ipAddress);
-            } catch (Exception e) {
-                log.error("异步增加文章阅读量失败，文章ID: {}, 错误: {}", articleId, e.getMessage(), e);
-            }
-        });
+        // 异步增加阅读量
+        this.incrReadCount(articleId, userId, ipAddress);
 
         return articleVo;
     }
 
+    // 异步增加阅读量
     private void incrReadCount(Integer articleId, Integer userId, String ipAddress) {
-        // 检查并记录浏览，如果用户/访客已浏览过，则不增加阅读量
-        boolean shouldIncrement = historyService.checkAndRecordRead(
-                articleId, userId, ipAddress);
+        executorService.execute(() -> {
+            try {
+                // 检查并记录浏览，如果用户/访客已浏览过，则不增加阅读量
+                boolean shouldIncrement = historyService.checkAndRecordRead(
+                        articleId, userId, ipAddress);
 
-        if (shouldIncrement) {
-            // 用户/访客首次阅读，增加阅读量（使用原子自增操作）
-            boolean updateResult = this.lambdaUpdate()
-                    .eq(Article::getId, articleId)
-                    .setIncrBy(Article::getReadCount, 1)
-                    .update();
+                if (shouldIncrement) {
+                    // 用户/访客首次阅读，增加阅读量（使用原子自增操作）
+                    boolean updateResult = this.lambdaUpdate()
+                            .eq(Article::getId, articleId)
+                            .setIncrBy(Article::getReadCount, 1)
+                            .update();
 
-            if (!updateResult) {
-                log.error("更新文章阅读量失败，文章ID: {}", articleId);
-                throw new BlogException(BlogConstants.UpdateArticleReadCountError);
+                    if (!updateResult) {
+                        log.error("更新文章阅读量失败，文章ID: {}", articleId);
+                        throw new BlogException(BlogConstants.UpdateArticleReadCountError);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("异步增加文章阅读量失败，文章ID: {}, 错误: {}", articleId, e.getMessage(), e);
             }
-        }
-
+        });
     }
 
     @Override

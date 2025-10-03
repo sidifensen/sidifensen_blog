@@ -186,17 +186,17 @@ public class FileUploadUtils {
                     fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
                 }
 
-                // 构建用户自定义的目录路径
+                // 文件夹目录
                 String dir = uploadEnum.getDir() + dirName;
 
                 PutObjectArgs args = PutObjectArgs.builder()
                         .bucket(bucketName)
                         .headers(Map.of("Content-Type", Objects.requireNonNull(file.getContentType())))
-                        .object(dir + name + "." + fileExtension)
+                        .object(dir + "/" + name + "." + fileExtension)
                         .stream(stream, file.getSize(), -1)
                         .build();
                 client.putObject(args);
-                return publicPoint + "/" + bucketName + "/" + dir + name + "." + fileExtension;
+                return publicPoint + "/" + bucketName + "/" + dir + "/" + name + "." + fileExtension;
             }
             log.error("--------------------上传文件格式不正确--------------------");
             throw new FileUploadException("上传文件类型错误");

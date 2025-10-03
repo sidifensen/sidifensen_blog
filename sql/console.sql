@@ -276,7 +276,6 @@ create table follow
     index idx_followed_time (followed_id, create_time desc)
 );
 
-
 create table link
 (
     id             int primary key auto_increment comment '友链id',
@@ -289,4 +288,24 @@ create table link
     email          varchar(255) not null comment '网站邮箱',
     create_time    datetime     not null comment '创建时间',
     is_deleted     tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除'
+);
+
+create table blacklist
+(
+    id          int primary key auto_increment comment '黑名单id',
+    type        tinyint      not null comment '黑名单类型 0-用户 1-ip地址',
+    user_id     int                   default null comment '用户id',
+    ip          varchar(100)          default null comment 'ip地址',
+    reason      varchar(200) not null comment '拉黑原因', 
+    ban_time    datetime     not null comment '拉黑时间',
+    expire_time datetime              default null comment '到期时间',
+    create_time datetime     not null comment '创建时间',
+    update_time datetime     not null comment '更新时间',
+    is_deleted  tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
+    -- 查询某用户是否在黑名单(检查是否过期)
+    index idx_user_expire (user_id, expire_time),
+    -- 查询某IP是否在黑名单(检查是否过期)
+    index idx_ip_expire (ip, expire_time),
+    -- 按类型和拉黑时间查询黑名单列表
+    index idx_type_ban_time (type, ban_time desc)
 );

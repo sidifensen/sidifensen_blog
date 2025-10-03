@@ -1,5 +1,6 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.ArticleAuditDto;
 import com.sidifensen.domain.dto.ArticleDto;
 import com.sidifensen.domain.dto.ArticleStatusDto;
@@ -22,6 +23,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/article")
+@RateLimit
 public class ArticleController {
 
     @Resource

@@ -28,8 +28,8 @@ import java.io.IOException;
 /**
  * @author sdifensen
  * @date 2023/12/14
- *       该接口在请求前执行一次，获取request中的数据，其中token就在请求头里
- *       获取token，根据token从redis中获取用户信息
+ * 该接口在请求前执行一次，获取request中的数据，其中token就在请求头里
+ * 获取token，根据token从redis中获取用户信息
  */
 @Component
 @Slf4j
@@ -50,12 +50,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        // 如果是不需要登录的接口，则直接放行
+        // 检查是否是不需要登录的接口
+        boolean isNoAuthRequired = false;
         for (String url : SecurityConstants.No_Need_Auth_Urls) {
             AntPathRequestMatcher matcher = new AntPathRequestMatcher(url);
             if (matcher.matches(request)) {
-                filterChain.doFilter(request, response);
-                return;
+                isNoAuthRequired = true;
+                break;
             }
         }
 
@@ -87,81 +88,69 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // return;
         // }
 
-        // 从请求头中获取jwt
-        String jwt = request.getHeader("Authorization");
-        if (ObjectUtil.isEmpty(jwt)) {
-            // 如果是可选认证接口且没有token，直接放行（不设置SecurityContext）
-            if (isOptionalAuth) {
-                filterChain.doFilter(request, response);
-                return;
+        // 可选认证接口：有token就认证，没有就跳过
+        if (isNoAuthRequired || isOptionalAuth) {
+            String jwt = request.getHeader("Authorization");
+            if (ObjectUtil.isNotEmpty(jwt)) {
+                authenticateUser(request, response);
             }
-            // 请先登录
-            log.error("用户访问接口{}, 提示:请先登录", request.getRequestURI());
-            WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.LoginRequired).toJson());
+            filterChain.doFilter(request, response);
             return;
         }
-        if (ObjectUtil.isNotEmpty(jwt)) {
-            // 解析并验证jwt
-            Integer id = jwtUtils.parseToken(jwt);
-            if (ObjectUtil.isEmpty(id)) {
-                // 如果是可选认证接口且token无效，直接放行（不设置SecurityContext）
-                if (isOptionalAuth) {
-                    filterChain.doFilter(request, response);
-                    return;
-                }
-                // 登录过期
-                log.error("用户访问接口{},提示:登录过期", request.getRequestURI());
-                WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.LoginExpired).toJson());
-                return;
-            }
-            try {
-                // 根据id查询用户信息
-                SysUser sysUser = sysUserMapper.selectById(id);
-                if (ObjectUtil.isEmpty(sysUser)) {
-                    // 如果是可选认证接口且用户不存在，直接放行（不设置SecurityContext）
-                    if (isOptionalAuth) {
-                        filterChain.doFilter(request, response);
-                        return;
-                    }
-                    // 用户不存在
-                    log.error("用户访问接口{}, 提示:用户不存在", request.getRequestURI());
-                    WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.NotFoundUser).toJson());
-                    return;
-                }
-                if (sysUser.getStatus() == StatusEnum.DISABLE.getStatus()) {
-                    // 如果是可选认证接口且用户被禁用，直接放行（不设置SecurityContext）
-                    if (isOptionalAuth) {
-                        filterChain.doFilter(request, response);
-                        return;
-                    }
-                    // 用户已被禁用
-                    log.error("用户id: {}, 访问接口{}, 提示:用户已被禁用", sysUser.getId(), request.getRequestURI());
-                    WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.UserDisabled).toJson());
-                    return;
-                }
-                // 将SysUser转换为LoginUser
-                LoginUser loginUser = userDetailsService.handleLogin(sysUser);
-                if (ObjectUtil.isNotEmpty(loginUser)) {
-                    // 鉴权，跳转的时候需要访问 /index 页面
-                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                            loginUser, null, loginUser.getAuthorities());
-                    // 将用户信息存储到SecurityContext中，SecurityContext存储到SecurityContextHolder中
-                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                }
-            } catch (Exception e) {
-                // 如果是可选认证接口且发生异常，直接放行（不设置SecurityContext）
-                if (isOptionalAuth) {
-                    log.warn("可选认证接口查询用户信息时发生异常，用户ID: {}, 错误信息: {}, 继续放行", id, e.getMessage());
-                    filterChain.doFilter(request, response);
-                    return;
-                }
-                log.error("查询用户信息时发生异常，用户ID: {}, 错误信息: {}", id, e.getMessage(), e);
-                WebUtils.Unauthorized(response, Result.unauthorized("系统内部错误").toJson());
-                return;
+
+        // 必须认证接口：认证失败则拦截
+        authenticateUser(request, response);
+        filterChain.doFilter(request, response);
+    }
+
+    /**
+     * 认证用户并设置SecurityContext
+     *
+     * @throws ServletException 认证失败时抛出
+     */
+    private void authenticateUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String jwt = request.getHeader("Authorization");
+        if (ObjectUtil.isEmpty(jwt)) {
+            log.error("用户访问接口{}, 提示:请先登录", request.getRequestURI());
+            WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.LoginRequired).toJson());
+            throw new ServletException(BlogConstants.LoginRequired);
+        }
+
+        Integer id = jwtUtils.parseToken(jwt);
+        if (ObjectUtil.isEmpty(id)) {
+            log.error("用户id: {}, 访问接口{},提示:登录过期", id, request.getRequestURI());
+            WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.LoginExpired).toJson());
+            throw new ServletException(BlogConstants.LoginExpired);
+        }
+
+        try {
+            SysUser sysUser = sysUserMapper.selectById(id);
+            if (ObjectUtil.isEmpty(sysUser)) {
+                log.error("用户id: {}, 访问接口{}, 提示:用户不存在", id, request.getRequestURI());
+                WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.NotFoundUser).toJson());
+                throw new ServletException(BlogConstants.NotFoundUser);
             }
 
+            if (sysUser.getStatus() == StatusEnum.DISABLE.getStatus()) {
+                log.error("用户id: {}, 访问接口{}, 提示:用户已被禁用", sysUser.getId(), request.getRequestURI());
+                WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.UserDisabled).toJson());
+                throw new ServletException(BlogConstants.UserDisabled);
+            }
+
+            // 设置用户信息到SecurityContext
+            LoginUser loginUser = userDetailsService.handleLogin(sysUser);
+            if (ObjectUtil.isNotEmpty(loginUser)) {
+                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                        loginUser, null, loginUser.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            }
+        } catch (ServletException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("查询用户信息时发生异常，错误: {}", e.getMessage(), e);
+            WebUtils.Unauthorized(response, Result.unauthorized("系统内部错误").toJson());
+            throw new ServletException("系统内部错误", e);
         }
-        filterChain.doFilter(request, response);
     }
 
     /**

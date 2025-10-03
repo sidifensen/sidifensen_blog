@@ -47,6 +47,12 @@ public class GlobalException {
         return Result.error(e.getMessage());
     }
 
+    @ExceptionHandler(RateLimitException.class)
+    Object handleRateLimitException(RateLimitException e) {
+        log.warn("限流异常：{}", e.getMessage());
+        return Result.error(e.getMessage());
+    }
+
     @ExceptionHandler(AuthenticationException.class)
     Object handleAuthenticationException(AuthenticationException e) {
         log.error("认证异常：{}", e.getMessage()); // 用户帐号已被锁定

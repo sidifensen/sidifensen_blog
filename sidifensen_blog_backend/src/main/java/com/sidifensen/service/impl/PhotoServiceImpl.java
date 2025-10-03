@@ -112,7 +112,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     public void uploadAlbum(MultipartFile file, Integer albumId) {
         // 拼接userId/albumId作为目录名
         Integer userId = SecurityUtils.getUserId();
-        String dirName = userId + "/" + albumId + "/";
+        String dirName = userId + "/" + albumId;
         String url = fileUploadUtils.upload(UploadEnum.ALBUM, file, dirName);
         auditAndUpdate(userId, url, albumId);
     }
@@ -120,7 +120,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     @Override
     public String uploadArticle(MultipartFile file) {
         Integer userId = SecurityUtils.getUserId();
-        String dirName = userId + "/";
+        String dirName = String.valueOf(userId);
         String url = fileUploadUtils.upload(UploadEnum.ARTICLE, file, dirName);
         auditAndUpdate(userId, url);
         return url;
@@ -129,7 +129,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     @Override
     public String uploadColumn(MultipartFile file) {
         Integer userId = SecurityUtils.getUserId();
-        String dirName = userId + "/";
+        String dirName = String.valueOf(userId);
         String url = fileUploadUtils.upload(UploadEnum.COLUMN, file, dirName);
         auditAndUpdate(userId, url);
         return url;
@@ -138,7 +138,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     @Override
     public String uploadAvatar(MultipartFile file) {
         Integer userId = SecurityUtils.getUserId();
-        String dirName = userId + "/";
+        String dirName = String.valueOf(userId);
         String url = fileUploadUtils.upload(UploadEnum.USER_AVATAR, file, dirName);
         auditAndUpdate(userId, url);
         return url;

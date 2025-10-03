@@ -118,4 +118,8 @@ public class BlogConstants {
     public static final String LinkEmailRequired = "网站邮箱不能为空";
     public static final String LinkIdRequired = "友链ID不能为空";
     public static final String GetLinkListError = "获取友链列表失败";
+
+    // 限流相关错误信息
+    public static final String RateLimitExceeded = "操作繁忙，请稍候再试";
+    public static final String BlacklistedUser = "您的访问已被限制，请稍后再试";
 }
