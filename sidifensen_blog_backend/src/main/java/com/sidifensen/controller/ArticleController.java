@@ -1,6 +1,7 @@
 package com.sidifensen.controller;
 
 import com.sidifensen.aspect.RateLimit;
+import com.sidifensen.aspect.TimeConsuming;
 import com.sidifensen.domain.dto.ArticleAuditDto;
 import com.sidifensen.domain.dto.ArticleDto;
 import com.sidifensen.domain.dto.ArticleStatusDto;
@@ -22,6 +23,7 @@ import java.util.List;
  * @since 2025-08-24
  */
 @RateLimit(30)
+@TimeConsuming
 @RestController
 @RequestMapping("/article")
 public class ArticleController {
@@ -119,6 +121,40 @@ public class ArticleController {
     public Result getArticle(@PathVariable Integer articleId) {
         ArticleVo articleVo = articleService.getArticle(articleId);
         return Result.success(articleVo);
+    }
+
+    /**
+     * 根据标题搜索文章
+     *
+     * @param title    搜索关键字
+     * @param pageNum  页码
+     * @param pageSize 页大小
+     * @return 搜索结果列表
+     */
+    @RateLimit(20)
+    @GetMapping("/search")
+    public Result searchArticleByTitle(@RequestParam @NotNull(message = "搜索关键字不能为空") String title,
+                                       @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+                                       @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<ArticleVo>> articleVoList = articleService.searchArticleByTitle(title, pageNum, pageSize);
+        return Result.success(articleVoList);
+    }
+
+    /**
+     * 根据标签搜索文章
+     *
+     * @param tag      标签关键字
+     * @param pageNum  页码
+     * @param pageSize 页大小
+     * @return 搜索结果列表
+     */
+    @RateLimit(20)
+    @GetMapping("/search/tag")
+    public Result searchArticleByTag(@RequestParam @NotNull(message = "标签不能为空") String tag,
+                                     @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+                                     @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<ArticleVo>> articleVoList = articleService.searchArticleByTag(tag, pageNum, pageSize);
+        return Result.success(articleVoList);
     }
 
     /**

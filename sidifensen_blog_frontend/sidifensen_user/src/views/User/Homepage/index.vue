@@ -581,13 +581,12 @@ $bg-color: #f5f7fa;
 
 // 用户主页容器
 .user-homepage {
-  background: url("@/assets/img/th.jpg") no-repeat center center / cover fixed;
-  min-height: calc(100vh - 48px);
+  min-height: 100vh; // 确保至少占满整个视口高度
   overflow-y: auto; // 改为auto，只在需要时显示滚动条
 
   // 内容区域
   .content-section {
-    padding: 10px 0;
+    padding: 10px 0 40px 0; // 增加底部内边距，避免内容紧贴底部
 
     .content-layout {
       display: grid;
@@ -662,16 +661,16 @@ $bg-color: #f5f7fa;
         }
       }
     }
+  }
 
-    // 标签页内容容器 - 固定高度防止抖动
-    .tab-content-container {
-      min-height: 620px; // 设置固定最小高度，包含筛选栏高度
-      position: relative;
+  // 标签页内容容器 - 固定高度防止抖动
+  .tab-content-container {
+    min-height: 400px; // 减少最小高度，避免出现过多空白区域
+    position: relative;
 
-      // 确保子组件占据完整高度
-      > div {
-        min-height: 100%;
-      }
+    // 确保子组件占据完整高度
+    > div {
+      min-height: 100%;
     }
   }
 }
@@ -720,12 +719,13 @@ $bg-color: #f5f7fa;
         padding: 0px 10px 10px 10px;
         margin-bottom: 5px;
       }
-
-      // 移动端调整标签页内容容器高度
-      .tab-content-container {
-        min-height: 500px; // 移动端减少高度
-      }
     }
+
+    // 移动端调整标签页内容容器高度
+    .tab-content-container {
+      min-height: 300px; // 移动端进一步减少高度，避免出现过多空白
+    }
+
     .sidebar {
       display: none;
     }

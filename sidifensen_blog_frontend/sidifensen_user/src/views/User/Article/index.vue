@@ -85,16 +85,18 @@ onMounted(async () => {
 .article-detail {
   height: 100%;
   background-color: var(--el-bg-color-page);
+  background: var(--el-bg-color-page);
   padding: 20px 0;
-
+  
   // 三栏布局容器
   .article-container {
+    padding-top: 70px;
     max-width: 1600px;
     margin: 0 auto;
     display: grid;
     grid-template-columns: 280px 1fr 280px;
     gap: 20px;
-    padding: 0 20px;
+    // padding: 0 20px;
 
     // 左侧用户信息栏
     .left-sidebar {

@@ -26,8 +26,8 @@
       <span class="menu-text">创作中心</span>
     </el-menu-item>
     <div class="right">
-      <div class="search">
-        <el-icon size="29px" color="#3d92eb"><Search /></el-icon>
+      <div class="search" @click="handleSearch">
+        <el-icon size="29px" color="var(--el-text-color-primary)"><Search /></el-icon>
       </div>
       <Dark />
       <div v-if="user" class="user-info">
@@ -147,6 +147,10 @@ const handleSelect = (index) => {
     // 对于其他路由，使用普通的push方法
     router.push(index);
   }
+};
+
+const handleSearch = () => {
+  router.push("/search");
 };
 
 const handleLoginClick = () => {

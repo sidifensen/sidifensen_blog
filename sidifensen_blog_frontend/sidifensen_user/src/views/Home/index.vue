@@ -1,29 +1,27 @@
 <template>
   <div class="home-container">
-    <!-- 主要内容区域 -->
-    <main class="main-content">
-      <div class="container">
-        <!-- 英雄区域 -->
-        <section class="hero">
-          <div class="hero-content">
-            <h1 class="hero-title">欢迎来到sidifensen博客</h1>
-            <p class="hero-subtitle">分享技术、经验和见解</p>
-            <router-link to="/article" class="hero-btn">
-              <span>浏览文章</span>
-              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </router-link>
-          </div>
-          <div class="hero-decoration">
-            <div class="floating-shapes">
-              <div class="shape shape-1"></div>
-              <div class="shape shape-2"></div>
-              <div class="shape shape-3"></div>
-            </div>
-          </div>
-        </section>
+    <!-- 全屏沉浸式首屏 -->
+    <section class="fullscreen-hero">
+      <div class="hero-background"></div>
+      <div class="hero-content">
+        <h1 class="hero-title">sidifensen-blog</h1>
+        <p class="hero-subtitle">分享技术、经验和见解</p>
+      </div>
+      <div class="scroll-indicator" @click="scrollToContent">
+        <div class="mouse">
+          <div class="wheel"></div>
+        </div>
+        <div class="arrow">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </section>
 
+    <!-- 主要内容区域 -->
+    <main class="main-content" ref="contentSection">
+      <div class="container">
         <!-- 最新文章 -->
         <section class="latest-articles">
           <h2>最新文章</h2>
@@ -116,35 +114,85 @@
 
     <!-- 页脚 -->
     <footer class="footer">
+      <div class="footer-wave">
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+          <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"></path>
+        </svg>
+      </div>
       <div class="container">
         <div class="footer-content">
-          <div class="footer-logo">
-            <h3>sidifensen博客</h3>
-            <p>分享技术、经验和见解</p>
+          <!-- 左侧品牌信息 -->
+          <div class="footer-brand">
+            <h3 class="brand-title">
+              <span class="brand-icon">✨</span>
+              sidifensen博客
+            </h3>
+            <p class="brand-description">分享技术、经验和见解<br />用代码改变世界</p>
+            <div class="social-links">
+              <a href="https://github.com/sidifensen" class="social-link" title="GitHub">
+                <svg-icon color="#ffffff" name="github" width="20px" height="20px" />
+              </a>
+              <a href="https://gitee.com/sidifensen" class="social-link" title="Gitee">
+                <svg-icon color="#ffffff" name="gitee" width="20px" height="20px" />
+              </a>
+            </div>
           </div>
+
+          <!-- 中间导航链接 -->
           <div class="footer-links">
             <div class="footer-column">
-              <h4>导航</h4>
-              <ul>
+              <h4 class="column-title">
+                <el-icon><Compass /></el-icon>
+                快速导航
+              </h4>
+              <ul class="links-list">
                 <li><router-link to="/">首页</router-link></li>
-                <li><router-link to="/articles">文章</router-link></li>
-                <li><router-link to="/categories">分类</router-link></li>
-                <li><router-link to="/tags">标签</router-link></li>
-                <li><router-link to="/about">关于</router-link></li>
+                <li><router-link to="/article">文章</router-link></li>
+                <li><router-link to="/link">友链</router-link></li>
               </ul>
             </div>
+
             <div class="footer-column">
-              <h4>联系我们</h4>
-              <ul>
-                <li>邮箱: contact@example.com</li>
-                <li>微信: example_wechat</li>
-                <li>微博: example_weibo</li>
+              <h4 class="column-title">
+                <el-icon><Phone /></el-icon>
+                联系方式
+              </h4>
+              <ul class="links-list contact-list">
+                <li>
+                  <el-icon><Message /></el-icon>
+                  <span>contact@example.com</span>
+                </li>
+                <li>
+                  <el-icon><ChatDotSquare /></el-icon>
+                  <span>example_wechat</span>
+                </li>
+                <li>
+                  <el-icon><Location /></el-icon>
+                  <span>中国·北京</span>
+                </li>
               </ul>
             </div>
           </div>
         </div>
+
+        <!-- 底部版权信息 -->
         <div class="footer-bottom">
-          <p>&copy; {{ currentYear }} sidifensen博客. 保留所有权利.</p>
+          <div class="footer-divider"></div>
+          <div class="footer-bottom-content">
+            <div class="footer-left">
+              <p class="copyright">&copy; {{ currentYear }} <strong>sidifensen博客</strong>. All Rights Reserved.</p>
+              <p class="beian">
+                <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">粤ICP备xxxxxxxx号</a>
+              </p>
+            </div>
+            <div class="footer-meta">
+              <span>Made with ❤️ by sidifensen</span>
+              <span class="separator">|</span>
+              <a href="#">隐私政策</a>
+              <span class="separator">|</span>
+              <a href="#">使用条款</a>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
@@ -154,8 +202,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed, nextTick } from "vue";
 import { useRouter } from "vue-router";
-import { ElMessage } from "element-plus";
-import { Loading, Picture, View, Star } from "@element-plus/icons-vue";
+import { Loading, Picture, View, Star, ChatDotSquare, Message, Notification, Compass, Phone, Location } from "@element-plus/icons-vue";
 import { getAllArticleList } from "@/api/article";
 
 // 路由
@@ -169,6 +216,7 @@ const currentPage = ref(1); // 当前页码
 const pageSize = ref(9); // 每页数据量
 const total = ref(0); // 总数据量
 const currentYear = ref(new Date().getFullYear());
+const contentSection = ref(null); // 内容区域引用
 
 // 计算属性
 const hasMore = computed(() => {
@@ -268,6 +316,13 @@ const getArticleDetailRoute = (article) => {
 const goToArticle = (article) => {
   const route = getArticleDetailRoute(article);
   router.push(route);
+};
+
+// 滚动到内容区域
+const scrollToContent = () => {
+  if (contentSection.value) {
+    contentSection.value.scrollIntoView({ behavior: "smooth" });
+  }
 };
 
 // 组件挂载时获取文章列表并绑定滚动事件
@@ -408,172 +463,139 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   }
 }
 
-// 主要内容区域样式
-.main-content {
-  padding: 40px 0;
+// 全屏沉浸式首屏
+.fullscreen-hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  margin-top: -48px; // 向上延伸覆盖导航栏高度
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  overflow: hidden;
+  padding-top: calc(25vh + 48px); // 从顶部开始25%的视口高度加上导航栏高度，让内容更居中
 
-  .hero {
-    position: relative;
-    text-align: center;
-    padding: 80px 0;
-    background: linear-gradient(135deg, #2196f3 0%, #21cbf3 100%);
-    border-radius: 20px;
-    margin-bottom: 40px;
-    overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  // 背景图片层
+  .hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("@/assets/img/th (2).jpg") no-repeat center center / cover fixed;
+    z-index: 1;
 
-    // 动态背景效果
-    &::before {
-      content: "";
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-      animation: heroFloat 8s ease-in-out infinite;
-      pointer-events: none;
-    }
-
+    // 底部渐变过渡效果
     &::after {
       content: "";
       position: absolute;
-      top: 0;
+      bottom: 0;
       left: 0;
       right: 0;
-      bottom: 0;
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(1px);
+      height: 150px; // 渐变高度
+      background: linear-gradient(to bottom, transparent 0%, color-mix(in srgb, var(--el-bg-color-page) 30%, transparent) 30%, color-mix(in srgb, var(--el-bg-color-page) 70%, transparent) 60%, color-mix(in srgb, var(--el-bg-color-page) 95%, transparent) 90%, var(--el-bg-color-page) 100%);
+      pointer-events: none;
     }
+  }
 
-    .hero-content {
-      position: relative;
-      z-index: 3;
-    }
+  // 内容层
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: $white;
+    animation: fadeInUp 1.2s ease-out;
 
     .hero-title {
-      font-size: 3.2rem;
+      font-size: 5rem;
       font-weight: 700;
       margin-bottom: 20px;
       color: $white;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      text-shadow: 0 4px 30px rgba(0, 0, 0, 0.8), 0 2px 10px rgba(0, 0, 0, 0.6);
+      letter-spacing: 2px;
       animation: slideInUp 1s ease-out;
-
-      background: linear-gradient(45deg, $white, rgba(255, 255, 255, 0.8));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
     }
 
     .hero-subtitle {
-      font-size: 1.3rem;
-      color: rgba(255, 255, 255, 0.9);
-      margin-bottom: 35px;
-      font-weight: 400;
+      font-size: 1.5rem;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.98);
+      text-shadow: 0 2px 20px rgba(0, 0, 0, 0.7), 0 1px 5px rgba(0, 0, 0, 0.5);
       animation: slideInUp 1s ease-out 0.2s both;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  // 滚动指示器
+  .scroll-indicator {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    cursor: pointer;
+    animation: fadeInUp 1s ease-out 0.6s both;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.6));
+
+    &:hover {
+      transform: translateX(-50%) scale(1.1);
     }
 
-    .hero-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 16px 32px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      background: rgba(255, 255, 255, 0.2);
-      color: $white;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-      text-decoration: none;
-      transition: all 0.3s ease;
-      animation: slideInUp 1s ease-out 0.4s both;
+    // 鼠标滚轮样式
+    .mouse {
+      width: 26px;
+      height: 40px;
+      border: 2px solid rgba(255, 255, 255, 0.95);
+      border-radius: 13px;
       position: relative;
-      overflow: hidden;
+      margin: 0 auto 10px;
 
-      &::before {
-        content: "";
+      .wheel {
+        width: 4px;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 2px;
         position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: left 0.5s ease;
-      }
-
-      .btn-icon {
-        width: 20px;
-        height: 20px;
-        transition: transform 0.3s ease;
-      }
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.3);
-        border-color: rgba(255, 255, 255, 0.5);
-        transform: translateY(-3px);
-        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
-
-        .btn-icon {
-          transform: translateX(4px);
-        }
-
-        &::before {
-          left: 100%;
-        }
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        animation: scrollWheel 1.5s ease-in-out infinite;
       }
     }
 
-    // 装饰元素
-    .hero-decoration {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 1;
-      pointer-events: none;
+    // 箭头样式
+    .arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
 
-      .floating-shapes {
-        position: relative;
-        width: 100%;
-        height: 100%;
+      span {
+        display: block;
+        width: 12px;
+        height: 12px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.95);
+        border-right: 2px solid rgba(255, 255, 255, 0.95);
+        transform: rotate(45deg);
+        animation: arrowBounce 1.5s ease-in-out infinite;
 
-        .shape {
-          position: absolute;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.1);
-          animation: shapeFloat 6s ease-in-out infinite;
+        &:nth-child(2) {
+          animation-delay: 0.15s;
+        }
 
-          &.shape-1 {
-            width: 60px;
-            height: 60px;
-            top: 20%;
-            left: 15%;
-            animation-delay: 0s;
-          }
-
-          &.shape-2 {
-            width: 80px;
-            height: 80px;
-            top: 60%;
-            right: 20%;
-            animation-delay: -2s;
-          }
-
-          &.shape-3 {
-            width: 40px;
-            height: 40px;
-            top: 30%;
-            right: 15%;
-            animation-delay: -4s;
-          }
+        &:nth-child(3) {
+          animation-delay: 0.3s;
         }
       }
     }
   }
+}
+
+// 主要内容区域样式
+.main-content {
+  padding: 60px 0;
+  background-color: var(--el-bg-color-page);
 
   .latest-articles {
     margin-bottom: 40px;
@@ -643,7 +665,6 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       overflow: hidden;
       box-shadow: $shadow;
       transition: all 0.3s ease;
-      border: 1px solid transparent;
       display: flex;
       flex-direction: column; // 垂直布局
       height: 100%; // 占满容器高度
@@ -833,11 +854,16 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       // 没有更多数据状态
       .no-more {
         margin: 20px 0;
+        background: transparent;
 
         .el-divider {
-          color: $dark-gray;
+          color: var(--el-border-color);
           font-size: 0.9rem;
           font-weight: 400;
+
+          :deep(.el-divider__text) {
+            background-color: transparent;
+          }
         }
       }
     }
@@ -846,52 +872,173 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 
 // 页脚样式
 .footer {
-  background-color: #2c3e50;
+  position: relative;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%);
   color: $white;
-  padding: 40px 0 20px;
+  padding: 0;
+  overflow: hidden;
+
+  // 顶部波浪效果
+  .footer-wave {
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    overflow: hidden;
+    line-height: 0;
+
+    svg {
+      position: relative;
+      display: block;
+      width: calc(100% + 1.3px);
+      height: 60px;
+      fill: var(--el-bg-color-page);
+    }
+  }
+
+  .container {
+    padding-top: 80px;
+    padding-bottom: 20px;
+  }
 
   .footer-content {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
+    display: grid;
+    grid-template-columns: 1.5fr 2fr;
+    gap: 60px;
+    margin-bottom: 40px;
+    padding: 0 20px;
 
-    .footer-logo {
-      max-width: 300px;
+    // 左侧品牌信息区域
+    .footer-brand {
+      .brand-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+        color: $white;
+        display: flex;
+        align-items: center;
+        gap: 8px;
 
-      h3 {
-        font-size: 1.5rem;
-        margin-bottom: 10px;
+        .brand-icon {
+          font-size: 2rem;
+          animation: sparkle 2s ease-in-out infinite;
+        }
       }
 
-      p {
-        color: #bdc3c7;
+      .brand-description {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 1rem;
+        line-height: 1.8;
+        margin-bottom: 24px;
+        font-weight: 300;
+      }
+
+      // 社交链接
+      .social-links {
+        display: flex;
+        gap: 12px;
+
+        .social-link {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 42px;
+          height: 42px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 50%;
+          color: $white;
+          text-decoration: none;
+          transition: all 0.3s ease;
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+
+          .el-icon {
+            font-size: 18px;
+          }
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+          }
+        }
       }
     }
 
+    // 导航链接区域
     .footer-links {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
       gap: 40px;
 
       .footer-column {
-        h4 {
+        .column-title {
           font-size: 1.1rem;
-          margin-bottom: 15px;
-          color: #ecf0f1;
+          font-weight: 600;
+          margin-bottom: 20px;
+          color: $white;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding-bottom: 12px;
+          border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+
+          .el-icon {
+            font-size: 18px;
+          }
         }
 
-        ul {
+        .links-list {
           list-style: none;
+          padding: 0;
+          margin: 0;
 
           li {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
 
             a {
-              color: #bdc3c7;
+              color: rgba(255, 255, 255, 0.8);
               text-decoration: none;
-              transition: color 0.3s ease;
+              font-size: 0.95rem;
+              transition: all 0.3s ease;
+              display: inline-block;
+              position: relative;
+
+              &::before {
+                content: "";
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                width: 0;
+                height: 2px;
+                background: $white;
+                transition: width 0.3s ease;
+              }
 
               &:hover {
                 color: $white;
+                padding-left: 8px;
+
+                &::before {
+                  width: 100%;
+                }
+              }
+            }
+          }
+
+          // 联系方式列表特殊样式
+          &.contact-list {
+            li {
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              color: rgba(255, 255, 255, 0.8);
+              font-size: 0.95rem;
+
+              .el-icon {
+                font-size: 16px;
+                color: rgba(255, 255, 255, 0.6);
               }
             }
           }
@@ -900,12 +1047,78 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
   }
 
+  // 底部区域
   .footer-bottom {
-    text-align: center;
-    padding-top: 20px;
-    border-top: 1px solid #34495e;
-    color: #bdc3c7;
-    font-size: 0.9rem;
+    padding: 0 20px;
+
+    .footer-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3) 20%, rgba(255, 255, 255, 0.3) 80%, transparent);
+      margin-bottom: 24px;
+    }
+
+    .footer-bottom-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding-bottom: 30px;
+
+      .footer-left {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        .copyright {
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 0.9rem;
+          margin: 0;
+
+          strong {
+            color: $white;
+            font-weight: 600;
+          }
+        }
+
+        .beian {
+          margin: 0;
+          font-size: 0.85rem;
+
+          a {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            transition: color 0.3s ease;
+
+            &:hover {
+              color: rgba(255, 255, 255, 0.9);
+            }
+          }
+        }
+      }
+
+      .footer-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+
+        .separator {
+          color: rgba(255, 255, 255, 0.3);
+        }
+
+        a {
+          color: rgba(255, 255, 255, 0.7);
+          text-decoration: none;
+          transition: color 0.3s ease;
+
+          &:hover {
+            color: $white;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -930,13 +1143,24 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   }
 
   .footer {
+    .container {
+      padding-top: 60px;
+    }
+
     .footer-content {
-      flex-direction: column;
-      gap: 30px;
+      grid-template-columns: 1fr;
+      gap: 40px;
 
       .footer-links {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+    }
+
+    .footer-bottom {
+      .footer-bottom-content {
         flex-direction: column;
-        gap: 20px;
+        text-align: center;
       }
     }
   }
@@ -947,33 +1171,37 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     padding: 0 15px;
   }
 
-  .main-content {
-    padding: 20px 0;
+  // 全屏首屏响应式
+  .fullscreen-hero {
+    padding-top: calc(20vh + 48px); // 移动端稍微降低一点，但仍需考虑导航栏高度
 
-    .hero {
-      padding: 50px 0;
-      margin-bottom: 30px;
-      border-radius: 15px;
+    .hero-background {
+      background-attachment: scroll; // 移动端优化
+    }
 
+    .hero-content {
       .hero-title {
-        font-size: 2.2rem;
+        font-size: 3rem;
+        letter-spacing: 1px;
       }
 
       .hero-subtitle {
-        font-size: 1.1rem;
-        margin-bottom: 25px;
-      }
-
-      .hero-btn {
-        padding: 12px 24px;
-        font-size: 1rem;
-      }
-
-      // 移动端隐藏装饰元素
-      .hero-decoration {
-        display: none;
+        font-size: 1.2rem;
       }
     }
+
+    .scroll-indicator {
+      bottom: 60px;
+
+      .mouse {
+        width: 22px;
+        height: 35px;
+      }
+    }
+  }
+
+  .main-content {
+    padding: 40px 0;
   }
 
   .latest-articles {
@@ -1003,35 +1231,120 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       }
     }
   }
+
+  // 页脚响应式
+  .footer {
+    .container {
+      padding-top: 50px;
+    }
+
+    .footer-wave {
+      height: 40px;
+
+      svg {
+        height: 40px;
+      }
+    }
+
+    .footer-content {
+      gap: 30px;
+
+      .footer-brand {
+        .brand-title {
+          font-size: 1.5rem;
+
+          .brand-icon {
+            font-size: 1.5rem;
+          }
+        }
+
+        .brand-description {
+          font-size: 0.9rem;
+        }
+
+        .social-links {
+          gap: 10px;
+
+          .social-link {
+            width: 38px;
+            height: 38px;
+
+            .el-icon {
+              font-size: 16px;
+            }
+          }
+        }
+      }
+
+      .footer-links {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+
+        .footer-column {
+          .column-title {
+            font-size: 1rem;
+          }
+        }
+      }
+    }
+
+    .footer-bottom {
+      .footer-bottom-content {
+        .footer-meta {
+          flex-direction: column;
+          gap: 8px;
+
+          .separator {
+            display: none;
+          }
+        }
+      }
+    }
+  }
 }
 
 // 超小屏幕优化
 @media screen and (max-width: 480px) {
-  .main-content {
-    .hero {
-      padding: 40px 0;
-      border-radius: 12px;
+  .fullscreen-hero {
+    padding-top: calc(22vh + 48px); // 超小屏幕也调整位置，考虑导航栏高度
+
+    .hero-content {
+      padding: 0 20px;
 
       .hero-title {
-        font-size: 1.8rem;
+        font-size: 2.2rem;
+        letter-spacing: 0.5px;
       }
 
       .hero-subtitle {
         font-size: 1rem;
-        margin-bottom: 20px;
+      }
+    }
+
+    .scroll-indicator {
+      bottom: 80px;
+
+      .mouse {
+        width: 20px;
+        height: 32px;
+
+        .wheel {
+          width: 3px;
+          height: 6px;
+        }
       }
 
-      .hero-btn {
-        padding: 10px 20px;
-        font-size: 0.95rem;
-        gap: 6px;
-
-        .btn-icon {
-          width: 16px;
-          height: 16px;
+      .arrow {
+        span {
+          width: 10px;
+          height: 10px;
         }
       }
     }
+  }
+
+  .main-content {
+    padding: 30px 0;
 
     .latest-articles {
       .article-list {
@@ -1078,6 +1391,31 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   }
 }
 
+// 闪烁动画
+@keyframes sparkle {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+// 淡入上升动画
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 // 英雄区域动画
 @keyframes slideInUp {
   from {
@@ -1090,25 +1428,32 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   }
 }
 
-@keyframes heroFloat {
-  0%,
-  100% {
-    transform: translateY(0px) rotate(0deg);
+// 滚轮动画
+@keyframes scrollWheel {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
   50% {
-    transform: translateY(-20px) rotate(180deg);
+    opacity: 0.5;
+    transform: translateX(-50%) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 }
 
-@keyframes shapeFloat {
+// 箭头弹跳动画
+@keyframes arrowBounce {
   0%,
   100% {
-    transform: translateY(0px) scale(1);
-    opacity: 0.7;
+    opacity: 0.3;
+    transform: rotate(45deg) translateY(0);
   }
   50% {
-    transform: translateY(-15px) scale(1.1);
     opacity: 1;
+    transform: rotate(45deg) translateY(5px);
   }
 }
 </style>

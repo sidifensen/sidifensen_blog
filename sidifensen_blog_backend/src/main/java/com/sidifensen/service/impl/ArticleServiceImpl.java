@@ -374,6 +374,66 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
+    public PageVo<List<ArticleVo>> searchArticleByTitle(String title, Integer pageNum, Integer pageSize) {
+        Page<Article> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
+                .select(Article.class, info -> !info.getColumn().equals("content"))  // 排除 content 字段
+                .like(Article::getTitle, title)
+                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
+                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                .eq(Article::getVisibleRange, VisibleRangeEnum.ALL.getCode())
+                .orderByDesc(Article::getUpdateTime);
+
+        List<Article> articles = articleMapper.selectPage(page, qw).getRecords();
+
+        // 转换为 ArticleVo 并填充用户信息
+        List<ArticleVo> articleVos = articles.stream()
+                .map(article -> {
+                    ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
+                    // 查询作者信息
+                    SysUser author = sysUserMapper.selectById(article.getUserId());
+                    if (ObjectUtil.isNotEmpty(author)) {
+                        articleVo.setNickname(author.getNickname());
+                        articleVo.setAvatar(author.getAvatar());
+                    }
+                    return articleVo;
+                })
+                .collect(Collectors.toList());
+
+        return new PageVo<>(articleVos, page.getTotal());
+    }
+
+    @Override
+    public PageVo<List<ArticleVo>> searchArticleByTag(String tag, Integer pageNum, Integer pageSize) {
+        Page<Article> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
+                .select(Article.class, info -> !info.getColumn().equals("content"))  // 排除 content 字段
+                .like(Article::getTag, tag)
+                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
+                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                .eq(Article::getVisibleRange, VisibleRangeEnum.ALL.getCode())
+                .orderByDesc(Article::getUpdateTime);
+
+        List<Article> articles = articleMapper.selectPage(page, qw).getRecords();
+
+        // 转换为 ArticleVo 并填充用户信息
+        List<ArticleVo> articleVos = articles.stream()
+                .map(article -> {
+                    ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
+                    // 查询作者信息
+                    SysUser author = sysUserMapper.selectById(article.getUserId());
+                    if (ObjectUtil.isNotEmpty(author)) {
+                        articleVo.setNickname(author.getNickname());
+                        articleVo.setAvatar(author.getAvatar());
+                    }
+                    return articleVo;
+                })
+                .collect(Collectors.toList());
+
+        return new PageVo<>(articleVos, page.getTotal());
+    }
+
+    @Override
     public void addArticle(ArticleDto articleDto) {
         Article article = BeanUtil.copyProperties(articleDto, Article.class);
         Integer userId = SecurityUtils.getUserId();

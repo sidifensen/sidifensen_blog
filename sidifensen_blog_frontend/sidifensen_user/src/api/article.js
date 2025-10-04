@@ -100,3 +100,19 @@ export function getCreationStatistics() {
     method: "get",
   });
 }
+
+// 根据标题搜索文章
+export function searchArticleByTitle(title, pageNum, pageSize) {
+  return request({
+    url: `/article/search?title=${title}&pageNum=${pageNum}&pageSize=${pageSize}`,
+    method: "get",
+  });
+}
+
+// 根据标签搜索文章
+export function searchArticleByTag(tag, pageNum, pageSize) {
+  return request({
+    url: `/article/search/tag?tag=${tag}&pageNum=${pageNum}&pageSize=${pageSize}`,
+    method: "get",
+  });
+}

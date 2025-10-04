@@ -803,11 +803,9 @@ onMounted(() => {
 <style lang="scss" scoped>
 // 设置页面容器
 .setting-container {
-  min-height: calc(100vh - 48px);
-  background: url("@/assets/img/homepage1.jpg") no-repeat center center;
-  background-size: cover;
-  background-attachment: fixed;
-  padding: 24px 0;
+  min-height: 100vh;
+  background-color: var(--el-bg-color-page);
+  padding-top: 68px;
 
   // 响应式：移动端优化背景
   @media (max-width: 768px) {

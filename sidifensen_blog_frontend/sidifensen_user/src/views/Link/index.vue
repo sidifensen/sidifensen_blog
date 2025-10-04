@@ -337,7 +337,6 @@ document.title = "友情链接";
   .page-header {
     padding: 40px 0;
 
-
     // 头部内容
     .header-content {
       display: flex;
@@ -660,7 +659,7 @@ document.title = "友情链接";
       span {
         position: relative;
         padding: 0 20px;
-        background: var(--el-bg-color-page);
+        background: transparent;
 
         &::before,
         &::after {
@@ -669,7 +668,7 @@ document.title = "友情链接";
           top: 50%;
           width: 60px;
           height: 1px;
-          background: var(--el-border-color-light);
+          background: var(--el-border-color);
         }
 
         &::before {

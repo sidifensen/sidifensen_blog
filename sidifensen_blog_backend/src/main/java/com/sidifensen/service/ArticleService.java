@@ -40,6 +40,12 @@ public interface ArticleService extends IService<Article> {
     // 获取文章详情
     ArticleVo getArticle(Integer articleId);
 
+    // 根据标题搜索文章
+    PageVo<List<ArticleVo>> searchArticleByTitle(String title, Integer pageNum, Integer pageSize);
+
+    // 根据标签搜索文章
+    PageVo<List<ArticleVo>> searchArticleByTag(String tag, Integer pageNum, Integer pageSize);
+
     // 新增文章
     void addArticle(ArticleDto articleDto);
 

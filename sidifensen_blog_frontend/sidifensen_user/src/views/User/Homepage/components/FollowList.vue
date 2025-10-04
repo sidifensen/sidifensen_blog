@@ -7,7 +7,7 @@
           <el-tab-pane label="关注的人" name="following">
             <!-- 关注列表加载状态 -->
             <div v-if="followingLoading" class="loading-container">
-              <el-skeleton animated :count="5">
+              <el-skeleton animated :count="8">
                 <template #template>
                   <div class="user-skeleton">
                     <el-skeleton-item variant="circle" style="width: 60px; height: 60px" />
@@ -66,7 +66,7 @@
           <el-tab-pane label="粉丝" name="fans">
             <!-- 粉丝列表加载状态 -->
             <div v-if="fansLoading" class="loading-container">
-              <el-skeleton animated :count="5">
+              <el-skeleton animated :count="8">
                 <template #template>
                   <div class="user-skeleton">
                     <el-skeleton-item variant="circle" style="width: 60px; height: 60px" />

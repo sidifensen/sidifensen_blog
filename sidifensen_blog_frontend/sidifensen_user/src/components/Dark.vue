@@ -35,7 +35,7 @@ const { toggleDark } = darkStore;
 .switch {
   width: 68px;
   height: 30px;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--el-text-color-primary);
   border-radius: 15px;
   box-sizing: border-box;
   cursor: pointer;
