@@ -325,7 +325,6 @@ document.title = "友情链接";
 // 友链页面容器
 .link-page {
   min-height: calc(100vh - 48px);
-  background-color: var(--el-bg-color-page);
 
   // 工具类
   .container {
@@ -336,9 +335,8 @@ document.title = "友情链接";
 
   // 页面头部
   .page-header {
-    background: white;
-    border-bottom: 1px solid var(--el-border-color-lighter);
     padding: 40px 0;
+
 
     // 头部内容
     .header-content {
@@ -416,7 +414,6 @@ document.title = "友情链接";
   // 主要内容
   .main-content {
     padding: 40px 0;
-    background: var(--el-bg-color-page);
   }
 
   // 友链区域

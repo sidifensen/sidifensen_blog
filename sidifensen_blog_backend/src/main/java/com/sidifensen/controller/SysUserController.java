@@ -1,5 +1,6 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysUserDetailVo;
@@ -23,6 +24,7 @@ import java.util.Map;
  * @author sidifensen
  * @since 2025-06-29
  */
+@RateLimit(30)
 @RestController
 @RequestMapping("/user")
 public class SysUserController {
@@ -139,6 +141,7 @@ public class SysUserController {
      *
      * @return
      */
+    @RateLimit
     @GetMapping("/info")
     public Result info() {
         SysUserVo sysUserVo = sysUserService.info();
@@ -151,6 +154,7 @@ public class SysUserController {
      * @param userId 用户ID
      * @return
      */
+    @RateLimit
     @GetMapping("/info/{userId}")
     public Result getUserInfoById(@PathVariable Integer userId) {
         SysUserVo sysUserVo = sysUserService.getUserInfoById(userId);

@@ -257,13 +257,12 @@ onBeforeUnmount(() => {
   left: 0;
   z-index: 1000;
   transition: transform 0.5s ease;
-  border-bottom: 1px solid var(--el-border-color-light);
+  border: none;
 
-  // 容器本身设置透明背景
-  background-color: transparent !important;
-  background: transparent !important;
+  /* 90% 透明背景 + 毛玻璃效果 */
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
 
-  // 使用 Element Plus 推荐的 CSS 变量设置透明背景
   --el-menu-bg-color: transparent;
   --el-menu-hover-bg-color: rgba(0, 0, 0, 0.05);
 

@@ -1,6 +1,7 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.TagDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.service.TagService;
@@ -15,6 +16,7 @@ import java.util.Map;
  * @author sidifensen
  * @since 2025-08-24
  */
+@RateLimit(30)
 @RestController
 @RequestMapping("/tag")
 public class TagController {

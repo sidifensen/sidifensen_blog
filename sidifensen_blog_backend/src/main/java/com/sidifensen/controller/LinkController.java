@@ -1,5 +1,6 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.LinkAuditDto;
 import com.sidifensen.domain.dto.LinkRequestDto;
 import com.sidifensen.domain.dto.LinkSearchDto;
@@ -20,6 +21,7 @@ import java.util.List;
  * @author sidifensen
  * @since 2025-09-28
  */
+@RateLimit(30)
 @RestController
 @RequestMapping("/link")
 public class LinkController {
@@ -58,6 +60,7 @@ public class LinkController {
      * @param pageSize 页面大小
      * @return 分页友链列表
      */
+    @RateLimit
     @GetMapping("/list")
     public Result<PageVo<List<LinkVo>>> getLinkList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
                                                      @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {

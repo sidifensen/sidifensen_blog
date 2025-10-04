@@ -1,5 +1,6 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.AddFavoriteDto;
 import com.sidifensen.domain.dto.UpdateFavoriteDto;
 import com.sidifensen.domain.result.Result;
@@ -7,8 +8,9 @@ import com.sidifensen.domain.vo.ArticleVo;
 import com.sidifensen.domain.vo.FavoriteVo;
 import com.sidifensen.service.FavoriteService;
 import jakarta.annotation.Resource;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +19,8 @@ import java.util.List;
  * @author sidifensen
  * @since 2025-09-16
  */
+@RateLimit(30)
+@Validated
 @RestController
 @RequestMapping("/favorite")
 public class FavoriteController {
@@ -31,7 +35,7 @@ public class FavoriteController {
      * @return 操作结果
      */
     @PostMapping("/add")
-    public Result<String> addFavorite(@RequestBody @Valid AddFavoriteDto addFavoriteDto) {
+    public Result<String> addFavorite(@RequestBody AddFavoriteDto addFavoriteDto) {
         favoriteService.addFavorite(addFavoriteDto);
         return Result.success();
     }
@@ -43,7 +47,7 @@ public class FavoriteController {
      * @return 操作结果
      */
     @PutMapping("/update")
-    public Result<String> updateFavorite(@RequestBody @Valid UpdateFavoriteDto updateFavoriteDto) {
+    public Result<String> updateFavorite(@RequestBody UpdateFavoriteDto updateFavoriteDto) {
         favoriteService.updateFavorite(updateFavoriteDto);
         return Result.success();
     }
@@ -81,6 +85,7 @@ public class FavoriteController {
      *
      * @return 收藏夹列表
      */
+    @RateLimit
     @GetMapping("/list")
     public Result<List<FavoriteVo>> getCurrentUserFavoriteList() {
         List<FavoriteVo> favoriteList = favoriteService.getCurrentUserFavoriteList();
@@ -93,6 +98,7 @@ public class FavoriteController {
      * @param articleId 文章ID
      * @return 收藏夹列表（包含收藏状态）
      */
+    @RateLimit
     @GetMapping("/listByArticle")
     public Result<List<FavoriteVo>> getFavoriteListByArticleId(@RequestParam @NotNull Integer articleId) {
         List<FavoriteVo> favoriteList = favoriteService.getFavoriteListByArticleId(articleId);
@@ -105,6 +111,7 @@ public class FavoriteController {
      * @param userId 用户ID，可选参数
      * @return 收藏夹列表
      */
+    @RateLimit
     @GetMapping("/listByUser")
     public Result<List<FavoriteVo>> getFavoriteListByUserId(@RequestParam(required = false) Integer userId) {
         List<FavoriteVo> favoriteList = favoriteService.getFavoriteListByUserId(userId);
@@ -117,6 +124,7 @@ public class FavoriteController {
      * @param favoriteId 收藏夹ID
      * @return 文章列表
      */
+    @RateLimit
     @GetMapping("/articles")
     public Result<List<ArticleVo>> getArticleListByFavoriteId(@RequestParam @NotNull Integer favoriteId) {
         List<ArticleVo> articleList = favoriteService.getArticleListByFavoriteId(favoriteId);

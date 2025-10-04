@@ -15,7 +15,7 @@
         </div>
       </template>
 
-      <LoadingAnimation v-if="loading"/>
+      <LoadingAnimation v-if="loading" />
       <div class="album-grid">
         <div v-for="album in albumList" :key="album.id" class="album-card">
           <div class="album-image-container" @click="handleViewAlbum(album.id)">
@@ -61,7 +61,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/userStore";
 import { storeToRefs } from "pinia";
-import LoadingAnimation from "../../components/LoadingAnimation.vue";
+import LoadingAnimation from "@/components/LoadingAnimation.vue";
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
 
@@ -155,7 +155,7 @@ onMounted(() => {
   if (!user.value) {
     ElMessage.error("请先登录");
     router.push("/login");
-  }else{
+  } else {
     getAlbumList();
   }
 });
@@ -164,8 +164,13 @@ onMounted(() => {
 <style lang="scss" scoped>
 .album-container {
   .main-card {
+    background: transparent;
+    border: none;
+    box-shadow: none;
     :deep(.el-card__header) {
       padding: 10px;
+      background: transparent;
+      border-bottom: none;
     }
     /* 相册列表头部 */
     .card-header {

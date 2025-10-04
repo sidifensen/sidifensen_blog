@@ -20,15 +20,7 @@
           <el-button class="edit-album-btn" type="warning" @click="handleEditAlbum">
             <el-icon style="margin-right: 2px"><Edit /></el-icon>编辑相册
           </el-button>
-          <el-switch
-            class="show-status-switch"
-            v-model="switchShowStatus"
-            @click="handleChangeAlbumShowStatus"
-            active-text="公开"
-            style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949"
-            inactive-text="私密"
-            size="large"
-            inline-prompt />
+          <el-switch class="show-status-switch" v-model="switchShowStatus" @click="handleChangeAlbumShowStatus" active-text="公开" style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949" inactive-text="私密" size="large" inline-prompt />
         </div>
         <div class="header-select" v-if="isAlbumOwner">
           <el-button v-if="isSelectMode" class="select-all-btn" style="margin-right: 5px" type="success" @click="toggleAllSelection">{{ isAllSelected ? "取消全选" : "全选" }}</el-button>
@@ -58,18 +50,7 @@
             </div>
             <div class="photo-grid">
               <div v-for="(photo, index) in group" :key="photo.id" class="photo-item" :class="{ selected: selectedPhotos.includes(photo.id) }" @click="handlePhotoClick(photo)">
-                <el-image
-                  v-if="photo.url"
-                  :src="photo.url || ''"
-                  class="photo"
-                  fit="cover"
-                  :preview-src-list="isSelectMode ? [] : getAllPhotoUrls()"
-                  :preview-teleported="!isSelectMode"
-                  :initial-index="getPhotoIndex(photo)"
-                  show-progress
-                  close-on-press-escape
-                  lazy
-                  loading="lazy">
+                <el-image v-if="photo.url" :src="photo.url || ''" class="photo" fit="cover" :preview-src-list="isSelectMode ? [] : getAllPhotoUrls()" :preview-teleported="!isSelectMode" :initial-index="getPhotoIndex(photo)" show-progress close-on-press-escape lazy loading="lazy">
                   <template #toolbar="{ actions, prev, next, activeIndex }">
                     <el-icon @click="prev"><Back /></el-icon>
                     <el-icon @click="next"><Right /></el-icon>
@@ -652,6 +633,9 @@ const getExamineStatusClass = (status) => {
 
 <style lang="scss" scoped>
 .card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   :deep(.el-button) {
     margin: 0;
@@ -659,6 +643,8 @@ const getExamineStatusClass = (status) => {
 
   :deep(.el-card__header) {
     padding: 10px;
+    background: transparent;
+    border-bottom: none;
   }
 
   /* 头部第一行 */
@@ -919,7 +905,7 @@ const getExamineStatusClass = (status) => {
   }
 
   .photo-container {
-    min-height: 75vh;
+    min-height: calc(100vh - 48px);
     /* 日期 */
     .date-section {
       margin-bottom: 30px;
@@ -929,7 +915,6 @@ const getExamineStatusClass = (status) => {
         // justify-content: space-between;
         margin-bottom: 15px;
         padding-bottom: 5px;
-        border-bottom: 1px solid #eee;
         h3 {
           font-size: 18px;
           margin: 0;

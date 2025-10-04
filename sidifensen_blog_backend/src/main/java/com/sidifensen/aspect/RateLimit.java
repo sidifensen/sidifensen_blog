@@ -19,10 +19,11 @@ public @interface RateLimit {
 
     /**
      * 限流次数
+     * 支持简写：@RateLimit(10) 等同于 @RateLimit(value = 10)
      *
      * @return 在指定时间周期内允许的最大访问次数
      */
-    int count() default 60;
+    int value() default 60;
 
     /**
      * 限流周期（秒）

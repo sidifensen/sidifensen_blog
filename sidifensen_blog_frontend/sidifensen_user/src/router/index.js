@@ -38,19 +38,19 @@ const router = createRouter({
             {
               path: "square",
               name: "AlbumSquare",
-              component: () => import("@/views/Album/AlbumSquare.vue"),
+              component: () => import("@/views/Album/AlbumSquare/AlbumSquare.vue"),
               meta: { title: "相册广场" },
             },
             {
               path: "myAlbum",
               name: "MyAlbum",
-              component: () => import("@/views/Album/MyAlbum.vue"),
+              component: () => import("@/views/Album/MyAlbum/MyAlbum.vue"),
               meta: { title: "我的相册" },
             },
             {
               path: ":albumId",
               name: "AlbumDetail",
-              component: () => import("@/views/Album/AlbumDetail.vue"),
+              component: () => import("@/views/Album/AlbumDetail/AlbumDetail.vue"),
               meta: { title: "相册详情" },
             },
           ],

@@ -159,13 +159,11 @@
     </div>
 
     <!-- 新增/编辑黑名单对话框 -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" :before-close="handleDialogClose" width="600px">
-      <el-form ref="blacklistFormRef" :model="blacklistForm" :rules="rules" label-width="100px">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" :before-close="handleDialogClose" width="600px" class="blacklist-dialog">
+      <el-form ref="blacklistFormRef" :model="blacklistForm" :rules="rules" label-width="90px">
         <el-form-item v-if="!isEdit" prop="userIds" label="用户ID">
-          <el-select v-model="blacklistForm.userIds" multiple filterable allow-create default-first-option placeholder="请输入用户ID（支持批量）" style="width: 100%">
-            <el-option v-for="id in blacklistForm.userIds" :key="id" :label="id" :value="id" />
-          </el-select>
-          <div class="form-tip">支持批量添加，输入用户ID后按回车添加</div>
+          <el-input v-model="blacklistForm.userIds" placeholder="请输入用户ID，多个用逗号分隔，如：3,4,5" />
+          <div class="form-tip">支持批量添加，多个用户ID用逗号分隔，如：3,4,5</div>
         </el-form-item>
 
         <el-form-item prop="reason" label="拉黑原因">
@@ -232,7 +230,7 @@ const searchForm = reactive({
 // 黑名单表单
 const blacklistForm = reactive({
   id: null,
-  userIds: [],
+  userIds: "",
   reason: "",
   expireTime: "",
 });
@@ -379,7 +377,7 @@ const handleAdd = () => {
   isEdit.value = false;
   dialogTitle.value = "批量新增黑名单";
   blacklistForm.id = null;
-  blacklistForm.userIds = [];
+  blacklistForm.userIds = "";
   blacklistForm.reason = "";
   blacklistForm.expireTime = "";
   dialogVisible.value = true;
@@ -390,7 +388,7 @@ const handleEdit = (row) => {
   isEdit.value = true;
   dialogTitle.value = "编辑黑名单";
   blacklistForm.id = row.id;
-  blacklistForm.userIds = row.userId ? [row.userId] : [];
+  blacklistForm.userIds = row.userId ? String(row.userId) : "";
   blacklistForm.reason = row.reason;
   blacklistForm.expireTime = row.expireTime;
   dialogVisible.value = true;
@@ -413,8 +411,14 @@ const handleSubmit = async () => {
       ElMessage.success("修改成功");
     } else {
       // 批量新增黑名单
+      const userIdsArray = blacklistForm.userIds
+        .split(",")
+        .map((id) => id.trim())
+        .filter((id) => id !== "")
+        .map((id) => parseInt(id));
+
       const addData = {
-        userIds: blacklistForm.userIds.map((id) => parseInt(id)),
+        userIds: userIdsArray,
         reason: blacklistForm.reason,
         expireTime: blacklistForm.expireTime,
       };
@@ -1039,6 +1043,7 @@ onUnmounted(() => {
   font-size: 12px;
   color: var(--el-text-color-secondary);
   margin-top: 4px;
+  line-height: 1.4;
 }
 
 // 响应式设计
@@ -1111,6 +1116,34 @@ onUnmounted(() => {
 
       :deep(.el-pagination .el-pager) {
         display: none;
+      }
+    }
+  }
+
+  // 移动端对话框样式调整
+  :deep(.blacklist-dialog) {
+    width: 90% !important;
+    max-width: 500px;
+    margin: 0 auto;
+    top: 50% !important;
+    transform: translateY(-50%);
+
+    .el-dialog__header {
+      padding: 15px;
+    }
+
+    .el-dialog__body {
+      padding: 15px;
+    }
+
+    .el-form {
+      .el-form-item__label {
+        font-size: 14px;
+      }
+
+      .el-input,
+      .el-textarea {
+        font-size: 14px;
       }
     }
   }

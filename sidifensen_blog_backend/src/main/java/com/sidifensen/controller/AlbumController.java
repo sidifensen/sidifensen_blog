@@ -1,6 +1,7 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.aspect.TimeConsuming;
 import com.sidifensen.domain.dto.AlbumDto;
 import com.sidifensen.domain.result.Result;
@@ -18,9 +19,9 @@ import java.util.List;
  * @author sidifensen
  * @since 2025-07-30
  */
+@RateLimit(30)
 @RestController
 @RequestMapping("/album")
-@TimeConsuming
 public class AlbumController {
 
     @Resource
@@ -32,6 +33,7 @@ public class AlbumController {
      * @param albumId
      * @return
      */
+    @RateLimit
     @GetMapping("/get/{albumId}")
     public Result<Object> getAlbum(@PathVariable("albumId") @NotNull(message = "相册id不能为空") Integer albumId) {
         AlbumVo album = albumService.getAlbum(albumId);
@@ -79,6 +81,7 @@ public class AlbumController {
      *
      * @return
      */
+    @RateLimit
     @GetMapping("/list")
     public Result<Object> listAlbum() {
         List<AlbumVo> albumVos = albumService.listAlbum();
@@ -88,6 +91,7 @@ public class AlbumController {
     /**
      * 查看所有用户的相册(公开)
      */
+    @RateLimit
     @GetMapping("/listAll")
     public Result<Object> listAllAlbum() {
         List<AlbumVo> albumVos = albumService.listAllAlbum();

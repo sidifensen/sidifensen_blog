@@ -8,6 +8,7 @@ import com.sidifensen.domain.dto.BlacklistAddDto;
 import com.sidifensen.domain.dto.BlacklistSearchDto;
 import com.sidifensen.domain.dto.BlacklistUpdateDto;
 import com.sidifensen.domain.entity.Blacklist;
+import com.sidifensen.domain.enums.BlacklistTypeEnum;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.BlacklistMapper;
 import com.sidifensen.service.BlacklistService;
@@ -35,16 +36,16 @@ public class BlacklistServiceImpl extends ServiceImpl<BlacklistMapper, Blacklist
     public void addToBlacklist(String identifier, String reason, long banDurationSeconds) {
         try {
             Blacklist blacklist = new Blacklist();
-            
+
             // 解析用户标识，判断是用户类型还是IP类型
             if (identifier.startsWith("user:")) {
                 // 用户类型
-                blacklist.setType(0);
+                blacklist.setType(BlacklistTypeEnum.USER.getCode());
                 String userIdStr = identifier.substring(5); // 去掉 "user:" 前缀
                 blacklist.setUserId(Integer.parseInt(userIdStr));
             } else if (identifier.startsWith("ip:")) {
                 // IP类型
-                blacklist.setType(1);
+                blacklist.setType(BlacklistTypeEnum.IP.getCode());
                 String ip = identifier.substring(3); // 去掉 "ip:" 前缀
                 blacklist.setIp(ip);
             } else {
@@ -57,14 +58,11 @@ public class BlacklistServiceImpl extends ServiceImpl<BlacklistMapper, Blacklist
             Date now = new Date();
             blacklist.setBanTime(now);
             blacklist.setExpireTime(new Date(now.getTime() + banDurationSeconds * 1000));
-            blacklist.setCreateTime(now);
-            blacklist.setUpdateTime(now);
-            blacklist.setIsDeleted(0);
 
             // 保存到数据库
             this.save(blacklist);
 
-            log.info("黑名单记录已保存到数据库 - 标识: {}, 原因: {}, 封禁时长: {}秒, 到期时间: {}", 
+            log.info("黑名单记录已保存到数据库 - 标识: {}, 原因: {}, 封禁时长: {}秒, 到期时间: {}",
                     identifier, reason, banDurationSeconds, blacklist.getExpireTime());
         } catch (Exception e) {
             log.error("保存黑名单记录失败 - 标识: {}, 原因: {}", identifier, reason, e);
@@ -103,10 +101,10 @@ public class BlacklistServiceImpl extends ServiceImpl<BlacklistMapper, Blacklist
             // 批量创建黑名单记录
             Date now = new Date();
             List<Blacklist> blacklistList = new ArrayList<>();
-            
+
             for (Integer userId : blacklistAddDto.getUserIds()) {
                 Blacklist blacklist = new Blacklist();
-                blacklist.setType(0); // 用户类型
+                blacklist.setType(BlacklistTypeEnum.USER.getCode()); // 用户类型
                 blacklist.setUserId(userId);
                 blacklist.setReason(blacklistAddDto.getReason());
                 blacklist.setBanTime(now);
@@ -135,7 +133,7 @@ public class BlacklistServiceImpl extends ServiceImpl<BlacklistMapper, Blacklist
 
             // 如果传了用户id，设置黑名单类型为用户
             if (blacklistSearchDto.getUserId() != null && blacklistSearchDto.getUserId() > 0) {
-                queryWrapper.eq(Blacklist::getType, 0)
+                queryWrapper.eq(Blacklist::getType, BlacklistTypeEnum.USER.getCode())
                         .eq(Blacklist::getUserId, blacklistSearchDto.getUserId());
             } else {
                 // 根据黑名单类型筛选

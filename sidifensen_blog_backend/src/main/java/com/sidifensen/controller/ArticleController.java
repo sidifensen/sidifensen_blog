@@ -12,7 +12,6 @@ import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.service.ArticleService;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
-
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,9 +21,9 @@ import java.util.List;
  * @author sidifensen
  * @since 2025-08-24
  */
+@RateLimit(30)
 @RestController
 @RequestMapping("/article")
-@RateLimit
 public class ArticleController {
 
     @Resource
@@ -37,6 +36,7 @@ public class ArticleController {
      * @param pageSize 页大小
      * @return 全部文章列表
      */
+    @RateLimit
     @GetMapping("/listAll")
     public Result getAllArticleList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
                                     @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
@@ -49,6 +49,7 @@ public class ArticleController {
      *
      * @return 用户文章列表
      */
+    @RateLimit
     @PostMapping("/user/list")
     public Result getUserArticleList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
                                      @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
@@ -62,6 +63,7 @@ public class ArticleController {
      *
      * @return 用户文章列表
      */
+    @RateLimit
     @PostMapping("/manage/list")
     public Result getArticleMangeList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
                                       @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
@@ -75,6 +77,7 @@ public class ArticleController {
      *
      * @return 用户文章状态统计
      */
+    @RateLimit
     @GetMapping("/user/statistics")
     public Result getUserArticleStatistics() {
         ArticleStatisticsVo statisticsVo = articleService.getUserArticleStatistics();
@@ -87,6 +90,7 @@ public class ArticleController {
      * @param userId 用户ID
      * @return 用户文章统计
      */
+    @RateLimit
     @GetMapping("/user/{userId}/statistics")
     public Result getUserArticleStatisticsById(@PathVariable Integer userId) {
         ArticleStatisticsVo statisticsVo = articleService.getUserArticleStatisticsById(userId);
@@ -98,6 +102,7 @@ public class ArticleController {
      *
      * @return 创作中心统计数据
      */
+    @RateLimit
     @GetMapping("/creation/statistics")
     public Result getCreationStatistics() {
         CreationStatisticsVo statisticsVo = articleService.getCreationStatistics();
@@ -109,6 +114,7 @@ public class ArticleController {
      *
      * @return 用户文章详情
      */
+    @RateLimit
     @GetMapping("/get/{articleId}")
     public Result getArticle(@PathVariable Integer articleId) {
         ArticleVo articleVo = articleService.getArticle(articleId);

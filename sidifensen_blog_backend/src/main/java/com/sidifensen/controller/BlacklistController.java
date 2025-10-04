@@ -1,5 +1,6 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.BlacklistAddDto;
 import com.sidifensen.domain.dto.BlacklistSearchDto;
 import com.sidifensen.domain.dto.BlacklistUpdateDto;
@@ -18,9 +19,9 @@ import java.util.List;
  * @author sidifensen
  * @since 2025-10-02
  */
+@RateLimit(30)
 @RestController
 @RequestMapping("/blacklist")
-@Slf4j
 public class BlacklistController {
 
     @Resource

@@ -1,5 +1,6 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
 import com.sidifensen.domain.oauth.Gitee;
 import com.sidifensen.domain.oauth.Github;
@@ -25,7 +26,7 @@ import java.io.IOException;
  * @author sidifensen
  * @since 2025-08-12
  */
-@Slf4j
+@RateLimit(10)
 @RestController
 @RequestMapping("/oauth")
 public class OauthController {

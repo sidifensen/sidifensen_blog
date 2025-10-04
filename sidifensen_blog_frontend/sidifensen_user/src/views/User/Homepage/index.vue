@@ -581,9 +581,7 @@ $bg-color: #f5f7fa;
 
 // 用户主页容器
 .user-homepage {
-  background: url("@/assets/img/homepage1.jpg") no-repeat center center;
-  background-size: cover;
-  background-attachment: fixed;
+  background: url("@/assets/img/th.jpg") no-repeat center center / cover fixed;
   min-height: calc(100vh - 48px);
   overflow-y: auto; // 改为auto，只在需要时显示滚动条
 

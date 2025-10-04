@@ -76,10 +76,15 @@ onMounted(() => {
 <style lang="scss" scoped>
 .album-container {
   .main-card {
-    min-height: 75vh;
-    margin-bottom: 20px;
+    min-height: calc(100vh - 48px);
+    margin-bottom: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
     :deep(.el-card__header) {
       padding: 10px;
+      background: transparent;
+      border-bottom: none;
     }
     /* 相册列表头部 */
     .card-header {

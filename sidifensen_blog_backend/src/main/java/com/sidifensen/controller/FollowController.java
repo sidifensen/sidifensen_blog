@@ -1,5 +1,6 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.SysUserVo;
@@ -16,10 +17,10 @@ import java.util.List;
  * @author sidifensen
  * @since 2025-09-25
  */
+@RateLimit(30)
+@Validated
 @RestController
 @RequestMapping("/follow")
-@Slf4j
-@Validated
 public class FollowController {
 
     @Resource
@@ -59,6 +60,7 @@ public class FollowController {
      * @param pageSize 每页大小
      * @return 关注用户列表
      */
+    @RateLimit
     @GetMapping("/followList/{userId}")
     public Result<PageVo<List<SysUserVo>>> getFollowList(
             @PathVariable @NotNull(message = "用户ID不能为空") Integer userId,
@@ -77,6 +79,7 @@ public class FollowController {
      * @param pageSize 每页大小
      * @return 粉丝用户列表
      */
+    @RateLimit
     @GetMapping("/fansList/{userId}")
     public Result<PageVo<List<SysUserVo>>> getFansList(
             @PathVariable @NotNull(message = "用户ID不能为空") Integer userId,

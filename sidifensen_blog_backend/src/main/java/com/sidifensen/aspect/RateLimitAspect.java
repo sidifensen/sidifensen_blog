@@ -91,7 +91,7 @@ public class RateLimitAspect {
             }
 
             // 检查是否超过限流限制
-            allowed = currentCount <= rateLimit.count();
+            allowed = currentCount <= rateLimit.value();
 
             // 根据访问次数检查是否需要加入黑名单
             BlacklistStrategy strategy = BlacklistStrategy.getStrategyByAccessCount(currentCount.intValue());
@@ -124,7 +124,7 @@ public class RateLimitAspect {
             // 抛出限流异常
             String message = StrUtil.isNotBlank(rateLimit.message()) ? rateLimit.message() : BlogConstants.RateLimitExceeded;
             log.warn("限流触发 - 用户标识: {}, 类: {}, 方法: {}, 限制: {}次/{}秒", 
-                    identifier, className, method.getName(), rateLimit.count(), rateLimit.period());
+                    identifier, className, method.getName(), rateLimit.value(), rateLimit.period());
             throw new RateLimitException(message);
         }
 

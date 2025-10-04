@@ -1,6 +1,7 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.ColumnArticleSortDto;
 import com.sidifensen.domain.dto.ColumnDto;
 import com.sidifensen.domain.dto.ColumnFilterDto;
@@ -24,6 +25,7 @@ import java.util.List;
  * @author sidifensen
  * @since 2025-08-26
  */
+@RateLimit(30)
 @RestController
 @RequestMapping("/column")
 public class ColumnController {
@@ -32,10 +34,11 @@ public class ColumnController {
     private ColumnService columnService;
 
     /**
-     * 获取用户专栏列表(新增文章)
+     * 获取用户专栏列表(新增文章时)
      *
      * @return 专栏列表
      */
+    @RateLimit
     @GetMapping("/list")
     public Result<List<ColumnVo>> getColumnList() {
         List<ColumnVo> columnList = columnService.getColumnList();
@@ -50,6 +53,7 @@ public class ColumnController {
      * @param pageSize 页大小
      * @return 专栏列表
      */
+    @RateLimit
     @GetMapping("/list/{userId}")
     public Result<PageVo<List<ColumnVo>>> getColumnListByUserId(@PathVariable Integer userId,
                                                                 @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
@@ -65,6 +69,7 @@ public class ColumnController {
      * @param columnId 专栏ID
      * @return 专栏详情
      */
+    @RateLimit
     @GetMapping("/detail/{columnId}")
     public Result<ColumnDetailVo> getColumnDetail(@PathVariable Integer columnId) {
         ColumnDetailVo columnDetail = columnService.getColumnDetail(columnId);
@@ -97,6 +102,7 @@ public class ColumnController {
      * @return 用户专栏列表
      */
     @PostMapping("/manage/list")
+    @RateLimit
     public Result<PageVo<List<UserColumnManageVo>>> getUserColumnManageList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
                                                                             @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
                                                                             @RequestBody ColumnFilterDto columnFilterDto) {

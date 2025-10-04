@@ -10,7 +10,7 @@
             <div class="article-list-wrapper">
               <div class="article-list-section" ref="listContainer">
                 <div v-if="articleLoading" class="loading-container">
-                  <el-skeleton animated :count="5">
+                  <el-skeleton animated :count="8">
                     <template #template>
                       <div class="article-skeleton">
                         <el-skeleton-item variant="image" style="width: 160px; height: 100px" />
@@ -228,9 +228,6 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 // 文章页面容器
 .article-page {
-  //   background: url("@/assets/img/homepage1.jpg") repeat center center;
-  //   background-size: cover;
-  //   background-attachment: fixed;
   min-height: calc(100vh - 48px);
 
   // 工具类
@@ -265,10 +262,10 @@ onUnmounted(() => {
       // 返回顶部按钮样式
       .back-to-top {
         position: fixed;
-        right: 200px;
-        bottom: 200px;
-        width: 70px;
-        height: 70px;
+        right: 150px;
+        bottom: 150px;
+        width: 50px;
+        height: 50px;
         backdrop-filter: blur(2px);
         background-color: color-mix(in srgb, var(--el-bg-color-page) 90%, transparent);
         border: 1px solid var(--el-border-color);

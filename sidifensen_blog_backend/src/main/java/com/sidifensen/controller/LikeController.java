@@ -1,10 +1,10 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.service.LikeService;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
  * @author sidifensen
  * @since 2025-09-15
  */
+@RateLimit(30)
+@Validated
 @RestController
 @RequestMapping("/like")
-@Slf4j
-@Validated
 public class LikeController {
 
     @Resource

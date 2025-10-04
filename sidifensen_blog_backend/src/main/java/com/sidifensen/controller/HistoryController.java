@@ -1,5 +1,6 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.HistoryVo;
 import com.sidifensen.domain.vo.PageVo;
@@ -18,6 +19,7 @@ import java.util.List;
  * @author sidifensen
  * @since 2025-09-27
  */
+@RateLimit(30)
 @RestController
 @RequestMapping("/history")
 public class HistoryController {
@@ -32,6 +34,7 @@ public class HistoryController {
      * @param pageSize 每页大小
      * @return 分页浏览历史数据
      */
+    @RateLimit
     @GetMapping("/list")
     public Result<PageVo<List<HistoryVo>>> getUserHistoryList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
                                                                @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {

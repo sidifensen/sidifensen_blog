@@ -1,5 +1,6 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.aspect.TimeConsuming;
 import com.sidifensen.domain.dto.CommentAuditDto;
 import com.sidifensen.domain.dto.CommentDto;
@@ -12,9 +13,9 @@ import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.UserCommentManageVo;
 import com.sidifensen.service.CommentService;
 import jakarta.annotation.Resource;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,9 +24,10 @@ import java.util.List;
  * @author sidifensen
  * @since 2025-09-15
  */
+@RateLimit(30)
+@Validated
 @RestController
 @RequestMapping("/comment")
-@TimeConsuming
 public class CommentController {
 
     @Resource
@@ -38,7 +40,7 @@ public class CommentController {
      * @return 评论id
      */
     @PostMapping("/add")
-    public Result<Integer> addComment(@Valid @RequestBody CommentDto commentDto) {
+    public Result<Integer> addComment(@RequestBody CommentDto commentDto) {
         Integer commentId = commentService.addComment(commentDto);
         return Result.success(commentId);
     }
@@ -63,6 +65,7 @@ public class CommentController {
      * @param pageSize  页大小
      * @return 评论列表
      */
+    @RateLimit
     @GetMapping("/list")
     public Result<PageVo<List<CommentVo>>> getCommentList(@NotNull Integer articleId,
                                                           @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
@@ -79,6 +82,7 @@ public class CommentController {
      * @param commentFilterDto 评论筛选条件
      * @return 用户评论列表
      */
+    @RateLimit
     @PostMapping("/manage/list")
     public Result<PageVo<List<UserCommentManageVo>>> getUserCommentManageList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
                                                                               @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
@@ -95,6 +99,7 @@ public class CommentController {
      * @param pageSize  页大小
      * @return 回复列表
      */
+    @RateLimit
     @GetMapping("/reply/list")
     public Result<PageVo<List<CommentVo>>> getReplyList(@NotNull Integer commentId,
                                                         @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,

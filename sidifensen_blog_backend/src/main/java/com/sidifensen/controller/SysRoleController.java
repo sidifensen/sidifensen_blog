@@ -1,6 +1,7 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.SysRoleDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysRoleVo;
@@ -17,6 +18,7 @@ import java.util.List;
  * @author sidifensen
  * @since 2025-06-29
  */
+@RateLimit(30)
 @RestController
 @RequestMapping("/role")
 public class SysRoleController {

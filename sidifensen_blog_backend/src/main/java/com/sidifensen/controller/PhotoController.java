@@ -1,6 +1,7 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.aspect.TimeConsuming;
 import com.sidifensen.domain.dto.PhotoAuditDto;
 import com.sidifensen.domain.dto.PhotoDto;
@@ -18,9 +19,9 @@ import java.util.List;
  * @author sidifensen
  * @since 2025-07-30
  */
+@RateLimit(30)
 @RestController
 @RequestMapping("/photo")
-@TimeConsuming
 public class PhotoController {
 
     @Resource
@@ -29,6 +30,7 @@ public class PhotoController {
     /**
      * 上传文章图片
      */
+    @RateLimit(10)
     @PostMapping("/uploadArticle")
     public Result uploadArticle(@RequestParam("file") MultipartFile file) {
         String url = photoService.uploadArticle(file);
@@ -38,6 +40,7 @@ public class PhotoController {
     /**
      * 上传照片到相册
      */
+    @RateLimit(10)
     @PostMapping("/uploadAlbum")
     public Result uploadAlbum(@RequestParam("file") MultipartFile file,
                               @RequestParam("albumId") Integer albumId) {
@@ -48,6 +51,7 @@ public class PhotoController {
     /**
      * 上传专栏图片
      */
+    @RateLimit(10)
     @PostMapping("/uploadColumn")
     public Result uploadColumn(@RequestParam("file") MultipartFile file) {
         String url = photoService.uploadColumn(file);
@@ -57,6 +61,7 @@ public class PhotoController {
     /**
      * 上传用户头像
      */
+    @RateLimit(10)
     @PostMapping("/uploadAvatar")
     public Result uploadAvatar(@RequestParam("file") MultipartFile file) {
         String url = photoService.uploadAvatar(file);

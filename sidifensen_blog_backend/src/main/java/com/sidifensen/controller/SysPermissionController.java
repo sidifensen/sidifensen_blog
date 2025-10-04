@@ -1,6 +1,7 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.SysPermissionDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysPermissionVo;
@@ -16,6 +17,7 @@ import java.util.List;
  * @author sidifensen
  * @since 2025-08-06
  */
+@RateLimit(30)
 @RestController
 @RequestMapping("/permission")
 public class SysPermissionController {
