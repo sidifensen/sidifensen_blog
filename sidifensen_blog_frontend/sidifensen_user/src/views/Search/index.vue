@@ -5,12 +5,32 @@
       <div class="container">
         <div class="search-box-wrapper">
           <div class="search-input-group">
-            <!-- 大搜索框 -->
-            <el-input v-model="searchKeyword" placeholder="搜索文章标题或标签..." size="large" class="search-input" clearable @keyup.enter="handleSearch">
+            <!-- 大搜索框（带自动补全） -->
+            <el-autocomplete
+              v-model="searchKeyword"
+              :fetch-suggestions="fetchSuggestions"
+              placeholder="搜索文章标题或标签..."
+              size="large"
+              class="search-input"
+              popper-class="search-autocomplete-popper"
+              clearable
+              :trigger-on-focus="false"
+              @select="handleSelectSuggestion"
+              @keyup.enter="handleEnterSearch"
+            >
               <template #prefix>
                 <el-icon><Search /></el-icon>
               </template>
-            </el-input>
+              <template #default="{ item }">
+                <div class="suggestion-item">
+                  <el-icon class="suggestion-icon">
+                    <Document v-if="searchType === 'title' || lastSearchAction === 'title'" />
+                    <PriceTag v-else />
+                  </el-icon>
+                  <span class="suggestion-text">{{ item.value }}</span>
+                </div>
+              </template>
+            </el-autocomplete>
 
             <!-- 搜索按钮 -->
             <el-button type="primary" size="large" class="search-btn" @click="handleSearch" :loading="searchLoading">
@@ -78,7 +98,7 @@
           <div v-for="article in articles" :key="article.id" class="article-item" @click="goToArticle(article)">
             <!-- 文章封面 -->
             <div class="article-cover-wrapper">
-              <el-image :src="article.coverUrl" class="article-cover" fit="cover">
+              <el-image :src="article.coverUrl || ''" class="article-cover" fit="cover">
                 <template #placeholder>
                   <div class="image-placeholder">
                     <el-icon class="is-loading"><Loading /></el-icon>
@@ -156,8 +176,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { Search, PriceTag, View, ChatDotRound, Loading, Picture, DocumentDelete } from "@element-plus/icons-vue";
-import { searchArticleByTitle, searchArticleByTag } from "@/api/article";
+import { Search, PriceTag, View, ChatDotRound, Loading, Picture, DocumentDelete, Document } from "@element-plus/icons-vue";
+import { searchArticleByTitle, searchArticleByTag, getTitleSuggestions, getTagSuggestions } from "@/api/article";
 
 // 路由
 const router = useRouter();
@@ -166,6 +186,7 @@ const route = useRoute();
 // 响应式数据
 const searchKeyword = ref(""); // 搜索关键字
 const searchType = ref("title"); // 搜索类型：title 或 tag
+const lastSearchAction = ref("title"); // 记录最后一次搜索操作类型（用于回车键）
 const articles = ref([]); // 文章列表
 const searchLoading = ref(false); // 搜索加载状态
 const loadingMore = ref(false); // 加载更多状态
@@ -179,6 +200,55 @@ const hasMore = computed(() => {
   return articles.value.length < total.value;
 });
 
+// 获取搜索建议（自动补全）
+const fetchSuggestions = async (queryString, callback) => {
+  // 如果输入为空，不显示建议
+  if (!queryString || queryString.trim().length === 0) {
+    callback([]);
+    return;
+  }
+
+  try {
+    let res;
+    // 根据当前搜索类型获取不同的建议
+    if (lastSearchAction.value === "tag") {
+      res = await getTagSuggestions(queryString);
+    } else {
+      // 默认为标题搜索
+      res = await getTitleSuggestions(queryString);
+    }
+
+    const suggestions = res.data.data || [];
+    // 转换为 Autocomplete 需要的格式（包含 value 字段）
+    const formattedSuggestions = suggestions.map((item) => ({
+      value: item,
+    }));
+    callback(formattedSuggestions);
+  } catch (error) {
+    console.error("获取搜索建议失败:", error);
+    callback([]);
+  }
+};
+
+// 处理选择建议项
+const handleSelectSuggestion = (item) => {
+  // 选择建议后，自动执行搜索
+  if (lastSearchAction.value === "tag") {
+    handleSearchByTag();
+  } else {
+    handleSearch();
+  }
+};
+
+// 处理回车键搜索 - 根据最后一次搜索操作类型决定搜索方式
+const handleEnterSearch = async () => {
+  if (lastSearchAction.value === "tag") {
+    await handleSearchByTag();
+  } else {
+    await handleSearch();
+  }
+};
+
 // 执行搜索（标题搜索）
 const handleSearch = async () => {
   if (!searchKeyword.value.trim()) {
@@ -186,7 +256,18 @@ const handleSearch = async () => {
     return;
   }
 
+  lastSearchAction.value = "title"; // 记录搜索操作类型
   searchType.value = "title";
+
+  // 更新 URL 参数（使用 replace 避免产生多个历史记录）
+  router.replace({
+    path: "/search",
+    query: {
+      keyword: searchKeyword.value,
+      type: "title",
+    },
+  });
+
   await performSearch(true);
 };
 
@@ -197,7 +278,18 @@ const handleSearchByTag = async () => {
     return;
   }
 
+  lastSearchAction.value = "tag"; // 记录搜索操作类型
   searchType.value = "tag";
+
+  // 更新 URL 参数（使用 replace 避免产生多个历史记录）
+  router.replace({
+    path: "/search",
+    query: {
+      keyword: searchKeyword.value,
+      type: "tag",
+    },
+  });
+
   await performSearch(true);
 };
 
@@ -257,6 +349,13 @@ const clearSearch = () => {
   hasSearched.value = false;
   currentPage.value = 1;
   total.value = 0;
+  lastSearchAction.value = "title"; // 重置为默认的标题搜索
+
+  // 清空 URL 参数
+  router.replace({
+    path: "/search",
+    query: {},
+  });
 };
 
 // 节流函数
@@ -328,6 +427,7 @@ onMounted(async () => {
   if (keyword) {
     searchKeyword.value = keyword;
     searchType.value = type;
+    lastSearchAction.value = type; // 同步记录搜索操作类型
     await performSearch(true);
   }
 
@@ -352,9 +452,9 @@ onUnmounted(() => {
 
 // 搜索页面容器
 .search-container {
-  min-height: calc(100vh - 60px);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
   padding-top: 20px;
+  background: var(--el-bg-color-page);
 }
 
 // 搜索区域
@@ -369,16 +469,16 @@ onUnmounted(() => {
     // 搜索输入组
     .search-input-group {
       display: flex;
+      align-items: center;
       gap: 12px;
       margin-bottom: 20px;
 
-      // 搜索输入框
+      // 搜索输入框（自动补全）- 椭圆形设计
+      // 注意：具体样式在全局样式中定义（不受 scoped 限制）
       .search-input {
         flex: 1;
 
         :deep(.el-input__wrapper) {
-          border-radius: 50px;
-          padding: 12px 24px;
           background: rgba(255, 255, 255, 0.95);
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           border: 2px solid transparent;
@@ -393,46 +493,129 @@ onUnmounted(() => {
         }
 
         :deep(.el-input__inner) {
-          font-size: 16px;
           color: var(--el-text-color-primary);
         }
 
+        // 左侧搜索图标
         :deep(.el-input__prefix) {
-          font-size: 20px;
           color: #909399;
+          margin-left: 6px;
+          display: flex;
+          align-items: center;
+        }
+
+        // 右侧清除图标
+        :deep(.el-input__suffix) {
+          margin-right: 6px;
+          display: flex;
+          align-items: center;
         }
       }
 
-      // 搜索按钮
+      // 自动补全建议项样式
+      .suggestion-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 4px 0;
+
+        .suggestion-icon {
+          font-size: 16px;
+          color: var(--el-color-primary);
+        }
+
+        .suggestion-text {
+          flex: 1;
+          font-size: 14px;
+          color: var(--el-text-color-regular);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      // 搜索按钮通用样式
       .search-btn,
       .search-tag-btn {
-        border-radius: 50px;
-        padding: 12px 32px;
+        border-radius: 16px;
+        padding: 16px 40px;
         font-weight: 600;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-        transition: all 0.3s ease;
+        font-size: 15px;
+        letter-spacing: 0.3px;
+        border: 2px solid transparent;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         white-space: nowrap;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+
+        .el-icon {
+          margin-right: 8px;
+          font-size: 18px;
+          transition: transform 0.3s ease;
+        }
+
+        // 悬停时图标动画
+        &:hover .el-icon {
+          transform: scale(1.1) rotate(5deg);
+        }
+
+        // 按钮光泽效果
+        &::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+          transition: left 0.5s;
+        }
+
+        &:hover::after {
+          left: 100%;
+        }
+      }
+
+      // 标题搜索按钮（现代浅蓝紫色）
+      .search-btn {
+        background: #e8f4ff;
+        color: #4a90e2;
+        border-color: rgba(74, 144, 226, 0.2);
+        box-shadow: 0 4px 16px rgba(74, 144, 226, 0.15), 0 2px 4px rgba(74, 144, 226, 0.1);
 
         &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+          background: #d5ebff;
+          border-color: rgba(74, 144, 226, 0.4);
+          transform: translateY(-4px) scale(1.02);
+          box-shadow: 0 12px 28px rgba(74, 144, 226, 0.25), 0 4px 8px rgba(74, 144, 226, 0.15);
+          color: #3a7bc8;
         }
 
         &:active {
-          transform: translateY(0);
-        }
-
-        .el-icon {
-          margin-right: 6px;
+          transform: translateY(-2px) scale(1);
+          box-shadow: 0 6px 16px rgba(74, 144, 226, 0.2), 0 2px 4px rgba(74, 144, 226, 0.1);
         }
       }
 
+      // 标签搜索按钮（现代浅青绿色）
       .search-tag-btn {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
+        background: #e6f9f5;
+        color: #36b89a;
+        border-color: rgba(54, 184, 154, 0.2);
+        box-shadow: 0 4px 16px rgba(54, 184, 154, 0.15), 0 2px 4px rgba(54, 184, 154, 0.1);
 
         &:hover {
-          background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+          background: #d1f4eb;
+          border-color: rgba(54, 184, 154, 0.4);
+          transform: translateY(-4px) scale(1.02);
+          box-shadow: 0 12px 28px rgba(54, 184, 154, 0.25), 0 4px 8px rgba(54, 184, 154, 0.15);
+          color: #2a9d7f;
+        }
+
+        &:active {
+          transform: translateY(-2px) scale(1);
+          box-shadow: 0 6px 16px rgba(54, 184, 154, 0.2), 0 2px 4px rgba(54, 184, 154, 0.1);
         }
       }
     }
@@ -448,15 +631,20 @@ onUnmounted(() => {
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 
       .search-type-badge {
-        padding: 4px 12px;
-        background: linear-gradient(135deg, #409eff 0%, #3a8ee6 100%);
-        color: white;
+        padding: 6px 16px;
+        background: #e8f4ff;
+        color: #4a90e2;
         border-radius: 20px;
         font-size: 12px;
         font-weight: 600;
+        border: 1.5px solid rgba(74, 144, 226, 0.25);
+        box-shadow: 0 2px 8px rgba(74, 144, 226, 0.12);
 
         &.tag-search {
-          background: linear-gradient(135deg, #67c23a 0%, #5daf34 100%);
+          background: #e6f9f5;
+          color: #36b89a;
+          border-color: rgba(54, 184, 154, 0.25);
+          box-shadow: 0 2px 8px rgba(54, 184, 154, 0.12);
         }
       }
 
@@ -592,8 +780,8 @@ onUnmounted(() => {
         flex-shrink: 0;
 
         .article-cover {
-          width: 180px;
-          height: 135px;
+          width: 200px;
+          height: 125px;
           border-radius: 12px;
           overflow: hidden;
           box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
@@ -777,6 +965,8 @@ onUnmounted(() => {
       .search-input-group {
         flex-direction: column;
 
+        // 移动端样式继承全局样式即可
+
         .search-btn,
         .search-tag-btn {
           width: 100%;
@@ -824,6 +1014,87 @@ onUnmounted(() => {
               margin-left: 0;
             }
           }
+        }
+      }
+    }
+  }
+}
+
+// 注意：自动补全下拉框样式在文件末尾的全局样式块中定义
+</style>
+
+<style lang="scss">
+// 全局样式（不带 scoped），强制覆盖 Element Plus 默认样式
+
+// 强制搜索输入框椭圆形样式（全局样式，优先级最高）
+.search-section {
+  .search-input {
+    .el-input__wrapper {
+      border-radius: 40px !important;
+      padding: 18px 28px !important;
+      height: 56px !important;
+      min-height: 56px !important;
+    }
+
+    .el-input__inner {
+      font-size: 16px !important;
+      height: 100% !important;
+    }
+
+    // 图标样式
+    .el-input__prefix,
+    .el-input__suffix {
+      font-size: 24px !important;
+
+      .el-icon {
+        font-size: 24px !important;
+      }
+    }
+
+    .el-input__clear {
+      font-size: 24px !important;
+    }
+  }
+}
+
+// 自动补全下拉框样式
+.search-autocomplete-popper {
+  max-height: none !important;
+  height: auto !important;
+
+  .el-autocomplete-suggestion {
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+
+    .el-autocomplete-suggestion__wrap {
+      max-height: none !important;
+      height: auto !important;
+      overflow: visible !important;
+      overflow-y: visible !important;
+
+      ul {
+        max-height: none !important;
+        overflow: visible !important;
+      }
+    }
+
+    .el-autocomplete-suggestion__list {
+      padding: 8px 0;
+      max-height: none !important;
+      overflow: visible !important;
+
+      li {
+        padding: 10px 16px;
+        line-height: 24px;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background-color: var(--el-fill-color-light);
+        }
+
+        &.is-highlighted {
+          background-color: var(--el-fill-color);
         }
       }
     }

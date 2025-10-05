@@ -434,6 +434,87 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
+    public PageVo<List<ArticleVo>> searchArticleByContent(String content, Integer pageNum, Integer pageSize) {
+        Page<Article> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
+                .like(Article::getContent, content)
+                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
+                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                .eq(Article::getVisibleRange, VisibleRangeEnum.ALL.getCode())
+                .orderByDesc(Article::getUpdateTime);
+
+        List<Article> articles = articleMapper.selectPage(page, qw).getRecords();
+
+        // 转换为 ArticleVo 并填充用户信息
+        List<ArticleVo> articleVos = articles.stream()
+                .map(article -> {
+                    ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
+                    // 查询作者信息
+                    SysUser author = sysUserMapper.selectById(article.getUserId());
+                    if (ObjectUtil.isNotEmpty(author)) {
+                        articleVo.setNickname(author.getNickname());
+                        articleVo.setAvatar(author.getAvatar());
+                    }
+                    return articleVo;
+                })
+                .collect(Collectors.toList());
+
+        return new PageVo<>(articleVos, page.getTotal());
+    }
+
+    @Override
+    public List<String> getTitleSuggestions(String keyword) {
+        // 查询标题包含关键字的文章，只返回标题，最多10条
+        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
+                .select(Article::getTitle)
+                .like(Article::getTitle, keyword)
+                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
+                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                .eq(Article::getVisibleRange, VisibleRangeEnum.ALL.getCode())
+                .orderByDesc(Article::getUpdateTime)
+                .last("LIMIT 10");
+
+        List<Article> articles = articleMapper.selectList(qw);
+
+        // 返回标题列表
+        return articles.stream()
+                .map(Article::getTitle)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getTagSuggestions(String keyword) {
+        // 查询标签包含关键字的文章，只返回标签，最多返回相关标签
+        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
+                .select(Article::getTag)
+                .like(Article::getTag, keyword)
+                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
+                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                .eq(Article::getVisibleRange, VisibleRangeEnum.ALL.getCode())
+                .isNotNull(Article::getTag)
+                .ne(Article::getTag, "")
+                .last("LIMIT 50");
+
+        List<Article> articles = articleMapper.selectList(qw);
+
+        // 解析所有标签并去重，返回匹配关键字的标签
+        return articles.stream()
+                .map(Article::getTag)
+                .filter(ObjectUtil::isNotEmpty)
+                .flatMap(tagString -> {
+                    // 标签是逗号分隔的字符串，需要拆分
+                    String[] tags = tagString.split(",");
+                    return java.util.Arrays.stream(tags);
+                })
+                .map(String::trim)
+                .filter(tag -> tag.contains(keyword))
+                .distinct()
+                .limit(10)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void addArticle(ArticleDto articleDto) {
         Article article = BeanUtil.copyProperties(articleDto, Article.class);
         Integer userId = SecurityUtils.getUserId();

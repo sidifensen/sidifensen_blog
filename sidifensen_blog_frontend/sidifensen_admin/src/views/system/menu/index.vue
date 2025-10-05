@@ -272,7 +272,8 @@ const getAllMenus = async () => {
 const handleAddMenu = async (row) => {
   await getAllMenus();
 
-  if (row) {
+  // 判断 row 是否是真正的菜单对象（而不是事件对象）
+  if (row && row.id) {
     dialogTitle.value = "新增菜单";
     // 如果传值了说明是在表格行内的新增按钮（添加子菜单）
     menuForm.value = {
@@ -287,10 +288,15 @@ const handleAddMenu = async (row) => {
     };
     dialogVisible.value = true;
   } else {
-    // 点击右上角的新增菜单按钮，计算最大排序号
-    const maxSort = allMenus.value.reduce((max, menu) => {
-      return menu.sort > max ? menu.sort : max;
-    }, 0);
+    // 点击右上角的新增菜单按钮，计算顶级菜单的最大排序号
+    const topLevelMenus = allMenus.value.filter((menu) => menu.parentId === 0);
+
+    const maxSort =
+      topLevelMenus.length > 0
+        ? topLevelMenus.reduce((max, menu) => {
+            return menu.sort > max ? menu.sort : max;
+          }, 0)
+        : 0;
 
     dialogTitle.value = "新增菜单";
     menuForm.value = {

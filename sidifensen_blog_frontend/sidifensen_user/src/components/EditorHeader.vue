@@ -1,7 +1,10 @@
 <template>
   <div class="pc-menu" @select="handleSelect">
     <a class="logo" href="/"><el-text size="large" class="logo-text">sidifensen</el-text></a>
-    <a href="/creation"><el-text class="creation-center"><el-icon><ArrowLeftBold /></el-icon></el-text></a>
+    <a href="/creation"
+      ><el-text class="creation-center"
+        ><el-icon><ArrowLeftBold /></el-icon></el-text
+    ></a>
     <el-text class="publish-article">发布文章</el-text>
     <div class="right">
       <Dark />
@@ -105,7 +108,7 @@ onMounted(() => {
     display: flex;
     font-size: 20px;
   }
-  .publish-article{
+  .publish-article {
     font-size: 20px;
     margin-left: 10px;
   }
@@ -130,15 +133,13 @@ onMounted(() => {
       .nickname {
         font-size: 18px !important;
         font-weight: 600;
-        color: #6f42c1;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+        color: var(--el-text-color-primary);
         margin-left: 10px;
         margin-right: 10px;
         transition: all 0.3s ease;
 
         &:hover {
-          color: #8a6cdd;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+          color: var(--el-color-primary);
           transform: translateY(-2px);
         }
 
@@ -163,7 +164,6 @@ onMounted(() => {
     }
   }
 }
-
 
 // 响应式设计 - 移动端
 @media (max-width: 870px) {

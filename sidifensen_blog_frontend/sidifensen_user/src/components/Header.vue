@@ -31,7 +31,7 @@
       </div>
       <Dark />
       <div v-if="user" class="user-info">
-        <el-text size="large" class="nickname">{{ user.nickname }}</el-text>
+        <el-text size="large" class="nickname" @click="goToUserHomepage">{{ user.nickname }}</el-text>
         <el-dropdown placement="bottom-end">
           <el-avatar v-if="user.avatar" style="cursor: pointer" :size="40" :src="user.avatar" />
           <el-avatar v-else style="cursor: pointer" :size="40" :icon="UserFilled" />
@@ -338,15 +338,14 @@ onBeforeUnmount(() => {
       .nickname {
         font-size: 18px !important;
         font-weight: 600;
-        color: #6f42c1;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+        color: var(--el-text-color-primary);
         margin-left: 10px;
         margin-right: 10px;
         transition: all 0.3s ease;
+        cursor: pointer;
 
         &:hover {
-          color: #8a6cdd;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+          color: var(--el-text-color-regular);
           transform: translateY(-2px);
         }
 

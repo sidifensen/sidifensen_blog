@@ -116,3 +116,19 @@ export function searchArticleByTag(tag, pageNum, pageSize) {
     method: "get",
   });
 }
+
+// 获取标题搜索建议（自动补全）
+export function getTitleSuggestions(keyword) {
+  return request({
+    url: `/article/search/suggestions/title?keyword=${encodeURIComponent(keyword)}`,
+    method: "get",
+  });
+}
+
+// 获取标签搜索建议（自动补全）
+export function getTagSuggestions(keyword) {
+  return request({
+    url: `/article/search/suggestions/tag?keyword=${encodeURIComponent(keyword)}`,
+    method: "get",
+  });
+}

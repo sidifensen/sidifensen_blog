@@ -158,6 +158,49 @@ public class ArticleController {
     }
 
     /**
+     * 获取标题搜索建议（自动补全）
+     *
+     * @param keyword 搜索关键字
+     * @return 标题建议列表（最多返回10条）
+     */
+    @RateLimit(30)
+    @GetMapping("/search/suggestions/title")
+    public Result getTitleSuggestions(@RequestParam @NotNull(message = "搜索关键字不能为空") String keyword) {
+        List<String> suggestions = articleService.getTitleSuggestions(keyword);
+        return Result.success(suggestions);
+    }
+
+    /**
+     * 获取标签搜索建议（自动补全）
+     *
+     * @param keyword 搜索关键字
+     * @return 标签建议列表（最多返回10条）
+     */
+    @RateLimit(30)
+    @GetMapping("/search/suggestions/tag")
+    public Result getTagSuggestions(@RequestParam @NotNull(message = "搜索关键字不能为空") String keyword) {
+        List<String> suggestions = articleService.getTagSuggestions(keyword);
+        return Result.success(suggestions);
+    }
+
+    /**
+     * 根据内容搜索文章
+     *
+     * @param content  内容关键字
+     * @param pageNum  页码
+     * @param pageSize 页大小
+     * @return 搜索结果列表
+     */
+    @RateLimit(20)
+    @GetMapping("/search/content")
+    public Result searchArticleByContent(@RequestParam @NotNull(message = "搜索内容不能为空") String content,
+                                         @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+                                         @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<ArticleVo>> articleVoList = articleService.searchArticleByContent(content, pageNum, pageSize);
+        return Result.success(articleVoList);
+    }
+
+    /**
      * 新增文章
      *
      * @return 新增文章

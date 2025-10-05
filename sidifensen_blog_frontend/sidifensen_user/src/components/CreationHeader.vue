@@ -191,15 +191,13 @@ onMounted(() => {
       .nickname {
         font-size: 18px !important;
         font-weight: 600;
-        color: #6f42c1;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+        color: var(--el-text-color-primary);
         margin-left: 10px;
         margin-right: 10px;
         transition: all 0.3s ease;
 
         &:hover {
-          color: #8a6cdd;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+          color: var(--el-color-primary);
           transform: translateY(-2px);
         }
 

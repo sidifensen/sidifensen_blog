@@ -311,83 +311,119 @@ onMounted(() => {
 <style lang="scss" scoped>
 // 创作中心首页样式
 .creation-home {
-  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
-  padding: 20px;
-  overflow-y: auto; // 如果内容超出则可滚动
+  background: #f5f7fa;
+  padding: 24px;
+  overflow-y: auto;
+  min-height: 100%;
+
+  // 滚动条样式
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--el-border-color);
+    border-radius: 4px;
+
+    &:hover {
+      background: var(--el-border-color-dark);
+    }
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
   // 欢迎横幅
   .welcome-banner {
-    background: var(--el-bg-color);
-    backdrop-filter: blur(10px);
+    background: #ffffff;
     border-radius: 16px;
-    padding: 40px 30px;
-    margin-bottom: 30px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 48px 40px;
+    margin-bottom: 32px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--el-border-color-lighter);
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    }
 
     .banner-content {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 30px;
+      gap: 40px;
 
       .welcome-text {
         flex: 1;
 
         .welcome-title {
-          font-size: 32px;
+          font-size: 36px;
           font-weight: 700;
-          color: var(--el-text-color-primary);
-          margin: 0 0 8px 0;
-          background: linear-gradient(135deg, #74b9ff, #0984e3);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+          color: #303133;
+          margin: 0 0 12px 0;
+          letter-spacing: -0.5px;
+          line-height: 1.2;
         }
 
         .welcome-subtitle {
-          font-size: 16px;
-          color: var(--el-text-color-regular);
+          font-size: 18px;
+          color: #606266;
           margin: 0;
+          font-weight: 400;
         }
       }
 
       .quick-actions {
         display: flex;
-        gap: 16px;
+        gap: 12px;
 
         .action-btn {
           display: flex;
           align-items: center;
-          gap: 8px;
-          padding: 12px 24px;
-          border-radius: 12px;
+          gap: 10px;
+          padding: 14px 28px;
+          border-radius: 10px;
           text-decoration: none;
           font-weight: 600;
+          font-size: 15px;
           transition: all 0.3s ease;
-          // border: 2px solid transparent;
+
+          .el-icon {
+            font-size: 18px;
+          }
 
           &.primary {
-            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            background: #409eff;
             color: white;
+            box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
 
             &:hover {
-              background: linear-gradient(135deg, #6c5ce7, #0984e3);
+              background: #66b1ff;
               transform: translateY(-2px);
-              box-shadow: 0 8px 25px rgba(116, 185, 255, 0.4);
+              box-shadow: 0 6px 16px rgba(64, 158, 255, 0.4);
+            }
+
+            &:active {
+              background: #3a8ee6;
+              transform: translateY(0);
             }
           }
 
           &.secondary {
-            background: var(--el-border-color-light);
-            color: var(--el-text-color-primary);
-            border-color: var(--el-border-color);
+            background: #f4f4f5;
+            color: #606266;
+            border: 1px solid #dcdfe6;
 
             &:hover {
-              background: var(--el-color-primary);
-              color: white;
-              border-color: var(--el-color-primary);
+              background: #ecf5ff;
+              color: #409eff;
+              border-color: #c6e2ff;
               transform: translateY(-2px);
-              box-shadow: 0 8px 25px rgba(64, 158, 255, 0.4);
+            }
+
+            &:active {
+              transform: translateY(0);
             }
           }
         }
@@ -397,9 +433,14 @@ onMounted(() => {
       @media (max-width: 768px) {
         flex-direction: column;
         text-align: center;
+        gap: 24px;
 
         .welcome-text .welcome-title {
-          font-size: 24px;
+          font-size: 28px;
+        }
+
+        .welcome-text .welcome-subtitle {
+          font-size: 16px;
         }
 
         .quick-actions {
@@ -413,19 +454,18 @@ onMounted(() => {
   // 通用节标题
   .section-title {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 32px;
 
     h2 {
       font-size: 28px;
-      font-weight: 700;
-      color: white;
+      font-weight: 600;
+      color: #303133;
       margin: 0 0 8px 0;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     p {
       font-size: 16px;
-      color: rgba(255, 255, 255, 0.8);
+      color: #909399;
       margin: 0;
     }
   }
@@ -443,16 +483,16 @@ onMounted(() => {
 
       // 统计卡片
       .stat-card {
-        background: var(--el-bg-color);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
+        background: #ffffff;
+        border-radius: 12px;
         padding: 24px;
         transition: all 0.3s ease;
-        border: 1px solid var(--el-border-color-light);
+        border: 1px solid var(--el-border-color-lighter);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
         &:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         }
 
         // 文章统计卡片特殊样式
@@ -504,40 +544,40 @@ onMounted(() => {
           .stat-icon {
             width: 60px;
             height: 60px;
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 24px;
 
             &.article {
-              background: linear-gradient(135deg, #74b9ff, #0984e3);
+              background: #409eff;
               color: white;
             }
 
             &.column {
-              background: linear-gradient(135deg, #f093fb, #f5576c);
+              background: #e6a23c;
               color: white;
             }
 
             &.comment {
-              background: linear-gradient(135deg, #4facfe, #00f2fe);
+              background: #67c23a;
               color: white;
             }
 
             &.read {
-              background: linear-gradient(135deg, #43e97b, #38f9d7);
+              background: #909399;
               color: white;
             }
 
             &.like {
-              background: linear-gradient(135deg, #fa709a, #fee140);
+              background: #f56c6c;
               color: white;
             }
 
             &.fans {
-              background: linear-gradient(135deg, #a8edea, #fed6e3);
-              color: var(--el-text-color-primary);
+              background: #606266;
+              color: white;
             }
           }
 
@@ -602,13 +642,14 @@ onMounted(() => {
       margin: 0 auto;
 
       .skeleton-card {
-        background: var(--el-bg-color);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
+        background: #ffffff;
+        border-radius: 12px;
         padding: 24px;
         display: flex;
         align-items: center;
         gap: 16px;
+        border: 1px solid var(--el-border-color-lighter);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
         .skeleton-content {
           flex: 1;
@@ -629,23 +670,23 @@ onMounted(() => {
       margin: 0 auto;
 
       .tool-card {
-        background: var(--el-bg-color);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
+        background: #ffffff;
+        border-radius: 12px;
         padding: 24px;
         cursor: pointer;
         transition: all 0.3s ease;
-        border: 1px solid var(--el-border-color-light);
+        border: 1px solid var(--el-border-color-lighter);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
         &:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         }
 
         .tool-icon {
           width: 60px;
           height: 60px;
-          border-radius: 12px;
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -653,22 +694,22 @@ onMounted(() => {
           margin-bottom: 16px;
 
           &.create {
-            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            background: #409eff;
             color: white;
           }
 
           &.manage {
-            background: linear-gradient(135deg, #f093fb, #f5576c);
+            background: #e6a23c;
             color: white;
           }
 
           &.column {
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            background: #67c23a;
             color: white;
           }
 
           &.comment {
-            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            background: #909399;
             color: white;
           }
         }
@@ -703,11 +744,11 @@ onMounted(() => {
       gap: 20px;
 
       .assistant-card {
-        background: var(--el-bg-color);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
+        background: #ffffff;
+        border-radius: 12px;
         padding: 24px;
-        border: 1px solid var(--el-border-color-light);
+        border: 1px solid var(--el-border-color-lighter);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
         .card-header {
           display: flex;
@@ -753,21 +794,25 @@ onMounted(() => {
           .topic-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 10px;
 
             .topic-tag {
-              padding: 6px 12px;
-              background: var(--el-color-primary-light-9);
-              color: var(--el-color-primary);
-              border-radius: 16px;
-              font-size: 12px;
+              padding: 8px 16px;
+              background: #f4f4f5;
+              color: #606266;
+              border-radius: 20px;
+              font-size: 13px;
               font-weight: 500;
               transition: all 0.3s ease;
               cursor: pointer;
+              border: 1px solid #e4e7ed;
 
               &:hover {
-                background: var(--el-color-primary-light-7);
-                transform: translateY(-1px);
+                background: #409eff;
+                color: white;
+                border-color: #409eff;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(64, 158, 255, 0.3);
               }
             }
           }
