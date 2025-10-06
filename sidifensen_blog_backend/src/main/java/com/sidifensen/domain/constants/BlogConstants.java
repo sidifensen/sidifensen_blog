@@ -43,6 +43,10 @@ public class BlogConstants {
 
     public static final String AddTagError = "添加标签失败";
     public static final String DeleteTagError = "删除标签失败";
+    public static final String UpdateCategorySortError = "更新分类排序失败";
+    public static final String CategoryNotFound = "分类不存在";
+    public static final String CategoryNameRequired = "分类名称不能为空";
+    public static final String SortValueRequired = "排序值不能为空";
     public static final String AddArticleError = "添加文章失败";
     public static final String DeleteArticleError = "删除文章失败";
     public static final String CannotHandleOthersArticle = "不能操作别人的文章";

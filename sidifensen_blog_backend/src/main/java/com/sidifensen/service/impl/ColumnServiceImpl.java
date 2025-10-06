@@ -258,6 +258,35 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
         }
         Column updateColumn = BeanUtil.copyProperties(columnDto, Column.class);
 
+        // 处理排序冲突：如果修改了排序，需要调整其他专栏的排序值
+        Integer oldSort = column.getSort();
+        Integer newSort = columnDto.getSort();
+        
+        if (!ObjectUtil.equal(oldSort, newSort) && newSort != null) {
+            // 排序被修改，需要重新调整其他专栏的排序
+            Integer userId = column.getUserId();
+            
+            if (newSort < oldSort) {
+                // 新排序值更小，说明向前移动，需要将 [newSort, oldSort) 范围内的专栏排序值 +1
+                LambdaUpdateWrapper<Column> updateWrapper = new LambdaUpdateWrapper<>();
+                updateWrapper.eq(Column::getUserId, userId)
+                        .ge(Column::getSort, newSort)
+                        .lt(Column::getSort, oldSort)
+                        .ne(Column::getId, column.getId())
+                        .setSql("sort = sort + 1");
+                columnMapper.update(null, updateWrapper);
+            } else {
+                // 新排序值更大，说明向后移动，需要将 (oldSort, newSort] 范围内的专栏排序值 -1
+                LambdaUpdateWrapper<Column> updateWrapper = new LambdaUpdateWrapper<>();
+                updateWrapper.eq(Column::getUserId, userId)
+                        .gt(Column::getSort, oldSort)
+                        .le(Column::getSort, newSort)
+                        .ne(Column::getId, column.getId())
+                        .setSql("sort = sort - 1");
+                columnMapper.update(null, updateWrapper);
+            }
+        }
+
         // 如果修改了标题、描述或封面，重新设为待审核状态
         boolean nameChanged = !ObjectUtil.equal(column.getName(), columnDto.getName());
         boolean descriptionChanged = !ObjectUtil.equal(column.getDescription(), columnDto.getDescription());

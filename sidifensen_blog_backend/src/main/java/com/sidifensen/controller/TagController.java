@@ -2,7 +2,9 @@ package com.sidifensen.controller;
 
 
 import com.sidifensen.aspect.RateLimit;
+import com.sidifensen.domain.dto.CategorySortDto;
 import com.sidifensen.domain.dto.TagDto;
+import com.sidifensen.domain.entity.Tag;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.service.TagService;
 import jakarta.annotation.Resource;
@@ -40,18 +42,30 @@ public class TagController {
      */
     @GetMapping("/list")
     public Result listTag() {
-        Map<String, List<String>> tagVos = tagService.listTag();
+        Map<String, List<Tag>> tagVos = tagService.listTag();
         return Result.success(tagVos);
     }
-
+    
     /**
-     * 删除标签
+     * 调整分类排序
+     * 说明：调整某个分类的排序值，该分类下所有标签的 sort 值都会更新，并自动处理排序冲突
+     */
+    @PreAuthorize("hasAuthority('tag:update')")
+    @PutMapping("/sort/category")
+    public Result updateCategorySort(@RequestBody CategorySortDto categorySortDto) {
+        tagService.updateCategorySort(categorySortDto);
+        return Result.success();
+    }
+    
+    /**
+     * 批量删除标签
      */
     @PreAuthorize("hasAuthority('tag:delete')")
     @DeleteMapping("/delete")
-    public Result deleteTag(@RequestParam Integer id) {
-        tagService.deleteTag(id);
+    public Result deleteTag(@RequestBody List<Integer> ids) {
+        tagService.deleteTags(ids);
         return Result.success();
     }
+
 
 }

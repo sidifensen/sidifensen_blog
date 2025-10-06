@@ -1,6 +1,7 @@
 package com.sidifensen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.sidifensen.domain.dto.CategorySortDto;
 import com.sidifensen.domain.dto.TagDto;
 import com.sidifensen.domain.entity.Tag;
 
@@ -19,7 +20,10 @@ public interface TagService extends IService<Tag> {
 
     void addTag(TagDto tagDto);
 
-    Map<String, List<String>> listTag();
+    Map<String, List<Tag>> listTag();
+    
+    void updateCategorySort(CategorySortDto categorySortDto);
+    
+    void deleteTags(List<Integer> ids);
 
-    void deleteTag(Integer id);
 }

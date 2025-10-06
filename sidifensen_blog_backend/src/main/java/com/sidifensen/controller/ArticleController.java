@@ -163,7 +163,7 @@ public class ArticleController {
      * @param keyword 搜索关键字
      * @return 标题建议列表（最多返回10条）
      */
-    @RateLimit(30)
+    @RateLimit(20)
     @GetMapping("/search/suggestions/title")
     public Result getTitleSuggestions(@RequestParam @NotNull(message = "搜索关键字不能为空") String keyword) {
         List<String> suggestions = articleService.getTitleSuggestions(keyword);
@@ -176,7 +176,7 @@ public class ArticleController {
      * @param keyword 搜索关键字
      * @return 标签建议列表（最多返回10条）
      */
-    @RateLimit(30)
+    @RateLimit(20)
     @GetMapping("/search/suggestions/tag")
     public Result getTagSuggestions(@RequestParam @NotNull(message = "搜索关键字不能为空") String keyword) {
         List<String> suggestions = articleService.getTagSuggestions(keyword);

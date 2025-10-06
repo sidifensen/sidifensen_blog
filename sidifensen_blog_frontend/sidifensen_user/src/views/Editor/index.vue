@@ -55,8 +55,8 @@
                         </template>
                       </el-input>
                       <div v-if="isSearchResultVisible && searchResults.length > 0" class="search-result-dropdown">
-                        <div v-for="result in searchResults" :key="result" class="search-result-item" @click="selectTag(result)">
-                          {{ result }}
+                        <div v-for="result in searchResults" :key="result.id" class="search-result-item" @click="selectTag(result)">
+                          {{ result.name }}
                         </div>
                       </div>
                     </div>
@@ -73,8 +73,8 @@
                       </div>
                       <div class="tag-list">
                         <div class="available-tags-section">
-                          <el-tag v-for="tag in getTagsByCategory(activeCategory)" :key="tag" :class="{ 'tag-item-active': tags.includes(tag) }" :disabled="tags.length >= 5 && !tags.includes(tag)" class="available-tag" size="small" @click="toggleTag(tag)">
-                            {{ tag }}
+                          <el-tag v-for="tag in getTagsByCategory(activeCategory)" :key="tag.id" :class="{ 'tag-item-active': tags.includes(tag.name) }" :disabled="tags.length >= 5 && !tags.includes(tag.name)" class="available-tag" size="small" @click="toggleTag(tag)">
+                            {{ tag.name }}
                           </el-tag>
                         </div>
                       </div>
@@ -578,9 +578,10 @@ watch(
   { deep: true, immediate: true }
 );
 
-// 所有标签
-const allTags = ref([]);
+// 所有标签 - 后端返回 Map<String, List<Tag>>
+const allTags = ref({});
 getTagList().then((res) => {
+  // 后端返回的是分组的标签数据: { "前沿技术": [{id, category, name}, ...], ... }
   allTags.value = res.data.data;
 });
 
@@ -637,7 +638,8 @@ const handleTagSearch = () => {
   if (allTags.value && typeof allTags.value === "object") {
     Object.values(allTags.value).forEach((tagArray) => {
       tagArray.forEach((tag) => {
-        if (tag.toLowerCase().includes(keyword) && !results.includes(tag)) {
+        // tag 现在是对象 {id, category, name}
+        if (tag.name.toLowerCase().includes(keyword) && !results.find((r) => r.name === tag.name)) {
           results.push(tag);
         }
       });
@@ -686,17 +688,18 @@ const getTagsByCategory = (category) => {
   return [];
 };
 
-// 当前标签
+// 当前标签（存储标签名称字符串）
 const tags = ref((article.value.tag || "").split(",").filter((tag) => tag.trim() !== ""));
 
 // 切换标签选中状态
 const toggleTag = (tag) => {
-  const index = tags.value.indexOf(tag);
+  const tagName = tag.name ;
+  const index = tags.value.indexOf(tagName);
   if (index > -1) {
     tags.value.splice(index, 1);
   } else if (tags.value.length < 5) {
     // 限制最多添加5个标签
-    tags.value.push(tag);
+    tags.value.push(tagName);
   } else {
     ElMessage.warning("最多只能添加5个标签");
     return;

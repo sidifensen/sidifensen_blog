@@ -443,503 +443,542 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
-// 全局容器
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
 // 搜索页面容器
 .search-container {
   min-height: 100vh;
   padding-top: 20px;
   background: var(--el-bg-color-page);
-}
 
-// 搜索区域
-.search-section {
-  padding: 40px 0;
-  background: transparent;
+  // 搜索区域
+  .search-section {
+    padding: 40px 0;
+    background: transparent;
 
-  .search-box-wrapper {
-    max-width: 900px;
-    margin: 0 auto;
+    // 容器
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
 
-    // 搜索输入组
-    .search-input-group {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
+      // 搜索框包装器
+      .search-box-wrapper {
+        max-width: 900px;
+        margin: 0 auto;
 
-      // 搜索输入框（自动补全）- 椭圆形设计
-      // 注意：具体样式在全局样式中定义（不受 scoped 限制）
-      .search-input {
-        flex: 1;
-
-        :deep(.el-input__wrapper) {
-          background: rgba(255, 255, 255, 0.95);
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-          border: 2px solid transparent;
-          transition: all 0.3s ease;
-
-          &:hover,
-          &:focus {
-            background: white;
-            border-color: #409eff;
-            box-shadow: 0 8px 32px rgba(64, 158, 255, 0.2);
-          }
-        }
-
-        :deep(.el-input__inner) {
-          color: var(--el-text-color-primary);
-        }
-
-        // 左侧搜索图标
-        :deep(.el-input__prefix) {
-          color: #909399;
-          margin-left: 6px;
+        // 搜索输入组
+        .search-input-group {
           display: flex;
           align-items: center;
-        }
+          gap: 12px;
+          margin-bottom: 20px;
 
-        // 右侧清除图标
-        :deep(.el-input__suffix) {
-          margin-right: 6px;
-          display: flex;
-          align-items: center;
-        }
-      }
+          // 搜索输入框（自动补全）- 椭圆形设计
+          // 注意：具体样式在全局样式中定义（不受 scoped 限制）
+          .search-input {
+            flex: 1;
 
-      // 自动补全建议项样式
-      .suggestion-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 4px 0;
+            :deep(.el-input__wrapper) {
+              background: rgba(255, 255, 255, 0.95);
+              box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+              border: 2px solid transparent;
+              transition: all 0.3s ease;
 
-        .suggestion-icon {
-          font-size: 16px;
-          color: var(--el-color-primary);
-        }
+              &:hover,
+              &:focus {
+                background: white;
+                border-color: #409eff;
+                box-shadow: 0 8px 32px rgba(64, 158, 255, 0.2);
+              }
+            }
 
-        .suggestion-text {
-          flex: 1;
-          font-size: 14px;
-          color: var(--el-text-color-regular);
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-      }
+            :deep(.el-input__inner) {
+              color: var(--el-text-color-primary);
+            }
 
-      // 搜索按钮通用样式
-      .search-btn,
-      .search-tag-btn {
-        border-radius: 16px;
-        padding: 16px 40px;
-        font-weight: 600;
-        font-size: 15px;
-        letter-spacing: 0.3px;
-        border: 2px solid transparent;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        white-space: nowrap;
-        position: relative;
-        overflow: hidden;
-        backdrop-filter: blur(10px);
+            // 左侧搜索图标
+            :deep(.el-input__prefix) {
+              color: #909399;
+              margin-left: 6px;
+              display: flex;
+              align-items: center;
+            }
 
-        .el-icon {
-          margin-right: 8px;
-          font-size: 18px;
-          transition: transform 0.3s ease;
-        }
-
-        // 悬停时图标动画
-        &:hover .el-icon {
-          transform: scale(1.1) rotate(5deg);
-        }
-
-        // 按钮光泽效果
-        &::after {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-          transition: left 0.5s;
-        }
-
-        &:hover::after {
-          left: 100%;
-        }
-      }
-
-      // 标题搜索按钮（现代浅蓝紫色）
-      .search-btn {
-        background: #e8f4ff;
-        color: #4a90e2;
-        border-color: rgba(74, 144, 226, 0.2);
-        box-shadow: 0 4px 16px rgba(74, 144, 226, 0.15), 0 2px 4px rgba(74, 144, 226, 0.1);
-
-        &:hover {
-          background: #d5ebff;
-          border-color: rgba(74, 144, 226, 0.4);
-          transform: translateY(-4px) scale(1.02);
-          box-shadow: 0 12px 28px rgba(74, 144, 226, 0.25), 0 4px 8px rgba(74, 144, 226, 0.15);
-          color: #3a7bc8;
-        }
-
-        &:active {
-          transform: translateY(-2px) scale(1);
-          box-shadow: 0 6px 16px rgba(74, 144, 226, 0.2), 0 2px 4px rgba(74, 144, 226, 0.1);
-        }
-      }
-
-      // 标签搜索按钮（现代浅青绿色）
-      .search-tag-btn {
-        background: #e6f9f5;
-        color: #36b89a;
-        border-color: rgba(54, 184, 154, 0.2);
-        box-shadow: 0 4px 16px rgba(54, 184, 154, 0.15), 0 2px 4px rgba(54, 184, 154, 0.1);
-
-        &:hover {
-          background: #d1f4eb;
-          border-color: rgba(54, 184, 154, 0.4);
-          transform: translateY(-4px) scale(1.02);
-          box-shadow: 0 12px 28px rgba(54, 184, 154, 0.25), 0 4px 8px rgba(54, 184, 154, 0.15);
-          color: #2a9d7f;
-        }
-
-        &:active {
-          transform: translateY(-2px) scale(1);
-          box-shadow: 0 6px 16px rgba(54, 184, 154, 0.2), 0 2px 4px rgba(54, 184, 154, 0.1);
-        }
-      }
-    }
-
-    // 搜索信息
-    .search-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 24px;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 50px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-
-      .search-type-badge {
-        padding: 6px 16px;
-        background: #e8f4ff;
-        color: #4a90e2;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        border: 1.5px solid rgba(74, 144, 226, 0.25);
-        box-shadow: 0 2px 8px rgba(74, 144, 226, 0.12);
-
-        &.tag-search {
-          background: #e6f9f5;
-          color: #36b89a;
-          border-color: rgba(54, 184, 154, 0.25);
-          box-shadow: 0 2px 8px rgba(54, 184, 154, 0.12);
-        }
-      }
-
-      .search-keyword {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--el-text-color-primary);
-      }
-
-      .search-result-count {
-        margin-left: auto;
-        font-size: 14px;
-        color: var(--el-text-color-secondary);
-      }
-    }
-  }
-}
-
-// 搜索结果区域
-.search-results-section {
-  padding: 20px 0 60px 0;
-
-  // 初始状态
-  .initial-state {
-    text-align: center;
-    padding: 80px 20px;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-
-    .search-icon {
-      font-size: 80px;
-      color: #909399;
-      margin-bottom: 20px;
-    }
-
-    h3 {
-      font-size: 24px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
-      margin: 0 0 12px 0;
-    }
-
-    p {
-      font-size: 16px;
-      color: var(--el-text-color-secondary);
-      margin: 0;
-    }
-  }
-
-  // 加载容器
-  .loading-container {
-    background: white;
-    border-radius: 16px;
-    padding: 30px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-
-    .article-skeleton {
-      display: flex;
-      gap: 20px;
-      padding: 20px 0;
-      border-bottom: 1px solid var(--el-border-color-lighter);
-
-      &:last-child {
-        border-bottom: none;
-      }
-
-      .skeleton-content {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-    }
-  }
-
-  // 空状态
-  .empty-state {
-    background: white;
-    border-radius: 16px;
-    padding: 60px 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    text-align: center;
-
-    .empty-icon {
-      font-size: 80px;
-      color: #909399;
-    }
-
-    :deep(.el-empty__description) {
-      font-size: 16px;
-      margin-top: 16px;
-    }
-  }
-
-  // 文章列表
-  .article-list {
-    background: white;
-    border-radius: 16px;
-    padding: 30px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-
-    // 文章项
-    .article-item {
-      display: flex;
-      gap: 20px;
-      padding: 24px 0;
-      border-bottom: 1px solid var(--el-border-color-lighter);
-      cursor: pointer;
-      transition: all 0.3s ease;
-
-      &:first-child {
-        padding-top: 0;
-      }
-
-      &:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-      }
-
-      &:hover {
-        transform: translateX(8px);
-        background: var(--el-fill-color-light);
-        padding-left: 16px;
-        padding-right: 16px;
-        margin-left: -16px;
-        margin-right: -16px;
-        border-radius: 12px;
-      }
-
-      // 文章封面
-      .article-cover-wrapper {
-        flex-shrink: 0;
-
-        .article-cover {
-          width: 200px;
-          height: 125px;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-          transition: transform 0.3s ease;
-
-          &:hover {
-            transform: scale(1.05);
+            // 右侧清除图标
+            :deep(.el-input__suffix) {
+              margin-right: 6px;
+              display: flex;
+              align-items: center;
+            }
           }
 
-          .image-placeholder,
-          .image-error {
-            width: 100%;
-            height: 100%;
+          // 自动补全建议项样式
+          .suggestion-item {
             display: flex;
-            justify-content: center;
             align-items: center;
-            background: var(--el-fill-color-light);
-            color: var(--el-text-color-placeholder);
+            gap: 10px;
+            padding: 4px 0;
+
+            .suggestion-icon {
+              font-size: 16px;
+              color: var(--el-color-primary);
+            }
+
+            .suggestion-text {
+              flex: 1;
+              font-size: 14px;
+              color: var(--el-text-color-regular);
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+          }
+
+          // 搜索按钮通用样式
+          .search-btn,
+          .search-tag-btn {
+            border-radius: 16px;
+            padding: 16px 40px;
+            font-weight: 600;
+            font-size: 15px;
+            letter-spacing: 0.3px;
+            border: 2px solid transparent;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
 
             .el-icon {
-              font-size: 32px;
+              margin-right: 8px;
+              font-size: 18px;
+              transition: transform 0.3s ease;
+            }
+
+            // 悬停时图标动画
+            &:hover .el-icon {
+              transform: scale(1.1) rotate(5deg);
+            }
+
+            // 按钮光泽效果
+            &::after {
+              content: "";
+              position: absolute;
+              top: 0;
+              left: -100%;
+              width: 100%;
+              height: 100%;
+              background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+              transition: left 0.5s;
+            }
+
+            &:hover::after {
+              left: 100%;
+            }
+          }
+
+          // 标题搜索按钮（现代浅蓝紫色）
+          .search-btn {
+            background: #e8f4ff;
+            color: #4a90e2;
+            border-color: rgba(74, 144, 226, 0.2);
+            box-shadow: 0 4px 16px rgba(74, 144, 226, 0.15), 0 2px 4px rgba(74, 144, 226, 0.1);
+
+            &:hover {
+              background: #d5ebff;
+              border-color: rgba(74, 144, 226, 0.4);
+              transform: translateY(-4px) scale(1.02);
+              box-shadow: 0 12px 28px rgba(74, 144, 226, 0.25), 0 4px 8px rgba(74, 144, 226, 0.15);
+              color: #3a7bc8;
+            }
+
+            &:active {
+              transform: translateY(-2px) scale(1);
+              box-shadow: 0 6px 16px rgba(74, 144, 226, 0.2), 0 2px 4px rgba(74, 144, 226, 0.1);
+            }
+          }
+
+          // 标签搜索按钮（现代浅青绿色）
+          .search-tag-btn {
+            background: #e6f9f5;
+            color: #36b89a;
+            border-color: rgba(54, 184, 154, 0.2);
+            box-shadow: 0 4px 16px rgba(54, 184, 154, 0.15), 0 2px 4px rgba(54, 184, 154, 0.1);
+
+            &:hover {
+              background: #d1f4eb;
+              border-color: rgba(54, 184, 154, 0.4);
+              transform: translateY(-4px) scale(1.02);
+              box-shadow: 0 12px 28px rgba(54, 184, 154, 0.25), 0 4px 8px rgba(54, 184, 154, 0.15);
+              color: #2a9d7f;
+            }
+
+            &:active {
+              transform: translateY(-2px) scale(1);
+              box-shadow: 0 6px 16px rgba(54, 184, 154, 0.2), 0 2px 4px rgba(54, 184, 154, 0.1);
             }
           }
         }
+
+        // 搜索信息
+        .search-info {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 24px;
+          background: rgba(255, 255, 255, 0.9);
+          border-radius: 50px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+
+          // 搜索类型标识
+          .search-type-badge {
+            padding: 6px 16px;
+            background: #e8f4ff;
+            color: #4a90e2;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1.5px solid rgba(74, 144, 226, 0.25);
+            box-shadow: 0 2px 8px rgba(74, 144, 226, 0.12);
+
+            &.tag-search {
+              background: #e6f9f5;
+              color: #36b89a;
+              border-color: rgba(54, 184, 154, 0.25);
+              box-shadow: 0 2px 8px rgba(54, 184, 154, 0.12);
+            }
+          }
+
+          // 搜索关键字
+          .search-keyword {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--el-text-color-primary);
+          }
+
+          // 搜索结果数量
+          .search-result-count {
+            margin-left: auto;
+            font-size: 14px;
+            color: var(--el-text-color-secondary);
+          }
+        }
       }
+    }
+  }
 
-      // 文章信息
-      .article-info {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        min-width: 0;
+  // 搜索结果区域
+  .search-results-section {
+    padding: 20px 0 60px 0;
 
-        // 文章标题
-        .article-title {
-          font-size: 20px;
+    // 容器
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+
+      // 初始状态
+      .initial-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+        // 搜索图标
+        .search-icon {
+          font-size: 80px;
+          color: #909399;
+          margin-bottom: 20px;
+        }
+
+        // 标题
+        h3 {
+          font-size: 24px;
           font-weight: 600;
           color: var(--el-text-color-primary);
           margin: 0 0 12px 0;
-          line-height: 1.4;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-          transition: color 0.3s ease;
+        }
+
+        // 描述
+        p {
+          font-size: 16px;
+          color: var(--el-text-color-secondary);
+          margin: 0;
+        }
+      }
+
+      // 加载容器
+      .loading-container {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+        // 骨架屏
+        .article-skeleton {
+          display: flex;
+          gap: 20px;
+          padding: 20px 0;
+          border-bottom: 1px solid var(--el-border-color-lighter);
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .skeleton-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+          }
+        }
+      }
+
+      // 空状态
+      .empty-state {
+        background: white;
+        border-radius: 16px;
+        padding: 60px 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        text-align: center;
+
+        // 空状态图标
+        .empty-icon {
+          font-size: 80px;
+          color: #909399;
+        }
+
+        :deep(.el-empty__description) {
+          font-size: 16px;
+          margin-top: 16px;
+        }
+      }
+
+      // 文章列表
+      .article-list {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+        // 文章项
+        .article-item {
+          display: flex;
+          gap: 20px;
+          padding: 24px 0;
+          border-bottom: 1px solid var(--el-border-color-lighter);
+          cursor: pointer;
+          transition: all 0.3s ease;
+
+          &:first-child {
+            padding-top: 0;
+          }
+
+          &:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+          }
 
           &:hover {
-            color: var(--el-color-primary);
-          }
-        }
-
-        // 文章描述
-        .article-description {
-          font-size: 14px;
-          color: var(--el-text-color-regular);
-          margin: 0 0 12px 0;
-          line-height: 1.6;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-
-        // 文章元信息
-        .article-meta {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          flex-wrap: wrap;
-          font-size: 13px;
-          color: var(--el-text-color-secondary);
-
-          // 作者信息
-          .author-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-
-            .author-avatar {
-              border: 2px solid var(--el-border-color-lighter);
-            }
-
-            .author-name {
-              font-weight: 500;
-              color: var(--el-text-color-regular);
-            }
+            transform: translateX(8px);
+            background: var(--el-fill-color-light);
+            padding-left: 16px;
+            padding-right: 16px;
+            margin-left: -16px;
+            margin-right: -16px;
+            border-radius: 12px;
           }
 
-          // 统计信息
-          .article-stats {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+          // 文章封面包装器
+          .article-cover-wrapper {
+            flex-shrink: 0;
 
-            .stat-item {
-              display: flex;
-              align-items: center;
-              gap: 4px;
+            // 文章封面
+            .article-cover {
+              width: 200px;
+              height: 125px;
+              border-radius: 12px;
+              overflow: hidden;
+              box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+              transition: transform 0.3s ease;
 
-              .el-icon {
-                font-size: 14px;
+              &:hover {
+                transform: scale(1.05);
+              }
+
+              // 图片加载占位符
+              .image-placeholder {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: var(--el-fill-color-light);
+                color: var(--el-text-color-placeholder);
+
+                .el-icon {
+                  font-size: 32px;
+                }
+              }
+
+              // 图片加载错误
+              .image-error {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: var(--el-fill-color-light);
+                color: var(--el-text-color-placeholder);
+
+                .el-icon {
+                  font-size: 32px;
+                }
               }
             }
           }
 
-          // 发布时间
-          .article-date {
-            margin-left: auto;
+          // 文章信息
+          .article-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-width: 0;
+
+            // 文章标题
+            .article-title {
+              font-size: 20px;
+              font-weight: 600;
+              color: var(--el-text-color-primary);
+              margin: 0 0 12px 0;
+              line-height: 1.4;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+              transition: color 0.3s ease;
+
+              &:hover {
+                color: var(--el-color-primary);
+              }
+            }
+
+            // 文章描述
+            .article-description {
+              font-size: 14px;
+              color: var(--el-text-color-regular);
+              margin: 0 0 12px 0;
+              line-height: 1.6;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+            }
+
+            // 文章元信息
+            .article-meta {
+              display: flex;
+              align-items: center;
+              gap: 16px;
+              flex-wrap: wrap;
+              font-size: 13px;
+              color: var(--el-text-color-secondary);
+
+              // 作者信息
+              .author-info {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                // 作者头像
+                .author-avatar {
+                  border: 2px solid var(--el-border-color-lighter);
+                }
+
+                // 作者名称
+                .author-name {
+                  font-weight: 500;
+                  color: var(--el-text-color-regular);
+                }
+              }
+
+              // 统计信息
+              .article-stats {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+
+                // 统计项
+                .stat-item {
+                  display: flex;
+                  align-items: center;
+                  gap: 4px;
+
+                  .el-icon {
+                    font-size: 14px;
+                  }
+                }
+              }
+
+              // 发布时间
+              .article-date {
+                margin-left: auto;
+              }
+            }
+
+            // 文章标签
+            .article-tags {
+              display: flex;
+              gap: 8px;
+              flex-wrap: wrap;
+              margin-top: 8px;
+
+              // 标签项
+              .tag-item {
+                border-radius: 4px;
+                font-size: 12px;
+              }
+            }
           }
         }
 
-        // 文章标签
-        .article-tags {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-          margin-top: 8px;
+        // 加载更多指示器
+        .load-more-indicator {
+          margin-top: 30px;
+          text-align: center;
 
-          .tag-item {
-            border-radius: 4px;
-            font-size: 12px;
+          // 加载更多中
+          .loading-more {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            padding: 20px;
+            color: var(--el-text-color-regular);
+
+            // 加载动画
+            .loading-spinner {
+              width: 24px;
+              height: 24px;
+              border: 3px solid var(--el-border-color);
+              border-top-color: var(--el-color-primary);
+              border-radius: 50%;
+              animation: spin 1s linear infinite;
+            }
           }
-        }
-      }
-    }
 
-    // 加载更多指示器
-    .load-more-indicator {
-      margin-top: 30px;
-      text-align: center;
+          // 没有更多
+          .no-more {
+            padding: 20px 0;
 
-      .loading-more {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 12px;
-        padding: 20px;
-        color: var(--el-text-color-regular);
-
-        .loading-spinner {
-          width: 24px;
-          height: 24px;
-          border: 3px solid var(--el-border-color);
-          border-top-color: var(--el-color-primary);
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-      }
-
-      .no-more {
-        padding: 20px 0;
-
-        :deep(.el-divider__text) {
-          color: var(--el-text-color-secondary);
-          font-size: 14px;
+            :deep(.el-divider__text) {
+              color: var(--el-text-color-secondary);
+              font-size: 14px;
+            }
+          }
         }
       }
     }
@@ -958,60 +997,75 @@ onUnmounted(() => {
 
 // 响应式设计
 @media (max-width: 768px) {
-  .search-section {
-    padding: 20px 0;
+  .search-container {
+    // 搜索区域
+    .search-section {
+      padding: 20px 0;
 
-    .search-box-wrapper {
-      .search-input-group {
-        flex-direction: column;
+      .container {
+        // 搜索框包装器
+        .search-box-wrapper {
+          // 搜索输入组
+          .search-input-group {
+            flex-direction: column;
 
-        // 移动端样式继承全局样式即可
+            // 搜索按钮
+            .search-btn,
+            .search-tag-btn {
+              width: 100%;
+            }
+          }
 
-        .search-btn,
-        .search-tag-btn {
-          width: 100%;
-        }
-      }
+          // 搜索信息
+          .search-info {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 16px;
 
-      .search-info {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 16px;
-
-        .search-result-count {
-          margin-left: 0;
+            .search-result-count {
+              margin-left: 0;
+            }
+          }
         }
       }
     }
-  }
 
-  .search-results-section {
-    .article-list {
-      padding: 20px;
+    // 搜索结果区域
+    .search-results-section {
+      .container {
+        // 文章列表
+        .article-list {
+          padding: 20px;
 
-      .article-item {
-        flex-direction: column;
-        gap: 16px;
-
-        &:hover {
-          transform: none;
-        }
-
-        .article-cover-wrapper {
-          .article-cover {
-            width: 100%;
-            height: 200px;
-          }
-        }
-
-        .article-info {
-          .article-meta {
+          // 文章项
+          .article-item {
             flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
+            gap: 16px;
 
-            .article-date {
-              margin-left: 0;
+            &:hover {
+              transform: none;
+            }
+
+            // 文章封面包装器
+            .article-cover-wrapper {
+              .article-cover {
+                width: 100%;
+                height: 200px;
+              }
+            }
+
+            // 文章信息
+            .article-info {
+              // 文章元信息
+              .article-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+
+                .article-date {
+                  margin-left: 0;
+                }
+              }
             }
           }
         }

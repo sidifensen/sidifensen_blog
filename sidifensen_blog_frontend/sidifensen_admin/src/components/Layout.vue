@@ -100,7 +100,7 @@
                 <div class="message-header">
                   <span class="message-title">消息通知</span>
                   <el-button v-if="hasUnreadMessages" size="small" plain type="success" @click="markAllAsRead">全部标为已读</el-button>
-                  <el-button size="small" plain  type="danger" @click="deleteAllMessages">全部删除</el-button>
+                  <el-button size="small" plain type="danger" @click="deleteAllMessages">全部删除</el-button>
                 </div>
                 <div class="message-list" ref="messageListRef">
                   <div v-if="messages.length === 0" class="no-message">
@@ -407,6 +407,28 @@ const handleLogout = () => {
       height: calc(100% - 48px);
       overflow-y: auto;
       overflow-x: hidden;
+      scrollbar-gutter: stable; // 始终为滚动条预留空间，避免布局抖动
+
+      // 自定义滚动条样式
+      &::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+        margin: 4px 0;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: rgba(203, 213, 225, 0.4);
+        border-radius: 4px;
+        border: 2px solid transparent;
+        background-clip: content-box;
+
+        &:hover {
+          background-color: rgba(203, 213, 225, 0.6);
+        }
+      }
 
       .el-menu-item {
         padding: 12px 20px;
@@ -537,7 +559,7 @@ const handleLogout = () => {
                 transform: scale(1);
               }
             }
-            
+
             @media screen and (max-width: 768px) {
               width: 300px;
               left: -150px;
@@ -560,7 +582,6 @@ const handleLogout = () => {
                 color: var(--el-text-color);
               }
             }
-            
 
             // 消息列表样式
             .message-list {
@@ -732,6 +753,30 @@ const handleLogout = () => {
         display: flex;
         flex-direction: column;
         align-items: flex-start; // 菜单项水平左对齐
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-gutter: stable; // 始终为滚动条预留空间，避免布局抖动
+
+        // 自定义滚动条样式
+        &::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: transparent;
+          margin: 4px 0;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background-color: rgba(203, 213, 225, 0.4);
+          border-radius: 4px;
+          border: 2px solid transparent;
+          background-clip: content-box;
+
+          &:hover {
+            background-color: rgba(203, 213, 225, 0.6);
+          }
+        }
 
         // 移动端子菜单样式
         .el-sub-menu {

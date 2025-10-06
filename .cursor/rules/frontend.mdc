@@ -4,6 +4,58 @@ alwaysApply: true
 
 # Vue 3 前端项目规则
 
+## 🔥🔥🔥 核心强制规则（必读）🔥🔥🔥
+
+### ❗❗❗ 最高优先级规则：SCSS 层次结构必须严格对应 template DOM 结构
+
+**这是本项目代码质量的第一标准，违反此规则的代码将不被接受！**
+
+**核心要求：**
+
+1. **SCSS 代码的嵌套层次结构必须 100% 严格对应 template 的 DOM 结构**
+2. **每个 SCSS 选择器的嵌套关系必须与 HTML 标签的父子关系完全一致**
+3. **不允许跳过中间层级、不允许打乱顺序、不允许将子元素样式写在其他位置**
+4. **每个样式模块都要有清晰的中文注释，说明该模块对应 template 中的哪个部分**
+
+**示例对比：**
+
+```vue
+<!-- Template 结构 -->
+<div class="search-container">
+  <section class="search-section">
+    <div class="container">
+      <div class="search-box-wrapper">
+        ...
+      </div>
+    </div>
+  </section>
+</div>
+```
+
+```scss
+// ✅ 正确：SCSS 层次严格对应 template
+.search-container {
+  .search-section {
+    .container {
+      .search-box-wrapper {
+        ...
+      }
+    }
+  }
+}
+
+// ❌ 错误：跳过了 search-section 层级
+.search-container {
+  .container {
+    ...
+  }
+}
+```
+
+**详细规范请查看本文档第 4 节：样式规范**
+
+---
+
 ## 项目架构
 
 - 基于 Vue 3 + Vite 的现代前端架构
@@ -143,9 +195,22 @@ onMounted(() => {
 - 全局样式变量定义在 `assets/scss/` 中
 - 响应式设计使用媒体查询
 - 颜色使用 CSS 变量或 SCSS 变量
-- **🎨 样式组织结构：SCSS 代码必须按照 template 的层次结构和嵌套关系来组织样式书写**
-- **📝 样式注释：每个样式模块必须添加清晰的中文注释，说明该模块的作用和用途**
+
+#### 🔥🔥🔥 核心强制规则 - SCSS 层次结构规范 🔥🔥🔥
+
+- **❗❗❗ 最高优先级规则：SCSS 代码的嵌套层次结构必须 100% 严格对应 template 的 DOM 结构**
+- **⚠️ 强制要求：每个 SCSS 选择器的嵌套关系必须与 HTML 标签的父子关系完全一致**
+- **🚫 禁止行为：不允许跳过中间层级、不允许打乱顺序、不允许将子元素样式写在其他位置**
+- **📝 必须添加：每个样式模块都要有清晰的中文注释，说明该模块对应 template 中的哪个部分**
+- **🎯 质量标准：代码审查时首先检查 SCSS 层次结构是否与 template 完全对应**
 - **📋 代码质量检查：编写完成后务必检查所有标签是否正确闭合，确保代码格式规范**
+
+**为什么这条规则如此重要？**
+
+1. ✅ **可维护性**：团队成员能快速定位样式，减少维护成本
+2. ✅ **可读性**：代码结构清晰，一目了然
+3. ✅ **避免冲突**：减少样式覆盖和优先级问题
+4. ✅ **统一标准**：团队协作更高效，代码风格一致
 
 #### SCSS 组织规范示例
 
@@ -1016,7 +1081,7 @@ const fetchUserInfo = async () => {
     userLoading.value = true;
     const userId = route.params.userId;
     const res = await getUserInfoById(userId);
-    userInfo.value = res.data.data; 
+    userInfo.value = res.data.data;
   } catch (error) {
     ElMessage.error("获取用户信息失败");
     console.error("获取用户信息失败:", error);
@@ -1030,7 +1095,7 @@ const fetchArticleStatistics = async () => {
   try {
     const userId = route.params.userId;
     const res = await getUserArticleStatisticsById(userId);
-    articleStatistics.value = res.data.data; 
+    articleStatistics.value = res.data.data;
   } catch (error) {
     console.error("获取文章统计信息失败:", error);
   }
@@ -1066,7 +1131,7 @@ const fetchArticleList = async (reset = false) => {
 
     const res = await getUserArticleList(currentPage.value, pageSize.value, articleStatusDto);
     const newArticles = res.data.data.data || [];
-    total.value = res.data.data.total || 0; 
+    total.value = res.data.data.total || 0;
 
     if (reset) {
       articleList.value = newArticles;
@@ -1521,13 +1586,41 @@ onMounted(() => {
    - 编写单元测试
    - **🔍 标签闭合检查：修改代码后必须检查所有 HTML 标签是否正确闭合，避免渲染错误**
 
-5. **样式组织最佳实践**
+5. **🔥 样式组织核心规范（最高优先级）**
 
-   - **层次结构对应**：SCSS 嵌套层级必须与 template 的 DOM 结构保持一致
-   - **模块化注释**：每个样式块都要有清晰的中文注释说明其功能
-   - **语义化命名**：CSS 类名要具有语义性，便于理解和维护
-   - **响应式设计**：使用媒体查询时也要保持层次结构的一致性
-   - **变量使用**：优先使用 CSS 变量和 SCSS 变量，提高主题切换的灵活性
+   - **❗❗❗ 层次结构对应（强制）**：SCSS 嵌套层级必须 100% 严格对应 template 的 DOM 结构，这是代码质量的第一标准
+   - **⚠️ 完整性要求（强制）**：不允许跳过任何中间层级，每个 DOM 层级都要在 SCSS 中体现
+   - **📝 模块化注释（必须）**：每个样式块都要有清晰的中文注释说明其功能和对应的 template 位置
+   - **🎯 语义化命名（必须）**：CSS 类名要具有语义性，便于理解和维护，类名要能反映元素的用途
+   - **📐 响应式一致性（必须）**：使用媒体查询时也要保持层次结构的一致性，响应式样式也要按照 DOM 结构组织
+   - **🎨 变量使用（推荐）**：优先使用 CSS 变量和 SCSS 变量，提高主题切换的灵活性
+
+   **❌ 错误示例（违反层次结构规则）：**
+
+   ```scss
+   // ❌ 错误：container 应该在 search-section 内部
+   .search-container {
+     .container {
+       ...
+     }
+     .search-section {
+       ...
+     }
+   }
+   ```
+
+   **✅ 正确示例（遵循层次结构规则）：**
+
+   ```scss
+   // ✅ 正确：严格按照 template 的 DOM 结构
+   .search-container {
+     .search-section {
+       .container {
+         ...
+       }
+     }
+   }
+   ```
 
 6. **安全性**
    - 输入验证和过滤

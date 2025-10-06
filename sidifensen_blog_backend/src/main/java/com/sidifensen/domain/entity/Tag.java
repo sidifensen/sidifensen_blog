@@ -41,5 +41,10 @@ public class Tag implements Serializable {
      */
     private String name;
 
+    /**
+     * 排序
+     */
+    private Integer sort;
+
 
 }
