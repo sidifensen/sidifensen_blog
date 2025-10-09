@@ -3,7 +3,7 @@
   <p>现代化个人博客系统 | 前后端分离架构</p>
   
   ![Java](https://img.shields.io/badge/Java-21-orange.svg)
-  ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.9-brightgreen.svg)
+  ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1.4-brightgreen.svg)
   ![Vue.js](https://img.shields.io/badge/Vue.js-3.5.13-4FC08D.svg)
   ![Element Plus](https://img.shields.io/badge/Element%20Plus-2.10.2-409EFF.svg)
   ![License](https://img.shields.io/badge/License-MIT-blue.svg)
@@ -40,21 +40,21 @@
 
 ### 🔧 后端技术栈
 
-- **核心框架**: Spring Boot 3.3.9
+- **核心框架**: Spring Boot 3.1.4
 - **开发语言**: Java 21
 - **安全框架**: Spring Security + JWT
 - **数据库**: MySQL 8.1.0
-- **ORM 框架**: MyBatis-Plus 3.5.9
+- **ORM 框架**: MyBatis-Plus 3.5.12
 - **缓存中间件**: Redis
 - **消息队列**: RabbitMQ
-- **文件存储**: MinIO RELEASE.2025-04-08T15-41-24Z
+- **文件存储**: MinIO 8.3.6
 - **模板引擎**: Thymeleaf
-- **第三方登录**: JustAuth 1.16.22
+- **第三方登录**: JustAuth 1.16.7
 - **内容安全**: 阿里云图片内容检测
 - **工具库**:
-  - Lombok 1.18.36 (代码简化)
-  - Hutool 5.8.32 (工具库)
-  - FastJSON 2.0.49 (JSON 处理)
+  - Lombok 1.18.38 (代码简化)
+  - Hutool 5.8.38 (工具库)
+  - FastJSON 2.0.50 (JSON 处理)
   - Easy-Captcha 1.6.2 (验证码)
 
 </td>
@@ -74,8 +74,8 @@
 - **开发工具**:
   - Vue DevTools 7.7.2
   - Auto Import 19.3.0
-  - TypeScript 支持
   - 代码混淆保护
+  - 开发工具禁用
 
 </td>
 </tr>
@@ -97,13 +97,22 @@
 │   ├── 📂 src/main/java/com/sidifensen/
 │   │   ├── 🎮 controller/                   # REST API 控制器
 │   │   ├── 💼 service/                      # 业务逻辑服务层
+│   │   │   └── impl/                       # 服务实现类
 │   │   ├── 🗃️ mapper/                       # MyBatis 数据访问层
-│   │   ├── 📋 domain/                       # 数据实体类
+│   │   ├── 📋 domain/                       # 数据模型层
+│   │   │   ├── entity/                     # 实体类
+│   │   │   ├── dto/                        # 数据传输对象
+│   │   │   ├── vo/                         # 视图对象
+│   │   │   ├── result/                     # 结果封装
+│   │   │   ├── enums/                      # 枚举类
+│   │   │   └── constants/                  # 常量类
 │   │   ├── 🔐 security/                     # Spring Security 配置
 │   │   ├── 🚀 redis/                        # Redis 缓存配置
 │   │   ├── 📁 minio/                        # MinIO 文件存储配置
 │   │   ├── 📨 rabbitmq/                     # RabbitMQ 消息队列
-│   │   └── 🛠️ utils/                        # 通用工具类
+│   │   ├── 🛠️ utils/                        # 通用工具类
+│   │   ├── 📝 task/                         # 定时任务
+│   │   └── 🎯 aspect/                       # AOP 切面
 │   ├── 📂 src/main/resources/
 │   │   ├── ⚙️ application*.yaml             # 应用配置文件
 │   │   ├── 📝 logback-spring.xml            # 日志配置
@@ -117,7 +126,16 @@
 │   │   ├── 📂 src/
 │   │   │   ├── 🔌 api/                      # API 接口封装
 │   │   │   ├── 🎭 components/               # 可复用组件
+│   │   │   │   ├── Comment/                 # 评论组件
+│   │   │   │   ├── Header.vue               # 头部组件
+│   │   │   │   ├── LoadingAnimation.vue     # 加载动画
+│   │   │   │   └── SvgIcon.vue              # SVG 图标
 │   │   │   ├── 📄 views/                    # 页面视图组件
+│   │   │   │   ├── Home/                    # 首页
+│   │   │   │   ├── User/                    # 用户相关页面
+│   │   │   │   ├── Creation/                # 创作中心
+│   │   │   │   ├── Account/                 # 账户管理
+│   │   │   │   └── Layout/                  # 布局组件
 │   │   │   ├── 🧭 router/                   # 路由配置
 │   │   │   ├── 🗃️ stores/                   # Pinia 状态管理
 │   │   │   └── 🛠️ utils/                    # 前端工具函数
@@ -125,7 +143,19 @@
 │   │   ├── 📜 docker.sh                     # Docker 部署脚本
 │   │   └── 📦 package.json                  # npm 依赖配置
 │   └── 🔧 sidifensen_admin/                 # 管理端后台 (Vue 3)
-│       ├── 📂 src/                          # 源码目录 (结构同用户端)
+│       ├── 📂 src/
+│       │   ├── 🔌 api/                      # API 接口封装
+│       │   ├── 🎭 components/               # 可复用组件
+│       │   ├── 📄 views/                    # 页面视图组件
+│       │   │   ├── home/                    # 仪表盘
+│       │   │   ├── article/                 # 文章管理
+│       │   │   ├── comment/                 # 评论管理
+│       │   │   ├── photo/                   # 图片管理
+│       │   │   ├── system/                  # 系统管理
+│       │   │   └── tag/                     # 标签管理
+│       │   ├── 🧭 router/                   # 路由配置
+│       │   ├── 🗃️ stores/                   # Pinia 状态管理
+│       │   └── 🛠️ utils/                    # 前端工具函数
 │       ├── 🐳 Dockerfile                    # Docker 构建文件
 │       ├── 📜 docker.sh                     # Docker 部署脚本
 │       └── 📦 package.json                  # npm 依赖配置
@@ -137,7 +167,9 @@
 │   ├── 📜 env.example                       # 环境变量配置示例
 │   ├── 📜 start.sh                          # Linux 启动脚本
 │   ├── 📜 start.bat                         # Windows 启动脚本
-│   └── 📖 README-Docker.md                  # Docker 部署说明
+│   ├── 📖 README-Docker.md                  # Docker 部署说明
+│   ├── 📁 ssl/                              # SSL 证书配置
+│   └── 📁 deploy/                           # 部署相关脚本
 └── 📖 README.md                             # 项目说明文档
 ```
 
@@ -149,16 +181,20 @@
 
 ### 🔐 用户系统
 
-- **多种登录方式**: 账号密码 + 第三方 OAuth 登录
+- **多种登录方式**: 账号密码 + 第三方 OAuth 登录 (GitHub, Gitee)
 - **权限管理**: 基于角色的访问控制 (RBAC)
 - **安全防护**: JWT 认证 + Spring Security
-- **邮件验证**: 注册验证码 + 密码重置
+- **邮件验证**: 注册验证码 + 密码重置 + 邮箱修改
 - **图形验证码**: 防止恶意注册和登录
+- **用户主页**: 个人主页展示 + 关注/粉丝系统
+- **创作中心**: 文章管理 + 专栏管理 + 评论管理
 
 ### 📝 内容管理
 
-- **富文本编辑**: 支持 Markdown + 所见即所得编辑
-- **文章分类**: 多级分类和标签系统
+- **富文本编辑**: 支持 Markdown + 所见即所得编辑 (AiEditor)
+- **文章系统**: 文章发布 + 草稿箱 + 回收站 + 审核机制
+- **专栏系统**: 专栏创建 + 文章分类管理
+- **标签系统**: 文章标签 + 标签管理
 - **图片管理**: MinIO 对象存储 + 图片安全检测
 - **内容审核**: 阿里云内容安全自动审核
 - **SEO 优化**: 友好的 URL 结构和 Meta 信息
@@ -170,33 +206,40 @@
 - **加载动画**: 优雅的加载和过渡效果
 - **无限滚动**: 流畅的内容浏览体验
 - **搜索功能**: 全文搜索和标签筛选
+- **用户交互**: 点赞 + 收藏 + 评论 + 关注
+- **历史记录**: 浏览历史 + 阅读记录
 
 </td>
 <td valign="top" width="50%">
 
 ### 🔧 管理后台
 
-- **仪表盘**: 数据统计和系统监控
-- **用户管理**: 用户列表、角色权限管理
-- **内容管理**: 文章、分类、标签的 CRUD 操作
-- **文件管理**: 图片上传、删除、批量操作
-- **系统设置**: 站点配置、邮件配置等
+- **仪表盘**: 数据统计和系统监控 + ECharts 图表展示
+- **用户管理**: 用户列表、角色权限管理、黑名单管理
+- **内容管理**: 文章审核、评论管理、标签管理
+- **文件管理**: 图片审核、相册管理、批量操作
+- **系统管理**: 菜单管理、权限管理、角色管理
+- **日志管理**: 登录日志、访问日志、操作记录
+- **系统设置**: 站点配置、邮件配置、安全设置
 
 ### ⚡ 性能优化
 
 - **Redis 缓存**: 热点数据缓存，提升响应速度
 - **异步处理**: RabbitMQ 消息队列处理耗时任务
-- **CDN 支持**: 静态资源 CDN 加速
+- **定时任务**: 热门文章统计、数据清理
 - **代码分割**: 前端代码按需加载
 - **图片优化**: 图片压缩和懒加载
+- **AOP 切面**: 统一日志记录和性能监控
 
 ### 🚀 部署运维
 
-- **Docker 支持**: 一键容器化部署
+- **Docker 支持**: 一键容器化部署 + Docker Compose 编排
 - **多环境配置**: 开发、测试、生产环境分离
+- **SSL 支持**: HTTPS 证书配置和自动续期
 - **日志管理**: 结构化日志记录和分析
 - **监控告警**: 应用性能监控
 - **备份恢复**: 数据库自动备份机制
+- **Windows 支持**: 提供 Windows 批处理脚本
 
 </td>
 </tr>
@@ -268,10 +311,17 @@ copy script\env.example .env
 
 # 启动所有服务
 # Windows:
-cd script && docker-compose up -d
+cd script && start.bat
 # Linux/Mac:
-# cd script && docker-compose up -d
+# cd script && ./start.sh
 ```
+
+#### 一键启动脚本
+
+项目提供了便捷的启动脚本：
+
+- **Windows**: `script/start.bat` - Windows 批处理脚本，支持环境检查、服务启动、日志查看等功能
+- **Linux/Mac**: `script/start.sh` - Shell 脚本，提供相同的功能
 
 ### 🎨 前端启动
 
@@ -348,10 +398,31 @@ cp script/env.example .env
 vim .env
 
 # 一键启动所有服务
-cd script && docker-compose up -d
+# Windows:
+cd script && start.bat
+# Linux/Mac:
+# cd script && ./start.sh
 ```
 
-#### 3️⃣ 传统方式部署
+#### 3️⃣ SSL 证书配置（可选）
+
+项目支持 HTTPS 部署，提供了 SSL 证书配置：
+
+```bash
+# 进入 SSL 配置目录
+cd script/ssl
+
+# 复制 SSL 环境配置
+cp env.example .env
+
+# 配置 SSL 证书信息
+vim .env
+
+# 启动 SSL 版本
+./start.sh
+```
+
+#### 4️⃣ 传统方式部署
 
 ##### 后端部署
 
@@ -426,7 +497,7 @@ chmod +x docker.sh
 public class ArticleController {
 
     @GetMapping
-    public Result<PageInfo<Article>> getArticles(
+    public Result<PageVo<List<ArticleVo>>> getArticles(
         @RequestParam(defaultValue = "1") Integer pageNum,
         @RequestParam(defaultValue = "10") Integer pageSize
     ) {
@@ -438,12 +509,13 @@ public class ArticleController {
 **开发要点：**
 
 - 📋 遵循 Spring Boot 最佳实践和阿里巴巴 Java 开发手册
-- 🗃️ 使用 MyBatis-Plus 简化数据库操作，支持分页和条件构造器
+- 🗃️ 强制使用 MyBatis-Plus 作为 ORM 框架，禁止使用 MyBatis XML
 - 🏗️ 采用三层架构：Controller → Service → Mapper
 - 📝 使用 Lombok 减少样板代码，提高开发效率
 - 🔌 RESTful API 设计，统一返回格式 `Result<T>`
 - ✅ 参数校验使用 `@Valid` 和 `@Validated` 注解
-- 📊 集成 Swagger/OpenAPI 3.0 用于 API 文档生成
+- 🚫 异常信息统一管理：所有异常信息必须定义在 `BlogConstants` 常量类中
+- 🔧 项目启动：开发者手动重新启动项目，无需 AI 协助编译
 
 ### 🎨 前端开发规范
 
@@ -484,6 +556,8 @@ onMounted(() => {
 - 🔧 Vite 构建工具，支持热更新和快速构建
 - 📦 自动导入插件，减少重复的 import 语句
 - 🔒 代码混淆和压缩，保护前端代码
+- 🚫 禁止导入 Element Plus 消息组件：不要在每个 Vue 文件中导入 `import { ElMessage, ElMessageBox } from "element-plus"`
+- 🔥 **核心强制规则**：SCSS 层次结构必须 100% 严格对应 template DOM 结构
 
 ### 🧪 测试和质量保证
 

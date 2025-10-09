@@ -4,6 +4,24 @@
 
 这是一个基于 `ssl.sh` 脚本开发的交互式 SSL 证书管理系统，为 Sidifensen Blog 项目提供完整的 HTTPS 支持。该系统集成了 Let's Encrypt 免费 SSL 证书申请、自动续期、Docker 服务管理等功能，通过友好的菜单界面让 SSL 证书管理变得简单直观。
 
+## 🆕 最新更新 (v2.4.0)
+
+### 新增功能
+
+- **🔧 增强的 Docker 服务管理**: 新增 `start.sh` 脚本，支持分模块启动服务
+- **📦 模块化部署**: 支持基础服务、前后端服务、完整环境的独立启动
+- **🌐 新增 API 专用域名**: `api.sidifensen.com` 提供独立的 API 访问入口
+- **🔒 增强的安全配置**: 优化 SSL 配置，支持 TLS 1.3 和更强的加密套件
+- **📊 实时服务监控**: 新增服务状态检查、日志查看、健康检查功能
+- **🛠️ 开发友好**: 支持开发环境快速启动和调试
+
+### 改进内容
+
+- **优化 Nginx 配置**: 改进反向代理配置，支持 WebSocket 和大文件上传
+- **增强 MinIO 支持**: 完善对象存储的 HTTPS 访问配置
+- **改进错误处理**: 更详细的错误信息和故障排除指南
+- **性能优化**: 优化容器启动顺序和依赖关系
+
 ## 主要特性
 
 ### 🎯 交互式界面
@@ -52,15 +70,43 @@ start.bat
 
 ### 3. Docker 服务管理
 
+#### 3.1 SSL 证书管理
+
 ```bash
-# Linux/macOS 启动SSL生产环境
+# Linux/macOS 运行SSL管理脚本
+sudo bash ssl.sh
+
+# Windows 环境
+bash ssl.sh
+```
+
+#### 3.2 服务启动管理
+
+```bash
+# Linux/macOS 启动服务
+sudo bash start.sh
+
+# Windows 环境
+start.bat
+```
+
+#### 3.3 模块化服务启动
+
+```bash
+# 启动完整SSL生产环境
 sudo bash start.sh  # 选择 1
 
-# 停止服务
+# 启动基础服务 (MySQL, Redis, MinIO, RabbitMQ)
 sudo bash start.sh  # 选择 2
 
-# Windows环境启动服务
-start.bat
+# 启动前后端服务
+sudo bash start.sh  # 选择 3
+
+# 启动后端服务
+sudo bash start.sh  # 选择 4
+
+# 启动前端服务
+sudo bash start.sh  # 选择 5
 ```
 
 ## 功能说明
@@ -140,27 +186,51 @@ COMPOSE_FILE="$SCRIPT_DIR/docker-compose-ssl.yml"
 
 系统支持以下域名的 SSL 证书管理：
 
-- `sidifensen.com` - 主站域名
-- `www.sidifensen.com` - WWW 主站
-- `admin.sidifensen.com` - 管理后台
-- `api.sidifensen.com` - API 接口服务（备用域名）
+- `sidifensen.com` - 主站域名（用户端前端）
+- `www.sidifensen.com` - WWW 主站（用户端前端）
+- `admin.sidifensen.com` - 管理后台（管理端前端）
+- `api.sidifensen.com` - API 接口服务（独立 API 访问入口）
 - `image.sidifensen.com` - MinIO 文件存储 API（图片、文件访问）
 - `minio.sidifensen.com` - MinIO 管理控制台
 
 **重要**: 所有域名使用同一个 SSL 证书，存储在 `/etc/letsencrypt/live/sidifensen.com/` 目录下。
 
+### 新增 API 专用域名
+
+`api.sidifensen.com` 提供独立的 API 访问入口，支持：
+
+- 直接 API 调用，无需通过前端代理
+- 独立的 CORS 配置
+- 支持大文件上传（最大 10MB）
+- 完整的 WebSocket 支持
+
 ### Docker Compose 配置
 
 SSL 环境使用 `docker-compose-ssl.yml` 文件，包含以下服务：
+
+#### 核心服务
 
 - **nginx-gateway**: Nginx 反向代理，支持 SSL 终止和域名路由
 - **backend**: Spring Boot 后端服务
 - **frontend-admin**: 管理端前端
 - **frontend-user**: 用户端前端
-- **mysql**: 数据库服务
-- **redis**: 缓存服务
-- **minio**: 对象存储服务（支持 HTTPS 访问）
-- **rabbitmq**: 消息队列服务
+
+#### 基础服务
+
+- **mysql**: MySQL 8.0 数据库服务
+- **redis**: Redis 7 缓存服务
+- **minio**: MinIO 对象存储服务（支持 HTTPS 访问）
+- **rabbitmq**: RabbitMQ 消息队列服务
+
+#### 新增模块化配置
+
+系统现在支持分模块启动，包含以下配置文件：
+
+- `docker-compose-ssl.yml` - 完整 SSL 生产环境
+- `docker-compose-services.yml` - 基础服务（MySQL, Redis, MinIO, RabbitMQ）
+- `docker-compose-apps.yml` - 前后端应用服务
+- `docker-compose-backend.yml` - 后端服务
+- `docker-compose-frontend.yml` - 前端服务
 
 ### Nginx 域名路由配置
 
@@ -173,6 +243,9 @@ sidifensen.com, www.sidifensen.com → sidifensen-user:80
 # 管理后台
 admin.sidifensen.com → sidifensen-admin:80
 
+# API 专用域名
+api.sidifensen.com → sidifensen-backend:5000
+
 # MinIO 文件存储 API
 image.sidifensen.com → minio:9000
 
@@ -182,6 +255,14 @@ minio.sidifensen.com → minio:9001
 # API 接口代理（在所有域名下）
 /api/ → backend:5000
 ```
+
+### 新增路由特性
+
+- **独立 API 域名**: `api.sidifensen.com` 提供直接的 API 访问
+- **增强的 CORS 支持**: 所有 API 端点都支持跨域请求
+- **WebSocket 支持**: 完整的 WebSocket 代理配置
+- **大文件上传**: 支持最大 10MB 的文件上传
+- **静态文件缓存**: 优化静态资源加载性能
 
 ### 自定义配置
 
@@ -283,10 +364,86 @@ MINIO_CONSOLE_PUBLIC_POINT=https://minio.sidifensen.com  # 管理控制台
 
 - **开发环境**: 前端 → `http://localhost:5000` (直接访问后端)
 - **生产环境**: 前端 → `https://domain.com/api` → Nginx → `http://backend:5000` (通过代理)
+- **API 专用域名**: 直接 → `https://api.sidifensen.com` → Nginx → `http://backend:5000`
 - **文件访问**: 用户 → `https://image.sidifensen.com/file.jpg` → Nginx → `http://minio:9000`
 - **MinIO 管理**: 管理员 → `https://minio.sidifensen.com` → Nginx → `http://minio:9001`
 
 这样确保所有请求都通过 HTTPS，避免混合内容警告。
+
+#### 6. 新增服务管理功能
+
+**start.sh 脚本功能**:
+
+- 模块化服务启动（基础服务、前后端、完整环境）
+- 服务状态监控和健康检查
+- 实时日志查看
+- 服务重启和停止
+- 数据清理功能（危险操作）
+
+**开发环境支持**:
+
+- 支持单独启动后端或前端服务
+- 快速调试和开发
+- 环境变量自动配置
+
+## 新增服务管理功能
+
+### start.sh 脚本功能详解
+
+`start.sh` 脚本提供了完整的 Docker 服务管理功能，支持以下操作：
+
+#### 1. 服务启动选项
+
+- **完整环境**: 启动所有服务（SSL 生产环境）
+- **基础服务**: 仅启动 MySQL, Redis, MinIO, RabbitMQ
+- **前后端服务**: 启动后端和前端应用
+- **后端服务**: 仅启动 Spring Boot 后端
+- **前端服务**: 仅启动前端应用
+
+#### 2. 服务管理功能
+
+- **服务状态查看**: 实时检查所有服务运行状态
+- **日志查看**: 支持查看单个服务或所有服务的日志
+- **服务重启**: 支持重启单个服务或所有服务
+- **服务停止**: 支持停止服务并清理资源
+- **数据清理**: 危险操作，清理所有数据卷
+
+#### 3. 开发环境优化
+
+- **快速启动**: 支持仅启动需要的服务
+- **独立调试**: 可以单独启动后端或前端进行调试
+- **环境隔离**: 不同服务使用独立的网络和数据卷
+
+### 使用示例
+
+```bash
+# 进入SSL脚本目录
+cd script/ssl
+
+# 运行服务管理脚本
+sudo ./start.sh
+
+# 选择操作：
+# 1. 启动生产环境 (SSL 全量服务)
+# 2. 启动基础服务 (MySQL, Redis, MinIO, RabbitMQ)
+# 3. 启动前后端服务
+# 4. 启动后端服务
+# 5. 启动前端服务
+# 6. 停止服务
+# 7. 查看服务状态
+# 8. 查看服务日志
+# 9. 重启服务
+# 10. 清理数据 (危险操作)
+```
+
+### 服务监控
+
+系统提供实时监控功能：
+
+- **健康检查**: 自动检查服务健康状态
+- **端口监控**: 检查服务端口占用情况
+- **日志监控**: 实时查看服务日志
+- **资源监控**: 监控容器资源使用情况
 
 ## 系统要求
 
@@ -581,7 +738,20 @@ sudo ./ssl.sh
 
 ## 更新日志
 
-### v2.3.0 (当前版本)
+### v2.4.0 (当前版本)
+
+- 🆕 **新增 start.sh 服务管理脚本**: 支持模块化服务启动和管理
+- 🆕 **模块化部署支持**: 基础服务、前后端、完整环境独立启动
+- 🆕 **API 专用域名**: `api.sidifensen.com` 提供独立 API 访问入口
+- 🆕 **增强的服务监控**: 实时状态检查、日志查看、健康检查
+- 🆕 **开发环境优化**: 支持单独启动后端或前端服务
+- 🔧 **优化 Nginx 配置**: 改进反向代理，支持 WebSocket 和大文件上传
+- 🔒 **增强安全配置**: 支持 TLS 1.3，优化加密套件
+- 📊 **新增服务管理功能**: 服务重启、停止、数据清理
+- 🐛 **修复容器依赖**: 优化启动顺序和健康检查
+- ⚡ **性能优化**: 改进容器启动时间和资源使用
+
+### v2.3.0
 
 - 🌐 新增 `api.sidifensen.com` API 备用域名支持
 - 🔧 优化交互式界面，增强用户体验
@@ -710,6 +880,8 @@ sudo ./ssl.sh
 
 ### 5. 启动服务
 
+#### 5.1 完整环境启动
+
 ```bash
 # 启动完整的 HTTPS 服务
 sudo ./start.sh
@@ -719,10 +891,31 @@ sudo ./start.sh
 start.bat
 ```
 
+#### 5.2 模块化启动（推荐开发环境）
+
+```bash
+# 启动基础服务
+sudo ./start.sh
+# 选择 [2] 启动基础服务
+
+# 启动前后端服务
+sudo ./start.sh
+# 选择 [3] 启动前后端服务
+
+# 单独启动后端（开发调试）
+sudo ./start.sh
+# 选择 [4] 启动后端服务
+
+# 单独启动前端（开发调试）
+sudo ./start.sh
+# 选择 [5] 启动前端服务
+```
+
 ### 6. 访问测试
 
 - **主站**: https://sidifensen.com
 - **管理后台**: https://admin.sidifensen.com
+- **API 服务**: https://api.sidifensen.com
 - **MinIO 文件存储**: https://image.sidifensen.com
 - **MinIO 控制台**: https://minio.sidifensen.com
 

@@ -11,7 +11,7 @@ target
 logs
 job
 
-sidifensen_blog_backend/src/test/
+**/src/test/
 
 .env
 .env.prod
