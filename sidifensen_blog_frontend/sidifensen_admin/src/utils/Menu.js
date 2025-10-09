@@ -1,4 +1,9 @@
 export const formatMenu = (menuList) => {
+  // 检查菜单列表是否存在且不为空
+  if (!menuList || !Array.isArray(menuList) || menuList.length === 0) {
+    return [];
+  }
+
   // 先按sort排序所有菜单（父菜单排序）
   menuList.sort((a, b) => a.sort - b.sort);
 

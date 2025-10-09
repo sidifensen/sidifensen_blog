@@ -497,7 +497,12 @@ const handleDetailUser = async (id) => {
   const res = await getUserDetail(id);
   userDetail.value = res.data.data;
   console.log(userDetail.value.sysMenus);
-  userDetail.value.sysMenus = formatMenu(userDetail.value.sysMenus);
+  // 检查菜单数据是否存在，避免空值调用formatMenu导致错误
+  if (userDetail.value.sysMenus && userDetail.value.sysMenus.length > 0) {
+    userDetail.value.sysMenus = formatMenu(userDetail.value.sysMenus);
+  } else {
+    userDetail.value.sysMenus = [];
+  }
   console.log(userDetail.value);
 };
 

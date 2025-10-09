@@ -41,6 +41,17 @@ public interface SysLoginLogService extends IService<SysLoginLog> {
     void recordLoginLog(Integer userId, String username, Integer loginType, String loginIp, Integer status);
 
     /**
+     * 异步记录或更新登录日志（避免重复插入）
+     *
+     * @param userId       用户ID
+     * @param username     用户名
+     * @param loginType    登录方式
+     * @param loginIp      登录IP
+     * @param status       登录状态 0-成功 1-失败
+     */
+    void recordOrUpdateLoginLog(Integer userId, String username, Integer loginType, String loginIp, Integer status);
+
+    /**
      * 查询所有登录日志（按时间倒序）
      *
      * @return 登录日志列表

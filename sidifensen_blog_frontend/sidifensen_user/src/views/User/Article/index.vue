@@ -9,7 +9,7 @@
 
       <!-- 中间文章内容 -->
       <div class="main-content">
-        <ArticleContent :article="articleInfo" :loading="articleLoading" @updateArticle="handleUpdateArticle" />
+        <ArticleContent :article="articleInfo" :loading="articleLoading" :user-info="userInfo" :user-loading="userLoading" @updateArticle="handleUpdateArticle" />
       </div>
 
       <!-- 右侧文章目录 -->

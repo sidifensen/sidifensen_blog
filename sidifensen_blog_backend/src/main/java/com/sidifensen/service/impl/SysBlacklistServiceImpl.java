@@ -11,7 +11,9 @@ import com.sidifensen.domain.entity.SysBlacklist;
 import com.sidifensen.domain.enums.BlacklistTypeEnum;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysBlacklistMapper;
+import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.SysBlacklistService;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,9 @@ import java.util.List;
 @Service
 @Slf4j
 public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, SysBlacklist> implements SysBlacklistService {
+
+    @Resource
+    private RedisComponent redisComponent;
 
     @Override
     public void addToBlacklist(String identifier, String reason, long banDurationSeconds) {
@@ -199,11 +204,22 @@ public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, Sys
                 throw new BlogException(BlogConstants.BlacklistIdsRequired);
             }
 
+            // 在删除数据库记录前，先获取黑名单信息用于删除Redis缓存
+            List<SysBlacklist> blacklistList = this.listByIds(blacklistIds);
+            if (ObjectUtil.isEmpty(blacklistList)) {
+                log.warn("未找到要删除的黑名单记录，ID列表: {}", blacklistIds);
+                return;
+            }
+
             // 批量删除（逻辑删除）
             boolean result = this.removeByIds(blacklistIds);
             if (!result) {
                 throw new BlogException(BlogConstants.DeleteBlacklistError);
             }
+
+            // 删除数据库记录成功后，删除Redis中的黑名单缓存
+            redisComponent.batchRemoveBlacklistFromRedis(blacklistList);
+
         } catch (BlogException e) {
             throw e;
         } catch (Exception e) {

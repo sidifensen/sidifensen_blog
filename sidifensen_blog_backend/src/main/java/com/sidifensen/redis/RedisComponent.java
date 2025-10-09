@@ -2,9 +2,12 @@ package com.sidifensen.redis;
 
 
 import com.sidifensen.domain.constants.RedisConstants;
+import com.sidifensen.domain.entity.SysBlacklist;
+import com.sidifensen.domain.enums.BlacklistTypeEnum;
 import com.sidifensen.utils.MyThreadFactory;
 import com.sidifensen.utils.RedisUtils;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -15,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class RedisComponent {
 
     @Resource
@@ -60,10 +64,11 @@ public class RedisComponent {
 
 
     // ==================== 浏览历史相关方法 ====================
-    
+
     /**
      * 检查用户是否已浏览过文章
-     * @param articleId 文章ID
+     *
+     * @param articleId  文章ID
      * @param identifier 用户标识符
      * @return true-已浏览过，false-未浏览过
      */
@@ -71,56 +76,155 @@ public class RedisComponent {
         String redisKey = RedisConstants.History + articleId;
         return redisUtils.sHasKey(redisKey, identifier);
     }
-    
+
     /**
      * 记录用户浏览文章
-     * @param articleId 文章ID
+     *
+     * @param articleId  文章ID
      * @param identifier 用户标识符
      */
     public void recordArticleRead(Integer articleId, String identifier) {
         String redisKey = RedisConstants.History + articleId;
         redisUtils.sSetAndTime(redisKey, RedisConstants.HISTORY_EXPIRE_TIME, identifier);
     }
-    
+
     /**
      * 移除用户浏览记录
-     * @param articleId 文章ID
+     *
+     * @param articleId  文章ID
      * @param identifier 用户标识符
      */
     public void removeArticleRead(Integer articleId, String identifier) {
         String redisKey = RedisConstants.History + articleId;
         redisUtils.setRemove(redisKey, identifier);
     }
-    
+
     /**
      * 清除文章的所有浏览记录
+     *
      * @param articleId 文章ID
      */
     public void clearArticleReads(Integer articleId) {
         String redisKey = RedisConstants.History + articleId;
         redisUtils.del(redisKey);
     }
-    
+
     /**
      * 批量清除多篇文章的所有浏览记录
+     *
      * @param articleIds 文章ID列表
      */
     public void batchClearArticleReads(List<Integer> articleIds) {
         if (articleIds == null || articleIds.isEmpty()) {
             return;
         }
-        
+
         // 构建所有需要删除的Redis key
         String[] redisKeys = articleIds.stream()
                 .map(articleId -> RedisConstants.History + articleId)
                 .toArray(String[]::new);
-        
+
         // 批量删除
         redisUtils.del(redisKeys);
     }
 
+    // ==================== 黑名单相关方法 ====================
+
+    /**
+     * 删除黑名单Redis缓存
+     * 根据黑名单类型和标识符删除对应的Redis缓存
+     *
+     * @param blacklist 黑名单实体对象
+     */
+    public void removeBlacklistFromRedis(SysBlacklist blacklist) {
+        if (blacklist == null) {
+            return;
+        }
+
+        try {
+            String identifier;
+            if (blacklist.getType().equals(BlacklistTypeEnum.USER.getCode())) {
+                // 用户类型黑名单
+                identifier = "user:" + blacklist.getUserId();
+            } else if (blacklist.getType().equals(BlacklistTypeEnum.IP.getCode())) {
+                // IP类型黑名单
+                identifier = "ip:" + blacklist.getIp();
+            } else {
+                log.warn("未知的黑名单类型: {}", blacklist.getType());
+                return;
+            }
+
+            // 删除黑名单缓存
+            String blacklistKey = RedisConstants.Blacklist + identifier;
+            redisUtils.del(blacklistKey);
+
+            // 删除黑名单日志限流缓存
+            String logKey = RedisConstants.BlacklistLog + identifier;
+            redisUtils.del(logKey);
+
+            log.info("已删除黑名单Redis缓存 - 标识: {}, 类型: {}", identifier, blacklist.getType());
+        } catch (Exception e) {
+            log.error("删除黑名单Redis缓存失败 - 黑名单ID: {}", blacklist.getId(), e);
+        }
+    }
+
+    /**
+     * 批量删除黑名单Redis缓存
+     * 根据黑名单列表批量删除对应的Redis缓存
+     *
+     * @param blacklistList 黑名单实体对象列表
+     */
+    public void batchRemoveBlacklistFromRedis(List<SysBlacklist> blacklistList) {
+        if (blacklistList == null || blacklistList.isEmpty()) {
+            return;
+        }
+
+        try {
+            // 收集所有需要删除的Redis key
+            List<String> keysToDelete = new ArrayList<>();
+
+            for (SysBlacklist blacklist : blacklistList) {
+                if (blacklist == null) {
+                    continue;
+                }
+
+                String identifier;
+                if (blacklist.getType().equals(BlacklistTypeEnum.USER.getCode())) {
+                    // 用户类型黑名单
+                    identifier = "user:" + blacklist.getUserId();
+                } else if (blacklist.getType().equals(BlacklistTypeEnum.IP.getCode())) {
+                    // IP类型黑名单
+                    identifier = "ip:" + blacklist.getIp();
+                } else {
+                    log.warn("未知的黑名单类型: {}", blacklist.getType());
+                    continue;
+                }
+
+                // 添加黑名单缓存key
+                keysToDelete.add(RedisConstants.Blacklist + identifier);
+                // 添加黑名单日志限流缓存key
+                keysToDelete.add(RedisConstants.BlacklistLog + identifier);
+            }
+
+            // 批量删除所有key
+            if (!keysToDelete.isEmpty()) {
+                redisUtils.del(keysToDelete.toArray(new String[0]));
+            }
+        } catch (Exception e) {
+            log.error("批量删除黑名单Redis缓存失败", e);
+            // 如果批量删除失败，回退到单个删除
+            for (SysBlacklist blacklist : blacklistList) {
+                try {
+                    removeBlacklistFromRedis(blacklist);
+                } catch (Exception ex) {
+                    log.error("单个删除黑名单Redis缓存失败 - 黑名单ID: {}", blacklist.getId(), ex);
+                }
+            }
+        }
+    }
+
     // ==================== 黑名单日志限流相关方法 ====================
-    
+
     /**
      * 黑名单日志限流：检查是否应该记录黑名单警告日志
      * 用于防止黑名单用户频繁访问导致日志刷屏
@@ -160,7 +264,7 @@ public class RedisComponent {
     /**
      * 批量设置文章热度（原子操作，避免并发读取问题）
      * 用于定时任务从数据库同步7天数据
-     * 
+     * <p>
      * 优化策略：
      * 1. 使用临时key进行数据同步，避免清空主key导致的并发读取问题
      * 2. 同步完成后，使用RENAME原子操作切换key
@@ -172,27 +276,27 @@ public class RedisComponent {
         if (articleScores == null || articleScores.isEmpty()) {
             return;
         }
-        
+
         executorService.execute(() -> {
             try {
                 // 使用临时key进行数据同步
                 String tempKey = RedisConstants.HotArticles7Days + ":temp";
-                
+
                 // 先删除可能存在的临时key
                 redisUtils.del(tempKey);
-                
+
                 // 批量添加新数据到临时key
                 for (Map.Entry<Integer, Double> entry : articleScores.entrySet()) {
                     redisUtils.zAdd(tempKey, entry.getKey().toString(), entry.getValue());
                 }
-                
+
                 // 使用RENAME原子操作切换key（旧key会被自动删除）
                 // 这样用户在整个过程中都能读取到完整数据
                 redisUtils.rename(tempKey, RedisConstants.HotArticles7Days);
-                
+
                 // 设置过期时间为7天
                 redisUtils.expire(RedisConstants.HotArticles7Days, RedisConstants.HOT_ARTICLES_EXPIRE_TIME, TimeUnit.SECONDS);
-                
+
             } catch (Exception e) {
                 // 如果出现异常，确保临时key被清理
                 String tempKey = RedisConstants.HotArticles7Days + ":temp";

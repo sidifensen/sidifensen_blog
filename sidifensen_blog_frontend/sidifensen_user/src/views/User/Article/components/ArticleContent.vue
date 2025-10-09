@@ -23,6 +23,9 @@
           <!-- 文章标题 -->
           <h1 class="article-title">{{ article.title }}</h1>
 
+          <!-- 移动端作者信息 -->
+          <MobileAuthorInfo v-if="userInfo" :user-info="userInfo" :loading="userLoading" />
+
           <!-- 文章元信息 -->
           <div class="article-meta">
             <!-- 第一行：基础信息 -->
@@ -139,6 +142,7 @@ import { Clock, View, Star, StarFilled, ChatLineRound, ArrowUp } from "@element-
 import { toggleLike, isLiked } from "@/api/like";
 import CommentDrawer from "@/views/User/Article/components/CommentDrawer.vue";
 import FavoriteDialog from "./FavoriteDialog.vue";
+import MobileAuthorInfo from "./MobileAuthorInfo.vue";
 
 // 路由
 const router = useRouter();
@@ -150,6 +154,14 @@ const props = defineProps({
     default: () => null,
   },
   loading: {
+    type: Boolean,
+    default: false,
+  },
+  userInfo: {
+    type: Object,
+    default: () => null,
+  },
+  userLoading: {
     type: Boolean,
     default: false,
   },

@@ -67,8 +67,8 @@ public class PhotoController {
     @RateLimit(10)
     @PostMapping("/uploadAvatar")
     public Result uploadAvatar(@RequestParam("file") MultipartFile file) {
-        String url = photoService.uploadAvatar(file);
-        return Result.success(url);
+        photoService.uploadAvatar(file);
+        return Result.success();
     }
 
     /**

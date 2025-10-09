@@ -407,31 +407,11 @@ const handleAvatarUpload = async (options) => {
 
     // 上传到服务器（使用专门的头像上传接口）
     ElMessage.info("头像上传中...");
-    const response = await uploadAvatar(compressedFile);
-
-    // 更新头像URL
-    const newAvatar = response.data.data;
-
-    // 调用更新接口（邮箱单独修改，这里不包含）
-    const updateData = {
-      nickname: userInfo.value.nickname,
-      sex: userInfo.value.sex,
-      introduction: userInfo.value.introduction,
-      avatar: newAvatar,
-    };
-
-    await updateUserInfo(updateData);
-
-    // 更新本地数据
-    userInfo.value.avatar = newAvatar;
-
-    // 更新 store
-    const res = await info();
-    userStore.user = res.data.data;
+    await uploadAvatar(compressedFile);
 
     // 调用成功回调
     options.onSuccess && options.onSuccess();
-    ElMessage.success("头像上传成功");
+    ElMessage.success("头像上传成功，正在审核中，审核通过后将自动更新");
   } catch (error) {
     console.error("头像上传失败:", error);
     ElMessage.error("头像上传失败，请重试");

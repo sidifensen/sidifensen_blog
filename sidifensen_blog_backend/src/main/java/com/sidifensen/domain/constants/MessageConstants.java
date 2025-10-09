@@ -25,6 +25,9 @@ public class MessageConstants {
     public static final String LINK_NEED_REVIEW = "友链id: %d , 名称: %s 需要审核";
     public static final String LINK_AUDIT_PASS = "友链网址: %s 审核通过";
 
+    // 头像相关消息模板
+    public static final String AVATAR_NEED_REVIEW = "用户 %d 上传了新头像，图片ID: %d，需要审核";
+
     /**
      * 图片需要审核的消息
      *
@@ -141,6 +144,20 @@ public class MessageConstants {
      */
     public static String LinkAuditPass(String url) {
         return String.format(LINK_AUDIT_PASS, url);
+    }
+
+    /**
+     * 头像需要审核的消息
+     *
+     * @param userId 用户id
+     * @param photoId 图片id
+     * @return 格式化后的消息
+     */
+    public static String AvatarNeedReview(Integer userId, Integer photoId) {
+        String text = String.format(AVATAR_NEED_REVIEW, userId, photoId);
+        Map<String, Object> map = new HashMap<>();
+        map.put("text", text);
+        return toJson(map);
     }
 
     /**

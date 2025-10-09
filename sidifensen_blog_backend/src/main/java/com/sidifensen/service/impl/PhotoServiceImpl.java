@@ -133,12 +133,11 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     }
 
     @Override
-    public String uploadAvatar(MultipartFile file) {
+    public void uploadAvatar(MultipartFile file) {
         Integer userId = SecurityUtils.getUserId();
         String dirName = String.valueOf(userId);
         String url = fileUploadUtils.upload(UploadEnum.USER_AVATAR, file, dirName);
-        auditAndUpdate(userId, url);
-        return url;
+        auditAvatarAndUpdate(userId, url);
     }
 
     // 相册图片审核
@@ -228,6 +227,59 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 log.error("图片异步处理失败", e);
             }
         });
+    }
+
+    // 头像审核专用方法
+    private void auditAvatarAndUpdate(Integer userId, String url) {
+        executorService.execute(() -> {
+            try {
+                // 保存图片信息到数据库
+                Photo photo = new Photo();
+                photo.setUserId(userId);
+                photo.setUrl(url);
+                photo.setExamineStatus(ExamineStatusEnum.WAIT.getCode());
+                photoMapper.insert(photo);
+
+                Integer status = 0;
+                // 图片自动审核
+                if (sidifensenConfig.isPhotoAutoAudit()) {
+                    AuditResult imageAuditResult = imageAuditUtils.auditImageWithDetails(url);
+                    status = imageAuditResult.getStatus();
+                    Photo updatePhoto = setPhotoExamineStatus(photo, status);
+                    photoMapper.updateById(updatePhoto);
+
+                    // 审核通过，更新用户头像
+                    if (status.equals(ExamineStatusEnum.PASS.getCode())) {
+                        updateUserAvatar(userId, url);
+                    }
+                }
+
+                if (!sidifensenConfig.isPhotoAutoAudit() || status.equals(ExamineStatusEnum.WAIT.getCode())) {
+                    // 需要人工审核，发送消息给管理员
+                    String text = MessageConstants.AvatarNeedReview(userId, photo.getId());
+                    MessageDto messageDto = new MessageDto();
+                    messageDto.setType(MessageTypeEnum.SYSTEM.getCode());
+                    messageDto.setContent(text);
+                    messageService.sendToAdmin(messageDto);
+
+                    // 发送邮件
+                    HashMap<String, Object> sendEmail = new HashMap<>();
+                    sendEmail.put("text", String.format(MessageConstants.AVATAR_NEED_REVIEW, userId, photo.getId()));
+                    rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange,
+                            RabbitMQConstants.Examine_Routing_Key, sendEmail);
+                }
+            } catch (Exception e) {
+                log.error("头像异步审核失败，用户ID: {}", userId, e);
+            }
+        });
+    }
+
+    // 审核通过后更新用户头像
+    private void updateUserAvatar(Integer userId, String url) {
+        LambdaUpdateWrapper<SysUser> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(SysUser::getId, userId)
+                .set(SysUser::getAvatar, url);
+        sysUserMapper.update(null, updateWrapper);
     }
 
     // 删除照片
@@ -393,17 +445,28 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
 
         // 如果是审核通过
         if (photoAuditDto.getExamineStatus() == 1) {
-            AlbumPhoto albumPhoto = albumPhotoMapper.selectById(photoAuditDto.getPhotoId());
-            if (ObjectUtil.isNotEmpty(albumPhoto)) {
-                // 更新相册封面
-                Album album = albumMapper.selectById(albumPhoto.getAlbumId());
-                if (ObjectUtil.isNotEmpty(album)) {
-                    Photo photo = photoMapper.selectById(photoAuditDto.getPhotoId());
-                    album.setCoverUrl(photo.getUrl());
-                    albumMapper.updateById(album);
+            Photo photo = photoMapper.selectById(photoAuditDto.getPhotoId());
+            if (ObjectUtil.isEmpty(photo)) {
+                return;
+            }
+
+            // 检查是否是头像（通过URL路径判断）
+            if (photo.getUrl().contains("/user/avatar/")) {
+                // 是头像审核，更新用户头像
+                updateUserAvatar(photo.getUserId(), photo.getUrl());
+            } else {
+                // 相册图片审核逻辑（保持原有逻辑）
+                AlbumPhoto albumPhoto = albumPhotoMapper.selectById(photoAuditDto.getPhotoId());
+                if (ObjectUtil.isNotEmpty(albumPhoto)) {
+                    Album album = albumMapper.selectById(albumPhoto.getAlbumId());
+                    if (ObjectUtil.isNotEmpty(album)) {
+                        album.setCoverUrl(photo.getUrl());
+                        albumMapper.updateById(album);
+                    }
                 }
             }
         }
+        // 审核不通过时不做任何处理（符合要求）
     }
 
     @Override

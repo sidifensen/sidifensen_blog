@@ -104,6 +104,52 @@ public class SysLoginLogServiceImpl extends ServiceImpl<SysLoginLogMapper, SysLo
     }
 
     /**
+     * 异步记录或更新登录日志（避免重复插入）
+     */
+    @Override
+    public void recordOrUpdateLoginLog(Integer userId, String username, Integer loginType, String loginIp, Integer status) {
+        // 使用线程池异步执行
+        executorService.execute(() -> {
+            try {
+                // 查询是否存在相同的登录记录（用户ID、用户名、登录方式、登录IP都相同）
+                LambdaQueryWrapper<SysLoginLog> queryWrapper = new LambdaQueryWrapper<SysLoginLog>()
+                        .eq(SysLoginLog::getUserId, userId)
+                        .eq(SysLoginLog::getUsername, username)
+                        .eq(SysLoginLog::getLoginType, loginType)
+                        .eq(SysLoginLog::getLoginIp, loginIp)
+                        .eq(SysLoginLog::getStatus, status)
+                        .orderByDesc(SysLoginLog::getLoginTime)
+                        .last("LIMIT 1");
+
+                SysLoginLog existingLog = sysLoginLogMapper.selectOne(queryWrapper);
+
+                if (ObjectUtil.isNotEmpty(existingLog)) {
+                    // 如果存在相同记录，更新登录时间
+                    SysLoginLog updateLog = new SysLoginLog();
+                    updateLog.setId(existingLog.getId());
+                    updateLog.setLoginTime(new Date());
+                    updateLog.setLoginAddress(ipUtils.getAddress(loginIp));
+                    sysLoginLogMapper.updateById(updateLog);
+                } else {
+                    // 如果不存在，插入新记录
+                    SysLoginLog loginLog = new SysLoginLog();
+                    loginLog.setUserId(userId);
+                    loginLog.setUsername(username);
+                    loginLog.setLoginType(loginType);
+                    loginLog.setLoginIp(loginIp);
+                    loginLog.setLoginAddress(ipUtils.getAddress(loginIp));
+                    loginLog.setStatus(status);
+                    loginLog.setLoginTime(new Date());
+
+                    sysLoginLogMapper.insert(loginLog);
+                }
+            } catch (Exception e) {
+                log.error("记录或更新登录日志失败：用户ID={}, 用户名={}, 登录IP={}, 错误信息={}", userId, username, loginIp, e.getMessage(), e);
+            }
+        });
+    }
+
+    /**
      * 查询所有登录日志（按时间倒序）
      */
     @Override
