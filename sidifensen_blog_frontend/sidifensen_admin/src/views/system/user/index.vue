@@ -13,28 +13,8 @@
         </div>
       </div>
       <div class="card-second">
-        <el-date-picker
-          v-model="searchCreateTimeStart"
-          type="datetime"
-          format="YYYY-MM-DD HH:mm:ss"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          placeholder="创建时间开始"
-          :prefix-icon="Calendar"
-          size="small"
-          class="search-input"
-          clearable
-          @change="handleSearch" />
-        <el-date-picker
-          v-model="searchCreateTimeEnd"
-          type="datetime"
-          format="YYYY-MM-DD HH:mm:ss"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          placeholder="创建时间结束"
-          :prefix-icon="Calendar"
-          size="small"
-          class="search-input"
-          clearable
-          @change="handleSearch" />
+        <el-date-picker v-model="searchCreateTimeStart" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间开始" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
+        <el-date-picker v-model="searchCreateTimeEnd" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间结束" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
       </div>
 
       <!-- 权限表格 -->
@@ -52,18 +32,7 @@
         <el-table-column prop="email" label="用户邮箱" width="170" />
         <el-table-column prop="status" label="状态">
           <template #default="{ row }">
-            <el-switch
-              v-model="row.status"
-              size="large"
-              active-color="#42b983"
-              inactive-color="#cccccc"
-              active-text="正常"
-              inactive-text="禁用"
-              :active-value="0"
-              :inactive-value="1"
-              inline-prompt
-              :loading="switchLoading"
-              :before-change="() => handleStatusChange(row.id, row.status === 0 ? 1 : 0)" />
+            <el-switch v-model="row.status" size="large" active-color="#42b983" inactive-color="#cccccc" active-text="正常" inactive-text="禁用" :active-value="0" :inactive-value="1" inline-prompt :loading="switchLoading" :before-change="() => handleStatusChange(row.id, row.status === 0 ? 1 : 0)" />
           </template>
         </el-table-column>
         <el-table-column prop="loginType" label="登录方式" width="110">
@@ -105,7 +74,7 @@
           <el-input v-model="userForm.email" placeholder="请输入用户邮箱" />
         </el-form-item>
         <el-form-item prop="nickname" label="用户昵称">
-          <el-input v-model="userForm.nickname" placeholder="请输入用户昵称" />
+          <el-input v-model="userForm.nickname" placeholder="请输入用户昵称" maxlength="20" show-word-limit />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -313,7 +282,10 @@ const userForm = ref({
 const rules = {
   username: [{ required: true, message: "请输入用户名称", trigger: "blur" }],
   email: [{ required: true, message: "请输入用户邮箱", trigger: "blur" }],
-  nickname: [{ required: true, message: "请输入用户昵称", trigger: "blur" }],
+  nickname: [
+    { required: true, message: "请输入用户昵称", trigger: "blur" },
+    { min: 4, max: 20, message: "昵称长度必须在4-20个字符之间", trigger: "blur" },
+  ],
 };
 
 // 获取用户列表

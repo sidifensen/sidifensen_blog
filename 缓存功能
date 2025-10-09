@@ -1,0 +1,27 @@
+[1mdiff --git a/sidifensen_blog_backend/src/main/java/com/sidifensen/domain/constants/RedisConstants.java b/sidifensen_blog_backend/src/main/java/com/sidifensen/domain/constants/RedisConstants.java[m
+[1mindex 66b9cf5..6568311 100644[m
+[1m--- a/sidifensen_blog_backend/src/main/java/com/sidifensen/domain/constants/RedisConstants.java[m
+[1m+++ b/sidifensen_blog_backend/src/main/java/com/sidifensen/domain/constants/RedisConstants.java[m
+[36m@@ -12,11 +12,6 @@[m [mpublic class RedisConstants {[m
+ [m
+     public static final String EmailCheckCode = RedisKeyPrefix + "EmailCheckCode:";[m
+ [m
+[31m-    public static final String Albums = RedisKeyPrefix + "Albums:";[m
+[31m-[m
+[31m-    public static final String UserAlbums = RedisKeyPrefix + "UserAlbums:";[m
+[31m-[m
+[31m-    public static final String AlbumPhotos = RedisKeyPrefix + "AlbumPhotos:";[m
+ [m
+     /**[m
+      * 登录验证码过期时间（5分钟，单位：秒）[m
+[36m@@ -28,10 +23,6 @@[m [mpublic class RedisConstants {[m
+      */[m
+     public static final long EMAIL_CHECK_CODE_EXPIRE_TIME = 5 * 60;[m
+ [m
+[31m-    /**[m
+[31m-     * 相册相关数据过期时间（7天，单位：秒）[m
+[31m-     */[m
+[31m-    public static final long ALBUM_EXPIRE_TIME = 7 * 24 * 60 * 60;[m
+ [m
+     /**[m
+      * 浏览历史缓存键[m

@@ -1,62 +1,69 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <title>注册</title>
 </head>
+
 <body style="margin: 0px auto;">
-<table style="min-height: 100vh; width: 100%; border-spacing: 0px">
-    <td style="padding: 10px; background: url('https://bing.img.run/1920x1080.php') no-repeat center center / cover;">
-        <div class="container" style="width: 350px; margin: 0 auto; text-align: center;">
-            <div class="avatar" style=" margin-top: 5px;">
-                <img src="https://foruda.gitee.com/avatar/1752080025136627357/14919133_sidifensen_1752080025.png!avatar200"
-                     alt="头像" style="border-radius: 50%;">
-            </div>
-            <div class="title" style="margin-top: 10px; padding-top: 10px; background-color: rgba(255, 255, 255, 0.5); border-radius: 10px 10px 0 0;">
-                <span style="font-weight: bold; font-size: 30px; color: #333333;">欢迎注册斯蒂芬森博客</span><br>
-                <span style="font-size: 20px; color: grey">一个开源免费的个人博客网站</span>
-            </div>
-            <div class="checkCode" style="font-size: 20px;padding-top: 10px; background-color: rgba(255, 255, 255, 0.5);">
-                您的<span style="font-weight: bold">注册</span>验证码为：
-                <br>
-                <span th:text="${checkCode}" class="code"
-                      style="font-size: 35px; color: #da1717; text-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);"></span>
-            </div>
-            <div class="content" style="font-size: 20px; padding: 10px 0; background-color: rgba(255, 255, 255, 0.5); border-radius: 0 0 10px 10px ;">
-                验证码有效期为5分钟，为了您的帐号安全，请勿将验证码泄露给他人
-            </div>
-            <div class="button" style="width: 300px; margin: 0px auto; ">
-                <div>
-                    <a th:href="${frontendUserHost}" class="goto"
-                       style="display: block; margin-top: 5px; padding: 10px; font-size: 20px; text-decoration: none; border-radius: 10px;
+    <table style="min-height: 100vh; width: 100%; border-spacing: 0px">
+        <td
+            style="padding: 10px; background: url('https://bing.img.run/1920x1080.php') no-repeat center center / cover;">
+            <div class="container" style="width: 350px; margin: 0 auto; text-align: center;">
+                <div class="avatar" style=" margin-top: 5px;">
+                    <img src="https://foruda.gitee.com/avatar/1752080025136627357/14919133_sidifensen_1752080025.png!avatar200"
+                        alt="头像" style="border-radius: 50%;">
+                </div>
+                <div class="title"
+                    style="margin-top: 10px; padding-top: 10px; background-color: rgba(255, 255, 255, 0.5); border-radius: 10px 10px 0 0;">
+                    <span style="font-weight: bold; font-size: 30px; color: #333333;">欢迎注册斯蒂芬森博客</span><br>
+                    <span style="font-size: 20px; color: grey">一个开源免费的个人博客网站</span>
+                </div>
+                <div class="checkCode"
+                    style="font-size: 20px;padding-top: 10px; background-color: rgba(255, 255, 255, 0.5);">
+                    您的<span style="font-weight: bold">注册</span>验证码为：
+                    <br>
+                    <span th:text="${checkCode}" class="code"
+                        style="font-size: 35px; color: #da1717; text-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);"></span>
+                </div>
+                <div class="content"
+                    style="font-size: 20px; padding: 10px 0; background-color: rgba(255, 255, 255, 0.5); border-radius: 0 0 10px 10px ;">
+                    验证码有效期为5分钟，为了您的帐号安全，请勿将验证码泄露给他人
+                </div>
+                <div class="button" style="width: 300px; margin: 0px auto; ">
+                    <div>
+                        <a th:href="${frontendUserHost}" class="goto"
+                            style="display: block; margin-top: 5px; padding: 10px; font-size: 20px; text-decoration: none; border-radius: 10px;
                        background-image: linear-gradient(to right, #409eff, #69c0ff, #00ccff, #98c0e6); background-size: 200% 100%;
                                  color: white; transition: all 0.5s ease; box-shadow: 3px 8px 10px rgba(0, 0, 0, 0.1);  ">
-                        立即前往博客网站
-                    </a>
-                </div>
-                <div>
-                    <a href="https://gitee.com/sidifensen/sidifensen_blog" class="gitee"
-                       style="display: block; margin-top: 15px; padding: 10px; font-size: 20px; text-decoration: none; border-radius: 10px;
+                            立即前往博客网站
+                        </a>
+                    </div>
+                    <div>
+                        <a href="https://gitee.com/sidifensen/sidifensen_blog" class="gitee"
+                            style="display: block; margin-top: 15px; padding: 10px; font-size: 20px; text-decoration: none; border-radius: 10px;
                        background-image: linear-gradient(to right, #409eff, #69c0ff, #00ccff, #98c0e6); background-size: 200% 100%;
                                  color: white; transition: all 0.5s ease; box-shadow: 3px 8px 10px rgba(0, 0, 0, 0.1);  ">
-                        <img src="data:image/svg+xml;charset=utf-8;base64,ICAgICAgICAgICAgICAgIDxzdmcgdD0iMTc1MjEyMzQyMDc4MSIgY2xhc3M9Imljb24iIHZpZXdCb3g9IjAgMCAxMDI0IDEwMjQiIHZlcnNpb249IjEuMSIKICAgICAgICAgICAgICAgICAgICAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBwLWlkPSIyODM4IiBpZD0ibXhfbl8xNzUyMTIzNDIwNzgyIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik01MTIgMTAyNEMyMjkuMjIyNCAxMDI0IDAgNzk0Ljc3NzYgMCA1MTJTMjI5LjIyMjQgMCA1MTIgMHM1MTIgMjI5LjIyMjQgNTEyIDUxMi0yMjkuMjIyNCA1MTItNTEyIDUxMnogbTI1OS4xNDg4LTU2OC44ODMySDQ4MC40MDk2YTI1LjI5MjggMjUuMjkyOCAwIDAgMC0yNS4yOTI4IDI1LjI5MjhsLTAuMDI1NiA2My4yMDY0YzAgMTMuOTUyIDExLjMxNTIgMjUuMjkyOCAyNS4yNjcyIDI1LjI5MjhoMTc3LjAyNGMxMy45Nzc2IDAgMjUuMjkyOCAxMS4zMTUyIDI1LjI5MjggMjUuMjY3MnYxMi42NDY0YTc1Ljg1MjggNzUuODUyOCAwIDAgMS03NS44NTI4IDc1Ljg1MjhIMzY2LjU5MmEyNS4yOTI4IDI1LjI5MjggMCAwIDEtMjUuMjY3Mi0yNS4yOTI4di0yNDAuMTc5MmE3NS44NTI4IDc1Ljg1MjggMCAwIDEgNzUuODI3Mi03NS44NTI4aDM1My45NDU2YTI1LjI5MjggMjUuMjkyOCAwIDAgMCAyNS4yNjcyLTI1LjI5MjhsMC4wNzY4LTYzLjIwNjRhMjUuMjkyOCAyNS4yOTI4IDAgMCAwLTI1LjI2NzItMjUuMjkyOEg0MTcuMTUyYTE4OS42MTkyIDE4OS42MTkyIDAgMCAwLTE4OS42MTkyIDE4OS42NDQ4djM1My45NDU2YzAgMTMuOTc3NiAxMS4zMTUyIDI1LjI5MjggMjUuMjkyOCAyNS4yOTI4aDM3Mi45NDA4YTE3MC42NDk2IDE3MC42NDk2IDAgMCAwIDE3MC42NDk2LTE3MC42NDk2di0xNDUuNDA4YTI1LjI5MjggMjUuMjkyOCAwIDAgMC0yNS4yOTI4LTI1LjI2NzJ6IgogICAgICAgICAgICAgICAgICAgICAgICAgIGZpbGw9IiNDNzFEMjMiIHAtaWQ9IjI4MzkiPjwvcGF0aD4KICAgICAgICAgICAgICAgIDwvc3ZnPg=="
-                             style="vertical-align: middle">
-                        <span style="text-align: center">gitee主页</span>
-                    </a>
-                </div>
-                <div>
-                    <a href="https://github.com/sidifensen/sidifensen_blog" class="github"
-                       style="display: block; margin-top: 5px; padding: 10px; font-size: 20px; text-decoration: none; border-radius: 10px;
+                            <img src="data:image/svg+xml;charset=utf-8;base64,ICAgICAgICAgICAgICAgIDxzdmcgdD0iMTc1MjEyMzQyMDc4MSIgY2xhc3M9Imljb24iIHZpZXdCb3g9IjAgMCAxMDI0IDEwMjQiIHZlcnNpb249IjEuMSIKICAgICAgICAgICAgICAgICAgICAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBwLWlkPSIyODM4IiBpZD0ibXhfbl8xNzUyMTIzNDIwNzgyIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik01MTIgMTAyNEMyMjkuMjIyNCAxMDI0IDAgNzk0Ljc3NzYgMCA1MTJTMjI5LjIyMjQgMCA1MTIgMHM1MTIgMjI5LjIyMjQgNTEyIDUxMi0yMjkuMjIyNCA1MTItNTEyIDUxMnogbTI1OS4xNDg4LTU2OC44ODMySDQ4MC40MDk2YTI1LjI5MjggMjUuMjkyOCAwIDAgMC0yNS4yOTI4IDI1LjI5MjhsLTAuMDI1NiA2My4yMDY0YzAgMTMuOTUyIDExLjMxNTIgMjUuMjkyOCAyNS4yNjcyIDI1LjI5MjhoMTc3LjAyNGMxMy45Nzc2IDAgMjUuMjkyOCAxMS4zMTUyIDI1LjI5MjggMjUuMjY3MnYxMi42NDY0YTc1Ljg1MjggNzUuODUyOCAwIDAgMS03NS44NTI4IDc1Ljg1MjhIMzY2LjU5MmEyNS4yOTI4IDI1LjI5MjggMCAwIDEtMjUuMjY3Mi0yNS4yOTI4di0yNDAuMTc5MmE3NS44NTI4IDc1Ljg1MjggMCAwIDEgNzUuODI3Mi03NS44NTI4aDM1My45NDU2YTI1LjI5MjggMjUuMjkyOCAwIDAgMCAyNS4yNjcyLTI1LjI5MjhsMC4wNzY4LTYzLjIwNjRhMjUuMjkyOCAyNS4yOTI4IDAgMCAwLTI1LjI2NzItMjUuMjkyOEg0MTcuMTUyYTE4OS42MTkyIDE4OS42MTkyIDAgMCAwLTE4OS42MTkyIDE4OS42NDQ4djM1My45NDU2YzAgMTMuOTc3NiAxMS4zMTUyIDI1LjI5MjggMjUuMjkyOCAyNS4yOTI4aDM3Mi45NDA4YTE3MC42NDk2IDE3MC42NDk2IDAgMCAwIDE3MC42NDk2LTE3MC42NDk2di0xNDUuNDA4YTI1LjI5MjggMjUuMjkyOCAwIDAgMC0yNS4yOTI4LTI1LjI2NzJ6IgogICAgICAgICAgICAgICAgICAgICAgICAgIGZpbGw9IiNDNzFEMjMiIHAtaWQ9IjI4MzkiPjwvcGF0aD4KICAgICAgICAgICAgICAgIDwvc3ZnPg=="
+                                style="vertical-align: middle">
+                            <span style="text-align: center">gitee主页</span>
+                        </a>
+                    </div>
+                    <div>
+                        <a href="https://github.com/sidifensen/sidifensen_blog" class="github"
+                            style="display: block; margin-top: 5px; padding: 10px; font-size: 20px; text-decoration: none; border-radius: 10px;
                        background-image: linear-gradient(to right, #409eff, #69c0ff, #00ccff, #98c0e6); background-size: 200% 100%;
                                  color: white; transition: all 0.5s ease; box-shadow: 3px 8px 10px rgba(0, 0, 0, 0.1);  ">
-                        <img src="data:image/svg+xml;charset=utf-8;base64,ICAgICAgICAgICAgICAgIDxzdmcgdD0iMTc1MjEyMzEwNDEzOSIgY2xhc3M9Imljb24iIHZpZXdCb3g9IjAgMCAxMDI0IDEwMjQiIHZlcnNpb249IjEuMSIKICAgICAgICAgICAgICAgICAgICAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBwLWlkPSIyNjkwIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik01MTIgNDIuNjY2NjY3QTQ2NC42NCA0NjQuNjQgMCAwIDAgNDIuNjY2NjY3IDUwMi4xODY2NjcgNDYwLjM3MzMzMyA0NjAuMzczMzMzIDAgMCAwIDM2My41MiA5MzguNjY2NjY3YzIzLjQ2NjY2NyA0LjI2NjY2NyAzMi05LjgxMzMzMyAzMi0yMi4xODY2Njd2LTc4LjA4Yy0xMzAuNTYgMjcuNzMzMzMzLTE1OC4yOTMzMzMtNjEuNDQtMTU4LjI5MzMzMy02MS40NGExMjIuMDI2NjY3IDEyMi4wMjY2NjcgMCAwIDAtNTIuMDUzMzM0LTY3LjQxMzMzM2MtNDIuNjY2NjY3LTI4LjE2IDMuNDEzMzMzLTI3LjczMzMzMyAzLjQxMzMzNC0yNy43MzMzMzRhOTguNTYgOTguNTYgMCAwIDEgNzEuNjggNDcuMzYgMTAxLjEyIDEwMS4xMiAwIDAgMCAxMzYuNTMzMzMzIDM3Ljk3MzMzNCA5OS40MTMzMzMgOTkuNDEzMzMzIDAgMCAxIDI5Ljg2NjY2Ny02MS40NGMtMTA0LjEwNjY2Ny0xMS41Mi0yMTMuMzMzMzMzLTUwLjc3MzMzMy0yMTMuMzMzMzM0LTIyNi45ODY2NjdhMTc3LjA2NjY2NyAxNzcuMDY2NjY3IDAgMCAxIDQ3LjM2LTEyNC4xNiAxNjEuMjggMTYxLjI4IDAgMCAxIDQuNjkzMzM0LTEyMS4xNzMzMzNzMzkuNjgtMTIuMzczMzMzIDEyOCA0Ni45MzMzMzNhNDU1LjY4IDQ1NS42OCAwIDAgMSAyMzQuNjY2NjY2IDBjODkuNi01OS4zMDY2NjcgMTI4LTQ2LjkzMzMzMyAxMjgtNDYuOTMzMzMzYTE2MS4yOCAxNjEuMjggMCAwIDEgNC42OTMzMzQgMTIxLjE3MzMzM0ExNzcuMDY2NjY3IDE3Ny4wNjY2NjcgMCAwIDEgODEwLjY2NjY2NyA0NzcuODY2NjY3YzAgMTc2LjY0LTExMC4wOCAyMTUuNDY2NjY3LTIxMy4zMzMzMzQgMjI2Ljk4NjY2NmExMDYuNjY2NjY3IDEwNi42NjY2NjcgMCAwIDEgMzIgODUuMzMzMzM0djEyNS44NjY2NjZjMCAxNC45MzMzMzMgOC41MzMzMzMgMjYuODggMzIgMjIuMTg2NjY3QTQ2MC44IDQ2MC44IDAgMCAwIDk4MS4zMzMzMzMgNTAyLjE4NjY2NyA0NjQuNjQgNDY0LjY0IDAgMCAwIDUxMiA0Mi42NjY2NjciCiAgICAgICAgICAgICAgICAgICAgICAgICAgZmlsbD0iIzIzMUYyMCIgcC1pZD0iMjY5MSI+PC9wYXRoPgogICAgICAgICAgICAgICAgPC9zdmc+"
-                             style="vertical-align: middle">
-                        <span style="text-align: center">github主页</span>
-                    </a>
+                            <img src="data:image/svg+xml;charset=utf-8;base64,ICAgICAgICAgICAgICAgIDxzdmcgdD0iMTc1MjEyMzEwNDEzOSIgY2xhc3M9Imljb24iIHZpZXdCb3g9IjAgMCAxMDI0IDEwMjQiIHZlcnNpb249IjEuMSIKICAgICAgICAgICAgICAgICAgICAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBwLWlkPSIyNjkwIiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik01MTIgNDIuNjY2NjY3QTQ2NC42NCA0NjQuNjQgMCAwIDAgNDIuNjY2NjY3IDUwMi4xODY2NjcgNDYwLjM3MzMzMyA0NjAuMzczMzMzIDAgMCAwIDM2My41MiA5MzguNjY2NjY3YzIzLjQ2NjY2NyA0LjI2NjY2NyAzMi05LjgxMzMzMyAzMi0yMi4xODY2Njd2LTc4LjA4Yy0xMzAuNTYgMjcuNzMzMzMzLTE1OC4yOTMzMzMtNjEuNDQtMTU4LjI5MzMzMy02MS40NGExMjIuMDI2NjY3IDEyMi4wMjY2NjcgMCAwIDAtNTIuMDUzMzM0LTY3LjQxMzMzM2MtNDIuNjY2NjY3LTI4LjE2IDMuNDEzMzMzLTI3LjczMzMzMyAzLjQxMzMzNC0yNy43MzMzMzRhOTguNTYgOTguNTYgMCAwIDEgNzEuNjggNDcuMzYgMTAxLjEyIDEwMS4xMiAwIDAgMCAxMzYuNTMzMzMzIDM3Ljk3MzMzNCA5OS40MTMzMzMgOTkuNDEzMzMzIDAgMCAxIDI5Ljg2NjY2Ny02MS40NGMtMTA0LjEwNjY2Ny0xMS41Mi0yMTMuMzMzMzMzLTUwLjc3MzMzMy0yMTMuMzMzMzM0LTIyNi45ODY2NjdhMTc3LjA2NjY2NyAxNzcuMDY2NjY3IDAgMCAxIDQ3LjM2LTEyNC4xNiAxNjEuMjggMTYxLjI4IDAgMCAxIDQuNjkzMzM0LTEyMS4xNzMzMzNzMzkuNjgtMTIuMzczMzMzIDEyOCA0Ni45MzMzMzNhNDU1LjY4IDQ1NS42OCAwIDAgMSAyMzQuNjY2NjY2IDBjODkuNi01OS4zMDY2NjcgMTI4LTQ2LjkzMzMzMyAxMjgtNDYuOTMzMzMzYTE2MS4yOCAxNjEuMjggMCAwIDEgNC42OTMzMzQgMTIxLjE3MzMzM0ExNzcuMDY2NjY3IDE3Ny4wNjY2NjcgMCAwIDEgODEwLjY2NjY2NyA0NzcuODY2NjY3YzAgMTc2LjY0LTExMC4wOCAyMTUuNDY2NjY3LTIxMy4zMzMzMzQgMjI2Ljk4NjY2NmExMDYuNjY2NjY3IDEwNi42NjY2NjcgMCAwIDEgMzIgODUuMzMzMzM0djEyNS44NjY2NjZjMCAxNC45MzMzMzMgOC41MzMzMzMgMjYuODggMzIgMjIuMTg2NjY3QTQ2MC44IDQ2MC44IDAgMCAwIDk4MS4zMzMzMzMgNTAyLjE4NjY2NyA0NjQuNjQgNDY0LjY0IDAgMCAwIDUxMiA0Mi42NjY2NjciCiAgICAgICAgICAgICAgICAgICAgICAgICAgZmlsbD0iIzIzMUYyMCIgcC1pZD0iMjY5MSI+PC9wYXRoPgogICAgICAgICAgICAgICAgPC9zdmc+"
+                                style="vertical-align: middle">
+                            <span style="text-align: center">github主页</span>
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </td>
-</table>
+        </td>
+    </table>
 </body>
+
 </html>

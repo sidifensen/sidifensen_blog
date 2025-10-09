@@ -13,6 +13,7 @@ import com.sidifensen.domain.vo.SysLoginLogVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysLoginLogMapper;
 import com.sidifensen.service.SysLoginLogService;
+import com.sidifensen.utils.IpUtils;
 import com.sidifensen.utils.MyThreadFactory;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,9 @@ public class SysLoginLogServiceImpl extends ServiceImpl<SysLoginLogMapper, SysLo
 
     @Resource
     private SysLoginLogMapper sysLoginLogMapper;
+
+    @Resource
+    private IpUtils ipUtils;
 
     // 创建线程池
     private final ExecutorService executorService = new ThreadPoolExecutor(
@@ -69,9 +73,32 @@ public class SysLoginLogServiceImpl extends ServiceImpl<SysLoginLogMapper, SysLo
                 loginLog.setLoginTime(new Date());
 
                 sysLoginLogMapper.insert(loginLog);
-                log.info("记录登录日志成功：用户ID={}, 用户名={}, 登录状态={}", userId, username, status);
             } catch (Exception e) {
-                log.error("记录登录日志失败：用户ID={}, 用户名={}, 错误信息={}", userId, username, e.getMessage(), e);
+                log.error("记录登录日志失败：用户ID={}, 用户名={}, 登录IP={}, 错误信息={}", userId, username, loginIp, e.getMessage(), e);
+            }
+        });
+    }
+
+        /**
+     * 异步记录登录日志
+     */
+    @Override
+    public void recordLoginLog(Integer userId, String username, Integer loginType, String loginIp, Integer status) {
+        // 使用线程池异步执行
+        executorService.execute(() -> {
+            try {
+                SysLoginLog loginLog = new SysLoginLog();
+                loginLog.setUserId(userId);
+                loginLog.setUsername(username);
+                loginLog.setLoginType(loginType);
+                loginLog.setLoginIp(loginIp);
+                loginLog.setLoginAddress(ipUtils.getAddress(loginIp));
+                loginLog.setStatus(status);
+                loginLog.setLoginTime(new Date());
+
+                sysLoginLogMapper.insert(loginLog);
+            } catch (Exception e) {
+                log.error("记录登录日志失败：用户ID={}, 用户名={}, 登录IP={}, 错误信息={}", userId, username, loginIp, e.getMessage(), e);
             }
         });
     }

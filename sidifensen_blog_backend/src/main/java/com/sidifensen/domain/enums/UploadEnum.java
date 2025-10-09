@@ -20,13 +20,13 @@ public enum UploadEnum {
     ARTICLE("article/", "文章封面", List.of("jpg", "jpeg", "png", "webp"), 5.0),
 
     // 用户头像
-    USER_AVATAR("user/avatar/", "用户头像", List.of("jpg", "jpeg", "png", "webp"), 0.3),
+    USER_AVATAR("user/avatar/", "用户头像", List.of("jpg", "jpeg", "png", "webp"), 1.0),
 
     // 专栏封面
     COLUMN("column/", "专栏封面", List.of("jpg", "jpeg", "png", "webp"), 5.0),
 
-    // 前台首页Banners图片
-    BANNERS("banners/", "前台首页Banners图片", List.of("jpg", "jpeg", "png", "webp"), 0.3);
+    // 前台首页图片
+    BANNERS("banners/", "前台首页图片", List.of("jpg", "jpeg", "png", "webp"), 1.0);
 
 
     // 上传目录

@@ -42,8 +42,6 @@ public class GlobalException {
 
     @ExceptionHandler(BlogException.class)
     Object handleBlogException(BlogException e) {
-        e.printStackTrace();
-        log.error("博客业务异常：{}", e.getMessage());
         return Result.error(e.getMessage());
     }
 
@@ -54,7 +52,7 @@ public class GlobalException {
 
     @ExceptionHandler(AuthenticationException.class)
     Object handleAuthenticationException(AuthenticationException e) {
-        log.error("认证异常：{}", e.getMessage()); // 用户帐号已被锁定
+//        log.error("认证异常：{}", e.getMessage()); // 用户帐号已被锁定
         return Result.unauthorized(e.getMessage()); // BadCredentialsException: 用户名或密码错误
     }
 

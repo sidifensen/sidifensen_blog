@@ -64,8 +64,6 @@ public class RabbitMqListener {
             String checkCode = (String) message.get("checkCode");
             String type = (String) message.get("type");
 
-            log.info("开始处理邮件发送请求: email={}, type={}", email, type);
-
             if (type.equals(MailEnum.REGISTER.getType())) {
                 emailUtils.sendHtmlMail(email, MailEnum.REGISTER.getSubject(), MailEnum.REGISTER.getTemplateName(),
                         Map.of("checkCode", checkCode, "frontendUserHost", frontendUserHost));
@@ -77,10 +75,8 @@ public class RabbitMqListener {
                         Map.of("checkCode", checkCode, "frontendUserHost", frontendUserHost));
             } else {
                 log.warn("未知的邮件类型: {}, 跳过处理", type);
-                return; // 未知类型不抛异常，避免无意义重试
             }
 
-            log.info("成功发送邮件到: {}, type={}", email, type);
         } catch (Exception e) {
             log.error("处理邮件发送请求时出现异常, email={}, message={}", email, message, e);
             // 抛出异常触发重试机制
@@ -102,12 +98,9 @@ public class RabbitMqListener {
         try {
             String text = (String) message.get("text");
 
-            log.info("开始处理审核通知邮件发送请求: text={}", text);
-
             emailUtils.sendHtmlMailToAdmin(MailEnum.EXAMINE.getSubject(), MailEnum.EXAMINE.getTemplateName(),
                     Map.of("text", text, "frontendAdminHost", frontendAdminHost));
 
-            log.info("成功发送审核通知邮件给管理员");
         } catch (Exception e) {
             log.error("处理审核通知邮件发送请求时出现异常, message={}", message, e);
             // 抛出异常触发重试机制
@@ -131,12 +124,9 @@ public class RabbitMqListener {
             email = (String) message.get("email");
             String text = (String) message.get("text");
 
-            log.info("开始处理友链审核通过邮件发送请求: email={}", email);
-
             emailUtils.sendHtmlMail(email, MailEnum.EXAMINE.getSubject(), MailEnum.EXAMINE.getTemplateName(),
                     Map.of("text", text, "frontendUserHost", frontendUserHost));
 
-            log.info("成功发送友链审核通过邮件到: {}", email);
         } catch (Exception e) {
             log.error("处理友链审核通过邮件发送请求时出现异常, email={}, message={}", email, message, e);
             // 抛出异常触发重试机制

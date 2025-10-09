@@ -26,7 +26,6 @@ import com.sidifensen.mapper.AlbumMapper;
 import com.sidifensen.mapper.AlbumPhotoMapper;
 import com.sidifensen.mapper.PhotoMapper;
 import com.sidifensen.mapper.SysUserMapper;
-import com.sidifensen.redis.RedisService;
 import com.sidifensen.service.MessageService;
 import com.sidifensen.service.PhotoService;
 import com.sidifensen.utils.FileUploadUtils;
@@ -85,8 +84,6 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     private RabbitTemplate rabbitTemplate;
     @Resource
     private SidifensenConfig sidifensenConfig;
-    @Resource
-    private RedisService redisService;
 
     private static @NotNull Photo setPhotoExamineStatus(Photo photo, Integer status) {
         Photo updatePhoto = new Photo();
@@ -189,7 +186,6 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             }
 
 
-            redisService.updateAlbumPhotos(albumId);
         });
     }
 
@@ -259,8 +255,6 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         // 删除照片对应的文件
         fileUploadUtils.deleteFile(dirName, fileName);
 
-        // 更新相册照片关联
-        redisService.updateAlbumPhotos(albumPhoto.getAlbumId());
     }
 
     // 批量删除照片
@@ -317,8 +311,6 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         // 批量删除文件
         fileUploadUtils.deleteFiles(filePaths);
 
-        // 批量更新相册照片关联
-        redisService.multiUpdateAlbumPhotos(albumPhotos.stream().map(AlbumPhoto::getAlbumId).collect(Collectors.toList()));
     }
 
     @Override
@@ -341,8 +333,6 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         // 删除照片对应的文件
         fileUploadUtils.deleteFile(dirName, fileName);
 
-        // 更新相册照片关联
-        redisService.updateAlbumPhotos(albumPhoto.getAlbumId());
     }
 
     @Override
@@ -391,8 +381,6 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         // 批量删除文件
         fileUploadUtils.deleteFiles(filePaths);
 
-        // 批量更新相册照片关联
-        redisService.multiUpdateAlbumPhotos(albumPhotos.stream().map(AlbumPhoto::getAlbumId).collect(Collectors.toList()));
     }
 
     @Override
@@ -413,8 +401,6 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                     Photo photo = photoMapper.selectById(photoAuditDto.getPhotoId());
                     album.setCoverUrl(photo.getUrl());
                     albumMapper.updateById(album);
-                    // 更新相册照片关联
-                    redisService.updateAlbumPhotos(albumPhoto.getAlbumId());
                 }
             }
         }
@@ -446,8 +432,6 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             }
         }
 
-        // 批量更新相册照片关联
-        redisService.multiUpdateAlbumPhotos(albumIds);
     }
 
     @Override

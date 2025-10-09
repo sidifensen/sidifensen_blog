@@ -144,10 +144,11 @@ onMounted(async () => {
     padding: 0;
 
     .article-container {
-      padding-top: 30px;
+      padding-top: 0px;
       gap: 10px;
       width: 100%;
       .main-content {
+        margin-top: 50px;
         border-radius: 0;
       }
     }

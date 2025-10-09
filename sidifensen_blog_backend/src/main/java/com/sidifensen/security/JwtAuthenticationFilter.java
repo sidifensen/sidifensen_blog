@@ -74,24 +74,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        // // 检查请求来源 - 防止简单的API工具直接访问
-        // String userAgent = request.getHeader("User-Agent");
-        // if (!isValidUserAgent(userAgent)) {
-        // log.warn("检测到可疑请求来源，User-Agent: {}", userAgent);
-        // WebUtils.Unauthorized(response,
-        // Result.unauthorized(BlogConstants.IllegalRequest).toJson());
-        // return;
-        // }
-        //
-        // // 检查Referer头
-        // String referer = request.getHeader("Referer");
-        // if (referer == null || !isValidReferer(referer)) {
-        // log.warn("检测到可疑请求来源，Referer: {}", referer);
-        // WebUtils.Unauthorized(response,
-        // Result.unauthorized(BlogConstants.IllegalRequest).toJson());
-        // return;
-        // }
-
         // 可选认证接口：有token就认证，没有就跳过
         if (isOptionalAuth) {
             String jwt = request.getHeader("Authorization");
@@ -166,47 +148,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.SystemInternalError).toJson());
             return false;
         }
-    }
-
-    /**
-     * 验证User-Agent是否合法
-     *
-     * @param userAgent User-Agent头
-     * @return 是否合法
-     */
-    private boolean isValidUserAgent(String userAgent) {
-        if (userAgent == null || userAgent.isEmpty()) {
-            return false;
-        }
-        // 检查是否包含允许的浏览器标识
-        for (String allowedAgent : SecurityConstants.Allowed_User_Agents) {
-            if (userAgent.contains(allowedAgent)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * 验证Referer是否合法
-     *
-     * @param referer Referer头
-     * @return 是否合法
-     */
-    private boolean isValidReferer(String referer) {
-        // 对于公开API，可以允许空的Referer
-        if (referer == null || referer.isEmpty()) {
-            return true;
-        }
-
-        // 检查是否来自允许的域名（根据实际情况配置）
-        for (String origin : sidifensenConfig.getAllowOrigins()) {
-            if (referer.contains(origin)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**

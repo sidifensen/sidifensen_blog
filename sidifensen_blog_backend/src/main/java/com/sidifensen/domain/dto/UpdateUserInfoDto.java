@@ -3,6 +3,7 @@ package com.sidifensen.domain.dto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.hibernate.validator.constraints.Length;
 
 import java.io.Serializable;
 
@@ -24,6 +25,7 @@ public class UpdateUserInfoDto implements Serializable {
     /**
      * 昵称
      */
+    @Length(min = 4, max = 20, message = "昵称长度必须在4-20个字符之间")
     private String nickname;
 
     /**

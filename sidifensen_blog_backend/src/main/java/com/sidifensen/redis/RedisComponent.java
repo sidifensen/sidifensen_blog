@@ -1,10 +1,7 @@
 package com.sidifensen.redis;
 
 
-import cn.hutool.core.util.ObjectUtil;
 import com.sidifensen.domain.constants.RedisConstants;
-import com.sidifensen.domain.vo.AlbumVo;
-import com.sidifensen.domain.vo.PhotoVo;
 import com.sidifensen.utils.MyThreadFactory;
 import com.sidifensen.utils.RedisUtils;
 import jakarta.annotation.Resource;
@@ -61,112 +58,6 @@ public class RedisComponent {
         redisUtils.del(RedisConstants.EmailCheckCode + type + ":" + email);
     }
 
-    // 保存相册
-    public void saveAlbum(Integer albumId, AlbumVo albumVo) {
-        executorService.execute(() -> {
-            redisUtils.hset(RedisConstants.Albums, albumId, albumVo, RedisConstants.ALBUM_EXPIRE_TIME, TimeUnit.SECONDS);
-        });
-    }
-
-    // 获取相册
-    public AlbumVo getAlbum(List<Integer> albumIds) {
-        return (AlbumVo) redisUtils.hmget(RedisConstants.Albums, albumIds);
-    }
-
-    // 删除相册
-    public void delAlbum(List<Integer> albumIds) {
-        redisUtils.hdel(RedisConstants.Albums, albumIds);
-    }
-
-    // 保存相册详情
-    public void saveAlbumDetail(Integer albumId, AlbumVo albumVo) {
-        executorService.execute(() -> {
-            // 分离存储相册基本信息和照片列表
-            // 存储相册基本信息（不包含照片列表）
-            AlbumVo albumInfo = new AlbumVo();
-            albumInfo.setId(albumVo.getId());
-            albumInfo.setUserId(albumVo.getUserId());
-            albumInfo.setName(albumVo.getName());
-            albumInfo.setCoverUrl(albumVo.getCoverUrl());
-            albumInfo.setShowStatus(albumVo.getShowStatus());
-            albumInfo.setCreateTime(albumVo.getCreateTime());
-            albumInfo.setUpdateTime(albumVo.getUpdateTime());
-            albumInfo.setUserName(albumVo.getUserName());
-
-            this.saveAlbum(albumId, albumInfo);
-
-            // 单独存储照片列表
-            if (albumVo.getPhotos() != null && !albumVo.getPhotos().isEmpty()) {
-                redisUtils.hset(RedisConstants.AlbumPhotos, albumId, albumVo.getPhotos(), RedisConstants.ALBUM_EXPIRE_TIME, TimeUnit.SECONDS);
-            }
-        });
-    }
-
-    // 保存相册照片关联
-    public void saveAlbumPhotos(Integer albumId, List<PhotoVo> photos) {
-        redisUtils.hset(RedisConstants.AlbumPhotos, albumId, photos, RedisConstants.ALBUM_EXPIRE_TIME, TimeUnit.SECONDS);
-    }
-
-    // 获取相册详情
-    public AlbumVo getAlbumDetail(List<Integer> albumIds) {
-        // 获取相册基本信息
-        AlbumVo albumInfo = this.getAlbum(albumIds);
-        if (albumInfo == null) {
-            return null;
-        }
-        // 获取照片列表
-        List<PhotoVo> photos = (List<PhotoVo>) redisUtils.hmultiGet(RedisConstants.AlbumPhotos, albumIds);
-        //拼接信息
-        albumInfo.setPhotos(photos != null ? photos : new ArrayList<>());
-        return albumInfo;
-    }
-
-    // 删除相册详情
-    public void delAlbumDetail(Integer albumId) {
-        redisUtils.hdel(RedisConstants.AlbumPhotos, albumId);
-    }
-
-
-    // 保存用户相册
-    public void saveUserAlbum(Integer userId, List<Integer> albumIds) {
-        executorService.execute(() -> {
-            redisUtils.hset(RedisConstants.UserAlbums, userId, albumIds, RedisConstants.ALBUM_EXPIRE_TIME, TimeUnit.SECONDS);
-        });
-    }
-
-    // 获取用户相册
-    public List<AlbumVo> getUserAlbum(List<Integer> userIds) {
-        List<Integer> userAlbumIds = (List<Integer>) redisUtils.hmultiGet(RedisConstants.UserAlbums, userIds);
-        if (ObjectUtil.isEmpty(userAlbumIds)) {
-            return new ArrayList<>();
-        }
-        return (List<AlbumVo>) this.getAlbum(userAlbumIds);
-    }
-
-    // 删除用户相册
-    public void delUserAlbum(List<Integer> userIds) {
-        redisUtils.hdel(RedisConstants.UserAlbums, userIds);
-    }
-
-    // 获取所有相册
-    public List<AlbumVo> getAllAlbum() {
-        return (List<AlbumVo>) redisUtils.hmgetValues(RedisConstants.Albums);
-    }
-
-    // 保存所有相册
-    public void saveAllAlbum(Map map) {
-        redisUtils.hmset(RedisConstants.Albums, map, RedisConstants.ALBUM_EXPIRE_TIME, TimeUnit.SECONDS);
-    }
-
-    //保存所有用户相册
-    public void saveAllUserAlbum(Map map) {
-        redisUtils.hmset(RedisConstants.UserAlbums, map, RedisConstants.ALBUM_EXPIRE_TIME, TimeUnit.SECONDS);
-    }
-
-    // 保存所有相册详情
-    public void saveAllAlbumPhotos(Map map) {
-        redisUtils.hmset(RedisConstants.AlbumPhotos, map, RedisConstants.ALBUM_EXPIRE_TIME, TimeUnit.SECONDS);
-    }
 
     // ==================== 浏览历史相关方法 ====================
     

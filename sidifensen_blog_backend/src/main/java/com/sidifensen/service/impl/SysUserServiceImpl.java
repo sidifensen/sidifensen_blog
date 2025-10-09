@@ -9,10 +9,7 @@ import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.RabbitMQConstants;
 import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.entity.*;
-import com.sidifensen.domain.enums.EditStatusEnum;
-import com.sidifensen.domain.enums.ExamineStatusEnum;
-import com.sidifensen.domain.enums.MailEnum;
-import com.sidifensen.domain.enums.StatusEnum;
+import com.sidifensen.domain.enums.*;
 import com.sidifensen.domain.vo.*;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.*;
@@ -97,9 +94,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     private ColumnMapper columnMapper;
 
     @Resource
-    private FollowMapper followMapper;
-
-    @Resource
     private com.sidifensen.service.SysLoginLogService sysLoginLogService;
 
     @Override
@@ -121,14 +115,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         } catch (Exception e) {
             // 记录登录失败日志
             String ip = ipUtils.getIp();
-            String loginAddress = ipUtils.getAddress();
             sysLoginLogService.recordLoginLog(
                     null,  // 登录失败时可能无法获取用户ID
                     loginDto.getUsername(),
-                    0,  // 0-用户名/邮箱登录
+                    RegisterOrLoginTypeEnum.EMAIL.getCode(),  // 0-用户名/邮箱登录
                     ip,
-                    loginAddress,
-                    1  // 1-失败
+                    LoginStatusEnum.FAIL.getCode()  // 1-失败
             );
             throw e;  // 重新抛出异常，让全局异常处理器处理
         } finally {
@@ -152,20 +144,18 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         } catch (Exception e) {
             // 记录登录失败日志
             String ip = ipUtils.getIp();
-            String loginAddress = ipUtils.getAddress();
             // 从请求头获取登录方式
             jakarta.servlet.http.HttpServletRequest request = com.sidifensen.utils.WebUtils.getRequest();
             String loginTypeHeader = request.getHeader("Login-Type");
-            Integer loginType = ObjectUtil.isNotEmpty(loginTypeHeader) 
-                    ? com.sidifensen.domain.enums.RegisterOrLoginTypeEnum.getCode(loginTypeHeader) 
+            Integer loginType = ObjectUtil.isNotEmpty(loginTypeHeader)
+                    ? com.sidifensen.domain.enums.RegisterOrLoginTypeEnum.getCode(loginTypeHeader)
                     : 0;
             sysLoginLogService.recordLoginLog(
-                    null,  // 登录失败时可能无法获取用户ID
+                    null,
                     oauthLoginDto.getUsername(),
                     loginType,
                     ip,
-                    loginAddress,
-                    1  // 1-失败
+                    LoginStatusEnum.FAIL.getCode()  // 1-失败
             );
             throw e;  // 重新抛出异常，让全局异常处理器处理
         }

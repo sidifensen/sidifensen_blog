@@ -14,7 +14,7 @@ public class VerifyResetDto{
     private String email;
 
     // 邮箱验证码
-    @Length(max = 6, min = 6)
+    @Length(max = 6, min = 6, message = "验证码长度必须为6位")
     private String emailCheckCode;
 
 }

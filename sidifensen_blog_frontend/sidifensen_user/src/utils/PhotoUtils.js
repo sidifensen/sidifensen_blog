@@ -77,16 +77,42 @@ export const validateImageFile = (file) => {
   const isLt5M = file.size / 1024 / 1024 < 5;
   if (!isJPG && !isJPEG && !isPNG && !isWEBP && !isGIF) {
     ElMessage.error("上传图片只能是 jpg/jpeg/png/webp/gif 格式!");
-    return false
+    return false;
   }
   if (!isLt5M) {
     ElMessage.error("上传图片大小不能超过 5MB!");
-    return false
+    return false;
+  }
+  return true;
+};
+
+/**
+ * 校验头像图片文件类型和大小
+ * @param {File} file - 要校验的头像图片文件
+ * @returns {boolean} - 校验结果
+ */
+export const validateAvatarImageFile = (file) => {
+  // 文件类型校验
+  const isJPG = file.type === "image/jpg";
+  const isJPEG = file.type === "image/jpeg";
+  const isPNG = file.type === "image/png";
+  const isWEBP = file.type === "image/webp";
+  const isGIF = file.type === "image/gif";
+  // 文件大小校验（1MB）
+  const isLt1M = file.size / 1024 / 1024 < 1;
+  if (!isJPG && !isJPEG && !isPNG && !isWEBP && !isGIF) {
+    ElMessage.error("头像图片只能是 jpg/jpeg/png/webp 格式!");
+    return false;
+  }
+  if (!isLt1M) {
+    ElMessage.error("头像图片大小不能超过 1MB!");
+    return false;
   }
   return true;
 };
 
 export default {
   compressImage,
-  validateImageFile
+  validateImageFile,
+  validateAvatarImageFile,
 };

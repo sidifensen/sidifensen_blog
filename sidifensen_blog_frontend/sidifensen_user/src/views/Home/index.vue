@@ -280,7 +280,7 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       left: 0;
       width: 100%;
       height: 100%;
-      background: url("@/assets/img/th (3).jpg") no-repeat center center / cover fixed;
+      background: url("@/assets/img/th.jpg") no-repeat center center / cover fixed;
       z-index: 1;
 
       // 底部渐变过渡效果
@@ -1023,9 +1023,14 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         padding-top: 50px;
 
         .footer-content {
+          display: flex;
+          flex-direction: row;
           gap: 30px;
+          align-items: flex-start;
 
           .footer-brand {
+            flex: 1;
+
             .brand-title {
               font-size: 1.5rem;
 
@@ -1053,6 +1058,10 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
           }
 
           .footer-links {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+
             .footer-column {
               .column-title {
                 font-size: 1rem;

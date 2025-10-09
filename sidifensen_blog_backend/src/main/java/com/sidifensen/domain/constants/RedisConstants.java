@@ -12,11 +12,6 @@ public class RedisConstants {
 
     public static final String EmailCheckCode = RedisKeyPrefix + "EmailCheckCode:";
 
-    public static final String Albums = RedisKeyPrefix + "Albums:";
-
-    public static final String UserAlbums = RedisKeyPrefix + "UserAlbums:";
-
-    public static final String AlbumPhotos = RedisKeyPrefix + "AlbumPhotos:";
 
     /**
      * 登录验证码过期时间（5分钟，单位：秒）
@@ -28,10 +23,6 @@ public class RedisConstants {
      */
     public static final long EMAIL_CHECK_CODE_EXPIRE_TIME = 5 * 60;
 
-    /**
-     * 相册相关数据过期时间（7天，单位：秒）
-     */
-    public static final long ALBUM_EXPIRE_TIME = 7 * 24 * 60 * 60;
 
     /**
      * 浏览历史缓存键

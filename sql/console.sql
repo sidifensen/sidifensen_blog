@@ -3,7 +3,7 @@ create table sys_user
     id               int primary key auto_increment comment '用户id',
     username         varchar(50)  not null comment '用户名',
     password         varchar(100) not null comment '密码',
-    nickname         varchar(10)  not null comment '昵称',
+    nickname         varchar(20)  not null comment '昵称',
     email            varchar(255) not null comment '邮箱',
     sex              tinyint               default 0 comment '性别 0-男 1-女',
     introduction     varchar(200) comment '简介',

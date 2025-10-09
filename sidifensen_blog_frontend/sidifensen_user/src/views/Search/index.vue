@@ -478,14 +478,15 @@ onUnmounted(() => {
             flex: 1;
 
             :deep(.el-input__wrapper) {
-              background: var(--el-bg-color);
+              background: var(--el-bg-color) !important;
               box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
               border: 2px solid transparent;
               transition: all 0.3s ease;
+              backdrop-filter: blur(10px);
 
               &:hover,
               &:focus {
-                background: var(--el-bg-color);
+                background: var(--el-bg-color) !important;
                 border-color: var(--el-color-primary);
                 box-shadow: 0 8px 32px rgba(64, 158, 255, 0.2);
               }
@@ -1009,6 +1010,7 @@ onUnmounted(() => {
             .search-btn,
             .search-tag-btn {
               width: 100%;
+              margin-left: 0 !important; // 移除 Element Plus 默认的 margin-left
             }
           }
 
@@ -1017,6 +1019,7 @@ onUnmounted(() => {
             flex-direction: column;
             align-items: flex-start;
             padding: 16px;
+            border-radius: 10px; // 手机端减小搜索信息区域的圆角
 
             .search-result-count {
               margin-left: 0;
@@ -1084,6 +1087,8 @@ onUnmounted(() => {
       padding: 18px 28px !important;
       height: 56px !important;
       min-height: 56px !important;
+      background: var(--el-bg-color) !important;
+      backdrop-filter: blur(10px) !important;
     }
 
     .el-input__inner {

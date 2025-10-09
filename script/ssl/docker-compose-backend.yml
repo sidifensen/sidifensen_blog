@@ -10,6 +10,9 @@ services:
     restart: unless-stopped
     ports:
       - "${BACKEND_PORT}:5000"
+    volumes:
+      # 挂载日志目录到宿主机，实现日志持久化
+      - ./logs:/app/logs
     environment:
       # 时区配置
       TZ: Asia/Shanghai

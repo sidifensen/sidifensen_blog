@@ -77,14 +77,14 @@ public class SysUserDetailsService implements UserDetailsService {
         sysUser.setLoginTime(new Date());
         String ip = ipUtils.getIp();
         sysUser.setLoginIp(ip);
-        String loginAddress = ipUtils.getAddress();
+        String loginAddress = ipUtils.getAddress(ip);
         sysUser.setLoginAddress(loginAddress);
         int i = sysUserMapper.updateById(sysUser);
         if (i == 0) {
             throw new BlogException(BlogConstants.NotFoundUser);
         }
         ipService.setLoginIp(sysUser.getId(), ip);
-        
+
         // 异步记录登录成功日志
         sysLoginLogService.recordLoginLog(
                 sysUser.getId(),
@@ -94,7 +94,7 @@ public class SysUserDetailsService implements UserDetailsService {
                 loginAddress,
                 0  // 0-成功
         );
-        
+
         return handleLogin(sysUser);
     }
 

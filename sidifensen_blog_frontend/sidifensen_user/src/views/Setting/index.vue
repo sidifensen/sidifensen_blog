@@ -35,8 +35,8 @@
                       </div>
                     </el-upload>
                     <div class="avatar-tips">
-                      <p>支持 JPG、PNG、GIF 格式</p>
-                      <p>建议尺寸：200x200 像素，大小不超过 5MB</p>
+                      <p>支持 jpg, jpeg, png, webp 格式</p>
+                      <p>建议尺寸：200x200 像素，大小不超过 1MB</p>
                     </div>
                   </div>
                 </div>
@@ -154,7 +154,7 @@
     </div>
 
     <!-- 修改密码对话框 -->
-    <el-dialog v-model="passwordDialogVisible" title="修改密码" width="500px" :close-on-click-modal="false" @close="resetPasswordDialog">
+    <el-dialog v-model="passwordDialogVisible" title="修改密码" :close-on-click-modal="false" @close="resetPasswordDialog">
       <!-- 步骤条 -->
       <el-steps :active="passwordStep" finish-status="success" align-center style="margin-bottom: 30px">
         <el-step title="验证邮箱" />
@@ -213,7 +213,7 @@
     </el-dialog>
 
     <!-- 修改邮箱对话框 -->
-    <el-dialog v-model="emailDialogVisible" title="修改邮箱" width="500px" :close-on-click-modal="false" @close="resetEmailDialog">
+    <el-dialog v-model="emailDialogVisible" title="修改邮箱" :close-on-click-modal="false" @close="resetEmailDialog">
       <!-- 步骤条 -->
       <el-steps :active="emailStep" finish-status="success" align-center style="margin-bottom: 30px">
         <el-step title="验证原邮箱" />
@@ -267,11 +267,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { Plus, User, Message, Edit, EditPen, Lock } from "@element-plus/icons-vue";
 import { info, updateUserInfo, sendEmail, verifyResetPassword, resetPassword, updateEmail, verifyResetEmail } from "@/api/user";
 import { uploadAvatar } from "@/api/photo";
-import { validateImageFile, compressImage } from "@/utils/PhotoUtils";
+import { validateAvatarImageFile, compressImage } from "@/utils/PhotoUtils";
 import { useUserStore } from "@/stores/userStore";
 
 // Store
@@ -342,8 +342,8 @@ const saveField = async (field) => {
       ElMessage.warning("昵称不能为空");
       return;
     }
-    if (editingData.nickname.length < 2 || editingData.nickname.length > 20) {
-      ElMessage.warning("昵称长度在 2 到 20 个字符");
+    if (editingData.nickname.length < 4 || editingData.nickname.length > 20) {
+      ElMessage.warning("昵称长度在 4 到 20 个字符");
       return;
     }
   }
@@ -391,7 +391,7 @@ const saveField = async (field) => {
 
 // 头像上传前的校验
 const beforeAvatarUpload = (file) => {
-  const validation = validateImageFile(file);
+  const validation = validateAvatarImageFile(file);
   if (!validation) {
     return false;
   }
@@ -805,250 +805,312 @@ onMounted(() => {
 .setting-container {
   min-height: 100vh;
   background-color: var(--el-bg-color-page);
-  padding-top: 68px;
 
   // 响应式：移动端优化背景
   @media (max-width: 768px) {
     background-attachment: scroll;
     padding: 16px 0;
   }
-}
 
-// 设置内容区域
-.setting-content {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
+  // 设置内容区域
+  .setting-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 20px 0 20px;
 
-// 页面标题
-.setting-header {
-  background: var(--el-bg-color-page);
-  backdrop-filter: blur(10px);
-  border-radius: 8px;
-  padding: 24px;
-  margin-bottom: 20px;
-  border: 1px solid var(--el-border-color);
-  box-shadow: 0 2px 12px var(--el-border-color-light);
+    // 页面标题
+    .setting-header {
+      background: var(--el-bg-color-page);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 20px;
+      border: 1px solid var(--el-border-color);
+      box-shadow: 0 2px 12px var(--el-border-color-light);
 
-  h2 {
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--el-text-color-primary);
-    margin: 0 0 8px 0;
-  }
+      h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--el-text-color-primary);
+        margin: 0 0 8px 0;
+      }
 
-  .header-desc {
-    font-size: 14px;
-    color: var(--el-text-color-regular);
-    margin: 0;
-  }
-}
-
-// 表单容器
-.setting-form-container {
-  background: var(--el-bg-color-page);
-  backdrop-filter: blur(10px);
-  border-radius: 8px;
-  padding: 32px;
-  border: 1px solid var(--el-border-color);
-  box-shadow: 0 2px 12px var(--el-border-color-light);
-
-  // 响应式：移动端调整内边距
-  @media (max-width: 768px) {
-    padding: 20px;
-  }
-}
-
-// 骨架屏容器
-.skeleton-container {
-  padding: 40px 20px;
-}
-
-// 用户信息容器
-.user-info-container {
-  // 信息项
-  .info-item {
-    display: flex;
-    padding: 24px 0;
-    border-bottom: 1px solid var(--el-border-color-lighter);
-
-    &:last-child {
-      border-bottom: none;
+      .header-desc {
+        font-size: 14px;
+        color: var(--el-text-color-regular);
+        margin: 0;
+      }
     }
 
-    // 响应式：移动端垂直布局
+    // 设置表单容器
+    .setting-form-container {
+      background: var(--el-bg-color-page);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      padding: 32px;
+      border: 1px solid var(--el-border-color);
+      box-shadow: 0 2px 12px var(--el-border-color-light);
+
+      // 响应式：移动端调整内边距
+      @media (max-width: 768px) {
+        padding: 20px;
+      }
+
+      // 骨架屏容器
+      .skeleton-container {
+        padding: 40px 20px;
+      }
+
+      // 用户信息容器
+      .user-info-container {
+        // 信息项
+        .info-item {
+          display: flex;
+          padding: 24px 0;
+          border-bottom: 1px solid var(--el-border-color-lighter);
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          // 响应式：移动端垂直布局
+          @media (max-width: 768px) {
+            flex-direction: column;
+            gap: 12px;
+          }
+
+          // 头像项特殊处理
+          &.avatar-item {
+            flex-direction: column;
+            gap: 0;
+
+            .item-label {
+              width: 100%;
+              margin-bottom: 16px;
+            }
+
+            .item-content {
+              width: 100%;
+            }
+          }
+
+          // 标签
+          .item-label {
+            width: 120px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--el-text-color-primary);
+            flex-shrink: 0;
+          }
+
+          // 内容
+          .item-content {
+            flex: 1;
+
+            // 显示模式
+            .display-mode {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 16px;
+
+              .display-value {
+                flex: 1;
+                font-size: 14px;
+                color: var(--el-text-color-regular);
+                line-height: 1.6;
+                word-break: break-word;
+              }
+            }
+
+            // 编辑模式
+            .edit-mode {
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+
+              .edit-actions {
+                display: flex;
+                gap: 8px;
+              }
+            }
+
+            // 头像上传容器
+            .avatar-upload-container {
+              display: flex;
+              align-items: flex-start;
+              gap: 24px;
+
+              // 响应式：移动端垂直布局
+              @media (max-width: 768px) {
+                flex-direction: column;
+                align-items: center;
+              }
+
+              // 头像上传器
+              .avatar-uploader {
+                :deep(.el-upload) {
+                  border: 2px dashed var(--el-border-color);
+                  border-radius: 50%;
+                  cursor: pointer;
+                  position: relative;
+                  overflow: hidden;
+                  transition: all 0.3s;
+                  width: 120px;
+                  height: 120px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+
+                  &:hover {
+                    border-color: var(--el-color-primary);
+                  }
+                }
+              }
+
+              // 头像预览
+              .avatar-preview {
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                object-fit: cover;
+                display: block;
+              }
+
+              // 头像占位符
+              .avatar-placeholder {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+                color: var(--el-text-color-placeholder);
+
+                .avatar-uploader-icon {
+                  font-size: 32px;
+                  margin-bottom: 8px;
+                }
+
+                .upload-text {
+                  font-size: 12px;
+                }
+              }
+
+              // 头像上传提示
+              .avatar-tips {
+                flex: 1;
+                color: var(--el-text-color-secondary);
+                font-size: 13px;
+                line-height: 1.6;
+
+                p {
+                  margin: 0 0 4px 0;
+
+                  &:last-child {
+                    margin-bottom: 0;
+                  }
+                }
+
+                // 响应式：移动端居中
+                @media (max-width: 768px) {
+                  text-align: center;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// 对话框样式优化
+:deep(.el-dialog) {
+  // 默认宽度
+  width: 500px;
+  // 垂直居中显示
+  margin: 15vh auto !important;
+
+  // 屏幕宽度小于768px时的宽度
+  @media screen and (max-width: 767px) {
+    width: 90% !important;
+    margin: 20vh auto !important;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  // 验证码面板样式
+  .check-code-panel {
+    display: flex;
+    width: 100%;
+    align-items: center;
+
+    // 移动端验证码面板优化
     @media (max-width: 768px) {
       flex-direction: column;
       gap: 12px;
-    }
 
-    // 头像项特殊处理
-    &.avatar-item {
-      flex-direction: column;
-      gap: 0;
-
-      .item-label {
+      .el-button {
         width: 100%;
-        margin-bottom: 16px;
-      }
-
-      .item-content {
-        width: 100%;
+        margin-left: 0 !important;
       }
     }
   }
 
-  // 标签
-  .item-label {
-    width: 120px;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--el-text-color-primary);
-    flex-shrink: 0;
-  }
+  // 成功消息样式
+  .success-message {
+    text-align: center;
+    padding: 20px 0;
 
-  // 内容
-  .item-content {
-    flex: 1;
-  }
-
-  // 显示模式
-  .display-mode {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-
-    .display-value {
-      flex: 1;
+    // 跳转提示
+    .jump-tip {
       font-size: 14px;
       color: var(--el-text-color-regular);
-      line-height: 1.6;
-      word-break: break-word;
+      margin: 0;
     }
   }
 
-  // 编辑模式
-  .edit-mode {
+  // 对话框底部按钮
+  .dialog-footer {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    justify-content: flex-end;
+    gap: 10px;
 
-    .edit-actions {
-      display: flex;
+    // 移动端按钮优化
+    @media (max-width: 768px) {
+      flex-direction: column;
       gap: 8px;
+
+      .el-button {
+        width: 100%;
+      }
     }
   }
 }
 
-// 头像上传容器
-.avatar-upload-container {
-  display: flex;
-  align-items: flex-start;
-  gap: 24px;
-
-  // 响应式：移动端垂直布局
+// 移动端步骤条优化
+:deep(.el-steps) {
   @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: center;
-  }
-}
-
-// 头像上传器
-.avatar-uploader {
-  :deep(.el-upload) {
-    border: 2px dashed var(--el-border-color);
-    border-radius: 50%;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s;
-    width: 120px;
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &:hover {
-      border-color: var(--el-color-primary);
+    .el-step__title {
+      font-size: 12px;
     }
   }
 }
 
-// 头像预览
-.avatar-preview {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-}
-
-// 头像占位符
-.avatar-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  color: var(--el-text-color-placeholder);
-
-  .avatar-uploader-icon {
-    font-size: 32px;
-    margin-bottom: 8px;
-  }
-
-  .upload-text {
-    font-size: 12px;
-  }
-}
-
-// 头像上传提示
-.avatar-tips {
-  flex: 1;
-  color: var(--el-text-color-secondary);
-  font-size: 13px;
-  line-height: 1.6;
-
-  p {
-    margin: 0 0 4px 0;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-
-  // 响应式：移动端居中
+// 移动端表单优化
+:deep(.el-form) {
   @media (max-width: 768px) {
-    text-align: center;
+    .el-form-item {
+      margin-bottom: 16px;
+    }
   }
 }
 
-// 修改密码对话框样式
-.check-code-panel {
-  display: flex;
-  width: 100%;
-  align-items: center;
-}
-
-// 成功消息样式
-.success-message {
-  text-align: center;
-  padding: 20px 0;
-
-  .jump-tip {
-    font-size: 14px;
-    color: var(--el-text-color-regular);
-    margin: 0;
+// 对话框按钮样式优化
+:deep(.dialog-footer) {
+  .el-button {
+    margin-left: 0 !important;
   }
-}
-
-// 对话框底部按钮
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
 }
 </style>
