@@ -311,7 +311,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 // 创作中心首页样式
 .creation-home {
-  background: #f5f7fa;
+  background: var(--el-bg-color-page);
   padding: 24px;
   overflow-y: auto;
   min-height: 100%;
@@ -336,7 +336,7 @@ onMounted(() => {
 
   // 欢迎横幅
   .welcome-banner {
-    background: #ffffff;
+    background: var(--el-bg-color);
     border-radius: 16px;
     padding: 48px 40px;
     margin-bottom: 32px;
@@ -360,7 +360,7 @@ onMounted(() => {
         .welcome-title {
           font-size: 36px;
           font-weight: 700;
-          color: #303133;
+          color: var(--el-text-color-primary);
           margin: 0 0 12px 0;
           letter-spacing: -0.5px;
           line-height: 1.2;
@@ -459,7 +459,7 @@ onMounted(() => {
     h2 {
       font-size: 28px;
       font-weight: 600;
-      color: #303133;
+      color: var(--el-text-color-primary);
       margin: 0 0 8px 0;
     }
 
@@ -483,7 +483,7 @@ onMounted(() => {
 
       // 统计卡片
       .stat-card {
-        background: #ffffff;
+        background: var(--el-bg-color);
         border-radius: 12px;
         padding: 24px;
         transition: all 0.3s ease;
@@ -642,7 +642,7 @@ onMounted(() => {
       margin: 0 auto;
 
       .skeleton-card {
-        background: #ffffff;
+        background: var(--el-bg-color);
         border-radius: 12px;
         padding: 24px;
         display: flex;
@@ -670,7 +670,7 @@ onMounted(() => {
       margin: 0 auto;
 
       .tool-card {
-        background: #ffffff;
+        background: var(--el-bg-color);
         border-radius: 12px;
         padding: 24px;
         cursor: pointer;
@@ -744,7 +744,7 @@ onMounted(() => {
       gap: 20px;
 
       .assistant-card {
-        background: #ffffff;
+        background: var(--el-bg-color);
         border-radius: 12px;
         padding: 24px;
         border: 1px solid var(--el-border-color-lighter);

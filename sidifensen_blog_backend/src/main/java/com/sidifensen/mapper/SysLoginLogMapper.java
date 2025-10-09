@@ -1,6 +1,6 @@
 package com.sidifensen.mapper;
 
-import com.sidifensen.domain.entity.Blacklist;
+import com.sidifensen.domain.entity.SysLoginLog;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -9,8 +9,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * </p>
  *
  * @author sidifensen
- * @since 2025-10-02
+ * @since 2025-10-06
  */
-public interface BlacklistMapper extends BaseMapper<Blacklist> {
+public interface SysLoginLogMapper extends BaseMapper<SysLoginLog> {
 
 }

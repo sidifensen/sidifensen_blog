@@ -3,17 +3,15 @@ package com.sidifensen.controller;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.result.Result;
-import com.sidifensen.domain.vo.SysUserDetailVo;
-import com.sidifensen.domain.vo.SysUserVo;
-import com.sidifensen.domain.vo.SysUserWithArticleCountVo;
-import com.sidifensen.domain.vo.SysUserWithCommentCountVo;
-import com.sidifensen.domain.vo.SysUserWithColumnCountVo;
+import com.sidifensen.domain.vo.*;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.SysUserService;
 import com.wf.captcha.ArithmeticCaptcha;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -25,6 +23,7 @@ import java.util.Map;
  * @since 2025-06-29
  */
 @RateLimit(30)
+@Validated
 @RestController
 @RequestMapping("/user")
 public class SysUserController {
@@ -156,7 +155,7 @@ public class SysUserController {
      */
     @RateLimit
     @GetMapping("/info/{userId}")
-    public Result getUserInfoById(@PathVariable Integer userId) {
+    public Result getUserInfoById(@PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
         SysUserVo sysUserVo = sysUserService.getUserInfoById(userId);
         return Result.success(sysUserVo);
     }
@@ -265,7 +264,7 @@ public class SysUserController {
      */
     @PreAuthorize("hasAuthority('system:user:delete')")
     @DeleteMapping("/admin/{userId}")
-    public Result deleteUser(@PathVariable Integer userId) {
+    public Result deleteUser(@PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
         sysUserService.deleteUser(userId);
         return Result.success();
     }
@@ -287,7 +286,7 @@ public class SysUserController {
      */
     @PreAuthorize("hasAuthority('system:user:info')")
     @GetMapping("/admin/{userId}")
-    public Result getUserInfo(@PathVariable Integer userId) {
+    public Result getUserInfo(@PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
         SysUserDetailVo sysUserDetailVo = sysUserService.getUserInfo(userId);
         return Result.success(sysUserDetailVo);
     }

@@ -1,7 +1,6 @@
 package com.sidifensen.controller;
 
 import com.sidifensen.aspect.RateLimit;
-import com.sidifensen.aspect.TimeConsuming;
 import com.sidifensen.domain.dto.CommentAuditDto;
 import com.sidifensen.domain.dto.CommentDto;
 import com.sidifensen.domain.dto.CommentFilterDto;
@@ -13,6 +12,7 @@ import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.UserCommentManageVo;
 import com.sidifensen.service.CommentService;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -40,7 +40,7 @@ public class CommentController {
      * @return 评论id
      */
     @PostMapping("/add")
-    public Result<Integer> addComment(@RequestBody CommentDto commentDto) {
+    public Result<Integer> addComment(@RequestBody @Valid CommentDto commentDto) {
         Integer commentId = commentService.addComment(commentDto);
         return Result.success(commentId);
     }
@@ -52,7 +52,7 @@ public class CommentController {
      * @return 操作结果
      */
     @DeleteMapping("/{commentId}")
-    public Result<Void> deleteComment(@PathVariable Integer commentId) {
+    public Result<Void> deleteComment(@PathVariable @NotNull(message = "评论ID不能为空") Integer commentId) {
         commentService.deleteComment(commentId);
         return Result.success();
     }
@@ -67,7 +67,7 @@ public class CommentController {
      */
     @RateLimit
     @GetMapping("/list")
-    public Result<PageVo<List<CommentVo>>> getCommentList(@NotNull Integer articleId,
+    public Result<PageVo<List<CommentVo>>> getCommentList(@RequestParam @NotNull(message = "文章ID不能为空") Integer articleId,
                                                           @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
                                                           @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<CommentVo>> commentList = commentService.getCommentList(articleId, pageNum, pageSize);
@@ -86,7 +86,7 @@ public class CommentController {
     @PostMapping("/manage/list")
     public Result<PageVo<List<UserCommentManageVo>>> getUserCommentManageList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
                                                                               @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
-                                                                              @RequestBody CommentFilterDto commentFilterDto) {
+                                                                              @RequestBody @Valid CommentFilterDto commentFilterDto) {
         PageVo<List<UserCommentManageVo>> commentList = commentService.getUserCommentManageList(pageNum, pageSize, commentFilterDto);
         return Result.success(commentList);
     }
@@ -101,7 +101,7 @@ public class CommentController {
      */
     @RateLimit
     @GetMapping("/reply/list")
-    public Result<PageVo<List<CommentVo>>> getReplyList(@NotNull Integer commentId,
+    public Result<PageVo<List<CommentVo>>> getReplyList(@RequestParam @NotNull(message = "评论ID不能为空") Integer commentId,
                                                         @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
                                                         @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<CommentVo>> replyList = commentService.getReplyList(commentId, pageNum, pageSize);
@@ -128,7 +128,7 @@ public class CommentController {
      */
     @PreAuthorize("hasAuthority('comment:user:list')")
     @GetMapping("/admin/user/{userId}")
-    public Result<List<AdminCommentVo>> adminGetCommentsByUserId(@PathVariable Integer userId) {
+    public Result<List<AdminCommentVo>> adminGetCommentsByUserId(@PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
         List<AdminCommentVo> commentList = commentService.adminGetCommentsByUserId(userId);
         return Result.success(commentList);
     }
@@ -141,7 +141,7 @@ public class CommentController {
      */
     @PreAuthorize("hasAuthority('comment:search')")
     @PostMapping("/admin/search")
-    public Result<List<AdminCommentVo>> adminSearchComment(@RequestBody CommentSearchDto commentSearchDto) {
+    public Result<List<AdminCommentVo>> adminSearchComment(@RequestBody @Valid CommentSearchDto commentSearchDto) {
         List<AdminCommentVo> commentList = commentService.adminSearchComment(commentSearchDto);
         return Result.success(commentList);
     }
@@ -154,7 +154,7 @@ public class CommentController {
      */
     @PreAuthorize("hasAuthority('comment:examine')")
     @PutMapping("/admin/examine")
-    public Result<Void> adminExamineComment(@RequestBody CommentAuditDto commentAuditDto) {
+    public Result<Void> adminExamineComment(@RequestBody @Valid CommentAuditDto commentAuditDto) {
         commentService.adminExamineComment(commentAuditDto);
         return Result.success();
     }
@@ -167,7 +167,7 @@ public class CommentController {
      */
     @PreAuthorize("hasAuthority('comment:examine')")
     @PutMapping("/admin/examine/batch")
-    public Result<Void> adminExamineBatchComment(@RequestBody List<CommentAuditDto> commentAuditDtos) {
+    public Result<Void> adminExamineBatchComment(@RequestBody @Valid List<CommentAuditDto> commentAuditDtos) {
         commentService.adminExamineBatchComment(commentAuditDtos);
         return Result.success();
     }
@@ -180,7 +180,7 @@ public class CommentController {
      */
     @PreAuthorize("hasAuthority('comment:delete')")
     @DeleteMapping("/admin/{commentId}")
-    public Result<Void> adminDeleteComment(@PathVariable Integer commentId) {
+    public Result<Void> adminDeleteComment(@PathVariable @NotNull(message = "评论ID不能为空") Integer commentId) {
         commentService.adminDeleteComment(commentId);
         return Result.success();
     }
@@ -193,7 +193,7 @@ public class CommentController {
      */
     @PreAuthorize("hasAuthority('comment:delete')")
     @DeleteMapping("/admin/delete/batch")
-    public Result<Void> adminDeleteBatchComment(@RequestBody List<Integer> commentIds) {
+    public Result<Void> adminDeleteBatchComment(@RequestBody @NotNull(message = "评论ID列表不能为空") List<Integer> commentIds) {
         commentService.adminDeleteBatchComment(commentIds);
         return Result.success();
     }

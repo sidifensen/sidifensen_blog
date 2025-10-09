@@ -3,6 +3,7 @@ package com.sidifensen.aspect;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.RedisConstants;
 import com.sidifensen.exception.RateLimitException;
+import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.utils.IpUtils;
 import com.sidifensen.utils.RedisUtils;
 import com.sidifensen.utils.SecurityUtils;
@@ -16,7 +17,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 黑名单拦截器
+ * 系统黑名单拦截器
  * 在请求进入Controller前检查用户是否在黑名单中
  * 比切面更早拦截，提高安全性和性能
  *
@@ -25,10 +26,13 @@ import java.util.concurrent.TimeUnit;
  */
 @Component
 @Slf4j
-public class BlacklistInterceptor implements HandlerInterceptor {
+public class SysBlacklistInterceptor implements HandlerInterceptor {
 
     @Resource
     private RedisUtils redisUtils;
+
+    @Resource
+    private RedisComponent redisComponent;
 
     @Resource
     private IpUtils ipUtils;
@@ -51,8 +55,11 @@ public class BlacklistInterceptor implements HandlerInterceptor {
             long ttl = redisUtils.getExpire(blacklistKey, TimeUnit.MINUTES);
             String violationType = (String) redisUtils.get(blacklistKey);
 
-            log.warn("黑名单用户尝试访问 - 用户标识: {}, 违规类型: {}, 剩余封禁时间: {}分钟",
-                    identifier, violationType, ttl);
+            // 日志限流：同一标识5分钟内只打印一次警告日志，避免日志刷屏
+            if (redisComponent.shouldLogBlacklist(identifier, 5L, TimeUnit.MINUTES)) {
+                log.warn("黑名单用户尝试访问 - 用户标识: {}, 违规类型: {}, 剩余封禁时间: {}分钟",
+                        identifier, violationType, ttl);
+            }
 
             throw new RateLimitException(BlogConstants.BlacklistedUser);
         }

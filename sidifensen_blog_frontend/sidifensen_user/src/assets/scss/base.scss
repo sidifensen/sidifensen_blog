@@ -1,3 +1,8 @@
+html {
+  // 为滚动条预留空间，防止页面切换时因滚动条出现/消失导致的抖动
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0px;
   padding: 0px;

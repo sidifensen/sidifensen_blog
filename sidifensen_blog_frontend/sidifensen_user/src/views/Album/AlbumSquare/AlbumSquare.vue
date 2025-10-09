@@ -99,7 +99,7 @@ onMounted(() => {
     .album-title {
       font-size: 18px !important;
       font-weight: 600;
-      background: linear-gradient(135deg, #3d92eb, #6f42c1);
+      background: linear-gradient(135deg, #0072ff, #00d4ff);
       -webkit-background-clip: text; // 背景被裁剪为文本前景色 非标准属性
       -webkit-text-fill-color: transparent; // 文字颜色透明
       background-clip: text; // 背景被裁剪为文本前景色 标准属性
@@ -113,9 +113,9 @@ onMounted(() => {
       font-weight: 600;
       border-radius: 30px;
       border: none;
-      background: linear-gradient(135deg, #3d92eb, #6f42c1);
+      background: linear-gradient(135deg, #0072ff, #00d4ff);
       color: white;
-      box-shadow: 0 4px 15px rgba(61, 146, 235, 0.3);
+      box-shadow: 0 4px 15px rgba(0, 114, 255, 0.3);
       transition: all 0.3s ease;
       overflow: hidden;
 
@@ -134,7 +134,7 @@ onMounted(() => {
 
       &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(61, 146, 235, 0.4);
+        box-shadow: 0 6px 20px rgba(0, 114, 255, 0.4);
 
         &::before {
           // 光效从左到右

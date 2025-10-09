@@ -4,19 +4,19 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.BlacklistAddDto;
 import com.sidifensen.domain.dto.BlacklistSearchDto;
 import com.sidifensen.domain.dto.BlacklistUpdateDto;
-import com.sidifensen.domain.entity.Blacklist;
+import com.sidifensen.domain.entity.SysBlacklist;
 
 import java.util.List;
 
 /**
  * <p>
- * 黑名单服务类
+ * 系统黑名单服务类
  * </p>
  *
  * @author sidifensen
  * @since 2025-10-02
  */
-public interface BlacklistService extends IService<Blacklist> {
+public interface SysBlacklistService extends IService<SysBlacklist> {
 
     /**
      * 添加黑名单记录到数据库
@@ -32,7 +32,7 @@ public interface BlacklistService extends IService<Blacklist> {
      *
      * @return 黑名单列表
      */
-    List<Blacklist> adminGetBlacklistList();
+    List<SysBlacklist> adminGetBlacklistList();
 
     /**
      * 管理员批量新增黑名单用户
@@ -47,7 +47,7 @@ public interface BlacklistService extends IService<Blacklist> {
      * @param blacklistSearchDto 搜索条件
      * @return 黑名单列表
      */
-    List<Blacklist> adminSearchBlacklist(BlacklistSearchDto blacklistSearchDto);
+    List<SysBlacklist> adminSearchBlacklist(BlacklistSearchDto blacklistSearchDto);
 
     /**
      * 管理员修改黑名单
@@ -63,3 +63,4 @@ public interface BlacklistService extends IService<Blacklist> {
      */
     void adminDeleteBlacklist(List<Integer> blacklistIds);
 }
+

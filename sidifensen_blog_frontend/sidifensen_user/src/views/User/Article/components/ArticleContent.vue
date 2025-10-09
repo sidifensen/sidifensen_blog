@@ -65,7 +65,9 @@
               <div class="article-tags">
                 <span>文章标签：</span>
                 <div class="tags-container">
-                  <el-tag v-for="tag in tagList" :key="tag" size="small" effect="light"> {{ tag }} </el-tag>
+                  <el-tag v-for="tag in tagList" :key="tag" size="small" effect="light" class="tag-clickable" @click="handleTagClick(tag)">
+                    {{ tag }}
+                  </el-tag>
                 </div>
               </div>
             </div>
@@ -75,7 +77,7 @@
               <div class="article-columns">
                 <span>文章专栏：</span>
                 <div class="columns-container">
-                  <el-tag v-for="column in article.columns || []" :key="column.id" type="success" size="small" effect="light">
+                  <el-tag v-for="column in article.columns || []" :key="column.id" type="success" size="small" effect="light" class="column-clickable" @click="handleColumnClick(column)">
                     {{ column.name }}
                   </el-tag>
                 </div>
@@ -131,11 +133,15 @@
 
 <script setup>
 import { computed, ref } from "vue";
+import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { Clock, View, Star, StarFilled, ChatLineRound, ArrowUp } from "@element-plus/icons-vue";
 import { toggleLike, isLiked } from "@/api/like";
 import CommentDrawer from "@/views/User/Article/components/CommentDrawer.vue";
 import FavoriteDialog from "./FavoriteDialog.vue";
+
+// 路由
+const router = useRouter();
 
 // Props 定义
 const props = defineProps({
@@ -254,6 +260,33 @@ const scrollToTop = () => {
   // 滚动到页面顶部
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
+
+// 点击标签跳转到搜索页面
+const handleTagClick = (tag) => {
+  if (!tag || !tag.trim()) return;
+
+  // 跳转到搜索页面，并传递标签参数
+  router.push({
+    path: "/search",
+    query: {
+      keyword: tag.trim(),
+      type: "tag",
+    },
+  });
+};
+
+// 点击专栏跳转到专栏详情页
+const handleColumnClick = (column) => {
+  if (!column?.id || !column?.userId) {
+    ElMessage.warning("专栏信息异常");
+    return;
+  }
+
+  // 跳转到专栏详情页
+  router.push({
+    path: `/user/${column.userId}/column/${column.id}`,
+  });
+};
 </script>
 
 <style lang="scss" scoped>
@@ -345,6 +378,17 @@ const scrollToTop = () => {
               display: flex;
               gap: 6px;
               flex-wrap: wrap;
+
+              // 可点击的标签样式
+              .tag-clickable {
+                cursor: pointer;
+                transition: all 0.3s ease;
+
+                &:hover {
+                  transform: translateY(-2px);
+                  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
+                }
+              }
             }
           }
         }
@@ -365,6 +409,17 @@ const scrollToTop = () => {
               display: flex;
               gap: 6px;
               flex-wrap: wrap;
+
+              // 可点击的专栏样式
+              .column-clickable {
+                cursor: pointer;
+                transition: all 0.3s ease;
+
+                &:hover {
+                  transform: translateY(-2px);
+                  box-shadow: 0 2px 8px rgba(103, 194, 58, 0.3);
+                }
+              }
             }
           }
         }
@@ -404,14 +459,14 @@ const scrollToTop = () => {
         overflow: auto;
         font-size: 14px;
         line-height: 1.45;
-        background-color: var(--el-fill-color-light);
+        background-color: var(--el-fill-color-light) !important;
         border-radius: 4px;
       }
 
       :deep(code) {
         padding: 0.2em 0.4em;
         font-size: 85%;
-        background-color: var(--el-fill-color-light);
+        background-color: var(--el-fill-color-light) !important;
         border-radius: 3px;
       }
 
@@ -419,7 +474,7 @@ const scrollToTop = () => {
       :deep(blockquote) {
         margin: 0;
         padding: 1px 1em;
-        background-color: var(--el-fill-color-light);
+        background-color: var(--el-fill-color-light) !important;
         color: var(--el-text-color-secondary);
         border-left: 0.25em solid var(--el-border-color);
         p {
@@ -449,7 +504,7 @@ const scrollToTop = () => {
       :deep(th) {
         padding: 5px;
         border: 1px solid var(--el-border-color);
-        background: var(--el-fill-color-light);
+        background: var(--el-fill-color-light) !important;
       }
 
       :deep(td) {

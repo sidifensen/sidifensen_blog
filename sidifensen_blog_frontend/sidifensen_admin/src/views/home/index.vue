@@ -121,36 +121,25 @@
           </el-card>
         </el-col>
 
-        <!-- 系统信息 -->
+        <!-- 网站访问趋势 -->
         <el-col :xs="24" :sm="24" :md="12" :lg="12">
           <el-card class="detail-card">
             <template #header>
               <div class="card-header">
-                <span class="card-header-title">系统信息</span>
-                <el-icon class="card-header-icon"><Monitor /></el-icon>
+                <span class="card-header-title">网站访问趋势</span>
+                <div class="card-header-actions">
+                  <el-select v-model="trendDays" @change="handleDaysChange" size="small" style="width: 100px">
+                    <el-option label="7天" :value="7" />
+                    <el-option label="14天" :value="14" />
+                    <el-option label="30天" :value="30" />
+                  </el-select>
+                  <el-icon class="card-header-icon"><TrendCharts /></el-icon>
+                </div>
               </div>
             </template>
-            <div class="system-info">
-              <div class="info-item">
-                <span class="info-label">系统版本</span>
-                <span class="info-value">v1.0.0</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">运行时间</span>
-                <span class="info-value">{{ runTime }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">当前用户</span>
-                <span class="info-value">{{ currentUser }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">登录时间</span>
-                <span class="info-value">{{ loginTime }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">系统状态</span>
-                <el-tag type="success" size="small">正常运行</el-tag>
-              </div>
+            <div class="trend-chart-container">
+              <el-skeleton v-if="trendLoading" :rows="6" animated />
+              <div v-else ref="chartRef" class="trend-chart"></div>
             </div>
           </el-card>
         </el-col>
@@ -229,13 +218,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/userStore";
-import { User, Document, ChatLineRound, View, PieChart, Monitor, Operation, Picture } from "@element-plus/icons-vue";
+import { User, Document, ChatLineRound, View, PieChart, Monitor, Operation, Picture, TrendCharts } from "@element-plus/icons-vue";
 import { getUserTotalCount } from "@/api/user";
 import { getArticleStatistics } from "@/api/article";
 import { getCommentStatistics } from "@/api/comment";
+import { getTodayVisitorCount, getVisitorTrend } from "@/api/visitorLog";
+import * as echarts from "echarts";
 
 // 路由和状态管理
 const router = useRouter();
@@ -247,22 +238,15 @@ const userCount = ref(0); // 用户总数
 const articleStatistics = ref(null); // 文章统计数据
 const commentCount = ref(0); // 评论总数
 const todayVisits = ref(0); // 今日访问量
-const runTime = ref(""); // 系统运行时间
+const trendDays = ref(7); // 访客趋势天数，默认7天
+const visitorTrend = ref([]); // 访客趋势数据
+const trendLoading = ref(false); // 趋势图加载状态
+const chartInstance = ref(null); // ECharts 图表实例
+const chartRef = ref(null); // 图表 DOM 引用
 
 // 计算属性
 const currentUser = computed(() => {
   return userStore.user?.nickname || "管理员";
-});
-
-const loginTime = computed(() => {
-  const now = new Date();
-  return now.toLocaleString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 });
 
 // 方法定义
@@ -272,7 +256,7 @@ const fetchAllStatistics = async () => {
     statisticsLoading.value = true;
 
     // 并行获取所有统计数据
-    const [userResult, articleResult, commentResult] = await Promise.allSettled([getUserTotalCount(), getArticleStatistics(), getCommentStatistics()]);
+    const [userResult, articleResult, commentResult, visitorResult] = await Promise.allSettled([getUserTotalCount(), getArticleStatistics(), getCommentStatistics(), getTodayVisitorCount()]);
 
     // 处理用户总数
     if (userResult.status === "fulfilled") {
@@ -295,8 +279,12 @@ const fetchAllStatistics = async () => {
       console.error("获取评论统计失败:", commentResult.reason);
     }
 
-    // 模拟今日访问数据（实际项目中应该从后端获取）
-    todayVisits.value = Math.floor(Math.random() * 1000) + 100;
+    // 处理今日访问量
+    if (visitorResult.status === "fulfilled") {
+      todayVisits.value = visitorResult.value.data.data || 0;
+    } else {
+      console.error("获取今日访问量失败:", visitorResult.reason);
+    }
   } catch (error) {
     ElMessage.error("获取统计数据失败");
     console.error("获取统计数据失败:", error);
@@ -311,15 +299,118 @@ const getPercentage = (value, total) => {
   return Math.round((value / total) * 100);
 };
 
-// 计算系统运行时间
-const calculateRunTime = () => {
-  // 假设系统启动时间（实际项目中应该从后端获取）
-  const startTime = new Date("2025-09-17");
-  const now = new Date();
-  const diff = now - startTime;
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  runTime.value = `${days}天${hours}小时`;
+// 获取访客趋势数据
+const fetchVisitorTrend = async () => {
+  try {
+    trendLoading.value = true;
+    const res = await getVisitorTrend(trendDays.value);
+    visitorTrend.value = res.data.data || [];
+  } catch (error) {
+    ElMessage.error("获取访客趋势失败");
+    console.error("获取访客趋势失败:", error);
+  } finally {
+    trendLoading.value = false;
+    // 等待 DOM 更新完成后再渲染图表
+    await nextTick();
+    renderChart();
+  }
+};
+
+// 渲染 ECharts 折线图
+const renderChart = () => {
+  if (!chartRef.value) return;
+
+  // 销毁旧实例，重新初始化（解决切换天数后白屏问题）
+  if (chartInstance.value) {
+    chartInstance.value.dispose();
+    chartInstance.value = null;
+  }
+
+  // 初始化图表实例
+  chartInstance.value = echarts.init(chartRef.value);
+
+  // 准备数据
+  const dates = visitorTrend.value.map((item) => item.date);
+  const counts = visitorTrend.value.map((item) => item.count);
+
+  // 配置图表选项
+  const option = {
+    tooltip: {
+      trigger: "axis",
+      axisPointer: {
+        type: "cross",
+        label: {
+          backgroundColor: "#6a7985",
+        },
+      },
+      formatter: "{b}<br/>访问量: {c}",
+    },
+    grid: {
+      left: "3%",
+      right: "4%",
+      bottom: "3%",
+      top: "10%",
+      containLabel: true,
+    },
+    xAxis: {
+      type: "category",
+      boundaryGap: false,
+      data: dates,
+      axisLabel: {
+        formatter: (value) => {
+          // 格式化日期显示（只显示月-日）
+          const date = new Date(value);
+          return `${date.getMonth() + 1}-${date.getDate()}`;
+        },
+      },
+    },
+    yAxis: {
+      type: "value",
+      name: "访问量",
+      minInterval: 1,
+    },
+    series: [
+      {
+        name: "访问量",
+        type: "line",
+        smooth: true,
+        areaStyle: {
+          color: {
+            type: "linear",
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              {
+                offset: 0,
+                color: "rgba(64, 158, 255, 0.3)",
+              },
+              {
+                offset: 1,
+                color: "rgba(64, 158, 255, 0.05)",
+              },
+            ],
+          },
+        },
+        lineStyle: {
+          color: "#409eff",
+          width: 2,
+        },
+        itemStyle: {
+          color: "#409eff",
+        },
+        data: counts,
+      },
+    ],
+  };
+
+  chartInstance.value.setOption(option);
+};
+
+// 切换天数
+const handleDaysChange = () => {
+  fetchVisitorTrend();
 };
 
 // 导航到指定页面
@@ -327,10 +418,29 @@ const navigateTo = (path) => {
   router.push(path);
 };
 
+// 窗口大小变化时重新调整图表大小
+const handleResize = () => {
+  chartInstance.value?.resize();
+};
+
 // 生命周期
 onMounted(() => {
   fetchAllStatistics();
-  calculateRunTime();
+  fetchVisitorTrend();
+
+  // 监听窗口大小变化
+  window.addEventListener("resize", handleResize);
+});
+
+onBeforeUnmount(() => {
+  // 销毁图表实例
+  if (chartInstance.value) {
+    chartInstance.value.dispose();
+    chartInstance.value = null;
+  }
+
+  // 移除窗口大小变化监听
+  window.removeEventListener("resize", handleResize);
 });
 </script>
 
@@ -390,7 +500,7 @@ onMounted(() => {
         margin-right: 20px;
 
         &.user-icon {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #5b86e5 0%, #36d1dc 100%);
           color: white;
         }
 
@@ -453,6 +563,12 @@ onMounted(() => {
         .card-header-icon {
           color: var(--el-color-primary);
         }
+
+        .card-header-actions {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
       }
 
       // 文章状态列表
@@ -504,29 +620,13 @@ onMounted(() => {
         }
       }
 
-      // 系统信息
-      .system-info {
-        .info-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 12px 0;
-          border-bottom: 1px solid var(--el-border-color-lighter);
+      // 访客趋势图表
+      .trend-chart-container {
+        min-height: 300px;
 
-          &:last-child {
-            border-bottom: none;
-          }
-
-          .info-label {
-            font-size: 14px;
-            color: var(--el-text-color-regular);
-          }
-
-          .info-value {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--el-text-color-primary);
-          }
+        .trend-chart {
+          width: 100%;
+          height: 300px;
         }
       }
     }
@@ -645,10 +745,10 @@ onMounted(() => {
 
         // 文章审核按钮样式
         &.article-btn {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
 
           &::before {
-            background: radial-gradient(circle, #a8b9ff 0%, transparent 70%);
+            background: radial-gradient(circle, #a78bfa 0%, transparent 70%);
           }
         }
 

@@ -48,6 +48,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="username" label="用户名称" />
+        <el-table-column prop="nickname" label="用户昵称" />
         <el-table-column prop="email" label="用户邮箱" width="170" />
         <el-table-column prop="status" label="状态">
           <template #default="{ row }">

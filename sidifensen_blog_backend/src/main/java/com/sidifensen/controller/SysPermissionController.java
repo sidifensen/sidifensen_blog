@@ -7,8 +7,10 @@ import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysPermissionVo;
 import com.sidifensen.service.SysPermissionService;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.List;
  * @since 2025-08-06
  */
 @RateLimit(30)
+@Validated
 @RestController
 @RequestMapping("/permission")
 public class SysPermissionController {
@@ -45,7 +48,7 @@ public class SysPermissionController {
      */
     @PreAuthorize("hasAuthority('system:permission:add')")
     @PostMapping("add")
-    public Result add(@RequestBody SysPermissionDto sysPermissionDto) {
+    public Result add(@RequestBody @Valid SysPermissionDto sysPermissionDto) {
         sysPermissionService.add(sysPermissionDto);
         return Result.success();
     }
@@ -58,7 +61,7 @@ public class SysPermissionController {
      */
     @PreAuthorize("hasAuthority('system:permission:update')")
     @PutMapping("update")
-    public Result update(@RequestBody SysPermissionDto sysPermissionDto) {
+    public Result update(@RequestBody @Valid SysPermissionDto sysPermissionDto) {
         sysPermissionService.update(sysPermissionDto);
         return Result.success();
     }
@@ -84,7 +87,7 @@ public class SysPermissionController {
      */
     @PreAuthorize("hasAuthority('system:permission:search')")
     @PostMapping("search")
-    public Result search(@RequestBody SysPermissionDto sysPermissionDto) {
+    public Result search(@RequestBody @Valid SysPermissionDto sysPermissionDto) {
         List<SysPermissionVo> sysPermissionVos = sysPermissionService.search(sysPermissionDto);
         return Result.success(sysPermissionVos);
     }

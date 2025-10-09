@@ -31,6 +31,7 @@ public class SecurityConstants {
             "/article/user/{userId:\\d+}/statistics",
             "/article/get/{articleId:\\d+}",
             "/article/incrReadCount/{articleId:\\d+}",
+            "/article/hot",
             
             // 评论相关
             "/comment/list",

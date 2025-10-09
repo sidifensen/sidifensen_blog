@@ -9,7 +9,9 @@ import com.sidifensen.service.SysMenuService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +21,7 @@ import java.util.List;
  * @since 2025-06-29
  */
 @RateLimit(30)
+@Validated
 @RestController
 @RequestMapping("/menu")
 public class SysMenuController {
@@ -97,7 +100,7 @@ public class SysMenuController {
      */
     @PreAuthorize("hasAuthority('system:menu:search')")
     @GetMapping("search")
-    public Result search(@RequestParam("name") String name) {
+    public Result search(@RequestParam("name") @NotNull(message = "菜单名称不能为空") String name) {
         List<SysMenuVo> menuList = sysMenuService.search(name);
         return Result.success(menuList);
     }

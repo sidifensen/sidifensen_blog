@@ -30,9 +30,13 @@
     <transition name="slide-fade">
       <div v-show="isMobileMenuVisible" class="mobile-menu-overlay" @click="closeMobileMenu">
         <el-menu class="mobile-menu" router @click.stop @select="closeMobileMenu" :default-openeds="['/creation/manage']">
+          <el-menu-item index="/" class="menu-item">
+            <el-icon><House /></el-icon>
+            <span class="menu-text">网站首页</span>
+          </el-menu-item>
           <el-menu-item index="/creation" class="menu-item">
             <el-icon><HomeFilled /></el-icon>
-            <span class="menu-text">首页</span>
+            <span class="menu-text">创作首页</span>
           </el-menu-item>
           <el-sub-menu index="/creation/manage" class="menu-item">
             <template #title>
@@ -56,7 +60,7 @@ import { ref, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { info } from "@/api/user";
-import { UserFilled } from "@element-plus/icons-vue";
+import { UserFilled, HomeFilled, Management, House } from "@element-plus/icons-vue";
 
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
@@ -253,6 +257,22 @@ onMounted(() => {
       width: 100%;
     }
   }
+}
+
+// 过渡动画
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.slide-fade-leave-to {
+  transform: translateX(-100%);
+  opacity: 0;
 }
 
 // 响应式设计 - 移动端

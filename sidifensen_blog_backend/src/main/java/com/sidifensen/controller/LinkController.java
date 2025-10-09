@@ -13,6 +13,7 @@ import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.List;
  * @since 2025-09-28
  */
 @RateLimit(30)
+@Validated
 @RestController
 @RequestMapping("/link")
 public class LinkController {
@@ -63,7 +65,7 @@ public class LinkController {
     @RateLimit
     @GetMapping("/list")
     public Result<PageVo<List<LinkVo>>> getLinkList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
-                                                     @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+                                                    @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<LinkVo>> linkList = linkService.getLinkList(pageNum, pageSize);
         return Result.success(linkList);
     }
@@ -88,7 +90,7 @@ public class LinkController {
      */
     @PreAuthorize("hasAuthority('link:search')")
     @PostMapping("/admin/search")
-    public Result<List<AdminLinkVo>> adminSearchLink(@RequestBody LinkSearchDto linkSearchDto) {
+    public Result<List<AdminLinkVo>> adminSearchLink(@RequestBody @Valid LinkSearchDto linkSearchDto) {
         List<AdminLinkVo> linkList = linkService.adminSearchLink(linkSearchDto);
         return Result.success(linkList);
     }
@@ -101,7 +103,7 @@ public class LinkController {
      */
     @PreAuthorize("hasAuthority('link:examine')")
     @PutMapping("/admin/examine")
-    public Result<Void> adminExamineLink(@RequestBody LinkAuditDto linkAuditDto) {
+    public Result<Void> adminExamineLink(@RequestBody @Valid LinkAuditDto linkAuditDto) {
         linkService.adminExamineLink(linkAuditDto);
         return Result.success();
     }
@@ -114,7 +116,7 @@ public class LinkController {
      */
     @PreAuthorize("hasAuthority('link:examine')")
     @PutMapping("/admin/examine/batch")
-    public Result<Void> adminExamineBatchLink(@RequestBody List<LinkAuditDto> linkAuditDtos) {
+    public Result<Void> adminExamineBatchLink(@RequestBody @Valid List<LinkAuditDto> linkAuditDtos) {
         linkService.adminExamineBatchLink(linkAuditDtos);
         return Result.success();
     }
@@ -127,7 +129,7 @@ public class LinkController {
      */
     @PreAuthorize("hasAuthority('link:delete')")
     @DeleteMapping("/admin/{linkId}")
-    public Result<Void> adminDeleteLink(@PathVariable Integer linkId) {
+    public Result<Void> adminDeleteLink(@PathVariable @NotNull(message = "友链ID不能为空") Integer linkId) {
         linkService.adminDeleteLink(linkId);
         return Result.success();
     }
@@ -140,7 +142,7 @@ public class LinkController {
      */
     @PreAuthorize("hasAuthority('link:delete')")
     @DeleteMapping("/admin/delete/batch")
-    public Result<Void> adminDeleteBatchLink(@RequestBody List<Integer> linkIds) {
+    public Result<Void> adminDeleteBatchLink(@RequestBody @NotNull(message = "友链ID列表不能为空") List<Integer> linkIds) {
         linkService.adminDeleteBatchLink(linkIds);
         return Result.success();
     }

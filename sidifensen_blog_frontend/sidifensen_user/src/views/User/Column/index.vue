@@ -288,6 +288,7 @@ const followLoading = ref(false); // 关注操作加载状态
 const columnInfo = ref(null); // 专栏信息
 const authorInfo = ref(null); // 作者信息
 const articleList = ref([]); // 文章列表
+const originalArticleList = ref([]); // 原始文章列表（用于恢复按顺序排序）
 const otherColumns = ref([]); // 作者其他专栏
 
 const sortType = ref("sort"); // 排序类型：sort-按顺序，time-按时间
@@ -330,7 +331,10 @@ const fetchColumnDetail = async () => {
     const columnId = route.params.columnId;
     const res = await getColumnDetail(columnId);
     columnInfo.value = res.data.data;
-    articleList.value = res.data.data.articles || [];
+    // 保存原始顺序的文章列表
+    originalArticleList.value = res.data.data.articles || [];
+    // 初始显示也是按原始顺序
+    articleList.value = [...originalArticleList.value];
   } catch (error) {
     ElMessage.error("获取专栏信息失败");
     console.error("获取专栏信息失败:", error);
@@ -376,10 +380,11 @@ const handleSortChange = (value) => {
   sortType.value = value;
   // 根据排序类型重新排序文章列表
   if (value === "time") {
-    articleList.value.sort((a, b) => new Date(b.createTime) - new Date(a.createTime));
+    // 按时间排序（降序）
+    articleList.value = [...articleList.value].sort((a, b) => new Date(b.createTime) - new Date(a.createTime));
   } else {
     // 按顺序排序（恢复原始顺序）
-    fetchColumnDetail();
+    articleList.value = [...originalArticleList.value];
   }
 };
 
@@ -487,10 +492,12 @@ watch(
       columnInfo.value = null;
       authorInfo.value = null;
       articleList.value = [];
+      originalArticleList.value = []; // 重置原始文章列表
       otherColumns.value = [];
       isDescExpanded.value = false;
       showBackToTop.value = false;
       isFollowed.value = false; // 重置关注状态
+      sortType.value = "sort"; // 重置排序类型为默认值
 
       // 获取数据
       fetchColumnDetail();
@@ -526,10 +533,10 @@ onUnmounted(() => {
 .column-page {
   background-color: var(--el-bg-color-page);
   min-height: 100vh;
-  padding: 20px 0;
 
   // 页面布局 - 三栏结构
   .page-layout {
+    margin-top: 20px;
     display: grid;
     grid-template-columns: 280px 1fr 280px;
     gap: 20px;

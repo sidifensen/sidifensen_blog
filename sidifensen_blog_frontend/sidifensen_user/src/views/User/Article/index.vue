@@ -87,7 +87,7 @@ onMounted(async () => {
   background-color: var(--el-bg-color-page);
   background: var(--el-bg-color-page);
   padding: 20px 0;
-  
+
   // 三栏布局容器
   .article-container {
     padding-top: 70px;
@@ -144,7 +144,7 @@ onMounted(async () => {
     padding: 0;
 
     .article-container {
-      padding: 0;
+      padding-top: 30px;
       gap: 10px;
       width: 100%;
       .main-content {

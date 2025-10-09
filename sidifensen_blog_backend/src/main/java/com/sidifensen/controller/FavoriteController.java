@@ -8,6 +8,7 @@ import com.sidifensen.domain.vo.ArticleVo;
 import com.sidifensen.domain.vo.FavoriteVo;
 import com.sidifensen.service.FavoriteService;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import org.springframework.validation.annotation.Validated;
@@ -35,7 +36,7 @@ public class FavoriteController {
      * @return 操作结果
      */
     @PostMapping("/add")
-    public Result<String> addFavorite(@RequestBody AddFavoriteDto addFavoriteDto) {
+    public Result<String> addFavorite(@RequestBody @Valid AddFavoriteDto addFavoriteDto) {
         favoriteService.addFavorite(addFavoriteDto);
         return Result.success();
     }
@@ -47,7 +48,7 @@ public class FavoriteController {
      * @return 操作结果
      */
     @PutMapping("/update")
-    public Result<String> updateFavorite(@RequestBody UpdateFavoriteDto updateFavoriteDto) {
+    public Result<String> updateFavorite(@RequestBody @Valid UpdateFavoriteDto updateFavoriteDto) {
         favoriteService.updateFavorite(updateFavoriteDto);
         return Result.success();
     }

@@ -132,3 +132,11 @@ export function getTagSuggestions(keyword) {
     method: "get",
   });
 }
+
+// 获取热门文章列表（近7天访问量排序）
+export function getHotArticleList(pageNum, pageSize) {
+  return request({
+    url: `/article/hot?pageNum=${pageNum}&pageSize=${pageSize}`,
+    method: "get",
+  });
+}

@@ -2,7 +2,6 @@ package com.sidifensen.controller;
 
 
 import com.sidifensen.aspect.RateLimit;
-import com.sidifensen.aspect.TimeConsuming;
 import com.sidifensen.domain.dto.AlbumDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.AlbumVo;
@@ -11,6 +10,7 @@ import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +20,7 @@ import java.util.List;
  * @since 2025-07-30
  */
 @RateLimit(30)
+@Validated
 @RestController
 @RequestMapping("/album")
 public class AlbumController {
@@ -71,7 +72,7 @@ public class AlbumController {
      * @return
      */
     @DeleteMapping("/delete/{albumId}")
-    public Result<String> deleteAlbum(@PathVariable("albumId") Integer albumId) {
+    public Result<String> deleteAlbum(@PathVariable("albumId") @NotNull(message = "相册ID不能为空") Integer albumId) {
         albumService.deleteAlbum(albumId);
         return Result.success();
     }
@@ -133,7 +134,7 @@ public class AlbumController {
         List<AlbumVo> albumVos = albumService.adminList();
         return Result.success(albumVos);
     }
-    
+
     /**
      * 管理端查看相册详情
      *
@@ -142,7 +143,7 @@ public class AlbumController {
      */
     @PreAuthorize("hasAuthority('album:detail')")
     @GetMapping("/admin/get/{albumId}")
-    public Result<Object> adminGetAlbum(@PathVariable("albumId") Integer albumId) {
+    public Result<Object> adminGetAlbum(@PathVariable("albumId") @NotNull(message = "相册ID不能为空") Integer albumId) {
         AlbumVo album = albumService.adminGetAlbum(albumId);
         return Result.success(album);
     }
@@ -178,7 +179,7 @@ public class AlbumController {
      */
     @PreAuthorize("hasAuthority('album:delete')")
     @DeleteMapping("/admin/delete/{albumId}")
-    public Result<String> adminDeleteAlbum(@PathVariable("albumId") Integer albumId) {
+    public Result<String> adminDeleteAlbum(@PathVariable("albumId") @NotNull(message = "相册ID不能为空") Integer albumId) {
         albumService.adminDeleteAlbum(albumId);
         return Result.success();
     }

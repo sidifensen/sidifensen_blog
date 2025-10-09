@@ -270,7 +270,7 @@
 import { ref, reactive, onMounted, computed } from "vue";
 import { Plus, User, Message, Edit, EditPen, Lock } from "@element-plus/icons-vue";
 import { info, updateUserInfo, sendEmail, verifyResetPassword, resetPassword, updateEmail, verifyResetEmail } from "@/api/user";
-import { uploadArticlePhoto } from "@/api/photo";
+import { uploadAvatar } from "@/api/photo";
 import { validateImageFile, compressImage } from "@/utils/PhotoUtils";
 import { useUserStore } from "@/stores/userStore";
 
@@ -405,9 +405,9 @@ const handleAvatarUpload = async (options) => {
     // 压缩图片
     const compressedFile = await compressImage(file, 0.8, 800, 800);
 
-    // 上传到服务器
+    // 上传到服务器（使用专门的头像上传接口）
     ElMessage.info("头像上传中...");
-    const response = await uploadArticlePhoto(compressedFile);
+    const response = await uploadAvatar(compressedFile);
 
     // 更新头像URL
     const newAvatar = response.data.data;

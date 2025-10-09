@@ -283,14 +283,14 @@ create table link
     name           varchar(20)  not null comment '网站名称',
     url            varchar(100) not null comment '网站地址',
     cover_url      varchar(100) not null comment '网站封面',
-    description    varchar(100)  not null comment '网站描述',
+    description    varchar(50)  not null comment '网站描述',
     examine_status tinyint      not null default 0 comment '审核状态 0-待审核 1-审核通过 2-审核未通过',
     email          varchar(255) not null comment '网站邮箱',
     create_time    datetime     not null comment '创建时间',
     is_deleted     tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除'
 );
 
-create table blacklist
+create table sys_blacklist
 (
     id          int primary key auto_increment comment '黑名单id',
     type        tinyint      not null comment '黑名单类型 0-用户 1-ip地址',
@@ -309,3 +309,27 @@ create table blacklist
     -- 按类型和拉黑时间查询黑名单列表
     index idx_type_ban_time (type, ban_time desc)
 );
+
+create table sys_loginlog
+(
+    id            int primary key auto_increment comment '登录日志id',
+    user_id       int comment '用户id',
+    username      varchar(20)  not null comment '用户名',
+    login_type    tinyint      default 0 comment '登录方式 0-用户名/邮箱 1-gitee 2-github 3-QQ',
+    login_ip      varchar(100) comment '登录ip',
+    login_address varchar(100) comment '登录地址',
+    status        tinyint      not null default 0 comment '登录状态 0-成功 1-失败',
+    login_time    datetime     not null comment '登录时间'
+);
+
+create table sys_visitorlog
+(
+    id         int primary key auto_increment comment '访客记录id',
+    user_id    int          default null comment '访客用户id',
+    ip         varchar(100) comment '访客ip',
+    address    varchar(100) comment '访客地址',
+    device     varchar(20)  comment '设备类型（PC/Mobile）',
+    visit_time datetime     not null comment '访问时间',
+    -- 时间索引（用于日期范围查询和访客统计）
+    index idx_visit_time (visit_time)
+)

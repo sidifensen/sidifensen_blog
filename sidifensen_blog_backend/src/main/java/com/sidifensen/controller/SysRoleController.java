@@ -9,7 +9,9 @@ import com.sidifensen.service.SysRoleService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +21,7 @@ import java.util.List;
  * @since 2025-06-29
  */
 @RateLimit(30)
+@Validated
 @RestController
 @RequestMapping("/role")
 public class SysRoleController {
@@ -85,7 +88,7 @@ public class SysRoleController {
      */
     @PreAuthorize("hasAuthority('system:role:search')")
     @GetMapping("search")
-    public Result search(@RequestParam("name") String name) {
+    public Result search(@RequestParam("name") @NotNull(message = "角色名称不能为空") String name) {
         List<SysRoleVo> roleList = sysRoleService.search(name);
         return Result.success(roleList);
     }

@@ -65,16 +65,30 @@ spring:
     virtual-host: /
     connection-timeout: 60000 # 连接超时时间(毫秒)
     requested-heartbeat: 60 # 心跳检测间隔(秒)
+    # 发布者确认机制（消息发送端确认）
+    publisher-confirm-type: correlated # 开启发布者确认（异步确认）
+    publisher-returns: true # 开启发布者返回（消息无法路由时返回）
+    template:
+      mandatory: true # 开启强制消息返回，如果消息无法路由到队列，则返回给生产者
     listener:
       simple:
+        # 消费者确认机制
+        acknowledge-mode: auto # 自动确认模式（成功消费后自动ACK，异常时自动NACK并重试）
+        # 消费者重试机制
         retry:
-          enabled: true #是否开启消费者重试
-          max-attempts: 5 #最大重试次数
-          initial-interval: 5000 #重试间隔时间（单位毫秒）
-          multiplier: 2 #间隔时间乘子，间隔时间*乘子=下一次的间隔时间，最大不能超过设置的最大间隔时间
-          max-interval: 30000 #重试最大时间间隔（单位毫秒）
-        concurrency: 5 # 监听器并发数
+          enabled: true # 是否开启消费者重试
+          max-attempts: 5 # 最大重试次数（包括首次消费）
+          initial-interval: 5000 # 首次重试间隔时间（单位毫秒）
+          multiplier: 2.0 # 间隔时间乘数（每次重试间隔时间 = 上次间隔时间 * multiplier）
+          max-interval: 30000 # 重试最大时间间隔（单位毫秒）
+          stateless: true # 无状态重试（true：重试时不保存消息状态，性能更好）
+        # 预取数量（消费者每次从队列预取的消息数量）
+        prefetch: 1 # 每次只取1条消息，确保消息均匀分配和及时重试
+        # 并发配置
+        concurrency: 5 # 监听器最小并发数
         max-concurrency: 10 # 监听器最大并发数
+        # 默认重新入队（配合死信队列使用）
+        default-requeue-rejected: false # 重试失败后不重新入队，而是发送到死信队列
 minio: # minio 配置
   endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
   publicPoint: ${MINIO_PUBLIC_POINT:http://localhost:9000}

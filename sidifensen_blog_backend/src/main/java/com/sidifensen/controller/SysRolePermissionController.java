@@ -7,7 +7,10 @@ import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysRoleVo;
 import com.sidifensen.service.SysRolePermissionService;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +20,7 @@ import java.util.List;
  * @since 2025-08-06
  */
 @RateLimit(30)
+@Validated
 @RestController
 @RequestMapping("/role-permission")
 public class SysRolePermissionController {
@@ -32,7 +36,7 @@ public class SysRolePermissionController {
      */
     @PreAuthorize("hasAuthority('system:role:permission:add')")
     @PostMapping("add")
-    public Result add(@RequestBody SysRolePermissionDto sysRolePermissionDto) {
+    public Result add(@RequestBody @Valid SysRolePermissionDto sysRolePermissionDto) {
         sysRolePermissionService.add(sysRolePermissionDto);
         return Result.success();
     }
@@ -45,7 +49,7 @@ public class SysRolePermissionController {
      */
     @PreAuthorize("hasAuthority('system:role:permission:get')")
     @GetMapping("{permissionId}")
-    public Result getRoles(@PathVariable Integer permissionId) {
+    public Result getRoles(@PathVariable @NotNull(message = "权限ID不能为空") Integer permissionId) {
         List<SysRoleVo> sysRoleVos = sysRolePermissionService.getRoles(permissionId);
         return Result.success(sysRoleVos);
     }
@@ -59,7 +63,7 @@ public class SysRolePermissionController {
      */
     @PreAuthorize("hasAuthority('system:role:permission:addBatch')")
     @PostMapping("addBatch")
-    public Result addBatch(@RequestBody SysRolePermissionDto sysRolePermissionDto) {
+    public Result addBatch(@RequestBody @Valid SysRolePermissionDto sysRolePermissionDto) {
         sysRolePermissionService.addBatch(sysRolePermissionDto);
         return Result.success();
     }

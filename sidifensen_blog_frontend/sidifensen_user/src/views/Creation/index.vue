@@ -13,8 +13,12 @@
               </div>
             </a>
           </div>
-          <el-menu-item index="/creation" class="menu-item">
+          <el-menu-item index="/" class="menu-item">
             <el-icon><House /></el-icon>
+            <span class="menu-text">网站首页</span>
+          </el-menu-item>
+          <el-menu-item index="/creation" class="menu-item">
+            <el-icon><HomeFilled /></el-icon>
             <span class="menu-text">首页</span>
           </el-menu-item>
           <el-sub-menu index="/creation/manage" class="menu-item">
@@ -38,6 +42,7 @@
 import CreationHeader from "@/components/CreationHeader.vue";
 import { ref, computed, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { Plus, House, Files, HomeFilled } from "@element-plus/icons-vue";
 
 const router = useRouter();
 const route = useRoute();

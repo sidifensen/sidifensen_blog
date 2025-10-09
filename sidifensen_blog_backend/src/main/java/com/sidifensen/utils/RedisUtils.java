@@ -1,7 +1,9 @@
 package com.sidifensen.utils;
 
 import jakarta.annotation.Resource;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -484,6 +486,163 @@ public class RedisUtils {
     public boolean lUpdateIndex(String key, long index, Object value) {
         redisTemplate.opsForList().set(key, index, value);
         return true;
+    }
+
+    // ==================== ZSet（有序集合）相关操作 ====================
+
+    /**
+     * 向有序集合添加一个成员，或者更新已存在成员的分数
+     *
+     * @param key   键
+     * @param value 值
+     * @param score 分数
+     * @return 是否成功
+     */
+    public Boolean zAdd(String key, String value, double score) {
+        return redisTemplate.opsForZSet().add(key, value, score);
+    }
+
+    /**
+     * 增加有序集合中成员的分数
+     *
+     * @param key   键
+     * @param value 值
+     * @param delta 增量
+     * @return 增加后的分数
+     */
+    public Double zIncrementScore(String key, String value, double delta) {
+        return redisTemplate.opsForZSet().incrementScore(key, value, delta);
+    }
+
+    /**
+     * 获取有序集合中指定成员的分数
+     *
+     * @param key   键
+     * @param value 值
+     * @return 分数
+     */
+    public Double zScore(String key, String value) {
+        return redisTemplate.opsForZSet().score(key, value);
+    }
+
+    /**
+     * 批量获取有序集合中多个成员的分数（使用Pipeline优化性能）
+     *
+     * @param key    键
+     * @param values 成员列表
+     * @return 分数列表（与values列表顺序对应）
+     */
+    public List<Object> zScoreBatch(String key, List<String> values) {
+        if (CollectionUtils.isEmpty(values)) {
+            return List.of();
+        }
+        
+        // 使用Pipeline批量执行命令，减少网络往返次数
+        // Pipeline会自动收集每个命令的返回值
+        return redisTemplate.executePipelined(new SessionCallback<Object>() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public Object execute(RedisOperations operations) {
+                for (String value : values) {
+                    operations.opsForZSet().score(key, value);
+                }
+                return null;
+            }
+        });
+    }
+
+    /**
+     * 获取有序集合指定范围内的成员（按分数从小到大）
+     *
+     * @param key   键
+     * @param start 开始位置
+     * @param end   结束位置
+     * @return 成员列表
+     */
+    public Set<Object> zRange(String key, long start, long end) {
+        return redisTemplate.opsForZSet().range(key, start, end);
+    }
+
+    /**
+     * 获取有序集合指定范围内的成员（按分数从大到小）
+     *
+     * @param key   键
+     * @param start 开始位置
+     * @param end   结束位置
+     * @return 成员列表
+     */
+    public Set<Object> zReverseRange(String key, long start, long end) {
+        return redisTemplate.opsForZSet().reverseRange(key, start, end);
+    }
+
+    /**
+     * 获取有序集合指定分数范围内的成员（按分数从小到大）
+     *
+     * @param key 键
+     * @param min 最小分数
+     * @param max 最大分数
+     * @return 成员列表
+     */
+    public Set<Object> zRangeByScore(String key, double min, double max) {
+        return redisTemplate.opsForZSet().rangeByScore(key, min, max);
+    }
+
+    /**
+     * 获取有序集合的成员数量
+     *
+     * @param key 键
+     * @return 成员数量
+     */
+    public Long zCard(String key) {
+        return redisTemplate.opsForZSet().zCard(key);
+    }
+
+    /**
+     * 移除有序集合中的一个或多个成员
+     *
+     * @param key    键
+     * @param values 值
+     * @return 成功移除的成员数量
+     */
+    public Long zRemove(String key, Object... values) {
+        return redisTemplate.opsForZSet().remove(key, values);
+    }
+
+    /**
+     * 移除有序集合中指定排名范围内的所有成员
+     *
+     * @param key   键
+     * @param start 开始位置
+     * @param end   结束位置
+     * @return 移除的成员数量
+     */
+    public Long zRemoveRange(String key, long start, long end) {
+        return redisTemplate.opsForZSet().removeRange(key, start, end);
+    }
+
+    /**
+     * 移除有序集合中指定分数范围内的所有成员
+     *
+     * @param key 键
+     * @param min 最小分数
+     * @param max 最大分数
+     * @return 移除的成员数量
+     */
+    public Long zRemoveRangeByScore(String key, double min, double max) {
+        return redisTemplate.opsForZSet().removeRangeByScore(key, min, max);
+    }
+
+    // ==================== Key 操作 ====================
+
+    /**
+     * 重命名key（原子操作）
+     * 如果newKey已存在，会被覆盖
+     *
+     * @param oldKey 原key
+     * @param newKey 新key
+     */
+    public void rename(String oldKey, String newKey) {
+        redisTemplate.rename(oldKey, newKey);
     }
 
 }

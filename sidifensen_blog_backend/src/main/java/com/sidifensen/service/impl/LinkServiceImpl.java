@@ -171,7 +171,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
             return convertToAdminLinkVo(linkList);
         } catch (Exception e) {
             log.error("管理员获取友链列表失败：{}", e.getMessage(), e);
-            throw new BlogException("获取友链列表失败");
+            throw new BlogException(BlogConstants.GetLinkListError);
         }
     }
 
@@ -194,7 +194,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
             return convertToAdminLinkVo(linkList);
         } catch (Exception e) {
             log.error("管理员搜索友链失败：{}", e.getMessage(), e);
-            throw new BlogException("搜索友链失败");
+            throw new BlogException(BlogConstants.SearchLinkError);
         }
     }
 
@@ -209,7 +209,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
             link.setExamineStatus(linkAuditDto.getExamineStatus());
             boolean updated = this.updateById(link);
             if (!updated) {
-                throw new BlogException("友链审核失败");
+                throw new BlogException(BlogConstants.LinkAuditError);
             }
 
             // 审核通过时发送邮件通知
@@ -219,7 +219,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
 
         } catch (Exception e) {
             log.error("管理员审核友链失败：{}", e.getMessage(), e);
-            throw new BlogException("友链审核失败");
+            throw new BlogException(BlogConstants.LinkAuditError);
         }
     }
 
@@ -228,7 +228,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
         try {
             // 参数校验
             if (ObjectUtil.isEmpty(linkAuditDtos) || linkAuditDtos.isEmpty()) {
-                throw new BlogException("友链审核信息列表不能为空");
+                throw new BlogException(BlogConstants.LinkAuditListRequired);
             }
 
             // 提取所有友链ID，验证友链是否存在
@@ -252,7 +252,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
             // 执行批量更新
             boolean updated = this.updateBatchById(linksToUpdate);
             if (!updated) {
-                throw new BlogException("批量审核友链失败");
+                throw new BlogException(BlogConstants.BatchAuditLinkError);
             }
 
             // 为审核通过的友链发送邮件通知
@@ -260,7 +260,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
 
         } catch (Exception e) {
             log.error("管理员批量审核友链失败：{}", e.getMessage(), e);
-            throw new BlogException("批量审核友链失败");
+            throw new BlogException(BlogConstants.BatchAuditLinkError);
         }
     }
 
@@ -295,18 +295,18 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
         try {
             // 参数校验
             if (ObjectUtil.isEmpty(linkIds) || linkIds.isEmpty()) {
-                throw new BlogException("友链ID列表不能为空");
+                throw new BlogException(BlogConstants.LinkIdsRequired);
             }
 
             // 批量删除
             boolean deleted = this.removeByIds(linkIds);
             if (!deleted) {
-                throw new BlogException("批量删除友链失败");
+                throw new BlogException(BlogConstants.BatchDeleteLinkError);
             }
 
         } catch (Exception e) {
             log.error("管理员批量删除友链失败：{}", e.getMessage(), e);
-            throw new BlogException("批量删除友链失败");
+            throw new BlogException(BlogConstants.BatchDeleteLinkError);
         }
     }
 

@@ -98,6 +98,9 @@ public class HistoryServiceImpl extends ServiceImpl<HistoryMapper, History> impl
             // 4. 添加到Redis缓存（登录用户和访客都需要）
             redisComponent.recordArticleRead(articleId, identifier);
 
+            // 5. 增加文章热度（用于热门文章统计）
+            redisComponent.incrementArticleHotScore(articleId);
+
             return true;
 
         } catch (Exception e) {

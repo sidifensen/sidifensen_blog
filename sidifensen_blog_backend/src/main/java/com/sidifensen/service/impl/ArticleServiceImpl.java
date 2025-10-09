@@ -1122,4 +1122,90 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return creationStatistics;
     }
 
+    @Override
+    public PageVo<List<HotArticleVo>> getHotArticleList(Integer pageNum, Integer pageSize) {
+        try {
+            // 1. 从Redis获取热门文章ID列表（按访问量倒序）
+            // 计算要获取的数据范围，确保有足够的文章用于分页
+            int totalNeeded = pageNum * pageSize;
+            List<Integer> hotArticleIds = redisComponent.getHotArticles(totalNeeded);
+
+            // 如果Redis中没有数据，返回空结果
+            if (ObjectUtil.isEmpty(hotArticleIds)) {
+                log.error("Redis中暂无热门文章数据");
+                return new PageVo<>(new ArrayList<>(), 0L);
+            }
+
+            // 2. 计算分页范围
+            int startIndex = (pageNum - 1) * pageSize;
+            int endIndex = Math.min(startIndex + pageSize, hotArticleIds.size());
+
+            // 如果起始索引超出范围，返回空结果
+            if (startIndex >= hotArticleIds.size()) {
+                return new PageVo<>(new ArrayList<>(), (long) hotArticleIds.size());
+            }
+
+            // 3. 获取当前页的文章ID列表
+            List<Integer> currentPageIds = hotArticleIds.subList(startIndex, endIndex);
+
+            // 4. 根据文章ID列表查询热门文章核心信息（使用 MyBatis-Plus，精简查询，只查必要字段）
+            List<Article> articles = articleMapper.selectList(
+                    new LambdaQueryWrapper<Article>()
+                            // 只查询需要的字段，避免查询大字段（如 content），提升性能
+                            .select(Article::getId, Article::getUserId, Article::getTitle, Article::getReadCount)
+                            // 根据ID列表查询
+                            .in(Article::getId, currentPageIds)
+                            // 审核状态为通过
+                            .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
+                            // 编辑状态为已发布
+                            .eq(Article::getEditStatus, 0)
+                            // 可见范围为公开
+                            .eq(Article::getVisibleRange, 0)
+                            // 未删除
+                            .eq(Article::getIsDeleted, 0)
+            );
+
+            // 如果查询结果为空，返回空结果
+            if (ObjectUtil.isEmpty(articles)) {
+                return new PageVo<>(new ArrayList<>(), (long) hotArticleIds.size());
+            }
+
+            // 5. 转换为Map，方便按ID查找
+            Map<Integer, Article> articleDataMap = articles.stream()
+                    .collect(Collectors.toMap(Article::getId, article -> article));
+
+            // 6. 批量获取热度分数（优化性能：避免循环中多次查询Redis）
+            Map<Integer, Double> hotScoreMap = redisComponent.batchGetArticleHotScore(currentPageIds);
+
+            // 7. 按照Redis中的顺序组装结果（保持热度排序）
+            List<HotArticleVo> hotArticleVos = new ArrayList<>();
+            for (Integer articleId : currentPageIds) {
+                Article article = articleDataMap.get(articleId);
+                if (article == null) {
+                    continue;
+                }
+
+                // 创建 HotArticleVo（只包含核心字段：ID、用户ID、标题、阅读量、热度）
+                HotArticleVo hotArticleVo = new HotArticleVo();
+                hotArticleVo.setId(article.getId());
+                hotArticleVo.setUserId(article.getUserId());
+                hotArticleVo.setTitle(article.getTitle());
+                hotArticleVo.setReadCount(article.getReadCount());
+
+                // 添加热度分数（从批量获取的Map中取值，如果没有则设为0）
+                Double hotScore = hotScoreMap.get(articleId);
+                hotArticleVo.setHotScore(hotScore != null ? hotScore.longValue() : 0L);
+
+                hotArticleVos.add(hotArticleVo);
+            }
+
+            // 8. 返回分页结果
+            return new PageVo<>(hotArticleVos, (long) hotArticleIds.size());
+
+        } catch (Exception e) {
+            log.error("获取热门文章列表失败: {}", e.getMessage(), e);
+            throw new BlogException(BlogConstants.GetHotArticleListError);
+        }
+    }
+
 }

@@ -30,9 +30,6 @@ public class FileUploadUtils {
     @Value("${minio.bucketName}")
     private String bucketName;
 
-    @Value("${minio.endpoint}")
-    private String endpoint;
-
     @Value("${minio.publicPoint}")
     private String publicPoint;
 
@@ -259,8 +256,8 @@ public class FileUploadUtils {
                 item = result.get();
                 fileNames.add(item.objectName());
             } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException
-                    | InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException
-                    | XmlParserException e) {
+                     | InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException
+                     | XmlParserException e) {
                 log.error("获取文件出现错误", e);
             }
         });
@@ -360,8 +357,8 @@ public class FileUploadUtils {
             try {
                 item = result.get();
             } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException
-                    | InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException
-                    | XmlParserException e) {
+                     | InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException
+                     | XmlParserException e) {
                 log.error("判断文件是否存在出现错误,{}, 文件名：{}, 目录：{}", e.getMessage(), fileName, dir);
                 throw new FileUploadException("文件不存在");
             }

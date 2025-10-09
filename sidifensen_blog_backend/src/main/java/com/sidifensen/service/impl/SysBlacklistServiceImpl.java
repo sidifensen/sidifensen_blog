@@ -7,11 +7,11 @@ import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.BlacklistAddDto;
 import com.sidifensen.domain.dto.BlacklistSearchDto;
 import com.sidifensen.domain.dto.BlacklistUpdateDto;
-import com.sidifensen.domain.entity.Blacklist;
+import com.sidifensen.domain.entity.SysBlacklist;
 import com.sidifensen.domain.enums.BlacklistTypeEnum;
 import com.sidifensen.exception.BlogException;
-import com.sidifensen.mapper.BlacklistMapper;
-import com.sidifensen.service.BlacklistService;
+import com.sidifensen.mapper.SysBlacklistMapper;
+import com.sidifensen.service.SysBlacklistService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * <p>
- * 黑名单服务实现类
+ * 系统黑名单服务实现类
  * </p>
  *
  * @author sidifensen
@@ -30,12 +30,12 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class BlacklistServiceImpl extends ServiceImpl<BlacklistMapper, Blacklist> implements BlacklistService {
+public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, SysBlacklist> implements SysBlacklistService {
 
     @Override
     public void addToBlacklist(String identifier, String reason, long banDurationSeconds) {
         try {
-            Blacklist blacklist = new Blacklist();
+            SysBlacklist blacklist = new SysBlacklist();
 
             // 解析用户标识，判断是用户类型还是IP类型
             if (identifier.startsWith("user:")) {
@@ -70,12 +70,12 @@ public class BlacklistServiceImpl extends ServiceImpl<BlacklistMapper, Blacklist
     }
 
     @Override
-    public List<Blacklist> adminGetBlacklistList() {
+    public List<SysBlacklist> adminGetBlacklistList() {
         try {
             // 获取所有黑名单记录，按封禁时间倒序
-            LambdaQueryWrapper<Blacklist> queryWrapper = new LambdaQueryWrapper<Blacklist>()
-                    .eq(Blacklist::getIsDeleted, 0)
-                    .orderByDesc(Blacklist::getBanTime);
+            LambdaQueryWrapper<SysBlacklist> queryWrapper = new LambdaQueryWrapper<SysBlacklist>()
+                    .eq(SysBlacklist::getIsDeleted, 0)
+                    .orderByDesc(SysBlacklist::getBanTime);
 
             return list(queryWrapper);
         } catch (Exception e) {
@@ -100,10 +100,10 @@ public class BlacklistServiceImpl extends ServiceImpl<BlacklistMapper, Blacklist
 
             // 批量创建黑名单记录
             Date now = new Date();
-            List<Blacklist> blacklistList = new ArrayList<>();
+            List<SysBlacklist> blacklistList = new ArrayList<>();
 
             for (Integer userId : blacklistAddDto.getUserIds()) {
-                Blacklist blacklist = new Blacklist();
+                SysBlacklist blacklist = new SysBlacklist();
                 blacklist.setType(BlacklistTypeEnum.USER.getCode()); // 用户类型
                 blacklist.setUserId(userId);
                 blacklist.setReason(blacklistAddDto.getReason());
@@ -124,31 +124,31 @@ public class BlacklistServiceImpl extends ServiceImpl<BlacklistMapper, Blacklist
     }
 
     @Override
-    public List<Blacklist> adminSearchBlacklist(BlacklistSearchDto blacklistSearchDto) {
+    public List<SysBlacklist> adminSearchBlacklist(BlacklistSearchDto blacklistSearchDto) {
         try {
             // 构建查询条件
-            LambdaQueryWrapper<Blacklist> queryWrapper = new LambdaQueryWrapper<Blacklist>()
-                    .eq(Blacklist::getIsDeleted, 0)
-                    .orderByDesc(Blacklist::getCreateTime);
+            LambdaQueryWrapper<SysBlacklist> queryWrapper = new LambdaQueryWrapper<SysBlacklist>()
+                    .eq(SysBlacklist::getIsDeleted, 0)
+                    .orderByDesc(SysBlacklist::getCreateTime);
 
             // 如果传了用户id，设置黑名单类型为用户
             if (blacklistSearchDto.getUserId() != null && blacklistSearchDto.getUserId() > 0) {
-                queryWrapper.eq(Blacklist::getType, BlacklistTypeEnum.USER.getCode())
-                        .eq(Blacklist::getUserId, blacklistSearchDto.getUserId());
+                queryWrapper.eq(SysBlacklist::getType, BlacklistTypeEnum.USER.getCode())
+                        .eq(SysBlacklist::getUserId, blacklistSearchDto.getUserId());
             } else {
                 // 根据黑名单类型筛选
-                queryWrapper.eq(blacklistSearchDto.getType() != null, Blacklist::getType, blacklistSearchDto.getType());
+                queryWrapper.eq(blacklistSearchDto.getType() != null, SysBlacklist::getType, blacklistSearchDto.getType());
             }
 
             // 根据拉黑时间范围筛选
-            queryWrapper.ge(blacklistSearchDto.getBanTimeStart() != null, Blacklist::getBanTime, blacklistSearchDto.getBanTimeStart())
-                    .le(blacklistSearchDto.getBanTimeEnd() != null, Blacklist::getBanTime, blacklistSearchDto.getBanTimeEnd());
+            queryWrapper.ge(blacklistSearchDto.getBanTimeStart() != null, SysBlacklist::getBanTime, blacklistSearchDto.getBanTimeStart())
+                    .le(blacklistSearchDto.getBanTimeEnd() != null, SysBlacklist::getBanTime, blacklistSearchDto.getBanTimeEnd());
 
             // 根据到期时间范围筛选
-            queryWrapper.ge(blacklistSearchDto.getExpireTimeStart() != null, Blacklist::getExpireTime, blacklistSearchDto.getExpireTimeStart())
-                    .le(blacklistSearchDto.getExpireTimeEnd() != null, Blacklist::getExpireTime, blacklistSearchDto.getExpireTimeEnd());
+            queryWrapper.ge(blacklistSearchDto.getExpireTimeStart() != null, SysBlacklist::getExpireTime, blacklistSearchDto.getExpireTimeStart())
+                    .le(blacklistSearchDto.getExpireTimeEnd() != null, SysBlacklist::getExpireTime, blacklistSearchDto.getExpireTimeEnd());
 
-            List<Blacklist> blacklistList = list(queryWrapper);
+            List<SysBlacklist> blacklistList = list(queryWrapper);
             return blacklistList;
         } catch (Exception e) {
             log.error("管理员搜索黑名单失败", e);
@@ -165,7 +165,7 @@ public class BlacklistServiceImpl extends ServiceImpl<BlacklistMapper, Blacklist
             }
 
             // 检查黑名单记录是否存在
-            Blacklist blacklist = this.getById(blacklistUpdateDto.getId());
+            SysBlacklist blacklist = this.getById(blacklistUpdateDto.getId());
             if (ObjectUtil.isEmpty(blacklist)) {
                 throw new BlogException(BlogConstants.NotFoundBlacklist);
             }
@@ -212,3 +212,4 @@ public class BlacklistServiceImpl extends ServiceImpl<BlacklistMapper, Blacklist
         }
     }
 }
+

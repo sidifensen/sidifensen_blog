@@ -446,7 +446,7 @@ onUnmounted(() => {
 // 搜索页面容器
 .search-container {
   min-height: 100vh;
-  padding-top: 20px;
+  padding-top: 50px;
   background: var(--el-bg-color-page);
 
   // 搜索区域
@@ -478,15 +478,15 @@ onUnmounted(() => {
             flex: 1;
 
             :deep(.el-input__wrapper) {
-              background: rgba(255, 255, 255, 0.95);
+              background: var(--el-bg-color);
               box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
               border: 2px solid transparent;
               transition: all 0.3s ease;
 
               &:hover,
               &:focus {
-                background: white;
-                border-color: #409eff;
+                background: var(--el-bg-color);
+                border-color: var(--el-color-primary);
                 box-shadow: 0 8px 32px rgba(64, 158, 255, 0.2);
               }
             }
@@ -625,7 +625,7 @@ onUnmounted(() => {
           align-items: center;
           gap: 12px;
           padding: 12px 24px;
-          background: rgba(255, 255, 255, 0.9);
+          background: var(--el-bg-color);
           border-radius: 50px;
           box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 
@@ -680,7 +680,7 @@ onUnmounted(() => {
       .initial-state {
         text-align: center;
         padding: 80px 20px;
-        background: white;
+        background: var(--el-color-primary-light-9);
         border-radius: 16px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 
@@ -709,7 +709,7 @@ onUnmounted(() => {
 
       // 加载容器
       .loading-container {
-        background: white;
+        background: var(--el-bg-color);
         border-radius: 16px;
         padding: 30px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -736,7 +736,7 @@ onUnmounted(() => {
 
       // 空状态
       .empty-state {
-        background: white;
+        background: var(--el-bg-color);
         border-radius: 16px;
         padding: 60px 20px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -756,7 +756,7 @@ onUnmounted(() => {
 
       // 文章列表
       .article-list {
-        background: white;
+        background: var(--el-bg-color);
         border-radius: 16px;
         padding: 30px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -769,10 +769,6 @@ onUnmounted(() => {
           border-bottom: 1px solid var(--el-border-color-lighter);
           cursor: pointer;
           transition: all 0.3s ease;
-
-          &:first-child {
-            padding-top: 0;
-          }
 
           &:last-child {
             border-bottom: none;

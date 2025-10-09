@@ -73,6 +73,9 @@
           <!-- 友链网格视图 -->
           <div v-else class="links-grid">
             <div v-for="link in linkList" :key="link.id" class="link-card" @click="visitLink(link)">
+              <!-- 卡片背景装饰 -->
+              <div class="card-bg-decoration"></div>
+
               <!-- 网站封面 -->
               <div class="link-cover">
                 <el-image :src="link.coverUrl || ''" fit="cover" class="cover-image" :alt="link.name">
@@ -90,30 +93,40 @@
 
                 <!-- 悬浮操作 -->
                 <div class="cover-overlay">
-                  <el-button type="primary" size="small" circle>
-                    <el-icon><View /></el-icon>
-                  </el-button>
+                  <div class="overlay-content">
+                    <el-icon class="visit-icon"><View /></el-icon>
+                    <span class="visit-text">访问网站</span>
+                  </div>
+                </div>
+
+                <!-- 我的友链标识 -->
+                <div v-if="isCurrentUserLink(link)" class="my-link-badge">
+                  <el-icon><User /></el-icon>
+                  <span>我的</span>
                 </div>
               </div>
 
               <!-- 网站信息 -->
               <div class="link-info">
                 <h3 class="link-name" :title="link.name">{{ link.name }}</h3>
+
                 <p class="link-description" :title="link.description">
                   {{ link.description }}
                 </p>
 
                 <!-- 网站地址 -->
-                <div class="link-url">
-                  <el-icon><Link /></el-icon>
-                  <span>{{ formatUrl(link.url) }}</span>
-                </div>
+                <div class="link-footer">
+                  <div class="link-url">
+                    <el-icon class="url-icon"><Link /></el-icon>
+                    <span>{{ formatUrl(link.url) }}</span>
+                  </div>
 
-                <!-- 删除按钮 - 仅当前用户的友链显示 -->
-                <div v-if="isCurrentUserLink(link)" class="delete-action" @click.stop>
-                  <el-button type="danger" size="small" circle class="delete-btn" @click="handleDeleteLink(link)" :loading="deletingLinkId === link.id">
-                    <el-icon><Delete /></el-icon>
-                  </el-button>
+                  <!-- 删除按钮 - 仅当前用户的友链显示 -->
+                  <div v-if="isCurrentUserLink(link)" class="delete-action" @click.stop>
+                    <el-button type="danger" size="small" circle class="delete-btn" @click="handleDeleteLink(link)" :loading="deletingLinkId === link.id">
+                      <el-icon><Delete /></el-icon>
+                    </el-button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -144,7 +157,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { useRouter } from "vue-router";
-import { Link, Plus, View, Picture, Loading, DocumentRemove, Delete } from "@element-plus/icons-vue";
+import { Link, Plus, View, Picture, Loading, DocumentRemove, Delete, User } from "@element-plus/icons-vue";
 import { getLinkList, deleteLink } from "@/api/link";
 import LinkApplyDialog from "@/views/Link/LinkApplyDialog.vue";
 import { useUserStore } from "@/stores/userStore";
@@ -316,9 +329,6 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
 });
-
-// 设置页面标题
-document.title = "友情链接";
 </script>
 
 <style lang="scss" scoped>
@@ -478,38 +488,73 @@ document.title = "友情链接";
     // 网格视图
     .links-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 28px;
       margin-bottom: 40px;
 
       .link-card {
-        background: white;
-        border-radius: 12px;
+        background: var(--el-bg-color-page);
+        border-radius: 16px;
         overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         position: relative;
 
         &:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+          transform: translateY(-8px) scale(1.02);
+          box-shadow: 0 12px 32px rgba(64, 158, 255, 0.15), 0 8px 16px rgba(0, 0, 0, 0.1);
+          border-color: rgba(64, 158, 255, 0.3);
+
+          .card-bg-decoration {
+            opacity: 1;
+          }
 
           .cover-overlay {
             opacity: 1;
+            backdrop-filter: blur(8px);
+
+            .overlay-content {
+              transform: translateY(0);
+            }
           }
+
+          .cover-image {
+            transform: scale(1.08);
+          }
+
+          .link-name {
+            color: var(--el-color-primary);
+          }
+        }
+
+        // 卡片背景装饰
+        .card-bg-decoration {
+          position: absolute;
+          top: -50%;
+          right: -50%;
+          width: 200%;
+          height: 200%;
+          background: linear-gradient(135deg, rgba(64, 158, 255, 0.05) 0%, transparent 50%);
+          opacity: 0;
+          transition: opacity 0.4s ease;
+          pointer-events: none;
+          z-index: 0;
         }
 
         // 网站封面
         .link-cover {
           position: relative;
-          height: 180px;
+          height: 240px;
           overflow: hidden;
+          background: linear-gradient(135deg, var(--el-bg-color-page) 0%, var(--el-fill-color-light) 100%);
 
           .cover-image {
             width: 100%;
             height: 100%;
-            transition: transform 0.3s ease;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
           }
 
           .cover-overlay {
@@ -518,15 +563,60 @@ document.title = "友情链接";
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: linear-gradient(135deg, rgba(64, 158, 255, 0.9) 0%, rgba(103, 194, 255, 0.8) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: all 0.4s ease;
+            z-index: 2;
 
-            .el-button {
-              transform: scale(1.2);
+            .overlay-content {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 8px;
+              color: white;
+              transform: translateY(10px);
+              transition: transform 0.4s ease;
+
+              .visit-icon {
+                font-size: 32px;
+                animation: bounce 1s ease-in-out infinite;
+              }
+
+              .visit-text {
+                font-size: 14px;
+                font-weight: 500;
+                letter-spacing: 0.5px;
+              }
+            }
+          }
+
+          // 我的友链标识
+          .my-link-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, rgba(103, 194, 255, 0.95) 0%, rgba(64, 158, 255, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+            z-index: 3;
+
+            .el-icon {
+              font-size: 14px;
+            }
+
+            span {
+              letter-spacing: 0.5px;
             }
           }
 
@@ -536,35 +626,38 @@ document.title = "友情链接";
             align-items: center;
             justify-content: center;
             height: 100%;
-            background: var(--el-bg-color-page);
+            background: linear-gradient(135deg, var(--el-fill-color-lighter) 0%, var(--el-fill-color-light) 100%);
             color: var(--el-text-color-placeholder);
 
             .el-icon {
-              font-size: 32px;
+              font-size: 40px;
             }
           }
         }
 
         // 网站信息
         .link-info {
-          padding: 20px;
+          padding: 13px;
+          position: relative;
+          z-index: 1;
 
           .link-name {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 600;
-            margin: 0 0 8px 0;
+            margin: 0;
             color: var(--el-text-color-primary);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            transition: color 0.3s ease;
           }
 
           .link-description {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--el-text-color-regular);
             line-height: 1.5;
-            margin: 0 0 12px 0;
-            height: 42px;
+            margin: 0;
+            height: 39px;
             overflow: hidden;
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -572,55 +665,68 @@ document.title = "友情链接";
             -webkit-box-orient: vertical;
           }
 
-          .link-url {
+          .link-footer {
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            color: var(--el-text-color-secondary);
+            justify-content: space-between;
 
-            .el-icon {
-              font-size: 14px;
-              color: var(--el-color-primary);
-            }
-
-            span {
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            }
-          }
-
-          // 删除按钮区域
-          .delete-action {
-            position: absolute;
-            right: 12px;
-            bottom: 12px;
-            z-index: 10;
-
-            .delete-btn {
-              width: 32px;
-              height: 32px;
-              background: rgba(245, 108, 108, 0.9);
-              border: none;
-              backdrop-filter: blur(4px);
+            .link-url {
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              font-size: 12px;
+              color: var(--el-text-color-secondary);
+              flex: 1;
+              min-width: 0;
+              padding: 6px 10px;
+              background: var(--el-fill-color-lighter);
+              border-radius: 8px;
               transition: all 0.3s ease;
-              opacity: 0.8;
 
               &:hover {
-                opacity: 1;
-                transform: scale(1.1);
-                background: var(--el-color-danger);
-                box-shadow: 0 4px 12px rgba(245, 108, 108, 0.4);
+                background: var(--el-fill-color-light);
               }
 
-              &:active {
-                transform: scale(0.95);
+              .url-icon {
+                font-size: 13px;
+                color: var(--el-color-primary);
+                flex-shrink: 0;
               }
 
-              .el-icon {
-                font-size: 14px;
-                color: white;
+              span {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-weight: 500;
+              }
+            }
+
+            // 删除按钮区域
+            .delete-action {
+              margin-left: 8px;
+
+              .delete-btn {
+                width: 36px;
+                height: 36px;
+                background: linear-gradient(135deg, #f56c6c 0%, #f89898 100%);
+                border: none;
+                box-shadow: 0 2px 8px rgba(245, 108, 108, 0.3);
+                transition: all 0.3s ease;
+
+                &:hover {
+                  transform: scale(1.1) rotate(5deg);
+                  background: linear-gradient(135deg, #f56c6c 0%, #f23030 100%);
+                  box-shadow: 0 4px 16px rgba(245, 108, 108, 0.5);
+                }
+
+                &:active {
+                  transform: scale(0.95) rotate(0deg);
+                }
+
+                .el-icon {
+                  font-size: 16px;
+                  color: white;
+                }
               }
             }
           }
@@ -693,7 +799,7 @@ document.title = "友情链接";
   }
 }
 
-// 简单的渐入动画
+// 渐入动画
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -702,6 +808,17 @@ document.title = "友情链接";
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+// 弹跳动画
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
   }
 }
 
@@ -756,7 +873,7 @@ document.title = "友情链接";
       .links-grid {
         .link-card {
           .link-info {
-            padding: 15px;
+            padding: 12px;
           }
         }
       }

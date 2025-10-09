@@ -8,7 +8,10 @@ import com.sidifensen.domain.vo.SysRoleVo;
 import com.sidifensen.domain.vo.SysUserVo;
 import com.sidifensen.service.SysUserRoleService;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +21,7 @@ import java.util.List;
  * @since 2025-06-29
  */
 @RateLimit(30)
+@Validated
 @RestController
 @RequestMapping("/user-role")
 public class SysUserRoleController {
@@ -34,7 +38,7 @@ public class SysUserRoleController {
      */
     @PreAuthorize("hasAuthority('system:user:role:addUser')")
     @PostMapping("addUser")
-    public Result addUser(@RequestBody SysUserRoleDto sysUserRoleDto) {
+    public Result addUser(@RequestBody @Valid SysUserRoleDto sysUserRoleDto) {
         sysUserRoleService.addUser(sysUserRoleDto);
         return Result.success();
     }
@@ -47,7 +51,7 @@ public class SysUserRoleController {
      */
     @PreAuthorize("hasAuthority('system:user:role:getUsers')")
     @GetMapping("getUsers/{roleId}")
-    public Result getUsers(@PathVariable Integer roleId) {
+    public Result getUsers(@PathVariable @NotNull(message = "角色ID不能为空") Integer roleId) {
         List<SysUserVo> sysUserVos = sysUserRoleService.getUsers(roleId);
         return Result.success(sysUserVos);
     }
@@ -60,7 +64,7 @@ public class SysUserRoleController {
      */
     @PreAuthorize("hasAuthority('system:user:role:addRole')")
     @PostMapping("addRole")
-    public Result addRole(@RequestBody SysUserRoleDto sysUserRoleDto) {
+    public Result addRole(@RequestBody @Valid SysUserRoleDto sysUserRoleDto) {
         sysUserRoleService.addRole(sysUserRoleDto);
         return Result.success();
     }
@@ -73,7 +77,7 @@ public class SysUserRoleController {
      */
     @PreAuthorize("hasAuthority('system:user:role:getRoles')")
     @GetMapping("getRoles/{userId}")
-    public Result getRoles(@PathVariable Integer userId) {
+    public Result getRoles(@PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
         List<SysRoleVo> sysRoleVos = sysUserRoleService.getRoles(userId);
         return Result.success(sysRoleVos);
     }

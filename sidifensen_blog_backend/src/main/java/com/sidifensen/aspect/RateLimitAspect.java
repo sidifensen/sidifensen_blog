@@ -5,7 +5,7 @@ import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.RedisConstants;
 import com.sidifensen.domain.enums.BlacklistStrategy;
 import com.sidifensen.exception.RateLimitException;
-import com.sidifensen.service.BlacklistService;
+import com.sidifensen.service.SysBlacklistService;
 import com.sidifensen.utils.IpUtils;
 import com.sidifensen.utils.RedisUtils;
 import com.sidifensen.utils.SecurityUtils;
@@ -40,7 +40,7 @@ public class RateLimitAspect {
     private IpUtils ipUtils;
 
     @Resource
-    private BlacklistService blacklistService;
+    private SysBlacklistService sysBlacklistService;
 
     /**
      * 环绕通知，拦截带有 @RateLimit 注解的类或方法
@@ -107,7 +107,7 @@ public class RateLimitAspect {
                 redisUtils.set(blacklistKey, detailedReason, strategy.getBanDuration(), TimeUnit.SECONDS);
 
                 // 保存到数据库（持久化记录）
-                blacklistService.addToBlacklist(identifier, detailedReason, strategy.getBanDuration());
+                sysBlacklistService.addToBlacklist(identifier, detailedReason, strategy.getBanDuration());
 
                 log.warn("用户加入黑名单 - 用户标识: {}, 访问接口: {}, 访问次数: {}, 策略: {}, 封禁时长: {}秒",
                         identifier, apiPath, currentCount, strategy.getDescription(), strategy.getBanDuration());

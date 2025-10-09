@@ -90,6 +90,7 @@ public class BlogConstants {
     public static final String SaveReadRecordError = "保存阅读记录失败";
     public static final String GetUserHistoryError = "获取用户浏览历史失败";
     public static final String ClearUserHistoryError = "清除用户浏览历史失败";
+    public static final String GetHotArticleListError = "获取热门文章列表失败";
 
     // 收藏夹相关错误信息
     public static final String NotFoundFavorite = "收藏夹不存在";
@@ -137,4 +138,28 @@ public class BlogConstants {
     public static final String UpdateBlacklistError = "更新黑名单失败";
     public static final String DeleteBlacklistError = "删除黑名单失败";
     public static final String BlacklistIdsRequired = "黑名单ID列表不能为空";
+
+    // 访客日志相关错误信息
+    public static final String VisitorLogIdsRequired = "访客日志ID列表不能为空";
+    public static final String QueryDaysMustGreaterThanZero = "查询天数必须大于0";
+    public static final String QueryDaysCannotExceed365 = "查询天数不能超过365天";
+
+    // 登录日志相关错误信息
+    public static final String LoginLogIdsRequired = "登录日志ID列表不能为空";
+    public static final String DeleteLoginLogError = "删除登录日志失败";
+
+    // 友链相关错误信息（补充）
+    public static final String SearchLinkError = "搜索友链失败";
+    public static final String LinkAuditError = "友链审核失败";
+    public static final String LinkAuditListRequired = "友链审核信息列表不能为空";
+    public static final String BatchAuditLinkError = "批量审核友链失败";
+    public static final String LinkIdsRequired = "友链ID列表不能为空";
+    public static final String BatchDeleteLinkError = "批量删除友链失败";
+
+    // OAuth相关错误信息
+    public static final String OauthLoginError = "OAuth登录失败";
+
+    // 通用错误信息
+    public static final String ParamError = "参数错误";
+    public static final String SystemInternalError = "系统内部错误";
 }

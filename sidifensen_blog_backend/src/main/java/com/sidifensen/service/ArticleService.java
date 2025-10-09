@@ -8,6 +8,7 @@ import com.sidifensen.domain.entity.Article;
 import com.sidifensen.domain.vo.ArticleStatisticsVo;
 import com.sidifensen.domain.vo.ArticleVo;
 import com.sidifensen.domain.vo.CreationStatisticsVo;
+import com.sidifensen.domain.vo.HotArticleVo;
 import com.sidifensen.domain.vo.PageVo;
 
 import java.util.List;
@@ -99,4 +100,7 @@ public interface ArticleService extends IService<Article> {
 
     // 获取创作中心统计数据
     CreationStatisticsVo getCreationStatistics();
+
+    // 获取热门文章列表（近7天访问量排序，精简版）
+    PageVo<List<HotArticleVo>> getHotArticleList(Integer pageNum, Integer pageSize);
 }

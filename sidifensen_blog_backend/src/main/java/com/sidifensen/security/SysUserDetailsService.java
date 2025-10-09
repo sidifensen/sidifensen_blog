@@ -55,6 +55,9 @@ public class SysUserDetailsService implements UserDetailsService {
     @Resource
     private IpService ipService;
 
+    @Resource
+    private com.sidifensen.service.SysLoginLogService sysLoginLogService;
+
     /**
      * 根据用户名查询用户信息
      */
@@ -74,12 +77,24 @@ public class SysUserDetailsService implements UserDetailsService {
         sysUser.setLoginTime(new Date());
         String ip = ipUtils.getIp();
         sysUser.setLoginIp(ip);
-        sysUser.setLoginAddress(ipUtils.getAddress());
+        String loginAddress = ipUtils.getAddress();
+        sysUser.setLoginAddress(loginAddress);
         int i = sysUserMapper.updateById(sysUser);
         if (i == 0) {
             throw new BlogException(BlogConstants.NotFoundUser);
         }
         ipService.setLoginIp(sysUser.getId(), ip);
+        
+        // 异步记录登录成功日志
+        sysLoginLogService.recordLoginLog(
+                sysUser.getId(),
+                sysUser.getUsername(),
+                sysUser.getLoginType(),
+                ip,
+                loginAddress,
+                0  // 0-成功
+        );
+        
         return handleLogin(sysUser);
     }
 

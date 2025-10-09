@@ -7,11 +7,8 @@ import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.service.HistoryService;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,6 +17,7 @@ import java.util.List;
  * @since 2025-09-27
  */
 @RateLimit(30)
+@Validated
 @RestController
 @RequestMapping("/history")
 public class HistoryController {
@@ -37,7 +35,7 @@ public class HistoryController {
     @RateLimit
     @GetMapping("/list")
     public Result<PageVo<List<HistoryVo>>> getUserHistoryList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
-                                                               @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+                                                              @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<HistoryVo>> historyPageVo = historyService.getUserHistoryList(pageNum, pageSize);
         return Result.success(historyPageVo);
     }

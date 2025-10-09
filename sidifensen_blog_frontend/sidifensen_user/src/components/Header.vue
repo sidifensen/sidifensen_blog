@@ -98,6 +98,10 @@
             <el-icon><Picture /></el-icon>
             <span class="menu-text">相册</span>
           </el-menu-item>
+          <el-menu-item index="/link" class="menu-item">
+            <el-icon><Link /></el-icon>
+            <span class="menu-text">友链</span>
+          </el-menu-item>
           <el-menu-item index="/creation" class="menu-item">
             <el-icon><MagicStick /></el-icon>
             <span class="menu-text">创作中心</span>
@@ -116,8 +120,6 @@ import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { info, oauthLogin } from "@/api/user";
 import { SetJwt } from "@/utils/Auth";
-// 引入ElMessage
-import { ElMessage } from "element-plus";
 import { UserFilled, User, Setting, SwitchButton } from "@element-plus/icons-vue";
 
 const userStore = useUserStore();
@@ -154,8 +156,8 @@ const handleSearch = () => {
 };
 
 const handleLoginClick = () => {
-  // 根据路由名称跳转
-  router.push({ name: "Account" });
+  // 直接使用路径跳转，更可靠
+  router.push("/login");
 };
 
 const oauth = () => {
@@ -295,7 +297,7 @@ onBeforeUnmount(() => {
         left: 0;
         width: 100%;
         height: 3px;
-        background: linear-gradient(90deg, #3d92eb, #6f42c1);
+        background: linear-gradient(90deg, #fbbf24, #f59e0b);
         border-radius: 3px;
         transform: scaleX(0);
         transform-origin: right;
@@ -303,7 +305,7 @@ onBeforeUnmount(() => {
       }
 
       &:hover {
-        color: #6f42c1;
+        color: #f59e0b;
         text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
 
         &::after {

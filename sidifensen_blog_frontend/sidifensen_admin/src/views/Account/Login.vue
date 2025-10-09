@@ -8,6 +8,7 @@
         </div>
         <h2>管理员登录</h2>
         <p>请输入您的账号和密码</p>
+        <p>测试账号: test/123456</p>
       </div>
       <el-form ref="loginFormRef" :model="loginForm" :rules="rules" class="login-form">
         <el-form-item prop="username">

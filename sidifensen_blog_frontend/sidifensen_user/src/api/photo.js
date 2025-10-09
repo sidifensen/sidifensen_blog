@@ -37,6 +37,18 @@ export function uploadColumnPhoto(file) {
   });
 }
 
+// 上传头像
+export function uploadAvatar(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  return request({
+    url: "/photo/uploadAvatar",
+    method: "post",
+    data: formData,
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+}
+
 // 修改图片展示状态
 export function changeShowStatus(data) {
   return request({

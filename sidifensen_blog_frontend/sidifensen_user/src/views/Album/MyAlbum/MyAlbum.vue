@@ -196,9 +196,9 @@ onMounted(() => {
         font-weight: 600;
         border-radius: 30px;
         border: none;
-        background: linear-gradient(135deg, #3d92eb, #6f42c1);
+        background: linear-gradient(135deg, #06b6d4, #14b8a6);
         color: white;
-        box-shadow: 0 4px 15px rgba(61, 146, 235, 0.3);
+        box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
         transition: all 0.3s ease;
         overflow: hidden;
 
@@ -217,7 +217,7 @@ onMounted(() => {
 
         &:hover {
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(61, 146, 235, 0.4);
+          box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
 
           &::before {
             // 光效从左到右
@@ -233,13 +233,13 @@ onMounted(() => {
 
       /* 新建相册按钮 */
       .create-btn {
-        background: linear-gradient(135deg, #3d92eb, #10b981);
+        background: linear-gradient(135deg, #f5f5f5, #d1d5db);
         border: none;
-        color: white;
+        color: #374151;
         font-size: 16px;
         font-weight: 600;
         border-radius: 30px;
-        box-shadow: 0 4px 15px rgba(61, 146, 235, 0.3);
+        box-shadow: 0 4px 15px rgba(209, 213, 219, 0.3);
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
@@ -252,13 +252,13 @@ onMounted(() => {
           left: -100%;
           width: 100%;
           height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
           transition: 0.5s;
         }
 
         &:hover {
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(61, 146, 235, 0.4);
+          box-shadow: 0 6px 20px rgba(209, 213, 219, 0.4);
 
           &::before {
             left: 100%;

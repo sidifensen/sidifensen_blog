@@ -2,6 +2,7 @@ package com.sidifensen.service;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
 import com.sidifensen.exception.BlogException;
@@ -82,7 +83,7 @@ public class OauthService {
             return "?login_type=gitee&user_name=" + username + "&access_token=" + authUser.getToken().getAccessToken();
         } else {
             log.error("oauth登录失败：{}", authResponse.getMsg());
-            throw new BlogException("oauth登录失败：" + authResponse.getMsg());
+            throw new BlogException(BlogConstants.OauthLoginError + "：" + authResponse.getMsg());
         }
     }
 }

@@ -16,7 +16,7 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 
+ * 系统黑名单实体类
  * </p>
  *
  * @author sidifensen
@@ -25,8 +25,8 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("blacklist")
-public class Blacklist implements Serializable {
+@TableName("sys_blacklist")
+public class SysBlacklist implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -86,3 +86,4 @@ public class Blacklist implements Serializable {
 
 
 }
+

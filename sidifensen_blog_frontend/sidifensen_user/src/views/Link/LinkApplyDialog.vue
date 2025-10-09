@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="dialogVisible" title="申请友链" width="500px" :before-close="handleClose"class="link-apply-dialog">
+  <el-dialog v-model="dialogVisible" title="申请友链" width="500px" :before-close="handleClose" class="link-apply-dialog">
     <!-- 对话框头部说明 -->
     <div class="dialog-header">
       <el-icon class="header-icon"><Link /></el-icon>
@@ -53,7 +53,7 @@
       </el-form-item>
 
       <el-form-item label="网站描述" prop="description">
-        <el-input v-model="linkForm.description" type="textarea" :rows="3" placeholder="请简单描述您的网站内容和特色" maxlength="200" show-word-limit resize="none" />
+        <el-input v-model="linkForm.description" type="textarea" :rows="3" placeholder="请简单描述您的网站内容和特色" maxlength="50" show-word-limit resize="none" />
       </el-form-item>
 
       <el-form-item label="联系邮箱" prop="email">
@@ -148,7 +148,7 @@ const linkFormRules = {
   ],
   description: [
     { required: true, message: "请输入网站描述", trigger: "blur" },
-    { min: 1, max: 100, message: "网站描述长度在1到100个字符", trigger: "blur" },
+    { min: 1, max: 50, message: "网站描述长度在1到50个字符", trigger: "blur" },
   ],
   email: [
     { required: true, message: "请输入邮箱地址", trigger: "blur" },

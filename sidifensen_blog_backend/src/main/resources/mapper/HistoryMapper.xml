@@ -26,4 +26,22 @@
         ORDER BY h.view_time DESC
     </select>
 
+    <!-- 统计近7天的文章访问量（按文章ID分组统计） -->
+    <select id="getArticleViewCountLast7Days" resultType="map">
+        SELECT h.article_id                       as articleId,
+               COUNT(DISTINCT h.user_id)          as viewCount
+        FROM history h
+                 INNER JOIN
+             article a ON h.article_id = a.id
+                 AND a.examine_status = 1
+                 AND a.edit_status = 0
+                 AND a.visible_range = 0
+                 AND a.is_deleted = 0
+        WHERE h.is_deleted = 0
+          AND h.view_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        GROUP BY h.article_id
+        HAVING viewCount > 0
+        ORDER BY viewCount DESC
+    </select>
+
 </mapper>

@@ -38,10 +38,10 @@
     <!-- 其他的登录方式 -->
     <div class="other-login">
       <el-link underline="never" :href="giteeLogin">
-        <svg-icon @click="giteeLogin" name="gitee" width="35px" height="35px" color="#4E86F1" cursor="pointer" />
+        <svg-icon @click="giteeLogin" name="gitee" width="35px" height="35px" color="#999" cursor="pointer" />
       </el-link>
       <el-link underline="never" :href="githubLogin">
-        <svg-icon name="github" width="36px" height="36px" color="#4E86F1" cursor="pointer" />
+        <svg-icon name="github" width="36px" height="36px" color="#999" cursor="pointer" />
       </el-link>
     </div>
   </el-form>

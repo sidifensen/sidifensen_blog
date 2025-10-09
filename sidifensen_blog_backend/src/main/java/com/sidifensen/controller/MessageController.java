@@ -1,11 +1,14 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.MessageVo;
 import com.sidifensen.service.MessageService;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +17,8 @@ import java.util.List;
  * @author sidifensen
  * @since 2025-08-17
  */
+@RateLimit
+@Validated
 @RestController
 @RequestMapping("/message")
 public class MessageController {
@@ -55,7 +60,7 @@ public class MessageController {
      */
     @PreAuthorize("hasAuthority('message:read')")
     @PutMapping("/admin/read")
-    public Result readAdminMessage(@RequestBody List<Integer> messageIds) {
+    public Result readAdminMessage(@RequestBody @NotNull(message = "消息ID列表不能为空") List<Integer> messageIds) {
         messageService.readAdminMessages(messageIds);
         return Result.success();
     }
@@ -68,7 +73,7 @@ public class MessageController {
      */
     @PreAuthorize("hasAuthority('message:delete')")
     @DeleteMapping("/admin/delete")
-    public Result deleteAdminMessage(@RequestBody List<Integer> messageIds) {
+    public Result deleteAdminMessage(@RequestBody @NotNull(message = "消息ID列表不能为空") List<Integer> messageIds) {
         messageService.deleteAdminMessages(messageIds);
         return Result.success();
     }

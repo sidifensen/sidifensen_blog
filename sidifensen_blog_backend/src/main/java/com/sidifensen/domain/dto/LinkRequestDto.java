@@ -36,7 +36,7 @@ public class LinkRequestDto {
      * 网站描述
      */
     @NotBlank(message = "网站描述不能为空")
-    @Size(max = 200, message = "网站描述不能超过200个字")
+    @Size(max = 50, message = "网站描述不能超过50个字")
     private String description;
 
     /**

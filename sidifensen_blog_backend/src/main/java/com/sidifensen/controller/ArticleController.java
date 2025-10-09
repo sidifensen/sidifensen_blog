@@ -1,19 +1,17 @@
 package com.sidifensen.controller;
 
 import com.sidifensen.aspect.RateLimit;
-import com.sidifensen.aspect.TimeConsuming;
 import com.sidifensen.domain.dto.ArticleAuditDto;
 import com.sidifensen.domain.dto.ArticleDto;
 import com.sidifensen.domain.dto.ArticleStatusDto;
 import com.sidifensen.domain.result.Result;
-import com.sidifensen.domain.vo.ArticleStatisticsVo;
-import com.sidifensen.domain.vo.ArticleVo;
-import com.sidifensen.domain.vo.CreationStatisticsVo;
-import com.sidifensen.domain.vo.PageVo;
+import com.sidifensen.domain.vo.*;
 import com.sidifensen.service.ArticleService;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,7 +21,7 @@ import java.util.List;
  * @since 2025-08-24
  */
 @RateLimit(30)
-@TimeConsuming
+@Validated
 @RestController
 @RequestMapping("/article")
 public class ArticleController {
@@ -55,7 +53,7 @@ public class ArticleController {
     @PostMapping("/user/list")
     public Result getUserArticleList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
                                      @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
-                                     @RequestBody ArticleStatusDto articleStatusDto) {
+                                     @RequestBody @Valid ArticleStatusDto articleStatusDto) {
         PageVo<List<ArticleVo>> articleVoList = articleService.getUserArticleList(pageNum, pageSize, articleStatusDto);
         return Result.success(articleVoList);
     }
@@ -69,7 +67,7 @@ public class ArticleController {
     @PostMapping("/manage/list")
     public Result getArticleMangeList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
                                       @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
-                                      @RequestBody ArticleStatusDto articleStatusDto) {
+                                      @RequestBody @Valid ArticleStatusDto articleStatusDto) {
         PageVo<List<ArticleVo>> articleVoList = articleService.getArticleMangeList(pageNum, pageSize, articleStatusDto);
         return Result.success(articleVoList);
     }
@@ -94,7 +92,7 @@ public class ArticleController {
      */
     @RateLimit
     @GetMapping("/user/{userId}/statistics")
-    public Result getUserArticleStatisticsById(@PathVariable Integer userId) {
+    public Result getUserArticleStatisticsById(@PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
         ArticleStatisticsVo statisticsVo = articleService.getUserArticleStatisticsById(userId);
         return Result.success(statisticsVo);
     }
@@ -118,7 +116,7 @@ public class ArticleController {
      */
     @RateLimit
     @GetMapping("/get/{articleId}")
-    public Result getArticle(@PathVariable Integer articleId) {
+    public Result getArticle(@PathVariable @NotNull(message = "文章ID不能为空") Integer articleId) {
         ArticleVo articleVo = articleService.getArticle(articleId);
         return Result.success(articleVo);
     }
@@ -154,6 +152,21 @@ public class ArticleController {
                                      @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
                                      @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<ArticleVo>> articleVoList = articleService.searchArticleByTag(tag, pageNum, pageSize);
+        return Result.success(articleVoList);
+    }
+
+    /**
+     * 获取热门文章列表（近7天访问量排序）
+     *
+     * @param pageNum  页码
+     * @param pageSize 页大小
+     * @return 热门文章列表
+     */
+    @RateLimit
+    @GetMapping("/hot")
+    public Result getHotArticleList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+                                    @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<HotArticleVo>> articleVoList = articleService.getHotArticleList(pageNum, pageSize);
         return Result.success(articleVoList);
     }
 
@@ -206,7 +219,7 @@ public class ArticleController {
      * @return 新增文章
      */
     @PostMapping("/add")
-    public Result addArticle(@RequestBody ArticleDto articleDto) {
+    public Result addArticle(@RequestBody @Valid ArticleDto articleDto) {
         articleService.addArticle(articleDto);
         return Result.success();
     }
@@ -215,7 +228,7 @@ public class ArticleController {
      * 保存为草稿
      */
     @PostMapping("/saveDraft")
-    public Result saveDraft(@RequestBody ArticleDto articleDto) {
+    public Result saveDraft(@RequestBody @Valid ArticleDto articleDto) {
         articleService.saveDraft(articleDto);
         return Result.success();
     }
@@ -226,7 +239,7 @@ public class ArticleController {
      * @return 更新文章
      */
     @PutMapping("/update")
-    public Result updateArticle(@RequestBody ArticleDto articleDto) {
+    public Result updateArticle(@RequestBody @Valid ArticleDto articleDto) {
         articleService.updateArticle(articleDto);
         return Result.success();
     }
@@ -237,7 +250,7 @@ public class ArticleController {
      * @return 删除文章
      */
     @DeleteMapping("/delete/{articleId}")
-    public Result deleteArticle(@PathVariable Integer articleId) {
+    public Result deleteArticle(@PathVariable @NotNull(message = "文章ID不能为空") Integer articleId) {
         articleService.deleteArticle(articleId);
         return Result.success();
     }
@@ -262,7 +275,7 @@ public class ArticleController {
      */
     @PreAuthorize("hasAuthority('article:user:list')")
     @GetMapping("/admin/user/{userId}")
-    public Result adminGetArticlesByUserId(@PathVariable Integer userId) {
+    public Result adminGetArticlesByUserId(@PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
         List<ArticleVo> articleVoList = articleService.adminGetArticlesByUserId(userId);
         return Result.success(articleVoList);
     }
@@ -274,7 +287,7 @@ public class ArticleController {
      */
     @PreAuthorize("hasAuthority('article:get')")
     @GetMapping("/admin/{articleId}")
-    public Result adminGetArticle(@PathVariable Integer articleId) {
+    public Result adminGetArticle(@PathVariable @NotNull(message = "文章ID不能为空") Integer articleId) {
         ArticleVo articleVo = articleService.adminGetArticle(articleId);
         return Result.success(articleVo);
     }
@@ -286,7 +299,7 @@ public class ArticleController {
      */
     @PreAuthorize("hasAuthority('article:update')")
     @PutMapping("/admin/update")
-    public Result adminUpdateArticle(@RequestBody ArticleDto articleDto) {
+    public Result adminUpdateArticle(@RequestBody @Valid ArticleDto articleDto) {
         articleService.adminUpdateArticle(articleDto);
         return Result.success();
     }
@@ -298,7 +311,7 @@ public class ArticleController {
      */
     @PreAuthorize("hasAuthority('article:search')")
     @PostMapping("/admin/search")
-    public Result adminSearchArticle(@RequestBody ArticleDto articleDto) {
+    public Result adminSearchArticle(@RequestBody @Valid ArticleDto articleDto) {
         List<ArticleVo> articleVoList = articleService.adminSearchArticle(articleDto);
         return Result.success(articleVoList);
     }
@@ -310,7 +323,7 @@ public class ArticleController {
      */
     @PreAuthorize("hasAuthority('article:examine')")
     @PutMapping("/admin/examine")
-    public Result adminExamineArticle(@RequestBody ArticleAuditDto articleAuditDto) {
+    public Result adminExamineArticle(@RequestBody @Valid ArticleAuditDto articleAuditDto) {
         articleService.adminExamineArticle(articleAuditDto);
         return Result.success();
     }
@@ -322,7 +335,7 @@ public class ArticleController {
      */
     @PreAuthorize("hasAuthority('article:examine')")
     @PutMapping("/admin/examine/batch")
-    public Result adminExamineBatchArticle(@RequestBody List<ArticleAuditDto> articleAuditDtos) {
+    public Result adminExamineBatchArticle(@RequestBody @Valid List<ArticleAuditDto> articleAuditDtos) {
         articleService.adminExamineBatchArticle(articleAuditDtos);
         return Result.success();
     }
@@ -334,7 +347,7 @@ public class ArticleController {
      */
     @PreAuthorize("hasAuthority('article:delete')")
     @DeleteMapping("/admin/{articleId}")
-    public Result adminDeleteArticle(@PathVariable Integer articleId) {
+    public Result adminDeleteArticle(@PathVariable @NotNull(message = "文章ID不能为空") Integer articleId) {
         articleService.adminDeleteArticle(articleId);
         return Result.success();
     }
@@ -347,7 +360,7 @@ public class ArticleController {
      */
     @PreAuthorize("hasAuthority('article:delete')")
     @DeleteMapping("/admin/delete/batch")
-    public Result adminDeleteBatchArticle(@RequestBody List<Integer> articleIds) {
+    public Result adminDeleteBatchArticle(@RequestBody @NotNull(message = "文章ID列表不能为空") List<Integer> articleIds) {
         articleService.adminDeleteBatchArticle(articleIds);
         return Result.success();
     }

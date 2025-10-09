@@ -7,6 +7,7 @@ import com.sidifensen.domain.vo.HistoryVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author sidifensen
@@ -22,5 +23,13 @@ public interface HistoryMapper extends BaseMapper<History> {
      * @return 浏览历史列表
      */
     List<HistoryVo> getUserHistoryList(Page<HistoryVo> page, @Param("userId") Integer userId);
+
+    /**
+     * 统计近7天的文章访问量（按文章ID分组统计）
+     * 用于热门文章排行榜
+     * 
+     * @return 文章访问量统计列表，每个元素包含 articleId 和 viewCount
+     */
+    List<Map<String, Object>> getArticleViewCountLast7Days();
 
 }

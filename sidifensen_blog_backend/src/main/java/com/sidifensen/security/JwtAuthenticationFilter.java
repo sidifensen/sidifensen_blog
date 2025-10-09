@@ -3,12 +3,15 @@ package com.sidifensen.security;
 import cn.hutool.core.util.ObjectUtil;
 import com.sidifensen.config.SidifensenConfig;
 import com.sidifensen.domain.constants.BlogConstants;
+import com.sidifensen.domain.constants.RabbitMQConstants;
 import com.sidifensen.domain.constants.SecurityConstants;
 import com.sidifensen.domain.entity.LoginUser;
 import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.enums.StatusEnum;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.mapper.SysUserMapper;
+import com.sidifensen.utils.DeviceUtils;
+import com.sidifensen.utils.IpUtils;
 import com.sidifensen.utils.JwtUtils;
 import com.sidifensen.utils.WebUtils;
 import jakarta.annotation.Resource;
@@ -17,6 +20,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -24,6 +28,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author sdifensen
@@ -47,9 +53,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Resource
     private SidifensenConfig sidifensenConfig;
 
+    @Resource
+    private RabbitTemplate rabbitTemplate;
+
+    @Resource
+    private IpUtils ipUtils;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        // 发送访客记录消息（异步处理，不影响主业务）
+        sendVisitorRecordMessage(request);
         // 检查是否是可选认证接口（有token就认证，没有就跳过）
         boolean isOptionalAuth = false;
         for (String url : SecurityConstants.Optional_Auth_Urls) {
@@ -94,28 +108,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // 必须认证接口：认证失败则拦截
-        authenticateUser(request, response);
+        boolean authenticated = authenticateUser(request, response);
+        if (!authenticated) {
+            // 认证失败，已经写入响应，不继续执行过滤器链
+            return;
+        }
         filterChain.doFilter(request, response);
     }
 
     /**
      * 认证用户并设置SecurityContext
      *
+     * @return 认证是否成功
      * @throws ServletException 认证失败时抛出
      */
-    private void authenticateUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private boolean authenticateUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String jwt = request.getHeader("Authorization");
         if (ObjectUtil.isEmpty(jwt)) {
             log.error("用户访问接口{}, 提示:请先登录", request.getRequestURI());
             WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.LoginRequired).toJson());
-            throw new ServletException(BlogConstants.LoginRequired);
+            return false;
         }
 
         Integer id = jwtUtils.parseToken(jwt);
         if (ObjectUtil.isEmpty(id)) {
             log.error("用户id: {}, 访问接口{},提示:登录过期", id, request.getRequestURI());
             WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.LoginExpired).toJson());
-            throw new ServletException(BlogConstants.LoginExpired);
+            return false;
         }
 
         try {
@@ -123,13 +142,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (ObjectUtil.isEmpty(sysUser)) {
                 log.error("用户id: {}, 访问接口{}, 提示:用户不存在", id, request.getRequestURI());
                 WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.NotFoundUser).toJson());
-                throw new ServletException(BlogConstants.NotFoundUser);
+                return false;
             }
 
             if (sysUser.getStatus() == StatusEnum.DISABLE.getStatus()) {
                 log.error("用户id: {}, 访问接口{}, 提示:用户已被禁用", sysUser.getId(), request.getRequestURI());
                 WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.UserDisabled).toJson());
-                throw new ServletException(BlogConstants.UserDisabled);
+                return false;
             }
 
             // 设置用户信息到SecurityContext
@@ -139,12 +158,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         loginUser, null, loginUser.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
-        } catch (ServletException e) {
-            throw e;
+
+            return true;
+
         } catch (Exception e) {
             log.error("查询用户信息时发生异常，错误: {}", e.getMessage(), e);
-            WebUtils.Unauthorized(response, Result.unauthorized("系统内部错误").toJson());
-            throw new ServletException("系统内部错误", e);
+            WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.SystemInternalError).toJson());
+            return false;
         }
     }
 
@@ -187,6 +207,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         return false;
+    }
+
+    /**
+     * 发送访客记录消息到MQ
+     *
+     * @param request HTTP请求
+     */
+    private void sendVisitorRecordMessage(HttpServletRequest request) {
+        try {
+            // 获取用户ID（如果已登录）
+            Integer userId = null;
+            String jwt = request.getHeader("Authorization");
+            if (ObjectUtil.isNotEmpty(jwt)) {
+                userId = jwtUtils.parseToken(jwt);
+            }
+
+            // 获取IP和设备信息
+            String ip = ipUtils.getIp();
+            String device = DeviceUtils.getDeviceType(request);
+
+            // 构建访客消息
+            Map<String, Object> visitorMessage = new HashMap<>();
+            visitorMessage.put("userId", userId);
+            visitorMessage.put("ip", ip);
+            visitorMessage.put("device", device);
+
+            // 发送到MQ
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConstants.Visitor_Exchange,
+                    RabbitMQConstants.Visitor_Routing_Key,
+                    visitorMessage
+            );
+
+            log.debug("访客记录消息已发送到MQ: userId={}, ip={}, device={}", userId, ip, device);
+        } catch (Exception e) {
+            // 访客记录失败不影响主业务，记录日志即可
+            log.warn("发送访客记录消息失败: {}", e.getMessage());
+        }
     }
 
 }

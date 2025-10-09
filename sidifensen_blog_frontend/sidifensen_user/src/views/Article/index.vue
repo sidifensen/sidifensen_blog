@@ -95,11 +95,42 @@
           <div class="sidebar">
             <!-- 热门文章 -->
             <div class="sidebar-card">
-              <h4 class="card-title">热门文章</h4>
-              <div class="hot-articles">
-                <div v-for="article in articleList" :key="article.id" class="hot-article-item" @click="goToArticle(article.id, article.userId)">
-                  <span class="hot-article-title">{{ article.title }}</span>
-                  <span class="hot-article-readCount">{{ article.readCount }} 阅读</span>
+              <h4 class="card-title">
+                <el-icon style="margin-right: 4px"><View /></el-icon>
+                热门文章
+              </h4>
+
+              <!-- 加载中骨架屏 -->
+              <div v-if="hotArticleLoading" class="hot-articles-loading">
+                <el-skeleton animated :count="5">
+                  <template #template>
+                    <div class="hot-skeleton-item">
+                      <el-skeleton-item variant="text" style="width: 100%; height: 16px; margin-bottom: 4px" />
+                      <el-skeleton-item variant="text" style="width: 60%; height: 14px" />
+                    </div>
+                  </template>
+                </el-skeleton>
+              </div>
+
+              <!-- 空状态 -->
+              <div v-else-if="hotArticleList.length === 0" class="hot-articles-empty">
+                <el-empty description="暂无热门文章" :image-size="60" />
+              </div>
+
+              <!-- 热门文章列表 -->
+              <div v-else class="hot-articles">
+                <div v-for="(article, index) in hotArticleList" :key="article.id" class="hot-article-item" @click="goToArticle(article.id, article.userId)">
+                  <div class="hot-article-rank">{{ index + 1 }}</div>
+                  <div class="hot-article-content">
+                    <span class="hot-article-title">{{ article.title }}</span>
+                    <div class="hot-article-meta">
+                      <span class="hot-article-readCount">
+                        <el-icon><View /></el-icon>
+                        {{ article.readCount }}
+                      </span>
+                      <span class="hot-article-score">🔥 {{ article.hotScore }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -113,9 +144,8 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ElMessage } from "element-plus";
-import { Plus, Message, Star, Edit, ArrowUp, Picture } from "@element-plus/icons-vue";
-import { getAllArticleList } from "@/api/article";
+import { Plus, Message, Star, Edit, ArrowUp, Picture, View } from "@element-plus/icons-vue";
+import { getAllArticleList, getHotArticleList } from "@/api/article";
 import { useUserStore } from "@/stores/userStore";
 
 // 路由和状态管理
@@ -131,6 +161,10 @@ const total = ref(0); // 文章总数
 const hasMore = ref(true); // 是否还有更多数据可加载
 const currentPage = ref(1); // 当前页码
 const showBackToTop = ref(false); // 是否显示返回顶部按钮
+
+// 热门文章相关数据
+const hotArticleLoading = ref(false); // 热门文章加载状态
+const hotArticleList = ref([]); // 热门文章列表数据
 
 // 每页数据量
 const pageSize = ref(10);
@@ -211,9 +245,23 @@ const goToUserPage = (userId) => {
   router.push(`/user/${userId}`);
 };
 
+// 获取热门文章列表
+const fetchHotArticleList = async () => {
+  try {
+    hotArticleLoading.value = true;
+    const res = await getHotArticleList(1, 10);
+    hotArticleList.value = res.data.data.data || [];
+  } catch (error) {
+    console.error("获取热门文章列表失败:", error);
+  } finally {
+    hotArticleLoading.value = false;
+  }
+};
+
 // 组件挂载
 onMounted(() => {
   fetchArticleList(true);
+  fetchHotArticleList(); // 获取热门文章
   // 绑定页面滚动事件
   window.addEventListener("scroll", handleScroll);
 });
@@ -493,8 +541,6 @@ onUnmounted(() => {
   .sidebar {
     // 侧边栏卡片
     .sidebar-card {
-      height: 600px;
-      overflow-y: hidden;
       background: var(--el-bg-color-page);
       border-radius: 8px;
       padding: 20px;
@@ -512,42 +558,123 @@ onUnmounted(() => {
         border-bottom: 2px solid var(--el-color-primary);
       }
 
-      // 热门文章
+      // 热门文章加载状态
+      .hot-articles-loading {
+        .hot-skeleton-item {
+          padding: 12px;
+          border-radius: 6px;
+          background-color: var(--el-fill-color-lighter);
+          margin-bottom: 8px;
+        }
+      }
+
+      // 热门文章空状态
+      .hot-articles-empty {
+        padding: 20px 0;
+        text-align: center;
+      }
+
+      // 热门文章列表
       .hot-articles {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
 
         .hot-article-item {
           display: flex;
-          flex-direction: column;
-          gap: 4px;
+          align-items: flex-start;
+          gap: 10px;
           padding: 12px;
-          background-color: var(--el-bg-color-page);
+          background-color: var(--el-fill-color-lighter);
           border-radius: 6px;
           cursor: pointer;
           transition: all 0.2s ease;
 
           &:hover {
             background-color: var(--el-color-primary-light-9);
-            transform: translateY(-2px);
+            transform: translateX(4px);
           }
 
-          .hot-article-title {
+          // 排名数字（默认样式）
+          .hot-article-rank {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 700;
             color: var(--el-text-color-primary);
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+            background: linear-gradient(135deg, var(--el-color-primary-light-5), var(--el-color-primary-light-3));
+            border-radius: 4px;
           }
 
-          .hot-article-readCount {
-            font-size: 12px;
-            color: var(--el-text-color-secondary);
+          // 第一名金色
+          &:nth-child(1) .hot-article-rank {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #b8860b;
+          }
+
+          // 第二名银色
+          &:nth-child(2) .hot-article-rank {
+            background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+            color: #696969;
+          }
+
+          // 第三名铜色
+          &:nth-child(3) .hot-article-rank {
+            background: linear-gradient(135deg, #cd7f32, #e9a76e);
+            color: #8b4513;
+          }
+
+          // 文章内容区域
+          .hot-article-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+
+            .hot-article-title {
+              font-size: 14px;
+              font-weight: 500;
+              color: var(--el-text-color-primary);
+              line-height: 1.4;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+              word-break: break-word;
+            }
+
+            // 文章元信息
+            .hot-article-meta {
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              font-size: 12px;
+              color: var(--el-text-color-secondary);
+
+              .hot-article-readCount {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+
+                .el-icon {
+                  font-size: 13px;
+                }
+              }
+
+              .hot-article-score {
+                display: flex;
+                align-items: center;
+                gap: 2px;
+                font-weight: 600;
+                color: var(--el-color-danger);
+              }
+            }
           }
         }
       }

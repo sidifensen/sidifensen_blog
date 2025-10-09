@@ -99,6 +99,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Resource
     private FollowMapper followMapper;
 
+    @Resource
+    private com.sidifensen.service.SysLoginLogService sysLoginLogService;
+
     @Override
     public String login(LoginDto loginDto) {
         try {
@@ -115,6 +118,19 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             // 创建token,此处的token时由UUID编码而成JWT字符串
             String token = jwtUtils.createToken(loginUser.getSysUser().getId(), loginDto.getRememberMe());
             return token;
+        } catch (Exception e) {
+            // 记录登录失败日志
+            String ip = ipUtils.getIp();
+            String loginAddress = ipUtils.getAddress();
+            sysLoginLogService.recordLoginLog(
+                    null,  // 登录失败时可能无法获取用户ID
+                    loginDto.getUsername(),
+                    0,  // 0-用户名/邮箱登录
+                    ip,
+                    loginAddress,
+                    1  // 1-失败
+            );
+            throw e;  // 重新抛出异常，让全局异常处理器处理
         } finally {
             redisComponent.cleanCheckCode(loginDto.getCheckCodeKey());
         }
@@ -123,15 +139,36 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Override
     public String oauthLogin(OauthLoginDto oauthLoginDto) {
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                oauthLoginDto.getUsername(), oauthLoginDto.getPassword());
-        // 调用loadUserByUsername方法
-        Authentication authenticate = authenticationManager.authenticate(authentication);
-        // 获取用户信息，返回的就是UserDetails
-        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
-        // 创建token,此处的token时由UUID编码而成JWT字符串
-        String token = jwtUtils.createToken(loginUser.getSysUser().getId(), true);
-        return token;
+        try {
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    oauthLoginDto.getUsername(), oauthLoginDto.getPassword());
+            // 调用loadUserByUsername方法
+            Authentication authenticate = authenticationManager.authenticate(authentication);
+            // 获取用户信息，返回的就是UserDetails
+            LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
+            // 创建token,此处的token时由UUID编码而成JWT字符串
+            String token = jwtUtils.createToken(loginUser.getSysUser().getId(), true);
+            return token;
+        } catch (Exception e) {
+            // 记录登录失败日志
+            String ip = ipUtils.getIp();
+            String loginAddress = ipUtils.getAddress();
+            // 从请求头获取登录方式
+            jakarta.servlet.http.HttpServletRequest request = com.sidifensen.utils.WebUtils.getRequest();
+            String loginTypeHeader = request.getHeader("Login-Type");
+            Integer loginType = ObjectUtil.isNotEmpty(loginTypeHeader) 
+                    ? com.sidifensen.domain.enums.RegisterOrLoginTypeEnum.getCode(loginTypeHeader) 
+                    : 0;
+            sysLoginLogService.recordLoginLog(
+                    null,  // 登录失败时可能无法获取用户ID
+                    oauthLoginDto.getUsername(),
+                    loginType,
+                    ip,
+                    loginAddress,
+                    1  // 1-失败
+            );
+            throw e;  // 重新抛出异常，让全局异常处理器处理
+        }
     }
 
     @Override
@@ -397,20 +434,35 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     // 管理员登录
     @Override
     public String adminLogin(AdminLoginDto adminLoginDto) {
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                adminLoginDto.getUsername(), adminLoginDto.getPassword());
-        // 调用loadUserByUsername方法
-        Authentication authenticate = authenticationManager.authenticate(authentication);
-        // 获取用户信息
-        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
-        List<SysRole> sysRoles = loginUser.getSysUser().getSysRoles();
+        try {
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    adminLoginDto.getUsername(), adminLoginDto.getPassword());
+            // 调用loadUserByUsername方法
+            Authentication authenticate = authenticationManager.authenticate(authentication);
+            // 获取用户信息
+            LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
+            List<SysRole> sysRoles = loginUser.getSysUser().getSysRoles();
 
-        if (sysRoles.stream().noneMatch(r -> r.getRole().equals("admin") || r.getRole().equals("viewer"))) {
-            throw new BlogException(BlogConstants.NotAdminAccount); // 不是管理员账户
+            if (sysRoles.stream().noneMatch(r -> r.getRole().equals("admin") || r.getRole().equals("viewer"))) {
+                throw new BlogException(BlogConstants.NotAdminAccount); // 不是管理员账户
+            }
+            // 创建token,此处的token时由UUID编码而成JWT字符串
+            String token = jwtUtils.createToken(loginUser.getSysUser().getId(), adminLoginDto.getRememberMe());
+            return token;
+        } catch (Exception e) {
+            // 记录管理员登录失败日志
+            String ip = ipUtils.getIp();
+            String loginAddress = ipUtils.getAddress();
+            sysLoginLogService.recordLoginLog(
+                    null,  // 登录失败时可能无法获取用户ID
+                    adminLoginDto.getUsername(),
+                    0,  // 0-用户名/邮箱登录
+                    ip,
+                    loginAddress,
+                    1  // 1-失败
+            );
+            throw e;  // 重新抛出异常，让全局异常处理器处理
         }
-        // 创建token,此处的token时由UUID编码而成JWT字符串
-        String token = jwtUtils.createToken(loginUser.getSysUser().getId(), adminLoginDto.getRememberMe());
-        return token;
     }
 
     // 管理端获取用户信息

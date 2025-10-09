@@ -1,5 +1,5 @@
 <template>
-  <!-- <Header></Header> -->
+  <Header></Header>
   <div class="login_container">
     <div class="left_panel"></div>
     <div class="welcome_title">
@@ -27,7 +27,8 @@
 }
 .login_container {
   display: flex;
-  height: calc(100vh - 48px);
+  height: 100vh;
+
   .left_panel {
     flex: 1;
     background: url("@/assets/img/bg.jpg") no-repeat center center / cover;

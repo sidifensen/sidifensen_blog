@@ -7,7 +7,10 @@ import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysRoleVo;
 import com.sidifensen.service.SysRoleMenuService;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +20,7 @@ import java.util.List;
  * @since 2025-06-29
  */
 @RateLimit(30)
+@Validated
 @RestController
 @RequestMapping("/role-menu")
 public class SysRoleMenuController {
@@ -32,7 +36,7 @@ public class SysRoleMenuController {
      */
     @PreAuthorize("hasAuthority('system:role:menu:add')")
     @PostMapping("add")
-    public Result add(@RequestBody SysRoleMenuDto sysRoleMenuDto) {
+    public Result add(@RequestBody @Valid SysRoleMenuDto sysRoleMenuDto) {
         sysRoleService.add(sysRoleMenuDto);
         return Result.success();
     }
@@ -45,7 +49,7 @@ public class SysRoleMenuController {
      */
     @PreAuthorize("hasAuthority('system:role:menu:get')")
     @GetMapping("{menuId}")
-    public Result getRoles(@PathVariable Integer menuId) {
+    public Result getRoles(@PathVariable @NotNull(message = "菜单ID不能为空") Integer menuId) {
         List<SysRoleVo> sysRoleVos = sysRoleService.getRoles(menuId);
         return Result.success(sysRoleVos);
     }
