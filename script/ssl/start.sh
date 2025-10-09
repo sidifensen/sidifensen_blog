@@ -79,15 +79,119 @@ start_stack() {
     show_access_info
 }
 
+start_services() {
+    print_title "启动基础服务"
+    print_message "正在启动 MySQL, Redis, MinIO, RabbitMQ..."
+    print_message "使用项目路径: ${PROJECT_ROOT}"
+    PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-services.yml up -d
+    print_message "等待服务启动..."
+    sleep 8
+    print_message "检查服务状态..."
+    docker-compose -f docker-compose-services.yml ps
+    print_message "基础服务启动完成"
+}
+
+start_apps() {
+    print_title "启动前后端服务"
+    print_message "正在启动后端和前端服务..."
+    print_message "使用项目路径: ${PROJECT_ROOT}"
+    PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-apps.yml up -d --build
+    print_message "等待服务启动..."
+    sleep 8
+    print_message "检查服务状态..."
+    docker-compose -f docker-compose-apps.yml ps
+    show_access_info
+}
+
+start_backend() {
+    print_title "启动后端服务"
+    print_message "正在启动后端服务..."
+    print_message "使用项目路径: ${PROJECT_ROOT}"
+    PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-backend.yml up -d --build
+    print_message "等待服务启动..."
+    sleep 5
+    print_message "检查服务状态..."
+    docker-compose -f docker-compose-backend.yml ps
+    print_message "后端服务启动完成"
+}
+
+start_frontend() {
+    print_title "启动前端服务"
+    print_message "正在启动前端服务..."
+    print_message "使用项目路径: ${PROJECT_ROOT}"
+    PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-frontend.yml up -d --build
+    print_message "等待服务启动..."
+    sleep 5
+    print_message "检查服务状态..."
+    docker-compose -f docker-compose-frontend.yml ps
+    show_access_info
+}
+
 stop_stack() {
     print_title "停止服务"
-    PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-ssl.yml down
-    print_message "所有服务已停止"
+    print_message "选择要停止的服务:"
+    echo "1) 停止所有服务 (完整环境)"
+    echo "2) 停止基础服务"
+    echo "3) 停止前后端服务"
+    echo "4) 停止后端服务"
+    echo "5) 停止前端服务"
+    read -p "请选择 (1-5): " stop_choice
+    case $stop_choice in
+        1)
+            PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-ssl.yml down
+            print_message "所有服务已停止"
+            ;;
+        2)
+            PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-services.yml down
+            print_message "基础服务已停止"
+            ;;
+        3)
+            PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-apps.yml down
+            print_message "前后端服务已停止"
+            ;;
+        4)
+            PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-backend.yml down
+            print_message "后端服务已停止"
+            ;;
+        5)
+            PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-frontend.yml down
+            print_message "前端服务已停止"
+            ;;
+        *)
+            print_error "无效选择"
+            ;;
+    esac
 }
 
 show_status() {
     print_title "服务状态"
-    PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-ssl.yml ps
+    print_message "选择要查看的服务状态:"
+    echo "1) 完整环境"
+    echo "2) 基础服务"
+    echo "3) 前后端服务"
+    echo "4) 后端服务"
+    echo "5) 前端服务"
+    read -p "请选择 (1-5): " status_choice
+    case $status_choice in
+        1)
+            PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-ssl.yml ps
+            ;;
+        2)
+            PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-services.yml ps
+            ;;
+        3)
+            PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-apps.yml ps
+            ;;
+        4)
+            PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-backend.yml ps
+            ;;
+        5)
+            PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-frontend.yml ps
+            ;;
+        *)
+            print_error "无效选择"
+            ;;
+    esac
 }
 
 show_logs() {
@@ -119,8 +223,38 @@ show_logs() {
 
 restart_stack() {
     print_title "重启服务"
-    PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-ssl.yml restart
-    print_message "服务重启完成"
+    print_message "选择要重启的服务:"
+    echo "1) 完整环境"
+    echo "2) 基础服务"
+    echo "3) 前后端服务"
+    echo "4) 后端服务"
+    echo "5) 前端服务"
+    read -p "请选择 (1-5): " restart_choice
+    case $restart_choice in
+        1)
+            PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-ssl.yml restart
+            print_message "完整环境重启完成"
+            ;;
+        2)
+            PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-services.yml restart
+            print_message "基础服务重启完成"
+            ;;
+        3)
+            PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-apps.yml restart
+            print_message "前后端服务重启完成"
+            ;;
+        4)
+            PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-backend.yml restart
+            print_message "后端服务重启完成"
+            ;;
+        5)
+            PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-frontend.yml restart
+            print_message "前端服务重启完成"
+            ;;
+        *)
+            print_error "无效选择"
+            ;;
+    esac
 }
 
 clean_data() {
@@ -151,11 +285,15 @@ menu() {
     echo ""
     print_title "Sidifensen Blog SSL Docker 管理脚本"
     echo "1. 启动生产环境 (SSL 全量服务)"
-    echo "2. 停止所有服务"
-    echo "3. 查看服务状态"
-    echo "4. 查看服务日志"
-    echo "5. 重启服务"
-    echo "6. 清理数据 (危险操作)"
+    echo "2. 启动基础服务 (MySQL, Redis, MinIO, RabbitMQ)"
+    echo "3. 启动前后端服务"
+    echo "4. 启动后端服务"
+    echo "5. 启动前端服务"
+    echo "6. 停止服务"
+    echo "7. 查看服务状态"
+    echo "8. 查看服务日志"
+    echo "9. 重启服务"
+    echo "10. 清理数据 (危险操作)"
     echo "0. 退出"
     echo ""
 }
@@ -171,14 +309,18 @@ main() {
     check_env_file
     while true; do
         menu
-        read -p "请选择操作 (0-6): " choice
+        read -p "请选择操作 (0-10): " choice
         case $choice in
             1) start_stack ;;
-            2) stop_stack ;;
-            3) show_status ;;
-            4) show_logs ;;
-            5) restart_stack ;;
-            6) clean_data ;;
+            2) start_services ;;
+            3) start_apps ;;
+            4) start_backend ;;
+            5) start_frontend ;;
+            6) stop_stack ;;
+            7) show_status ;;
+            8) show_logs ;;
+            9) restart_stack ;;
+            10) clean_data ;;
             0) print_message "再见！"; exit 0 ;;
             *) print_error "无效选择，请重新输入" ;;
         esac

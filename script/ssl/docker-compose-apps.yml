@@ -1,0 +1,126 @@
+# 应用服务配置（后端 + 前端）
+services:
+  # 后端服务
+  backend:
+    build:
+      context: ${PROJECT_ROOT}/sidifensen_blog_backend
+      dockerfile: Dockerfile
+    image: sidifensen-blog-backend
+    container_name: sidifensen-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT}:5000"
+    environment:
+      # 时区配置
+      TZ: Asia/Shanghai
+
+      # Spring Boot 配置
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+
+      # 数据库配置
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USERNAME: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+      # Redis 配置
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_USERNAME: ${REDIS_USERNAME}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+      # MinIO 配置
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_PUBLIC_POINT: ${MINIO_PUBLIC_POINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+
+      # RabbitMQ 配置
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
+
+      # 邮件配置
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+
+      # OAuth 配置
+      GITEE_CLIENT_ID: ${GITEE_CLIENT_ID}
+      GITEE_CLIENT_SECRET: ${GITEE_CLIENT_SECRET}
+      GITEE_REDIRECT_URI: ${GITEE_REDIRECT_URI}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      GITHUB_REDIRECT_URI: ${GITHUB_REDIRECT_URI}
+
+      # 前端地址配置
+      FRONTEND_USER_HOST: https://sidifensen.com/
+      FRONTEND_ADMIN_HOST: https://admin.sidifensen.com/
+
+      # 阿里云配置
+      ALIYUN_ACCESS_KEY_ID: ${ALIYUN_ACCESS_KEY_ID}
+      ALIYUN_ACCESS_KEY_SECRET: ${ALIYUN_ACCESS_KEY_SECRET}
+
+      # 自定义配置
+      SIDIFENSEN_JWT_SECRET: ${SIDIFENSEN_JWT_SECRET}
+      SIDIFENSEN_PHOTO_AUTO_AUDIT: ${SIDIFENSEN_PHOTO_AUTO_AUDIT}
+      SIDIFENSEN_ARTICLE_AUTO_AUDIT: ${SIDIFENSEN_ARTICLE_AUTO_AUDIT}
+      SIDIFENSEN_COMMENT_AUTO_AUDIT: ${SIDIFENSEN_COMMENT_AUTO_AUDIT}
+    networks:
+      - sidifensen-network
+
+  # Nginx 网关容器
+  nginx-gateway:
+    image: nginx:alpine
+    container_name: sidifensen-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-ssl.conf:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /etc/nginx/ssl:/etc/nginx/ssl:ro
+      - ./certbot-webroot:/var/www/certbot:ro
+    depends_on:
+      - frontend-admin
+      - frontend-user
+    networks:
+      - sidifensen-network
+
+  # 前端管理端
+  frontend-admin:
+    build:
+      context: ${PROJECT_ROOT}/sidifensen_blog_frontend/sidifensen_admin
+      dockerfile: Dockerfile
+    image: sidifensen-blog-admin
+    container_name: sidifensen-admin
+    restart: unless-stopped
+    ports:
+      - "${ADMIN_PORT}:80"
+    depends_on:
+      - backend
+    networks:
+      - sidifensen-network
+
+  # 前端用户端
+  frontend-user:
+    build:
+      context: ${PROJECT_ROOT}/sidifensen_blog_frontend/sidifensen_user
+      dockerfile: Dockerfile
+    image: sidifensen-blog-user
+    container_name: sidifensen-user
+    restart: unless-stopped
+    ports:
+      - "${USER_PORT}:80"
+    depends_on:
+      - backend
+    networks:
+      - sidifensen-network
+
+# 网络
+networks:
+  sidifensen-network:
+    driver: bridge
+    name: sidifensen-blog-network

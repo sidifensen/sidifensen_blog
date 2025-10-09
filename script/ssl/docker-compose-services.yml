@@ -1,0 +1,120 @@
+# 基础服务配置（MySQL, Redis, MinIO, RabbitMQ）
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: sidifensen-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: Asia/Shanghai
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ${PROJECT_ROOT}/sql/sidifensen_blog.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - sidifensen-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: sidifensen-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}", "--user", "default", "off", "--user", "${REDIS_USERNAME}", "on", "+@all", "~*", "&*", ">${REDIS_PASSWORD}"]
+    networks:
+      - sidifensen-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--user", "${REDIS_USERNAME}", "-a", "${REDIS_PASSWORD}", "ping"]
+      timeout: 10s
+      retries: 5
+      interval: 10s
+      start_period: 30s
+
+  # MinIO 对象存储
+  minio:
+    image: minio/minio:RELEASE.2025-04-08T15-41-24Z
+    container_name: sidifensen-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+      MINIO_BROWSER: on
+      MINIO_BROWSER_LOGIN_ANIMATION: on
+      MINIO_BROWSER_SESSION_DURATION: 12h
+      MINIO_IDENTITY_OPENID_ENABLE: "false"
+      MINIO_IDENTITY_LDAP_ENABLE: "false"
+      MINIO_IDENTITY_PLUGIN_ENABLE: "false"
+      MINIO_REGION: us-east-1
+      MINIO_SKIP_CLIENT: "true"
+      MINIO_SERVER_URL: ${MINIO_PUBLIC_POINT}
+    ports:
+      - "${MINIO_API_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001" --quiet
+    networks:
+      - sidifensen-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      timeout: 20s
+      retries: 3
+      interval: 30s
+      start_period: 20s
+
+  # RabbitMQ 消息队列
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: sidifensen-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    ports:
+      - "${RABBITMQ_PORT}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT}:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - sidifensen-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      timeout: 30s
+      retries: 10
+      interval: 10s
+      start_period: 60s
+
+# 数据卷
+volumes:
+  mysql_data:
+    driver: local
+    name: sidifensen-mysql-data
+  redis_data:
+    driver: local
+    name: sidifensen-redis-data
+  minio_data:
+    driver: local
+    name: sidifensen-minio-data
+  rabbitmq_data:
+    driver: local
+    name: sidifensen-rabbitmq-data
+
+# 网络
+networks:
+  sidifensen-network:
+    driver: bridge
+    name: sidifensen-blog-network
