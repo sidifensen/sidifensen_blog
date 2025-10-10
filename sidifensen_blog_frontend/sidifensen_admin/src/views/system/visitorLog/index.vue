@@ -38,7 +38,7 @@
               <span>{{ row.userId || "-" }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="username" label="用户名" width="120">
+          <el-table-column prop="username" label="用户名" width="170">
             <template #default="{ row }">
               <el-tooltip v-if="row.username" :content="row.username" placement="top-start">
                 <div class="log-username">{{ row.username }}</div>

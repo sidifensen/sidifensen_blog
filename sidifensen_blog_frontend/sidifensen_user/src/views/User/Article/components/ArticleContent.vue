@@ -94,7 +94,7 @@
           </div>
 
           <!-- 文章内容 -->
-          <div class="article-body" v-html="renderContent"></div>
+          <div class="article-body" v-html="renderContent" @click="handleCodeBlockClick"></div>
         </div>
       </template>
     </el-skeleton>
@@ -176,6 +176,7 @@ const commentDrawerVisible = ref(false); // 评论抽屉显示状态
 const commentTotal = ref(0); // 评论总数
 const commentDrawerRef = ref(null); // 评论抽屉引用
 const favoriteDialogVisible = ref(false); // 收藏对话框显示状态
+const copySuccess = ref(false); // 复制成功状态
 
 // 渲染富文本内容
 const renderContent = computed(() => {
@@ -298,6 +299,40 @@ const handleColumnClick = (column) => {
   router.push({
     path: `/user/${column.userId}/column/${column.id}`,
   });
+};
+
+// 复制代码块内容
+const copyCodeBlock = async (codeElement) => {
+  try {
+    // 获取代码文本内容
+    const codeText = codeElement.textContent || codeElement.innerText;
+
+    // 使用 Clipboard API 复制文本
+    await navigator.clipboard.writeText(codeText);
+
+    // 显示成功提示
+    copySuccess.value = true;
+    ElMessage.success("代码已复制到剪贴板");
+
+    // 2秒后重置状态
+    setTimeout(() => {
+      copySuccess.value = false;
+    }, 2000);
+  } catch (error) {
+    console.error("复制失败:", error);
+    ElMessage.error("复制失败，请手动复制");
+  }
+};
+
+// 处理代码块点击事件
+const handleCodeBlockClick = (event) => {
+  const target = event.target;
+
+  // 如果点击的是代码块本身，复制内容
+  if (target.tagName === "PRE" || target.closest("pre")) {
+    const codeElement = target.tagName === "PRE" ? target : target.closest("pre");
+    copyCodeBlock(codeElement);
+  }
 };
 </script>
 
@@ -467,12 +502,50 @@ const handleColumnClick = (column) => {
       }
 
       :deep(pre) {
+        position: relative;
         padding: 16px;
         overflow: auto;
         font-size: 14px;
         line-height: 1.45;
         background-color: var(--el-fill-color-light) !important;
         border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background-color: var(--el-fill-color) !important;
+
+          .copy-button {
+            opacity: 1;
+            visibility: visible;
+          }
+        }
+
+        // 复制按钮样式
+        &::before {
+          content: "复制";
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          padding: 4px 8px;
+          font-size: 12px;
+          color: var(--el-text-color-regular);
+          background-color: var(--el-bg-color);
+          border: 1px solid var(--el-border-color);
+          border-radius: 4px;
+          cursor: pointer;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.3s ease;
+          z-index: 10;
+          user-select: none;
+          pointer-events: none;
+        }
+
+        &:hover::before {
+          opacity: 1;
+          visibility: visible;
+        }
       }
 
       :deep(code) {

@@ -1,5 +1,5 @@
 <template>
-  <div class="article-catalog">
+  <div class="article-catalog" :class="{ 'is-fixed': isFixed }">
     <div class="catalog-header">
       <el-icon>
         <Document />
@@ -34,6 +34,7 @@ const props = defineProps({
 // 目录数据
 const catalog = ref([]);
 const currentHeading = ref("");
+const isFixed = ref(false);
 
 // 解析文章内容中的标题（HTML格式）
 const parseHeadings = () => {
@@ -67,10 +68,32 @@ const scrollToHeading = (headingText) => {
   }
 };
 
-// 监听滚动，高亮当前标题
+// 监听滚动，高亮当前标题和判断是否固定
 const handleScroll = () => {
   const headings = document.querySelectorAll(".article-body h1, .article-body h2, .article-body h3, .article-body h4, .article-body h5, .article-body h6");
   const scrollPosition = window.scrollY;
+
+  // 判断是否应该固定目录（当滚动超过文章开始位置时）
+  const articleContent = document.querySelector(".article-content");
+  if (articleContent) {
+    const articleTop = articleContent.offsetTop;
+    const shouldBeFixed = scrollPosition > articleTop - 100;
+
+    // 如果状态发生变化，记录原始位置
+    if (shouldBeFixed && !isFixed.value) {
+      const catalogElement = document.querySelector(".article-catalog");
+      if (catalogElement) {
+        // 获取目录元素的原始位置
+        const rect = catalogElement.getBoundingClientRect();
+
+        // 设置 CSS 变量来保持原始位置
+        catalogElement.style.setProperty("--catalog-left", `${rect.left}px`);
+        catalogElement.style.setProperty("--catalog-width", `${rect.width}px`);
+      }
+    }
+
+    isFixed.value = shouldBeFixed;
+  }
 
   for (const heading of headings) {
     const position = heading.offsetTop;
@@ -99,6 +122,20 @@ onUnmounted(() => {
   border-radius: 8px;
   padding: 20px;
   box-shadow: var(--el-box-shadow-light);
+  transition: all 0.3s ease;
+
+  // 固定状态样式
+  &.is-fixed {
+    position: fixed;
+    top: 90px;
+    left: var(--catalog-left, auto);
+    width: var(--catalog-width, 280px);
+    max-height: calc(100vh - 120px);
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    background-color: rgba(var(--el-bg-color-rgb), 0.9);
+    border: 1px solid var(--el-border-color);
+  }
 
   // 目录头部
   .catalog-header {
@@ -117,6 +154,11 @@ onUnmounted(() => {
   .catalog-list {
     max-height: calc(100vh - 200px);
     overflow-y: auto;
+
+    // 固定状态下的目录列表高度调整
+    .is-fixed & {
+      max-height: calc(100vh - 160px);
+    }
 
     // 目录项
     .catalog-item {
@@ -173,6 +215,29 @@ onUnmounted(() => {
 
     &::-webkit-scrollbar-track {
       background-color: transparent;
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 1024px) {
+  .article-catalog {
+    // 平板端固定位置调整
+    &.is-fixed {
+      width: 260px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .article-catalog {
+    // 移动端隐藏固定目录功能
+    &.is-fixed {
+      position: static;
+      width: auto;
+      max-height: none;
+      backdrop-filter: none;
+      background-color: var(--el-bg-color);
     }
   }
 }

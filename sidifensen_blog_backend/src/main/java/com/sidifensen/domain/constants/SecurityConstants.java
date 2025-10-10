@@ -1,8 +1,5 @@
 package com.sidifensen.domain.constants;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * @author sidifensen
  * @since 2025-07-08
@@ -24,7 +21,7 @@ public class SecurityConstants {
             "/user/admin/login",
             "/user/info/{userId:\\d+}",
             "/user/oauthLogin",
-            
+
             // 文章相关
             "/article/listAll",
             "/article/user/list",
@@ -32,38 +29,36 @@ public class SecurityConstants {
             "/article/get/{articleId:\\d+}",
             "/article/incrReadCount/{articleId:\\d+}",
             "/article/hot",
-            
+
             // 评论相关
             "/comment/list",
             "/comment/reply/list",
-            
+
             // 专栏相关
             "/column/list/{userId:\\d+}",
             "/column/detail/{columnId:\\d+}",
-            
+
             // 相册相关
             "/album/listAll",
             "/album/get/{albumId:\\d+}",
-            
+
             // 收藏相关
             "/favorite/listByUser",
             "/favorite/articles",
-            
+
             // OAuth相关
             "/oauth/gitee/login",
             "/oauth/gitee/callback",
             "/oauth/github/login",
             "/oauth/github/callback",
-            
+            "/oauth/qq/login",
+            "/oauth/qq/callback",
+
             // 友链相关
             "/link/list",
-            
+
             // 其他
             "/favicon.ico"
     };
-
-    // 允许的用户代理列表（可根据需要扩展）
-    public static final List<String> Allowed_User_Agents = Arrays.asList(
-            "Mozilla", "Chrome", "Firefox", "Safari", "Edge");
 
 }

@@ -4,6 +4,7 @@ import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
 import com.sidifensen.domain.oauth.Gitee;
 import com.sidifensen.domain.oauth.Github;
+import com.sidifensen.domain.oauth.QQ;
 import com.sidifensen.service.OauthService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,6 +14,7 @@ import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.request.AuthGiteeRequest;
 import me.zhyd.oauth.request.AuthGithubRequest;
+import me.zhyd.oauth.request.AuthQqRequest;
 import me.zhyd.oauth.request.AuthRequest;
 import me.zhyd.oauth.utils.AuthStateUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +38,9 @@ public class OauthController {
 
     @Resource
     private Github github;
+
+    @Resource
+    private QQ qq;
 
     @Resource
     private OauthService oauthService;
@@ -73,6 +78,21 @@ public class OauthController {
         request.sendRedirect(frontendUserHost + url);
     }
 
+    @GetMapping("/qq/login")
+    public void qqLogin(HttpServletResponse response) throws IOException {
+        AuthRequest authRequest = getQqAuthRequest();
+        String authorizeUrl = authRequest.authorize(AuthStateUtils.createState());
+        response.sendRedirect(authorizeUrl);
+    }
+
+    @GetMapping("/qq/callback")
+    public void qqCallback(AuthCallback callback, HttpServletResponse request) throws IOException {
+        AuthRequest authRequest = getQqAuthRequest();
+        AuthResponse authResponse = authRequest.login(callback);
+        String url = oauthService.login(authResponse, request, RegisterOrLoginTypeEnum.QQ.getCode());
+        request.sendRedirect(frontendUserHost + url);
+    }
+
 
     public AuthRequest getGiteeAuthRequest() {
         return new AuthGiteeRequest(AuthConfig.builder()
@@ -87,6 +107,14 @@ public class OauthController {
                 .clientId(github.getClientId())
                 .clientSecret(github.getClientSecret())
                 .redirectUri(github.getRedirectUri())
+                .build());
+    }
+
+    public AuthRequest getQqAuthRequest() {
+        return new AuthQqRequest(AuthConfig.builder()
+                .clientId(qq.getClientId())
+                .clientSecret(qq.getClientSecret())
+                .redirectUri(qq.getRedirectUri())
                 .build());
     }
 }

@@ -106,6 +106,11 @@ oauth:
     client-id: ${GITHUB_CLIENT_ID:} # github 客户端ID
     client-secret: ${GITHUB_CLIENT_SECRET:} # github 客户端密钥
     redirect-uri: ${GITHUB_REDIRECT_URI:http://localhost:5000/oauth/github/callback} # github 重定向URI
+  # qq 登录
+  qq:
+    client-id: ${QQ_CLIENT_ID:} # qq 客户端ID
+    client-secret: ${QQ_CLIENT_SECRET:} # qq 客户端密钥
+    redirect-uri: ${QQ_REDIRECT_URI:http://localhost:5000/oauth/qq/callback} # qq 重定向URI
 frontend:
   userHost: ${FRONTEND_USER_HOST:http://localhost:7000/} # 前端用户地址
   adminHost: ${FRONTEND_ADMIN_HOST:http://localhost:8000/} # 前端管理员地址

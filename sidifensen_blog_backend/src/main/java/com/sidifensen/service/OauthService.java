@@ -8,7 +8,6 @@ import com.sidifensen.domain.enums.LoginStatusEnum;
 import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysUserMapper;
-import com.sidifensen.service.SysLoginLogService;
 import com.sidifensen.utils.IpUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
@@ -45,14 +44,23 @@ public class OauthService {
     public String login(AuthResponse<?> authResponse, HttpServletResponse request, Integer code) {
         String ip = ipUtils.getIp();
         String loginType = RegisterOrLoginTypeEnum.getType(code);
-        
+
         if (authResponse.getCode() == 2000) {
             AuthUser authUser = (AuthUser) authResponse.getData();
-            String username = loginType + "_" + authUser.getUuid();
+            // 确保用户名长度不超过20个字符（数据库字段限制）
+            String uuid = authUser.getUuid();
+            log.info("uuid: {}", uuid);
+            String prefix = loginType + "_";
+            int maxUuidLength = 20 - prefix.length();
+            if (uuid.length() > maxUuidLength) {
+                uuid = uuid.substring(0, maxUuidLength);
+            }
+            String username = prefix + uuid;
+
             LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, username);
             SysUser user = sysUserMapper.selectOne(queryWrapper);
             String password = passwordEncoder.encode(authUser.getToken().getAccessToken());
-            
+
             if (ObjectUtil.isEmpty(user)) {
                 // 注册
                 SysUser sysUser = new SysUser();
@@ -88,18 +96,17 @@ public class OauthService {
                 // 异步记录登录成功日志（使用去重方法避免重复插入）
                 sysLoginLogService.recordOrUpdateLoginLog(user.getId(), username, code, ip, LoginStatusEnum.SUCCESS.getCode());
             }
-            
+
             switch (code) {
                 case 1:
                     return "?login_type=gitee&user_name=" + username + "&access_token=" + authUser.getToken().getAccessToken();
                 case 2:
                     return "?login_type=github&user_name=" + username + "&access_token=" + authUser.getToken().getAccessToken();
+                case 3:
+                    return "?login_type=qq&user_name=" + username + "&access_token=" + authUser.getToken().getAccessToken();
             }
             return "?login_type=gitee&user_name=" + username + "&access_token=" + authUser.getToken().getAccessToken();
         } else {
-            log.error("oauth登录失败,登录方式={}, 登录IP={}, 失败报错：{}", loginType, ip, authResponse.getMsg());
-            // 记录OAuth登录失败日志
-            sysLoginLogService.recordLoginLog(null, loginType + "_oauth_failed", code, ip, LoginStatusEnum.FAIL.getCode());
             throw new BlogException(BlogConstants.OauthLoginError + "：" + authResponse.getMsg());
         }
     }

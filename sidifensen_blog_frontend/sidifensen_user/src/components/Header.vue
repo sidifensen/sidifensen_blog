@@ -174,7 +174,6 @@ const oauth = () => {
       SetJwt(res.data.data);
       info().then((res) => {
         userStore.user = res.data.data;
-        router.push({ name: "index" });
       });
     });
   }

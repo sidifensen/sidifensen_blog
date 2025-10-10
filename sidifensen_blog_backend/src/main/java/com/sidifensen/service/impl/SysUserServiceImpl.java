@@ -115,7 +115,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         } catch (Exception e) {
             // 记录登录失败日志
             String ip = ipUtils.getIp();
-            sysLoginLogService.recordLoginLog(
+            sysLoginLogService.recordOrUpdateLoginLog(
                     null,  // 登录失败时可能无法获取用户ID
                     loginDto.getUsername(),
                     RegisterOrLoginTypeEnum.EMAIL.getCode(),  // 0-用户名/邮箱登录
@@ -142,21 +142,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             String token = jwtUtils.createToken(loginUser.getSysUser().getId(), true);
             return token;
         } catch (Exception e) {
-            // 记录登录失败日志
-            String ip = ipUtils.getIp();
-            // 从请求头获取登录方式
-            jakarta.servlet.http.HttpServletRequest request = com.sidifensen.utils.WebUtils.getRequest();
-            String loginTypeHeader = request.getHeader("Login-Type");
-            Integer loginType = ObjectUtil.isNotEmpty(loginTypeHeader)
-                    ? com.sidifensen.domain.enums.RegisterOrLoginTypeEnum.getCode(loginTypeHeader)
-                    : 0;
-            sysLoginLogService.recordLoginLog(
-                    null,
-                    oauthLoginDto.getUsername(),
-                    loginType,
-                    ip,
-                    LoginStatusEnum.FAIL.getCode()  // 1-失败
-            );
+            log.error("OAuth登录JWT token生成失败：用户名={}, 错误={}", oauthLoginDto.getUsername(), e.getMessage());
             throw e;  // 重新抛出异常，让全局异常处理器处理
         }
     }
@@ -434,7 +420,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             List<SysRole> sysRoles = loginUser.getSysUser().getSysRoles();
 
             if (sysRoles.stream().noneMatch(r -> r.getRole().equals("admin") || r.getRole().equals("viewer"))) {
-                throw new BlogException(BlogConstants.NotAdminAccount); // 不是管理员账户
+                throw new BlogException(BlogConstants.NotAdminAccount); // 不是管理后台账户
             }
             // 创建token,此处的token时由UUID编码而成JWT字符串
             String token = jwtUtils.createToken(loginUser.getSysUser().getId(), adminLoginDto.getRememberMe());
@@ -442,14 +428,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         } catch (Exception e) {
             // 记录管理员登录失败日志
             String ip = ipUtils.getIp();
-            String loginAddress = ipUtils.getAddress();
-            sysLoginLogService.recordLoginLog(
+            sysLoginLogService.recordOrUpdateLoginLog(
                     null,  // 登录失败时可能无法获取用户ID
                     adminLoginDto.getUsername(),
                     0,  // 0-用户名/邮箱登录
                     ip,
-                    loginAddress,
-                    1  // 1-失败
+                    LoginStatusEnum.FAIL.getCode()  // 1-失败
             );
             throw e;  // 重新抛出异常，让全局异常处理器处理
         }

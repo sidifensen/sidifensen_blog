@@ -53,8 +53,6 @@ public class SysVisitorLogServiceImpl extends ServiceImpl<SysVisitorLogMapper, S
     @Override
     public void insertVisitorRecord(SysVisitorLog sysVisitorLog) {
         sysVisitorLogMapper.insert(sysVisitorLog);
-        log.info("访客记录插入成功: userId={}, ip={}, device={}",
-                sysVisitorLog.getUserId(), sysVisitorLog.getIp(), sysVisitorLog.getDevice());
     }
 
     @Override
@@ -120,7 +118,6 @@ public class SysVisitorLogServiceImpl extends ServiceImpl<SysVisitorLogMapper, S
         // 使用 MyBatis-Plus 的 removeByIds 方法批量删除
         boolean success = this.removeByIds(ids);
         if (success) {
-            log.info("批量删除访客日志成功，删除数量: {}", ids.size());
         } else {
             log.warn("批量删除访客日志失败");
         }

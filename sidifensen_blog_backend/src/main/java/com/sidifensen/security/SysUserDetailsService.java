@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.entity.*;
+import com.sidifensen.domain.enums.LoginStatusEnum;
 import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
 import com.sidifensen.domain.enums.RoleEnum;
 import com.sidifensen.domain.enums.StatusEnum;
@@ -86,13 +87,12 @@ public class SysUserDetailsService implements UserDetailsService {
         ipService.setLoginIp(sysUser.getId(), ip);
 
         // 异步记录登录成功日志
-        sysLoginLogService.recordLoginLog(
+        sysLoginLogService.recordOrUpdateLoginLog(
                 sysUser.getId(),
                 sysUser.getUsername(),
                 sysUser.getLoginType(),
                 ip,
-                loginAddress,
-                0  // 0-成功
+                LoginStatusEnum.SUCCESS.getCode()  // 0-成功
         );
 
         return handleLogin(sysUser);

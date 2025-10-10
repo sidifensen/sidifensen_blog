@@ -18,7 +18,11 @@ public enum RegisterOrLoginTypeEnum {
     /**
      * Github
      */
-    GITHUB(2, "github","Github登录" );
+    GITHUB(2, "github","Github登录" ),
+    /**
+     * QQ
+     */
+    QQ(3, "qq","QQ登录" );
 
 
     /**

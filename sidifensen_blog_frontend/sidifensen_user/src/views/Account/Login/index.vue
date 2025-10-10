@@ -43,12 +43,15 @@
       <el-link underline="never" :href="githubLogin">
         <svg-icon name="github" width="36px" height="36px" color="#999" cursor="pointer" />
       </el-link>
+      <el-link underline="never" :href="qqLogin">
+        <svg-icon name="qq" width="36px" height="36px" color="#999" cursor="pointer" />
+      </el-link>
     </div>
   </el-form>
 </template>
 
 <script setup>
-import { giteeLogin, githubLogin } from "@/api/oauth";
+import { giteeLogin, githubLogin, qqLogin } from "@/api/oauth";
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { login, checkCode, info } from "@/api/user";
