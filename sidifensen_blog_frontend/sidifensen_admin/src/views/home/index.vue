@@ -1,5 +1,8 @@
 <template>
   <div class="dashboard-container">
+    <!-- 项目链接展示区域 -->
+    <ProjectLinks />
+
     <!-- 页面标题 -->
     <div class="page-header">
       <h1 class="page-title">管理后台首页</h1>
@@ -227,6 +230,7 @@ import { getArticleStatistics } from "@/api/article";
 import { getCommentStatistics } from "@/api/comment";
 import { getTodayVisitorCount, getVisitorTrend } from "@/api/visitorLog";
 import * as echarts from "echarts";
+import ProjectLinks from "@/components/ProjectLinks.vue";
 
 // 路由和状态管理
 const router = useRouter();
@@ -801,6 +805,83 @@ onBeforeUnmount(() => {
 @media (max-width: 768px) {
   .dashboard-container {
     padding: 10px;
+
+    // 项目链接展示区域
+    .project-links-section {
+      margin-bottom: 20px;
+
+      // 项目卡片
+      .project-card {
+        :deep(.el-card__body) {
+          padding: 16px;
+        }
+
+        // 项目头部
+        .project-header {
+          margin-bottom: 16px;
+
+          // 项目标题
+          .project-title {
+            .title-icon {
+              font-size: 20px;
+            }
+
+            .title-text {
+              font-size: 18px;
+            }
+          }
+
+          // 项目描述
+          .project-description {
+            font-size: 13px;
+          }
+        }
+
+        // 项目链接列表
+        .project-links {
+          grid-template-columns: 1fr;
+          gap: 12px;
+
+          // 单个项目链接
+          .project-link {
+            padding: 14px;
+
+            &:hover {
+              transform: translateY(-2px);
+            }
+
+            // 链接图标容器
+            .link-icon {
+              width: 40px;
+              height: 40px;
+
+              svg {
+                width: 28px;
+                height: 28px;
+              }
+            }
+
+            // 链接内容
+            .link-content {
+              // 链接名称
+              .link-name {
+                font-size: 15px;
+              }
+
+              // 链接副标题
+              .link-subtitle {
+                font-size: 11px;
+              }
+            }
+
+            // 箭头图标
+            .link-arrow {
+              font-size: 18px;
+            }
+          }
+        }
+      }
+    }
 
     .page-header {
       margin-bottom: 20px;

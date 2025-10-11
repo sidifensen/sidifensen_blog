@@ -5,7 +5,6 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
-import com.sidifensen.domain.constants.RedisConstants;
 import com.sidifensen.domain.dto.SysVisitorLogQueryDto;
 import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.entity.SysVisitorLog;
@@ -18,7 +17,6 @@ import com.sidifensen.mapper.SysVisitorLogMapper;
 import com.sidifensen.service.SysVisitorLogService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,12 +45,39 @@ public class SysVisitorLogServiceImpl extends ServiceImpl<SysVisitorLogMapper, S
     @Resource
     private SysUserMapper sysUserMapper;
 
-    @Resource
-    private RedisTemplate<String, String> redisTemplate;
-
     @Override
     public void insertVisitorRecord(SysVisitorLog sysVisitorLog) {
-        sysVisitorLogMapper.insert(sysVisitorLog);
+        // 构建锁的key：userId(或null) + IP + 设备类型
+        String lockKey = "visitor:" + 
+                         (sysVisitorLog.getUserId() != null ? sysVisitorLog.getUserId() : "guest") + 
+                         ":" + sysVisitorLog.getIp() + 
+                         ":" + sysVisitorLog.getDevice();
+        
+        // 使用 synchronized 锁定该访客的操作，防止并发插入重复数据 intern() 确保相同字符串使用同一个对象实例作为锁
+        synchronized (lockKey.intern()) {
+            // 计算1小时前的时间
+            Date oneHourAgo = new Date(System.currentTimeMillis() - 60 * 60 * 1000);
+            
+            // 查重逻辑：基于用户id、IP、设备类型进行查重，且访问时间在1小时内
+            LambdaQueryWrapper<SysVisitorLog> qw = new LambdaQueryWrapper<SysVisitorLog>()
+                    .eq(sysVisitorLog.getUserId() != null, SysVisitorLog::getUserId, sysVisitorLog.getUserId())
+                    .isNull(sysVisitorLog.getUserId() == null, SysVisitorLog::getUserId)
+                    .eq(SysVisitorLog::getIp, sysVisitorLog.getIp())
+                    .eq(SysVisitorLog::getDevice, sysVisitorLog.getDevice())
+                    .ge(SysVisitorLog::getVisitTime, oneHourAgo); // 1小时内的记录
+
+            // 查询是否已存在1小时内相同的访客记录
+            SysVisitorLog existingLog = sysVisitorLogMapper.selectOne(qw);
+
+            if (existingLog != null) {
+                // 存在1小时内的记录，更新访问时间
+                existingLog.setVisitTime(sysVisitorLog.getVisitTime());
+                sysVisitorLogMapper.updateById(existingLog);
+            } else {
+                // 不存在1小时内的记录，执行插入
+                sysVisitorLogMapper.insert(sysVisitorLog);
+            }
+        }
     }
 
     @Override
@@ -212,26 +237,7 @@ public class SysVisitorLogServiceImpl extends ServiceImpl<SysVisitorLogMapper, S
 
     @Override
     public Long getTodayVisitorCount() {
-        try {
-            // 1. 构建今日的 Redis Set Key
-            String today = LocalDate.now().toString();
-            String setKey = RedisConstants.VisitorSet + today;
-
-            // 2. 从 Redis 获取今日访客数量（Set 的成员数量）
-            Long count = redisTemplate.opsForSet().size(setKey);
-
-            if (count != null && count > 0) {
-                return count;
-            }
-
-            // 3. Redis 中没有数据，降级到数据库查询
-            return countByDate(LocalDate.now(), LocalDate.now());
-
-        } catch (Exception e) {
-            // 4. Redis 异常，降级到数据库查询
-            log.error("从 Redis 获取今日访问量失败，降级到数据库查询", e);
-            return countByDate(LocalDate.now(), LocalDate.now());
-        }
+        return countByDate(LocalDate.now(), LocalDate.now());
     }
 
     /**
@@ -247,5 +253,6 @@ public class SysVisitorLogServiceImpl extends ServiceImpl<SysVisitorLogMapper, S
 
         return sysVisitorLogMapper.selectCount(qw);
     }
+
 }
 

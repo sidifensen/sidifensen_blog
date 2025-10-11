@@ -115,7 +115,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         } catch (Exception e) {
             // 记录登录失败日志
             String ip = ipUtils.getIp();
-            sysLoginLogService.recordOrUpdateLoginLog(
+            sysLoginLogService.recordLoginLog(
                     null,  // 登录失败时可能无法获取用户ID
                     loginDto.getUsername(),
                     RegisterOrLoginTypeEnum.EMAIL.getCode(),  // 0-用户名/邮箱登录
@@ -428,10 +428,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         } catch (Exception e) {
             // 记录管理员登录失败日志
             String ip = ipUtils.getIp();
-            sysLoginLogService.recordOrUpdateLoginLog(
+            sysLoginLogService.recordLoginLog(
                     null,  // 登录失败时可能无法获取用户ID
                     adminLoginDto.getUsername(),
-                    0,  // 0-用户名/邮箱登录
+                    RegisterOrLoginTypeEnum.EMAIL.getCode(),  // 0-用户名/邮箱登录
                     ip,
                     LoginStatusEnum.FAIL.getCode()  // 1-失败
             );

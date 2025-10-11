@@ -1106,8 +1106,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         // 获取用户信息（粉丝数、关注数）
         SysUser user = sysUserMapper.selectById(userId);
-        Long fansCount = user != null ? user.getFansCount() : 0L;
-        Long followCount = user != null ? user.getFollowCount() : 0L;
+        Long fansCount = user.getFansCount().longValue();
+        Long followCount = user.getFollowCount().longValue();
 
         // 构建返回对象
         CreationStatisticsVo creationStatistics = new CreationStatisticsVo();

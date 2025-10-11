@@ -1,7 +1,6 @@
 package com.sidifensen.rabbitmq;
 
 import com.sidifensen.domain.constants.RabbitMQConstants;
-import com.sidifensen.domain.constants.RedisConstants;
 import com.sidifensen.domain.entity.SysVisitorLog;
 import com.sidifensen.domain.enums.MailEnum;
 import com.sidifensen.service.SysVisitorLogService;
@@ -14,12 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author sidifensen
@@ -136,7 +131,7 @@ public class RabbitMqListener {
 
     /**
      * 监听访客记录队列
-     * 处理访客记录插入（Redis去重 + 数据库插入）
+     * 处理访客记录插入
      */
     @RabbitListener(queues = RabbitMQConstants.Visitor_Queue)
     public void receiveVisitorRecord(Map<String, Object> message) {
@@ -144,39 +139,8 @@ public class RabbitMqListener {
             Integer userId = (Integer) message.get("userId");
             String ip = (String) message.get("ip");
             String device = (String) message.get("device");
-
-            // 1. 构建当天的 Redis Set Key（所有访客记录都存在一个 Set 中）
-            String today = LocalDate.now().toString(); // 2025-10-07
-            String setKey = RedisConstants.VisitorSet + today;
-
-            // 2. 构建访客的唯一标识（Set 的成员）
-            String visitorMember = userId != null
-                    ? "user:" + userId + ":ip:" + ip + ":device:" + device
-                    : "ip:" + ip + ":device:" + device;
-
-            // 3. 【关键】先尝试添加到 Redis Set，利用 SADD 的原子性去重
-            // SADD 返回值：1=成功添加（新元素），0=添加失败（元素已存在）
-            Long addResult = redisTemplate.opsForSet().add(setKey, visitorMember);
-
-            if (addResult == null || addResult == 0) {
-                // Redis 中已存在，说明今日已记录过，直接跳过
-                return;
-            }
-
-            // 4. 设置 Set 的过期时间（只在第一次添加时设置）
-            // 使用 TTL 检查是否已设置过期时间，避免重复设置
-            Long ttl = redisTemplate.getExpire(setKey, TimeUnit.SECONDS);
-            if (ttl == null || ttl == -1) { // -1 表示没有设置过期时间
-                LocalDateTime now = LocalDateTime.now();
-                LocalDateTime endOfDay = now.toLocalDate().atTime(23, 59, 59);
-                long seconds = ChronoUnit.SECONDS.between(now, endOfDay);
-                redisTemplate.expire(setKey, seconds, TimeUnit.SECONDS);
-            }
-
-            // 5. Redis 添加成功（说明是新访客），解析IP获取地理位置
             String address = ipUtils.getAddress(ip);
 
-            // 6. 插入数据库（只有通过 Redis 原子去重的才会执行到这里）
             SysVisitorLog sysVisitorLog = new SysVisitorLog()
                     .setUserId(userId)
                     .setIp(ip)
@@ -189,6 +153,47 @@ public class RabbitMqListener {
         } catch (Exception e) {
             log.error("处理访客记录时出现异常, message={}", message, e);
             // 不抛出异常，避免重试（访客记录丢失影响不大）
+        }
+    }
+
+    /**
+     * 监听黑名单通知队列
+     * 处理黑名单通知邮件发送
+     * <p>
+     * 重试机制：
+     * - 最大重试次数：5次（包括首次消费）
+     * - 重试间隔：5s, 10s, 20s, 30s（指数退避）
+     * - 重试失败后：消息进入死信队列
+     */
+    @RabbitListener(queues = RabbitMQConstants.Blacklist_Queue)
+    public void receiveBlacklistNotification(Map<String, Object> message) {
+        try {
+            String userId = String.valueOf(message.get("userId"));
+            String ip = (String) message.get("ip");
+            String address = (String) message.get("address");
+            String reason = (String) message.get("reason");
+            String banDuration = (String) message.get("banDuration");
+            String banTime = (String) message.get("banTime");
+
+            // 发送邮件给管理员
+            emailUtils.sendHtmlMailToAdmin(
+                    MailEnum.BLACKLIST_NOTIFICATION.getSubject(),
+                    MailEnum.BLACKLIST_NOTIFICATION.getTemplateName(),
+                    Map.of(
+                            "userId", userId,
+                            "ip", ip,
+                            "address", address,
+                            "reason", reason,
+                            "banDuration", banDuration,
+                            "banTime", banTime,
+                            "frontendAdminHost", frontendAdminHost
+                    )
+            );
+
+        } catch (Exception e) {
+            log.error("处理黑名单通知邮件发送请求时出现异常, message={}", message, e);
+            // 抛出异常触发重试机制
+            throw new RuntimeException("黑名单通知邮件发送失败: " + e.getMessage(), e);
         }
     }
 
