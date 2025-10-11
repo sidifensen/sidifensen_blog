@@ -68,6 +68,10 @@
     <logger name="org.mybatis.spring.mapper" level="OFF"/>
     <logger name="org.apache" level="INFO"/>
 
+    <!-- 屏蔽 RabbitMQ 和 HikariCP 关闭时的 INFO 日志 -->
+    <logger name="org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer" level="WARN"/>
+    <logger name="com.zaxxer.hikari.HikariDataSource" level="WARN"/>
+
     <!-- 开发环境:打印控制台 -->
     <springProfile name="dev">
         <logger name="com.sidifensen" level="INFO"/>

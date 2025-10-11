@@ -59,89 +59,48 @@ public class SysLoginLogServiceImpl extends ServiceImpl<SysLoginLogMapper, SysLo
      * 异步记录登录日志
      */
     @Override
-    public void recordLoginLog(Integer userId, String username, Integer loginType, String loginIp, String loginAddress, Integer status) {
-        // 使用线程池异步执行
-        executorService.execute(() -> {
-            try {
-                SysLoginLog loginLog = new SysLoginLog();
-                loginLog.setUserId(userId);
-                loginLog.setUsername(username);
-                loginLog.setLoginType(loginType);
-                loginLog.setLoginIp(loginIp);
-                loginLog.setLoginAddress(loginAddress);
-                loginLog.setStatus(status);
-                loginLog.setLoginTime(new Date());
-
-                sysLoginLogMapper.insert(loginLog);
-            } catch (Exception e) {
-                log.error("记录登录日志失败：用户ID={}, 用户名={}, 登录IP={}, 错误信息={}", userId, username, loginIp, e.getMessage(), e);
-            }
-        });
-    }
-
-        /**
-     * 异步记录登录日志
-     */
-    @Override
     public void recordLoginLog(Integer userId, String username, Integer loginType, String loginIp, Integer status) {
         // 使用线程池异步执行
         executorService.execute(() -> {
             try {
-                SysLoginLog loginLog = new SysLoginLog();
-                loginLog.setUserId(userId);
-                loginLog.setUsername(username);
-                loginLog.setLoginType(loginType);
-                loginLog.setLoginIp(loginIp);
-                loginLog.setLoginAddress(ipUtils.getAddress(loginIp));
-                loginLog.setStatus(status);
-                loginLog.setLoginTime(new Date());
+                // 构建锁的key：userId + username + loginType + loginIp + status
+                String lockKey = "loginLog:" + userId + ":" + username + ":" + loginType + ":" + loginIp + ":" + status;
 
-                sysLoginLogMapper.insert(loginLog);
-            } catch (Exception e) {
-                log.error("记录登录日志失败：用户ID={}, 用户名={}, 登录IP={}, 错误信息={}", userId, username, loginIp, e.getMessage(), e);
-            }
-        });
-    }
+                // 使用 synchronized 锁定该登录记录的操作，防止并发插入重复数据 intern() 确保相同字符串使用同一个对象实例作为锁
+                synchronized (lockKey.intern()) {
+                    // 计算一个小时前的时间
+                    Date oneHourAgo = new Date(System.currentTimeMillis() - 60 * 60 * 1000);
+                    
+                    // 查询一个小时内是否有相同的登录日志
+                    LambdaQueryWrapper<SysLoginLog> qw = new LambdaQueryWrapper<SysLoginLog>()
+                            .eq(SysLoginLog::getUserId, userId)
+                            .eq(SysLoginLog::getUsername, username)
+                            .eq(SysLoginLog::getLoginType, loginType)
+                            .eq(SysLoginLog::getLoginIp, loginIp)
+                            .eq(SysLoginLog::getStatus, status)
+                            .ge(SysLoginLog::getLoginTime, oneHourAgo)
+                            .orderByDesc(SysLoginLog::getLoginTime)
+                            .last("LIMIT 1");
+                    
+                    SysLoginLog existingLog = sysLoginLogMapper.selectOne(qw);
+                    
+                    if (ObjectUtil.isNotEmpty(existingLog)) {
+                        // 如果存在，更新登录时间
+                        existingLog.setLoginTime(new Date());
+                        sysLoginLogMapper.updateById(existingLog);
+                    } else {
+                        // 如果不存在，插入新记录
+                        SysLoginLog loginLog = new SysLoginLog();
+                        loginLog.setUserId(userId);
+                        loginLog.setUsername(username);
+                        loginLog.setLoginType(loginType);
+                        loginLog.setLoginIp(loginIp);
+                        loginLog.setLoginAddress(ipUtils.getAddress(loginIp));
+                        loginLog.setStatus(status);
+                        loginLog.setLoginTime(new Date());
 
-    /**
-     * 异步记录或更新登录日志（避免重复插入）
-     */
-    @Override
-    public void recordOrUpdateLoginLog(Integer userId, String username, Integer loginType, String loginIp, Integer status) {
-        // 使用线程池异步执行
-        executorService.execute(() -> {
-            try {
-                // 查询是否存在相同的登录记录（用户ID、用户名、登录方式、登录IP都相同）
-                LambdaQueryWrapper<SysLoginLog> queryWrapper = new LambdaQueryWrapper<SysLoginLog>()
-                        .eq(SysLoginLog::getUserId, userId)
-                        .eq(SysLoginLog::getUsername, username)
-                        .eq(SysLoginLog::getLoginType, loginType)
-                        .eq(SysLoginLog::getLoginIp, loginIp)
-                        .eq(SysLoginLog::getStatus, status)
-                        .orderByDesc(SysLoginLog::getLoginTime)
-                        .last("LIMIT 1");
-
-                SysLoginLog existingLog = sysLoginLogMapper.selectOne(queryWrapper);
-
-                if (ObjectUtil.isNotEmpty(existingLog)) {
-                    // 如果存在相同记录，更新登录时间
-                    SysLoginLog updateLog = new SysLoginLog();
-                    updateLog.setId(existingLog.getId());
-                    updateLog.setLoginTime(new Date());
-                    updateLog.setLoginAddress(ipUtils.getAddress(loginIp));
-                    sysLoginLogMapper.updateById(updateLog);
-                } else {
-                    // 如果不存在，插入新记录
-                    SysLoginLog loginLog = new SysLoginLog();
-                    loginLog.setUserId(userId);
-                    loginLog.setUsername(username);
-                    loginLog.setLoginType(loginType);
-                    loginLog.setLoginIp(loginIp);
-                    loginLog.setLoginAddress(ipUtils.getAddress(loginIp));
-                    loginLog.setStatus(status);
-                    loginLog.setLoginTime(new Date());
-
-                    sysLoginLogMapper.insert(loginLog);
+                        sysLoginLogMapper.insert(loginLog);
+                    }
                 }
             } catch (Exception e) {
                 log.error("记录或更新登录日志失败：用户ID={}, 用户名={}, 登录IP={}, 错误信息={}", userId, username, loginIp, e.getMessage(), e);

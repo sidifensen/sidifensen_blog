@@ -10,6 +10,7 @@
             <el-option label="用户名/邮箱" :value="0" />
             <el-option label="Gitee" :value="1" />
             <el-option label="GitHub" :value="2" />
+            <el-option label="QQ" :value="3" />
           </el-select>
           <el-select v-model="searchForm.status" placeholder="登录状态" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="全部" value="" />
@@ -195,6 +196,7 @@ const getLoginTypeClass = (loginType) => {
   if (loginType === 0) return "type-email";
   if (loginType === 1) return "type-gitee";
   if (loginType === 2) return "type-github";
+  if (loginType === 3) return "type-qq";
   return "";
 };
 
@@ -542,6 +544,11 @@ onUnmounted(() => {
           background-color: #f3f4f6;
           color: #374151;
         }
+
+        &.type-qq {
+          background-color: #dbeafe;
+          color: #1e40af;
+        }
       }
 
       // IP地址样式
@@ -706,6 +713,11 @@ onUnmounted(() => {
                   &.type-github {
                     background-color: #f3f4f6;
                     color: #374151;
+                  }
+
+                  &.type-qq {
+                    background-color: #dbeafe;
+                    color: #1e40af;
                   }
                 }
 

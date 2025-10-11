@@ -46,6 +46,10 @@ public class SecurityConstants {
             "/favorite/listByUser",
             "/favorite/articles",
 
+            // 关注相关
+            "/follow/followList/{userId:\\d+}",
+            "/follow/fansList/{userId:\\d+}",
+            
             // OAuth相关
             "/oauth/gitee/login",
             "/oauth/gitee/callback",

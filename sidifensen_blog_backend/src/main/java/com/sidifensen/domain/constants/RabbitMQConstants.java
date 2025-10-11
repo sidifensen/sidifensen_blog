@@ -69,4 +69,21 @@ public class RabbitMQConstants {
      */
     public static final String Visitor_Routing_Key = "visitor_routing_key";
 
+    // ==================== 黑名单通知相关 ====================
+    
+    /**
+     * 黑名单通知交换机
+     */
+    public static final String Blacklist_Exchange = "blacklist_exchange";
+
+    /**
+     * 黑名单通知队列
+     */
+    public static final String Blacklist_Queue = "blacklist_queue";
+
+    /**
+     * 黑名单通知路由键
+     */
+    public static final String Blacklist_Routing_Key = "blacklist_routing_key";
+
 }

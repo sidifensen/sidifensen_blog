@@ -82,8 +82,8 @@ public class OauthService {
                     ipService.setRegisterIp(sysUser.getId(), ip);
                     // 异步设置角色
                     sysUserRoleService.setRegisterRole(sysUser.getId());
-                    // 异步记录注册成功日志（使用去重方法避免重复插入）
-                    sysLoginLogService.recordOrUpdateLoginLog(sysUser.getId(), username, code, ip, LoginStatusEnum.SUCCESS.getCode());
+                    // 异步记录注册成功日志
+                    sysLoginLogService.recordLoginLog(sysUser.getId(), username, code, ip, LoginStatusEnum.SUCCESS.getCode());
                 }
             } else {
                 // 登录
@@ -93,8 +93,8 @@ public class OauthService {
                 sysUserMapper.updateById(sysUser);
                 // 异步设置登录IP
                 ipService.setLoginIp(sysUser.getId(), ip);
-                // 异步记录登录成功日志（使用去重方法避免重复插入）
-                sysLoginLogService.recordOrUpdateLoginLog(user.getId(), username, code, ip, LoginStatusEnum.SUCCESS.getCode());
+                // 异步记录登录成功日志
+                sysLoginLogService.recordLoginLog(user.getId(), username, code, ip, LoginStatusEnum.SUCCESS.getCode());
             }
 
             switch (code) {

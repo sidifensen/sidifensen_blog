@@ -1,26 +1,34 @@
 package com.sidifensen.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
+import com.sidifensen.domain.constants.RabbitMQConstants;
 import com.sidifensen.domain.dto.BlacklistAddDto;
 import com.sidifensen.domain.dto.BlacklistSearchDto;
 import com.sidifensen.domain.dto.BlacklistUpdateDto;
+import com.sidifensen.domain.dto.MessageDto;
 import com.sidifensen.domain.entity.SysBlacklist;
 import com.sidifensen.domain.enums.BlacklistTypeEnum;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysBlacklistMapper;
 import com.sidifensen.redis.RedisComponent;
+import com.sidifensen.service.MessageService;
 import com.sidifensen.service.SysBlacklistService;
+import com.sidifensen.utils.IpUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -37,10 +45,21 @@ public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, Sys
     @Resource
     private RedisComponent redisComponent;
 
+    @Resource
+    private MessageService messageService;
+
+    @Resource
+    private RabbitTemplate rabbitTemplate;
+
+    @Resource
+    private IpUtils ipUtils;
+
     @Override
     public void addToBlacklist(String identifier, String reason, long banDurationSeconds) {
         try {
             SysBlacklist blacklist = new SysBlacklist();
+            String userId = "未知";
+            String ip = "未知";
 
             // 解析用户标识，判断是用户类型还是IP类型
             if (identifier.startsWith("user:")) {
@@ -48,11 +67,13 @@ public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, Sys
                 blacklist.setType(BlacklistTypeEnum.USER.getCode());
                 String userIdStr = identifier.substring(5); // 去掉 "user:" 前缀
                 blacklist.setUserId(Integer.parseInt(userIdStr));
+                userId = userIdStr;
             } else if (identifier.startsWith("ip:")) {
                 // IP类型
                 blacklist.setType(BlacklistTypeEnum.IP.getCode());
-                String ip = identifier.substring(3); // 去掉 "ip:" 前缀
-                blacklist.setIp(ip);
+                String ipStr = identifier.substring(3); // 去掉 "ip:" 前缀
+                blacklist.setIp(ipStr);
+                ip = ipStr;
             } else {
                 log.error("无效的用户标识格式: {}", identifier);
                 return;
@@ -67,10 +88,74 @@ public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, Sys
             // 保存到数据库
             this.save(blacklist);
 
-            log.info("黑名单记录已保存到数据库 - 标识: {}, 原因: {}, 封禁时长: {}秒, 到期时间: {}",
-                    identifier, reason, banDurationSeconds, blacklist.getExpireTime());
+            // 获取IP地址信息
+            String address = "未知地址";
+            if (!ip.equals("未知")) {
+                try {
+                    address = ipUtils.getAddress(ip);
+                } catch (Exception e) {
+                    log.error("获取IP地址信息失败: {}", ip, e);
+                }
+            }
+
+            // 格式化封禁时长
+            String banDuration = formatBanDuration(banDurationSeconds);
+
+            // 格式化拉黑时间
+            String banTime = DateUtil.format(now, "yyyy-MM-dd HH:mm:ss");
+
+            // 发送站内消息给管理员
+            try {
+                MessageDto messageDto = new MessageDto();
+                messageDto.setType(0); // 系统消息
+                messageDto.setIsRead(0); // 未读
+                messageDto.setContent(String.format(
+                        "黑名单拉黑通知：用户ID为 %s，IP为 %s，地址为 %s 的用户因 %s 被拉入黑名单，封禁时长：%s",
+                        userId, ip, address, reason, banDuration
+                ));
+                messageService.sendToAdmin(messageDto);
+            } catch (Exception e) {
+                log.error("发送站内消息给管理员失败", e);
+            }
+
+            // 发送 RabbitMQ 消息（用于邮件通知）
+            try {
+                Map<String, Object> emailMessage = new HashMap<>();
+                emailMessage.put("userId", userId);
+                emailMessage.put("ip", ip);
+                emailMessage.put("address", address);
+                emailMessage.put("reason", reason);
+                emailMessage.put("banDuration", banDuration);
+                emailMessage.put("banTime", banTime);
+
+                rabbitTemplate.convertAndSend(
+                        RabbitMQConstants.Blacklist_Exchange,
+                        RabbitMQConstants.Blacklist_Routing_Key,
+                        emailMessage
+                );
+            } catch (Exception e) {
+                log.error("发送 RabbitMQ 消息失败", e);
+            }
+
         } catch (Exception e) {
             log.error("保存黑名单记录失败 - 标识: {}, 原因: {}", identifier, reason, e);
+        }
+    }
+
+    /**
+     * 格式化封禁时长
+     * @param banDurationSeconds 封禁时长（秒）
+     * @return 格式化后的时长字符串
+     */
+    private String formatBanDuration(long banDurationSeconds) {
+        if (banDurationSeconds < 60) {
+            return banDurationSeconds + "秒";
+        } else if (banDurationSeconds < 3600) {
+            return (banDurationSeconds / 60) + "分钟";
+        } else if (banDurationSeconds < 86400) {
+            return (banDurationSeconds / 3600) + "小时";
+        } else {
+            return (banDurationSeconds / 86400) + "天";
         }
     }
 

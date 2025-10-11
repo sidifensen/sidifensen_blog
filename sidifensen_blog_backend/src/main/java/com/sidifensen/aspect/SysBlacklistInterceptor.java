@@ -61,10 +61,45 @@ public class SysBlacklistInterceptor implements HandlerInterceptor {
                         identifier, violationType, ttl);
             }
 
-            throw new RateLimitException(BlogConstants.BlacklistedUser);
+            // 格式化封禁时间显示
+            String timeMessage = formatBanTime(ttl);
+            throw new RateLimitException(BlogConstants.BlacklistedUser + "，" + timeMessage);
         }
 
         return true;
+    }
+
+    /**
+     * 格式化封禁时间显示
+     * @param minutes 剩余封禁分钟数
+     * @return 格式化后的时间字符串
+     */
+    private String formatBanTime(long minutes) {
+        if (minutes < 0) {
+            return "封禁即将解除";
+        } else if (minutes == 0) {
+            return "封禁即将解除";
+        } else if (minutes < 60) {
+            return "剩余封禁时间：" + minutes + "分钟";
+        } else if (minutes < 1440) {
+            // 小于24小时，显示小时和分钟
+            long hours = minutes / 60;
+            long remainMinutes = minutes % 60;
+            if (remainMinutes == 0) {
+                return "剩余封禁时间：" + hours + "小时";
+            } else {
+                return "剩余封禁时间：" + hours + "小时" + remainMinutes + "分钟";
+            }
+        } else {
+            // 大于等于24小时，显示天数和小时
+            long days = minutes / 1440;
+            long remainHours = (minutes % 1440) / 60;
+            if (remainHours == 0) {
+                return "剩余封禁时间：" + days + "天";
+            } else {
+                return "剩余封禁时间：" + days + "天" + remainHours + "小时";
+            }
+        }
     }
 }
 

@@ -87,7 +87,7 @@ public class SysUserDetailsService implements UserDetailsService {
         ipService.setLoginIp(sysUser.getId(), ip);
 
         // 异步记录登录成功日志
-        sysLoginLogService.recordOrUpdateLoginLog(
+        sysLoginLogService.recordLoginLog(
                 sysUser.getId(),
                 sysUser.getUsername(),
                 sysUser.getLoginType(),
