@@ -32,11 +32,28 @@ public class HotArticleTask {
     /**
      * 项目启动时初始化热门文章数据
      * 确保项目启动后立即有热门文章数据可用
+     * 
+     * 注意：使用延迟初始化策略，避免在Docker环境中数据库未完全就绪的问题
+     * 如果初始化失败，不影响应用启动，等待定时任务重新同步
      */
     @PostConstruct
     public void initHotArticles() {
-        log.info("项目启动，开始初始化热门文章数据...");
-        syncHotArticles();
+        log.info("项目启动，准备初始化热门文章数据...");
+        
+        // 异步延迟执行，避免阻塞应用启动
+        // 等待3秒，给数据库更多的初始化时间
+        new Thread(() -> {
+            try {
+                Thread.sleep(3000);
+                log.info("开始初始化热门文章数据...");
+                syncHotArticles();
+            } catch (InterruptedException e) {
+                log.warn("热门文章初始化线程被中断: {}", e.getMessage());
+                Thread.currentThread().interrupt();
+            } catch (Exception e) {
+                log.warn("初始化热门文章数据失败（将在定时任务中重试）: {}", e.getMessage());
+            }
+        }, "HotArticleInit").start();
     }
 
     /**

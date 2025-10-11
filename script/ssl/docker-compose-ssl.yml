@@ -61,7 +61,6 @@ services:
       MINIO_SKIP_CLIENT: "true"
       # HTTPS 配置
       MINIO_SERVER_URL: ${MINIO_PUBLIC_POINT}
-      # MINIO_BROWSER_REDIRECT_URL: ${MINIO_CONSOLE_PUBLIC_POINT}  # 注释掉自动重定向
     ports:
       - "${MINIO_API_PORT}:9000"
       - "${MINIO_CONSOLE_PORT}:9001"

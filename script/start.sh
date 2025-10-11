@@ -65,9 +65,55 @@ check_env_file() {
     fi
 }
 
+# 检查打包文件
+check_build_files() {
+    print_title "检查项目打包文件"
+    
+    local build_error=0
+    
+    # 检查后端 jar 包
+    if ! ls ../sidifensen_blog_backend/target/*.jar 1> /dev/null 2>&1; then
+        print_error "未找到后端 jar 包"
+        print_error "请先在后端项目目录运行: mvn clean package"
+        build_error=1
+    else
+        print_message "后端 jar 包检查通过"
+    fi
+    
+    # 检查管理端 dist 目录
+    if [ ! -d "../sidifensen_blog_frontend/sidifensen_admin/dist" ]; then
+        print_error "未找到管理端 dist 目录"
+        print_error "请先在管理端项目目录运行: npm run build"
+        build_error=1
+    else
+        print_message "管理端 dist 目录检查通过"
+    fi
+    
+    # 检查用户端 dist 目录
+    if [ ! -d "../sidifensen_blog_frontend/sidifensen_user/dist" ]; then
+        print_error "未找到用户端 dist 目录"
+        print_error "请先在用户端项目目录运行: npm run build"
+        build_error=1
+    else
+        print_message "用户端 dist 目录检查通过"
+    fi
+    
+    if [ $build_error -eq 1 ]; then
+        echo ""
+        print_error "请先完成所有项目的打包后再启动服务"
+        echo ""
+        exit 1
+    fi
+    
+    print_message "所有打包文件检查通过"
+    echo ""
+}
+
 # 启动生产环境
 start_production() {
     print_title "启动生产环境"
+    
+    check_build_files
     
     print_message "正在构建并启动服务..."
     docker-compose -f docker-compose.yml up -d --build
@@ -103,8 +149,10 @@ start_development() {
 start_apps_only() {
     print_title "启动应用服务 (后端+前端)"
     
+    check_build_files
+    
     print_message "正在启动后端和前端服务..."
-    docker-compose -f docker-compose.apps.yml up -d --build
+    docker-compose -f docker-compose-apps.yml up -d --build
     
     print_message "等待服务启动..."
     sleep 10

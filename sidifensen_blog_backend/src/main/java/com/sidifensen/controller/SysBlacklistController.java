@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 系统黑名单控制器
- *
  * @author sidifensen
  * @since 2025-10-02
  */

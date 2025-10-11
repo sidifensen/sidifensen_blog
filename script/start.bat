@@ -62,6 +62,63 @@ if not exist "..\.env" (
 )
 echo.
 
+:: 跳过函数定义，直接进入主菜单
+goto menu_loop
+
+:: ========================================
+:: 函数定义区域
+:: ========================================
+
+:: 检查打包文件的函数
+:check_build_files
+echo ========================================
+echo 检查项目打包文件
+echo ========================================
+
+set build_error=0
+
+:: 检查后端 jar 包
+echo [INFO] 检查后端 jar 包...
+dir "..\sidifensen_blog_backend\target\*.jar" >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] 未找到后端 jar 包
+    echo [ERROR] 请先在后端项目目录运行: mvn clean package
+    set build_error=1
+) else (
+    echo [INFO] 后端 jar 包检查通过
+)
+
+:: 检查管理端 dist 目录
+echo [INFO] 检查管理端 dist 目录...
+if not exist "..\sidifensen_blog_frontend\sidifensen_admin\dist" (
+    echo [ERROR] 未找到管理端 dist 目录
+    echo [ERROR] 请先在管理端项目目录运行: npm run build
+    set build_error=1
+) else (
+    echo [INFO] 管理端 dist 目录检查通过
+)
+
+:: 检查用户端 dist 目录
+echo [INFO] 检查用户端 dist 目录...
+if not exist "..\sidifensen_blog_frontend\sidifensen_user\dist" (
+    echo [ERROR] 未找到用户端 dist 目录
+    echo [ERROR] 请先在用户端项目目录运行: npm run build
+    set build_error=1
+) else (
+    echo [INFO] 用户端 dist 目录检查通过
+)
+
+if !build_error!==1 (
+    echo.
+    echo [ERROR] 请先完成所有项目的打包后再启动服务
+    echo.
+    exit /b 1
+)
+
+echo [INFO] 所有打包文件检查通过
+echo.
+exit /b 0
+
 :menu_loop
 echo.
 echo ========================================
@@ -96,6 +153,8 @@ echo.
 echo ========================================
 echo 启动生产环境
 echo ========================================
+call :check_build_files
+if errorlevel 1 goto menu_continue
 echo [INFO] 正在构建并启动服务...
 docker-compose -f docker-compose.yml up -d --build
 echo [INFO] 等待服务启动...
@@ -124,6 +183,8 @@ echo.
 echo ========================================
 echo 启动应用服务 (后端+前端)
 echo ========================================
+call :check_build_files
+if errorlevel 1 goto menu_continue
 echo [INFO] 正在启动后端和前端服务...
 docker-compose -f docker-compose-apps.yml up -d --build
 echo [INFO] 等待服务启动...
@@ -326,4 +387,4 @@ echo [INFO] 常用命令:
 echo   查看日志: docker-compose logs -f
 echo   停止服务: docker-compose down
 echo   重启服务: docker-compose restart
-goto :eof
+exit /b 0

@@ -12,24 +12,24 @@ import java.util.List;
 public class SidifensenConfig {
 
     private List<String> allowOrigins;
-    private boolean photoAutoAudit;
-    private boolean articleAutoAudit;
-    private boolean commentAutoAudit;
+    private Boolean photoAutoAudit;
+    private Boolean articleAutoAudit;
+    private Boolean commentAutoAudit;
 
     public List<String> getAllowOrigins() {
         return this.allowOrigins;
     }
 
     public boolean isPhotoAutoAudit() {
-        return this.photoAutoAudit;
+        return Boolean.TRUE.equals(this.photoAutoAudit);
     }
 
     public boolean isArticleAutoAudit() {
-        return this.articleAutoAudit;
+        return Boolean.TRUE.equals(this.articleAutoAudit);
     }
 
     public boolean isCommentAutoAudit() {
-        return this.commentAutoAudit;
+        return Boolean.TRUE.equals(this.commentAutoAudit);
     }
 
 }

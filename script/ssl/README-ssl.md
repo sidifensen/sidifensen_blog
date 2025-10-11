@@ -357,7 +357,6 @@ Docker 环境变量：
 ```bash
 MINIO_ENDPOINT=http://minio:9000                    # 后端内部访问
 MINIO_PUBLIC_POINT=https://image.sidifensen.com    # 用户文件访问
-MINIO_CONSOLE_PUBLIC_POINT=https://minio.sidifensen.com  # 管理控制台
 ```
 
 #### 5. 请求流程
