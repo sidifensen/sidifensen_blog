@@ -124,7 +124,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public PageVo<List<ArticleVo>> getUserArticleList(Integer pageNum, Integer pageSize,
-                                                      ArticleStatusDto articleStatusDto) {
+            ArticleStatusDto articleStatusDto) {
         Integer currentUserId = SecurityUtils.getUserId(); // 当前登录用户ID
 
         Page<Article> page = new Page<>(pageNum, pageSize);
@@ -140,7 +140,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         } else {
             // 查看自己文章时，应用用户指定的筛选条件
             qw.eq(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatus()), Article::getExamineStatus,
-                            articleStatusDto.getExamineStatus())
+                    articleStatusDto.getExamineStatus())
                     .in(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatusList()), Article::getExamineStatus,
                             articleStatusDto.getExamineStatusList())
                     .eq(ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus()), Article::getEditStatus,
@@ -151,7 +151,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         // 通用筛选条件（对所有用户都适用）
         qw.eq(ObjectUtil.isNotEmpty(articleStatusDto.getReprintType()), Article::getReprintType,
-                        articleStatusDto.getReprintType())
+                articleStatusDto.getReprintType())
                 .and(ObjectUtil.isNotEmpty(articleStatusDto.getKeyword()), wrapper -> wrapper
                         .like(Article::getTag, articleStatusDto.getKeyword()) // 标签
                         .or()
@@ -176,7 +176,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public PageVo<List<ArticleVo>> getArticleMangeList(Integer pageNum, Integer pageSize,
-                                                       ArticleStatusDto articleStatusDto) {
+            ArticleStatusDto articleStatusDto) {
         Integer currentUserId = SecurityUtils.getUserId(); // 当前登录用户ID
         Integer targetUserId = ObjectUtil.isNotEmpty(articleStatusDto.getUserId()) ? articleStatusDto.getUserId()
                 : currentUserId; // 目标用户ID
@@ -194,7 +194,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         } else {
             // 查看自己文章时，应用用户指定的筛选条件
             qw.eq(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatus()), Article::getExamineStatus,
-                            articleStatusDto.getExamineStatus())
+                    articleStatusDto.getExamineStatus())
                     .in(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatusList()), Article::getExamineStatus,
                             articleStatusDto.getExamineStatusList())
                     .eq(ObjectUtil.isNotEmpty(articleStatusDto.getEditStatus()), Article::getEditStatus,
@@ -205,7 +205,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         // 通用筛选条件（对所有用户都适用）
         qw.eq(ObjectUtil.isNotEmpty(articleStatusDto.getReprintType()), Article::getReprintType,
-                        articleStatusDto.getReprintType())
+                articleStatusDto.getReprintType())
                 .and(ObjectUtil.isNotEmpty(articleStatusDto.getKeyword()), wrapper -> wrapper
                         .like(Article::getTag, articleStatusDto.getKeyword()) // 标签
                         .or()
@@ -217,8 +217,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (ObjectUtil.isNotEmpty(articleStatusDto.getYear()) || ObjectUtil.isNotEmpty(articleStatusDto.getMonth())) {
             if (ObjectUtil.isNotEmpty(articleStatusDto.getMonth())) {
                 // 确定年份：如果有指定年份则使用，否则使用当前年份
-                int year = ObjectUtil.isNotEmpty(articleStatusDto.getYear()) ?
-                        articleStatusDto.getYear() : LocalDateTime.now().getYear();
+                int year = ObjectUtil.isNotEmpty(articleStatusDto.getYear()) ? articleStatusDto.getYear()
+                        : LocalDateTime.now().getYear();
 
                 // 查询指定年份的指定月份
                 LocalDateTime firstDayOfMonth = LocalDateTime.of(year, articleStatusDto.getMonth(), 1, 0, 0, 0);
@@ -299,8 +299,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                         .select(Article::getReadCount)
                         .eq(Article::getUserId, userId)
                         .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
-                        .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
-        );
+                        .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode()));
 
         // 计算总阅读量
         Long totalReadCount = articles.stream()
@@ -329,7 +328,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             if (ObjectUtil.isNotEmpty(articleColumns)) {
                 List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId)
                         .collect(Collectors.toList());
-                List<Column> columns = columnMapper.selectByIds(columnIds);
+                List<Column> columns = columnMapper.selectBatchIds(columnIds);
                 articleVo.setColumns(BeanUtil.copyToList(columns, ColumnVo.class));
             }
         }
@@ -377,7 +376,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public PageVo<List<ArticleVo>> searchArticleByTitle(String title, Integer pageNum, Integer pageSize) {
         Page<Article> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
-                .select(Article.class, info -> !info.getColumn().equals("content"))  // 排除 content 字段
+                .select(Article.class, info -> !info.getColumn().equals("content")) // 排除 content 字段
                 .like(Article::getTitle, title)
                 .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
                 .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
@@ -407,7 +406,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public PageVo<List<ArticleVo>> searchArticleByTag(String tag, Integer pageNum, Integer pageSize) {
         Page<Article> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
-                .select(Article.class, info -> !info.getColumn().equals("content"))  // 排除 content 字段
+                .select(Article.class, info -> !info.getColumn().equals("content")) // 排除 content 字段
                 .like(Article::getTag, tag)
                 .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
                 .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
@@ -656,8 +655,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 如果文章已审核通过，需要减少相关专栏的文章数量
         if (article.getExamineStatus().equals(ExamineStatusEnum.PASS.getCode())) {
             List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
-                    new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleId)
-            );
+                    new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleId));
 
             // 减少每个专栏的文章数量
             articleColumns.forEach(articleColumn -> {
@@ -828,7 +826,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
     }
 
-
     // 管理员搜索文章
     @Override
     public List<ArticleVo> adminSearchArticle(ArticleDto articleDto) {
@@ -981,8 +978,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 如果文章已审核通过，需要减少相关专栏的文章数量
         if (article != null && article.getExamineStatus().equals(ExamineStatusEnum.PASS.getCode())) {
             List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
-                    new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleId)
-            );
+                    new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleId));
 
             // 减少每个专栏的文章数量
             articleColumns.forEach(articleColumn -> {
@@ -1014,8 +1010,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             // 如果文章已审核通过，需要减少相关专栏的文章数量
             if (article != null && article.getExamineStatus().equals(ExamineStatusEnum.PASS.getCode())) {
                 List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
-                        new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleId)
-                );
+                        new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleId));
 
                 // 减少每个专栏的文章数量
                 articleColumns.forEach(articleColumn -> {
@@ -1082,13 +1077,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Long columnCount = columnMapper.selectCount(new LambdaQueryWrapper<Column>()
                 .eq(Column::getUserId, userId));
 
-        // 获取评论数量 
+        // 获取评论数量
         Long commentCount = 0L;
         try {
             commentCount = commentService.count(
                     new LambdaQueryWrapper<Comment>()
-                            .eq(Comment::getUserId, userId)
-            );
+                            .eq(Comment::getUserId, userId));
         } catch (Exception e) {
             // 如果Comment实体类或方法不存在，设为0
             commentCount = 0L;
@@ -1098,8 +1092,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Long totalReadCount = articleMapper.selectList(
                 new LambdaQueryWrapper<Article>()
                         .eq(Article::getUserId, userId)
-                        .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
-        ).stream().mapToLong(Article::getReadCount).sum();
+                        .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode()))
+                .stream().mapToLong(Article::getReadCount).sum();
 
         // 获取总点赞数 - 暂时设为0，后续可以实现
         Long totalLikeCount = 0L;
@@ -1162,8 +1156,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                             // 可见范围为公开
                             .eq(Article::getVisibleRange, 0)
                             // 未删除
-                            .eq(Article::getIsDeleted, 0)
-            );
+                            .eq(Article::getIsDeleted, 0));
 
             // 如果查询结果为空，返回空结果
             if (ObjectUtil.isEmpty(articles)) {

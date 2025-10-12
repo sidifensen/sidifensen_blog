@@ -98,7 +98,10 @@
                 <label>文章摘要</label>
                 <div class="description-container">
                   <el-input v-model="article.description" :autosize="{ minRows: 2, maxRows: 4 }" class="description-input" maxlength="256" placeholder="输入文章摘要" resize="none" type="textarea"></el-input>
-                  <el-button icon="EditPen" plain round size="small" style="margin-top: 8px" type="danger" @click="extractSummary">AI提取摘要 </el-button>
+                  <div class="ai-summary-actions">
+                    <el-button icon="EditPen" plain round size="small" type="danger" @click="extractSummary">AI提取摘要</el-button>
+                    <span v-if="aiQuota !== null" class="ai-quota-text">今日剩余: {{ aiQuota }}/5 次</span>
+                  </div>
                 </div>
               </div>
               <div class="column-setting">
@@ -181,13 +184,13 @@ import { AiEditor } from "aieditor";
 import "aieditor/dist/style.css";
 import { useDarkStore } from "@/stores/darkStore";
 import { storeToRefs } from "pinia";
-import { ElMessage } from "element-plus";
 import { compressImage, validateImageFile } from "@/utils/PhotoUtils";
 import { getTagList } from "@/api/tag";
 import { addColumn, getColumnList } from "@/api/column";
 import { uploadArticlePhoto } from "@/api/photo";
 import { ArrowUp, Close, Search } from "@element-plus/icons-vue";
 import { addArticle, getArticleDetail, saveDraft } from "@/api/article";
+import { extractSummary as extractSummaryApi, getAiQuota } from "@/api/ai";
 
 const darkStore = useDarkStore();
 const { isDark } = storeToRefs(darkStore);
@@ -349,6 +352,9 @@ const loadArticleDetail = async () => {
 onMounted(async () => {
   // 加载用户文章数据
   await loadArticleDetail();
+
+  // 获取AI配额
+  await fetchAiQuota();
 
   // 添加页面刷新事件监听
   window.addEventListener("beforeunload", handleBeforeUnload);
@@ -693,7 +699,7 @@ const tags = ref((article.value.tag || "").split(",").filter((tag) => tag.trim()
 
 // 切换标签选中状态
 const toggleTag = (tag) => {
-  const tagName = tag.name ;
+  const tagName = tag.name;
   const index = tags.value.indexOf(tagName);
   if (index > -1) {
     tags.value.splice(index, 1);
@@ -744,12 +750,53 @@ const handleCoverUpload = async (options) => {
   }
 };
 
+// AI配额（剩余调用次数）
+const aiQuota = ref(null);
+
+// 获取AI配额
+const fetchAiQuota = async () => {
+  try {
+    const response = await getAiQuota();
+    aiQuota.value = response.data.data;
+  } catch (error) {
+    console.error("获取AI配额失败:", error);
+  }
+};
+
 // AI提取摘要
-const extractSummary = () => {
-  ElMessage.success("AI摘要提取中...");
-  setTimeout(() => {
+const extractSummary = async () => {
+  try {
+    // 获取编辑器内容
+    if (!aiEditor) {
+      ElMessage.warning("编辑器未初始化");
+      return;
+    }
+
+    const content = aiEditor.getHtml();
+
+    // 检查内容是否为空
+    if (!content || content.trim() === "" || content === "<p></p>") {
+      ElMessage.warning("请先输入文章内容");
+      return;
+    }
+
+    ElMessage.info("AI摘要提取中，请稍候...");
+
+    // 调用后端接口提取摘要
+    const response = await extractSummaryApi(content);
+    const summary = response.data.data;
+
+    // 将提取的摘要填充到文章摘要输入框
+    article.value.description = summary;
+
     ElMessage.success("AI摘要提取完成");
-  }, 1000);
+
+    // 更新AI配额
+    await fetchAiQuota();
+  } catch (error) {
+    console.error("AI提取摘要失败:", error);
+    ElMessage.error(error.response?.data?.msg || "AI提取摘要失败，请重试");
+  }
 };
 
 // 专栏标签输入框是否显示
@@ -1413,6 +1460,19 @@ const handleSaveDraft = async () => {
               .description-input {
                 :deep(.el-textarea__inner) {
                   box-sizing: border-box;
+                }
+              }
+              // AI摘要操作区域
+              .ai-summary-actions {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-top: 8px;
+                // AI配额文字
+                .ai-quota-text {
+                  font-size: 13px;
+                  color: var(--el-text-color-regular);
+                  white-space: nowrap;
                 }
               }
             }

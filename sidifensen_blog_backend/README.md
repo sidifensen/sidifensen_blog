@@ -1,10 +1,10 @@
 # Sidifensen Blog 后端项目
 
-> 基于 Spring Boot 3.1.4 + Java 21 的现代化博客系统后端
+> 基于 Spring Boot 3.4.0 + Java 21 的现代化博客系统后端
 
 ## 📖 项目简介
 
-功能完善的博客系统后端服务，采用 Spring Boot 3.1.4 + Java 21 构建，提供用户管理、文章管理、评论互动、相册管理等核心功能。
+功能完善的博客系统后端服务，采用 Spring Boot 3.4.0 + Java 21 构建，提供用户管理、文章管理、评论互动、相册管理等核心功能。
 
 ## ✨ 核心特性
 
@@ -15,14 +15,16 @@
 - 🔒 **安全防护**：接口限流、IP 黑名单、内容审核、XSS 防护
 - 🚀 **性能优化**：Redis 缓存、连接池优化、异步任务处理
 - 📮 **消息队列**：RabbitMQ 实现邮件发送、审核通知
+- 🤖 **AI 能力**：DeepSeek API 智能提取文章摘要，配额管理、限流保护
 
 ## 🛠 技术栈
 
 ### 核心框架
 
-- Spring Boot 3.1.4
-- Spring Security
-- MyBatis-Plus 3.5.12
+- Spring Boot 3.4.0
+- Spring Security 6.4.1
+- MyBatis-Plus 3.5.14
+- Spring AI 1.0.0
 
 ### 数据存储
 
@@ -39,6 +41,7 @@
 - JustAuth 1.16.7（OAuth 登录）
 - 阿里云内容安全（图片/文本审核）
 - QQ 邮箱（邮件发送）
+- DeepSeek API（AI 摘要提取）
 
 ### 工具库
 
@@ -87,6 +90,11 @@ RABBITMQ_HOST=localhost
 RABBITMQ_PORT=30000
 RABBITMQ_USERNAME=guest
 RABBITMQ_PASSWORD=guest
+
+# AI配置（DeepSeek API）
+DEEPSEEK_API_KEY=your_deepseek_api_key
+DEEPSEEK_API_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-chat
 
 # MinIO配置
 MINIO_ENDPOINT=http://localhost:9000
@@ -159,6 +167,107 @@ java -jar target/sidifensen_blog_backend-1.0-SNAPSHOT.jar
 ```bash
 curl http://localhost:5000/actuator/health
 ```
+
+## 🤖 AI 功能
+
+### AI 摘要提取
+
+项目集成了 DeepSeek API，可以智能提取文章摘要，帮助用户快速生成文章概述。
+
+#### 功能特性
+
+- ✨ **智能提取**：基于 DeepSeek 大语言模型自动分析文章内容，生成精准摘要
+- 📊 **配额管理**：每个用户每天最多调用 5 次（硬编码），防止滥用
+- 🚦 **限流保护**：单个接口每小时最多调用 2 次，避免频繁请求
+- 🔄 **实时查询**：支持查询当前用户的剩余配额
+
+#### API 接口
+
+##### 1. 提取文章摘要
+
+```http
+POST /ai/extractSummary
+Authorization: <JWT Token>
+Content-Type: application/json
+
+{
+  "content": "<h1>文章标题</h1><p>文章正文内容...</p>"
+}
+```
+
+**请求参数：**
+
+- `content`: 文章内容（HTML 格式）
+
+**响应示例：**
+
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": "这是一篇关于 Spring Boot 开发的文章，介绍了如何集成 AI 功能..."
+}
+```
+
+**限流规则：**
+
+- 每小时最多调用 2 次
+- 超出限制返回：`AI摘要提取过于频繁，请1小时后再试`
+
+##### 2. 查询配额
+
+```http
+GET /ai/quota
+Authorization: <JWT Token>
+```
+
+**响应示例：**
+
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": 3
+}
+```
+
+**返回值说明：**
+
+- 返回用户今日剩余的 AI 调用次数
+
+#### 配置说明
+
+在 `.env` 文件中配置 DeepSeek API：
+
+```bash
+# DeepSeek API 密钥
+DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxx
+
+# API 端点（默认使用 DeepSeek 官方地址）
+DEEPSEEK_API_BASE_URL=https://api.deepseek.com
+
+# 使用的模型
+DEEPSEEK_MODEL=deepseek-chat
+```
+
+**配额说明：**
+
+- 每个用户每天最多调用 5 次（代码中硬编码，不可配置）
+- 如需修改配额，请在 `AiUsageServiceImpl.java` 中修改 `DAILY_LIMIT` 常量
+
+#### 技术实现
+
+- **框架**: Spring AI 1.0.0（OpenAI 兼容接口）
+- **模型**: DeepSeek Chat（通过 OpenAI API 适配）
+- **缓存**: Redis 存储用户配额信息
+- **限流**: AOP 注解 `@RateLimit` 实现接口级限流
+
+#### 获取 API Key
+
+1. 访问 [DeepSeek 官网](https://platform.deepseek.com/)
+2. 注册并登录账号
+3. 在控制台创建 API Key
+4. 将 Key 配置到 `.env` 文件中
 
 ## 🔐 登录认证
 
@@ -342,6 +451,42 @@ docker-compose up -d
 docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 docker run -d --name minio -p 9000:9000 -p 9001:9001 minio/minio server /data
 ```
+
+### 5. AI 功能相关问题
+
+#### AI 摘要提取失败
+
+**可能原因**：
+
+- DeepSeek API Key 未配置或无效
+- API Key 余额不足
+- 网络连接问题
+
+**解决方案**：
+
+1. 检查 `.env` 文件中的 `DEEPSEEK_API_KEY` 配置
+2. 访问 [DeepSeek 控制台](https://platform.deepseek.com/) 检查余额
+3. 确保服务器可以访问 `https://api.deepseek.com`
+
+#### AI 配额用完
+
+**问题**：提示"今日配额已用完"
+
+**解决方案**：
+
+- 配额每天 00:00 自动重置
+- 如需修改配额限制，需在代码 `AiUsageServiceImpl.java` 中修改 `DAILY_LIMIT` 常量并重新部署
+- 等待次日自动恢复配额
+
+#### AI 接口限流
+
+**问题**：提示"AI 摘要提取过于频繁，请 1 小时后再试"
+
+**解决方案**：
+
+- 单个接口每小时最多调用 2 次
+- 等待 1 小时后重试
+- 避免频繁调用，优化使用策略
 
 ## 🛠 调试建议
 

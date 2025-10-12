@@ -7,7 +7,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+        org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration.class
+})
 @MapperScan("com.sidifensen.mapper")
 @EnableAspectJAutoProxy
 @Slf4j
@@ -17,7 +19,7 @@ public class Main {
         // 设置JVM文件编码为UTF-8
         System.setProperty("file.encoding", "UTF-8");
         System.setProperty("sun.jnu.encoding", "UTF-8");
-        
+
         SpringApplication app = new SpringApplication(Main.class);
 
         // 设置自定义 Banner
@@ -28,7 +30,7 @@ public class Main {
                         " / __| | |  / _` | | | | |_   / _ \\ | '_ \\  / __|  / _ \\ | '_ \\ \n" +
                         " \\__ \\ | | | (_| | | | |  _| |  __/ | | | | \\__ \\ |  __/ | | | |\n" +
                         " |___/ |_|  \\__,_| |_| |_|    \\___| |_| |_| |___/  \\___| |_| |_|\n" +
-                        "\u001B[0m"   // 重置颜色
+                        "\u001B[0m" // 重置颜色
         ));
 
         app.run(args);

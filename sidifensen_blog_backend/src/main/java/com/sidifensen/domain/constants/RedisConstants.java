@@ -12,7 +12,6 @@ public class RedisConstants {
 
     public static final String EmailCheckCode = RedisKeyPrefix + "EmailCheckCode:";
 
-
     /**
      * 登录验证码过期时间（5分钟，单位：秒）
      */
@@ -22,7 +21,6 @@ public class RedisConstants {
      * 邮箱验证码过期时间（5分钟，单位：秒）
      */
     public static final long EMAIL_CHECK_CODE_EXPIRE_TIME = 5 * 60;
-
 
     /**
      * 浏览历史缓存键
@@ -75,5 +73,26 @@ public class RedisConstants {
      * 热门文章缓存过期时间（7天，单位：秒）
      */
     public static final long HOT_ARTICLES_EXPIRE_TIME = 7 * 24 * 60 * 60;
+
+    /**
+     * AI使用次数缓存键前缀
+     * 格式：sidifensen_blog:AiUsage:用户ID
+     * 存储结构：计数器，记录用户当天的AI调用次数
+     * 过期时间：到第二天凌晨自动过期
+     */
+    public static final String AiUsage = RedisKeyPrefix + "AiUsage:";
+
+    /**
+     * AI内容哈希缓存键前缀（防重复提交）
+     * 格式：sidifensen_blog:AiContentHash:用户ID:内容Hash
+     * 存储结构：标记值，防止短时间内重复提交相同内容
+     * 过期时间：5分钟
+     */
+    public static final String AiContentHash = RedisKeyPrefix + "AiContentHash:";
+
+    /**
+     * AI内容哈希缓存过期时间（5分钟，单位：秒）
+     */
+    public static final long AI_CONTENT_HASH_EXPIRE_TIME = 5 * 60;
 
 }

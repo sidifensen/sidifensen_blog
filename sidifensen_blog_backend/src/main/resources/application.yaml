@@ -89,6 +89,15 @@ spring:
         max-concurrency: 10 # 监听器最大并发数
         # 默认重新入队（配合死信队列使用）
         default-requeue-rejected: false # 重试失败后不重新入队，而是发送到死信队列
+  ai:
+    openai:
+      api-key: ${SPRING_AI_OPENAI_API_KEY} # DeepSeek API Key
+      base-url: ${SPRING_AI_OPENAI_BASE_URL:https://api.deepseek.com} # DeepSeek API 地址
+      chat:
+        options:
+          model: ${SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL:deepseek-chat} # DeepSeek 模型名称
+          temperature: 0.7 # 温度参数，控制输出的随机性（0-1，越大越随机）
+          max-tokens: 300 # 最大 token 数量
 minio: # minio 配置
   endpoint: ${MINIO_ENDPOINT:http://localhost:9000} # java后端连接minio服务的地址
   publicPoint: ${MINIO_PUBLIC_POINT:http://localhost:9000} # 生成的图片地址

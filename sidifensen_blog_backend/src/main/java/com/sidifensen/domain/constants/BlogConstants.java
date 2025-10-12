@@ -159,6 +159,13 @@ public class BlogConstants {
     // OAuth相关错误信息
     public static final String OauthLoginError = "OAuth登录失败";
 
+    // AI相关错误信息
+    public static final String AiDailyLimitExceeded = "今日AI调用次数已达上限，请明天再试";
+    public static final String AiContentTooShort = "文章内容过短（少于100字），无需AI生成摘要";
+    public static final String AiContentEmpty = "文章内容不能为空";
+    public static final String AiDuplicateRequest = "请勿重复提交相同内容";
+    public static final String AiExtractSummaryError = "AI提取摘要失败";
+
     // 通用错误信息
     public static final String ParamError = "参数错误";
     public static final String SystemInternalError = "系统内部错误";

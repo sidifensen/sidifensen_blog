@@ -3,7 +3,7 @@
   <p>现代化个人博客/论坛系统 | 前后端分离架构</p>
   
   ![Java](https://img.shields.io/badge/Java-21-orange.svg)
-  ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1.4-brightgreen.svg)
+  ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.0-brightgreen.svg)
   ![Vue.js](https://img.shields.io/badge/Vue.js-3.5.13-4FC08D.svg)
   ![Element Plus](https://img.shields.io/badge/Element%20Plus-2.10.2-409EFF.svg)
 
@@ -39,6 +39,7 @@
 - 🎨 **现代化 UI**: 基于 Element Plus 的精美界面设计
 - 🔒 **安全可靠**: Spring Security + JWT 认证，阿里云内容安全检测
 - ⚡ **高性能**: Redis 缓存 + RabbitMQ 异步处理
+- 🤖 **AI 赋能**: DeepSeek API 智能提取文章摘要，提升创作效率
 - 📱 **响应式设计**: 完美适配桌面端和移动端
 - 🔧 **易于扩展**: 模块化架构，支持功能定制
 - 🚀 **开箱即用**: Docker 一键部署，快速上线
@@ -51,11 +52,11 @@
 
 ### 🔧 后端技术栈
 
-- **核心框架**: Spring Boot 3.1.4
+- **核心框架**: Spring Boot 3.4.0
 - **开发语言**: Java 21
-- **安全框架**: Spring Security + JWT
+- **安全框架**: Spring Security 6.4.1 + JWT
 - **数据库**: MySQL 8.1.0
-- **ORM 框架**: MyBatis-Plus 3.5.12
+- **ORM 框架**: MyBatis-Plus 3.5.14
 - **缓存中间件**: Redis 3.4.0
 - **消息队列**: RabbitMQ 3.4.0
 - **文件存储**: MinIO 8.3.6
@@ -63,6 +64,7 @@
 - **邮件服务**: Spring Mail
 - **第三方登录**: JustAuth 1.16.7
 - **内容安全**: 阿里云图片内容检测 2.0.6
+- **AI 能力**: Spring AI 1.0.0 + DeepSeek API
 - **监控运维**: Spring Actuator
 - **切面编程**: Spring AOP
 - **工具库**:
@@ -172,7 +174,7 @@ sidifensen_blog/
 │   ├── start.bat                     # Windows 启动脚本
 │   └── start.sh                      # Linux/Mac 启动脚本
 │
-├── sidifensen_blog_backend/          # 🔧 后端服务 (Spring Boot 3.1.4 + Java 21)
+├── sidifensen_blog_backend/          # 🔧 后端服务 (Spring Boot 3.4.0 + Java 21)
 │   ├── src/
 │   │   ├── main/
 │   │   │   ├── java/com/sidifensen/
@@ -369,6 +371,7 @@ sidifensen_blog/
 - **标签系统**: 文章标签 + 标签管理
 - **图片管理**: MinIO 对象存储 + 图片安全检测
 - **内容审核**: 阿里云内容安全自动审核
+- **AI 摘要**: DeepSeek API 智能提取文章摘要 + 配额限制
 - **SEO 优化**: 友好的 URL 结构和 Meta 信息
 
 ### 🎨 用户界面
@@ -402,6 +405,7 @@ sidifensen_blog/
 - **代码分割**: 前端代码按需加载
 - **图片优化**: 图片压缩和懒加载
 - **AOP 切面**: 统一日志记录和性能监控
+- **智能限流**: API 限流保护，防止滥用（AI 接口每小时 2 次）
 
 ### 🚀 部署运维
 
@@ -655,6 +659,7 @@ chmod +x docker.sh
 - 阿里云内容安全配置
 - 邮件服务配置
 - OAuth 第三方登录配置
+- DeepSeek AI 配置（文章摘要功能）
 
 > 💡 **提示**: 所有配置项都可以在 `.env` 文件中修改，详细说明请参考 `script/env.example` 文件。
 
