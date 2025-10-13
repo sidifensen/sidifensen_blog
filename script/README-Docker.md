@@ -744,31 +744,6 @@ docker-compose logs -f backend
 docker-compose logs --tail=100 backend
 ```
 
-### 性能优化
-
-1. **资源限制**
-
-   ```yaml
-   services:
-     backend:
-       deploy:
-         resources:
-           limits:
-             memory: 1G
-             cpus: "0.5"
-   ```
-
-2. **健康检查**
-   ```yaml
-   services:
-     backend:
-       healthcheck:
-         test: ["CMD", "curl", "-f", "http://localhost:5000/actuator/health"]
-         interval: 30s
-         timeout: 10s
-         retries: 3
-   ```
-
 ## 📚 更多资源
 
 - [Docker 官方文档](https://docs.docker.com/)

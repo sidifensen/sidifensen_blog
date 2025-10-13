@@ -13,7 +13,7 @@
     <div class="statistics-section">
       <el-row :gutter="20">
         <!-- 用户统计卡片 -->
-        <el-col :xs="24" :sm="12" :md="6" :lg="6">
+        <el-col :xs="12" :sm="12" :md="6" :lg="6">
           <div class="statistics-card">
             <div class="card-icon user-icon">
               <el-icon size="40"><User /></el-icon>
@@ -27,7 +27,7 @@
         </el-col>
 
         <!-- 文章统计卡片 -->
-        <el-col :xs="24" :sm="12" :md="6" :lg="6">
+        <el-col :xs="12" :sm="12" :md="6" :lg="6">
           <div class="statistics-card">
             <div class="card-icon article-icon">
               <el-icon size="40"><Document /></el-icon>
@@ -41,7 +41,7 @@
         </el-col>
 
         <!-- 评论统计卡片 -->
-        <el-col :xs="24" :sm="12" :md="6" :lg="6">
+        <el-col :xs="12" :sm="12" :md="6" :lg="6">
           <div class="statistics-card">
             <div class="card-icon comment-icon">
               <el-icon size="40"><ChatLineRound /></el-icon>
@@ -55,7 +55,7 @@
         </el-col>
 
         <!-- 今日访问统计卡片 -->
-        <el-col :xs="24" :sm="12" :md="6" :lg="6">
+        <el-col :xs="12" :sm="12" :md="6" :lg="6">
           <div class="statistics-card">
             <div class="card-icon visit-icon">
               <el-icon size="40"><View /></el-icon>
@@ -806,83 +806,6 @@ onBeforeUnmount(() => {
   .dashboard-container {
     padding: 10px;
 
-    // 项目链接展示区域
-    .project-links-section {
-      margin-bottom: 20px;
-
-      // 项目卡片
-      .project-card {
-        :deep(.el-card__body) {
-          padding: 16px;
-        }
-
-        // 项目头部
-        .project-header {
-          margin-bottom: 16px;
-
-          // 项目标题
-          .project-title {
-            .title-icon {
-              font-size: 20px;
-            }
-
-            .title-text {
-              font-size: 18px;
-            }
-          }
-
-          // 项目描述
-          .project-description {
-            font-size: 13px;
-          }
-        }
-
-        // 项目链接列表
-        .project-links {
-          grid-template-columns: 1fr;
-          gap: 12px;
-
-          // 单个项目链接
-          .project-link {
-            padding: 14px;
-
-            &:hover {
-              transform: translateY(-2px);
-            }
-
-            // 链接图标容器
-            .link-icon {
-              width: 40px;
-              height: 40px;
-
-              svg {
-                width: 28px;
-                height: 28px;
-              }
-            }
-
-            // 链接内容
-            .link-content {
-              // 链接名称
-              .link-name {
-                font-size: 15px;
-              }
-
-              // 链接副标题
-              .link-subtitle {
-                font-size: 11px;
-              }
-            }
-
-            // 箭头图标
-            .link-arrow {
-              font-size: 18px;
-            }
-          }
-        }
-      }
-    }
-
     .page-header {
       margin-bottom: 20px;
 
@@ -896,30 +819,57 @@ onBeforeUnmount(() => {
     }
 
     .statistics-section {
+      margin-bottom: 20px;
+
+      // 调整手机端卡片间距
+      :deep(.el-row) {
+        margin-left: -8px !important;
+        margin-right: -8px !important;
+
+        .el-col {
+          padding-left: 8px !important;
+          padding-right: 8px !important;
+          margin-bottom: 16px;
+        }
+      }
+
       .statistics-card {
         flex-direction: column;
         text-align: center;
         height: auto;
-        padding: 20px;
+        padding: 16px 12px;
 
         .card-icon {
-          margin: 0 0 16px 0;
-          width: 60px;
-          height: 60px;
+          margin: 0 0 12px 0;
+          width: 50px;
+          height: 50px;
 
           .el-icon {
-            font-size: 30px;
+            font-size: 26px;
           }
         }
 
         .card-content {
           .card-title {
-            font-size: 14px;
-            margin-bottom: 4px;
+            font-size: 13px;
+            margin-bottom: 6px;
           }
 
           .card-value {
-            font-size: 24px;
+            font-size: 22px;
+          }
+        }
+      }
+    }
+
+    // 详细数据展示区域
+    .details-section {
+      margin-bottom: 20px;
+
+      :deep(.el-row) {
+        .el-col {
+          &:first-child {
+            margin-bottom: 20px;
           }
         }
       }

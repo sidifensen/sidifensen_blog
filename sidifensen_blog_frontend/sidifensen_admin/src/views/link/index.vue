@@ -103,10 +103,11 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="link-cards">
-          <el-card v-for="link in paginatedLinkList" :key="link.id" class="link-card">
+          <el-card v-for="link in paginatedLinkList" :key="link.id" class="link-card" :class="{ 'is-selected': isLinkSelected(link.id) }">
             <div class="link-card-content">
               <div class="link-header-section">
                 <div class="link-cover-mobile">
+                  <el-checkbox :model-value="isLinkSelected(link.id)" @change="handleMobileSelect(link)" class="mobile-checkbox" />
                   <el-image v-if="link.coverUrl" :src="link.coverUrl" class="link-cover-img" :preview-src-list="[link.coverUrl]" fit="cover" preview-teleported />
                   <div v-else class="no-cover-mobile">暂无封面</div>
                 </div>
@@ -298,6 +299,23 @@ const refreshLinkList = async () => {
 // 表格多选
 const handleSelectionChange = (links) => {
   selectedLinks.value = links;
+};
+
+// 检查友链是否被选中
+const isLinkSelected = (linkId) => {
+  return selectedLinks.value.some((link) => link.id === linkId);
+};
+
+// 移动端选择处理
+const handleMobileSelect = (link) => {
+  const index = selectedLinks.value.findIndex((item) => item.id === link.id);
+  if (index > -1) {
+    // 已选中，取消选中
+    selectedLinks.value.splice(index, 1);
+  } else {
+    // 未选中，添加到选中列表
+    selectedLinks.value.push(link);
+  }
 };
 
 // 处理单个友链审核
@@ -791,6 +809,12 @@ onUnmounted(() => {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
+        // 选中状态样式
+        &.is-selected {
+          border: 2px solid #409eff;
+          box-shadow: 0 0 12px rgba(64, 158, 255, 0.3);
+        }
+
         // 友链卡片内容容器
         .link-card-content {
           display: flex;
@@ -806,6 +830,23 @@ onUnmounted(() => {
             .link-cover-mobile {
               width: 100%;
               margin-bottom: 8px;
+              position: relative;
+
+              // 移动端复选框样式
+              .mobile-checkbox {
+                position: absolute;
+                top: 8px;
+                left: 8px;
+                z-index: 10;
+                background-color: rgba(255, 255, 255, 0.9);
+                border-radius: 4px;
+                padding: 4px;
+
+                :deep(.el-checkbox__inner) {
+                  width: 18px;
+                  height: 18px;
+                }
+              }
 
               // 封面图片样式
               .link-cover-img {

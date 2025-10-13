@@ -21,32 +21,82 @@
         </div>
       </div>
 
-      <!-- 权限表格 -->
-      <el-table id="my-table" v-loading="loading" :data="paginatedPermissionList" class="table" style="height: 100%" @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" />
-        <el-table-column prop="id" label="权限id" width="70" />
-        <el-table-column prop="description" label="权限描述" />
-        <el-table-column prop="permission" label="权限标识" />
-        <el-table-column prop="menuName" label="菜单名称">
-          <template v-slot="scope">
-            <el-tag>
-              <el-icon><component :is="scope.row.icon" /></el-icon>
-              {{ scope.row.menuName }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" sortable width="120" />
-        <el-table-column prop="updateTime" label="更新时间" sortable width="120" />
-        <el-table-column label="操作" width="260">
-          <template #default="{ row }">
-            <div class="table-actions">
-              <el-button type="primary" size="small" @click="handleEditPermission(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
-              <el-button type="danger" size="small" @click="handleDeletePermission(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
-              <el-button size="small" type="warning" @click="handleAuthorizeRole(row)" :icon="Avatar" class="role-button"> 授权角色 </el-button>
+      <!-- 桌面端表格视图 -->
+      <div v-if="!isMobileView" class="desktop-view">
+        <el-table id="my-table" v-loading="loading" :data="paginatedPermissionList" class="table" style="height: 100%" @selection-change="handleSelectionChange">
+          <el-table-column type="selection" width="55" />
+          <el-table-column prop="id" label="权限id" width="70" />
+          <el-table-column prop="description" label="权限描述" />
+          <el-table-column prop="permission" label="权限标识" />
+          <el-table-column prop="menuName" label="菜单名称">
+            <template v-slot="scope">
+              <el-tag>
+                <el-icon><component :is="scope.row.icon" /></el-icon>
+                {{ scope.row.menuName }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createTime" label="创建时间" sortable width="120" />
+          <el-table-column prop="updateTime" label="更新时间" sortable width="120" />
+          <el-table-column label="操作" width="260">
+            <template #default="{ row }">
+              <div class="table-actions">
+                <el-button type="primary" size="small" @click="handleEditPermission(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
+                <el-button type="danger" size="small" @click="handleDeletePermission(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
+                <el-button size="small" type="warning" @click="handleAuthorizeRole(row)" :icon="Avatar" class="role-button"> 授权角色 </el-button>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+
+      <!-- 移动端卡片视图 -->
+      <div v-else class="mobile-view">
+        <div v-loading="loading" class="permission-cards">
+          <el-card v-for="permission in paginatedPermissionList" :key="permission.id" class="permission-card" :class="{ 'is-selected': isPermissionSelected(permission.id) }">
+            <div class="permission-card-content">
+              <!-- 卡片头部 -->
+              <div class="permission-header">
+                <div class="header-left">
+                  <el-checkbox :model-value="isPermissionSelected(permission.id)" @change="handleMobileSelect(permission)" class="mobile-checkbox" />
+                  <div class="permission-id">#{{ permission.id }}</div>
+                </div>
+                <el-tag>
+                  <el-icon><component :is="permission.icon" /></el-icon>
+                  {{ permission.menuName }}
+                </el-tag>
+              </div>
+
+              <!-- 权限信息 -->
+              <div class="permission-info">
+                <div class="info-row">
+                  <span class="label">权限描述:</span>
+                  <span class="value">{{ permission.description }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">权限标识:</span>
+                  <span class="value permission-text">{{ permission.permission }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">创建时间:</span>
+                  <span class="value time-text">{{ permission.createTime }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">更新时间:</span>
+                  <span class="value time-text">{{ permission.updateTime }}</span>
+                </div>
+              </div>
+
+              <!-- 操作按钮 -->
+              <div class="permission-actions">
+                <el-button type="primary" size="small" @click="handleEditPermission(permission)" :icon="Edit" class="edit-button">编辑</el-button>
+                <el-button type="danger" size="small" @click="handleDeletePermission(permission.id)" :icon="Delete" class="delete-button">删除</el-button>
+                <el-button size="small" type="warning" @click="handleAuthorizeRole(permission)" :icon="Avatar" class="role-button">授权角色</el-button>
+              </div>
             </div>
-          </template>
-        </el-table-column>
-      </el-table>
+          </el-card>
+        </div>
+      </div>
 
       <!-- 分页 -->
       <div class="pagination-container">
@@ -119,7 +169,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import { Search, Plus, Edit, Delete, Avatar, Download } from "@element-plus/icons-vue";
 import { getPermissionList, addPermission, updatePermission, deletePermission, queryPermission } from "@/api/permission";
 import { getRoleList } from "@/api/role";
@@ -209,6 +259,13 @@ const getPermissions = async () => {
 onMounted(() => {
   getPermissions();
   getMenuList();
+  handleResize();
+  window.addEventListener("resize", handleResize);
+});
+
+// 组件卸载时移除监听
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
 });
 
 // 更新分页数据
@@ -424,6 +481,14 @@ const authorizeBatchDialogVisible = ref(false);
 // 当前权限
 const currentPermissionList = ref([]);
 
+// 移动端检测
+const isMobileView = ref(false);
+
+// 监听窗口大小变化
+const handleResize = () => {
+  isMobileView.value = window.innerWidth <= 768;
+};
+
 // 表格多选
 const handleSelectionChange = async (permission) => {
   currentPermissionList.value = permission;
@@ -431,6 +496,23 @@ const handleSelectionChange = async (permission) => {
   const res = await getRoleList();
   allRole.value = res.data.data;
   // console.log(currentPermissionList.value);
+};
+
+// 检查权限是否被选中
+const isPermissionSelected = (permissionId) => {
+  return currentPermissionList.value.some((permission) => permission.id === permissionId);
+};
+
+// 移动端选择处理
+const handleMobileSelect = (permission) => {
+  const index = currentPermissionList.value.findIndex((item) => item.id === permission.id);
+  if (index > -1) {
+    // 已选中，取消选中
+    currentPermissionList.value.splice(index, 1);
+  } else {
+    // 未选中，添加到选中列表
+    currentPermissionList.value.push(permission);
+  }
 };
 
 const handleAuthorizeBatchRole = () => {
@@ -594,6 +676,14 @@ const handleAuthorizeBatchDialogClose = () => {
     }
   }
 
+  // 桌面端表格视图
+  .desktop-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 60px;
+  }
+
   //表格
   .table {
     flex: 1;
@@ -679,6 +769,168 @@ const handleAuthorizeBatchDialogClose = () => {
           border-color: #fde68a;
           transform: translateY(-2px);
           box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
+        }
+      }
+    }
+  }
+
+  // 移动端卡片视图
+  .mobile-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+    padding-bottom: 60px;
+    overflow-y: auto;
+
+    // 权限卡片列表容器
+    .permission-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 10px;
+
+      // 单个权限卡片
+      .permission-card {
+        transition: all 0.3s ease;
+        border-radius: 8px;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        // 选中状态样式
+        &.is-selected {
+          border: 2px solid #42b983;
+          box-shadow: 0 0 12px rgba(66, 185, 131, 0.3);
+        }
+
+        // 权限卡片内容容器
+        .permission-card-content {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+
+          // 卡片头部
+          .permission-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--el-border-color-lighter);
+
+            .header-left {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+
+              .mobile-checkbox {
+                :deep(.el-checkbox__inner) {
+                  width: 18px;
+                  height: 18px;
+                }
+              }
+
+              .permission-id {
+                font-size: 12px;
+                color: #666;
+                background-color: #f5f5f5;
+                padding: 2px 6px;
+                border-radius: 4px;
+              }
+            }
+
+            :deep(.el-tag) {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+            }
+          }
+
+          // 权限信息区域
+          .permission-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+
+            .info-row {
+              display: flex;
+              font-size: 14px;
+
+              .label {
+                font-weight: 500;
+                color: #888;
+                margin-right: 8px;
+                flex-shrink: 0;
+              }
+
+              .value {
+                color: #555;
+                flex: 1;
+                word-break: break-all;
+              }
+
+              .permission-text {
+                color: #409eff;
+                font-family: "Courier New", monospace;
+              }
+
+              .time-text {
+                font-size: 12px;
+                color: #999;
+              }
+            }
+          }
+
+          // 操作按钮区域
+          .permission-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            padding-top: 12px;
+            border-top: 1px solid var(--el-border-color-lighter);
+            flex-wrap: wrap;
+
+            .el-button {
+              margin-left: 0;
+              flex: 1;
+              min-width: 70px;
+            }
+
+            .edit-button {
+              background-color: #e0f2fe;
+              color: #0284c7;
+              border-color: #e0f2fe;
+
+              &:hover {
+                background-color: #bae6fd;
+                border-color: #bae6fd;
+              }
+            }
+
+            .delete-button {
+              background-color: #fee2e2;
+              color: #ef4444;
+              border-color: #fee2e2;
+
+              &:hover {
+                background-color: #fecaca;
+                border-color: #fecaca;
+              }
+            }
+
+            .role-button {
+              background-color: #fef3c7;
+              color: #d97706;
+              border-color: #fef3c7;
+
+              &:hover {
+                background-color: #fde68a;
+                border-color: #fde68a;
+              }
+            }
+          }
         }
       }
     }

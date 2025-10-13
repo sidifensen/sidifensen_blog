@@ -28,76 +28,84 @@
           <section class="latest-articles">
             <h2>最新文章</h2>
 
-            <!-- 加载状态 -->
-            <div v-if="articleLoading" class="loading-container">
-              <el-skeleton animated :count="6">
-                <template #template>
-                  <div class="article-skeleton">
-                    <el-skeleton-item variant="image" style="width: 100%; height: 200px; border-radius: 8px" />
-                    <div class="skeleton-content">
-                      <div class="skeleton-meta">
-                        <el-skeleton-item variant="text" style="width: 80px; height: 20px" />
-                        <el-skeleton-item variant="text" style="width: 100px; height: 20px" />
+            <!-- 文章内容包装容器 -->
+            <div class="articles-wrapper">
+              <!-- 加载状态 -->
+              <div v-if="articleLoading" class="loading-container">
+                <el-skeleton animated :count="6">
+                  <template #template>
+                    <div class="article-skeleton">
+                      <el-skeleton-item variant="image" style="width: 100%; height: 200px; border-radius: 8px" />
+                      <div class="skeleton-content">
+                        <div class="skeleton-meta">
+                          <el-skeleton-item variant="text" style="width: 80px; height: 20px" />
+                          <el-skeleton-item variant="text" style="width: 100px; height: 20px" />
+                        </div>
+                        <el-skeleton-item variant="h3" style="width: 80%; height: 24px; margin: 10px 0" />
+                        <el-skeleton-item variant="text" style="width: 100%; height: 16px" />
+                        <el-skeleton-item variant="text" style="width: 90%; height: 16px" />
+                        <el-skeleton-item variant="text" style="width: 70%; height: 16px" />
                       </div>
-                      <el-skeleton-item variant="h3" style="width: 80%; height: 24px; margin: 10px 0" />
-                      <el-skeleton-item variant="text" style="width: 100%; height: 16px" />
-                      <el-skeleton-item variant="text" style="width: 90%; height: 16px" />
-                      <el-skeleton-item variant="text" style="width: 70%; height: 16px" />
+                    </div>
+                  </template>
+                </el-skeleton>
+              </div>
+
+              <!-- 空状态 -->
+              <div v-else-if="articles.length === 0" class="empty-state">
+                <el-empty description="暂无文章" />
+              </div>
+
+              <!-- 文章列表 -->
+              <div v-else class="article-list">
+                <article v-for="article in articles" :key="article.id" class="article-card">
+                  <div class="article-image" @click="goToArticle(article)">
+                    <el-image :src="article.coverUrl" class="article-cover" fit="cover">
+                      <template #placeholder>
+                        <div class="image-placeholder">
+                          <el-icon class="is-loading"><Loading /></el-icon>
+                        </div>
+                      </template>
+                      <template #error>
+                        <div class="image-error">
+                          <el-icon><Picture /></el-icon>
+                        </div>
+                      </template>
+                    </el-image>
+                  </div>
+                  <div class="article-content">
+                    <div class="article-meta">
+                      <span class="date">{{ formatDate(article.createTime) }}</span>
+                    </div>
+                    <h3>
+                      <router-link :to="getArticleDetailRoute(article)" class="article-title-link">
+                        {{ article.title }}
+                      </router-link>
+                    </h3>
+                    <p class="article-description">{{ article.description || "暂无描述" }}</p>
+                    <div class="article-stats">
+                      <span class="like-count">
+                        <svg-icon name="like" width="13px" height="13px" margin-right="1px" :color="article.isLiked ? '#ffffff' : '#666666'" />
+                        {{ article.likeCount || 0 }}
+                      </span>
+                      <span class="read-count">
+                        <el-icon><View /></el-icon>
+                        {{ article.readCount || 0 }}
+                      </span>
+                      <span class="collect-count">
+                        <el-icon><Star /></el-icon>
+                        {{ article.collectCount || 0 }}
+                      </span>
+                      <router-link :to="getArticleDetailRoute(article)" class="read-more">阅读更多</router-link>
                     </div>
                   </div>
-                </template>
-              </el-skeleton>
+                </article>
+              </div>
             </div>
 
-            <!-- 空状态 -->
-            <div v-else-if="articles.length === 0" class="empty-state">
-              <el-empty description="暂无文章" />
-            </div>
-
-            <!-- 文章列表 -->
-            <div v-else class="article-list">
-              <article v-for="article in articles" :key="article.id" class="article-card">
-                <div class="article-image" @click="goToArticle(article)">
-                  <el-image :src="article.coverUrl" class="article-cover" fit="cover">
-                    <template #placeholder>
-                      <div class="image-placeholder">
-                        <el-icon class="is-loading"><Loading /></el-icon>
-                      </div>
-                    </template>
-                    <template #error>
-                      <div class="image-error">
-                        <el-icon><Picture /></el-icon>
-                      </div>
-                    </template>
-                  </el-image>
-                </div>
-                <div class="article-content">
-                  <div class="article-meta">
-                    <span class="date">{{ formatDate(article.createTime) }}</span>
-                  </div>
-                  <h3>
-                    <router-link :to="getArticleDetailRoute(article)" class="article-title-link">
-                      {{ article.title }}
-                    </router-link>
-                  </h3>
-                  <p class="article-description">{{ article.description || "暂无描述" }}</p>
-                  <div class="article-stats">
-                    <span class="like-count">
-                      <svg-icon name="like" width="13px" height="13px" margin-right="1px" :color="article.isLiked ? '#ffffff' : '#666666'" />
-                      {{ article.likeCount || 0 }}
-                    </span>
-                    <span class="read-count">
-                      <el-icon><View /></el-icon>
-                      {{ article.readCount || 0 }}
-                    </span>
-                    <span class="collect-count">
-                      <el-icon><Star /></el-icon>
-                      {{ article.collectCount || 0 }}
-                    </span>
-                    <router-link :to="getArticleDetailRoute(article)" class="read-more">阅读更多</router-link>
-                  </div>
-                </div>
-              </article>
+            <!-- 手机端项目链接（仅在手机端显示） -->
+            <div class="mobile-project-links">
+              <ProjectLinks />
             </div>
           </section>
 
@@ -269,6 +277,22 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 
 // 首页容器（对应 template 最外层）
 .home-container {
+  position: relative;
+  z-index: 1;
+
+  // 添加固定背景覆盖层，确保完全覆盖 layout 背景
+  &::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--el-bg-color-page);
+    z-index: -1;
+    pointer-events: none;
+  }
+
   // 第一部分：全屏沉浸式首屏 section.fullscreen-hero
   .fullscreen-hero {
     position: relative;
@@ -281,6 +305,7 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     align-items: center;
     overflow: hidden;
     padding-top: calc(25vh + 48px); // 从顶部开始25%的视口高度加上导航栏高度，让内容更居中
+    z-index: 2; // 确保首屏在背景覆盖层之上
 
     // 背景图片层 .hero-background
     .hero-background {
@@ -406,6 +431,9 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   .main-content {
     padding: 60px 0;
     background-color: var(--el-bg-color-page);
+    position: relative;
+    z-index: 2; // 确保内容区域在背景覆盖层之上
+    min-height: 100vh; // 确保至少占满整个视口高度
 
     // .container 已在全局定义
 
@@ -424,6 +452,14 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 
     // 最新文章区域 section.latest-articles
     .latest-articles {
+      background-color: var(--el-bg-color-page);
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      position: relative;
+      z-index: 2; // 确保在背景之上
+      min-height: 85vh; // 确保整个区域有足够的高度
+
       // 标题 h2
       h2 {
         font-size: 1.8rem;
@@ -443,9 +479,24 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
       }
 
+      // 文章内容包装容器 .articles-wrapper
+      .articles-wrapper {
+        background-color: transparent; // 使用透明背景，因为父容器已有背景
+        border-radius: 8px;
+        padding: 0; // 移除内边距，因为父容器已有 padding
+        box-shadow: none; // 移除阴影，因为父容器已有阴影
+        min-height: 70vh; // 确保有足够的高度
+        position: relative;
+        z-index: 2; // 确保在背景之上
+      }
+
       // 加载状态容器 .loading-container
       .loading-container {
-        margin-bottom: 30px;
+        margin-bottom: 0; // 移除底部边距，因为父容器已有 padding
+        background-color: transparent; // 使用透明背景
+        border-radius: 0; // 移除圆角
+        padding: 0; // 移除内边距
+        box-shadow: none; // 移除阴影
 
         // 文章骨架屏 .article-skeleton
         .article-skeleton {
@@ -473,9 +524,10 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       .empty-state {
         padding: 60px 0;
         text-align: center;
-        background-color: var(--el-bg-color);
-        border-radius: 8px;
-        box-shadow: $shadow;
+        margin-bottom: 0; // 移除底部边距，因为父容器已有 padding
+        background-color: transparent; // 使用透明背景
+        border-radius: 0; // 移除圆角
+        box-shadow: none; // 移除阴影
       }
 
       // 文章列表 .article-list
@@ -483,7 +535,7 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 30px;
-        margin-bottom: 30px;
+        margin-bottom: 0; // 移除底部边距，因为父容器已有 padding
 
         // 响应式：平板及以下自适应列数
         @media screen and (max-width: 992px) {
@@ -671,6 +723,17 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
           }
         }
       }
+
+      // 手机端项目链接 .mobile-project-links
+      .mobile-project-links {
+        display: none; // 默认隐藏（桌面端）
+        margin-top: 30px;
+
+        // 响应式：平板及以下显示
+        @media screen and (max-width: 992px) {
+          display: block;
+        }
+      }
     }
 
     // 右侧边栏 aside.sidebar
@@ -690,6 +753,7 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     color: $white;
     padding: 0;
     overflow: hidden;
+    z-index: 2; // 确保页脚在背景覆盖层之上
 
     // 顶部波浪效果 .footer-wave
     .footer-wave {
@@ -1017,6 +1081,13 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       padding: 40px 0;
 
       .latest-articles {
+        padding: 20px; // 手机端减少内边距
+        min-height: 80vh; // 手机端保持足够高度
+
+        .articles-wrapper {
+          min-height: 60vh; // 手机端减少最小高度
+        }
+
         .loading-container {
           .article-skeleton {
             padding: 15px;
@@ -1168,6 +1239,13 @@ $shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       padding: 30px 0;
 
       .latest-articles {
+        padding: 15px; // 超小屏幕进一步减少内边距
+        min-height: 75vh; // 超小屏幕保持足够高度
+
+        .articles-wrapper {
+          min-height: 55vh; // 超小屏幕进一步减少最小高度
+        }
+
         .article-list {
           gap: 15px;
 

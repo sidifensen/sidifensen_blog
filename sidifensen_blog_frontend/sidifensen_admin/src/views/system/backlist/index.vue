@@ -96,11 +96,12 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="blacklist-cards">
-          <el-card v-for="blacklist in paginatedBlacklistList" :key="blacklist.id" class="blacklist-card">
+          <el-card v-for="blacklist in paginatedBlacklistList" :key="blacklist.id" class="blacklist-card" :class="{ 'is-selected': isBlacklistSelected(blacklist.id) }">
             <div class="blacklist-card-content">
               <div class="blacklist-header-section">
                 <div class="blacklist-info">
                   <div class="blacklist-header">
+                    <el-checkbox :model-value="isBlacklistSelected(blacklist.id)" @change="handleMobileSelect(blacklist)" class="mobile-checkbox" />
                     <div class="blacklist-id">#{{ blacklist.id }}</div>
                     <div class="blacklist-type" :class="blacklist.type === 0 ? 'type-user' : 'type-ip'">
                       {{ blacklist.type === 0 ? "用户" : "IP地址" }}
@@ -370,6 +371,23 @@ const refreshBlacklistList = async () => {
 // 表格多选
 const handleSelectionChange = (blacklists) => {
   selectedBlacklists.value = blacklists;
+};
+
+// 检查黑名单是否被选中
+const isBlacklistSelected = (blacklistId) => {
+  return selectedBlacklists.value.some((blacklist) => blacklist.id === blacklistId);
+};
+
+// 移动端选择处理
+const handleMobileSelect = (blacklist) => {
+  const index = selectedBlacklists.value.findIndex((item) => item.id === blacklist.id);
+  if (index > -1) {
+    // 已选中，取消选中
+    selectedBlacklists.value.splice(index, 1);
+  } else {
+    // 未选中，添加到选中列表
+    selectedBlacklists.value.push(blacklist);
+  }
 };
 
 // 新增黑名单
@@ -817,6 +835,12 @@ onUnmounted(() => {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
+        // 选中状态样式
+        &.is-selected {
+          border: 2px solid #409eff;
+          box-shadow: 0 0 12px rgba(64, 158, 255, 0.3);
+        }
+
         // 黑名单卡片内容容器
         .blacklist-card-content {
           display: flex;
@@ -842,6 +866,16 @@ onUnmounted(() => {
                 flex-wrap: wrap;
                 gap: 8px;
                 margin-bottom: 5px;
+
+                // 移动端复选框样式
+                .mobile-checkbox {
+                  flex-shrink: 0;
+
+                  :deep(.el-checkbox__inner) {
+                    width: 18px;
+                    height: 18px;
+                  }
+                }
 
                 .blacklist-id {
                   font-size: 12px;

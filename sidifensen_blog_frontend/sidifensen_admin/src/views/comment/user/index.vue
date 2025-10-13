@@ -158,11 +158,12 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="comment-cards">
-          <el-card v-for="comment in paginatedCommentList" :key="comment.id" class="comment-card">
+          <el-card v-for="comment in paginatedCommentList" :key="comment.id" class="comment-card" :class="{ 'is-selected': isCommentSelected(comment.id) }">
             <div class="comment-card-content">
               <div class="comment-header-section">
                 <div class="comment-info">
                   <div class="comment-header">
+                    <el-checkbox :model-value="isCommentSelected(comment.id)" @change="handleMobileSelect(comment)" class="mobile-checkbox" />
                     <div class="comment-id">#{{ comment.id }}</div>
                     <div class="comment-status" :class="comment.examineStatus === 0 ? 'status-unaudited' : comment.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
                       {{ comment.examineStatus === 0 ? "待审核" : comment.examineStatus === 1 ? "已审核" : "未通过" }}
@@ -497,6 +498,23 @@ const refreshCommentList = async () => {
 // 表格多选
 const handleSelectionChange = (comments) => {
   selectedComments.value = comments;
+};
+
+// 检查评论是否被选中
+const isCommentSelected = (commentId) => {
+  return selectedComments.value.some((comment) => comment.id === commentId);
+};
+
+// 移动端选择处理
+const handleMobileSelect = (comment) => {
+  const index = selectedComments.value.findIndex((item) => item.id === comment.id);
+  if (index > -1) {
+    // 已选中，取消选中
+    selectedComments.value.splice(index, 1);
+  } else {
+    // 未选中，添加到选中列表
+    selectedComments.value.push(comment);
+  }
 };
 
 // 对话框关闭处理
@@ -1104,6 +1122,12 @@ onUnmounted(() => {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
+        // 选中状态样式
+        &.is-selected {
+          border: 2px solid #e6a23c;
+          box-shadow: 0 0 12px rgba(230, 162, 60, 0.3);
+        }
+
         // 评论卡片内容容器
         .comment-card-content {
           display: flex;
@@ -1129,6 +1153,16 @@ onUnmounted(() => {
                 flex-wrap: wrap;
                 gap: 8px;
                 margin-bottom: 5px;
+
+                // 移动端复选框样式
+                .mobile-checkbox {
+                  flex-shrink: 0;
+
+                  :deep(.el-checkbox__inner) {
+                    width: 18px;
+                    height: 18px;
+                  }
+                }
 
                 .comment-id {
                   font-size: 12px;

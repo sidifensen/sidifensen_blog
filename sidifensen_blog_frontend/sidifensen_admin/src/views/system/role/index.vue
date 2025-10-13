@@ -9,40 +9,94 @@
         </div>
       </div>
 
-      <!-- 角色表格 -->
-      <el-table v-loading="loading" :data="paginatedRoleList" class="table" style="height: 100%">
-        <el-table-column prop="id" label="角色id" width="70" />
-        <el-table-column prop="role" label="角色标识" />
-        <el-table-column prop="name" label="角色名称" />
-        <el-table-column prop="description" label="角色描述" />
-        <el-table-column prop="status" label="状态">
-          <template #default="{ row }">
-            <el-switch
-              v-model="row.status"
-              size="large"
-              active-color="#42b983"
-              inactive-color="#cccccc"
-              active-text="正常"
-              inactive-text="禁用"
-              :active-value="0"
-              :inactive-value="1"
-              inline-prompt
-              :loading="switchLoading"
-              :before-change="() => handleStatusChange(row.id, row.status === 0 ? 1 : 0)" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" sortable width="120" />
-        <el-table-column prop="updateTime" label="更新时间" sortable width="120" />
-        <el-table-column label="操作" width="260">
-          <template #default="{ row }">
-            <div class="table-actions">
-              <el-button type="primary" size="small" @click="handleEditRole(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
-              <el-button type="danger" size="small" @click="handleDeleteRole(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
-              <el-button size="small" type="warning" @click="handleAuthorizeUser(row)" :icon="User" class="user-button"> 分配用户 </el-button>
+      <!-- 桌面端表格视图 -->
+      <div v-if="!isMobileView" class="desktop-view">
+        <el-table v-loading="loading" :data="paginatedRoleList" class="table" style="height: 100%">
+          <el-table-column prop="id" label="角色id" width="70" />
+          <el-table-column prop="role" label="角色标识" />
+          <el-table-column prop="name" label="角色名称" />
+          <el-table-column prop="description" label="角色描述" />
+          <el-table-column prop="status" label="状态">
+            <template #default="{ row }">
+              <el-switch
+                v-model="row.status"
+                size="large"
+                active-color="#42b983"
+                inactive-color="#cccccc"
+                active-text="正常"
+                inactive-text="禁用"
+                :active-value="0"
+                :inactive-value="1"
+                inline-prompt
+                :loading="switchLoading"
+                :before-change="() => handleStatusChange(row.id, row.status === 0 ? 1 : 0)"
+              />
+            </template>
+          </el-table-column>
+          <el-table-column prop="createTime" label="创建时间" sortable width="120" />
+          <el-table-column prop="updateTime" label="更新时间" sortable width="120" />
+          <el-table-column label="操作" width="260">
+            <template #default="{ row }">
+              <div class="table-actions">
+                <el-button type="primary" size="small" @click="handleEditRole(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
+                <el-button type="danger" size="small" @click="handleDeleteRole(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
+                <el-button size="small" type="warning" @click="handleAuthorizeUser(row)" :icon="User" class="user-button"> 分配用户 </el-button>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+
+      <!-- 移动端卡片视图 -->
+      <div v-else class="mobile-view">
+        <div v-loading="loading" class="role-cards">
+          <el-card v-for="role in paginatedRoleList" :key="role.id" class="role-card">
+            <div class="role-card-content">
+              <!-- 卡片头部 -->
+              <div class="role-header">
+                <div class="header-left">
+                  <div class="role-id">#{{ role.id }}</div>
+                  <el-tag :type="role.status === 0 ? 'success' : 'danger'">
+                    {{ role.status === 0 ? "正常" : "禁用" }}
+                  </el-tag>
+                </div>
+                <el-switch v-model="role.status" size="small" active-color="#42b983" inactive-color="#cccccc" :active-value="0" :inactive-value="1" :loading="switchLoading" :before-change="() => handleStatusChange(role.id, role.status === 0 ? 1 : 0)" />
+              </div>
+
+              <!-- 角色信息 -->
+              <div class="role-info">
+                <div class="info-row">
+                  <span class="label">角色标识:</span>
+                  <span class="value role-text">{{ role.role }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">角色名称:</span>
+                  <span class="value">{{ role.name }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">角色描述:</span>
+                  <span class="value">{{ role.description }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">创建时间:</span>
+                  <span class="value time-text">{{ role.createTime }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">更新时间:</span>
+                  <span class="value time-text">{{ role.updateTime }}</span>
+                </div>
+              </div>
+
+              <!-- 操作按钮 -->
+              <div class="role-actions">
+                <el-button type="primary" size="small" @click="handleEditRole(role)" :icon="Edit" class="edit-button">编辑</el-button>
+                <el-button type="danger" size="small" @click="handleDeleteRole(role.id)" :icon="Delete" class="delete-button">删除</el-button>
+                <el-button size="small" type="warning" @click="handleAuthorizeUser(role)" :icon="User" class="user-button">分配用户</el-button>
+              </div>
             </div>
-          </template>
-        </el-table-column>
-      </el-table>
+          </el-card>
+        </div>
+      </div>
 
       <!-- 分页 -->
       <div class="pagination-container">
@@ -94,7 +148,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from "vue";
+import { ref, onMounted, onUnmounted, watch, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { Search, Plus, Edit, Delete, User } from "@element-plus/icons-vue";
 import { getRoleList, addRole, updateRole, deleteRole, queryRole } from "@/api/role";
@@ -154,6 +208,13 @@ const getRoles = async () => {
 // 初始化
 onMounted(() => {
   getRoles();
+  handleResize();
+  window.addEventListener("resize", handleResize);
+});
+
+// 组件卸载时移除监听
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
 });
 
 // 当前页码
@@ -369,6 +430,14 @@ const handleAuthorizeDialogClose = () => {
   authorizeDialogVisible.value = false;
   selectedUser.value = [];
 };
+
+// 移动端检测
+const isMobileView = ref(false);
+
+// 监听窗口大小变化
+const handleResize = () => {
+  isMobileView.value = window.innerWidth <= 768;
+};
 </script>
 
 <style lang="scss" scoped>
@@ -453,6 +522,14 @@ const handleAuthorizeDialogClose = () => {
       }
     }
 
+    // 桌面端表格视图
+    .desktop-view {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 60px;
+    }
+
     //表格
     .table {
       flex: 1;
@@ -462,7 +539,7 @@ const handleAuthorizeDialogClose = () => {
       max-height: calc(100vh - 220px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
 
       :deep(.el-table__header-wrapper) {
-      background-color: var(--el-bg-color);
+        background-color: var(--el-bg-color);
         th {
           font-weight: 600;
           color: #475569;
@@ -533,6 +610,149 @@ const handleAuthorizeDialogClose = () => {
             border-color: #fde68a;
             transform: translateY(-2px);
             box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
+          }
+        }
+      }
+    }
+
+    // 移动端卡片视图
+    .mobile-view {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-top: 16px;
+      padding-bottom: 60px;
+      overflow-y: auto;
+
+      // 角色卡片列表容器
+      .role-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 10px;
+
+        // 单个角色卡片
+        .role-card {
+          transition: all 0.3s ease;
+          border-radius: 8px;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          }
+
+          // 角色卡片内容容器
+          .role-card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+
+            // 卡片头部
+            .role-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding-bottom: 12px;
+              border-bottom: 1px solid var(--el-border-color-lighter);
+
+              .header-left {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                .role-id {
+                  font-size: 12px;
+                  color: #666;
+                  background-color: #f5f5f5;
+                  padding: 2px 6px;
+                  border-radius: 4px;
+                }
+              }
+            }
+
+            // 角色信息区域
+            .role-info {
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+
+              .info-row {
+                display: flex;
+                font-size: 14px;
+
+                .label {
+                  font-weight: 500;
+                  color: #888;
+                  margin-right: 8px;
+                  flex-shrink: 0;
+                }
+
+                .value {
+                  color: #555;
+                  flex: 1;
+                  word-break: break-all;
+                }
+
+                .role-text {
+                  color: #42b983;
+                  font-family: "Courier New", monospace;
+                }
+
+                .time-text {
+                  font-size: 12px;
+                  color: #999;
+                }
+              }
+            }
+
+            // 操作按钮区域
+            .role-actions {
+              display: flex;
+              gap: 8px;
+              justify-content: center;
+              padding-top: 12px;
+              border-top: 1px solid var(--el-border-color-lighter);
+              flex-wrap: wrap;
+
+              .el-button {
+                margin-left: 0;
+                flex: 1;
+                min-width: 70px;
+              }
+
+              .edit-button {
+                background-color: #e0f2fe;
+                color: #0284c7;
+                border-color: #e0f2fe;
+
+                &:hover {
+                  background-color: #bae6fd;
+                  border-color: #bae6fd;
+                }
+              }
+
+              .delete-button {
+                background-color: #fee2e2;
+                color: #ef4444;
+                border-color: #fee2e2;
+
+                &:hover {
+                  background-color: #fecaca;
+                  border-color: #fecaca;
+                }
+              }
+
+              .user-button {
+                background-color: #fef3c7;
+                color: #d97706;
+                border-color: #fef3c7;
+
+                &:hover {
+                  background-color: #fde68a;
+                  border-color: #fde68a;
+                }
+              }
+            }
           }
         }
       }

@@ -62,10 +62,13 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="photo-cards">
-          <el-card v-for="photo in paginatedPhotoList" :key="photo.id" class="photo-card">
+          <el-card v-for="photo in paginatedPhotoList" :key="photo.id" class="photo-card" :class="{ 'is-selected': isPhotoSelected(photo.id) }">
             <div class="photo-card-content">
               <div class="photo-header-section">
-                <el-image preview-teleported :src="photo.url" class="photo-cover" :preview-src-list="[photo.url]" fit="cover" />
+                <div class="photo-cover-container">
+                  <el-checkbox :model-value="isPhotoSelected(photo.id)" @change="handleMobileSelect(photo)" class="mobile-checkbox" />
+                  <el-image preview-teleported :src="photo.url" class="photo-cover" :preview-src-list="[photo.url]" fit="cover" />
+                </div>
                 <div class="photo-info">
                   <div class="photo-header">
                     <div class="photo-id">#{{ photo.id }}</div>
@@ -221,6 +224,23 @@ const selectedPhotos = ref([]);
 // 表格多选
 const handleSelectionChange = async (photo) => {
   selectedPhotos.value = photo;
+};
+
+// 检查图片是否被选中
+const isPhotoSelected = (photoId) => {
+  return selectedPhotos.value.some((photo) => photo.id === photoId);
+};
+
+// 移动端选择处理
+const handleMobileSelect = (photo) => {
+  const index = selectedPhotos.value.findIndex((item) => item.id === photo.id);
+  if (index > -1) {
+    // 已选中，取消选中
+    selectedPhotos.value.splice(index, 1);
+  } else {
+    // 未选中，添加到选中列表
+    selectedPhotos.value.push(photo);
+  }
 };
 // 批量审核加载状态
 const batchAuditLoading = ref(false);
@@ -603,6 +623,12 @@ const handleBatchDelete = () => {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
+        // 选中状态样式
+        &.is-selected {
+          border: 2px solid #42b983;
+          box-shadow: 0 0 12px rgba(66, 185, 131, 0.3);
+        }
+
         .photo-card-content {
           display: flex;
           flex-direction: column;
@@ -614,12 +640,34 @@ const handleBatchDelete = () => {
             flex-direction: column;
             gap: 12px;
 
-            .photo-cover {
+            // 图片封面容器
+            .photo-cover-container {
               width: 100%;
-              height: 180px;
-              border-radius: 6px;
-              flex-shrink: 0;
-              object-fit: cover;
+              position: relative;
+
+              // 移动端复选框样式
+              .mobile-checkbox {
+                position: absolute;
+                top: 8px;
+                left: 8px;
+                z-index: 10;
+                background-color: rgba(255, 255, 255, 0.9);
+                border-radius: 4px;
+                padding: 4px;
+
+                :deep(.el-checkbox__inner) {
+                  width: 18px;
+                  height: 18px;
+                }
+              }
+
+              .photo-cover {
+                width: 100%;
+                height: 180px;
+                border-radius: 6px;
+                flex-shrink: 0;
+                object-fit: cover;
+              }
             }
 
             .photo-info {

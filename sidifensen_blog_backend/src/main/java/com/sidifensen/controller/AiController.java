@@ -17,12 +17,12 @@ public class AiController {
 
     /**
      * 提取文章摘要
-     * 限流策略：每小时最多2次
+     * 限流策略：每小时最多5次
      *
      * @param aiSummaryDto 请求参数（包含文章内容）
      * @return 提取的摘要
      */
-    @RateLimit(value = 2, period = 3600, message = "AI摘要提取过于频繁，请1小时后再试")
+    @RateLimit(value = 5, period = 600, message = "AI摘要提取过于频繁，请10分钟后再试")
     @PostMapping("/extractSummary")
     public Result<String> extractSummary(@Valid @RequestBody AiSummaryDto aiSummaryDto) {
         String summary = aiService.extractSummary(aiSummaryDto.getContent());

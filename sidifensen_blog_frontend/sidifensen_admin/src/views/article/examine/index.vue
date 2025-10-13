@@ -104,10 +104,11 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="article-cards">
-          <el-card v-for="article in paginatedArticleList" :key="article.id" class="article-card">
+          <el-card v-for="article in paginatedArticleList" :key="article.id" class="article-card" :class="{ 'is-selected': isArticleSelected(article.id) }">
             <div class="article-card-content">
               <div class="article-header-section">
                 <div class="article-cover-mobile">
+                  <el-checkbox :model-value="isArticleSelected(article.id)" @change="handleMobileSelect(article)" class="mobile-checkbox" />
                   <el-image v-if="article.coverUrl" :src="article.coverUrl" class="article-cover-img" :preview-src-list="[article.coverUrl]" fit="cover" preview-teleported />
                   <div v-else class="no-cover-mobile">暂无封面</div>
                 </div>
@@ -493,6 +494,23 @@ const selectedArticles = ref([]);
 // 表格多选
 const handleSelectionChange = (articles) => {
   selectedArticles.value = articles;
+};
+
+// 检查文章是否被选中
+const isArticleSelected = (articleId) => {
+  return selectedArticles.value.some((article) => article.id === articleId);
+};
+
+// 移动端选择处理
+const handleMobileSelect = (article) => {
+  const index = selectedArticles.value.findIndex((item) => item.id === article.id);
+  if (index > -1) {
+    // 已选中，取消选中
+    selectedArticles.value.splice(index, 1);
+  } else {
+    // 未选中，添加到选中列表
+    selectedArticles.value.push(article);
+  }
 };
 
 // 批量操作加载状态
@@ -1024,6 +1042,12 @@ const getEditStatusType = (editStatus) => {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
           }
 
+          // 选中状态样式
+          &.is-selected {
+            border: 2px solid #42b983;
+            box-shadow: 0 0 12px rgba(66, 185, 131, 0.3);
+          }
+
           // 卡片内容容器
           .article-card-content {
             display: flex;
@@ -1039,6 +1063,23 @@ const getEditStatusType = (editStatus) => {
               .article-cover-mobile {
                 width: 100%;
                 margin-bottom: 8px;
+                position: relative;
+
+                // 移动端复选框样式
+                .mobile-checkbox {
+                  position: absolute;
+                  top: 8px;
+                  left: 8px;
+                  z-index: 10;
+                  background-color: rgba(255, 255, 255, 0.9);
+                  border-radius: 4px;
+                  padding: 4px;
+
+                  :deep(.el-checkbox__inner) {
+                    width: 18px;
+                    height: 18px;
+                  }
+                }
 
                 // 封面图片样式
                 .article-cover-img {

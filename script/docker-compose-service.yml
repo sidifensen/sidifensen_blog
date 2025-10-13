@@ -67,8 +67,6 @@ services:
       MINIO_IDENTITY_PLUGIN_ENABLE: "false"
       # 配置区域设置
       MINIO_REGION: us-east-1
-      # 禁用配置文件自动加载和身份验证相关配置
-      # MINIO_CONFIG_ENV_FILE: ""
       # 强制跳过身份验证初始化
       MINIO_SKIP_CLIENT: "true"
     ports:

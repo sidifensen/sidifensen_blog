@@ -57,8 +57,6 @@ public class AiServiceImpl implements AiService {
 
             // 5. 检查每日调用次数限制
             if (!aiUsageService.checkDailyLimit(userId)) {
-                int remaining = aiUsageService.getRemainingQuota(userId);
-                log.warn("用户 [ID: {}] 今日AI调用次数已达上限，剩余配额: {}", userId, remaining);
                 throw new BlogException(BlogConstants.AiDailyLimitExceeded);
             }
 
@@ -116,8 +114,6 @@ public class AiServiceImpl implements AiService {
             // 7. 调用成功后记录使用次数和内容hash
             aiUsageService.recordUsage(userId);
             aiUsageService.recordContentHash(userId, plainText);
-
-            log.info("用户 [ID: {}] AI摘要提取成功，摘要长度: {} 字符", userId, summary.length());
 
             return summary;
         } catch (BlogException e) {

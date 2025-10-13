@@ -96,11 +96,12 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="log-cards">
-          <el-card v-for="log in paginatedLogList" :key="log.id" class="log-card">
+          <el-card v-for="log in paginatedLogList" :key="log.id" class="log-card" :class="{ 'is-selected': isLogSelected(log.id) }">
             <div class="log-card-content">
               <div class="log-header-section">
                 <div class="log-info">
                   <div class="log-header">
+                    <el-checkbox :model-value="isLogSelected(log.id)" @change="handleMobileSelect(log)" class="mobile-checkbox" />
                     <div class="log-id">#{{ log.id }}</div>
                     <div class="login-type" :class="getLoginTypeClass(log.loginType)">
                       {{ log.loginTypeDesc }}
@@ -287,6 +288,23 @@ const refreshLogList = async () => {
 // 表格多选
 const handleSelectionChange = (logs) => {
   selectedLogs.value = logs;
+};
+
+// 检查日志是否被选中
+const isLogSelected = (logId) => {
+  return selectedLogs.value.some((log) => log.id === logId);
+};
+
+// 移动端选择处理
+const handleMobileSelect = (log) => {
+  const index = selectedLogs.value.findIndex((item) => item.id === log.id);
+  if (index > -1) {
+    // 已选中，取消选中
+    selectedLogs.value.splice(index, 1);
+  } else {
+    // 未选中，添加到选中列表
+    selectedLogs.value.push(log);
+  }
 };
 
 // 删除单个日志
@@ -659,6 +677,12 @@ onUnmounted(() => {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
+        // 选中状态样式
+        &.is-selected {
+          border: 2px solid #409eff;
+          box-shadow: 0 0 12px rgba(64, 158, 255, 0.3);
+        }
+
         // 登录日志卡片内容容器
         .log-card-content {
           display: flex;
@@ -684,6 +708,16 @@ onUnmounted(() => {
                 flex-wrap: wrap;
                 gap: 8px;
                 margin-bottom: 5px;
+
+                // 移动端复选框样式
+                .mobile-checkbox {
+                  flex-shrink: 0;
+
+                  :deep(.el-checkbox__inner) {
+                    width: 18px;
+                    height: 18px;
+                  }
+                }
 
                 .log-id {
                   font-size: 12px;

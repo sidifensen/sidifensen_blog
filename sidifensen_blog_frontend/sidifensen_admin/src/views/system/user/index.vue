@@ -17,46 +17,125 @@
         <el-date-picker v-model="searchCreateTimeEnd" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间结束" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
       </div>
 
-      <!-- 权限表格 -->
-      <el-table v-loading="loading" :data="paginatedUserList" class="table" style="height: 100%">
-        <el-table-column prop="id" label="用户id" width="70" />
-        <el-table-column prop="avatar" label="用户头像">
-          <template #default="{ row }">
-            <div style="display: flex; align-items: center">
-              <el-image preview-teleported :src="row.avatar" style="width: 40px; height: 40px" :preview-src-list="[row.avatar]" fit="fill" />
+      <!-- 桌面端表格视图 -->
+      <div v-if="!isMobileView" class="desktop-view">
+        <!-- 权限表格 -->
+        <el-table v-loading="loading" :data="paginatedUserList" class="table" style="height: 100%">
+          <el-table-column prop="id" label="用户id" width="70" />
+          <el-table-column prop="avatar" label="用户头像">
+            <template #default="{ row }">
+              <div style="display: flex; align-items: center">
+                <el-image preview-teleported :src="row.avatar" style="width: 40px; height: 40px" :preview-src-list="[row.avatar]" fit="fill" />
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="username" label="用户名称" />
+          <el-table-column prop="nickname" label="用户昵称" />
+          <el-table-column prop="email" label="用户邮箱" width="170" />
+          <el-table-column prop="status" label="状态">
+            <template #default="{ row }">
+              <el-switch
+                v-model="row.status"
+                size="large"
+                active-color="#42b983"
+                inactive-color="#cccccc"
+                active-text="正常"
+                inactive-text="禁用"
+                :active-value="0"
+                :inactive-value="1"
+                inline-prompt
+                :loading="switchLoading"
+                :before-change="() => handleStatusChange(row.id, row.status === 0 ? 1 : 0)"
+              />
+            </template>
+          </el-table-column>
+          <el-table-column prop="loginType" label="登录方式" width="110">
+            <template #default="{ row }">
+              <el-tag>
+                {{ row.loginType === 0 ? "用户名/邮箱" : row.loginType === 1 ? "gitee" : row.loginType === 2 ? "github" : row.loginType === 3 ? "QQ" : "未知登录方式" }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="loginAddress" label="登录地址" />
+          <el-table-column prop="loginTime" label="最近登录时间" sortable width="135" />
+          <el-table-column prop="createTime" label="创建时间" sortable width="120" />
+          <el-table-column prop="updateTime" label="更新时间" sortable width="120" />
+          <el-table-column label="操作" width="330">
+            <template #default="{ row }">
+              <div class="table-actions">
+                <el-button type="info" size="small" @click="handleDetailUser(row.id)" :icon="InfoFilled" class="detail-button">详情</el-button>
+                <el-button type="primary" size="small" @click="handleEditUser(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
+                <el-button type="danger" size="small" @click="handleDeleteUser(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
+                <el-button size="small" type="warning" @click="handleAuthorizeRole(row)" :icon="Avatar" class="role-button"> 添加角色 </el-button>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+
+      <!-- 移动端卡片视图 -->
+      <div v-else class="mobile-view">
+        <div v-loading="loading" class="user-cards">
+          <el-card v-for="user in paginatedUserList" :key="user.id" class="user-card">
+            <div class="user-card-content">
+              <!-- 卡片头部 -->
+              <div class="user-header">
+                <div class="header-left">
+                  <el-avatar :src="user.avatar" :size="50" />
+                  <div class="user-basic">
+                    <div class="user-name">{{ user.nickname || user.username }}</div>
+                    <div class="user-id">#{{ user.id }}</div>
+                  </div>
+                </div>
+                <div class="header-right">
+                  <el-tag :type="user.status === 0 ? 'success' : 'danger'">
+                    {{ user.status === 0 ? "正常" : "禁用" }}
+                  </el-tag>
+                  <el-switch v-model="user.status" size="small" active-color="#42b983" inactive-color="#cccccc" :active-value="0" :inactive-value="1" :loading="switchLoading" :before-change="() => handleStatusChange(user.id, user.status === 0 ? 1 : 0)" />
+                </div>
+              </div>
+
+              <!-- 用户信息 -->
+              <div class="user-info">
+                <div class="info-row">
+                  <span class="label">用户名:</span>
+                  <span class="value">{{ user.username }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">邮箱:</span>
+                  <span class="value">{{ user.email }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">登录方式:</span>
+                  <el-tag size="small">
+                    {{ user.loginType === 0 ? "用户名/邮箱" : user.loginType === 1 ? "gitee" : user.loginType === 2 ? "github" : user.loginType === 3 ? "QQ" : "未知" }}
+                  </el-tag>
+                </div>
+                <div class="info-row">
+                  <span class="label">登录地址:</span>
+                  <span class="value">{{ user.loginAddress || "-" }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">最近登录:</span>
+                  <span class="value time-text">{{ user.loginTime }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">创建时间:</span>
+                  <span class="value time-text">{{ user.createTime }}</span>
+                </div>
+              </div>
+
+              <!-- 操作按钮 -->
+              <div class="user-actions">
+                <el-button type="info" size="small" @click="handleDetailUser(user.id)" :icon="InfoFilled" class="detail-button">详情</el-button>
+                <el-button type="primary" size="small" @click="handleEditUser(user)" :icon="Edit" class="edit-button">编辑</el-button>
+                <el-button type="danger" size="small" @click="handleDeleteUser(user.id)" :icon="Delete" class="delete-button">删除</el-button>
+                <el-button size="small" type="warning" @click="handleAuthorizeRole(user)" :icon="Avatar" class="role-button">添加角色</el-button>
+              </div>
             </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="username" label="用户名称" />
-        <el-table-column prop="nickname" label="用户昵称" />
-        <el-table-column prop="email" label="用户邮箱" width="170" />
-        <el-table-column prop="status" label="状态">
-          <template #default="{ row }">
-            <el-switch v-model="row.status" size="large" active-color="#42b983" inactive-color="#cccccc" active-text="正常" inactive-text="禁用" :active-value="0" :inactive-value="1" inline-prompt :loading="switchLoading" :before-change="() => handleStatusChange(row.id, row.status === 0 ? 1 : 0)" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="loginType" label="登录方式" width="110">
-          <template #default="{ row }">
-            <el-tag>
-              {{ row.loginType === 0 ? "用户名/邮箱" : row.loginType === 1 ? "gitee" : row.loginType === 2 ? "github" : row.loginType === 3 ? "QQ" : "未知登录方式" }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="loginAddress" label="登录地址" />
-        <el-table-column prop="loginTime" label="最近登录时间" sortable width="135" />
-        <el-table-column prop="createTime" label="创建时间" sortable width="120" />
-        <el-table-column prop="updateTime" label="更新时间" sortable width="120" />
-        <el-table-column label="操作" width="330">
-          <template #default="{ row }">
-            <div class="table-actions">
-              <el-button type="info" size="small" @click="handleDetailUser(row.id)" :icon="InfoFilled" class="detail-button">详情</el-button>
-              <el-button type="primary" size="small" @click="handleEditUser(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
-              <el-button type="danger" size="small" @click="handleDeleteUser(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
-              <el-button size="small" type="warning" @click="handleAuthorizeRole(row)" :icon="Avatar" class="role-button"> 添加角色 </el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
+          </el-card>
+        </div>
+      </div>
 
       <!-- 分页 -->
       <div class="pagination-container">
@@ -243,7 +322,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import { Search, Plus, InfoFilled, Edit, Delete, Avatar, Calendar } from "@element-plus/icons-vue";
 import { getRoleList } from "@/api/role";
 import { getUserList, updateUser, deleteUser, queryUser, getUserDetail } from "@/api/user";
@@ -309,6 +388,13 @@ const getUsers = async () => {
 // 初始化
 onMounted(() => {
   getUsers();
+  handleResize();
+  window.addEventListener("resize", handleResize);
+});
+
+// 组件卸载时移除监听
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
 });
 
 // 更新分页数据
@@ -560,6 +646,14 @@ const handleAuthorizeDialogClose = () => {
   authorizeDialogVisible.value = false;
   selectedRole.value = [];
 };
+
+// 移动端检测
+const isMobileView = ref(false);
+
+// 监听窗口大小变化
+const handleResize = () => {
+  isMobileView.value = window.innerWidth <= 768;
+};
 </script>
 
 <style lang="scss" scoped>
@@ -648,6 +742,14 @@ const handleAuthorizeDialogClose = () => {
         }
       }
     }
+  }
+
+  // 桌面端表格视图
+  .desktop-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 60px;
   }
 
   //表格
@@ -748,6 +850,187 @@ const handleAuthorizeDialogClose = () => {
           border-color: #fde68a;
           transform: translateY(-2px);
           box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
+        }
+      }
+    }
+  }
+
+  // 移动端卡片视图
+  .mobile-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+    padding-bottom: 60px;
+    overflow-y: auto;
+
+    // 用户卡片列表容器
+    .user-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 10px;
+
+      // 单个用户卡片
+      .user-card {
+        transition: all 0.3s ease;
+        border-radius: 8px;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        // 用户卡片内容容器
+        .user-card-content {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+
+          // 卡片头部
+          .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--el-border-color-lighter);
+
+            .header-left {
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              flex: 1;
+              min-width: 0;
+
+              :deep(.el-avatar) {
+                flex-shrink: 0;
+              }
+
+              .user-basic {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                flex: 1;
+                min-width: 0;
+
+                .user-name {
+                  font-size: 16px;
+                  font-weight: 600;
+                  color: #333;
+                  word-break: break-all;
+                  line-height: 1.3;
+                }
+
+                .user-id {
+                  font-size: 12px;
+                  color: #666;
+                  background-color: #f5f5f5;
+                  padding: 2px 6px;
+                  border-radius: 4px;
+                  display: inline-block;
+                  width: fit-content;
+                }
+              }
+            }
+
+            .header-right {
+              display: flex;
+              flex-direction: column;
+              align-items: flex-end;
+              gap: 8px;
+            }
+          }
+
+          // 用户信息区域
+          .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+
+            .info-row {
+              display: flex;
+              align-items: center;
+              font-size: 14px;
+
+              .label {
+                font-weight: 500;
+                color: #888;
+                margin-right: 8px;
+                flex-shrink: 0;
+              }
+
+              .value {
+                color: #555;
+                flex: 1;
+                word-break: break-all;
+              }
+
+              .time-text {
+                font-size: 12px;
+                color: #999;
+              }
+            }
+          }
+
+          // 操作按钮区域
+          .user-actions {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            padding-top: 12px;
+            border-top: 1px solid var(--el-border-color-lighter);
+            flex-wrap: wrap;
+
+            .el-button {
+              margin-left: 0;
+              flex: 1;
+              min-width: 60px;
+            }
+
+            .detail-button {
+              background-color: #f5f5f5;
+              color: #606266;
+              border-color: #dcdfe6;
+
+              &:hover {
+                background-color: #e9e9e9;
+                border-color: #c0c4cc;
+              }
+            }
+
+            .edit-button {
+              background-color: #e0f2fe;
+              color: #0284c7;
+              border-color: #e0f2fe;
+
+              &:hover {
+                background-color: #bae6fd;
+                border-color: #bae6fd;
+              }
+            }
+
+            .delete-button {
+              background-color: #fee2e2;
+              color: #ef4444;
+              border-color: #fee2e2;
+
+              &:hover {
+                background-color: #fecaca;
+                border-color: #fecaca;
+              }
+            }
+
+            .role-button {
+              background-color: #fef3c7;
+              color: #d97706;
+              border-color: #fef3c7;
+
+              &:hover {
+                background-color: #fde68a;
+                border-color: #fde68a;
+              }
+            }
+          }
         }
       }
     }

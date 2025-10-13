@@ -9,38 +9,123 @@
         </div>
       </div>
 
-      <!-- 菜单表格 -->
-      <el-table v-loading="loading" :data="paginatedMenuList" row-key="id" default-expand-all class="menu-table" style="height: 100%">
-        <el-table-column prop="id" label="菜单id" width="120" />
-        <el-table-column prop="parentId" label="父菜单id" />
-        <el-table-column prop="name" label="菜单名称" />
-        <el-table-column prop="path" label="路由路径" />
-        <el-table-column prop="component" label="组件路径" />
-        <el-table-column prop="icon" label="图标">
-          <template #default="{ row }">
-            <el-icon v-if="row.icon"><component :is="row.icon" /></el-icon>
-            <span v-else>-</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="sort" sortable label="排序" />
-        <el-table-column prop="status" label="状态">
-          <template #default="{ row }">
-            <el-switch v-model="row.status" size="large" active-color="#42b983" inactive-color="#cccccc" active-text="正常" inactive-text="禁用" :active-value="0" :inactive-value="1" inline-prompt :loading="switchLoading" :before-change="() => handleStatusChange(row.id, row.status === 0 ? 1 : 0)" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" sortable width="120" />
-        <el-table-column prop="updateTime" label="更新时间" sortable width="120" />
-        <el-table-column label="操作" width="330">
-          <template #default="{ row }">
-            <div class="table-actions">
-              <el-button size="small" type="success" @click="handleAddMenu(row)" :icon="Plus" v-if="row.children || row.parentId == 0" class="add-button"> 新增 </el-button>
-              <el-button size="small" type="primary" @click="handleEditMenu(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
-              <el-button size="small" type="danger" @click="handleDeleteMenu(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
-              <el-button size="small" type="warning" @click="handleAuthorizeRole(row)" :icon="Avatar" class="role-button"> 分配角色 </el-button>
+      <!-- 桌面端表格视图 -->
+      <div v-if="!isMobileView" class="desktop-view">
+        <el-table v-loading="loading" :data="paginatedMenuList" row-key="id" default-expand-all class="menu-table" style="height: 100%">
+          <el-table-column prop="id" label="菜单id" width="120" />
+          <el-table-column prop="parentId" label="父菜单id" />
+          <el-table-column prop="name" label="菜单名称" />
+          <el-table-column prop="path" label="路由路径" />
+          <el-table-column prop="component" label="组件路径" />
+          <el-table-column prop="icon" label="图标">
+            <template #default="{ row }">
+              <el-icon v-if="row.icon"><component :is="row.icon" /></el-icon>
+              <span v-else>-</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="sort" sortable label="排序" />
+          <el-table-column prop="status" label="状态">
+            <template #default="{ row }">
+              <el-switch
+                v-model="row.status"
+                size="large"
+                active-color="#42b983"
+                inactive-color="#cccccc"
+                active-text="正常"
+                inactive-text="禁用"
+                :active-value="0"
+                :inactive-value="1"
+                inline-prompt
+                :loading="switchLoading"
+                :before-change="() => handleStatusChange(row.id, row.status === 0 ? 1 : 0)"
+              />
+            </template>
+          </el-table-column>
+          <el-table-column prop="createTime" label="创建时间" sortable width="120" />
+          <el-table-column prop="updateTime" label="更新时间" sortable width="120" />
+          <el-table-column label="操作" width="330">
+            <template #default="{ row }">
+              <div class="table-actions">
+                <el-button size="small" type="success" @click="handleAddMenu(row)" :icon="Plus" v-if="row.children || row.parentId == 0" class="add-button"> 新增 </el-button>
+                <el-button size="small" type="primary" @click="handleEditMenu(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
+                <el-button size="small" type="danger" @click="handleDeleteMenu(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
+                <el-button size="small" type="warning" @click="handleAuthorizeRole(row)" :icon="Avatar" class="role-button"> 分配角色 </el-button>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+
+      <!-- 移动端卡片视图 -->
+      <div v-else class="mobile-view">
+        <div class="menu-cards" v-loading="loading">
+          <!-- 展平的菜单列表，用缩进显示层级 -->
+          <div v-for="menu in flatMenuList" :key="menu.id" class="menu-card" :style="{ marginLeft: menu.level * 16 + 'px' }">
+            <div class="menu-card-header">
+              <!-- 展开/收起按钮 -->
+              <div v-if="menu.hasChildren" class="expand-button" @click="toggleMenuExpand(menu.id)">
+                <el-icon :class="['expand-icon', { expanded: isMenuExpanded(menu.id) }]">
+                  <ArrowRight />
+                </el-icon>
+              </div>
+
+              <!-- 菜单图标 -->
+              <div class="menu-icon-wrapper">
+                <el-icon v-if="menu.icon" class="menu-icon">
+                  <component :is="menu.icon" />
+                </el-icon>
+                <el-icon v-else class="menu-icon placeholder">
+                  <Document />
+                </el-icon>
+              </div>
+
+              <!-- 菜单主要信息 -->
+              <div class="menu-main-info">
+                <div class="menu-id-badge">ID: {{ menu.id }}</div>
+                <div class="menu-name">{{ menu.name }}</div>
+                <div v-if="menu.path" class="menu-path">{{ menu.path }}</div>
+              </div>
             </div>
-          </template>
-        </el-table-column>
-      </el-table>
+
+            <!-- 菜单详细信息 -->
+            <div class="menu-details">
+              <div v-if="menu.parentId !== undefined" class="detail-item">
+                <span class="label">父菜单ID:</span>
+                <span class="value">{{ menu.parentId === 0 ? "无" : menu.parentId }}</span>
+              </div>
+              <div v-if="menu.component" class="detail-item">
+                <span class="label">组件路径:</span>
+                <span class="value">{{ menu.component }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">排序:</span>
+                <span class="value">{{ menu.sort }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">创建时间:</span>
+                <span class="value">{{ menu.createTime }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">更新时间:</span>
+                <span class="value">{{ menu.updateTime }}</span>
+              </div>
+            </div>
+
+            <!-- 状态区域 -->
+            <div class="menu-status-section">
+              <el-switch v-model="menu.status" active-color="#42b983" inactive-color="#cccccc" active-text="正常" inactive-text="禁用" :active-value="0" :inactive-value="1" inline-prompt :loading="switchLoading" :before-change="() => handleStatusChange(menu.id, menu.status === 0 ? 1 : 0)" />
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="menu-actions">
+              <el-button v-if="menu.hasChildren || menu.parentId == 0" text bg type="success" size="small" :icon="Plus" @click="handleAddMenu(menu)">新增</el-button>
+              <el-button text bg type="primary" size="small" :icon="Edit" @click="handleEditMenu(menu)">编辑</el-button>
+              <el-button text bg type="danger" size="small" :icon="Delete" @click="handleDeleteMenu(menu.id)">删除</el-button>
+              <el-button text bg type="warning" size="small" :icon="Avatar" @click="handleAuthorizeRole(menu)">角色</el-button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- 分页 -->
       <div class="pagination-container">
@@ -119,8 +204,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
-import { Search, Plus, Edit, Delete, Avatar } from "@element-plus/icons-vue";
+import { ref, onMounted, onUnmounted, watch, computed } from "vue";
+import { Search, Plus, Edit, Delete, Avatar, Document, ArrowRight } from "@element-plus/icons-vue";
 import { getAllMenuList, addMenu, updateMenu, deleteMenu, queryMenu } from "@/api/menu";
 import { addRoleMenu, getRolesByMenu } from "@/api/role-menu";
 import { getRoleList } from "@/api/role";
@@ -129,6 +214,31 @@ import { formatMenu } from "@/utils/Menu";
 
 // 搜索查询
 const searchQuery = ref("");
+// 移动端检测
+const isMobileView = ref(false);
+// 移动端展开的菜单ID集合
+const expandedMenus = ref(new Set());
+
+// 监听窗口大小变化
+const handleResize = () => {
+  isMobileView.value = window.innerWidth <= 768;
+};
+
+// 切换菜单展开状态
+const toggleMenuExpand = (menuId) => {
+  if (expandedMenus.value.has(menuId)) {
+    expandedMenus.value.delete(menuId);
+  } else {
+    expandedMenus.value.add(menuId);
+  }
+  // 触发响应式更新
+  expandedMenus.value = new Set(expandedMenus.value);
+};
+
+// 检查菜单是否展开
+const isMenuExpanded = (menuId) => {
+  return expandedMenus.value.has(menuId);
+};
 // 菜单列表数据
 const menuList = ref([]);
 // 分页后的菜单列表
@@ -174,6 +284,13 @@ const rules = {
 // 初始化
 onMounted(() => {
   getMenuList();
+  handleResize();
+  window.addEventListener("resize", handleResize);
+});
+
+// 组件卸载时移除监听
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
 });
 
 // 获取菜单列表
@@ -454,6 +571,29 @@ const handleAuthorizeDialogClose = () => {
   authorizeDialogVisible.value = false;
   selectedRoles.value = [];
 };
+
+// 计算扁平化的菜单列表（用于移动端显示）
+const flatMenuList = computed(() => {
+  const flattenMenus = (menus, level = 0, result = []) => {
+    menus.forEach((menu) => {
+      // 添加层级信息
+      const flatMenu = {
+        ...menu,
+        level,
+        hasChildren: menu.children && menu.children.length > 0,
+      };
+      result.push(flatMenu);
+
+      // 如果有子菜单且处于展开状态，递归添加子菜单
+      if (flatMenu.hasChildren && isMenuExpanded(menu.id)) {
+        flattenMenus(menu.children, level + 1, result);
+      }
+    });
+    return result;
+  };
+
+  return flattenMenus(paginatedMenuList.value);
+});
 </script>
 
 <style lang="scss" scoped>
@@ -539,6 +679,21 @@ const handleAuthorizeDialogClose = () => {
         }
       }
     }
+
+    // 批量操作按钮区域
+    .card-third {
+      display: flex;
+      justify-content: flex-end;
+      padding: 10px;
+      border-bottom: 1px solid var(--el-border-color);
+    }
+  }
+
+  // 桌面端表格视图
+  .desktop-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 
     // 菜单表格
     .menu-table {
@@ -641,68 +796,272 @@ const handleAuthorizeDialogClose = () => {
         }
       }
     }
+  }
 
-    .pagination-container {
+  // 移动端卡片视图
+  .mobile-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+    padding-bottom: 60px; // 为分页容器预留空间
+    overflow-y: auto;
+
+    // 菜单卡片列表容器
+    .menu-cards {
       display: flex;
-      justify-content: flex-end;
+      flex-direction: column;
+      gap: 0;
       padding: 10px;
-      background-color: var(--el-bg-color);
-      border-radius: 0 0 12px 12px;
-      z-index: 10;
-      width: 100%;
-      box-sizing: border-box;
-      position: absolute;
-      bottom: 0;
-      left: 0;
-    }
-  }
 
-  :deep(.el-dialog) {
-    border-radius: 16px;
-    // 默认宽度
-    width: 500px;
+      // 菜单树项容器
+      .menu-tree-item {
+        // 子菜单容器
+        .menu-children {
+          margin-top: 0;
+          padding-left: 0;
 
-    // 屏幕宽度小于768px时的宽度
-    @media screen and (max-width: 767px) {
-      width: 90%;
-    }
-  }
-
-  // 新增/编辑菜单对话框
-  .menu-form {
-    :deep(.el-form-item) {
-      margin-bottom: 20px;
-    }
-  }
-
-  // 授权角色对话框样式
-  .authorize-dialog-content {
-    padding: 10px;
-
-    .menu-name {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      color: #1e293b;
-    }
-
-    .authorize-form {
-      :deep(.el-form-item) {
-        margin-bottom: 20px;
+          .menu-card {
+            margin-left: 0;
+          }
+        }
       }
 
-      .role-checkbox-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
+      // 单个菜单卡片
+      .menu-card {
+        background: var(--el-bg-color);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        margin-bottom: 8px;
 
-        :deep(.el-checkbox) {
-          margin-right: 16px;
-          margin-bottom: 8px;
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        // 菜单卡片头部
+        .menu-card-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px;
+          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          border-bottom: 1px solid var(--el-border-color-lighter);
+          position: relative;
+
+          // 展开/收起按钮
+          .expand-button {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+
+            &:hover {
+              background-color: rgba(66, 185, 131, 0.1);
+            }
+
+            .expand-icon {
+              font-size: 18px;
+              color: #606266;
+              transition: transform 0.3s ease;
+
+              &.expanded {
+                transform: rotate(90deg);
+              }
+            }
+          }
+
+          // 菜单图标包装器
+          .menu-icon-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #42b983 0%, #36a970 100%);
+            box-shadow: 0 4px 12px rgba(66, 185, 131, 0.3);
+
+            .menu-icon {
+              font-size: 24px;
+              color: white;
+
+              &.placeholder {
+                opacity: 0.6;
+              }
+            }
+          }
+
+          // 菜单主要信息
+          .menu-main-info {
+            flex: 1;
+            min-width: 0;
+
+            .menu-id-badge {
+              display: inline-block;
+              padding: 2px 8px;
+              background-color: #e3f2fd;
+              color: #1976d2;
+              border-radius: 12px;
+              font-size: 10px;
+              font-weight: 600;
+              margin-bottom: 4px;
+            }
+
+            .menu-name {
+              font-size: 16px;
+              font-weight: 600;
+              color: var(--el-text-color-primary);
+              margin-bottom: 4px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+
+            .menu-path {
+              font-size: 12px;
+              color: var(--el-text-color-secondary);
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+          }
+        }
+
+        // 菜单详细信息
+        .menu-details {
+          padding: 12px 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          background-color: var(--el-bg-color);
+
+          .detail-item {
+            display: flex;
+            align-items: flex-start;
+            font-size: 12px;
+            line-height: 1.5;
+
+            .label {
+              flex-shrink: 0;
+              width: 80px;
+              color: var(--el-text-color-secondary);
+              font-weight: 500;
+            }
+
+            .value {
+              flex: 1;
+              color: var(--el-text-color-primary);
+              word-break: break-all;
+            }
+          }
+        }
+
+        // 菜单状态区域
+        .menu-status-section {
+          display: flex;
+          justify-content: center;
+          padding: 12px 16px;
+          border-top: 1px solid var(--el-border-color-lighter);
+          border-bottom: 1px solid var(--el-border-color-lighter);
+          background-color: var(--el-bg-color-page);
+        }
+
+        // 菜单操作按钮
+        .menu-actions {
+          display: flex;
+          gap: 6px;
+          padding: 12px 16px;
+          justify-content: space-between;
+          background-color: var(--el-bg-color);
+
+          .el-button {
+            font-size: 12px;
+            padding: 6px 10px;
+            height: auto;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 0;
+          }
         }
       }
     }
   }
+
+  // 分页容器
+  .pagination-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px;
+    background-color: var(--el-bg-color);
+    border-radius: 0 0 12px 12px;
+    z-index: 10;
+    width: 100%;
+    box-sizing: border-box;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+  }
+}
+
+// 对话框样式
+:deep(.el-dialog) {
+  border-radius: 16px;
+  // 默认宽度
+  width: 500px;
+
+  // 屏幕宽度小于768px时的宽度
+  @media screen and (max-width: 767px) {
+    width: 90%;
+  }
+}
+
+// 新增/编辑菜单对话框
+.menu-form {
+  :deep(.el-form-item) {
+    margin-bottom: 20px;
+  }
+}
+
+// 授权角色对话框样式
+.authorize-dialog-content {
+  padding: 10px;
+
+  .menu-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1e293b;
+  }
+
+  .authorize-form {
+    :deep(.el-form-item) {
+      margin-bottom: 20px;
+    }
+
+    .role-checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+
+      :deep(.el-checkbox) {
+        margin-right: 16px;
+        margin-bottom: 8px;
+      }
+    }
+  }
+}
+
+// 对话框内表单元素样式
+.menu-management-container {
   :deep(.el-input-number),
   :deep(.el-input__wrapper),
   :deep(.el-select__wrapper) {
@@ -774,10 +1133,6 @@ const handleAuthorizeDialogClose = () => {
           .search-input {
             width: 100%;
           }
-
-          .add {
-            // width: 100%;
-          }
         }
       }
 
@@ -835,10 +1190,6 @@ const handleAuthorizeDialogClose = () => {
 
       .search-input {
         width: 100% !important;
-      }
-
-      .add {
-        // width: 100%;
       }
     }
   }

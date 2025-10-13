@@ -148,10 +148,11 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="column-cards">
-          <el-card v-for="column in paginatedColumnList" :key="column.id" class="column-card">
+          <el-card v-for="column in paginatedColumnList" :key="column.id" class="column-card" :class="{ 'is-selected': isColumnSelected(column.id) }">
             <div class="column-card-content">
               <div class="column-header-section">
                 <div class="column-cover-mobile">
+                  <el-checkbox :model-value="isColumnSelected(column.id)" @change="handleMobileSelect(column)" class="mobile-checkbox" />
                   <el-image v-if="column.coverUrl" :src="column.coverUrl" class="column-cover-img" :preview-src-list="[column.coverUrl]" fit="cover" preview-teleported />
                   <div v-else class="no-cover-mobile">暂无封面</div>
                 </div>
@@ -593,6 +594,23 @@ const refreshColumnList = async () => {
 // 表格多选
 const handleSelectionChange = (columns) => {
   selectedColumns.value = columns;
+};
+
+// 检查专栏是否被选中
+const isColumnSelected = (columnId) => {
+  return selectedColumns.value.some((column) => column.id === columnId);
+};
+
+// 移动端选择处理
+const handleMobileSelect = (column) => {
+  const index = selectedColumns.value.findIndex((item) => item.id === column.id);
+  if (index > -1) {
+    // 已选中，取消选中
+    selectedColumns.value.splice(index, 1);
+  } else {
+    // 未选中,添加到选中列表
+    selectedColumns.value.push(column);
+  }
 };
 
 // 对话框关闭处理
@@ -1130,9 +1148,9 @@ onUnmounted(() => {
       .column-description {
         overflow: hidden;
         cursor: pointer;
-        display: -webkit-box; 
+        display: -webkit-box;
         text-overflow: ellipsis;
-        -webkit-line-clamp: 2; 
+        -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
 
         &:hover {
@@ -1299,6 +1317,12 @@ onUnmounted(() => {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
+        // 选中状态样式
+        &.is-selected {
+          border: 2px solid #e6a23c;
+          box-shadow: 0 0 12px rgba(230, 162, 60, 0.3);
+        }
+
         // 专栏卡片内容容器
         .column-card-content {
           display: flex;
@@ -1314,6 +1338,23 @@ onUnmounted(() => {
             .column-cover-mobile {
               width: 100%;
               margin-bottom: 8px;
+              position: relative;
+
+              // 移动端复选框样式
+              .mobile-checkbox {
+                position: absolute;
+                top: 8px;
+                left: 8px;
+                z-index: 10;
+                background-color: rgba(255, 255, 255, 0.9);
+                border-radius: 4px;
+                padding: 4px;
+
+                :deep(.el-checkbox__inner) {
+                  width: 18px;
+                  height: 18px;
+                }
+              }
 
               // 封面图片样式
               .column-cover-img {
@@ -2461,7 +2502,6 @@ onUnmounted(() => {
     }
 
     .column-stats-detail .stats-group {
-
       .stat-item {
         min-width: auto;
         max-width: none;
