@@ -236,9 +236,7 @@
       </div>
 
       <!-- 分页 -->
-      <div class="pagination-container">
-        <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]" layout="prev, pager, next, jumper" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-      </div>
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 文章详情对话框 -->
@@ -457,6 +455,7 @@ import { Delete, Close, Check, View, Calendar, Picture, User, Document, Star, Ch
 import { ElMessage, ElMessageBox } from "element-plus";
 import { getUserList, getUserListWithArticleCount } from "@/api/user";
 import { adminGetArticlesByUserId, adminDeleteArticle, adminDeleteBatchArticle, adminExamineArticle, adminExamineBatchArticle, adminSearchArticle, adminGetArticle, adminUpdateArticle } from "@/api/article";
+import Pagination from "@/components/Pagination.vue";
 
 // 视图状态
 const showArticles = ref(false);
@@ -1664,21 +1663,6 @@ onUnmounted(() => {
       color: #e6a23c;
     }
   }
-
-  // 分页容器
-  .pagination-container {
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px;
-    background-color: var(--el-bg-color);
-    border-radius: 0 0 12px 12px;
-    z-index: 10;
-    width: 100%;
-    box-sizing: border-box;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-  }
 }
 
 // 文章详情对话框样式
@@ -2230,16 +2214,6 @@ onUnmounted(() => {
       .table {
         margin-top: 0;
         max-height: calc(100vh - 240px); // 为分页容器预留更多空间
-      }
-
-      .pagination-container {
-        padding: 4px;
-
-        :deep(.el-pagination) {
-          .el-pager {
-            display: none;
-          }
-        }
       }
     }
 

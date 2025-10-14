@@ -162,9 +162,7 @@
       </div>
 
       <!-- 分页 -->
-      <div class="pagination-container">
-        <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]" layout="prev, pager, next, jumper" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-      </div>
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 评论详情对话框 -->
@@ -271,6 +269,7 @@ import { ref, onMounted, onUnmounted, computed } from "vue";
 import { Delete, Close, Check, View, Calendar, User, ChatDotRound, Clock } from "@element-plus/icons-vue";
 import { getUserListWithCommentCount } from "@/api/user";
 import { adminGetCommentList, adminDeleteComment, adminDeleteBatchComment, adminExamineComment, adminExamineBatchComment, adminSearchComment } from "@/api/comment";
+import Pagination from "@/components/Pagination.vue";
 
 // 评论列表数据
 const commentList = ref([]);
@@ -1089,21 +1088,6 @@ const handleBatchDelete = () => {
       }
     }
 
-    // ===== 分页容器 =====
-    // 固定在底部的分页组件
-    .pagination-container {
-      display: flex;
-      justify-content: flex-end;
-      padding: 10px;
-      background-color: var(--el-bg-color);
-      border-radius: 0 0 12px 12px;
-      z-index: 10;
-      width: 100%;
-      box-sizing: border-box;
-      position: absolute;
-      bottom: 0;
-      left: 0;
-    }
   }
 
   // ===== 通用评论状态样式 =====
@@ -1550,16 +1534,6 @@ const handleBatchDelete = () => {
         }
       }
 
-      // 分页容器响应式调整
-      .pagination-container {
-        padding: 4px;
-
-        :deep(.el-pagination) {
-          .el-pager {
-            display: none;
-          }
-        }
-      }
     }
   }
 

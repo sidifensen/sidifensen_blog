@@ -171,9 +171,7 @@
       </div>
 
       <!-- 分页 -->
-      <div class="pagination-container">
-        <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]" layout="prev, pager, next, jumper" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-      </div>
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 专栏详情对话框 -->
@@ -371,6 +369,7 @@ import { ref, onMounted, onUnmounted, computed } from "vue";
 import { Delete, Close, Check, View, Search, Picture, User, Star, Clock, Document, Edit, ChatDotRound } from "@element-plus/icons-vue";
 import { getUserList } from "@/api/user";
 import { adminGetColumnList, adminSearchColumn, adminExamineColumn, adminBatchExamineColumn, adminDeleteColumn, adminBatchDeleteColumn, adminUpdateColumn, adminGetColumnDetail } from "@/api/column";
+import Pagination from "@/components/Pagination.vue";
 
 // 专栏列表数据
 const columnList = ref([]);
@@ -1398,21 +1397,6 @@ onUnmounted(() => {
       color: #e6a23c;
     }
   }
-
-  // 分页容器
-  .pagination-container {
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px;
-    background-color: var(--el-bg-color);
-    border-radius: 0 0 12px 12px;
-    z-index: 10;
-    width: 100%;
-    box-sizing: border-box;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-  }
 }
 
 // 专栏详情对话框样式
@@ -2228,14 +2212,6 @@ onUnmounted(() => {
     .table {
       margin-top: 0;
       max-height: calc(100vh - 240px);
-    }
-
-    .pagination-container {
-      padding: 4px;
-
-      :deep(.el-pagination .el-pager) {
-        display: none;
-      }
     }
   }
 

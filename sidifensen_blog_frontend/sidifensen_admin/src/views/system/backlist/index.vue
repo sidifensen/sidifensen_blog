@@ -154,9 +154,7 @@
       </div>
 
       <!-- 分页 -->
-      <div class="pagination-container">
-        <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]" layout="prev, pager, next, jumper" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-      </div>
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 新增/编辑黑名单对话框 -->
@@ -202,6 +200,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
 import { Search, Plus, Delete, Edit } from "@element-plus/icons-vue";
 import { getBlacklistList, addBlacklist, searchBlacklist, updateBlacklist, deleteBlacklist } from "@/api/blacklist";
+import Pagination from "@/components/Pagination.vue";
 
 // 黑名单列表数据
 const blacklistList = ref([]);
@@ -1056,20 +1055,6 @@ onUnmounted(() => {
     }
   }
 
-  // 分页容器
-  .pagination-container {
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px;
-    background-color: var(--el-bg-color);
-    border-radius: 0 0 12px 12px;
-    z-index: 10;
-    width: 100%;
-    box-sizing: border-box;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-  }
 }
 
 // 表单提示
@@ -1145,13 +1130,6 @@ onUnmounted(() => {
       max-height: calc(100vh - 240px);
     }
 
-    .pagination-container {
-      padding: 4px;
-
-      :deep(.el-pagination .el-pager) {
-        display: none;
-      }
-    }
   }
 
   // 移动端对话框样式调整

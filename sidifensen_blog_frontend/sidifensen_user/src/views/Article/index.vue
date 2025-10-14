@@ -710,10 +710,10 @@ onUnmounted(() => {
           .main-content {
             .article-list-wrapper {
               .back-to-top {
-                width: 40px;
-                height: 40px;
-                right: 15px;
-                bottom: 15px;
+                width: 40px !important;
+                height: 40px !important;
+                right: 15px !important;
+                bottom: 15px !important;
               }
 
               .article-list-section {

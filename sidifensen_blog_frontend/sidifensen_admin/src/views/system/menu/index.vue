@@ -128,9 +128,7 @@
       </div>
 
       <!-- 分页 -->
-      <div class="pagination-container">
-        <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]" layout=" prev, pager, next, jumper" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-      </div>
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 新增/编辑菜单对话框 -->
@@ -211,6 +209,7 @@ import { addRoleMenu, getRolesByMenu } from "@/api/role-menu";
 import { getRoleList } from "@/api/role";
 import { icons } from "@/utils/Icon";
 import { formatMenu } from "@/utils/Menu";
+import Pagination from "@/components/Pagination.vue";
 
 // 搜索查询
 const searchQuery = ref("");
@@ -996,20 +995,6 @@ const flatMenuList = computed(() => {
     }
   }
 
-  // 分页容器
-  .pagination-container {
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px;
-    background-color: var(--el-bg-color);
-    border-radius: 0 0 12px 12px;
-    z-index: 10;
-    width: 100%;
-    box-sizing: border-box;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-  }
 }
 
 // 对话框样式
@@ -1140,14 +1125,6 @@ const flatMenuList = computed(() => {
         max-height: calc(100vh - 200px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
       }
 
-      .pagination-container {
-        padding: 4px;
-        :deep(.el-pagination) {
-          .el-pager {
-            display: none;
-          }
-        }
-      }
     }
   }
 }

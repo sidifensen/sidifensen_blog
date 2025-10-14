@@ -138,9 +138,7 @@
       </div>
 
       <!-- 分页 -->
-      <div class="pagination-container">
-        <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]" layout=" prev, pager, next, jumper" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-      </div>
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 新增/编辑权限对话框 -->
@@ -328,6 +326,7 @@ import { getRoleList } from "@/api/role";
 import { getUserList, updateUser, deleteUser, queryUser, getUserDetail } from "@/api/user";
 import { getRolesByUser } from "@/api/user-role";
 import { formatMenu } from "@/utils/Menu";
+import Pagination from "@/components/Pagination.vue";
 
 // 用户列表数据
 const userList = ref([]);
@@ -1036,19 +1035,6 @@ const handleResize = () => {
     }
   }
 
-  .pagination-container {
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px;
-    background-color: var(--el-bg-color);
-    border-radius: 0 0 12px 12px;
-    z-index: 10;
-    width: 100%;
-    box-sizing: border-box;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-  }
 }
 
 :deep(.el-dialog) {
@@ -1221,14 +1207,6 @@ const handleResize = () => {
         max-height: calc(100vh - 180px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
       }
 
-      .pagination-container {
-        padding: 4px;
-        :deep(.el-pagination) {
-          .el-pager {
-            display: none;
-          }
-        }
-      }
     }
   }
 }

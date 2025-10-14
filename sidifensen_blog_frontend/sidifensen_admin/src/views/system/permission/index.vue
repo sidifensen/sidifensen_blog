@@ -99,9 +99,7 @@
       </div>
 
       <!-- 分页 -->
-      <div class="pagination-container">
-        <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]" layout=" prev, pager, next, jumper" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-      </div>
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
     <!-- 新增/编辑权限对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" :before-close="handleDialogClose">
@@ -175,6 +173,7 @@ import { getPermissionList, addPermission, updatePermission, deletePermission, q
 import { getRoleList } from "@/api/role";
 import { addBatchRolePermission, addRolePermission, getRolesByPermission } from "@/api/role-permission";
 import { getAllMenuList } from "@/api/menu";
+import Pagination from "@/components/Pagination.vue";
 
 import FileSaver from "file-saver";
 import * as XLSX from "xlsx";
@@ -936,19 +935,6 @@ const handleAuthorizeBatchDialogClose = () => {
     }
   }
 
-  .pagination-container {
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px;
-    background-color: var(--el-bg-color);
-    border-radius: 0 0 12px 12px;
-    z-index: 10;
-    width: 100%;
-    box-sizing: border-box;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-  }
 }
 
 :deep(.el-dialog) {
@@ -1079,14 +1065,6 @@ const handleAuthorizeBatchDialogClose = () => {
         }
       }
 
-      .pagination-container {
-        padding: 4px;
-        :deep(.el-pagination) {
-          .el-pager {
-            display: none;
-          }
-        }
-      }
     }
   }
 }

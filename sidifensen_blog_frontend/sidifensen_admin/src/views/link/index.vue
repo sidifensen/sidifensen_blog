@@ -108,7 +108,7 @@
               <div class="link-header-section">
                 <div class="link-cover-mobile">
                   <el-checkbox :model-value="isLinkSelected(link.id)" @change="handleMobileSelect(link)" class="mobile-checkbox" />
-                  <el-image v-if="link.coverUrl" :src="link.coverUrl" class="link-cover-img" :preview-src-list="[link.coverUrl]" fit="cover" preview-teleported />
+                  <el-image v-if="link.coverUrl" :src="link.coverUrl" class="link-cover-img" :preview-src-list="[link.coverUrl]" fit="contain" preview-teleported />
                   <div v-else class="no-cover-mobile">暂无封面</div>
                 </div>
                 <div class="link-info">
@@ -166,9 +166,7 @@
       </div>
 
       <!-- 分页 -->
-      <div class="pagination-container">
-        <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]" layout="prev, pager, next, jumper" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-      </div>
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
   </div>
 </template>
@@ -178,6 +176,7 @@ import { ref, onMounted, onUnmounted, computed } from "vue";
 import { Delete, Close, Check, Search } from "@element-plus/icons-vue";
 import { getUserList } from "@/api/user";
 import { adminGetLinkList, adminSearchLink, adminExamineLink, adminBatchExamineLink, adminDeleteLink, adminBatchDeleteLink } from "@/api/link";
+import Pagination from "@/components/Pagination.vue";
 
 // 友链列表数据
 const linkList = ref([]);
@@ -1095,21 +1094,6 @@ onUnmounted(() => {
       color: #e6a23c;
     }
   }
-
-  // 分页容器
-  .pagination-container {
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px;
-    background-color: var(--el-bg-color);
-    border-radius: 0 0 12px 12px;
-    z-index: 10;
-    width: 100%;
-    box-sizing: border-box;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-  }
 }
 
 // 响应式设计
@@ -1191,14 +1175,6 @@ onUnmounted(() => {
     .table {
       margin-top: 0;
       max-height: calc(100vh - 240px);
-    }
-
-    .pagination-container {
-      padding: 4px;
-
-      :deep(.el-pagination .el-pager) {
-        display: none;
-      }
     }
   }
 

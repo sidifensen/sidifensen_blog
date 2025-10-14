@@ -191,9 +191,7 @@
       </div>
 
       <!-- 分页 -->
-      <div class="pagination-container">
-        <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]" layout="prev, pager, next, jumper" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-      </div>
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 文章详情对话框 -->
@@ -350,6 +348,7 @@ import { ref, onMounted, onUnmounted, computed } from "vue";
 import { Delete, Close, Check, View, Calendar, Picture, User, Document, Star, ChatDotRound, Collection, Clock, Refresh } from "@element-plus/icons-vue";
 import { getUserList } from "@/api/user";
 import { adminGetArticleList, adminDeleteArticle, adminDeleteBatchArticle, adminExamineArticle, adminExamineBatchArticle, adminSearchArticle, adminGetArticle } from "@/api/article";
+import Pagination from "@/components/Pagination.vue";
 
 // 文章列表数据
 const articleList = ref([]);
@@ -1290,22 +1289,6 @@ const getEditStatusType = (editStatus) => {
         }
       }
     }
-
-    // ===== 分页容器 =====
-    // 固定在底部的分页组件
-    .pagination-container {
-      display: flex;
-      justify-content: flex-end;
-      padding: 10px;
-      background-color: var(--el-bg-color);
-      border-radius: 0 0 12px 12px;
-      z-index: 10;
-      width: 100%;
-      box-sizing: border-box;
-      position: absolute;
-      bottom: 0;
-      left: 0;
-    }
   }
 
   // ===== 通用文章状态样式 =====
@@ -1906,17 +1889,6 @@ const getEditStatusType = (editStatus) => {
         .table {
           margin-top: 0;
           max-height: calc(100vh - 240px); // 为分页容器预留更多空间
-        }
-      }
-
-      // 分页容器响应式调整
-      .pagination-container {
-        padding: 4px;
-
-        :deep(.el-pagination) {
-          .el-pager {
-            display: none;
-          }
         }
       }
     }
