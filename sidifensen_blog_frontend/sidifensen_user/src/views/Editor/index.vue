@@ -100,7 +100,7 @@
                   <el-input v-model="article.description" :autosize="{ minRows: 2, maxRows: 4 }" class="description-input" maxlength="256" placeholder="输入文章摘要" resize="none" type="textarea"></el-input>
                   <div class="ai-summary-actions">
                     <el-button icon="EditPen" plain round size="small" type="danger" @click="extractSummary">AI提取摘要</el-button>
-                    <span v-if="aiQuota !== null" class="ai-quota-text">今日剩余: {{ aiQuota }}/5 次</span>
+                    <span v-if="aiQuota !== null" class="ai-quota-text">今日剩余: {{ aiQuota }}/10 次</span>
                   </div>
                 </div>
               </div>

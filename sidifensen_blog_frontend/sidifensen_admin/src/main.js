@@ -8,12 +8,12 @@ const app = createApp(App);
 import router from "./router";
 app.use(router);
 
-// // 引入并配置disable-devtool
-// import { setupDisableDevtool } from "@/utils/disableDevtool";
-// // 只在生产环境启用禁用开发者工具功能
-// if (import.meta.env.PROD) {
-//   setupDisableDevtool();
-// }
+// 引入并配置disable-devtool
+import { setupDisableDevtool } from "@/utils/disableDevtool";
+// 只在生产环境启用禁用开发者工具功能
+if (import.meta.env.PROD) {
+  setupDisableDevtool();
+}
 
 // 注册svg全局组件
 import SvgIcon from "@/components/SvgIcon.vue";

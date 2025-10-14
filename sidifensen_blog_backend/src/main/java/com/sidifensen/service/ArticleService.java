@@ -47,9 +47,6 @@ public interface ArticleService extends IService<Article> {
     // 根据标签搜索文章
     PageVo<List<ArticleVo>> searchArticleByTag(String tag, Integer pageNum, Integer pageSize);
 
-    // 根据内容搜索文章
-    PageVo<List<ArticleVo>> searchArticleByContent(String content, Integer pageNum, Integer pageSize);
-
     // 获取标题搜索建议（自动补全）
     List<String> getTitleSuggestions(String keyword);
 

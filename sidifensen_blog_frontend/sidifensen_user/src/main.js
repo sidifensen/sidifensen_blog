@@ -19,12 +19,12 @@ import "element-plus/theme-chalk/dark/css-vars.css";
 
 const app = createApp(App);
 
-// // 引入并配置disable-devtool
-// import { setupDisableDevtool } from "@/utils/disableDevtool";
-// // 只在生产环境启用禁用开发者工具功能
-// if (import.meta.env.PROD) {
-//   setupDisableDevtool();
-// }
+// 引入并配置disable-devtool
+import { setupDisableDevtool } from "@/utils/disableDevtool";
+// 只在生产环境启用禁用开发者工具功能
+if (import.meta.env.PROD) {
+  setupDisableDevtool();
+}
 
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component);

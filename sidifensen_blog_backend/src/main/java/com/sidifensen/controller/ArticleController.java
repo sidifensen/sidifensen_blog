@@ -197,23 +197,6 @@ public class ArticleController {
     }
 
     /**
-     * 根据内容搜索文章
-     *
-     * @param content  内容关键字
-     * @param pageNum  页码
-     * @param pageSize 页大小
-     * @return 搜索结果列表
-     */
-    @RateLimit(20)
-    @GetMapping("/search/content")
-    public Result searchArticleByContent(@RequestParam @NotNull(message = "搜索内容不能为空") String content,
-                                         @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
-                                         @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
-        PageVo<List<ArticleVo>> articleVoList = articleService.searchArticleByContent(content, pageNum, pageSize);
-        return Result.success(articleVoList);
-    }
-
-    /**
      * 新增文章
      *
      * @return 新增文章

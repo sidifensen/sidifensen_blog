@@ -433,35 +433,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public PageVo<List<ArticleVo>> searchArticleByContent(String content, Integer pageNum, Integer pageSize) {
-        Page<Article> page = new Page<>(pageNum, pageSize);
-        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
-                .like(Article::getContent, content)
-                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
-                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
-                .eq(Article::getVisibleRange, VisibleRangeEnum.ALL.getCode())
-                .orderByDesc(Article::getUpdateTime);
-
-        List<Article> articles = articleMapper.selectPage(page, qw).getRecords();
-
-        // 转换为 ArticleVo 并填充用户信息
-        List<ArticleVo> articleVos = articles.stream()
-                .map(article -> {
-                    ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
-                    // 查询作者信息
-                    SysUser author = sysUserMapper.selectById(article.getUserId());
-                    if (ObjectUtil.isNotEmpty(author)) {
-                        articleVo.setNickname(author.getNickname());
-                        articleVo.setAvatar(author.getAvatar());
-                    }
-                    return articleVo;
-                })
-                .collect(Collectors.toList());
-
-        return new PageVo<>(articleVos, page.getTotal());
-    }
-
-    @Override
     public List<String> getTitleSuggestions(String keyword) {
         // 查询标题包含关键字的文章，只返回标题，最多10条
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
@@ -1038,23 +1009,23 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 查询所有文章总数
         Long totalCount = this.count();
 
-        // 查询已发布数量 (editStatus=0 && examineStatus=1)
+        // 查询已发布数量 (已发布 && 审核通过)
         Long publishedCount = this.count(new LambdaQueryWrapper<Article>()
-                .eq(Article::getEditStatus, 0)
-                .eq(Article::getExamineStatus, 1));
+                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode()));
 
-        // 查询审核中数量 (editStatus=0 && examineStatus=0)
+        // 查询审核中数量 (已发布 && 待审核)
         Long reviewingCount = this.count(new LambdaQueryWrapper<Article>()
-                .eq(Article::getEditStatus, 0)
-                .eq(Article::getExamineStatus, 0));
+                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                .eq(Article::getExamineStatus, ExamineStatusEnum.WAIT.getCode()));
 
-        // 查询草稿箱数量 (editStatus=1)
+        // 查询草稿箱数量
         Long draftCount = this.count(new LambdaQueryWrapper<Article>()
-                .eq(Article::getEditStatus, 1));
+                .eq(Article::getEditStatus, EditStatusEnum.DRAFT.getCode()));
 
-        // 查询回收站数量 (editStatus=2)
+        // 查询回收站数量
         Long garbageCount = this.count(new LambdaQueryWrapper<Article>()
-                .eq(Article::getEditStatus, 2));
+                .eq(Article::getEditStatus, EditStatusEnum.RECYCLE.getCode()));
 
         ArticleStatisticsVo statisticsVo = new ArticleStatisticsVo();
         statisticsVo.setTotalCount(totalCount);
@@ -1074,32 +1045,30 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         ArticleStatisticsVo articleStatistics = getUserArticleStatistics();
 
         // 获取专栏数量
-        Long columnCount = columnMapper.selectCount(new LambdaQueryWrapper<Column>()
-                .eq(Column::getUserId, userId));
+        Long columnCount = columnMapper.selectCount(new LambdaQueryWrapper<Column>().eq(Column::getUserId, userId));
 
-        // 获取评论数量
-        Long commentCount = 0L;
-        try {
-            commentCount = commentService.count(
-                    new LambdaQueryWrapper<Comment>()
-                            .eq(Comment::getUserId, userId));
-        } catch (Exception e) {
-            // 如果Comment实体类或方法不存在，设为0
-            commentCount = 0L;
-        }
-
-        // 获取总阅读量
-        Long totalReadCount = articleMapper.selectList(
+        // 一次性查询获取该用户所有已审核通过的文章（只查询阅读量和点赞量字段）
+        List<Article> articles = articleMapper.selectList(
                 new LambdaQueryWrapper<Article>()
                         .eq(Article::getUserId, userId)
-                        .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode()))
-                .stream().mapToLong(Article::getReadCount).sum();
+                        .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
+                        .select(Article::getReadCount, Article::getLikeCount, Article::getCommentCount));
 
-        // 获取总点赞数 - 暂时设为0，后续可以实现
+        // 同时计算总阅读量和总点赞量
+        Long totalReadCount = 0L;
         Long totalLikeCount = 0L;
+        Long totalCommentCount = 0L;
+        if (!articles.isEmpty()) {
+            totalReadCount = articles.stream().mapToLong(Article::getReadCount).sum();
+            totalLikeCount = articles.stream().mapToLong(Article::getLikeCount).sum();
+            totalCommentCount = articles.stream().mapToLong(Article::getCommentCount).sum();
+        }
 
-        // 获取用户信息（粉丝数、关注数）
-        SysUser user = sysUserMapper.selectById(userId);
+        // 获取用户信息（只查询粉丝数和关注数字段）
+        SysUser user = sysUserMapper.selectOne(
+                new LambdaQueryWrapper<SysUser>()
+                        .eq(SysUser::getId, userId)
+                        .select(SysUser::getFansCount, SysUser::getFollowCount));
         Long fansCount = user.getFansCount().longValue();
         Long followCount = user.getFollowCount().longValue();
 
@@ -1107,7 +1076,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         CreationStatisticsVo creationStatistics = new CreationStatisticsVo();
         creationStatistics.setArticleStatistics(articleStatistics);
         creationStatistics.setColumnCount(columnCount);
-        creationStatistics.setCommentCount(commentCount);
+        creationStatistics.setCommentCount(totalCommentCount);
         creationStatistics.setTotalReadCount(totalReadCount);
         creationStatistics.setTotalLikeCount(totalLikeCount);
         creationStatistics.setFansCount(fansCount);

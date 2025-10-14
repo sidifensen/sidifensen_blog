@@ -45,7 +45,7 @@
           <el-table-column prop="coverUrl" label="网站封面" width="120">
             <template #default="{ row }">
               <div class="link-cover-container">
-                <el-image v-if="row.coverUrl" :src="row.coverUrl" class="link-cover" :preview-src-list="[row.coverUrl]" fit="cover" preview-teleported />
+                <el-image v-if="row.coverUrl" :src="row.coverUrl" class="link-cover" :preview-src-list="[row.coverUrl]" fit="contain" preview-teleported />
                 <div v-else class="no-cover">暂无封面</div>
               </div>
             </template>

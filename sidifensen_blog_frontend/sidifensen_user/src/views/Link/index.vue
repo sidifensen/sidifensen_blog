@@ -78,7 +78,7 @@
 
               <!-- 网站封面 -->
               <div class="link-cover">
-                <el-image :src="link.coverUrl || ''" fit="cover" class="cover-image" :alt="link.name">
+                <el-image :src="link.coverUrl || ''" fit="contain" class="cover-image" :alt="link.name">
                   <template #placeholder>
                     <div class="image-placeholder">
                       <el-icon><Loading /></el-icon>
@@ -371,7 +371,7 @@ onUnmounted(() => {
 
         .page-description {
           font-size: 16px;
-          color: var(--el-text-color-regular);
+          color: var(--el-text-color-primary);
           margin: 0;
           line-height: 1.5;
         }
@@ -401,6 +401,7 @@ onUnmounted(() => {
           font-size: 16px;
           border-radius: 8px;
           font-weight: 500;
+          background: var(--el-bg-color-page);
           color: var(--el-text-color-regular);
           border: 2px solid var(--el-border-color);
           transition: all 0.3s ease;

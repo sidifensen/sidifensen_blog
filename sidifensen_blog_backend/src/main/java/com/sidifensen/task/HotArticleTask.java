@@ -38,14 +38,11 @@ public class HotArticleTask {
      */
     @PostConstruct
     public void initHotArticles() {
-        log.info("项目启动，准备初始化热门文章数据...");
-        
         // 异步延迟执行，避免阻塞应用启动
         // 等待3秒，给数据库更多的初始化时间
         new Thread(() -> {
             try {
                 Thread.sleep(3000);
-                log.info("开始初始化热门文章数据...");
                 syncHotArticles();
             } catch (InterruptedException e) {
                 log.warn("热门文章初始化线程被中断: {}", e.getMessage());
