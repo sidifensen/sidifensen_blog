@@ -1047,7 +1047,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 获取专栏数量
         Long columnCount = columnMapper.selectCount(new LambdaQueryWrapper<Column>().eq(Column::getUserId, userId));
 
-        // 一次性查询获取该用户所有已审核通过的文章（只查询阅读量和点赞量字段）
+        // 一次性查询获取该用户所有已审核通过的文章
         List<Article> articles = articleMapper.selectList(
                 new LambdaQueryWrapper<Article>()
                         .eq(Article::getUserId, userId)
@@ -1064,11 +1064,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             totalCommentCount = articles.stream().mapToLong(Article::getCommentCount).sum();
         }
 
-        // 获取用户信息（只查询粉丝数和关注数字段）
+        // 获取用户信息
         SysUser user = sysUserMapper.selectOne(
                 new LambdaQueryWrapper<SysUser>()
                         .eq(SysUser::getId, userId)
-                        .select(SysUser::getFansCount, SysUser::getFollowCount));
+                        .select(SysUser::getId, SysUser::getFansCount, SysUser::getFollowCount));
+                        
         Long fansCount = user.getFansCount().longValue();
         Long followCount = user.getFollowCount().longValue();
 
@@ -1111,10 +1112,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             // 3. 获取当前页的文章ID列表
             List<Integer> currentPageIds = hotArticleIds.subList(startIndex, endIndex);
 
-            // 4. 根据文章ID列表查询热门文章核心信息（使用 MyBatis-Plus，精简查询，只查必要字段）
+            // 4. 根据文章ID列表查询热门文章核心信息
             List<Article> articles = articleMapper.selectList(
                     new LambdaQueryWrapper<Article>()
-                            // 只查询需要的字段，避免查询大字段（如 content），提升性能
+                            // 只查询需要的字段
                             .select(Article::getId, Article::getUserId, Article::getTitle, Article::getReadCount)
                             // 根据ID列表查询
                             .in(Article::getId, currentPageIds)
@@ -1136,7 +1137,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             Map<Integer, Article> articleDataMap = articles.stream()
                     .collect(Collectors.toMap(Article::getId, article -> article));
 
-            // 6. 批量获取热度分数（优化性能：避免循环中多次查询Redis）
+            // 6. 批量获取热度分数
             Map<Integer, Double> hotScoreMap = redisComponent.batchGetArticleHotScore(currentPageIds);
 
             // 7. 按照Redis中的顺序组装结果（保持热度排序）
@@ -1147,14 +1148,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                     continue;
                 }
 
-                // 创建 HotArticleVo（只包含核心字段：ID、用户ID、标题、阅读量、热度）
+                // 创建 HotArticleVo
                 HotArticleVo hotArticleVo = new HotArticleVo();
                 hotArticleVo.setId(article.getId());
                 hotArticleVo.setUserId(article.getUserId());
                 hotArticleVo.setTitle(article.getTitle());
                 hotArticleVo.setReadCount(article.getReadCount());
 
-                // 添加热度分数（从批量获取的Map中取值，如果没有则设为0）
+                // 添加热度分数
                 Double hotScore = hotScoreMap.get(articleId);
                 hotArticleVo.setHotScore(hotScore != null ? hotScore.longValue() : 0L);
 

@@ -562,7 +562,7 @@ npm run dev
 
 > 💡 **提示**:
 >
-> - docker部署需要4g内存
+> - docker 部署需要 4g 内存
 
 #### 1️⃣ 环境准备
 
@@ -681,6 +681,118 @@ chmod +x docker.sh
 - DeepSeek AI 配置（文章摘要功能）
 
 > 💡 **提示**: 所有配置项都可以在 `.env` 文件中修改，详细说明请参考 `script/env.example` 文件。
+
+## 📸 项目截图展示
+
+### 🏠 首页
+
+<div align="center">
+
+**博客首页 - 欢迎页面**
+
+<img src="img/Snipaste_2025-10-14_15-38-11.png" alt="博客首页" width="800"/>
+
+</div>
+
+### 📝 文章系统
+
+<div align="center">
+
+**文章列表页面**
+
+<img src="img/Snipaste_2025-10-14_15-38-13.png" alt="文章列表" width="800"/>
+
+**文章搜索结果页面**
+
+<img src="img/Snipaste_2025-10-14_15-38-34.png" alt="搜索结果" width="800"/>
+
+</div>
+
+### 📸 相册系统
+
+<div align="center">
+
+**相册广场页面**
+
+<img src="img/Snipaste_2025-10-14_15-38-17.png" alt="相册广场" width="800"/>
+
+</div>
+
+### 🔗 友链系统
+
+<div align="center">
+
+**友情链接页面**
+
+<img src="img/Snipaste_2025-10-14_15-38-19.png" alt="友情链接" width="800"/>
+
+</div>
+
+### 🎨 创作中心
+
+<div align="center">
+
+**创作中心 - 首页**
+
+<img src="img/Snipaste_2025-10-14_13-39-30.png" alt="创作中心-文章列表" width="800"/>
+
+**创作中心 - 文章管理**
+
+<img src="img/Snipaste_2025-10-14_13-39-33.png" alt="创作中心-文章编辑" width="800"/>
+
+**创作中心 - 专栏管理**
+
+<img src="img/Snipaste_2025-10-14_13-39-36.png" alt="创作中心-AI摘要" width="800"/>
+
+**创作中心 - 评论管理**
+
+<img src="img/Snipaste_2025-10-14_13-39-38.png" alt="创作中心-专栏管理" width="800"/>
+
+</div>
+
+### 👤 个人主页
+
+<div align="center">
+
+**个人主页 - 文章展示**
+
+<img src="img/Snipaste_2025-10-14_13-40-13.png" alt="个人主页-用户信息" width="800"/>
+
+**个人主页 - 专栏展示**
+
+<img src="img/Snipaste_2025-10-14_13-40-17.png" alt="个人主页-文章展示" width="800"/>
+
+**个人主页 - 收藏内容**
+
+<img src="img/Snipaste_2025-10-14_13-40-19.png" alt="个人主页-专栏展示" width="800"/>
+
+**个人主页 - 关注/粉丝**
+
+<img src="img/Snipaste_2025-10-14_13-40-22.png" alt="个人主页-收藏内容" width="800"/>
+
+**个人主页 - 历史记录**
+
+<img src="img/Snipaste_2025-10-14_13-40-31.png" alt="个人主页-历史记录" width="800"/>
+
+</div>
+
+### 🔧 管理后台
+
+<div align="center">
+
+**管理后台首页 - 数据统计仪表盘**
+
+<img src="img/Snipaste_2025-10-14_15-34-37.png" alt="管理后台首页" width="800"/>
+
+**系统管理 - 菜单管理页面**
+
+<img src="img/Snipaste_2025-10-14_15-36-42.png" alt="菜单管理" width="800"/>
+
+**文章管理 - 文章审核页面**
+
+<img src="img/Snipaste_2025-10-14_15-35-31.png" alt="文章审核" width="800"/>
+
+</div>
 
 ## 🤝 贡献指南
 

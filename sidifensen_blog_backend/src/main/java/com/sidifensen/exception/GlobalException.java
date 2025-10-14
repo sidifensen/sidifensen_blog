@@ -62,8 +62,8 @@ public class GlobalException {
         if (loginUser != null) {
             // 获取访问的url
             String requestUrl = WebUtils.getRequestUrl();
-            log.error("userId:{} 权限异常：{}; 访问url:{} ; 权限: {}",
-                    loginUser.getSysUser().getId(), e.getMessage(), requestUrl, loginUser.getAuthorities());
+            log.error("userId:{} 权限异常：{}; 访问url:{} ; ",
+                    loginUser.getSysUser().getId(), e.getMessage(), requestUrl);
         }
         return Result.unauthorized("无权限"); // AccessDeniedException: 无权限
     }
