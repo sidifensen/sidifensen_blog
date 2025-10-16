@@ -3,10 +3,12 @@ package com.sidifensen.utils;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import com.aliyun.teaopenapi.Client;
+
+import com.aliyun.imageaudit20191230.Client;
+import com.aliyun.imageaudit20191230.models.ScanImageAdvanceRequest;
+import com.aliyun.imageaudit20191230.models.ScanImageResponse;
+import com.aliyun.tea.TeaModel;
 import com.aliyun.teaopenapi.models.Config;
-import com.aliyun.teaopenapi.models.OpenApiRequest;
-import com.aliyun.teaopenapi.models.Params;
 import com.aliyun.teautil.Common;
 import com.aliyun.teautil.models.RuntimeOptions;
 import com.sidifensen.domain.constants.ImageAuditConstants;
@@ -16,10 +18,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -41,38 +45,16 @@ public class ImageAuditUtils {
      * @throws Exception
      */
     private Client createClient() throws Exception {
+        /*
+         * 初始化配置对象com.aliyun.teaopenapi.models.Config
+         * Config对象存放AccessKeyId、AccessKeySecret、endpoint等配置
+         */
         Config config = new Config()
                 .setAccessKeyId(accessKeyId)
                 .setAccessKeySecret(accessKeySecret);
-        // Endpoint 请参考 https://api.aliyun.com/product/imageaudit
+        // 访问的域名
         config.endpoint = endpoint;
         return new Client(config);
-    }
-
-    /**
-     * 创建API信息
-     *
-     * @return Params
-     * @throws Exception
-     */
-    private Params createApiInfo() {
-        return new Params()
-                // 接口名称
-                .setAction("ScanImage")
-                // 接口版本
-                .setVersion("2019-12-30")
-                // 接口协议
-                .setProtocol("HTTPS")
-                // 接口 HTTP 方法
-                .setMethod("POST")
-                .setAuthType("AK")
-                .setStyle("RPC")
-                // 接口 PATH
-                .setPathname("/")
-                // 接口请求体内容格式
-                .setReqBodyType("formData")
-                // 接口响应体内容格式
-                .setBodyType("json");
     }
 
     /**
@@ -87,25 +69,43 @@ public class ImageAuditUtils {
             String encodedImageUrl = encodeImageUrl(imageUrl);
 
             Client client = createClient();
-            Params params = createApiInfo();
 
-            // 构造请求参数
-            Map<String, Object> map = new HashMap<>();
-            map.put("Task.1.ImageURL", encodedImageUrl);
-            map.put("Scene.1", "porn"); // 检测色情内容
-            map.put("Scene.2", "terrorism"); // 检测暴恐内容
-            map.put("Scene.3", "live"); // 检测不良场景
-            map.put("Scene.4", "logo"); // Logo识别
-//            map.put("Scene.5", "ad"); // 检测广告内容
+            // 使用URL创建InputStream
+            URL url = new URL(encodedImageUrl);
+            InputStream inputStream = url.openConnection().getInputStream();
 
-            OpenApiRequest request = new OpenApiRequest().setBody(map);
+            // 创建任务
+            ScanImageAdvanceRequest.ScanImageAdvanceRequestTask task = new ScanImageAdvanceRequest.ScanImageAdvanceRequestTask();
+            task.setDataId("audit-task-" + System.currentTimeMillis());
+            task.setImageTimeMillisecond(1L);
+            task.setInterval(1);
+            task.setMaxFrames(1);
+            task.setImageURLObject(inputStream);
+
+            // 添加任务到列表
+            List<ScanImageAdvanceRequest.ScanImageAdvanceRequestTask> taskList = new ArrayList<>();
+            taskList.add(task);
+
+            // 设置检测场景
+            List<String> sceneList = new ArrayList<>();
+            sceneList.add("porn"); // 检测色情内容
+            sceneList.add("terrorism"); // 检测暴恐内容
+            sceneList.add("live"); // 检测不良场景
+            sceneList.add("logo"); // Logo识别
+
+            // 创建请求对象
+            ScanImageAdvanceRequest scanImageAdvanceRequest = new ScanImageAdvanceRequest()
+                    .setTask(taskList)
+                    .setScene(sceneList);
+
+            // 设置运行时选项
             RuntimeOptions runtime = new RuntimeOptions();
 
             // 发起请求并获取结果
-            Object resp = client.callApi(params, request, runtime);
+            ScanImageResponse scanImageResponse = client.scanImageAdvance(scanImageAdvanceRequest, runtime);
 
             // 解析审核结果
-            String responseStr = Common.toJSONString(resp);
+            String responseStr = Common.toJSONString(TeaModel.buildMap(scanImageResponse));
 
             // 使用 hutool 解析返回的 JSON 数据
             JSONObject responseJson = JSONUtil.parseObj(responseStr);
@@ -163,7 +163,8 @@ public class ImageAuditUtils {
             AuditResult imageAuditResult = new AuditResult(2, "图片审核过程中发生错误: " + e.getMessage());
             return imageAuditResult;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error("图片:{} ,审核异常:{}", imageUrl, e);
+            throw new RuntimeException("图片审核异常", e);
         }
     }
 

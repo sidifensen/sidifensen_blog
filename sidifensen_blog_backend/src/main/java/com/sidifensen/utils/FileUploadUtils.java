@@ -68,7 +68,7 @@ public class FileUploadUtils {
      */
     private void setBucketPublicReadPolicy() {
         try {
-            // MinIO 标准的公开读取策略
+            // MinIO 优化的公开读取策略 - 只允许读取对象，不允许列出桶内容
             String policy = String.format("""
                     {
                         "Version": "2012-10-17",
@@ -82,20 +82,10 @@ public class FileUploadUtils {
                                 "Resource": [
                                     "arn:aws:s3:::%s/*"
                                 ]
-                            },
-                            {
-                                "Effect": "Allow",
-                                "Principal": "*",
-                                "Action": [
-                                    "s3:ListBucket"
-                                ],
-                                "Resource": [
-                                    "arn:aws:s3:::%s"
-                                ]
                             }
                         ]
                     }
-                    """, bucketName, bucketName);
+                    """, bucketName);
 
             // 设置桶策略
             client.setBucketPolicy(SetBucketPolicyArgs.builder()
@@ -103,7 +93,7 @@ public class FileUploadUtils {
                     .config(policy)
                     .build());
 
-            log.info("成功设置 MinIO 存储桶 {} 为公开读取访问", bucketName);
+            log.info("成功设置 MinIO 存储桶 {} 为公开读取访问（仅允许读取对象，不允许列出桶内容）", bucketName);
         } catch (Exception e) {
             log.error("设置 MinIO 存储桶公开访问策略失败: {}", e.getMessage(), e);
             // 这里不抛出异常，因为桶策略设置失败不应该影响应用启动
@@ -256,8 +246,8 @@ public class FileUploadUtils {
                 item = result.get();
                 fileNames.add(item.objectName());
             } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException
-                     | InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException
-                     | XmlParserException e) {
+                    | InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException
+                    | XmlParserException e) {
                 log.error("获取文件出现错误", e);
             }
         });
@@ -357,8 +347,8 @@ public class FileUploadUtils {
             try {
                 item = result.get();
             } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException
-                     | InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException
-                     | XmlParserException e) {
+                    | InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException
+                    | XmlParserException e) {
                 log.error("判断文件是否存在出现错误,{}, 文件名：{}, 目录：{}", e.getMessage(), fileName, dir);
                 throw new FileUploadException("文件不存在");
             }
