@@ -87,7 +87,8 @@ public class SysVisitorLogController {
      */
     @PreAuthorize("hasAuthority('system:visitorLog:list')")
     @GetMapping("/trend")
-    public Result<List<VisitorTrendVo>> getTrend(@RequestParam(defaultValue = "7") @NotNull(message = "天数不能为空") Integer days) {
+    public Result<List<VisitorTrendVo>> getTrend(
+            @RequestParam(defaultValue = "7") @NotNull(message = "天数不能为空") Integer days) {
         List<VisitorTrendVo> trend = sysVisitorLogService.getVisitorTrend(days);
         return Result.success(trend);
     }
@@ -102,5 +103,14 @@ public class SysVisitorLogController {
         return Result.success(count);
     }
 
-}
+    /**
+     * 获取总访问量
+     */
+    @PreAuthorize("hasAuthority('system:visitorLog:list')")
+    @GetMapping("/total/count")
+    public Result<Long> getTotalCount() {
+        Long count = sysVisitorLogService.getTotalVisitorCount();
+        return Result.success(count);
+    }
 
+}

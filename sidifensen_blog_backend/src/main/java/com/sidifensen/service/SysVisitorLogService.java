@@ -69,5 +69,11 @@ public interface SysVisitorLogService extends IService<SysVisitorLog> {
      */
     Long getTodayVisitorCount();
 
-}
+    /**
+     * 获取总访问量
+     *
+     * @return 总访问量
+     */
+    Long getTotalVisitorCount();
 
+}

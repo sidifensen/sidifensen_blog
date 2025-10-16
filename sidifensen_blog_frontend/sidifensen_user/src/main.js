@@ -20,10 +20,10 @@ import "element-plus/theme-chalk/dark/css-vars.css";
 const app = createApp(App);
 
 // 引入并配置disable-devtool
-import { setupDisableDevtool } from "@/utils/disableDevtool";
 // 只在生产环境启用禁用开发者工具功能
+import { setupDisableDevtool } from "@/utils/disableDevtool";
 if (import.meta.env.PROD) {
-  setupDisableDevtool();
+  // setupDisableDevtool();
 }
 
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {

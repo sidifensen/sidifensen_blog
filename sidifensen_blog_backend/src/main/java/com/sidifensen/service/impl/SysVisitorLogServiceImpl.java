@@ -37,7 +37,8 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-public class SysVisitorLogServiceImpl extends ServiceImpl<SysVisitorLogMapper, SysVisitorLog> implements SysVisitorLogService {
+public class SysVisitorLogServiceImpl extends ServiceImpl<SysVisitorLogMapper, SysVisitorLog>
+        implements SysVisitorLogService {
 
     @Resource
     private SysVisitorLogMapper sysVisitorLogMapper;
@@ -48,16 +49,16 @@ public class SysVisitorLogServiceImpl extends ServiceImpl<SysVisitorLogMapper, S
     @Override
     public void insertVisitorRecord(SysVisitorLog sysVisitorLog) {
         // 构建锁的key：userId(或null) + IP + 设备类型
-        String lockKey = "visitor:" + 
-                         (sysVisitorLog.getUserId() != null ? sysVisitorLog.getUserId() : "guest") + 
-                         ":" + sysVisitorLog.getIp() + 
-                         ":" + sysVisitorLog.getDevice();
-        
+        String lockKey = "visitor:" +
+                (sysVisitorLog.getUserId() != null ? sysVisitorLog.getUserId() : "guest") +
+                ":" + sysVisitorLog.getIp() +
+                ":" + sysVisitorLog.getDevice();
+
         // 使用 synchronized 锁定该访客的操作，防止并发插入重复数据 intern() 确保相同字符串使用同一个对象实例作为锁
         synchronized (lockKey.intern()) {
             // 计算1小时前的时间
             Date oneHourAgo = new Date(System.currentTimeMillis() - 60 * 60 * 1000);
-            
+
             // 查重逻辑：基于用户id、IP、设备类型进行查重，且访问时间在1小时内
             LambdaQueryWrapper<SysVisitorLog> qw = new LambdaQueryWrapper<SysVisitorLog>()
                     .eq(sysVisitorLog.getUserId() != null, SysVisitorLog::getUserId, sysVisitorLog.getUserId())
@@ -164,8 +165,8 @@ public class SysVisitorLogServiceImpl extends ServiceImpl<SysVisitorLogMapper, S
         LocalDate startDate = endDate.minusDays(days - 1);
 
         // 查询日期范围内的所有访客记录
-        Date startDateTime = Date.from(startDate.atStartOfDay(ZoneId.systemDefault()).toInstant());//转换为当天的0点
-        Date endDateTime = Date.from(endDate.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant());//转换为当天的23:59:59
+        Date startDateTime = Date.from(startDate.atStartOfDay(ZoneId.systemDefault()).toInstant());// 转换为当天的0点
+        Date endDateTime = Date.from(endDate.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant());// 转换为当天的23:59:59
 
         LambdaQueryWrapper<SysVisitorLog> qw = new LambdaQueryWrapper<SysVisitorLog>()
                 .ge(SysVisitorLog::getVisitTime, startDateTime)
@@ -178,10 +179,9 @@ public class SysVisitorLogServiceImpl extends ServiceImpl<SysVisitorLogMapper, S
                 .collect(Collectors.groupingBy(
                         log -> log.getVisitTime().toInstant()
                                 .atZone(ZoneId.systemDefault())
-                                .toLocalDate() //提取日期,去掉时间部分
+                                .toLocalDate() // 提取日期,去掉时间部分
                                 .toString(),
-                        Collectors.counting()
-                ));
+                        Collectors.counting()));
 
         // 构建结果列表（确保所有日期都有数据，没有访问的日期补0）
         List<VisitorTrendVo> result = new ArrayList<>();
@@ -240,6 +240,11 @@ public class SysVisitorLogServiceImpl extends ServiceImpl<SysVisitorLogMapper, S
         return countByDate(LocalDate.now(), LocalDate.now());
     }
 
+    @Override
+    public Long getTotalVisitorCount() {
+        return sysVisitorLogMapper.selectCount(null);
+    }
+
     /**
      * 统计指定日期范围内的访客数
      */
@@ -255,4 +260,3 @@ public class SysVisitorLogServiceImpl extends ServiceImpl<SysVisitorLogMapper, S
     }
 
 }
-

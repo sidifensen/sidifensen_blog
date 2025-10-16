@@ -426,7 +426,7 @@ onMounted(async () => {
         bubbleMenuItems: ["delete"], // 选中图片时的浮动菜单配置, 只显示删除
       },
       // 排除下标,上标.强制换行,视频,源代码,打印,全屏,附件
-      toolbarExcludeKeys: ["subscript", "superscript", "break", "video", "source-code", "printer", "fullscreen", "attachment"],
+      toolbarExcludeKeys: ["subscript", "superscript", "break", "video", "source-code", "printer", "fullscreen", "attachment","ai"],
       onSave: (editor) => {
         ElMessage.success("文档保存成功！");
         return true;

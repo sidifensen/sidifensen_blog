@@ -31,17 +31,23 @@
             <!-- 第一行：基础信息 -->
             <div class="meta-row first-row">
               <div class="basic-info">
-                <span class="reprint-type">
-                  <el-tag :type="article.reprintType === 0 ? 'success' : 'warning'" size="small" effect="light">
-                    {{ article.reprintType === 0 ? "原创" : "转载" }}
-                  </el-tag>
-                </span>
-                <span class="publish-time">
-                  <el-icon>
-                    <Clock />
-                  </el-icon>
-                  {{ article.createTime }}
-                </span>
+                <div class="basic-info-content">
+                  <span class="reprint-type">
+                    <el-tag :type="article.reprintType === 0 ? 'success' : 'warning'" size="small" effect="light">
+                      {{ article.reprintType === 0 ? "原创" : "转载" }}
+                    </el-tag>
+                  </span>
+                  <span class="publish-time">
+                    <el-icon>
+                      <Clock />
+                    </el-icon>
+                    {{ article.createTime }}
+                  </span>
+                </div>
+                <!-- 移动端编辑按钮 - 与发布时间在同一行 -->
+                <div class="edit-actions mobile-edit" v-if="isCurrentUser">
+                  <el-button link type="info" size="small" :icon="Edit" @click="handleEditArticle"> 编辑文章 </el-button>
+                </div>
               </div>
               <div class="stats-info">
                 <span class="read-count">
@@ -51,7 +57,7 @@
                   {{ article.readCount || 0 }} 阅读
                 </span>
                 <span class="like-count">
-                  <svg-icon name="like" width="16px" height="16px" color="#909399" />
+                  <svg-icon name="like" width="14px" height="14px" color="#909399" />
                   {{ article.likeCount || 0 }} 点赞
                 </span>
                 <span class="collect-count">
@@ -60,6 +66,10 @@
                   </el-icon>
                   {{ article.collectCount || 0 }} 收藏
                 </span>
+              </div>
+              <!-- 编辑按钮 - 只有当前用户是文章作者时才显示（桌面端） -->
+              <div class="edit-actions desktop-edit" v-if="isCurrentUser">
+                <el-button link type="info" size="small" :icon="Edit" @click="handleEditArticle"> 编辑文章 </el-button>
               </div>
             </div>
 
@@ -138,14 +148,16 @@
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
-import { Clock, View, Star, StarFilled, ChatLineRound, ArrowUp } from "@element-plus/icons-vue";
+import { Clock, View, Star, StarFilled, ChatLineRound, ArrowUp, Edit } from "@element-plus/icons-vue";
 import { toggleLike, isLiked } from "@/api/like";
+import { useUserStore } from "@/stores/userStore";
 import CommentDrawer from "@/views/User/Article/components/CommentDrawer.vue";
 import FavoriteDialog from "./FavoriteDialog.vue";
 import MobileAuthorInfo from "./MobileAuthorInfo.vue";
 
-// 路由
+// 路由和状态管理
 const router = useRouter();
+const userStore = useUserStore();
 
 // Props 定义
 const props = defineProps({
@@ -188,6 +200,12 @@ const renderContent = computed(() => {
 const tagList = computed(() => {
   if (!props.article?.tag) return [];
   return props.article.tag.split(",").filter((tag) => tag.trim() !== "");
+});
+
+// 判断当前用户是否为文章作者
+const isCurrentUser = computed(() => {
+  if (!userStore.user?.id || !props.article?.userId) return false;
+  return userStore.user.id === props.article.userId;
 });
 
 // 点赞文章
@@ -334,6 +352,18 @@ const handleCodeBlockClick = (event) => {
     copyCodeBlock(codeElement);
   }
 };
+
+// 编辑文章
+const handleEditArticle = () => {
+  if (!props.article?.id) {
+    ElMessage.warning("文章信息异常");
+    return;
+  }
+
+  // 使用完整的页面跳转，确保页面完全重新加载
+  const editorUrl = `/editor?articleId=${props.article.id}`;
+  window.location.href = editorUrl;
+};
 </script>
 
 <style lang="scss" scoped>
@@ -383,16 +413,27 @@ const handleCodeBlockClick = (event) => {
             gap: 20px;
             align-items: center;
 
-            .reprint-type {
-              align-items: center;
+            .basic-info-content {
               display: flex;
+              gap: 20px;
+              align-items: center;
+
+              .reprint-type {
+                align-items: center;
+                display: flex;
+              }
+
+              .publish-time {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                line-height: 1;
+              }
             }
 
-            .publish-time {
-              display: flex;
-              align-items: center;
-              gap: 4px;
-              line-height: 1;
+            // 移动端编辑按钮样式
+            .edit-actions.mobile-edit {
+              display: none; // 桌面端隐藏
             }
           }
 
@@ -408,6 +449,25 @@ const handleCodeBlockClick = (event) => {
               align-items: center;
               gap: 4px;
               line-height: 1;
+            }
+          }
+
+          // 编辑按钮区域
+          .edit-actions {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0; // 防止按钮被压缩
+
+            .el-button {
+              border-radius: 6px;
+              font-size: 13px;
+              padding: 6px 12px;
+              height: auto;
+            }
+
+            // 桌面端编辑按钮
+            &.desktop-edit {
+              display: flex;
             }
           }
         }
@@ -724,11 +784,38 @@ const handleCodeBlockClick = (event) => {
             .basic-info {
               gap: 15px;
               flex-wrap: wrap;
+              width: 100%;
+              justify-content: space-between; // 让内容分布在两端
+
+              .basic-info-content {
+                display: flex;
+                gap: 15px;
+                flex-wrap: wrap;
+                align-items: center;
+              }
+
+              // 移动端编辑按钮显示
+              .edit-actions.mobile-edit {
+                display: flex;
+                margin-left: auto;
+                flex-shrink: 0;
+
+                .el-button {
+                  font-size: 12px;
+                  padding: 4px 8px;
+                  height: auto;
+                }
+              }
             }
 
             .stats-info {
               gap: 15px;
               width: 100%;
+            }
+
+            // 桌面端编辑按钮在移动端隐藏
+            .edit-actions.desktop-edit {
+              display: none;
             }
           }
 

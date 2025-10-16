@@ -65,3 +65,13 @@ export const getTodayVisitorCount = () => {
     method: "get",
   });
 };
+
+/**
+ * 获取总访问量
+ */
+export const getTotalVisitorCount = () => {
+  return request({
+    url: "/visitorLog/total/count",
+    method: "get",
+  });
+};

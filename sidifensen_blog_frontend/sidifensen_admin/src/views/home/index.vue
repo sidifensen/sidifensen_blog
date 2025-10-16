@@ -40,15 +40,15 @@
           </div>
         </el-col>
 
-        <!-- 评论统计卡片 -->
+        <!-- 总访问统计卡片 -->
         <el-col :xs="12" :sm="12" :md="6" :lg="6">
           <div class="statistics-card">
-            <div class="card-icon comment-icon">
-              <el-icon size="40"><ChatLineRound /></el-icon>
+            <div class="card-icon visit-total-icon">
+              <el-icon size="40"><Monitor /></el-icon>
             </div>
             <div class="card-content">
-              <div class="card-title">评论总数</div>
-              <div class="card-value" v-if="!statisticsLoading">{{ commentCount }}</div>
+              <div class="card-title">总访问数</div>
+              <div class="card-value" v-if="!statisticsLoading">{{ totalVisits }}</div>
               <el-skeleton v-else :rows="1" animated />
             </div>
           </div>
@@ -228,7 +228,7 @@ import { User, Document, ChatLineRound, View, PieChart, Monitor, Operation, Pict
 import { getUserTotalCount } from "@/api/user";
 import { getArticleStatistics } from "@/api/article";
 import { getCommentStatistics } from "@/api/comment";
-import { getTodayVisitorCount, getVisitorTrend } from "@/api/visitorLog";
+import { getTodayVisitorCount, getTotalVisitorCount, getVisitorTrend } from "@/api/visitorLog";
 import * as echarts from "echarts";
 import ProjectLinks from "@/components/ProjectLinks.vue";
 
@@ -240,7 +240,7 @@ const userStore = useUserStore();
 const statisticsLoading = ref(true); // 统计数据加载状态
 const userCount = ref(0); // 用户总数
 const articleStatistics = ref(null); // 文章统计数据
-const commentCount = ref(0); // 评论总数
+const totalVisits = ref(0); // 总访问量
 const todayVisits = ref(0); // 今日访问量
 const trendDays = ref(7); // 访客趋势天数，默认7天
 const visitorTrend = ref([]); // 访客趋势数据
@@ -260,7 +260,7 @@ const fetchAllStatistics = async () => {
     statisticsLoading.value = true;
 
     // 并行获取所有统计数据
-    const [userResult, articleResult, commentResult, visitorResult] = await Promise.allSettled([getUserTotalCount(), getArticleStatistics(), getCommentStatistics(), getTodayVisitorCount()]);
+    const [userResult, articleResult, totalVisitorResult, todayVisitorResult] = await Promise.allSettled([getUserTotalCount(), getArticleStatistics(), getTotalVisitorCount(), getTodayVisitorCount()]);
 
     // 处理用户总数
     if (userResult.status === "fulfilled") {
@@ -276,18 +276,18 @@ const fetchAllStatistics = async () => {
       console.error("获取文章统计失败:", articleResult.reason);
     }
 
-    // 处理评论统计
-    if (commentResult.status === "fulfilled") {
-      commentCount.value = commentResult.value.data.data || 0;
+    // 处理总访问量
+    if (totalVisitorResult.status === "fulfilled") {
+      totalVisits.value = totalVisitorResult.value.data.data || 0;
     } else {
-      console.error("获取评论统计失败:", commentResult.reason);
+      console.error("获取总访问量失败:", totalVisitorResult.reason);
     }
 
     // 处理今日访问量
-    if (visitorResult.status === "fulfilled") {
-      todayVisits.value = visitorResult.value.data.data || 0;
+    if (todayVisitorResult.status === "fulfilled") {
+      todayVisits.value = todayVisitorResult.value.data.data || 0;
     } else {
-      console.error("获取今日访问量失败:", visitorResult.reason);
+      console.error("获取今日访问量失败:", todayVisitorResult.reason);
     }
   } catch (error) {
     ElMessage.error("获取统计数据失败");
@@ -513,7 +513,7 @@ onBeforeUnmount(() => {
           color: white;
         }
 
-        &.comment-icon {
+        &.visit-total-icon {
           background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
           color: white;
         }

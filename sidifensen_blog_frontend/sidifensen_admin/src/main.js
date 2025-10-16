@@ -9,10 +9,10 @@ import router from "./router";
 app.use(router);
 
 // 引入并配置disable-devtool
-import { setupDisableDevtool } from "@/utils/disableDevtool";
 // 只在生产环境启用禁用开发者工具功能
+import { setupDisableDevtool } from "@/utils/disableDevtool";
 if (import.meta.env.PROD) {
-  setupDisableDevtool();
+  // setupDisableDevtool();
 }
 
 // 注册svg全局组件
