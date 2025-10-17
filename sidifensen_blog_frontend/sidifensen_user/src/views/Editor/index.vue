@@ -202,9 +202,7 @@ const router = useRouter();
 // 监听页面刷新事件，弹出确认框
 const handleBeforeUnload = (e) => {
   // isModified 将在后面定义
-  console.log("检测页面刷新 - 内容是否已修改:", isModified?.value);
   if (isModified?.value) {
-    console.log("阻止页面刷新，弹出确认框");
     // 现代浏览器标准实现方式
     e.preventDefault();
     e.returnValue = "";
@@ -303,11 +301,9 @@ const loadArticleDetail = async () => {
     // 从路由参数中获取articleId
     const articleId = route.query.articleId;
     if (articleId && !isNaN(articleId)) {
-      // ElMessage.info(`正在加载文章ID: ${articleId} 的内容...`);
       // 调用获取文章详情接口
       const response = await getArticleDetail(articleId);
       const articleData = response.data.data;
-      // console.log('articleData:', articleData)
 
       // 填充文章基本信息
       if (articleData) {
@@ -409,17 +405,13 @@ onMounted(async () => {
             return true;
           },
           onSuccess: (file, response) => {
-            console.log("onSuccess上传成功:", response);
-            // {"errorCode": 0,"data": {"src": "", "alt": "文章图片"}
             ElMessage.success("图片上传成功");
             return true;
           },
           onFailed: (file, response) => {
-            console.log("onFailed上传失败:", response);
             ElMessage.error(response?.msg || "图片上传失败");
           },
           onError: (file, error) => {
-            console.log("onError上传出错:", error);
             ElMessage.error("上传出错: " + error.message);
           },
         },
@@ -712,7 +704,6 @@ const toggleTag = (tag) => {
   }
   // 更新article中的tag值，确保数据同步
   article.value.tag = tags.value.join(",");
-  console.log(tags.value);
 };
 
 // 删除标签

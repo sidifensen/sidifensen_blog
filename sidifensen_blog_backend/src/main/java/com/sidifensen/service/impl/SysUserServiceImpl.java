@@ -183,7 +183,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             ipService.setRegisterIp(user.getId(), ip);
             sysUserRoleService.setRegisterRole(user.getId());
             redisComponent.cleanEmailCheckCode(registerDto.getEmail(), MailEnum.REGISTER.getType());
-            log.info("用户{}注册成功", user.getUsername());
         }
 
     }
@@ -208,7 +207,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         sendEmail.put("checkCode", checkCode);
         sendEmail.put("type", emailDto.getType());
         rabbitTemplate.convertAndSend(RabbitMQConstants.Email_Exchange, RabbitMQConstants.Email_Routing_Key, sendEmail);
-        log.info("生产者向rabbitmq发送请求：{}", emailDto);
     }
 
     @Override

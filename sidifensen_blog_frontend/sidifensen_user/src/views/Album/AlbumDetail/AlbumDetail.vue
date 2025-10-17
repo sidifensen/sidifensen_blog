@@ -249,7 +249,6 @@ const groupPhotosByDate = () => {
     groups[date].push(photo);
   });
   groupedPhotos.value = groups;
-  // console.log(groupedPhotos.value);// key:2025-08-04 value:[{...},{...}]
 };
 
 // 图片工具栏下载按钮
@@ -505,10 +504,8 @@ const handleDeleteAlbum = () => {
 
 // 修改相册展示状态
 const handleChangeAlbumShowStatus = async () => {
-  console.log("switchShowStatus.value", switchShowStatus.value);
   try {
     const newStatus = albumForm.value.showStatus === 0 ? 1 : 0;
-    console.log("newStatus", newStatus);
     const AlbumDto = {
       id: albumForm.value.id,
       showStatus: newStatus,
@@ -535,7 +532,6 @@ const handleChangeCover = async () => {
       return;
     }
     const photos = res.data.data.photos;
-    console.log(photos);
     if (!photos || photos.length === 0) {
       ElMessage.warning("该相册暂无图片，请先上传图片");
       return;
@@ -567,7 +563,6 @@ const confirmCoverChange = async () => {
     albumForm.value.coverUrl = selectedCoverUrl.value;
     coverDialogVisible.value = false; // 关闭选择封面对话框
   } catch (error) {
-    console.log(error);
     ElMessage.error("更换封面失败");
   }
 };

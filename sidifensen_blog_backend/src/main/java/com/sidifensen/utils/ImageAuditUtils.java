@@ -155,7 +155,6 @@ public class ImageAuditUtils {
                 }
             }
 
-            log.info("图片:{} ,审核结果:{} , 错误信息:{}", imageUrl, results, errorMessage);
             return new AuditResult(status, errorMessage.toString());
         } catch (com.aliyun.tea.TeaException e) {
             log.error("图片:{} ,审核失败:{}", imageUrl, e);
@@ -178,7 +177,6 @@ public class ImageAuditUtils {
         try {
             // 如果URL中包含非ASCII字符或特殊字符，则进行编码
             if (imageUrl.matches(".*[^\\x00-\\x7F]+.*") || imageUrl.contains(" ")) {
-                log.info("URL编码处理开始，使用原始URL: {}", imageUrl);
                 // 解析URL并重新构建，对路径部分进行编码
                 java.net.URI uri = java.net.URI.create(imageUrl);
                 String scheme = uri.getScheme();
@@ -208,7 +206,6 @@ public class ImageAuditUtils {
                     encodedUrl.append("?").append(query);
                 }
 
-                log.info("URL编码处理成功，使用编码后的URL: {}", encodedUrl.toString());
                 return encodedUrl.toString();
             }
             return imageUrl;

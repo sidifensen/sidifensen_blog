@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="dialogVisible" title="申请友链" width="500px" :before-close="handleClose" class="link-apply-dialog">
+  <el-dialog v-model="dialogVisible" title="申请友链" :width="dialogWidth" :before-close="handleClose" class="link-apply-dialog">
     <!-- 对话框头部说明 -->
     <div class="dialog-header">
       <el-icon class="header-icon"><Link /></el-icon>
@@ -93,7 +93,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, computed } from "vue";
+import { ref, reactive, watch, computed, onMounted, onUnmounted } from "vue";
 import { Link, House, Picture, Message, InfoFilled, Check, Loading } from "@element-plus/icons-vue";
 import { applyLink } from "@/api/link";
 
@@ -112,6 +112,7 @@ const emit = defineEmits(["update:modelValue", "success"]);
 const dialogVisible = ref(false);
 const submitLoading = ref(false);
 const linkFormRef = ref(null);
+const isMobile = ref(false);
 
 // 申请表单数据
 const linkForm = reactive({
@@ -129,6 +130,11 @@ const imagePreviewList = computed(() => {
     return [linkForm.coverUrl];
   }
   return [];
+});
+
+// 计算属性 - 对话框宽度
+const dialogWidth = computed(() => {
+  return isMobile.value ? "95%" : "500px";
 });
 
 // 表单验证规则
@@ -192,6 +198,11 @@ const handleClose = () => {
   dialogVisible.value = false;
 };
 
+// 检测设备类型
+const checkDevice = () => {
+  isMobile.value = window.innerWidth <= 768;
+};
+
 // 提交申请
 const handleSubmit = async () => {
   if (!linkFormRef.value) return;
@@ -218,6 +229,16 @@ const handleSubmit = async () => {
     submitLoading.value = false;
   }
 };
+
+// 组件挂载和卸载
+onMounted(() => {
+  checkDevice();
+  window.addEventListener("resize", checkDevice);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", checkDevice);
+});
 </script>
 
 <style lang="scss" scoped>
@@ -226,6 +247,9 @@ const handleSubmit = async () => {
   :deep(.el-dialog) {
     border-radius: 12px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    margin: 0 auto;
+    max-height: 90vh;
+    overflow-y: auto;
   }
 
   :deep(.el-dialog__header) {
@@ -235,6 +259,8 @@ const handleSubmit = async () => {
 
   :deep(.el-dialog__body) {
     padding: 24px;
+    max-height: calc(90vh - 120px);
+    overflow-y: auto;
   }
 
   :deep(.el-dialog__footer) {
@@ -437,6 +463,111 @@ const handleSubmit = async () => {
         .el-icon {
           margin-right: 4px;
         }
+      }
+    }
+  }
+}
+
+// 移动端响应式样式
+@media (max-width: 768px) {
+  .link-apply-dialog {
+    :deep(.el-dialog) {
+      width: 95% !important;
+      margin: 5vh auto;
+      max-height: 90vh;
+    }
+
+    :deep(.el-dialog__body) {
+      padding: 16px;
+      max-height: calc(90vh - 100px);
+    }
+
+    :deep(.el-dialog__footer) {
+      padding: 0 16px 16px;
+    }
+
+    // 对话框头部移动端优化
+    .dialog-header {
+      padding: 16px;
+      gap: 12px;
+
+      .header-icon {
+        font-size: 24px;
+        padding: 8px;
+      }
+
+      .header-content {
+        .header-title {
+          font-size: 18px;
+        }
+
+        .header-description {
+          font-size: 13px;
+        }
+      }
+    }
+
+    // 表单移动端优化
+    .link-apply-form {
+      margin-top: 16px;
+
+      :deep(.el-form-item) {
+        margin-bottom: 16px;
+
+        .el-form-item__label {
+          font-size: 14px;
+          padding-bottom: 4px;
+        }
+      }
+
+      :deep(.el-input) {
+        .el-input__wrapper {
+          padding: 8px 12px;
+        }
+      }
+
+      :deep(.el-textarea) {
+        .el-textarea__inner {
+          padding: 8px 12px;
+        }
+      }
+
+      // 封面预览移动端优化
+      .cover-preview {
+        .preview-image {
+          width: 100px;
+          height: 70px;
+        }
+      }
+    }
+
+    // 申请须知移动端优化
+    .apply-notice {
+      margin-top: 16px;
+      padding: 12px;
+
+      .notice-title {
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+
+      .notice-list {
+        li {
+          font-size: 12px;
+          line-height: 1.5;
+        }
+      }
+    }
+
+    // 底部按钮移动端优化
+    .dialog-footer {
+      padding-top: 16px;
+      gap: 8px;
+
+      .el-button {
+        padding: 10px 20px;
+        font-size: 14px;
+        flex: 1;
       }
     }
   }

@@ -146,7 +146,6 @@ public class TextAuditUtils {
         // 对每个分段进行审核
         for (int i = 0; i < textSegments.size(); i++) {
             String segment = textSegments.get(i);
-            log.info("正在审核第 {} 段文本，长度: {} 字", i + 1, segment.length());
 
             try {
                 // 调用单段审核方法
@@ -205,7 +204,6 @@ public class TextAuditUtils {
             startIndex = endIndex;
         }
 
-        log.info("文本拆分完成，总长度: {} 字，拆分为 {} 段", textLength, segments.size());
         return segments;
     }
 
@@ -409,13 +407,11 @@ public class TextAuditUtils {
 
         // 如果所有分段都通过，返回通过结果
         if (finalStatus.equals(ExamineStatusEnum.PASS.getCode())) {
-            log.info("所有文本分段审核通过，共 {} 段", segmentResults.size());
             return new AuditResult(ExamineStatusEnum.PASS.getCode(), "所有文本分段审核通过（共 " + segmentResults.size() + " 段）");
         }
 
         // 返回汇总的审核结果
         String message = allMessages.toString();
-        log.info("文本分段审核汇总结果: 状态={}, 信息={}", finalStatus, message);
         return new AuditResult(finalStatus, message);
     }
 
@@ -548,7 +544,6 @@ public class TextAuditUtils {
                 }
             }
 
-            log.info("文字内容审核结果:{} ;状态:{} ; 原因:{}", elements, status, errorMessage);
             return new AuditResult(status, errorMessage.toString());
         } catch (com.aliyun.tea.TeaException e) {
             log.error("文字内容审核失败:{}", e);

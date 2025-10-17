@@ -68,8 +68,6 @@ public class HotArticleTask {
         long startTime = System.currentTimeMillis();
 
         try {
-            log.info("开始同步热门文章数据...");
-
             // 从数据库查询近7天的文章访问量统计
             List<Map<String, Object>> articleStats = historyMapper.getArticleViewCountLast7Days();
 

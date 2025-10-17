@@ -40,7 +40,6 @@ request.interceptors.request.use(
 // 配置响应拦截器
 request.interceptors.response.use(
   (response) => {
-    // console.log('response=====>',response)
     let { code, msg } = response.data;
     if (code == 200) {
       if (msg) {
@@ -51,11 +50,9 @@ request.interceptors.response.use(
       // 响应失败的处理 401 400
       ElMessage.error(msg);
     }
-    console.log("响应拦截器", response.data);
     return Promise.reject(response.data);
   },
   (error) => {
-    // console.log("error=====>", error);
     if (error.response) {
       let { status, data } = error.response;
       if (status === 401) {

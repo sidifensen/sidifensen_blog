@@ -113,7 +113,19 @@
 
             <!-- 状态区域 -->
             <div class="menu-status-section">
-              <el-switch v-model="menu.status" active-color="#42b983" inactive-color="#cccccc" active-text="正常" inactive-text="禁用" :active-value="0" :inactive-value="1" inline-prompt :loading="switchLoading" :before-change="() => handleStatusChange(menu.id, menu.status === 0 ? 1 : 0)" />
+              <el-switch
+                v-model="menu.status"
+                size="large"
+                active-color="#42b983"
+                inactive-color="#cccccc"
+                active-text="正常"
+                inactive-text="禁用"
+                :active-value="0"
+                :inactive-value="1"
+                inline-prompt
+                :loading="switchLoading"
+                :before-change="() => handleStatusChange(menu.id, menu.status === 0 ? 1 : 0)"
+              />
             </div>
 
             <!-- 操作按钮 -->
@@ -830,6 +842,7 @@ const flatMenuList = computed(() => {
       .menu-card {
         background: var(--el-bg-color);
         border-radius: 8px;
+        border: 1px solid var(--el-border-color-lighter);
         overflow: hidden;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         transition: all 0.3s ease;
@@ -846,7 +859,7 @@ const flatMenuList = computed(() => {
           align-items: center;
           gap: 12px;
           padding: 16px;
-          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          background-color: var(--el-bg-color-page);
           border-bottom: 1px solid var(--el-border-color-lighter);
           position: relative;
 
@@ -968,10 +981,9 @@ const flatMenuList = computed(() => {
         .menu-status-section {
           display: flex;
           justify-content: center;
-          padding: 12px 16px;
           border-top: 1px solid var(--el-border-color-lighter);
           border-bottom: 1px solid var(--el-border-color-lighter);
-          background-color: var(--el-bg-color-page);
+          background-color: var(--el-bg-color);
         }
 
         // 菜单操作按钮
@@ -994,7 +1006,6 @@ const flatMenuList = computed(() => {
       }
     }
   }
-
 }
 
 // 对话框样式
@@ -1124,7 +1135,6 @@ const flatMenuList = computed(() => {
       .menu-table {
         max-height: calc(100vh - 200px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
       }
-
     }
   }
 }

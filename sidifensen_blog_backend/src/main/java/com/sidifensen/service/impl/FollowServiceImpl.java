@@ -235,12 +235,10 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
                     // 关注操作：关注者的关注数+1，被关注者的粉丝数+1
                     updateFollowCount(followerId, 1);
                     updateFansCount(followedId, 1);
-                    log.info("异步更新用户计数成功 - 关注操作：关注者ID={}, 被关注者ID={}", followerId, followedId);
                 } else {
                     // 取消关注操作：关注者的关注数-1，被关注者的粉丝数-1
                     updateFollowCount(followerId, -1);
                     updateFansCount(followedId, -1);
-                    log.info("异步更新用户计数成功 - 取消关注操作：关注者ID={}, 被关注者ID={}", followerId, followedId);
                 }
             } catch (Exception e) {
                 log.error("异步更新用户计数失败：关注者ID={}, 被关注者ID={}, 操作类型={}", 

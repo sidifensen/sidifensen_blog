@@ -262,7 +262,6 @@ const goToLogin = () => {
 
 // 申请成功回调
 const handleApplySuccess = () => {
-  ElMessage.success("友链申请已提交，请耐心等待审核");
   // 可以选择刷新列表或显示提示
 };
 
@@ -354,6 +353,11 @@ onUnmounted(() => {
       align-items: center;
 
       .header-info {
+        background: color-mix(in srgb, var(--el-bg-color-page) 90%, transparent);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+
         .page-title {
           display: flex;
           align-items: center;

@@ -121,7 +121,6 @@ const handleSubmit = async () => {
       isLiked: false,
       children: [],
     };
-    console.log("newComment", newComment);
 
     commentContent.value = "";
     // 通知父组件

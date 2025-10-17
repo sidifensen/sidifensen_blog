@@ -260,7 +260,6 @@ const handleCollect = () => {
 
 // 处理收藏成功
 const handleFavoriteSuccess = (result) => {
-  console.log("收藏操作成功:", result);
 
   // 更新文章的收藏状态和收藏数
   const updatedArticle = { ...props.article };

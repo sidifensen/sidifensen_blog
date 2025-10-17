@@ -151,7 +151,6 @@ public class SysLoginLogServiceImpl extends ServiceImpl<SysLoginLogMapper, SysLo
             throw new BlogException(BlogConstants.DeleteLoginLogError);
         }
 
-        log.info("批量删除登录日志成功，删除数量：{}", result);
     }
 
     /**

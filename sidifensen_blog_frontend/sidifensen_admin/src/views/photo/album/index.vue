@@ -534,7 +534,6 @@ const handleBatchAudit = () => {
           photoId: id,
           examineStatus: 1,
         }));
-        console.log(data);
         await adminAuditBatchPhoto(data);
         ElMessage.success("批量审核成功");
         // 更新本地数据
@@ -547,7 +546,6 @@ const handleBatchAudit = () => {
           selectedPhotos.value = [];
         }
       } catch (error) {
-        console.log(error);
         ElMessage.error("批量审核失败");
       } finally {
         batchAuditLoading.value = false;

@@ -37,7 +37,6 @@ request.interceptors.request.use(
 // 配置响应拦截器
 request.interceptors.response.use(
   (response) => {
-    // console.log('response=====>',response)
     let { code, msg } = response.data;
     if (code == 200) {
       if (msg) {
@@ -51,7 +50,6 @@ request.interceptors.response.use(
     return Promise.reject(response.data);
   },
   (error) => {
-    // console.log("error=====>", error);
     let { status, data } = error.response;
     if (status === 401) {
       // 401 代表token过期，需要重新登录

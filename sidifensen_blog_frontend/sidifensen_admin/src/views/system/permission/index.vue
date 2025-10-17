@@ -494,7 +494,6 @@ const handleSelectionChange = async (permission) => {
   // 获取角色列表
   const res = await getRoleList();
   allRole.value = res.data.data;
-  // console.log(currentPermissionList.value);
 };
 
 // 检查权限是否被选中

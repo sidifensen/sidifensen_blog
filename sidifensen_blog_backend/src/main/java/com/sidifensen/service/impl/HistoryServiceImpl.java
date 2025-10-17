@@ -161,7 +161,6 @@ public class HistoryServiceImpl extends ServiceImpl<HistoryMapper, History> impl
             int deletedCount = historyMapper.delete(new LambdaQueryWrapper<History>()
                     .eq(History::getUserId, userId));
 
-            log.info("用户 {} 清除了 {} 条浏览记录", userId, deletedCount);
             return deletedCount;
 
         } catch (Exception e) {

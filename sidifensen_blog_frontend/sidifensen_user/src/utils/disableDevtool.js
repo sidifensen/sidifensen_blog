@@ -50,7 +50,6 @@ export function setupDisableDevtool() {
     ondevtoolclose: () => {
       // 开发者面板关闭的回调
       // ElMessage.error('开发者工具被关闭！');
-      console.log('开发者工具被关闭');
     },
     interval: 100,               // 增加检测频率，提高灵敏度
     disableMenu: true,           // 禁用右键菜单

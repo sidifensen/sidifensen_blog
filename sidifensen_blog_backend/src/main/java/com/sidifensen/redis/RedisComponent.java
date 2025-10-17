@@ -162,7 +162,6 @@ public class RedisComponent {
             String logKey = RedisConstants.BlacklistLog + identifier;
             redisUtils.del(logKey);
 
-            log.info("已删除黑名单Redis缓存 - 标识: {}, 类型: {}", identifier, blacklist.getType());
         } catch (Exception e) {
             log.error("删除黑名单Redis缓存失败 - 黑名单ID: {}", blacklist.getId(), e);
         }

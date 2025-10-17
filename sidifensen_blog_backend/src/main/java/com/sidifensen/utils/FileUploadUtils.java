@@ -93,7 +93,6 @@ public class FileUploadUtils {
                     .config(policy)
                     .build());
 
-            log.info("成功设置 MinIO 存储桶 {} 为公开读取访问（仅允许读取对象，不允许列出桶内容）", bucketName);
         } catch (Exception e) {
             log.error("设置 MinIO 存储桶公开访问策略失败: {}", e.getMessage(), e);
             // 这里不抛出异常，因为桶策略设置失败不应该影响应用启动
@@ -303,7 +302,6 @@ public class FileUploadUtils {
                             .object(objectName)
                             .build());
 
-            log.info("文件 {} 已成功从 MinIO 中删除", objectName);
             return true;
         } catch (Exception e) {
             log.error("删除文件失败", e);

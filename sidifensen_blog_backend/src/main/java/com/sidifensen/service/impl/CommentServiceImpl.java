@@ -130,7 +130,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         // 进行文字内容审核
         if (sidifensenConfig.isCommentAutoAudit()) {
             try {
-                log.info("开始对评论进行文字审核，评论ID: {}, 用户ID: {}, 评论内容长度: {}", commentId, userId, content.length());
                 AuditResult auditResult = textAuditUtils.auditTextWithDetailsSplit(content);
 
                 Comment updateComment = new Comment();
@@ -140,7 +139,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                     // 审核通过
                     updateComment.setExamineStatus(ExamineStatusEnum.PASS.getCode());
                     updateById(updateComment);
-                    log.info("评论文字审核通过，评论ID: {}, 用户ID: {}", commentId, userId);
 
                     // 审核通过后更新统计数据
                     updateCommentStatistics(comment);
@@ -160,7 +158,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                     // 需要人工审核，发送消息给管理员并发送邮件
                     updateComment.setExamineStatus(ExamineStatusEnum.WAIT.getCode());
                     updateById(updateComment);
-                    log.info("评论需要人工审核，评论ID: {}, 用户ID: {}, 原因: {}", commentId, userId, auditResult.getErrorMessage());
 
                     // 发送消息给管理员
                     messageDto.setContent(MessageConstants.CommentNeedReview(commentId, auditResult.getErrorMessage()));
@@ -187,7 +184,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             }
         } else {
             // 如果没有开启自动审核，需要人工审核，发送消息给管理员
-            log.info("评论自动审核功能未开启，需要人工审核，评论ID: {}, 用户ID: {}", commentId, userId);
             messageDto.setContent(MessageConstants.CommentNeedReview(commentId, "未开启自动审核"));
             messageService.sendToAdmin(messageDto);
 
@@ -265,7 +261,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             log.warn("更新文章评论数失败，文章ID：{}", comment.getArticleId());
         }
 
-        log.info("用户删除评论及其所有子评论，评论ID：{}，删除数量：{}", commentId, deletedCommentCount);
     }
 
     @Override
@@ -735,9 +730,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         if (examineStatus.equals(ExamineStatusEnum.PASS.getCode())) {
             updateCommentStatistics(comment);
         }
-
-        log.info("管理员审核评论，评论ID：{}，审核状态：{}，原因：{}",
-                commentAuditDto.getCommentId(), examineStatus, commentAuditDto.getExamineReason());
     }
 
     @Override
@@ -758,8 +750,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                 // 继续处理其他评论，不中断整个批量操作
             }
         }
-
-        log.info("管理员批量审核评论，共处理{}条评论", commentAuditDtos.size());
     }
 
     @Override
@@ -796,7 +786,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             log.warn("更新文章评论数失败，文章ID：{}", comment.getArticleId());
         }
 
-        log.info("管理员删除评论及其所有子评论，评论ID：{}，删除数量：{}", commentId, deletedCommentCount);
     }
 
     @Override
@@ -844,7 +833,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             }
         }
 
-        log.info("管理员批量删除评论成功，删除评论数量：{}（包含子评论）", allCommentIdsToDelete.size());
     }
 
     /**

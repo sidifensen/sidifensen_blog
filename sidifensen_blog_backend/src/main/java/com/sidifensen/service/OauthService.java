@@ -49,7 +49,6 @@ public class OauthService {
             AuthUser authUser = (AuthUser) authResponse.getData();
             // 确保用户名长度不超过20个字符（数据库字段限制）
             String uuid = authUser.getUuid();
-            log.info("uuid: {}", uuid);
             String prefix = loginType + "_";
             int maxUuidLength = 20 - prefix.length();
             if (uuid.length() > maxUuidLength) {

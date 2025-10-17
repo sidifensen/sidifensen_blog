@@ -515,7 +515,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                     // 文字审核通过，更新审核状态为通过
                     updateArticle.setExamineStatus(ExamineStatusEnum.PASS.getCode());
                     articleMapper.updateById(updateArticle);
-                    log.info("文章审核通过，ID: {}", articleDto.getId());
 
                     // 文字审核通过，更新文章所属的专栏
                     if (ObjectUtil.isNotEmpty(articleDto.getColumnIds())) {

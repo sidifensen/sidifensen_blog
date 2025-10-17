@@ -322,7 +322,6 @@ const handleDeleteRole = (id) => {
 const switchLoading = ref(false);
 // 处理状态变更
 const handleStatusChange = async (id, status) => {
-  console.log("handleStatusChange", id, status);
   return new Promise((resolve, reject) => {
     switchLoading.value = true;
     updateRole({ id, status })
@@ -407,7 +406,6 @@ const handleAuthorizeUser = async (row) => {
 
 // 处理授权提交
 const handleAuthorizeSubmit = async () => {
-  console.log(selectedUser.value);
   try {
     await addUser({
       roleId: currentRole.value.id,

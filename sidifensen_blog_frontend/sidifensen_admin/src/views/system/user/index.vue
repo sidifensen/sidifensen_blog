@@ -581,14 +581,12 @@ const handleDetailUser = async (id) => {
   userDetailDialogVisible.value = true;
   const res = await getUserDetail(id);
   userDetail.value = res.data.data;
-  console.log(userDetail.value.sysMenus);
   // 检查菜单数据是否存在，避免空值调用formatMenu导致错误
   if (userDetail.value.sysMenus && userDetail.value.sysMenus.length > 0) {
     userDetail.value.sysMenus = formatMenu(userDetail.value.sysMenus);
   } else {
     userDetail.value.sysMenus = [];
   }
-  console.log(userDetail.value);
 };
 
 // 授权角色弹窗
@@ -614,7 +612,6 @@ const handleAuthorizeRole = async (row) => {
 
   // 已获得当前用户授权的角色
   const res1 = await getRolesByUser(row.id);
-  console.log(res1.data.data);
   // 把数组里的id取出来
   res1.data.data.forEach((item) => {
     // 默认选中已经有权限授权的用户

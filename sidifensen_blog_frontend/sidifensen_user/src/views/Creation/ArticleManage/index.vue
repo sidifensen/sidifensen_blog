@@ -165,7 +165,6 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
-import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import { deleteArticle, getArticleManageList, getUserArticleStatistics, updateArticle } from "@/api/article";
 import { Search, View, Message, Pointer, Edit, Delete, Star, ChatLineRound } from "@element-plus/icons-vue";
@@ -322,6 +321,12 @@ const handleDateFilterChange = () => {
 
 // 加载文章列表
 const loadArticles = async (reset = false) => {
+  // 如果重置，先重置页码和状态
+  if (reset) {
+    currentPage.value = 1;
+    hasMore.value = true;
+  }
+
   // 如果没有更多数据或者已经在加载中，则不再请求
   if (!hasMore.value || loading.value || loadingMore.value) {
     return;
@@ -369,7 +374,6 @@ const loadArticles = async (reset = false) => {
     const result = response.data || {};
     const newArticles = result.data ? result.data.data || [] : [];
     const total = result.data ? result.data.total || 0 : 0;
-    // console.log("加载数据:", { currentPage: currentPage.value, newArticlesCount: newArticles.length, total });
 
     if (reset) {
       // 初次加载或筛选条件改变时
@@ -391,7 +395,6 @@ const loadArticles = async (reset = false) => {
       currentPage.value++;
     }
   } catch (error) {
-    console.error("加载文章列表失败:", error);
     ElMessage.error("加载文章列表失败");
   } finally {
     // 重置加载状态
@@ -407,38 +410,38 @@ const handleEditArticle = (articleId) => {
 
 // 删除到回收站
 const handleDeleteToDraftArticle = async (articleId) => {
-  const ArticleDto = {
-    id: articleId,
-    editStatus: 1,
-  };
-  updateArticle(ArticleDto)
-    .then((res) => {
-      ElMessage.success("文章删除成功");
-      // 重新加载文章列表和统计数据
-      loadArticles(true);
-      loadStatistics();
-    })
-    .catch((err) => {
-      ElMessage.error("文章删除失败");
-    });
+  try {
+    const ArticleDto = {
+      id: articleId,
+      editStatus: 2,
+    };
+
+    await updateArticle(ArticleDto);
+    ElMessage.success("文章删除成功");
+
+    // 重新加载文章列表和统计数据
+    await Promise.all([loadArticles(true), loadStatistics()]);
+  } catch (err) {
+    ElMessage.error("文章删除失败");
+  }
 };
 
 // 回收至回收站
 const handleRecyleToDraftArticle = async (articleId) => {
-  const ArticleDto = {
-    id: articleId,
-    editStatus: 1,
-  };
-  updateArticle(ArticleDto)
-    .then((res) => {
-      ElMessage.success("文章回收成功");
-      // 重新加载文章列表和统计数据
-      loadArticles(true);
-      loadStatistics();
-    })
-    .catch((err) => {
-      ElMessage.error("文章回收失败");
-    });
+  try {
+    const ArticleDto = {
+      id: articleId,
+      editStatus: 1,
+    };
+
+    await updateArticle(ArticleDto);
+    ElMessage.success("文章回收成功");
+
+    // 重新加载文章列表和统计数据
+    await Promise.all([loadArticles(true), loadStatistics()]);
+  } catch (err) {
+    ElMessage.error("文章回收失败");
+  }
 };
 
 // 处理删除文章
@@ -449,19 +452,15 @@ const handleDeleteArticle = async (articleId) => {
       cancelButtonText: "取消",
       type: "warning",
     });
-    await deleteArticle(articleId)
-      .then(() => {
-        ElMessage.success("文章删除成功");
-        // 重新加载文章列表和统计数据
-        loadArticles(true);
-        loadStatistics();
-      })
-      .catch((err) => {
-        ElMessage.error("文章删除失败");
-      });
+
+    await deleteArticle(articleId);
+    ElMessage.success("文章删除成功");
+
+    // 重新加载文章列表和统计数据
+    await Promise.all([loadArticles(true), loadStatistics()]);
   } catch (error) {
     if (error !== "cancel") {
-      ElMessage.error("删除文章失败，请重试");
+      ElMessage.error("文章删除失败");
     }
   }
 };

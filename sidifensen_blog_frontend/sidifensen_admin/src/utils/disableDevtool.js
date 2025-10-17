@@ -28,7 +28,6 @@ export function setupDisableDevtool() {
     tkName: 'youyu',              // 绕过禁用时的url参数名称
     ondevtoolopen: (type, next) => {
       // 开发者面板打开的回调
-      // console.log('开发者工具被打开，检测类型:', type);
       // 使用setTimeout确保消息有足够时间显示
       // 使用闭包确保只显示一次提示
       if (!window.devtoolWarned) {
@@ -50,7 +49,6 @@ export function setupDisableDevtool() {
     ondevtoolclose: () => {
       // 开发者面板关闭的回调
       // ElMessage.error('开发者工具被关闭！');
-      console.log('开发者工具被关闭');
     },
     interval: 100,               // 增加检测频率，提高灵敏度
     disableMenu: true,           // 禁用右键菜单
