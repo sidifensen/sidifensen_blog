@@ -189,7 +189,7 @@ import { getTagList } from "@/api/tag";
 import { addColumn, getColumnList } from "@/api/column";
 import { uploadArticlePhoto } from "@/api/photo";
 import { ArrowUp, Close, Search } from "@element-plus/icons-vue";
-import { addArticle, getArticleDetail, saveDraft } from "@/api/article";
+import { addArticle, getArticleDetail, saveDraft, updateArticle } from "@/api/article";
 import { extractSummary as extractSummaryApi, getAiQuota } from "@/api/ai";
 
 const darkStore = useDarkStore();
@@ -317,19 +317,28 @@ const loadArticleDetail = async () => {
 
         // 填充标签
         if (articleData.tags && articleData.tags.length > 0) {
-          tags.value = articleData.tags;
+          tags.value = [...articleData.tags]; // 创建新数组避免引用问题
           article.value.tag = articleData.tags.join(",");
         } else if (articleData.tag) {
           // 兼容旧格式
           tags.value = articleData.tag.split(",").filter((tag) => tag.trim() !== "");
+          article.value.tag = articleData.tag;
+        } else {
+          // 如果没有标签数据，初始化为空数组
+          tags.value = [];
+          article.value.tag = "";
         }
 
         // 填充专栏
         if (articleData.columns && articleData.columns.length > 0) {
           columns.value = articleData.columns;
+          // 同步更新article中的columnIds
+          article.value.columnIds = articleData.columns.map((column) => column.id);
         } else if (articleData.columnIds && articleData.columnIds.length > 0 && allColumns.value.length > 0) {
           // 如果只有columnIds，从allColumns中匹配名称
           columns.value = allColumns.value.filter((column) => articleData.columnIds.includes(column.id));
+          // 同步更新article中的columnIds
+          article.value.columnIds = articleData.columnIds;
         }
 
         ElMessage.success("文章内容加载成功");
@@ -684,7 +693,7 @@ const getTagsByCategory = (category) => {
 };
 
 // 当前标签（存储标签名称字符串）
-const tags = ref((article.value.tag || "").split(",").filter((tag) => tag.trim() !== ""));
+const tags = ref([]);
 
 // 切换标签选中状态
 const toggleTag = (tag) => {
@@ -706,6 +715,8 @@ const toggleTag = (tag) => {
 // 删除标签
 const deleteTag = (tag) => {
   tags.value = tags.value.filter((item) => item !== tag);
+  // 同步更新article中的tag值，确保数据同步
+  article.value.tag = tags.value.join(",");
 };
 
 // 封面图片URL
@@ -947,8 +958,17 @@ const handleClickPublish = async () => {
       return;
     }
 
-    await addArticle(article.value);
-    ElMessage.success("文章发布成功!");
+    // 根据是否存在文章ID决定调用新增还是更新接口
+    const articleId = route.query.articleId;
+    if (articleId && !isNaN(articleId)) {
+      // 存在文章ID，调用更新接口
+      await updateArticle(article.value);
+      ElMessage.success("文章更新成功!");
+    } else {
+      // 不存在文章ID，调用新增接口
+      await addArticle(article.value);
+      ElMessage.success("文章发布成功!");
+    }
 
     // 标记内容未修改，避免刷新提示
     isModified.value = false;
@@ -959,7 +979,12 @@ const handleClickPublish = async () => {
     router.go(-1);
     // }, 1000);
   } catch (error) {
-    ElMessage.error("文章发布失败!");
+    const articleId = route.query.articleId;
+    if (articleId && !isNaN(articleId)) {
+      ElMessage.error("文章更新失败!");
+    } else {
+      ElMessage.error("文章发布失败!");
+    }
   } finally {
     isPublishing.value = false;
   }

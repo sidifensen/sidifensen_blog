@@ -88,9 +88,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Resource
     private RedisComponent redisComponent;
 
-    @Resource
-    private CommentService commentService;
-
     @Override
     public PageVo<List<ArticleVo>> getAllArticleList(Integer pageNum, Integer pageSize) {
         Page<Article> page = new Page<>(pageNum, pageSize);
@@ -106,7 +103,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             return articleVo;
         }).collect(Collectors.toList());
 
-        // 添加用户昵称
+        // 添加用户昵称和专栏信息
         if (!articleVoList.isEmpty()) {
             List<Integer> userIds = articleVoList.stream().map(ArticleVo::getUserId).collect(Collectors.toList());
             List<SysUser> users = sysUserMapper
@@ -117,6 +114,28 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                     .collect(Collectors.toMap(SysUser::getId, SysUser::getAvatar));
             articleVoList.forEach(articleVo -> articleVo.setNickname(userIdToNicknameMap.get(articleVo.getUserId())));
             articleVoList.forEach(articleVo -> articleVo.setAvatar(userIdToAvatarMap.get(articleVo.getUserId())));
+
+            // 添加专栏信息
+            List<Integer> articleIds = articleVoList.stream().map(ArticleVo::getId).collect(Collectors.toList());
+            List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
+                    new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, articleIds));
+            if (ObjectUtil.isNotEmpty(articleColumns)) {
+                List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId)
+                        .distinct().collect(Collectors.toList());
+                List<Column> columns = columnMapper.selectBatchIds(columnIds);
+                Map<Integer, ColumnVo> columnIdToColumnMap = columns.stream()
+                        .collect(Collectors.toMap(Column::getId,
+                                column -> BeanUtil.copyProperties(column, ColumnVo.class)));
+
+                // 为每个文章设置专栏信息
+                Map<Integer, List<ColumnVo>> articleIdToColumnsMap = articleColumns.stream()
+                        .collect(Collectors.groupingBy(
+                                ArticleColumn::getArticleId,
+                                Collectors.mapping(ac -> columnIdToColumnMap.get(ac.getColumnId()),
+                                        Collectors.toList())));
+                articleVoList.forEach(articleVo -> articleVo
+                        .setColumns(articleIdToColumnsMap.getOrDefault(articleVo.getId(), new ArrayList<>())));
+            }
         }
 
         return new PageVo<>(articleVoList, page.getTotal());
@@ -170,6 +189,30 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
             return articleVo;
         }).toList();
+
+        // 添加专栏信息
+        if (!articleVoList.isEmpty()) {
+            List<Integer> articleIds = articleVoList.stream().map(ArticleVo::getId).collect(Collectors.toList());
+            List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
+                    new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, articleIds));
+            if (ObjectUtil.isNotEmpty(articleColumns)) {
+                List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId)
+                        .distinct().collect(Collectors.toList());
+                List<Column> columns = columnMapper.selectBatchIds(columnIds);
+                Map<Integer, ColumnVo> columnIdToColumnMap = columns.stream()
+                        .collect(Collectors.toMap(Column::getId,
+                                column -> BeanUtil.copyProperties(column, ColumnVo.class)));
+
+                // 为每个文章设置专栏信息
+                Map<Integer, List<ColumnVo>> articleIdToColumnsMap = articleColumns.stream()
+                        .collect(Collectors.groupingBy(
+                                ArticleColumn::getArticleId,
+                                Collectors.mapping(ac -> columnIdToColumnMap.get(ac.getColumnId()),
+                                        Collectors.toList())));
+                articleVoList.forEach(articleVo -> articleVo
+                        .setColumns(articleIdToColumnsMap.getOrDefault(articleVo.getId(), new ArrayList<>())));
+            }
+        }
 
         return new PageVo<>(articleVoList, page.getTotal());
     }
@@ -321,16 +364,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
 
-        // 如果文章状态为已发布, 则查询文章所属的专栏
-        if (article.getEditStatus().equals(EditStatusEnum.PUBLISHED.getCode())) {
-            List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
-                    new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, article.getId()));
-            if (ObjectUtil.isNotEmpty(articleColumns)) {
-                List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId)
-                        .collect(Collectors.toList());
-                List<Column> columns = columnMapper.selectBatchIds(columnIds);
-                articleVo.setColumns(BeanUtil.copyToList(columns, ColumnVo.class));
-            }
+        // 查询文章所属的专栏（所有状态的文章都应该能查询到专栏信息）
+        List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
+                new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, article.getId()));
+        if (ObjectUtil.isNotEmpty(articleColumns)) {
+            List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId)
+                    .collect(Collectors.toList());
+            List<Column> columns = columnMapper.selectBatchIds(columnIds);
+            articleVo.setColumns(BeanUtil.copyToList(columns, ColumnVo.class));
         }
 
         Boolean isLiked = likeService.isLiked(LikeTypeEnum.ARTICLE.getCode(), articleId);
@@ -515,22 +556,22 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                     // 文字审核通过，更新审核状态为通过
                     updateArticle.setExamineStatus(ExamineStatusEnum.PASS.getCode());
                     updateArticle.setTag(articleDto.getTag());
-                    
+
                     // 更新文章所属的专栏
                     if (ObjectUtil.isNotEmpty(articleDto.getColumnIds())) {
                         List<Integer> columnIds = articleDto.getColumnIds();
                         columnIds.forEach(columnId -> {
                             ArticleColumn articleColumn = articleColumnMapper
-                            .selectOne(new LambdaQueryWrapper<ArticleColumn>().select(ArticleColumn::getSort)
-                            .eq(ArticleColumn::getColumnId, columnId)
-                            .orderByDesc(ArticleColumn::getSort).last("limit 1"));
+                                    .selectOne(new LambdaQueryWrapper<ArticleColumn>().select(ArticleColumn::getSort)
+                                            .eq(ArticleColumn::getColumnId, columnId)
+                                            .orderByDesc(ArticleColumn::getSort).last("limit 1"));
                             Integer sort = articleColumn == null ? 0 : articleColumn.getSort();
                             ArticleColumn newArticleColumn = new ArticleColumn();
                             newArticleColumn.setArticleId(articleDto.getId());
                             newArticleColumn.setColumnId(columnId);
                             newArticleColumn.setSort(sort + 1); // 最大排序值加1
                             articleColumnMapper.insert(newArticleColumn);
-                            
+
                             // 增加专栏的文章数量
                             Column column = columnMapper.selectById(columnId);
                             if (column != null) {
@@ -601,15 +642,95 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (userArticle.getUserId() != SecurityUtils.getUserId()) {
             throw new BlogException(BlogConstants.CannotHandleOthersArticle);
         }
-        if (articleDto.getEditStatus().equals(EditStatusEnum.DRAFT.getCode())
-                || articleDto.getEditStatus().equals(EditStatusEnum.RECYCLE.getCode())) {
-            // 如果设置草稿箱和回收站,则删除专栏文章
-            articleColumnMapper.delete(
-                    new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, articleDto.getId()));
+
+        // 如果是创作中心删除文章, 会携带 editStatus 参数
+        if (ObjectUtil.isNotEmpty(articleDto.getEditStatus())) {
+            if (articleDto.getEditStatus().equals(EditStatusEnum.DRAFT.getCode())
+                    || articleDto.getEditStatus().equals(EditStatusEnum.RECYCLE.getCode())) {
+                // 如果设置草稿箱和回收站,则删除专栏文章关联
+                List<ArticleColumn> existingColumns = articleColumnMapper.selectList(
+                        new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleDto.getId()));
+
+                if (ObjectUtil.isNotEmpty(existingColumns)) {
+                    // 减少专栏文章数量
+                    existingColumns.forEach(articleColumn -> {
+                        Column column = columnMapper.selectById(articleColumn.getColumnId());
+                        if (column != null && column.getArticleCount() > 0) {
+                            column.setArticleCount(column.getArticleCount() - 1);
+                            columnMapper.updateById(column);
+                        }
+                    });
+
+                    // 删除专栏文章关联
+                    articleColumnMapper.delete(
+                            new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId,
+                                    articleDto.getId()));
+                }
+            }
         }
+        // 更新文章, 处理专栏关联
+        handleColumnAssociation(articleDto);
+
         Article article = BeanUtil.copyProperties(articleDto, Article.class);
         if (articleMapper.updateById(article) < 1) {
             throw new BlogException(BlogConstants.UpdateArticleError);
+        }
+    }
+
+    /**
+     * 处理专栏文章关联
+     * 
+     * @param articleDto 文章DTO
+     */
+    private void handleColumnAssociation(ArticleDto articleDto) {
+        // 先删除现有的专栏关联
+        List<ArticleColumn> existingColumns = articleColumnMapper.selectList(
+                new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleDto.getId()));
+
+        if (ObjectUtil.isNotEmpty(existingColumns)) {
+            // 减少原有专栏的文章数量
+            existingColumns.forEach(articleColumn -> {
+                Column column = columnMapper.selectById(articleColumn.getColumnId());
+                if (column != null && column.getArticleCount() > 0) {
+                    column.setArticleCount(column.getArticleCount() - 1);
+                    columnMapper.updateById(column);
+                }
+            });
+
+            // 删除现有专栏关联
+            articleColumnMapper.delete(
+                    new LambdaQueryWrapper<ArticleColumn>().eq(ArticleColumn::getArticleId, articleDto.getId()));
+        }
+
+        // 如果有新的专栏ID，添加新的专栏关联
+        if (ObjectUtil.isNotEmpty(articleDto.getColumnIds())) {
+            List<Integer> columnIds = articleDto.getColumnIds();
+            columnIds.forEach(columnId -> {
+                // 检查专栏是否存在
+                Column column = columnMapper.selectById(columnId);
+                if (column != null) {
+                    // 获取该专栏的最大排序值
+                    ArticleColumn maxSortColumn = articleColumnMapper
+                            .selectOne(new LambdaQueryWrapper<ArticleColumn>()
+                                    .select(ArticleColumn::getSort)
+                                    .eq(ArticleColumn::getColumnId, columnId)
+                                    .orderByDesc(ArticleColumn::getSort)
+                                    .last("limit 1"));
+
+                    Integer sort = maxSortColumn == null ? 0 : maxSortColumn.getSort();
+
+                    // 创建新的专栏文章关联
+                    ArticleColumn newArticleColumn = new ArticleColumn();
+                    newArticleColumn.setArticleId(articleDto.getId());
+                    newArticleColumn.setColumnId(columnId);
+                    newArticleColumn.setSort(sort + 1); // 最大排序值加1
+                    articleColumnMapper.insert(newArticleColumn);
+
+                    // 增加专栏的文章数量
+                    column.setArticleCount(column.getArticleCount() + 1);
+                    columnMapper.updateById(column);
+                }
+            });
         }
     }
 
@@ -1069,7 +1190,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 new LambdaQueryWrapper<SysUser>()
                         .eq(SysUser::getId, userId)
                         .select(SysUser::getId, SysUser::getFansCount, SysUser::getFollowCount));
-                        
+
         Long fansCount = user.getFansCount().longValue();
         Long followCount = user.getFollowCount().longValue();
 
