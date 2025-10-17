@@ -218,10 +218,7 @@ const wordCount = ref(0);
 
 // 滚动到页面顶部
 const scrollToTop = () => {
-  const contentArea = document.querySelector(".editor-content");
-  if (contentArea) {
-    contentArea.scrollTo({ top: 0, behavior: "smooth" });
-  }
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 // 滚动到文章设置区域
@@ -418,7 +415,7 @@ onMounted(async () => {
         bubbleMenuItems: ["delete"], // 选中图片时的浮动菜单配置, 只显示删除
       },
       // 排除下标,上标.强制换行,视频,源代码,打印,全屏,附件
-      toolbarExcludeKeys: ["subscript", "superscript", "break", "video", "source-code", "printer", "fullscreen", "attachment","ai"],
+      toolbarExcludeKeys: ["subscript", "superscript", "break", "video", "source-code", "printer", "fullscreen", "attachment", "ai"],
       onSave: (editor) => {
         ElMessage.success("文档保存成功！");
         return true;
@@ -1005,7 +1002,7 @@ const handleSaveDraft = async () => {
 .editor-container {
   display: flex;
   flex-direction: column;
-  width: 100vw;
+  width: 100%;
   background: #f3f4f6;
   // 编辑器
   .editor {
@@ -1018,13 +1015,15 @@ const handleSaveDraft = async () => {
     // 编辑器头部
     .aie-container-header {
       position: fixed;
-      z-index: 1;
+      z-index: 999;
+      top: 48px;
       display: flex;
       justify-content: center;
-      width: 100vw;
+      width: 100%;
       border: none;
       :deep(aie-header) {
-        width: 100vw;
+        border-top: 1px solid var(--el-border-color);
+        width: 100%;
         div {
           display: flex;
           justify-content: center;
@@ -1037,6 +1036,7 @@ const handleSaveDraft = async () => {
       padding-top: 68px;
       padding-bottom: 48px;
       background: var(--el-border-color-lighter);
+      min-height: calc(100vh - 48px);
       // 左侧目录样式
       .aie-directory {
         position: fixed;
@@ -1149,9 +1149,9 @@ const handleSaveDraft = async () => {
       // 编辑器内容
       .editor-content {
         overflow-x: hidden;
-        overflow-y: auto;
+        overflow-y: visible;
         width: 50vw;
-        height: calc(100vh - 168px);
+        min-height: calc(100vh - 168px);
         margin: auto;
         border-radius: 8px;
         // 文章标题区域样式
@@ -1180,7 +1180,7 @@ const handleSaveDraft = async () => {
         // 文章正文区域样式
         .aie-container-main {
           overflow-x: hidden;
-          min-height: calc(100vh - 100px);
+          min-height: calc(100vh - 200px);
           margin-bottom: 24px;
           padding: 16px;
           background: var(--el-bg-color);
@@ -1656,8 +1656,8 @@ const handleSaveDraft = async () => {
           .editor-content {
             overflow-x: hidden !important;
             box-sizing: border-box;
-            width: 100vw; // 编辑文章区域
-            height: calc(100vh - 68px);
+            width: 100%; // 编辑文章区域
+            min-height: calc(100vh - 68px);
             margin-top: 100px;
             padding: 0 15px;
           }
@@ -1674,7 +1674,8 @@ const handleSaveDraft = async () => {
           .editor-content {
             overflow-x: hidden !important;
             box-sizing: border-box !important;
-            width: 100vw !important;
+            width: 100% !important;
+            min-height: calc(100vh - 68px);
             margin-top: 120px;
             padding: 0 10px;
           }

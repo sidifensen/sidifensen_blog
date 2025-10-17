@@ -10,12 +10,24 @@
       <Dark />
       <div v-if="user" class="user-info">
         <el-text size="large" class="nickname">{{ user.nickname }}</el-text>
-        <el-dropdown>
+        <el-dropdown
+          :popper-options="{
+            modifiers: [
+              {
+                name: 'offset',
+                options: {
+                  offset: [-20, 8],
+                },
+              },
+            ],
+          }"
+        >
           <el-avatar v-if="user.avatar" style="cursor: pointer" :size="40" :src="user.avatar" />
           <el-avatar v-else style="cursor: pointer" :size="40" :icon="UserFilled" />
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item>个人设置</el-dropdown-item>
+              <el-dropdown-item @click="goToProfile">个人主页</el-dropdown-item>
+              <el-dropdown-item @click="goToSettings">个人设置</el-dropdown-item>
               <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -44,6 +56,23 @@ const getUserInfo = async () => {
 
 const logout = () => {
   userStore.clearUser();
+};
+
+// 跳转到登录页面
+const handleLoginClick = () => {
+  window.location.href = "/login";
+};
+
+// 跳转到个人主页
+const goToProfile = () => {
+  location.href = `/user/${user.value.id}`;
+};
+
+// 跳转到个人设置页面
+const goToSettings = () => {
+  console.log("点击个人设置，准备跳转");
+  // 直接使用 location.href
+  location.href = "/setting";
 };
 
 onMounted(() => {

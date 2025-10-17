@@ -514,23 +514,23 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 if (auditResult.getStatus().equals(ExamineStatusEnum.PASS.getCode())) {
                     // 文字审核通过，更新审核状态为通过
                     updateArticle.setExamineStatus(ExamineStatusEnum.PASS.getCode());
-                    articleMapper.updateById(updateArticle);
-
-                    // 文字审核通过，更新文章所属的专栏
+                    updateArticle.setTag(articleDto.getTag());
+                    
+                    // 更新文章所属的专栏
                     if (ObjectUtil.isNotEmpty(articleDto.getColumnIds())) {
                         List<Integer> columnIds = articleDto.getColumnIds();
                         columnIds.forEach(columnId -> {
                             ArticleColumn articleColumn = articleColumnMapper
-                                    .selectOne(new LambdaQueryWrapper<ArticleColumn>().select(ArticleColumn::getSort)
-                                            .eq(ArticleColumn::getColumnId, columnId)
-                                            .orderByDesc(ArticleColumn::getSort).last("limit 1"));
+                            .selectOne(new LambdaQueryWrapper<ArticleColumn>().select(ArticleColumn::getSort)
+                            .eq(ArticleColumn::getColumnId, columnId)
+                            .orderByDesc(ArticleColumn::getSort).last("limit 1"));
                             Integer sort = articleColumn == null ? 0 : articleColumn.getSort();
                             ArticleColumn newArticleColumn = new ArticleColumn();
                             newArticleColumn.setArticleId(articleDto.getId());
                             newArticleColumn.setColumnId(columnId);
                             newArticleColumn.setSort(sort + 1); // 最大排序值加1
                             articleColumnMapper.insert(newArticleColumn);
-
+                            
                             // 增加专栏的文章数量
                             Column column = columnMapper.selectById(columnId);
                             if (column != null) {
@@ -539,6 +539,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                             }
                         });
                     }
+                    articleMapper.updateById(updateArticle);
                 } else if (auditResult.getStatus().equals(ExamineStatusEnum.NO_PASS.getCode())) {
                     // 文字审核不通过，更新审核状态为不通过，并记录原因，并发送消息给用户
                     updateArticle.setExamineStatus(ExamineStatusEnum.NO_PASS.getCode());

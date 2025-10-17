@@ -10,12 +10,22 @@
       <Dark />
       <div v-if="user" class="user-info">
         <el-text size="large" class="nickname">{{ user.nickname }}</el-text>
-        <el-dropdown>
+        <el-dropdown :popper-options="{
+            modifiers: [
+              {
+                name: 'offset',
+                options: {
+                  offset: [-20, 8],
+                },
+              },
+            ],
+          }">
           <el-avatar v-if="user.avatar" style="cursor: pointer" :size="40" :src="user.avatar" />
           <el-avatar v-else style="cursor: pointer" :size="40" :icon="UserFilled" />
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item>个人设置</el-dropdown-item>
+              <el-dropdown-item @click="goToProfile">个人主页</el-dropdown-item>
+              <el-dropdown-item @click="goToUserSettings">个人设置</el-dropdown-item>
               <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -30,6 +40,10 @@
     <transition name="slide-fade">
       <div v-show="isMobileMenuVisible" class="mobile-menu-overlay" @click="closeMobileMenu">
         <el-menu class="mobile-menu" router @click.stop @select="closeMobileMenu" :default-openeds="['/creation/manage']">
+          <el-menu-item index="/editor" class="menu-item">
+            <el-icon><Plus /></el-icon>
+            <span class="menu-text">创作</span>
+          </el-menu-item>
           <el-menu-item index="/" class="menu-item">
             <el-icon><House /></el-icon>
             <span class="menu-text">网站首页</span>
@@ -60,7 +74,7 @@ import { ref, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { info } from "@/api/user";
-import { UserFilled, HomeFilled, Management, House } from "@element-plus/icons-vue";
+import { UserFilled, HomeFilled, Management, House, Plus } from "@element-plus/icons-vue";
 
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
@@ -93,6 +107,15 @@ const getUserInfo = async () => {
 
 const logout = () => {
   userStore.clearUser();
+};
+
+// 跳转到个人主页
+const goToProfile = () => {
+  location.href = `/user/${user.value.id}`;
+};
+
+const goToUserSettings = () => {
+  window.location.href = "/setting";
 };
 
 // 移动端菜单是否可见
