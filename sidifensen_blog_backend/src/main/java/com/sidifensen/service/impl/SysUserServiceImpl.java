@@ -116,13 +116,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             // 记录登录失败日志
             String ip = ipUtils.getIp();
             sysLoginLogService.recordLoginLog(
-                    null,  // 登录失败时可能无法获取用户ID
+                    null, // 登录失败时可能无法获取用户ID
                     loginDto.getUsername(),
-                    RegisterOrLoginTypeEnum.EMAIL.getCode(),  // 0-用户名/邮箱登录
+                    RegisterOrLoginTypeEnum.EMAIL.getCode(), // 0-用户名/邮箱登录
                     ip,
-                    LoginStatusEnum.FAIL.getCode()  // 1-失败
+                    LoginStatusEnum.FAIL.getCode() // 1-失败
             );
-            throw e;  // 重新抛出异常，让全局异常处理器处理
+            throw e; // 重新抛出异常，让全局异常处理器处理
         } finally {
             redisComponent.cleanCheckCode(loginDto.getCheckCodeKey());
         }
@@ -143,7 +143,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             return token;
         } catch (Exception e) {
             log.error("OAuth登录JWT token生成失败：用户名={}, 错误={}", oauthLoginDto.getUsername(), e.getMessage());
-            throw e;  // 重新抛出异常，让全局异常处理器处理
+            throw e; // 重新抛出异常，让全局异常处理器处理
         }
     }
 
@@ -191,7 +191,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     public void sendEmailCheckCode(EmailDto emailDto) {
         String email = emailDto.getEmail();
         // 如果是重置密码, 则需要先校验邮箱是否存在
-        if (emailDto.getType().equals(MailEnum.RESET_PASSWORD.getType()) || emailDto.getType().equals(MailEnum.RESET_EMAIL.getType())) {
+        if (emailDto.getType().equals(MailEnum.RESET_PASSWORD.getType())
+                || emailDto.getType().equals(MailEnum.RESET_EMAIL.getType())) {
             SysUser sysUser = sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getEmail, email));
             if (ObjectUtil.isNull(sysUser)) {
                 throw new BlogException(BlogConstants.NotFoundEmail);// 邮箱不存在
@@ -212,7 +213,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     public void verifyResetPassword(VerifyResetDto verifyResetDto) {
         if (!verifyResetDto.getEmailCheckCode()
-                .equals(redisComponent.getEmailCheckCode(verifyResetDto.getEmail(), MailEnum.RESET_PASSWORD.getType()))) {
+                .equals(redisComponent.getEmailCheckCode(verifyResetDto.getEmail(),
+                        MailEnum.RESET_PASSWORD.getType()))) {
             throw new BlogException(BlogConstants.CheckCodeError); // 验证码错误
         }
     }
@@ -221,7 +223,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     public void resetPassword(ResetPasswordDto resetPasswordDto) {
         // 校验邮箱验证码
         if (!resetPasswordDto.getEmailCheckCode()
-                .equals(redisComponent.getEmailCheckCode(resetPasswordDto.getEmail(), MailEnum.RESET_PASSWORD.getType()))) {
+                .equals(redisComponent.getEmailCheckCode(resetPasswordDto.getEmail(),
+                        MailEnum.RESET_PASSWORD.getType()))) {
             throw new BlogException(BlogConstants.CheckCodeError);
         }
 
@@ -364,10 +367,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
         LambdaUpdateWrapper<SysUser> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(SysUser::getId, userId)
-                .set(ObjectUtil.isNotEmpty(updateUserInfoDto.getNickname()), SysUser::getNickname, updateUserInfoDto.getNickname())
+                .set(ObjectUtil.isNotEmpty(updateUserInfoDto.getNickname()), SysUser::getNickname,
+                        updateUserInfoDto.getNickname())
                 .set(ObjectUtil.isNotNull(updateUserInfoDto.getSex()), SysUser::getSex, updateUserInfoDto.getSex())
                 .set(SysUser::getIntroduction, updateUserInfoDto.getIntroduction())
-                .set(ObjectUtil.isNotEmpty(updateUserInfoDto.getAvatar()), SysUser::getAvatar, updateUserInfoDto.getAvatar());
+                .set(ObjectUtil.isNotEmpty(updateUserInfoDto.getAvatar()), SysUser::getAvatar,
+                        updateUserInfoDto.getAvatar());
 
         int result = sysUserMapper.update(null, updateWrapper);
         if (result != 1) {
@@ -427,13 +432,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             // 记录管理员登录失败日志
             String ip = ipUtils.getIp();
             sysLoginLogService.recordLoginLog(
-                    null,  // 登录失败时可能无法获取用户ID
+                    null, // 登录失败时可能无法获取用户ID
                     adminLoginDto.getUsername(),
-                    RegisterOrLoginTypeEnum.EMAIL.getCode(),  // 0-用户名/邮箱登录
+                    RegisterOrLoginTypeEnum.EMAIL.getCode(), // 0-用户名/邮箱登录
                     ip,
-                    LoginStatusEnum.FAIL.getCode()  // 1-失败
+                    LoginStatusEnum.FAIL.getCode() // 1-失败
             );
-            throw e;  // 重新抛出异常，让全局异常处理器处理
+            throw e; // 重新抛出异常，让全局异常处理器处理
         }
     }
 
@@ -461,6 +466,19 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     public List<SysUserVo> listUser() {
         List<SysUser> sysUsers = sysUserMapper.selectList(null);
         List<SysUserVo> sysUserVos = BeanUtil.copyToList(sysUsers, SysUserVo.class);
+
+        // 获取当前登录用户
+        SysUser currentUser = SecurityUtils.getUser();
+
+        // 判断当前用户是否是admin角色
+        boolean isAdmin = currentUser.getSysRoles().stream()
+                .anyMatch(role -> "admin".equals(role.getRole()));
+
+        // 如果不是admin角色，移除邮箱信息以保护用户隐私
+        if (!isAdmin) {
+            sysUserVos.forEach(userVo -> userVo.setEmail(null));
+        }
+
         return sysUserVos;
     }
 
