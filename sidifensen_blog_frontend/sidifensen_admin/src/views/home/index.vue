@@ -227,7 +227,6 @@ import { useUserStore } from "@/stores/userStore";
 import { User, Document, ChatLineRound, View, PieChart, Monitor, Operation, Picture, TrendCharts } from "@element-plus/icons-vue";
 import { getUserTotalCount } from "@/api/user";
 import { getArticleStatistics } from "@/api/article";
-import { getCommentStatistics } from "@/api/comment";
 import { getTodayVisitorCount, getTotalVisitorCount, getVisitorTrend } from "@/api/visitorLog";
 import * as echarts from "echarts";
 import ProjectLinks from "@/components/ProjectLinks.vue";

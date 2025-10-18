@@ -1,6 +1,7 @@
 package com.sidifensen.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
@@ -46,7 +47,6 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
 
     @Resource
     private ArticleFavoriteMapper articleFavoriteMapper;
-
 
     @Override
     public void addFavorite(AddFavoriteDto addFavoriteDto) {
@@ -143,6 +143,13 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
             throw new BlogException(BlogConstants.UpdateFavoriteArticleCountError);
         }
 
+        // 增加文章的收藏数
+        article.setCollectCount(article.getCollectCount() + 1);
+        boolean updateArticleResult = articleMapper.updateById(article) > 0;
+        if (!updateArticleResult) {
+            throw new BlogException(BlogConstants.UpdateArticleCollectCountError);
+        }
+
     }
 
     @Override
@@ -194,6 +201,15 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
             boolean updateResult = favoriteMapper.updateById(favorite) > 0;
             if (!updateResult) {
                 throw new BlogException(BlogConstants.UpdateFavoriteArticleCountError);
+            }
+        }
+
+        // 减少文章的收藏数
+        if (article.getCollectCount() > 0) {
+            article.setCollectCount(article.getCollectCount() - 1);
+            boolean updateArticleResult = articleMapper.updateById(article) > 0;
+            if (!updateArticleResult) {
+                throw new BlogException(BlogConstants.UpdateArticleCollectCountError);
             }
         }
 
@@ -340,5 +356,34 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
                 .toList();
 
         return articleVoList;
+    }
+
+    @Override
+    public Boolean isCollected(Integer articleId) {
+        // 获取当前用户ID
+        Integer userId = SecurityUtils.getUserId();
+        if (userId == 0) {
+            return false;
+        }
+
+        // 查询当前用户的所有收藏夹ID
+        LambdaQueryWrapper<Favorite> favoriteQueryWrapper = new LambdaQueryWrapper<>();
+        favoriteQueryWrapper.eq(Favorite::getUserId, userId);
+        List<Favorite> favorites = favoriteMapper.selectList(favoriteQueryWrapper);
+
+        if (ObjectUtil.isEmpty(favorites)) {
+            return false;
+        }
+
+        List<Integer> favoriteIds = favorites.stream()
+                .map(Favorite::getId)
+                .collect(Collectors.toList());
+
+        // 查询文章是否在这些收藏夹中
+        LambdaQueryWrapper<ArticleFavorite> articleFavoriteQueryWrapper = new LambdaQueryWrapper<>();
+        articleFavoriteQueryWrapper.eq(ArticleFavorite::getArticleId, articleId)
+                .in(ArticleFavorite::getFavoriteId, favoriteIds);
+
+        return articleFavoriteMapper.selectCount(articleFavoriteQueryWrapper) > 0;
     }
 }

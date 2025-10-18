@@ -105,6 +105,7 @@ public class BlogConstants {
     public static final String UpdateFavoriteArticleCountError = "更新收藏夹文章数失败";
     public static final String ArticleNotInFavorite = "文章不在该收藏夹中";
     public static final String RemoveArticleFromFavoriteError = "从收藏夹中移除文章失败";
+    public static final String UpdateArticleCollectCountError = "更新文章收藏数失败";
 
     // 关注相关错误信息
     public static final String CannotFollowSelf = "不能关注自己";

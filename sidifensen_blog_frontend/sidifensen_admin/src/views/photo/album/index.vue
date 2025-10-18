@@ -119,8 +119,7 @@
       <el-form ref="albumFormRef" :model="albumForm" :rules="rules" class="editForm">
         <el-form-item prop="name" label="相册名称">
           <el-input v-model="albumForm.name" placeholder="请输入相册名称" />
-        </el-form-item> </el-form
-      >=;
+        </el-form-item> </el-form>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>

@@ -321,10 +321,10 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from "vue";
-import { Search, Plus, InfoFilled, Edit, Delete, Avatar, Calendar } from "@element-plus/icons-vue";
+import { Search, InfoFilled, Edit, Delete, Avatar, Calendar } from "@element-plus/icons-vue";
 import { getRoleList } from "@/api/role";
 import { getUserList, updateUser, deleteUser, queryUser, getUserDetail } from "@/api/user";
-import { getRolesByUser } from "@/api/user-role";
+import { getRolesByUser, addRole } from "@/api/user-role";
 import { formatMenu } from "@/utils/Menu";
 import Pagination from "@/components/Pagination.vue";
 
@@ -1031,7 +1031,6 @@ const handleResize = () => {
       }
     }
   }
-
 }
 
 :deep(.el-dialog) {
@@ -1203,7 +1202,6 @@ const handleResize = () => {
         margin-top: 0;
         max-height: calc(100vh - 180px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
       }
-
     }
   }
 }

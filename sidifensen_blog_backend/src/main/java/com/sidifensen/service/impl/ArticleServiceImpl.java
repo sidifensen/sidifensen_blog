@@ -80,6 +80,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private LikeService likeService;
 
     @Resource
+    private FavoriteService favoriteService;
+
+    @Resource
     private HistoryService historyService;
 
     @Resource
@@ -376,6 +379,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         Boolean isLiked = likeService.isLiked(LikeTypeEnum.ARTICLE.getCode(), articleId);
         articleVo.setIsLiked(isLiked);
+
+        Boolean isCollected = favoriteService.isCollected(articleId);
+        articleVo.setIsCollected(isCollected);
 
         // 获取当前用户ID
         Integer userId = SecurityUtils.getUserId() == 0 ? null : SecurityUtils.getUserId();

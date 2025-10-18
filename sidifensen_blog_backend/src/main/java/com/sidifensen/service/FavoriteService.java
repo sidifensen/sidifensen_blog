@@ -36,7 +36,7 @@ public interface FavoriteService extends IService<Favorite> {
     /**
      * 根据articleId把文章添加到文章-收藏夹关联表，并增加收藏夹的文章数量
      * 
-     * @param articleId 文章ID
+     * @param articleId  文章ID
      * @param favoriteId 收藏夹ID
      */
     void addArticleToFavorite(Integer articleId, Integer favoriteId);
@@ -44,7 +44,7 @@ public interface FavoriteService extends IService<Favorite> {
     /**
      * 根据articleId把文章从文章-收藏夹关联表中移除，并减少收藏夹的文章数量
      * 
-     * @param articleId 文章ID
+     * @param articleId  文章ID
      * @param favoriteId 收藏夹ID
      */
     void removeArticleFromFavorite(Integer articleId, Integer favoriteId);
@@ -83,4 +83,12 @@ public interface FavoriteService extends IService<Favorite> {
      * @return 文章列表
      */
     List<ArticleVo> getArticleListByFavoriteId(Integer favoriteId);
+
+    /**
+     * 检查当前登录用户是否已收藏指定文章
+     * 
+     * @param articleId 文章ID
+     * @return 是否已收藏
+     */
+    Boolean isCollected(Integer articleId);
 }

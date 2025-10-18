@@ -134,6 +134,11 @@ public class ArticleVo implements Serializable {
     private Boolean isLiked;
 
     /**
+     * 当前用户是否已收藏
+     */
+    private Boolean isCollected;
+
+    /**
      * 热度分数（近7天访问量，用于热门文章排行）
      */
     private Long hotScore;
