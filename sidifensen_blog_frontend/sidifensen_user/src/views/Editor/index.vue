@@ -807,9 +807,25 @@ const inputColumn = ref("");
 // 用户专栏列表是否显示
 const showColumnDropdown = ref(false);
 
-// 鼠标悬停时只显示专栏列表
-const showColumnListOnHover = () => {
+// 鼠标悬停时获取最新专栏列表并显示
+const showColumnListOnHover = async () => {
   showColumnDropdown.value = true;
+  try {
+    const res = await getColumnList();
+    allColumns.value = res.data.data
+      .sort((a, b) => {
+        return a.sort - b.sort;
+      })
+      .map((item) => {
+        return {
+          id: item.id,
+          name: item.name,
+        };
+      });
+  } catch (error) {
+    console.error("获取专栏列表失败:", error);
+    ElMessage.error("获取专栏列表失败");
+  }
 };
 
 // 鼠标移出按钮时隐藏专栏列表
@@ -820,7 +836,7 @@ const hideColumnListOnLeave = () => {
     if (!isMouseInDropdown.value) {
       showColumnDropdown.value = false;
     }
-  }, 1000);
+  }, 2000);
 };
 
 // 标记鼠标是否在下拉列表区域内
@@ -958,6 +974,9 @@ const handleClickPublish = async () => {
       return;
     }
 
+    // 确保标签数据同步到article对象中
+    article.value.tag = tags.value.join(",");
+
     // 根据是否存在文章ID决定调用新增还是更新接口
     const articleId = route.query.articleId;
     if (articleId && !isNaN(articleId)) {
@@ -1010,6 +1029,9 @@ const handleSaveDraft = async () => {
     if (aiEditor) {
       article.value.content = aiEditor.getHtml();
     }
+
+    // 确保标签数据同步到article对象中
+    article.value.tag = tags.value.join(",");
 
     await saveDraft(article.value);
     ElMessage.success("草稿保存成功!");

@@ -260,7 +260,6 @@ const handleCollect = () => {
 
 // 处理收藏成功
 const handleFavoriteSuccess = (result) => {
-
   // 更新文章的收藏状态和收藏数
   const updatedArticle = { ...props.article };
 
@@ -734,7 +733,8 @@ const handleEditArticle = () => {
 // 返回顶部按钮样式
 .back-to-top {
   position: fixed;
-  right: 22px;
+  z-index: 9999;
+  right: 70px;
   bottom: 150px; // 避免与底部操作栏重叠
   display: flex;
   align-items: center;
