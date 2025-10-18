@@ -41,6 +41,11 @@ public class UserCommentManageVo implements Serializable {
     private String replyUserAvatar;
 
     /**
+     * 被回复的评论内容
+     */
+    private String replyCommentContent;
+
+    /**
      * 评论内容
      */
     private String content;

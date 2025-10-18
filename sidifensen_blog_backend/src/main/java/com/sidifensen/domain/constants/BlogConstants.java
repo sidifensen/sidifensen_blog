@@ -84,6 +84,7 @@ public class BlogConstants {
     // 点赞相关错误信息
     public static final String LikeTypeError = "点赞类型错误";
     public static final String UpdateArticleLikeCountError = "更新文章点赞数失败";
+    public static final String UpdateCommentLikeCountError = "更新评论点赞数失败";
 
     // 阅读记录相关错误信息
     public static final String UpdateArticleReadCountError = "更新文章阅读数失败";

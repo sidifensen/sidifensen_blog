@@ -80,7 +80,10 @@
                     </el-tooltip>
                     <span v-else class="reply-username">{{ comment.replyUserNickname }}</span>
                   </div>
-                  <div class="reply-content">回复了您的评论</div>
+                  <el-tooltip v-if="comment.replyCommentContent && comment.replyCommentContent.length > 80" :content="comment.replyCommentContent" placement="top" :show-after="500" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
+                    <div class="reply-content">{{ comment.replyCommentContent }}</div>
+                  </el-tooltip>
+                  <div v-else class="reply-content">{{ comment.replyCommentContent || "原评论已被删除" }}</div>
                 </div>
 
                 <!-- 我的评论内容 -->
@@ -521,6 +524,13 @@ onUnmounted(() => {
                   font-size: 13px;
                   color: var(--el-text-color-regular);
                   margin-left: 32px;
+                  line-height: 1.5;
+                  overflow: hidden;
+                  display: -webkit-box;
+                  -webkit-line-clamp: 2;
+                  line-clamp: 2;
+                  -webkit-box-orient: vertical;
+                  word-break: break-word;
                 }
               }
 
@@ -704,6 +714,8 @@ onUnmounted(() => {
                   .reply-content {
                     font-size: 12px;
                     margin-left: 28px;
+                    -webkit-line-clamp: 2;
+                    line-clamp: 2;
                   }
                 }
 

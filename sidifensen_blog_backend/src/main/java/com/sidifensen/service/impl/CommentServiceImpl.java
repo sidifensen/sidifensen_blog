@@ -390,7 +390,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      * @return CommentVo列表
      */
     private List<CommentVo> batchBuildCommentVos(List<Comment> mainComments, List<Comment> subComments,
-                                                 Integer currentUserId, boolean withChildren) {
+            Integer currentUserId, boolean withChildren) {
         if (mainComments.isEmpty()) {
             return new ArrayList<>();
         }
@@ -493,7 +493,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      * @return 评论VO
      */
     private CommentVo buildCommentVo(Comment comment, Map<Integer, SysUser> userMap,
-                                     Map<Integer, Long> likeCountMap, Set<Integer> userLikedIds) {
+            Map<Integer, Long> likeCountMap, Set<Integer> userLikedIds) {
         CommentVo vo = BeanUtil.copyProperties(comment, CommentVo.class);
 
         // 设置用户信息
@@ -535,7 +535,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         return batchBuildAdminCommentVos(comments);
     }
 
-
     @Override
     public List<AdminCommentVo> adminGetCommentsByUserId(Integer userId) {
         if (userId == null || userId <= 0) {
@@ -573,16 +572,23 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
         queryWrapper
                 // 根据审核状态筛选
-                .eq(commentSearchDto.getExamineStatus() != null, Comment::getExamineStatus, commentSearchDto.getExamineStatus())
+                .eq(commentSearchDto.getExamineStatus() != null, Comment::getExamineStatus,
+                        commentSearchDto.getExamineStatus())
                 // 根据用户ID筛选
-                .eq(commentSearchDto.getUserId() != null && commentSearchDto.getUserId() > 0, Comment::getUserId, commentSearchDto.getUserId())
+                .eq(commentSearchDto.getUserId() != null && commentSearchDto.getUserId() > 0, Comment::getUserId,
+                        commentSearchDto.getUserId())
                 // 根据文章ID筛选
-                .eq(commentSearchDto.getArticleId() != null && commentSearchDto.getArticleId() > 0, Comment::getArticleId, commentSearchDto.getArticleId())
+                .eq(commentSearchDto.getArticleId() != null && commentSearchDto.getArticleId() > 0,
+                        Comment::getArticleId, commentSearchDto.getArticleId())
                 // 根据关键词搜索评论内容
-                .like(commentSearchDto.getKeyword() != null && !commentSearchDto.getKeyword().trim().isEmpty(), Comment::getContent, commentSearchDto.getKeyword() != null ? commentSearchDto.getKeyword().trim() : null)
+                .like(commentSearchDto.getKeyword() != null && !commentSearchDto.getKeyword().trim().isEmpty(),
+                        Comment::getContent,
+                        commentSearchDto.getKeyword() != null ? commentSearchDto.getKeyword().trim() : null)
                 // 根据创建时间范围筛选
-                .ge(commentSearchDto.getCreateTimeStart() != null, Comment::getCreateTime, commentSearchDto.getCreateTimeStart())
-                .le(commentSearchDto.getCreateTimeEnd() != null, Comment::getCreateTime, commentSearchDto.getCreateTimeEnd());
+                .ge(commentSearchDto.getCreateTimeStart() != null, Comment::getCreateTime,
+                        commentSearchDto.getCreateTimeStart())
+                .le(commentSearchDto.getCreateTimeEnd() != null, Comment::getCreateTime,
+                        commentSearchDto.getCreateTimeEnd());
 
         List<Comment> comments = list(queryWrapper);
 
@@ -673,7 +679,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      * @return 管理员评论VO
      */
     private AdminCommentVo buildAdminCommentVo(Comment comment, Map<Integer, SysUser> userMap,
-                                               Map<Integer, Article> articleMap, Map<Integer, Long> likeCountMap) {
+            Map<Integer, Article> articleMap, Map<Integer, Long> likeCountMap) {
         AdminCommentVo vo = BeanUtil.copyProperties(comment, AdminCommentVo.class);
 
         // 设置用户信息
@@ -906,7 +912,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
-    public PageVo<List<UserCommentManageVo>> getUserCommentManageList(Integer pageNum, Integer pageSize, CommentFilterDto commentFilterDto) {
+    public PageVo<List<UserCommentManageVo>> getUserCommentManageList(Integer pageNum, Integer pageSize,
+            CommentFilterDto commentFilterDto) {
         Integer currentUserId = SecurityUtils.getUserId(); // 当前登录用户ID
 
         Page<Comment> page = new Page<>(pageNum, pageSize);
@@ -924,9 +931,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         if (ObjectUtil.isNotEmpty(commentFilterDto.getYear()) || ObjectUtil.isNotEmpty(commentFilterDto.getMonth())) {
             if (ObjectUtil.isNotEmpty(commentFilterDto.getMonth())) {
                 // 确定年份：如果有指定年份则使用，否则使用当前年份
-                int year = ObjectUtil.isNotEmpty(commentFilterDto.getYear()) ? 
-                          commentFilterDto.getYear() : LocalDateTime.now().getYear();
-                
+                int year = ObjectUtil.isNotEmpty(commentFilterDto.getYear()) ? commentFilterDto.getYear()
+                        : LocalDateTime.now().getYear();
+
                 // 查询指定年份的指定月份
                 LocalDateTime firstDayOfMonth = LocalDateTime.of(year, commentFilterDto.getMonth(), 1, 0, 0, 0);
                 LocalDateTime lastDayOfMonth = firstDayOfMonth.with(TemporalAdjusters.lastDayOfMonth())
@@ -961,6 +968,14 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                     vo.setReplyUserId(replyUser.getId());
                     vo.setReplyUserNickname(replyUser.getNickname());
                     vo.setReplyUserAvatar(replyUser.getAvatar());
+                }
+
+                // 获取被回复的评论内容（通过parentId查询）
+                if (ObjectUtil.isNotEmpty(comment.getParentId()) && comment.getParentId() != 0) {
+                    Comment parentComment = commentMapper.selectById(comment.getParentId());
+                    if (ObjectUtil.isNotEmpty(parentComment)) {
+                        vo.setReplyCommentContent(parentComment.getContent());
+                    }
                 }
             }
 

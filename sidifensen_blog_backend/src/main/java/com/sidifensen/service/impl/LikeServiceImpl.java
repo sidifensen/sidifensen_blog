@@ -5,11 +5,13 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.entity.Article;
+import com.sidifensen.domain.entity.Comment;
 import com.sidifensen.domain.entity.Like;
 import com.sidifensen.domain.enums.LikeTypeEnum;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.LikeMapper;
 import com.sidifensen.mapper.ArticleMapper;
+import com.sidifensen.mapper.CommentMapper;
 import com.sidifensen.service.LikeService;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
@@ -31,6 +33,9 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Like> implements Li
 
     @Resource
     private ArticleMapper articleMapper;
+
+    @Resource
+    private CommentMapper commentMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -55,9 +60,11 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Like> implements Li
             if (existingLike != null) {
                 // 已点赞，执行取消点赞
                 this.removeById(existingLike.getId());
-                // 如果是文章类型的点赞，减少文章点赞量
+                // 根据类型减少对应的点赞量
                 if (LikeTypeEnum.ARTICLE.equals(likeType)) {
                     updateArticleLikeCount(typeId, -1);
+                } else if (LikeTypeEnum.COMMENT.equals(likeType)) {
+                    updateCommentLikeCount(typeId, -1);
                 }
             } else {
                 // 未点赞，执行点赞
@@ -66,14 +73,21 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Like> implements Li
                 like.setType(type);
                 like.setTypeId(typeId);
                 this.save(like);
-                // 如果是文章类型的点赞，增加文章点赞量
+                // 根据类型增加对应的点赞量
                 if (LikeTypeEnum.ARTICLE.equals(likeType)) {
                     updateArticleLikeCount(typeId, 1);
+                } else if (LikeTypeEnum.COMMENT.equals(likeType)) {
+                    updateCommentLikeCount(typeId, 1);
                 }
             }
         } catch (Exception e) {
             log.error("用户{}切换点赞状态失败，类型:{}, ID:{}", userId, likeType.getDesc(), typeId, e);
-            throw new BlogException(BlogConstants.UpdateArticleLikeCountError);
+            if (LikeTypeEnum.ARTICLE.equals(likeType)) {
+                throw new BlogException(BlogConstants.UpdateArticleLikeCountError);
+            } else if (LikeTypeEnum.COMMENT.equals(likeType)) {
+                throw new BlogException(BlogConstants.UpdateCommentLikeCountError);
+            }
+            throw new BlogException(BlogConstants.LikeTypeError);
         }
     }
 
@@ -108,6 +122,37 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Like> implements Li
         }
     }
 
+    /**
+     * 更新评论点赞量
+     *
+     * @param commentId 评论ID
+     * @param delta     变化量 (1表示增加，-1表示减少)
+     */
+    private void updateCommentLikeCount(Integer commentId, int delta) {
+        // 验证评论是否存在
+        Comment comment = commentMapper.selectById(commentId);
+        if (comment == null) {
+            throw new BlogException(BlogConstants.NotFoundComment);
+        }
+
+        LambdaUpdateWrapper<Comment> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Comment::getId, commentId);
+
+        if (delta > 0) {
+            // 增加点赞量
+            updateWrapper.setSql("like_count = like_count + " + delta);
+        } else {
+            // 减少点赞量，但不能小于0
+            updateWrapper.setSql(
+                    "like_count = CASE WHEN like_count + " + delta + " < 0 THEN 0 ELSE like_count + " + delta + " END");
+        }
+
+        int updated = commentMapper.update(null, updateWrapper);
+        if (updated == 0) {
+            throw new BlogException(BlogConstants.UpdateCommentLikeCountError);
+        }
+    }
+
     @Override
     public Boolean isLiked(Integer type, Integer typeId) {
         Integer userId = SecurityUtils.getUserId();
@@ -122,7 +167,6 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Like> implements Li
 
         return this.count(queryWrapper) > 0;
     }
-
 
     @Override
     public Long getLikeCount(Integer type, Integer typeId) {
