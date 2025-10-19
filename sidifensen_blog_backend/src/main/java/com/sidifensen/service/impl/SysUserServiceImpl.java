@@ -333,7 +333,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         sysUserVo.setId(sysUser.getId());
         sysUserVo.setNickname(sysUser.getNickname());
         sysUserVo.setUsername(sysUser.getUsername());
-        sysUserVo.setEmail(sysUser.getEmail());
         sysUserVo.setIntroduction(sysUser.getIntroduction());
         sysUserVo.setAvatar(sysUser.getAvatar());
         sysUserVo.setSex(sysUser.getSex());

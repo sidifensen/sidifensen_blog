@@ -970,7 +970,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                     vo.setReplyUserAvatar(replyUser.getAvatar());
                 }
 
-                // 获取被回复的评论内容（通过parentId查询）
+                // 获取回复的评论内容（通过parentId查询）
                 if (ObjectUtil.isNotEmpty(comment.getParentId()) && comment.getParentId() != 0) {
                     Comment parentComment = commentMapper.selectById(comment.getParentId());
                     if (ObjectUtil.isNotEmpty(parentComment)) {

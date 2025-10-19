@@ -51,13 +51,13 @@ public class RateLimitAspect {
         // 获取方法签名
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
-        
+
         // 优先获取方法级别的注解，如果没有则获取类级别的注解
         RateLimit rateLimit = method.getAnnotation(RateLimit.class);
         if (rateLimit == null) {
             rateLimit = method.getDeclaringClass().getAnnotation(RateLimit.class);
         }
-        
+
         // 如果既没有方法级别也没有类级别的注解，则直接放行
         if (rateLimit == null) {
             return joinPoint.proceed();
@@ -95,25 +95,31 @@ public class RateLimitAspect {
 
             // 根据访问次数检查是否需要加入黑名单
             BlacklistStrategy strategy = BlacklistStrategy.getStrategyByAccessCount(currentCount.intValue());
-            if (strategy != null) { 
-                // 构建接口路径
-                String apiPath = className + ":" + method.getName();
-                
-                // 生成详细的违规原因（包含接口和访问次数）
-                String detailedReason = strategy.getDetailedReason(apiPath, currentCount.intValue());
-                
-                // 加入Redis黑名单（快速检查）
+            if (strategy != null) {
+                // 构建黑名单key，检查用户是否已经在黑名单中
                 String blacklistKey = RedisConstants.Blacklist + identifier;
-                redisUtils.set(blacklistKey, detailedReason, strategy.getBanDuration(), TimeUnit.SECONDS);
 
-                // 保存到数据库（持久化记录）
-                sysBlacklistService.addToBlacklist(identifier, detailedReason, strategy.getBanDuration());
+                // 只有当用户不在黑名单中时，才执行加入黑名单的操作
+                // 这样可以避免重复插入数据库记录和打印多条日志
+                if (!redisUtils.hasKey(blacklistKey)) {
+                    // 构建接口路径
+                    String apiPath = className + ":" + method.getName();
 
-                log.warn("用户加入黑名单 - 用户标识: {}, 访问接口: {}, 访问次数: {}, 策略: {}, 封禁时长: {}秒",
-                        identifier, apiPath, currentCount, strategy.getDescription(), strategy.getBanDuration());
+                    // 生成详细的违规原因（包含接口和访问次数）
+                    String detailedReason = strategy.getDetailedReason(apiPath, currentCount.intValue());
 
-                // 清除限流计数器
-                redisUtils.del(rateLimitKey);
+                    // 加入Redis黑名单（快速检查）
+                    redisUtils.set(blacklistKey, detailedReason, strategy.getBanDuration(), TimeUnit.SECONDS);
+
+                    // 保存到数据库（持久化记录）
+                    sysBlacklistService.addToBlacklist(identifier, detailedReason, strategy.getBanDuration());
+
+                    log.warn("用户加入黑名单 - 用户标识: {}, 访问接口: {}, 访问次数: {}, 策略: {}, 封禁时长: {}秒",
+                            identifier, apiPath, currentCount, strategy.getDescription(), strategy.getBanDuration());
+
+                    // 清除限流计数器
+                    redisUtils.del(rateLimitKey);
+                }
             }
         } catch (Exception e) {
             log.error("限流检查异常，允许访问 - key: {}", rateLimitKey, e);
@@ -122,8 +128,9 @@ public class RateLimitAspect {
 
         if (!allowed) {
             // 抛出限流异常
-            String message = StrUtil.isNotBlank(rateLimit.message()) ? rateLimit.message() : BlogConstants.RateLimitExceeded;
-            log.warn("限流触发 - 用户标识: {}, 类: {}, 方法: {}, 限制: {}次/{}秒", 
+            String message = StrUtil.isNotBlank(rateLimit.message()) ? rateLimit.message()
+                    : BlogConstants.RateLimitExceeded;
+            log.warn("限流触发 - 用户标识: {}, 类: {}, 方法: {}, 限制: {}次/{}秒",
                     identifier, className, method.getName(), rateLimit.value(), rateLimit.period());
             throw new RateLimitException(message);
         }
@@ -132,4 +139,3 @@ public class RateLimitAspect {
         return joinPoint.proceed();
     }
 }
-

@@ -398,8 +398,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         executorService.execute(() -> {
             try {
                 // 检查并记录浏览，如果用户/访客已浏览过，则不增加阅读量
-                boolean shouldIncrement = historyService.checkAndRecordRead(
-                        articleId, userId, ipAddress);
+                boolean shouldIncrement = historyService.checkAndRecordRead(articleId, userId, ipAddress);
 
                 if (shouldIncrement) {
                     // 用户/访客首次阅读，增加阅读量（使用原子自增操作）

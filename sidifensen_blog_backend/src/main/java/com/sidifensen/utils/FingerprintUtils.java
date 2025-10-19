@@ -2,7 +2,6 @@ package com.sidifensen.utils;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.MD5;
-import com.sidifensen.aspect.TimeConsuming;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -28,7 +27,6 @@ public class FingerprintUtils {
      * @param request HTTP请求对象
      * @return 浏览器指纹字符串
      */
-    @TimeConsuming
     public String generateFingerprint(HttpServletRequest request) {
         List<String> fingerprints = new ArrayList<>();
 

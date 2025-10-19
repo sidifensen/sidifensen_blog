@@ -380,6 +380,7 @@ onBeforeUnmount(() => {
 
 .user-dropdown-menu {
   min-width: 220px !important;
+  max-width: 280px !important;
   padding: 15px !important;
 
   // 用户信息区域
@@ -387,11 +388,14 @@ onBeforeUnmount(() => {
     // 用户名区域
     .user-name {
       text-align: center;
+      max-width: 250px;
 
       .nickname {
         font-size: 18px;
         font-weight: 600;
         color: var(--el-text-color-primary);
+        word-wrap: break-word;
+        word-break: break-all;
       }
     }
 

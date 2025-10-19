@@ -276,7 +276,7 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 // 文章页面容器
 .article-page {
-  min-height: calc(100vh - 48px);
+  min-height: 100vh;
 
   // 内容区域
   .content-section {

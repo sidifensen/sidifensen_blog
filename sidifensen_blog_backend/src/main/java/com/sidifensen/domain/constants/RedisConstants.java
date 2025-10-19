@@ -54,14 +54,6 @@ public class RedisConstants {
     public static final String BlacklistLog = RedisKeyPrefix + "BlacklistLog:";
 
     /**
-     * 访客记录缓存键前缀
-     * 格式：sidifensen_blog:Visitor:Set:日期
-     * 存储结构：Set，存储当天的访客唯一标识（userId:ip:device 或 ip:device）
-     * 示例：sidifensen_blog:Visitor:Set:2025-10-07
-     */
-    public static final String VisitorSet = RedisKeyPrefix + "Visitor:Set:";
-
-    /**
      * 热门文章缓存键（近7天访问量排行）
      * 格式：sidifensen_blog:HotArticles:7Days
      * 存储结构：ZSet，score为访问量，member为文章ID

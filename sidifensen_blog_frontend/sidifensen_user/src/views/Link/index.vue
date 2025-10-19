@@ -333,7 +333,9 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 // 友链页面容器
 .link-page {
-  min-height: calc(100vh - 48px);
+  min-height: 100vh;
+  padding-top: 48px;
+  background-color: var(--el-bg-color-page);
 
   // 工具类
   .container {

@@ -9,5 +9,6 @@
   padding-top: 48px;
   min-height: 100vh;
   overflow-y: auto;
+  background-color: var(--el-bg-color-page);
 }
 </style>
