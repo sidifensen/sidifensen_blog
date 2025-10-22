@@ -10,10 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
 /**
  * 获取IP方法
  *
@@ -98,6 +94,13 @@ public class IpUtils {
                 return "未知地址";
             }
 
+            // 验证返回内容是否为有效的JSON格式
+            if (!res.trim().startsWith("{")) {
+                log.warn("IP查询服务返回非JSON格式数据，响应前100字符: {}",
+                        res.substring(0, Math.min(100, res.length())));
+                return "未知地址";
+            }
+
             // 解析 ip9.com.cn 返回的 JSON 数据
             IpResult ipResult = JSONUtil.toBean(res, IpResult.class);
             if (ipResult == null || ipResult.getData() == null) {
@@ -121,6 +124,9 @@ public class IpUtils {
                 String area = StrUtil.nullToEmpty(ipDetail.getArea());
                 address = country + "-" + prov + "-" + city + "-" + area;
             }
+        } catch (cn.hutool.json.JSONException e) {
+            log.warn("IP查询服务返回数据格式错误，JSON解析异常: {}", e.getMessage());
+            address = "未知地址";
         } catch (Exception e) {
             log.error("获取IP地址失败，使用默认值", e);
             address = "未知地址";
@@ -140,6 +146,13 @@ public class IpUtils {
             String res = HttpUtil.get(StrUtil.format(GET_IP_URL1, ip));
             if (StrUtil.isBlank(res)) {
                 log.warn("IP查询服务返回空响应，IP: {}", ip);
+                return "未知地址";
+            }
+
+            // 验证返回内容是否为有效的JSON格式（防止429错误返回HTML）
+            if (!res.trim().startsWith("{")) {
+                log.warn("IP查询服务返回非JSON格式数据（可能触发限流），IP: {}，响应前100字符: {}",
+                        ip, res.substring(0, Math.min(100, res.length())));
                 return "未知地址";
             }
 
@@ -166,6 +179,9 @@ public class IpUtils {
                 String area = StrUtil.nullToEmpty(ipDetail.getArea());
                 address = country + "-" + prov + "-" + city + "-" + area;
             }
+        } catch (cn.hutool.json.JSONException e) {
+            log.warn("IP查询服务返回数据格式错误（可能触发限流），IP: {}，JSON解析异常: {}", ip, e.getMessage());
+            address = "未知地址";
         } catch (Exception e) {
             log.error("获取IP地址失败，IP: {}，使用默认值", ip, e);
             address = "未知地址";
@@ -174,34 +190,35 @@ public class IpUtils {
     }
 
     // public static void main(String[] args) throws InterruptedException {
-    //     ExecutorService executor = Executors.newFixedThreadPool(8);
-    //     executor.execute(() -> {
+    // ExecutorService executor = Executors.newFixedThreadPool(8);
+    // executor.execute(() -> {
 
-    //         long startTime = System.currentTimeMillis();
-    //         int requestCount = 100;
-    //         System.out.println("=== 测试开始 ===");
+    // long startTime = System.currentTimeMillis();
+    // int requestCount = 100;
+    // System.out.println("=== 测试开始 ===");
 
-    //         IpUtils ipUtils = new IpUtils();
+    // IpUtils ipUtils = new IpUtils();
 
-    //         for (int i = 0; i < requestCount; i++) {
-    //             String ipDetail = ipUtils.getAddress();
-    //             System.out.println("Request " + (i + 1) + ": " + ipDetail);
-    //         }
+    // for (int i = 0; i < requestCount; i++) {
+    // String ipDetail = ipUtils.getAddress();
+    // System.out.println("Request " + (i + 1) + ": " + ipDetail);
+    // }
 
-    //         long endTime = System.currentTimeMillis();
-    //         long totalTime = endTime - startTime;
+    // long endTime = System.currentTimeMillis();
+    // long totalTime = endTime - startTime;
 
-    //         System.out.println("\n=== 测试结果 ===");
-    //         System.out.println("请求次数: " + requestCount);
-    //         System.out.println("总耗时: " + totalTime + " ms");
-    //         System.out.println("平均每次请求耗时: " + (totalTime / (double) requestCount) + "ms");
-    //     });
-    //     //=== 测试结果 ===
-    //     //请求次数: 60
-    //     //总耗时: 61098 ms
-    //     //平均每次请求耗时: 1018.3 ms
-    //     executor.shutdown();
-    //     executor.awaitTermination(60, TimeUnit.SECONDS);
+    // System.out.println("\n=== 测试结果 ===");
+    // System.out.println("请求次数: " + requestCount);
+    // System.out.println("总耗时: " + totalTime + " ms");
+    // System.out.println("平均每次请求耗时: " + (totalTime / (double) requestCount) +
+    // "ms");
+    // });
+    // //=== 测试结果 ===
+    // //请求次数: 60
+    // //总耗时: 61098 ms
+    // //平均每次请求耗时: 1018.3 ms
+    // executor.shutdown();
+    // executor.awaitTermination(60, TimeUnit.SECONDS);
     // }
 
 }
