@@ -2,6 +2,7 @@ package com.sidifensen.utils;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONException;
 import cn.hutool.json.JSONUtil;
 import com.sidifensen.domain.entity.IpDetail;
 import com.sidifensen.domain.result.IpResult;
@@ -94,17 +95,14 @@ public class IpUtils {
                 return "未知地址";
             }
 
-            // 验证返回内容是否为有效的JSON格式
+            // 验证返回内容是否为有效的JSON格式 (防止429限流错误返回HTML)
             if (!res.trim().startsWith("{")) {
-                log.warn("IP查询服务返回非JSON格式数据，响应前100字符: {}",
-                        res.substring(0, Math.min(100, res.length())));
                 return "未知地址";
             }
 
             // 解析 ip9.com.cn 返回的 JSON 数据
             IpResult ipResult = JSONUtil.toBean(res, IpResult.class);
             if (ipResult == null || ipResult.getData() == null) {
-                log.warn("IP详情解析失败");
                 return "未知地址";
             }
             IpDetail ipDetail = ipResult.getData();
@@ -124,9 +122,6 @@ public class IpUtils {
                 String area = StrUtil.nullToEmpty(ipDetail.getArea());
                 address = country + "-" + prov + "-" + city + "-" + area;
             }
-        } catch (cn.hutool.json.JSONException e) {
-            log.warn("IP查询服务返回数据格式错误，JSON解析异常: {}", e.getMessage());
-            address = "未知地址";
         } catch (Exception e) {
             log.error("获取IP地址失败，使用默认值", e);
             address = "未知地址";
@@ -149,10 +144,8 @@ public class IpUtils {
                 return "未知地址";
             }
 
-            // 验证返回内容是否为有效的JSON格式（防止429错误返回HTML）
+            // 验证返回内容是否为有效的JSON格式（防止429限流错误返回HTML）
             if (!res.trim().startsWith("{")) {
-                log.warn("IP查询服务返回非JSON格式数据（可能触发限流），IP: {}，响应前100字符: {}",
-                        ip, res.substring(0, Math.min(100, res.length())));
                 return "未知地址";
             }
 
@@ -179,9 +172,6 @@ public class IpUtils {
                 String area = StrUtil.nullToEmpty(ipDetail.getArea());
                 address = country + "-" + prov + "-" + city + "-" + area;
             }
-        } catch (cn.hutool.json.JSONException e) {
-            log.warn("IP查询服务返回数据格式错误（可能触发限流），IP: {}，JSON解析异常: {}", ip, e.getMessage());
-            address = "未知地址";
         } catch (Exception e) {
             log.error("获取IP地址失败，IP: {}，使用默认值", ip, e);
             address = "未知地址";

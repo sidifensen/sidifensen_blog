@@ -149,22 +149,30 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Override
     public void register(RegisterDto registerDto) {
-        // 校验验证码
-        if (ObjectUtil.isNotEmpty(registerDto.getEmailCheckCode()) && !registerDto.getEmailCheckCode()
-                .equals(redisComponent.getEmailCheckCode(registerDto.getEmail(), MailEnum.REGISTER.getType()))) {
+        // 必须校验验证码，不能为空
+        if (ObjectUtil.isEmpty(registerDto.getEmailCheckCode())) {
             throw new BlogException(BlogConstants.CheckCodeError);
         }
 
-        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(SysUser::getUsername, registerDto.getUsername())
-                .or().eq(SysUser::getEmail, registerDto.getEmail());
-        SysUser sysUser = sysUserMapper.selectOne(queryWrapper);
-        if (ObjectUtil.isNotNull(sysUser)) {
-            if (sysUser.getUsername().equals(registerDto.getUsername())) {
-                throw new BlogException(BlogConstants.ExistUserName);// 用户名已存在
-            } else if (sysUser.getEmail().equals(registerDto.getEmail())) {
-                throw new BlogException(BlogConstants.ExistEmail);// 邮箱已存在
-            }
+        // 校验验证码是否正确
+        if (!registerDto.getEmailCheckCode()
+            .equals(redisComponent.getEmailCheckCode(registerDto.getEmail(), MailEnum.REGISTER.getType()))) {
+            throw new BlogException(BlogConstants.CheckCodeError);
+        }
+
+        // 分别检查用户名和邮箱是否存在，避免or条件导致的逻辑错误
+        LambdaQueryWrapper<SysUser> usernameQuery = new LambdaQueryWrapper<>();
+        usernameQuery.eq(SysUser::getUsername, registerDto.getUsername());
+        SysUser existUsername = sysUserMapper.selectOne(usernameQuery);
+        if (ObjectUtil.isNotNull(existUsername)) {
+            throw new BlogException(BlogConstants.ExistUserName);// 用户名已存在
+        }
+
+        LambdaQueryWrapper<SysUser> emailQuery = new LambdaQueryWrapper<>();
+        emailQuery.eq(SysUser::getEmail, registerDto.getEmail());
+        SysUser existEmail = sysUserMapper.selectOne(emailQuery);
+        if (ObjectUtil.isNotNull(existEmail)) {
+            throw new BlogException(BlogConstants.ExistEmail);// 邮箱已存在
         }
 
         // 注册用户
