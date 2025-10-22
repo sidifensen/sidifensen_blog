@@ -160,8 +160,8 @@ const fetchUserInfo = async () => {
       await checkUserFollowStatus();
     }
   } catch (error) {
-    ElMessage.error("获取用户信息失败");
     console.error("获取用户信息失败:", error);
+    ElMessage.error("获取用户信息失败");
   } finally {
     userLoading.value = false;
   }
@@ -179,6 +179,7 @@ const fetchArticleStatistics = async () => {
     }
   } catch (error) {
     console.error("获取文章统计信息失败:", error);
+    ElMessage.error("获取文章统计信息失败");
   }
 };
 

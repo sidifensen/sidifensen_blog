@@ -64,7 +64,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
     @Resource
     private RabbitTemplate rabbitTemplate;
 
-    //创建线程池
+    // 创建线程池
     ExecutorService executorService = new ThreadPoolExecutor(
             2, 4, 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(500),
@@ -106,7 +106,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
 
             HashMap<String, Object> sendEmail = new HashMap<>();
             sendEmail.put("text", String.format(MessageConstants.LINK_NEED_REVIEW, link.getId(), link.getName()));
-            rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
+            rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key,sendEmail);
         });
     }
 
@@ -180,11 +180,11 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
         try {
             // 构建查询条件
             LambdaQueryWrapper<Link> qw = new LambdaQueryWrapper<Link>()
-                    .eq(ObjectUtil.isNotEmpty(linkSearchDto.getExamineStatus()), Link::getExamineStatus, linkSearchDto.getExamineStatus())
+                    .eq(ObjectUtil.isNotEmpty(linkSearchDto.getExamineStatus()), Link::getExamineStatus,linkSearchDto.getExamineStatus())
                     .eq(ObjectUtil.isNotEmpty(linkSearchDto.getUserId()), Link::getUserId, linkSearchDto.getUserId())
                     .like(StrUtil.isNotBlank(linkSearchDto.getKeyword()), Link::getName, linkSearchDto.getKeyword())
-                    .ge(ObjectUtil.isNotEmpty(linkSearchDto.getCreateTimeStart()), Link::getCreateTime, linkSearchDto.getCreateTimeStart())
-                    .le(ObjectUtil.isNotEmpty(linkSearchDto.getCreateTimeEnd()), Link::getCreateTime, linkSearchDto.getCreateTimeEnd())
+                    .ge(ObjectUtil.isNotEmpty(linkSearchDto.getCreateTimeStart()), Link::getCreateTime,linkSearchDto.getCreateTimeStart())
+                    .le(ObjectUtil.isNotEmpty(linkSearchDto.getCreateTimeEnd()), Link::getCreateTime,linkSearchDto.getCreateTimeEnd())
                     .orderByDesc(Link::getCreateTime);
 
             // 查询友链列表
@@ -310,7 +310,6 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
         }
     }
 
-
     /**
      * 将Link列表转换为AdminLinkVo列表，并填充用户信息
      *
@@ -321,6 +320,11 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
         if (ObjectUtil.isEmpty(linkList)) {
             return List.of();
         }
+
+        // 判断当前用户是否是admin角色
+        SysUser currentUser = SecurityUtils.getUser();
+        boolean isAdmin = currentUser.getSysRoles().stream()
+                .anyMatch(role -> "admin".equals(role.getRole()));
 
         // 提取所有用户ID
         List<Integer> userIds = linkList.stream()
@@ -334,8 +338,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
             List<SysUser> userList = sysUserMapper.selectList(
                     new LambdaQueryWrapper<SysUser>()
                             .in(SysUser::getId, userIds)
-                            .select(SysUser::getId, SysUser::getNickname)
-            );
+                            .select(SysUser::getId, SysUser::getNickname));
             userNicknameMap = userList.stream()
                     .collect(Collectors.toMap(SysUser::getId, SysUser::getNickname));
         }
@@ -347,6 +350,12 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
             BeanUtil.copyProperties(link, adminLinkVo);
             // 设置用户昵称
             adminLinkVo.setUserNickname(finalUserNicknameMap.get(link.getUserId()));
+
+            // 如果不是admin角色，移除邮箱信息以保护用户隐私
+            if (!isAdmin) {
+                adminLinkVo.setEmail(null);
+            }
+
             return adminLinkVo;
         }).collect(Collectors.toList());
     }
@@ -367,8 +376,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
             rabbitTemplate.convertAndSend(
                     RabbitMQConstants.Link_Approval_Exchange,
                     RabbitMQConstants.Link_Approval_Routing_Key,
-                    emailMessage
-            );
+                    emailMessage);
 
         } catch (Exception e) {
             log.error("发送友链审核通过邮件失败，友链ID：{}，邮箱：{}，错误：{}",
