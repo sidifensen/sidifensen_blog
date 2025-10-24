@@ -112,9 +112,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             List<SysUser> users = sysUserMapper
                     .selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIds));
             Map<Integer, String> userIdToNicknameMap = users.stream()
-                    .collect(Collectors.toMap(SysUser::getId, SysUser::getNickname));
+                    .collect(Collectors.toMap(
+                            SysUser::getId,
+                            user -> user.getNickname() != null ? user.getNickname() : "",
+                            (v1, v2) -> v1));
             Map<Integer, String> userIdToAvatarMap = users.stream()
-                    .collect(Collectors.toMap(SysUser::getId, SysUser::getAvatar));
+                    .collect(Collectors.toMap(
+                            SysUser::getId,
+                            user -> user.getAvatar() != null ? user.getAvatar() : "",
+                            (v1, v2) -> v1));
             articleVoList.forEach(articleVo -> articleVo.setNickname(userIdToNicknameMap.get(articleVo.getUserId())));
             articleVoList.forEach(articleVo -> articleVo.setAvatar(userIdToAvatarMap.get(articleVo.getUserId())));
 
@@ -794,7 +800,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
                 // 创建用户ID到用户昵称的映射
                 Map<Integer, String> userIdToNicknameMap = users.stream()
-                        .collect(Collectors.toMap(SysUser::getId, SysUser::getNickname));
+                        .collect(Collectors.toMap(
+                                SysUser::getId,
+                                user -> user.getNickname() != null ? user.getNickname() : "",
+                                (v1, v2) -> v1));
 
                 // 为每篇文章设置用户昵称
                 articleVoList.forEach(articleVo -> {
@@ -830,7 +839,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 List<SysUser> users = sysUserMapper.selectList(
                         new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIds));
                 Map<Integer, String> userMap = users.stream()
-                        .collect(Collectors.toMap(SysUser::getId, SysUser::getNickname));
+                        .collect(Collectors.toMap(
+                                SysUser::getId,
+                                user -> user.getNickname() != null ? user.getNickname() : "",
+                                (v1, v2) -> v1));
 
                 // 设置用户昵称
                 articleVos.forEach(articleVo -> {
