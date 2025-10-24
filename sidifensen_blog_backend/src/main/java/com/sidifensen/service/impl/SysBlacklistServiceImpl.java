@@ -40,7 +40,8 @@ import java.util.Map;
  */
 @Service
 @Slf4j
-public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, SysBlacklist> implements SysBlacklistService {
+public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, SysBlacklist>
+        implements SysBlacklistService {
 
     @Resource
     private RedisComponent redisComponent;
@@ -111,8 +112,7 @@ public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, Sys
                 messageDto.setIsRead(0); // 未读
                 messageDto.setContent(String.format(
                         "黑名单拉黑通知：用户ID为 %s，IP为 %s，地址为 %s 的用户因 %s 被拉入黑名单，封禁时长：%s",
-                        userId, ip, address, reason, banDuration
-                ));
+                        userId, ip, address, reason, banDuration));
                 messageService.sendToAdmin(messageDto);
             } catch (Exception e) {
                 log.error("发送站内消息给管理员失败", e);
@@ -131,8 +131,7 @@ public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, Sys
                 rabbitTemplate.convertAndSend(
                         RabbitMQConstants.Blacklist_Exchange,
                         RabbitMQConstants.Blacklist_Routing_Key,
-                        emailMessage
-                );
+                        emailMessage);
             } catch (Exception e) {
                 log.error("发送 RabbitMQ 消息失败", e);
             }
@@ -142,8 +141,66 @@ public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, Sys
         }
     }
 
+    @Override
+    public void updateBlacklist(String identifier, String reason, long banDurationSeconds) {
+        try {
+            // 解析用户标识
+            Integer userId = null;
+            String ip = null;
+            Integer type = null;
+
+            if (identifier.startsWith("user:")) {
+                type = BlacklistTypeEnum.USER.getCode();
+                userId = Integer.parseInt(identifier.substring(5));
+            } else if (identifier.startsWith("ip:")) {
+                type = BlacklistTypeEnum.IP.getCode();
+                ip = identifier.substring(3);
+            } else {
+                log.error("无效的用户标识格式: {}", identifier);
+                return;
+            }
+
+            // 查询现有的黑名单记录
+            LambdaQueryWrapper<SysBlacklist> queryWrapper = new LambdaQueryWrapper<SysBlacklist>()
+                    .eq(SysBlacklist::getType, type)
+                    .orderByDesc(SysBlacklist::getCreateTime)
+                    .last("LIMIT 1");
+
+            if (userId != null) {
+                queryWrapper.eq(SysBlacklist::getUserId, userId);
+            } else {
+                queryWrapper.eq(SysBlacklist::getIp, ip);
+            }
+
+            SysBlacklist blacklist = this.getOne(queryWrapper);
+
+            if (blacklist == null) {
+                // 如果没有找到记录，则创建新记录
+                addToBlacklist(identifier, reason, banDurationSeconds);
+                return;
+            }
+
+            // 更新黑名单记录
+            Date now = new Date();
+            blacklist.setReason(reason);
+            blacklist.setBanTime(now);
+            blacklist.setExpireTime(new Date(now.getTime() + banDurationSeconds * 1000));
+
+            boolean result = this.updateById(blacklist);
+            if (!result) {
+                log.error("更新黑名单记录失败 - 标识: {}", identifier);
+            } else {
+                log.info("黑名单记录已升级 - 标识: {}, 新原因: {}, 新封禁时长: {}秒", identifier, banDurationSeconds);
+            }
+
+        } catch (Exception e) {
+            log.error("更新黑名单记录失败 - 标识: {}, 原因: {}", identifier, reason, e);
+        }
+    }
+
     /**
      * 格式化封禁时长
+     * 
      * @param banDurationSeconds 封禁时长（秒）
      * @return 格式化后的时长字符串
      */
@@ -227,16 +284,23 @@ public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, Sys
                         .eq(SysBlacklist::getUserId, blacklistSearchDto.getUserId());
             } else {
                 // 根据黑名单类型筛选
-                queryWrapper.eq(blacklistSearchDto.getType() != null, SysBlacklist::getType, blacklistSearchDto.getType());
+                queryWrapper.eq(blacklistSearchDto.getType() != null, SysBlacklist::getType,
+                        blacklistSearchDto.getType());
             }
 
             // 根据拉黑时间范围筛选
-            queryWrapper.ge(blacklistSearchDto.getBanTimeStart() != null, SysBlacklist::getBanTime, blacklistSearchDto.getBanTimeStart())
-                    .le(blacklistSearchDto.getBanTimeEnd() != null, SysBlacklist::getBanTime, blacklistSearchDto.getBanTimeEnd());
+            queryWrapper
+                    .ge(blacklistSearchDto.getBanTimeStart() != null, SysBlacklist::getBanTime,
+                            blacklistSearchDto.getBanTimeStart())
+                    .le(blacklistSearchDto.getBanTimeEnd() != null, SysBlacklist::getBanTime,
+                            blacklistSearchDto.getBanTimeEnd());
 
             // 根据到期时间范围筛选
-            queryWrapper.ge(blacklistSearchDto.getExpireTimeStart() != null, SysBlacklist::getExpireTime, blacklistSearchDto.getExpireTimeStart())
-                    .le(blacklistSearchDto.getExpireTimeEnd() != null, SysBlacklist::getExpireTime, blacklistSearchDto.getExpireTimeEnd());
+            queryWrapper
+                    .ge(blacklistSearchDto.getExpireTimeStart() != null, SysBlacklist::getExpireTime,
+                            blacklistSearchDto.getExpireTimeStart())
+                    .le(blacklistSearchDto.getExpireTimeEnd() != null, SysBlacklist::getExpireTime,
+                            blacklistSearchDto.getExpireTimeEnd());
 
             List<SysBlacklist> blacklistList = list(queryWrapper);
             return blacklistList;
@@ -313,4 +377,3 @@ public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, Sys
         }
     }
 }
-

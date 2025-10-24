@@ -93,32 +93,54 @@ public class RateLimitAspect {
             // 检查是否超过限流限制
             allowed = currentCount <= rateLimit.value();
 
-            // 根据访问次数检查是否需要加入黑名单
-            BlacklistStrategy strategy = BlacklistStrategy.getStrategyByAccessCount(currentCount.intValue());
-            if (strategy != null) {
-                // 构建黑名单key，检查用户是否已经在黑名单中
+            // 根据访问次数检查是否需要加入黑名单或升级黑名单等级
+            BlacklistStrategy newStrategy = BlacklistStrategy.getStrategyByAccessCount(currentCount.intValue());
+            if (newStrategy != null) {
+                // 构建黑名单key
                 String blacklistKey = RedisConstants.Blacklist + identifier;
+                // 构建接口路径
+                String apiPath = className + ":" + method.getName();
 
-                // 只有当用户不在黑名单中时，才执行加入黑名单的操作
-                // 这样可以避免重复插入数据库记录和打印多条日志
-                if (!redisUtils.hasKey(blacklistKey)) {
-                    // 构建接口路径
-                    String apiPath = className + ":" + method.getName();
+                // 检查用户是否已经在黑名单中
+                if (redisUtils.hasKey(blacklistKey)) {
+                    // 用户已在黑名单中，检查是否需要升级策略
+                    String currentReasonInRedis = (String) redisUtils.get(blacklistKey);
+                    BlacklistStrategy currentStrategy = BlacklistStrategy.fromDetailedReason(currentReasonInRedis);
 
-                    // 生成详细的违规原因（包含接口和访问次数）
-                    String detailedReason = strategy.getDetailedReason(apiPath, currentCount.intValue());
+                    // 如果新策略级别更高，则升级封禁
+                    if (newStrategy.isHigherThan(currentStrategy)) {
+                        // 生成新的详细违规原因
+                        String newDetailedReason = newStrategy.getDetailedReason(apiPath, currentCount.intValue());
+
+                        // 更新Redis黑名单
+                        redisUtils.set(blacklistKey, newDetailedReason, newStrategy.getBanDuration(), TimeUnit.SECONDS);
+
+                        // 更新数据库记录
+                        sysBlacklistService.updateBlacklist(identifier, newDetailedReason,newStrategy.getBanDuration());
+
+                        // 延长计数器过期时间，与新的封禁时长保持一致
+                        redisUtils.expire(rateLimitKey, newStrategy.getBanDuration(), TimeUnit.SECONDS);
+
+                        log.warn("黑名单等级升级 - 用户标识: {}, 访问接口: {}, 访问次数: {}, 原策略: {}, 新策略: {}, 新封禁时长: {}秒",
+                                identifier, apiPath, currentCount,
+                                currentStrategy != null ? currentStrategy.getDescription() : "未知",
+                                newStrategy.getDescription(), newStrategy.getBanDuration());
+                    }
+                } else {
+                    // 用户不在黑名单中，首次加入黑名单
+                    String detailedReason = newStrategy.getDetailedReason(apiPath, currentCount.intValue());
 
                     // 加入Redis黑名单（快速检查）
-                    redisUtils.set(blacklistKey, detailedReason, strategy.getBanDuration(), TimeUnit.SECONDS);
+                    redisUtils.set(blacklistKey, detailedReason, newStrategy.getBanDuration(), TimeUnit.SECONDS);
 
                     // 保存到数据库（持久化记录）
-                    sysBlacklistService.addToBlacklist(identifier, detailedReason, strategy.getBanDuration());
+                    sysBlacklistService.addToBlacklist(identifier, detailedReason, newStrategy.getBanDuration());
+
+                    // 延长计数器过期时间，与封禁时长保持一致
+                    redisUtils.expire(rateLimitKey, newStrategy.getBanDuration(), TimeUnit.SECONDS);
 
                     log.warn("用户加入黑名单 - 用户标识: {}, 访问接口: {}, 访问次数: {}, 策略: {}, 封禁时长: {}秒",
-                            identifier, apiPath, currentCount, strategy.getDescription(), strategy.getBanDuration());
-
-                    // 清除限流计数器
-                    redisUtils.del(rateLimitKey);
+                            identifier, apiPath, currentCount, newStrategy.getDescription(),newStrategy.getBanDuration());
                 }
             }
         } catch (Exception e) {
@@ -128,8 +150,7 @@ public class RateLimitAspect {
 
         if (!allowed) {
             // 抛出限流异常
-            String message = StrUtil.isNotBlank(rateLimit.message()) ? rateLimit.message()
-                    : BlogConstants.RateLimitExceeded;
+            String message = StrUtil.isNotBlank(rateLimit.message()) ? rateLimit.message(): BlogConstants.RateLimitExceeded;
             log.warn("限流触发 - 用户标识: {}, 类: {}, 方法: {}, 限制: {}次/{}秒",
                     identifier, className, method.getName(), rateLimit.value(), rateLimit.period());
             throw new RateLimitException(message);

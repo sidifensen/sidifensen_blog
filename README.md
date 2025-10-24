@@ -851,4 +851,14 @@ chmod +x docker.sh
 - 📚 作为企业级项目开发参考
 - 🔧 二次开发和功能扩展
 
+## 💬 交流群
+
+<div align="center">
+
+**欢迎加入 QQ 交流群，一起学习讨论！**
+
+<img src="img/qq交流群.jpg" alt="QQ交流群" width="400"/>
+
+</div>
+
 </div>

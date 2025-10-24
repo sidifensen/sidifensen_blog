@@ -65,12 +65,47 @@ public enum BlacklistStrategy {
     /**
      * 生成包含接口和访问次数的详细违规原因
      *
-     * @param apiPath 接口路径（格式：ClassName:methodName）
+     * @param apiPath     接口路径（格式：ClassName:methodName）
      * @param accessCount 访问次数
      * @return 详细的违规原因
      */
     public String getDetailedReason(String apiPath, int accessCount) {
         return String.format("访问接口: %s, 访问次数: %d次, %s", apiPath, accessCount, this.description);
     }
-}
 
+    /**
+     * 比较策略级别，判断当前策略是否比另一个策略级别更高
+     *
+     * @param other 另一个策略
+     * @return 如果当前策略级别更高返回true
+     */
+    public boolean isHigherThan(BlacklistStrategy other) {
+        if (other == null) {
+            return true;
+        }
+        return this.accessCount > other.accessCount;
+    }
+
+    /**
+     * 从详细原因字符串中提取策略
+     * 格式：访问接口: xxx, 访问次数: xxx次, 轻度/中度/重度违规,封禁xxx
+     *
+     * @param detailedReason 详细原因
+     * @return 对应的策略，如果无法解析则返回null
+     */
+    public static BlacklistStrategy fromDetailedReason(String detailedReason) {
+        if (detailedReason == null || detailedReason.isEmpty()) {
+            return null;
+        }
+
+        // 根据描述关键字判断策略
+        if (detailedReason.contains(HIGH.description)) {
+            return HIGH;
+        } else if (detailedReason.contains(MEDIUM.description)) {
+            return MEDIUM;
+        } else if (detailedReason.contains(LOW.description)) {
+            return LOW;
+        }
+        return null;
+    }
+}
