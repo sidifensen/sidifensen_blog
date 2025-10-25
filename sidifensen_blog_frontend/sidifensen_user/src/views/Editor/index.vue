@@ -981,10 +981,14 @@ const handleClickPublish = async () => {
     const articleId = route.query.articleId;
     if (articleId && !isNaN(articleId)) {
       // 存在文章ID，调用更新接口
+      // 设置编辑状态为已发布
+      article.value.editStatus = 0;
       await updateArticle(article.value);
       ElMessage.success("文章更新成功!");
     } else {
       // 不存在文章ID，调用新增接口
+      // 设置编辑状态为已发布
+      article.value.editStatus = 0;
       await addArticle(article.value);
       ElMessage.success("文章发布成功!");
     }
@@ -992,10 +996,9 @@ const handleClickPublish = async () => {
     // 标记内容未修改，避免刷新提示
     isModified.value = false;
 
-    // 延迟跳转，让用户看到成功提示
+    // 延迟跳转到文章管理页面，让用户看到成功提示
     // setTimeout(() => {
-    // 返回上一页
-    router.go(-1);
+      router.push("/creation/articlemanage");
     // }, 1000);
   } catch (error) {
     const articleId = route.query.articleId;
@@ -1033,7 +1036,17 @@ const handleSaveDraft = async () => {
     // 确保标签数据同步到article对象中
     article.value.tag = tags.value.join(",");
 
-    await saveDraft(article.value);
+    const response = await saveDraft(article.value);
+
+    // 保存草稿成功后，更新文章ID和路由参数
+    if (response.data && response.data.data && response.data.data.id) {
+      article.value.id = response.data.data.id;
+      // 更新路由参数，确保后续发布时能正确识别为更新操作
+      router.replace({
+        query: { ...route.query, articleId: response.data.data.id },
+      });
+    }
+
     ElMessage.success("草稿保存成功!");
   } catch (error) {
     console.error("草稿保存失败:", error);

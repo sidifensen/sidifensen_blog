@@ -39,7 +39,7 @@ public class ArticleController {
     @RateLimit
     @GetMapping("/listAll")
     public Result getAllArticleList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
-                                    @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<ArticleVo>> articleVoList = articleService.getAllArticleList(pageNum, pageSize);
         return Result.success(articleVoList);
     }
@@ -52,8 +52,8 @@ public class ArticleController {
     @RateLimit
     @PostMapping("/user/list")
     public Result getUserArticleList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
-                                     @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
-                                     @RequestBody @Valid ArticleStatusDto articleStatusDto) {
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
+            @RequestBody @Valid ArticleStatusDto articleStatusDto) {
         PageVo<List<ArticleVo>> articleVoList = articleService.getUserArticleList(pageNum, pageSize, articleStatusDto);
         return Result.success(articleVoList);
     }
@@ -66,8 +66,8 @@ public class ArticleController {
     @RateLimit
     @PostMapping("/manage/list")
     public Result getArticleMangeList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
-                                      @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
-                                      @RequestBody @Valid ArticleStatusDto articleStatusDto) {
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
+            @RequestBody @Valid ArticleStatusDto articleStatusDto) {
         PageVo<List<ArticleVo>> articleVoList = articleService.getArticleMangeList(pageNum, pageSize, articleStatusDto);
         return Result.success(articleVoList);
     }
@@ -132,8 +132,8 @@ public class ArticleController {
     @RateLimit(20)
     @GetMapping("/search")
     public Result searchArticleByTitle(@RequestParam @NotNull(message = "搜索关键字不能为空") String title,
-                                       @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
-                                       @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<ArticleVo>> articleVoList = articleService.searchArticleByTitle(title, pageNum, pageSize);
         return Result.success(articleVoList);
     }
@@ -149,8 +149,8 @@ public class ArticleController {
     @RateLimit(20)
     @GetMapping("/search/tag")
     public Result searchArticleByTag(@RequestParam @NotNull(message = "标签不能为空") String tag,
-                                     @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
-                                     @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<ArticleVo>> articleVoList = articleService.searchArticleByTag(tag, pageNum, pageSize);
         return Result.success(articleVoList);
     }
@@ -165,7 +165,7 @@ public class ArticleController {
     @RateLimit
     @GetMapping("/hot")
     public Result getHotArticleList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
-                                    @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<HotArticleVo>> articleVoList = articleService.getHotArticleList(pageNum, pageSize);
         return Result.success(articleVoList);
     }
@@ -213,7 +213,7 @@ public class ArticleController {
     @PostMapping("/saveDraft")
     public Result saveDraft(@RequestBody @Valid ArticleDto articleDto) {
         articleService.saveDraft(articleDto);
-        return Result.success();
+        return Result.success(articleDto);
     }
 
     /**
@@ -249,7 +249,6 @@ public class ArticleController {
         List<ArticleVo> articleVoList = articleService.adminGetArticleList();
         return Result.success(articleVoList);
     }
-
 
     /**
      * 管理员根据用户ID获取文章列表

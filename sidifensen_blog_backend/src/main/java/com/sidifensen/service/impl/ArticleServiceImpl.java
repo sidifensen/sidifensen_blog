@@ -541,6 +541,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Article article = BeanUtil.copyProperties(articleDto, Article.class);
         Integer userId = SecurityUtils.getUserId();
         article.setUserId(userId);
+        // 如果前端没有设置editStatus，默认为已发布状态
+        if (article.getEditStatus() == null) {
+            article.setEditStatus(EditStatusEnum.PUBLISHED.getCode());
+        }
         if (!articleMapper.insertOrUpdate(article)) {
             throw new BlogException(BlogConstants.AddArticleError);
         }
@@ -642,6 +646,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setUserId(SecurityUtils.getUserId());
         article.setEditStatus(EditStatusEnum.DRAFT.getCode());
         articleMapper.insertOrUpdate(article);
+        // 将生成的ID回写到DTO中，供前端使用
+        articleDto.setId(article.getId());
     }
 
     @Override

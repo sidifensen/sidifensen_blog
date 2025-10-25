@@ -102,6 +102,8 @@
                     <span v-if="article.examineStatus !== 1" class="examine-status" :class="getExamineStatusClass(article.examineStatus)">
                       {{ getExamineStatusText(article.examineStatus) }}
                     </span>
+                    <span v-if="article.editStatus === 1" class="edit-status draft-status"> 草稿 </span>
+                    <span v-if="article.editStatus === 2" class="edit-status recycle-status"> 回收站 </span>
                     <span class="type-badge" :class="article.reprintType === 0 ? 'original' : 'reprint'">
                       {{ article.reprintType === 0 ? "原创" : "转载" }}
                     </span>
@@ -716,6 +718,59 @@ onUnmounted(() => {
 
                 &.status-rejected {
                   background-color: #f56c6c;
+                }
+              }
+
+              .edit-status {
+                position: relative;
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 10px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                color: #ffffff;
+                border: 2px solid transparent;
+                background-clip: padding-box;
+
+                &::before {
+                  content: "";
+                  position: absolute;
+                  top: -2px;
+                  left: -2px;
+                  right: -2px;
+                  bottom: -2px;
+                  border-radius: 22px;
+                  z-index: -1;
+                }
+
+                &::after {
+                  content: "●";
+                  position: absolute;
+                  top: 50%;
+                  left: 6px;
+                  transform: translateY(-50%);
+                  font-size: 6px;
+                }
+
+                // 草稿状态 - 蓝色系
+                &.draft-status {
+                  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                  box-shadow: 0 2px 8px rgba(79, 172, 254, 0.4);
+
+                  &::before {
+                    background: linear-gradient(135deg, #4facfe, #00f2fe, #667eea, #764ba2);
+                  }
+                }
+
+                // 回收站状态 - 红色系
+                &.recycle-status {
+                  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+                  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+
+                  &::before {
+                    background: linear-gradient(135deg, #ff6b6b, #ee5a24, #f093fb, #f5576c);
+                  }
                 }
               }
 
