@@ -87,4 +87,18 @@ public class RedisConstants {
      */
     public static final long AI_CONTENT_HASH_EXPIRE_TIME = 5 * 60;
 
+    /**
+     * 私信未读数缓存键前缀
+     * 格式：sidifensen_blog:PrivateMessageUnreadCount:用户ID
+     * 存储结构：计数器，记录用户的未读私信数
+     */
+    public static final String PRIVATE_MESSAGE_UNREAD_COUNT_KEY = RedisKeyPrefix + "PrivateMessageUnreadCount:";
+
+    /**
+     * 用户在线状态缓存键前缀
+     * 格式：sidifensen_blog:UserOnline:用户ID
+     * 存储结构：布尔值，true表示在线，false表示离线
+     */
+    public static final String USER_ONLINE_STATUS_KEY = RedisKeyPrefix + "UserOnline:";
+
 }

@@ -168,6 +168,14 @@ public class BlogConstants {
     public static final String AiDuplicateRequest = "请勿重复提交相同内容";
     public static final String AiExtractSummaryError = "AI提取摘要失败";
 
+    // 私信相关错误信息
+    public static final String NotFoundPrivateMessage = "私信不存在";
+    public static final String CannotRevokeOthersMessage = "不能撤回别人的消息";
+    public static final String MessageRevokeTimeExpired = "消息发送超过2分钟，无法撤回";
+    public static final String MessageAlreadyRevoked = "消息已被撤回";
+    public static final String NotFoundConversation = "会话不存在";
+    public static final String RevokedMessage = "撤回了一条消息";
+
     // 通用错误信息
     public static final String ParamError = "参数错误";
     public static final String SystemInternalError = "系统内部错误";

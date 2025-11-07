@@ -52,7 +52,6 @@ public class RedisUtils {
         }
     }
 
-
     /**
      * 根据key 获取过期时间
      *
@@ -101,7 +100,7 @@ public class RedisUtils {
         }
     }
 
-// ============================String=============================
+    // ============================String=============================
 
     /**
      * 普通缓存获取
@@ -111,6 +110,19 @@ public class RedisUtils {
      */
     public Object get(String key) {
         return key == null ? null : redisTemplate.opsForValue().get(key);
+    }
+
+    /**
+     * 批量获取多个key的值
+     *
+     * @param keys 键列表
+     * @return 对应的值列表
+     */
+    public List<Object> multiGet(List<String> keys) {
+        if (keys == null || keys.isEmpty()) {
+            return null;
+        }
+        return redisTemplate.opsForValue().multiGet(keys);
     }
 
     /**
@@ -124,7 +136,6 @@ public class RedisUtils {
         redisTemplate.opsForValue().set(key, value);
         return true;
     }
-
 
     /**
      * 普通缓存放入并设置时间
@@ -161,7 +172,6 @@ public class RedisUtils {
         return true;
     }
 
-
     /**
      * 递增
      *
@@ -190,7 +200,7 @@ public class RedisUtils {
         return redisTemplate.opsForValue().increment(key, -delta);
     }
 
-// ================================Map=================================
+    // ================================Map=================================
 
     /**
      * HashGet
@@ -203,7 +213,6 @@ public class RedisUtils {
         return redisTemplate.opsForHash().get(key, item);
     }
 
-
     /**
      * 获取hashKey对应的value
      *
@@ -213,7 +222,6 @@ public class RedisUtils {
     public Object hmget(String key, Object hashKey) {
         return redisTemplate.opsForHash().get(key, hashKey);
     }
-
 
     /**
      * 批量获取hash中的多个字段值
@@ -252,14 +260,13 @@ public class RedisUtils {
         return true;
     }
 
-
     /**
      * 向一张hash表中放入数据,如果不存在将创建
      *
      * @param key     键
      * @param hashKey 项
      * @param value   值
-     * @param time    时间(秒)  注意:如果已存在的hash表有时间,这里将会替换原有的时间
+     * @param time    时间(秒) 注意:如果已存在的hash表有时间,这里将会替换原有的时间
      * @return true 成功 false失败
      */
     public boolean hset(String key, Object hashKey, Object value, long time, TimeUnit timeUnit) {
@@ -269,7 +276,6 @@ public class RedisUtils {
         }
         return true;
     }
-
 
     /**
      * 删除hash表中的值
@@ -392,7 +398,7 @@ public class RedisUtils {
      *
      * @param key   键
      * @param start 开始
-     * @param end   结束  0 到 -1代表所有值
+     * @param end   结束 0 到 -1代表所有值
      * @return
      */
     public List<Object> lGet(String key, long start, long end) {
@@ -413,7 +419,7 @@ public class RedisUtils {
      * 通过索引 获取list中的值
      *
      * @param key   键
-     * @param index 索引  index>=0时， 0 表头，1 第二个元素，依次类推；index<0时，-1，表尾，-2倒数第二个元素，依次类推
+     * @param index 索引 index>=0时， 0 表头，1 第二个元素，依次类推；index<0时，-1，表尾，-2倒数第二个元素，依次类推
      * @return
      */
     public Object lGetIndex(String key, long index) {
@@ -536,7 +542,7 @@ public class RedisUtils {
         if (CollectionUtils.isEmpty(values)) {
             return List.of();
         }
-        
+
         // 使用Pipeline批量执行命令，减少网络往返次数
         // Pipeline会自动收集每个命令的返回值
         return redisTemplate.executePipelined(new SessionCallback<Object>() {
@@ -643,6 +649,22 @@ public class RedisUtils {
      */
     public void rename(String oldKey, String newKey) {
         redisTemplate.rename(oldKey, newKey);
+    }
+
+    /**
+     * 根据模式删除匹配的所有key
+     * 注意：在生产环境中使用keys命令可能会影响性能，建议谨慎使用
+     *
+     * @param pattern 匹配模式，如：sidifensen_blog:RateLimit:*:user:123
+     * @return 删除的key数量
+     */
+    public long deleteByPattern(String pattern) {
+        Set<String> keys = redisTemplate.keys(pattern);
+        if (keys != null && !keys.isEmpty()) {
+            Long deletedCount = redisTemplate.delete(keys);
+            return deletedCount != null ? deletedCount : 0;
+        }
+        return 0;
     }
 
 }

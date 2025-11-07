@@ -1,6 +1,5 @@
 package com.sidifensen.redis;
 
-
 import com.sidifensen.domain.constants.RedisConstants;
 import com.sidifensen.domain.entity.SysBlacklist;
 import com.sidifensen.domain.enums.BlacklistTypeEnum;
@@ -27,13 +26,13 @@ public class RedisComponent {
     ExecutorService executorService = new ThreadPoolExecutor(
             2, 4, 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(500),
-            new MyThreadFactory("RedisComponent")
-    );
+            new MyThreadFactory("RedisComponent"));
 
     // 保存登录验证码
     public String saveCheckCode(String checkCode) {
         String checkCodeKey = UUID.randomUUID().toString().replace("-", "");
-        redisUtils.set(RedisConstants.CheckCode + checkCodeKey, checkCode, RedisConstants.CHECK_CODE_EXPIRE_TIME, TimeUnit.SECONDS);
+        redisUtils.set(RedisConstants.CheckCode + checkCodeKey, checkCode, RedisConstants.CHECK_CODE_EXPIRE_TIME,
+                TimeUnit.SECONDS);
         return checkCodeKey;
     }
 
@@ -49,7 +48,8 @@ public class RedisComponent {
 
     // 保存邮箱验证码
     public void saveEmailCheckCode(String email, String type, String checkCode) {
-        redisUtils.set(RedisConstants.EmailCheckCode + type + ":" + email, checkCode, RedisConstants.EMAIL_CHECK_CODE_EXPIRE_TIME, TimeUnit.SECONDS);
+        redisUtils.set(RedisConstants.EmailCheckCode + type + ":" + email, checkCode,
+                RedisConstants.EMAIL_CHECK_CODE_EXPIRE_TIME, TimeUnit.SECONDS);
     }
 
     // 获取邮箱验证码
@@ -61,7 +61,6 @@ public class RedisComponent {
     public void cleanEmailCheckCode(String email, String type) {
         redisUtils.del(RedisConstants.EmailCheckCode + type + ":" + email);
     }
-
 
     // ==================== 浏览历史相关方法 ====================
 
@@ -133,6 +132,7 @@ public class RedisComponent {
     /**
      * 删除黑名单Redis缓存
      * 根据黑名单类型和标识符删除对应的Redis缓存
+     * 包括：黑名单缓存、黑名单日志限流缓存、用户相关的限流缓存
      *
      * @param blacklist 黑名单实体对象
      */
@@ -143,9 +143,12 @@ public class RedisComponent {
 
         try {
             String identifier;
+            Integer userId = null;
+
             if (blacklist.getType().equals(BlacklistTypeEnum.USER.getCode())) {
                 // 用户类型黑名单
                 identifier = "user:" + blacklist.getUserId();
+                userId = blacklist.getUserId();
             } else if (blacklist.getType().equals(BlacklistTypeEnum.IP.getCode())) {
                 // IP类型黑名单
                 identifier = "ip:" + blacklist.getIp();
@@ -162,6 +165,21 @@ public class RedisComponent {
             String logKey = RedisConstants.BlacklistLog + identifier;
             redisUtils.del(logKey);
 
+            // 如果是用户类型黑名单，删除该用户相关的所有限流缓存
+            if (userId != null) {
+                try {
+                    // 删除该用户相关的所有限流key
+                    // 格式：sidifensen_blog:RateLimit:*:user:userId
+                    String rateLimitPattern = RedisConstants.RateLimit + "*:user:" + userId;
+                    long deletedCount = redisUtils.deleteByPattern(rateLimitPattern);
+                    if (deletedCount > 0) {
+                        log.info("成功删除用户ID={}的{}个限流缓存key", userId, deletedCount);
+                    }
+                } catch (Exception ex) {
+                    log.error("删除用户ID={}的限流缓存失败", userId, ex);
+                }
+            }
+
         } catch (Exception e) {
             log.error("删除黑名单Redis缓存失败 - 黑名单ID: {}", blacklist.getId(), e);
         }
@@ -170,6 +188,7 @@ public class RedisComponent {
     /**
      * 批量删除黑名单Redis缓存
      * 根据黑名单列表批量删除对应的Redis缓存
+     * 包括：黑名单缓存、黑名单日志限流缓存、用户相关的限流缓存
      *
      * @param blacklistList 黑名单实体对象列表
      */
@@ -181,6 +200,8 @@ public class RedisComponent {
         try {
             // 收集所有需要删除的Redis key
             List<String> keysToDelete = new ArrayList<>();
+            // 收集需要按模式删除的用户ID列表
+            List<Integer> userIdsToCleanRateLimit = new ArrayList<>();
 
             for (SysBlacklist blacklist : blacklistList) {
                 if (blacklist == null) {
@@ -191,6 +212,8 @@ public class RedisComponent {
                 if (blacklist.getType().equals(BlacklistTypeEnum.USER.getCode())) {
                     // 用户类型黑名单
                     identifier = "user:" + blacklist.getUserId();
+                    // 记录需要清理限流缓存的用户ID
+                    userIdsToCleanRateLimit.add(blacklist.getUserId());
                 } else if (blacklist.getType().equals(BlacklistTypeEnum.IP.getCode())) {
                     // IP类型黑名单
                     identifier = "ip:" + blacklist.getIp();
@@ -208,6 +231,24 @@ public class RedisComponent {
             // 批量删除所有key
             if (!keysToDelete.isEmpty()) {
                 redisUtils.del(keysToDelete.toArray(new String[0]));
+                log.info("成功删除{}个黑名单相关缓存key", keysToDelete.size());
+            }
+
+            // 删除用户相关的所有限流缓存
+            if (!userIdsToCleanRateLimit.isEmpty()) {
+                for (Integer userId : userIdsToCleanRateLimit) {
+                    try {
+                        // 删除该用户相关的所有限流key
+                        // 格式：sidifensen_blog:RateLimit:*:user:userId
+                        String rateLimitPattern = RedisConstants.RateLimit + "*:user:" + userId;
+                        long deletedCount = redisUtils.deleteByPattern(rateLimitPattern);
+                        if (deletedCount > 0) {
+                            log.info("成功删除用户ID={}的{}个限流缓存key", userId, deletedCount);
+                        }
+                    } catch (Exception ex) {
+                        log.error("删除用户ID={}的限流缓存失败", userId, ex);
+                    }
+                }
             }
         } catch (Exception e) {
             log.error("批量删除黑名单Redis缓存失败", e);
@@ -256,7 +297,8 @@ public class RedisComponent {
         executorService.execute(() -> {
             redisUtils.zIncrementScore(RedisConstants.HotArticles7Days, articleId.toString(), 1.0);
             // 设置过期时间为7天
-            redisUtils.expire(RedisConstants.HotArticles7Days, RedisConstants.HOT_ARTICLES_EXPIRE_TIME, TimeUnit.SECONDS);
+            redisUtils.expire(RedisConstants.HotArticles7Days, RedisConstants.HOT_ARTICLES_EXPIRE_TIME,
+                    TimeUnit.SECONDS);
         });
     }
 
@@ -294,7 +336,8 @@ public class RedisComponent {
                 redisUtils.rename(tempKey, RedisConstants.HotArticles7Days);
 
                 // 设置过期时间为7天
-                redisUtils.expire(RedisConstants.HotArticles7Days, RedisConstants.HOT_ARTICLES_EXPIRE_TIME, TimeUnit.SECONDS);
+                redisUtils.expire(RedisConstants.HotArticles7Days, RedisConstants.HOT_ARTICLES_EXPIRE_TIME,
+                        TimeUnit.SECONDS);
 
             } catch (Exception e) {
                 // 如果出现异常，确保临时key被清理
@@ -370,5 +413,57 @@ public class RedisComponent {
         return resultMap;
     }
 
+    // ==================== WebSocket 用户在线状态相关方法 ====================
+
+    /**
+     * 设置用户在线状态
+     * 用于用户连接 WebSocket 时标记用户在线
+     *
+     * @param userId 用户ID
+     */
+    public void setUserOnlineStatus(Integer userId) {
+        redisUtils.set(RedisConstants.USER_ONLINE_STATUS_KEY + userId, true, 30, TimeUnit.MINUTES);
+    }
+
+    /**
+     * 移除用户在线状态
+     * 用于用户断开 WebSocket 时清除在线标记
+     *
+     * @param userId 用户ID
+     */
+    public void removeUserOnlineStatus(Integer userId) {
+        redisUtils.del(RedisConstants.USER_ONLINE_STATUS_KEY + userId);
+    }
+
+    /**
+     * 批量获取用户在线状态
+     * 用于优化会话列表等场景，避免 N+1 Redis 查询问题
+     *
+     * @param userIds 用户ID列表
+     * @return Map<用户ID, 是否在线>
+     */
+    public Map<Integer, Boolean> batchGetUserOnlineStatus(List<Integer> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        // 构建所有的 Redis key
+        List<String> keys = userIds.stream()
+                .map(userId -> RedisConstants.USER_ONLINE_STATUS_KEY + userId)
+                .collect(Collectors.toList());
+
+        // 批量获取在线状态
+        List<Object> results = redisUtils.multiGet(keys);
+
+        // 组装结果 Map
+        Map<Integer, Boolean> onlineStatusMap = new HashMap<>();
+        for (int i = 0; i < userIds.size() && i < results.size(); i++) {
+            Object result = results.get(i);
+            boolean isOnline = result != null && (Boolean) result;
+            onlineStatusMap.put(userIds.get(i), isOnline);
+        }
+
+        return onlineStatusMap;
+    }
 
 }

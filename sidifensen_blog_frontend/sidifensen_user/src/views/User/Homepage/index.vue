@@ -466,7 +466,13 @@ const handleFollow = async () => {
 
 // 私信用户
 const handleMessage = () => {
-  ElMessage.info("私信功能开发中...");
+  if (!userStore.user) {
+    ElMessage.warning("请先登录");
+    router.push("/login");
+    return;
+  }
+  // 跳转到聊天窗口
+  router.push(`/message/chat/${route.params.userId}`);
 };
 
 // 返回顶部 - 统一滚动到页面顶部

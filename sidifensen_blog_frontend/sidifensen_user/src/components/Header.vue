@@ -29,6 +29,11 @@
       <div class="search" @click="handleSearch">
         <el-icon size="29px" color="var(--el-text-color-primary)"><Search /></el-icon>
       </div>
+      <div class="message-icon" @click="goToMessage" v-if="user">
+        <el-badge :value="messageStore.totalUnreadCount" :max="99" :hidden="messageStore.totalUnreadCount === 0">
+          <el-icon size="32px" color="var(--el-text-color-primary)"><ChatDotRound /></el-icon>
+        </el-badge>
+      </div>
       <Dark />
       <div v-if="user" class="user-info">
         <el-text size="large" class="nickname" @click="goToUserHomepage">{{ user.nickname }}</el-text>
@@ -115,14 +120,18 @@
 <script setup>
 import Dark from "./Dark.vue";
 import { useUserStore } from "@/stores/userStore.js";
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { info, oauthLogin } from "@/api/user";
 import { SetJwt } from "@/utils/Auth";
-import { UserFilled, User, Setting, SwitchButton } from "@element-plus/icons-vue";
+import { UserFilled, User, Setting, SwitchButton, ChatDotRound } from "@element-plus/icons-vue";
+import { useMessageStore } from "@/stores/messageStore";
+import { getUnreadCount } from "@/api/privateMessage";
+import WebSocketClient from "@/utils/WebSocketClient";
 
 const userStore = useUserStore();
+const messageStore = useMessageStore();
 const { user } = storeToRefs(userStore);
 const router = useRouter();
 const route = useRoute();
@@ -155,9 +164,79 @@ const handleSearch = () => {
   router.push("/search");
 };
 
+const goToMessage = () => {
+  router.push("/message");
+};
+
 const handleLoginClick = () => {
   // 直接使用路径跳转，更可靠
   router.push("/login");
+};
+
+// 获取未读消息数
+const fetchUnreadCount = async () => {
+  if (user.value) {
+    try {
+      const res = await getUnreadCount();
+      messageStore.totalUnreadCount = res.data.data || 0;
+    } catch (error) {
+      console.error("获取未读消息数失败:", error);
+    }
+  }
+};
+
+// 新消息处理器（定义在组件级别，便于移除）
+const handleNewMessage = (data) => {
+  messageStore.updateConversation(
+    data.fromUserId,
+    {
+      content: data.content,
+      createTime: data.createTime,
+    },
+    data.unreadCount, // 使用后端返回的最新未读数
+    {
+      nickname: data.fromUserNickname,
+      avatar: data.fromUserAvatar,
+    }
+  );
+};
+
+// 消息撤回处理器
+const handleMessageRevoked = (data) => {
+  // 更新会话列表中的最后一条消息
+  messageStore.updateConversationLastMessage(data.fromUserId, data.content || "撤回了一条消息");
+};
+
+// 初始化 WebSocket 连接
+const initWebSocket = () => {
+  if (!user.value) {
+    return;
+  }
+
+  // 如果 WebSocket 未连接，则建立连接
+  if (!WebSocketClient.isConnected()) {
+    WebSocketClient.connect();
+  }
+
+  // 移除旧的监听器(避免重复注册)
+  WebSocketClient.off("NEW_MESSAGE", handleNewMessage);
+  WebSocketClient.off("MESSAGE_REVOKED", handleMessageRevoked);
+  // 注册新消息监听器
+  WebSocketClient.on("NEW_MESSAGE", handleNewMessage);
+  WebSocketClient.on("MESSAGE_REVOKED", handleMessageRevoked);
+
+  // 监听 WebSocket 重连,重新注册监听器
+  WebSocketClient.off("open", handleWebSocketOpen);
+  WebSocketClient.on("open", handleWebSocketOpen);
+};
+
+// WebSocket 连接成功处理器
+const handleWebSocketOpen = () => {
+  // 重连后重新注册监听器
+  WebSocketClient.off("NEW_MESSAGE", handleNewMessage);
+  WebSocketClient.off("MESSAGE_REVOKED", handleMessageRevoked);
+  WebSocketClient.on("NEW_MESSAGE", handleNewMessage);
+  WebSocketClient.on("MESSAGE_REVOKED", handleMessageRevoked);
 };
 
 const oauth = () => {
@@ -234,10 +313,29 @@ const closeMobileMenu = (index) => {
   handleSelect(index);
 };
 
+// 监听用户登录状态变化，自动初始化 WebSocket
+watch(
+  () => user.value,
+  (newUser) => {
+    if (newUser) {
+      // 用户已登录，立即初始化 WebSocket
+      fetchUnreadCount();
+      initWebSocket();
+    } else {
+      // 用户已登出，关闭 WebSocket
+      WebSocketClient.close();
+      // 移除监听器
+      WebSocketClient.off("NEW_MESSAGE", handleNewMessage);
+      WebSocketClient.off("open", handleWebSocketOpen);
+    }
+  },
+  { immediate: true } // 立即执行一次，检查当前用户状态
+);
+
 // 组件挂载时添加监听滚动事件
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
-  // 如果pinia有userid再获取用户信息
+  // 如果 pinia 有 userid 再获取用户信息
   if (user.value) {
     getUserInfo();
   }
@@ -246,6 +344,10 @@ onMounted(() => {
 // 组件销毁时移除监听事件
 onBeforeUnmount(() => {
   window.removeEventListener("scroll", handleScroll);
+  // 移除 WebSocket 监听器
+  WebSocketClient.off("NEW_MESSAGE", handleNewMessage);
+  WebSocketClient.off("MESSAGE_REVOKED", handleMessageRevoked);
+  WebSocketClient.off("open", handleWebSocketOpen);
 });
 </script>
 
@@ -330,8 +432,25 @@ onBeforeUnmount(() => {
     align-items: center;
     .search {
       display: flex;
-      margin-right: 20px;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
       cursor: pointer;
+    }
+    .message-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+      cursor: pointer;
+
+      // 调整徽章大小和位置
+      :deep(.el-badge__content) {
+        font-size: 11px;
+        top: 5px;
+        right: 10px;
+        border: none;
+      }
     }
     .user-info {
       display: flex;
@@ -504,14 +623,6 @@ onBeforeUnmount(() => {
       margin-right: 0;
       .logo-text {
         font-size: 20px !important;
-      }
-    }
-    .right {
-      .search {
-        margin-right: 5px;
-      }
-      .login {
-        margin-left: 0;
       }
     }
   }

@@ -996,10 +996,7 @@ const handleClickPublish = async () => {
     // 标记内容未修改，避免刷新提示
     isModified.value = false;
 
-    // 延迟跳转到文章管理页面，让用户看到成功提示
-    // setTimeout(() => {
-      router.push("/creation/articlemanage");
-    // }, 1000);
+    router.push("/creation/articlemanage");
   } catch (error) {
     const articleId = route.query.articleId;
     if (articleId && !isNaN(articleId)) {

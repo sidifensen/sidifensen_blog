@@ -49,6 +49,18 @@ export function uploadAvatar(file) {
   });
 }
 
+// 上传私信图片
+export function uploadMessagePhoto(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  return request({
+    url: "/photo/uploadMessage",
+    method: "post",
+    data: formData,
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+}
+
 // 修改图片展示状态
 export function changeShowStatus(data) {
   return request({

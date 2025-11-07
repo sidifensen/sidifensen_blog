@@ -332,4 +332,41 @@ create table sys_visitorlog
     visit_time datetime     not null comment '访问时间',
     -- 时间索引（用于日期范围查询和访客统计）
     index idx_visit_time (visit_time)
-)
+);
+
+-- 私信表
+create table private_message
+(
+    id           int primary key auto_increment comment '主键id',
+    from_user_id int      not null comment '发送者id',
+    to_user_id   int      not null comment '接收者id',
+    content      text     not null comment '消息内容',
+    message_type tinyint  not null default 1 comment '消息类型 1-文本 2-图片',
+    image_url    varchar(400) comment '图片url',
+    is_read      tinyint  not null default 0 comment '是否已读 0-未读 1-已读',
+    is_revoked   tinyint  not null default 0 comment '是否撤回 0-正常 1-撤回',
+    read_time    datetime comment '阅读时间',
+    create_time  datetime not null comment '创建时间',
+    is_deleted   tinyint  not null default 0 comment '是否删除 0-正常 1-删除',
+    -- 查询某用户的私信列表 
+    index idx_from_to (from_user_id, to_user_id, create_time),
+    -- 查询某用户的私信列表
+    index idx_to_from (to_user_id, from_user_id, create_time)
+);
+
+-- 会话表
+create table conversation
+(
+    id                   int primary key auto_increment comment '主键id',
+    user_id              int      not null comment '用户id',
+    target_user_id       int      not null comment '目标用户id',
+    last_message_id      int comment '最后一条消息id',
+    last_message_content varchar(400) comment '最后一条消息内容',
+    last_message_time    datetime comment '最后消息时间',
+    unread_count         int      not null default 0 comment '未读消息数',
+    create_time          datetime not null comment '创建时间',
+    update_time          datetime not null comment '更新时间',
+    is_deleted           tinyint  not null default 0 comment '是否删除 0-正常 1-删除',
+    -- 查询某用户的会话列表
+    index idx_user_update (user_id, update_time desc)
+);

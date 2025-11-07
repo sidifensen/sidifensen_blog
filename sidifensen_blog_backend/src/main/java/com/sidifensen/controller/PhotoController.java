@@ -1,6 +1,5 @@
 package com.sidifensen.controller;
 
-
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.PhotoAuditDto;
 import com.sidifensen.domain.dto.PhotoDto;
@@ -46,7 +45,7 @@ public class PhotoController {
     @RateLimit(10)
     @PostMapping("/uploadAlbum")
     public Result uploadAlbum(@RequestParam("file") MultipartFile file,
-                              @RequestParam("albumId") Integer albumId) {
+            @RequestParam("albumId") Integer albumId) {
         photoService.uploadAlbum(file, albumId);
         return Result.success();
     }
@@ -69,6 +68,16 @@ public class PhotoController {
     public Result uploadAvatar(@RequestParam("file") MultipartFile file) {
         photoService.uploadAvatar(file);
         return Result.success();
+    }
+
+    /**
+     * 上传私信图片
+     */
+    @RateLimit(10)
+    @PostMapping("/uploadMessage")
+    public Result uploadMessage(@RequestParam("file") MultipartFile file) {
+        String url = photoService.uploadMessage(file);
+        return Result.success(url);
     }
 
     /**
@@ -121,7 +130,6 @@ public class PhotoController {
         return Result.success();
     }
 
-
     /**
      * 管理端批量审核图片
      */
@@ -151,6 +159,5 @@ public class PhotoController {
         List<PhotoVo> photoVoList = photoService.adminSearch(photoDto);
         return Result.success(photoVoList);
     }
-
 
 }

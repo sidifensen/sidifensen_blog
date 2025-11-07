@@ -86,6 +86,18 @@ const router = createRouter({
           meta: { title: "个人设置" },
         },
         {
+          path: "message",
+          name: "Message",
+          component: () => import("@/views/Message/ConversationList.vue"),
+          meta: { title: "私信" },
+        },
+        {
+          path: "message/chat/:userId",
+          name: "ChatWindow",
+          component: () => import("@/views/Message/ChatWindow.vue"),
+          meta: { title: "聊天窗口" },
+        },
+        {
           path: "account",
           name: "Account",
           component: () => import("@/views/Account/index.vue"),

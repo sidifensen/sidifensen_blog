@@ -154,7 +154,8 @@ const handleMessage = () => {
     router.push("/login");
     return;
   }
-  ElMessage.info("私信功能开发中...");
+  // 跳转到聊天窗口
+  router.push(`/message/chat/${props.userInfo.id}`);
 };
 
 // 处理关注按钮悬停状态

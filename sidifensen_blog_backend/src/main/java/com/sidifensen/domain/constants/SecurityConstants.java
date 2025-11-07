@@ -62,7 +62,10 @@ public class SecurityConstants {
             "/link/list",
 
             // 其他
-            "/favicon.ico"
+            "/favicon.ico",
+
+            //私信
+            "/ws/message",
     };
 
 }

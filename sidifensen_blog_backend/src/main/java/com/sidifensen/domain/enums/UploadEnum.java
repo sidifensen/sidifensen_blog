@@ -26,8 +26,10 @@ public enum UploadEnum {
     COLUMN("column/", "专栏封面", List.of("jpg", "jpeg", "png", "webp"), 5.0),
 
     // 前台首页图片
-    BANNERS("banners/", "前台首页图片", List.of("jpg", "jpeg", "png", "webp"), 1.0);
+    BANNERS("banners/", "前台首页图片", List.of("jpg", "jpeg", "png", "webp"), 1.0),
 
+    // 私信图片
+    MESSAGE("message/", "私信图片", List.of("jpg", "jpeg", "png", "gif", "webp"), 10.0);
 
     // 上传目录
     private final String dir;
@@ -40,6 +42,5 @@ public enum UploadEnum {
 
     // 文件最大大小 单位：MB
     private final Double limitSize;
-
 
 }

@@ -64,8 +64,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     ExecutorService executorService = new ThreadPoolExecutor(
             2, 4, 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(500),
-            new MyThreadFactory("PhotoServiceImpl")
-    );
+            new MyThreadFactory("PhotoServiceImpl"));
+
     @Resource
     private FileUploadUtils fileUploadUtils;
     @Resource
@@ -140,6 +140,39 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         auditAvatarAndUpdate(userId, url);
     }
 
+    @Override
+    public String uploadMessage(MultipartFile file) {
+        Integer userId = SecurityUtils.getUserId();
+        String dirName = String.valueOf(userId);
+
+        // 上传图片
+        String url = fileUploadUtils.upload(UploadEnum.MESSAGE, file, dirName);
+
+        // 异步记录到图片表（不阻塞返回，不做审核）
+        recordMessagePhotoAsync(userId, url);
+
+        return url;
+    }
+
+    /**
+     * 异步记录私信图片到图片表
+     * 仅用于追溯和管理，不做审核
+     */
+    private void recordMessagePhotoAsync(Integer userId, String url) {
+        executorService.execute(() -> {
+            try {
+                Photo photo = new Photo();
+                photo.setUserId(userId);
+                photo.setUrl(url);
+                photo.setExamineStatus(ExamineStatusEnum.WAIT.getCode()); // 直接标记为待审核，不做审核
+                photoMapper.insert(photo);
+            } catch (Exception e) {
+                // 记录失败不影响用户使用，只记录日志
+                log.error("记录私信图片失败，userId: {}, url: {}", userId, url, e);
+            }
+        });
+    }
+
     // 相册图片审核
     private void auditAndUpdate(Integer userId, String url, Integer albumId) {
         executorService.execute(() -> {
@@ -181,9 +214,9 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 // 发送邮件给管理员
                 HashMap<String, Object> sendEmail = new HashMap<>();
                 sendEmail.put("text", String.format(MessageConstants.IMAGE_NEED_REVIEW, photo.getId()));
-                rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
+                rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key,
+                        sendEmail);
             }
-
 
         });
     }
@@ -220,7 +253,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                     // 发送邮件给管理员
                     HashMap<String, Object> sendEmail = new HashMap<>();
                     sendEmail.put("text", String.format(MessageConstants.IMAGE_NEED_REVIEW, photo.getId()));
-                    rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key, sendEmail);
+                    rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange,
+                            RabbitMQConstants.Examine_Routing_Key, sendEmail);
                 }
 
             } catch (Exception e) {
@@ -292,7 +326,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         if (photo.getUserId() != SecurityUtils.getUserId()) {
             throw new BlogException(BlogConstants.CannotHandleOthersPhoto);
         }
-        AlbumPhoto albumPhoto = albumPhotoMapper.selectOne(new LambdaUpdateWrapper<AlbumPhoto>().eq(AlbumPhoto::getPhotoId, photoId));
+        AlbumPhoto albumPhoto = albumPhotoMapper
+                .selectOne(new LambdaUpdateWrapper<AlbumPhoto>().eq(AlbumPhoto::getPhotoId, photoId));
         if (ObjectUtil.isEmpty(albumPhoto)) {
             throw new BlogException(BlogConstants.NotFoundAlbum);
         }
@@ -331,7 +366,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         String baseDir = UploadEnum.ALBUM.getDir() + userId + "/";
 
         // 获取所有要删除的照片对应的相册id
-        List<AlbumPhoto> albumPhotos = albumPhotoMapper.selectList(new LambdaQueryWrapper<AlbumPhoto>().in(AlbumPhoto::getPhotoId, photoIds));
+        List<AlbumPhoto> albumPhotos = albumPhotoMapper
+                .selectList(new LambdaQueryWrapper<AlbumPhoto>().in(AlbumPhoto::getPhotoId, photoIds));
 
         // 构建照片ID到相册ID的映射
         Map<Integer, Integer> photoToAlbumMap = new HashMap<>();
@@ -371,7 +407,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         if (ObjectUtil.isEmpty(photo)) {
             throw new BlogException(BlogConstants.NotFoundPhoto);
         }
-        AlbumPhoto albumPhoto = albumPhotoMapper.selectOne(new LambdaUpdateWrapper<AlbumPhoto>().eq(AlbumPhoto::getPhotoId, photoId));
+        AlbumPhoto albumPhoto = albumPhotoMapper
+                .selectOne(new LambdaUpdateWrapper<AlbumPhoto>().eq(AlbumPhoto::getPhotoId, photoId));
         if (ObjectUtil.isEmpty(albumPhoto)) {
             throw new BlogException(BlogConstants.NotFoundAlbum);
         }
@@ -401,7 +438,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         String baseDir = UploadEnum.ALBUM.getDir() + userId + "/";
 
         // 获取所有要删除的照片对应的相册id
-        List<AlbumPhoto> albumPhotos = albumPhotoMapper.selectList(new LambdaQueryWrapper<AlbumPhoto>().in(AlbumPhoto::getPhotoId, photoIds));
+        List<AlbumPhoto> albumPhotos = albumPhotoMapper
+                .selectList(new LambdaQueryWrapper<AlbumPhoto>().in(AlbumPhoto::getPhotoId, photoIds));
 
         // 构建照片ID到相册ID的映射
         Map<Integer, Integer> photoToAlbumMap = new HashMap<>();
@@ -505,7 +543,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         }
         List<Integer> userIds = photos.stream().map(Photo::getUserId).collect(Collectors.toList());
         List<SysUser> sysUsers = sysUserMapper.selectBatchIds(userIds);
-        Map<Integer, String> userMap = sysUsers.stream().collect(Collectors.toMap(SysUser::getId, SysUser::getUsername));
+        Map<Integer, String> userMap = sysUsers.stream()
+                .collect(Collectors.toMap(SysUser::getId, SysUser::getUsername));
 
         List<PhotoVo> photoVos = BeanUtil.copyToList(photos, PhotoVo.class);
         // 填充用户名
@@ -517,17 +556,22 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     public List<PhotoVo> adminSearch(PhotoDto photoDto) {
         // 管理员搜索照片 (
         LambdaQueryWrapper<Photo> queryWrapper = new LambdaQueryWrapper();
-        queryWrapper.eq(ObjectUtil.isNotEmpty(photoDto.getUserId()), Photo::getUserId, photoDto.getUserId())
-                .eq(ObjectUtil.isNotEmpty(photoDto.getExamineStatus()), Photo::getExamineStatus, photoDto.getExamineStatus())
-                .ge(ObjectUtil.isNotEmpty(photoDto.getCreateTimeStart()), Photo::getCreateTime, photoDto.getCreateTimeStart())
-                .le(ObjectUtil.isNotEmpty(photoDto.getCreateTimeEnd()), Photo::getCreateTime, photoDto.getCreateTimeEnd());
+        queryWrapper
+                .eq(ObjectUtil.isNotEmpty(photoDto.getUserId()), Photo::getUserId, photoDto.getUserId())
+                .eq(ObjectUtil.isNotEmpty(photoDto.getExamineStatus()), Photo::getExamineStatus,
+                        photoDto.getExamineStatus())
+                .ge(ObjectUtil.isNotEmpty(photoDto.getCreateTimeStart()), Photo::getCreateTime,
+                        photoDto.getCreateTimeStart())
+                .le(ObjectUtil.isNotEmpty(photoDto.getCreateTimeEnd()), Photo::getCreateTime,
+                        photoDto.getCreateTimeEnd());
         List<Photo> photos = photoMapper.selectList(queryWrapper);
         if (ObjectUtil.isEmpty(photos)) {
             return List.of();
         }
         List<Integer> userIds = photos.stream().map(Photo::getUserId).collect(Collectors.toList());
         List<SysUser> sysUsers = sysUserMapper.selectBatchIds(userIds);
-        Map<Integer, String> userMap = sysUsers.stream().collect(Collectors.toMap(SysUser::getId, SysUser::getUsername));
+        Map<Integer, String> userMap = sysUsers.stream()
+                .collect(Collectors.toMap(SysUser::getId, SysUser::getUsername));
 
         List<PhotoVo> photoVos = BeanUtil.copyToList(photos, PhotoVo.class);
         // 填充用户名

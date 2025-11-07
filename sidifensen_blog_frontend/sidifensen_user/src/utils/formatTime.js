@@ -107,3 +107,20 @@ export const getFriendlyTime = (date) => {
   // 其他情况显示完整日期
   return formatDate(target, "YYYY-MM-DD HH:mm");
 };
+
+/**
+ * 格式化会话列表的时间显示（短格式）
+ * @param {Date|string} time 时间
+ * @returns {string} 格式化后的时间（刚刚、X分钟前、X小时前、日期）
+ */
+export const formatConversationTime = (time) => {
+  if (!time) return "";
+  const date = new Date(time);
+  const now = new Date();
+  const diff = now - date;
+
+  if (diff < 60000) return "刚刚";
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`;
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`;
+  return date.toLocaleDateString();
+};
