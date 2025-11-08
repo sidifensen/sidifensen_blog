@@ -203,20 +203,31 @@ const handleToggleCollect = async (favorite) => {
       favorite.isCollected = false;
       favorite.articleCount = Math.max(0, (favorite.articleCount || 0) - 1);
       ElMessage.success("取消收藏成功");
+
+      // 检查是否还有其他收藏夹收藏了这篇文章
+      const hasOtherCollected = favoriteList.value.some((f) => f.id !== favorite.id && f.isCollected);
+
+      // 通知父组件更新收藏状态
+      emit("success", {
+        action: "remove",
+        favoriteId: favorite.id,
+        favoriteName: favorite.name,
+        hasOtherCollected, // 是否还有其他收藏夹收藏了这篇文章
+      });
     } else {
       // 添加收藏
       await addArticleToFavorite(props.articleId, favorite.id);
       favorite.isCollected = true;
       favorite.articleCount = (favorite.articleCount || 0) + 1;
       ElMessage.success("收藏成功");
-    }
 
-    // 通知父组件更新收藏状态
-    emit("success", {
-      action: favorite.isCollected ? "add" : "remove",
-      favoriteId: favorite.id,
-      favoriteName: favorite.name,
-    });
+      // 通知父组件更新收藏状态
+      emit("success", {
+        action: "add",
+        favoriteId: favorite.id,
+        favoriteName: favorite.name,
+      });
+    }
   } catch (error) {
     console.error("收藏操作失败:", error);
     ElMessage.error("收藏操作失败");

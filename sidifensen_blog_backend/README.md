@@ -11,6 +11,8 @@
 - 🔐 **认证授权**：Spring Security + JWT，支持用户名/邮箱登录、OAuth 第三方登录（Gitee/GitHub/QQ）
 - 📝 **文章管理**：文章发布、编辑、审核、专栏管理、标签分类
 - 💬 **评论互动**：多级评论、点赞、收藏、浏览历史
+- 💌 **私信系统**：WebSocket 实时通信、消息已读/未读、撤回删除、在线状态
+- 🔔 **通知中心**：系统通知、互动提醒（点赞、评论、关注、收藏）、分类管理、已读状态
 - 📷 **相册管理**：基于 MinIO 的图片存储
 - 🔒 **安全防护**：接口限流、IP 黑名单、内容审核、XSS 防护
 - 🚀 **性能优化**：Redis 缓存、连接池优化、异步任务处理
@@ -25,6 +27,7 @@
 - Spring Security 6.4.1
 - MyBatis-Plus 3.5.14
 - Spring AI 1.0.0
+- Spring WebSocket 6.4.1
 
 ### 数据存储
 
@@ -166,6 +169,415 @@ java -jar target/sidifensen_blog_backend-1.0-SNAPSHOT.jar
 
 ```bash
 curl http://localhost:5000/actuator/health
+```
+
+## 💬 私信功能
+
+### 私信系统
+
+项目集成了 WebSocket 实时通信，实现了完整的私信聊天功能。
+
+#### 功能特性
+
+- 💌 **实时通信**：基于 WebSocket 的实时消息推送，即时送达
+- 📊 **会话管理**：会话列表展示，支持最后消息预览和未读计数
+- 🔔 **消息状态**：已读/未读状态管理，实时更新
+- ↩️ **消息撤回**：支持消息撤回功能（有时间限制）
+- 🗑️ **消息删除**：支持删除单条消息或整个会话
+- 👤 **在线状态**：实时显示用户在线/离线状态
+- 📜 **历史记录**：分页加载聊天历史记录
+
+#### API 接口
+
+##### 1. 获取聊天历史
+
+```http
+GET /message/history?targetUserId=2&pageNum=1&pageSize=20
+Authorization: <JWT Token>
+```
+
+**请求参数：**
+
+- `targetUserId`: 目标用户 ID
+- `pageNum`: 页码
+- `pageSize`: 每页数量
+
+**响应示例：**
+
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": {
+    "data": [
+      {
+        "id": 1,
+        "fromUserId": 1,
+        "toUserId": 2,
+        "content": "你好",
+        "isRead": true,
+        "isRevoked": false,
+        "createTime": "2025-11-07 10:00:00"
+      }
+    ],
+    "total": 50
+  }
+}
+```
+
+##### 2. 撤回消息
+
+```http
+PUT /message/revoke/{messageId}
+Authorization: <JWT Token>
+```
+
+**路径参数：**
+
+- `messageId`: 消息 ID
+
+##### 3. 删除消息
+
+```http
+DELETE /message/{messageId}
+Authorization: <JWT Token>
+```
+
+**路径参数：**
+
+- `messageId`: 消息 ID
+
+##### 4. 获取未读消息数
+
+```http
+GET /message/unread/count
+Authorization: <JWT Token>
+```
+
+**响应示例：**
+
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": 5
+}
+```
+
+#### WebSocket 连接
+
+##### 连接地址
+
+```
+ws://localhost:5000/ws/message
+```
+
+##### 连接参数
+
+在建立 WebSocket 连接时，需要在 URL 中传递 JWT Token：
+
+```javascript
+const token = "your_jwt_token";
+const ws = new WebSocket(`ws://localhost:5000/ws/message?token=${token}`);
+```
+
+##### 消息格式
+
+**发送消息：**
+
+```json
+{
+  "type": "PRIVATE_MESSAGE",
+  "toUserId": 2,
+  "content": "你好"
+}
+```
+
+**接收消息：**
+
+```json
+{
+  "type": "PRIVATE_MESSAGE",
+  "data": {
+    "id": 1,
+    "fromUserId": 1,
+    "toUserId": 2,
+    "content": "你好",
+    "createTime": "2025-11-07 10:00:00"
+  }
+}
+```
+
+**在线状态通知：**
+
+```json
+{
+  "type": "USER_ONLINE",
+  "userId": 2
+}
+```
+
+```json
+{
+  "type": "USER_OFFLINE",
+  "userId": 2
+}
+```
+
+**消息已读通知：**
+
+```json
+{
+  "type": "MESSAGE_READ",
+  "fromUserId": 2,
+  "toUserId": 1
+}
+```
+
+**消息撤回通知：**
+
+```json
+{
+  "type": "MESSAGE_REVOKE",
+  "messageId": 1
+}
+```
+
+#### 技术实现
+
+- **框架**: Spring WebSocket 6.4.1
+- **协议**: WebSocket（基于 STOMP 协议的文本消息）
+- **会话管理**: 内存中的 ConcurrentHashMap 管理用户会话
+- **消息持久化**: MySQL 存储所有聊天记录
+- **状态同步**: Redis 缓存用户在线状态和未读计数
+
+#### 配置说明
+
+WebSocket 相关配置已在 `WebSocketConfig.java` 中完成，无需额外配置。默认端点：
+
+- WebSocket 端点：`/ws/message`
+- 允许跨域：所有来源（生产环境建议限制）
+
+## 🔔 通知中心
+
+### 通知系统
+
+项目提供了完整的通知系统，用户可以接收各种互动通知（点赞、评论、关注、收藏）和系统通知。
+
+#### 功能特性
+
+- 📬 **多类型通知**：支持系统通知、点赞、评论、关注、收藏等多种通知类型
+- 🔔 **实时推送**：基于 WebSocket 的实时通知推送
+- 📊 **分类筛选**：支持按通知类型筛选查看
+- 🔍 **已读管理**：支持标记已读/未读，批量标记已读
+- 📜 **历史记录**：分页查看所有历史通知
+- 🔢 **未读统计**：实时显示未读通知数量
+
+#### API 接口
+
+##### 1. 获取通知列表
+
+```http
+GET /notification/list?pageNum=1&pageSize=20&type=
+Authorization: <JWT Token>
+```
+
+**请求参数：**
+
+- `pageNum`: 页码（必填）
+- `pageSize`: 每页数量（必填）
+- `type`: 通知类型（可选，不传则查询全部）
+  - `SYSTEM`: 系统通知
+  - `LIKE`: 点赞通知
+  - `COMMENT`: 评论通知
+  - `FOLLOW`: 关注通知
+  - `FAVORITE`: 收藏通知
+
+**响应示例：**
+
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": {
+    "data": [
+      {
+        "id": 1,
+        "userId": 1,
+        "type": "LIKE",
+        "title": "点赞通知",
+        "content": {
+          "triggerUserId": 2,
+          "triggerUserName": "张三",
+          "triggerUserAvatar": "https://example.com/avatar.jpg",
+          "targetId": 123,
+          "targetType": "ARTICLE",
+          "targetTitle": "我的第一篇文章",
+          "actionTime": "2025-11-08 10:00:00"
+        },
+        "isRead": false,
+        "createTime": "2025-11-08 10:00:00"
+      }
+    ],
+    "total": 50
+  }
+}
+```
+
+##### 2. 标记通知已读
+
+```http
+PUT /notification/read/{notificationId}
+Authorization: <JWT Token>
+```
+
+**路径参数：**
+
+- `notificationId`: 通知 ID
+
+**响应示例：**
+
+```json
+{
+  "code": 200,
+  "message": "操作成功"
+}
+```
+
+##### 3. 批量标记已读
+
+```http
+PUT /notification/read/batch
+Authorization: <JWT Token>
+Content-Type: application/json
+
+{
+  "notificationIds": [1, 2, 3]
+}
+```
+
+**请求参数：**
+
+- `notificationIds`: 通知 ID 数组
+
+##### 4. 全部标记已读
+
+```http
+PUT /notification/read/all
+Authorization: <JWT Token>
+```
+
+**响应示例：**
+
+```json
+{
+  "code": 200,
+  "message": "操作成功"
+}
+```
+
+##### 5. 获取未读通知数量
+
+```http
+GET /notification/unread/count
+Authorization: <JWT Token>
+```
+
+**响应示例：**
+
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": {
+    "total": 10,
+    "system": 2,
+    "like": 3,
+    "comment": 2,
+    "follow": 1,
+    "favorite": 2
+  }
+}
+```
+
+##### 6. 删除通知
+
+```http
+DELETE /notification/{notificationId}
+Authorization: <JWT Token>
+```
+
+**路径参数：**
+
+- `notificationId`: 通知 ID
+
+#### WebSocket 通知推送
+
+##### 消息格式
+
+**实时通知推送：**
+
+```json
+{
+  "type": "NOTIFICATION",
+  "data": {
+    "id": 1,
+    "userId": 1,
+    "type": "LIKE",
+    "title": "点赞通知",
+    "content": {
+      "triggerUserId": 2,
+      "triggerUserName": "张三",
+      "targetId": 123,
+      "targetType": "ARTICLE",
+      "targetTitle": "我的第一篇文章"
+    },
+    "isRead": false,
+    "createTime": "2025-11-08 10:00:00"
+  }
+}
+```
+
+**未读数量更新：**
+
+```json
+{
+  "type": "UNREAD_COUNT",
+  "count": 5
+}
+```
+
+#### 通知触发场景
+
+系统会在以下场景自动发送通知：
+
+1. **点赞通知**：文章或评论被点赞时
+2. **评论通知**：文章被评论或评论被回复时
+3. **关注通知**：被其他用户关注时
+4. **收藏通知**：文章被收藏时
+5. **系统通知**：管理员发送系统公告、审核结果等
+
+#### 技术实现
+
+- **存储**: MySQL 存储所有通知记录
+- **缓存**: Redis 缓存未读数量统计
+- **推送**: WebSocket 实时推送新通知
+- **消息队列**: RabbitMQ 异步处理通知生成，避免阻塞主流程
+
+#### 数据模型
+
+通知内容（`NotificationContentDto`）结构：
+
+```java
+{
+  "triggerUserId": 2,           // 触发通知的用户ID
+  "triggerUserName": "张三",     // 触发用户昵称
+  "triggerUserAvatar": "...",   // 触发用户头像
+  "targetId": 123,              // 目标对象ID（文章ID/评论ID等）
+  "targetType": "ARTICLE",      // 目标类型（ARTICLE/COMMENT/USER）
+  "targetTitle": "文章标题",     // 目标标题
+  "actionTime": "2025-11-08"    // 操作时间
+}
 ```
 
 ## 🤖 AI 功能

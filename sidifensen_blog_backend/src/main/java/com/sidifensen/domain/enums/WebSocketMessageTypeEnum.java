@@ -18,7 +18,8 @@ public enum WebSocketMessageTypeEnum {
     SEND_SUCCESS("SEND_SUCCESS", "发送成功"),
     HEARTBEAT("HEARTBEAT", "心跳"),
     USER_ONLINE_STATUS("USER_ONLINE_STATUS", "用户在线状态"),
-    SYSTEM("SYSTEM", "系统消息");
+    SYSTEM("SYSTEM", "系统消息"),
+    NEW_NOTIFICATION("NEW_NOTIFICATION", "新通知");
 
     private final String type;
     private final String desc;

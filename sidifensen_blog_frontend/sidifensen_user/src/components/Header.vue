@@ -34,6 +34,11 @@
           <el-icon size="32px" color="var(--el-text-color-primary)"><ChatDotRound /></el-icon>
         </el-badge>
       </div>
+      <div class="notification-icon" @click="goToNotification" v-if="user">
+        <el-badge :value="notificationUnreadCount" :max="99" :hidden="notificationUnreadCount === 0">
+          <el-icon size="31px" color="var(--el-text-color-primary)"><Bell /></el-icon>
+        </el-badge>
+      </div>
       <Dark />
       <div v-if="user" class="user-info">
         <el-text size="large" class="nickname" @click="goToUserHomepage">{{ user.nickname }}</el-text>
@@ -125,9 +130,10 @@ import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { info, oauthLogin } from "@/api/user";
 import { SetJwt } from "@/utils/Auth";
-import { UserFilled, User, Setting, SwitchButton, ChatDotRound } from "@element-plus/icons-vue";
+import { UserFilled, User, Setting, SwitchButton, ChatDotRound, Bell } from "@element-plus/icons-vue";
 import { useMessageStore } from "@/stores/messageStore";
 import { getUnreadCount } from "@/api/privateMessage";
+import { getUnreadNotificationCount } from "@/api/notification";
 import WebSocketClient from "@/utils/WebSocketClient";
 
 const userStore = useUserStore();
@@ -138,6 +144,9 @@ const route = useRoute();
 
 // 当前激活的菜单索引
 const activeIndex = ref("/");
+
+// 通知未读数量
+const notificationUnreadCount = ref(0);
 
 // 监听路由变化，更新激活的菜单
 router.afterEach((to) => {
@@ -168,6 +177,21 @@ const goToMessage = () => {
   router.push("/message");
 };
 
+const goToNotification = () => {
+  const isCurrentlyOnNotificationPage = router.currentRoute.value.path === "/notification";
+
+  // 跳转到消息中心
+  router.push("/notification");
+
+  // 触发消息中心的刷新事件（如果当前在消息中心页面，则不延迟执行，如果不在消息中心页面，则延迟100ms确保路由跳转完成）
+  setTimeout(
+    () => {
+      window.dispatchEvent(new CustomEvent("refresh-notifications"));
+    },
+    isCurrentlyOnNotificationPage ? 0 : 100
+  );
+};
+
 const handleLoginClick = () => {
   // 直接使用路径跳转，更可靠
   router.push("/login");
@@ -181,6 +205,20 @@ const fetchUnreadCount = async () => {
       messageStore.totalUnreadCount = res.data.data || 0;
     } catch (error) {
       console.error("获取未读消息数失败:", error);
+    }
+  }
+};
+
+// 获取未读通知数量
+const fetchNotificationUnreadCount = async () => {
+  if (user.value) {
+    try {
+      const res = await getUnreadNotificationCount();
+      const data = res.data.data;
+      // 计算总未读数量
+      notificationUnreadCount.value = data.total || 0;
+    } catch (error) {
+      console.error("获取未读通知数失败:", error);
     }
   }
 };
@@ -207,6 +245,12 @@ const handleMessageRevoked = (data) => {
   messageStore.updateConversationLastMessage(data.fromUserId, data.content || "撤回了一条消息");
 };
 
+// 新通知处理器
+const handleNewNotification = (data) => {
+  // 收到新通知时，重新获取准确的未读数量
+  fetchNotificationUnreadCount();
+};
+
 // 初始化 WebSocket 连接
 const initWebSocket = () => {
   if (!user.value) {
@@ -221,9 +265,11 @@ const initWebSocket = () => {
   // 移除旧的监听器(避免重复注册)
   WebSocketClient.off("NEW_MESSAGE", handleNewMessage);
   WebSocketClient.off("MESSAGE_REVOKED", handleMessageRevoked);
+  WebSocketClient.off("NEW_NOTIFICATION", handleNewNotification);
   // 注册新消息监听器
   WebSocketClient.on("NEW_MESSAGE", handleNewMessage);
   WebSocketClient.on("MESSAGE_REVOKED", handleMessageRevoked);
+  WebSocketClient.on("NEW_NOTIFICATION", handleNewNotification);
 
   // 监听 WebSocket 重连,重新注册监听器
   WebSocketClient.off("open", handleWebSocketOpen);
@@ -235,8 +281,10 @@ const handleWebSocketOpen = () => {
   // 重连后重新注册监听器
   WebSocketClient.off("NEW_MESSAGE", handleNewMessage);
   WebSocketClient.off("MESSAGE_REVOKED", handleMessageRevoked);
+  WebSocketClient.off("NEW_NOTIFICATION", handleNewNotification);
   WebSocketClient.on("NEW_MESSAGE", handleNewMessage);
   WebSocketClient.on("MESSAGE_REVOKED", handleMessageRevoked);
+  WebSocketClient.on("NEW_NOTIFICATION", handleNewNotification);
 };
 
 const oauth = () => {
@@ -320,21 +368,33 @@ watch(
     if (newUser) {
       // 用户已登录，立即初始化 WebSocket
       fetchUnreadCount();
+      fetchNotificationUnreadCount();
       initWebSocket();
     } else {
       // 用户已登出，关闭 WebSocket
       WebSocketClient.close();
       // 移除监听器
       WebSocketClient.off("NEW_MESSAGE", handleNewMessage);
+      WebSocketClient.off("MESSAGE_REVOKED", handleMessageRevoked);
+      WebSocketClient.off("NEW_NOTIFICATION", handleNewNotification);
       WebSocketClient.off("open", handleWebSocketOpen);
+      // 重置未读数量
+      notificationUnreadCount.value = 0;
     }
   },
   { immediate: true } // 立即执行一次，检查当前用户状态
 );
 
+// 监听通知已读事件
+const handleNotificationRead = () => {
+  // 当用户查看通知页面并标记已读后，刷新未读数量
+  fetchNotificationUnreadCount();
+};
+
 // 组件挂载时添加监听滚动事件
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
+  window.addEventListener("notification-read", handleNotificationRead);
   // 如果 pinia 有 userid 再获取用户信息
   if (user.value) {
     getUserInfo();
@@ -344,9 +404,11 @@ onMounted(() => {
 // 组件销毁时移除监听事件
 onBeforeUnmount(() => {
   window.removeEventListener("scroll", handleScroll);
+  window.removeEventListener("notification-read", handleNotificationRead);
   // 移除 WebSocket 监听器
   WebSocketClient.off("NEW_MESSAGE", handleNewMessage);
   WebSocketClient.off("MESSAGE_REVOKED", handleMessageRevoked);
+  WebSocketClient.off("NEW_NOTIFICATION", handleNewNotification);
   WebSocketClient.off("open", handleWebSocketOpen);
 });
 </script>
@@ -438,6 +500,21 @@ onBeforeUnmount(() => {
       cursor: pointer;
     }
     .message-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+      cursor: pointer;
+
+      // 调整徽章大小和位置
+      :deep(.el-badge__content) {
+        font-size: 11px;
+        top: 5px;
+        right: 10px;
+        border: none;
+      }
+    }
+    .notification-icon {
       display: flex;
       align-items: center;
       justify-content: center;

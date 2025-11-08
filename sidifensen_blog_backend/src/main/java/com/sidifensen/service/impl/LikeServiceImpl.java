@@ -7,17 +7,25 @@ import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.entity.Article;
 import com.sidifensen.domain.entity.Comment;
 import com.sidifensen.domain.entity.Like;
+import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.enums.LikeTypeEnum;
 import com.sidifensen.exception.BlogException;
-import com.sidifensen.mapper.LikeMapper;
 import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.CommentMapper;
+import com.sidifensen.mapper.LikeMapper;
+import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.LikeService;
+import com.sidifensen.service.MessageService;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -36,6 +44,27 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Like> implements Li
 
     @Resource
     private CommentMapper commentMapper;
+
+    @Resource
+    private MessageService messageService;
+
+    @Resource
+    private SysUserMapper sysUserMapper;
+
+    // 通知发送专用线程池
+    private final ExecutorService notificationExecutor = new ThreadPoolExecutor(
+            3, // 核心线程数
+            5, // 最大线程数
+            60L, // 空闲线程存活时间
+            TimeUnit.SECONDS, // 时间单位
+            new LinkedBlockingQueue<>(500), // 任务队列
+            r -> {
+                Thread thread = new Thread(r);
+                thread.setName("like-notification-thread-" + thread.getId());
+                thread.setDaemon(true);
+                return thread;
+            },
+            new ThreadPoolExecutor.CallerRunsPolicy());
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -76,8 +105,12 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Like> implements Li
                 // 根据类型增加对应的点赞量
                 if (LikeTypeEnum.ARTICLE.equals(likeType)) {
                     updateArticleLikeCount(typeId, 1);
+                    // 发送点赞文章通知
+                    sendLikeArticleNotification(userId, typeId);
                 } else if (LikeTypeEnum.COMMENT.equals(likeType)) {
                     updateCommentLikeCount(typeId, 1);
+                    // 发送点赞评论通知
+                    sendLikeCommentNotification(userId, typeId);
                 }
             }
         } catch (Exception e) {
@@ -175,6 +208,78 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Like> implements Li
                 .eq(Like::getTypeId, typeId);
 
         return this.count(queryWrapper);
+    }
+
+    /**
+     * 发送点赞文章通知（异步）
+     *
+     * @param likerId   点赞者ID
+     * @param articleId 文章ID
+     */
+    private void sendLikeArticleNotification(Integer likerId, Integer articleId) {
+        // 使用线程池异步执行
+        notificationExecutor.execute(() -> {
+            try {
+                // 查询文章信息
+                Article article = articleMapper.selectById(articleId);
+                if (article == null) {
+                    log.warn("发送点赞文章通知失败：文章不存在，articleId={}", articleId);
+                    return;
+                }
+
+                // 查询点赞者信息
+                SysUser liker = sysUserMapper.selectById(likerId);
+                if (liker == null) {
+                    log.warn("发送点赞文章通知失败：点赞者不存在，likerId={}", likerId);
+                    return;
+                }
+
+                // 发送通知
+                messageService.sendLikeArticleNotification(
+                        likerId,
+                        article.getUserId(),
+                        liker.getNickname(),
+                        article.getTitle(),
+                        article.getId());
+            } catch (Exception e) {
+                log.error("发送点赞文章通知失败：likerId={}, articleId={}", likerId, articleId, e);
+            }
+        });
+    }
+
+    /**
+     * 发送点赞评论通知（异步）
+     *
+     * @param likerId   点赞者ID
+     * @param commentId 评论ID
+     */
+    private void sendLikeCommentNotification(Integer likerId, Integer commentId) {
+        // 使用线程池异步执行
+        notificationExecutor.execute(() -> {
+            try {
+                // 查询评论信息
+                Comment comment = commentMapper.selectById(commentId);
+                if (comment == null) {
+                    log.warn("发送点赞评论通知失败：评论不存在，commentId={}", commentId);
+                    return;
+                }
+
+                // 查询点赞者信息
+                SysUser liker = sysUserMapper.selectById(likerId);
+                if (liker == null) {
+                    log.warn("发送点赞评论通知失败：点赞者不存在，likerId={}", likerId);
+                    return;
+                }
+
+                // 发送通知
+                messageService.sendLikeCommentNotification(
+                        likerId,
+                        comment.getUserId(),
+                        liker.getNickname());
+            } catch (Exception e) {
+                log.error("发送点赞评论通知失败：likerId={}, commentId={}", likerId, commentId, e);
+            }
+        });
     }
 
 }

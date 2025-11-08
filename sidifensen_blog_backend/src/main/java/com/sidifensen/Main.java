@@ -12,8 +12,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 })
 @MapperScan("com.sidifensen.mapper")
 @EnableAspectJAutoProxy
-@Slf4j
 @EnableScheduling // 启用定时任务
+@Slf4j
 public class Main {
     public static void main(String[] args) {
         // 设置JVM文件编码为UTF-8

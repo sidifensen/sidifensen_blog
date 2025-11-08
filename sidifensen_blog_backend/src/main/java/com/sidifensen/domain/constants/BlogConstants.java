@@ -40,6 +40,7 @@ public class BlogConstants {
     public static final String SaveMessageError = "消息保存失败";
     public static final String ReadMessageError = "消息读取失败";
     public static final String DeleteMessageError = "消息删除失败";
+    public static final String MarkMessageAsReadError = "标记消息已读失败";
 
     public static final String AddTagError = "添加标签失败";
     public static final String DeleteTagError = "删除标签失败";
@@ -179,4 +180,63 @@ public class BlogConstants {
     // 通用错误信息
     public static final String ParamError = "参数错误";
     public static final String SystemInternalError = "系统内部错误";
+
+    // 系统通知消息模板（评论、点赞、收藏、关注）
+    /**
+     * 评论通知消息模板
+     * 
+     * @param nickname     评论者昵称
+     * @param articleTitle 文章标题
+     */
+    public static String CommentNotification(String nickname, String articleTitle) {
+        return String.format("%s 评论了你的文章《%s》", nickname, articleTitle);
+    }
+
+    /**
+     * 回复通知消息模板
+     * 
+     * @param nickname     回复者昵称
+     * @param articleTitle 文章标题
+     */
+    public static String ReplyNotification(String nickname, String articleTitle) {
+        return String.format("%s 回复了你在《%s》中的评论", nickname, articleTitle);
+    }
+
+    /**
+     * 点赞文章通知消息模板
+     * 
+     * @param nickname     点赞者昵称
+     * @param articleTitle 文章标题
+     */
+    public static String LikeArticleNotification(String nickname, String articleTitle) {
+        return String.format("%s 点赞了你的文章《%s》", nickname, articleTitle);
+    }
+
+    /**
+     * 点赞评论通知消息模板
+     * 
+     * @param nickname 点赞者昵称
+     */
+    public static String LikeCommentNotification(String nickname) {
+        return String.format("%s 点赞了你的评论", nickname);
+    }
+
+    /**
+     * 收藏文章通知消息模板
+     * 
+     * @param nickname     收藏者昵称
+     * @param articleTitle 文章标题
+     */
+    public static String CollectArticleNotification(String nickname, String articleTitle) {
+        return String.format("%s 收藏了你的文章《%s》", nickname, articleTitle);
+    }
+
+    /**
+     * 关注通知消息模板
+     * 
+     * @param nickname 关注者昵称
+     */
+    public static String FollowNotification(String nickname) {
+        return String.format("%s 关注了你", nickname);
+    }
 }

@@ -41,6 +41,10 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -76,6 +80,21 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     @Resource
     private RabbitTemplate rabbitTemplate;
+
+    // 通知发送专用线程池
+    private final ExecutorService notificationExecutor = new ThreadPoolExecutor(
+            3, // 核心线程数
+            5, // 最大线程数
+            60L, // 空闲线程存活时间
+            TimeUnit.SECONDS, // 时间单位
+            new LinkedBlockingQueue<>(500), // 任务队列
+            r -> {
+                Thread thread = new Thread(r);
+                thread.setName("comment-notification-thread-" + thread.getId());
+                thread.setDaemon(true);
+                return thread;
+            },
+            new ThreadPoolExecutor.CallerRunsPolicy());
 
     @Override
     @Transactional
@@ -142,6 +161,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
                     // 审核通过后更新统计数据
                     updateCommentStatistics(comment);
+
+                    // 发送评论通知
+                    sendCommentNotification(comment);
 
                 } else if (auditResult.getStatus().equals(ExamineStatusEnum.NO_PASS.getCode())) {
                     // 审核不通过，发送消息给用户
@@ -732,10 +754,61 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             throw new BlogException(BlogConstants.CommentAuditError);
         }
 
-        // 如果审核通过，更新统计数据
+        // 如果审核通过，更新统计数据和发送通知
         if (examineStatus.equals(ExamineStatusEnum.PASS.getCode())) {
             updateCommentStatistics(comment);
+            // 发送评论通知
+            sendCommentNotification(comment);
         }
+    }
+
+    /**
+     * 发送评论通知（异步）
+     * 
+     * @param comment 评论对象
+     */
+    private void sendCommentNotification(Comment comment) {
+        // 使用线程池异步执行
+        notificationExecutor.execute(() -> {
+            try {
+                // 查询文章信息
+                Article article = articleMapper.selectById(comment.getArticleId());
+                if (article == null) {
+                    log.warn("发送评论通知失败：文章不存在，articleId={}", comment.getArticleId());
+                    return;
+                }
+
+                // 查询评论者信息
+                SysUser commenter = sysUserMapper.selectById(comment.getUserId());
+                if (commenter == null) {
+                    log.warn("发送评论通知失败：评论者不存在，userId={}", comment.getUserId());
+                    return;
+                }
+
+                // 如果是回复评论，通知被回复的用户
+                if (comment.getReplyUserId() != null && comment.getReplyUserId() > 0) {
+                    messageService.sendReplyNotification(
+                            comment.getUserId(),
+                            comment.getReplyUserId(),
+                            commenter.getNickname(),
+                            article.getTitle(),
+                            article.getId(),
+                            article.getUserId(), // 文章作者ID
+                            comment.getContent()); // 回复内容
+                } else {
+                    // 否则通知文章作者
+                    messageService.sendCommentNotification(
+                            comment.getUserId(),
+                            article.getUserId(),
+                            commenter.getNickname(),
+                            article.getTitle(),
+                            article.getId(),
+                            comment.getContent()); // 评论内容
+                }
+            } catch (Exception e) {
+                log.error("发送评论通知失败：commentId={}", comment.getId(), e);
+            }
+        });
     }
 
     @Override

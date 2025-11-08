@@ -13,6 +13,7 @@ import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.FollowMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.FollowService;
+import com.sidifensen.service.MessageService;
 import com.sidifensen.service.SysUserService;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
@@ -23,9 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +44,24 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
 
     @Resource
     private SysUserMapper sysUserMapper;
+
+    @Resource
+    private MessageService messageService;
+
+    // 通知发送专用线程池
+    private final ExecutorService notificationExecutor = new ThreadPoolExecutor(
+            3, // 核心线程数
+            5, // 最大线程数
+            60L, // 空闲线程存活时间
+            TimeUnit.SECONDS, // 时间单位
+            new LinkedBlockingQueue<>(500), // 任务队列
+            r -> {
+                Thread thread = new Thread(r);
+                thread.setName("follow-notification-thread-" + thread.getId());
+                thread.setDaemon(true);
+                return thread;
+            },
+            new ThreadPoolExecutor.CallerRunsPolicy());
 
     // 异步线程池，用于更新用户计数
     private final ExecutorService asyncExecutor = Executors.newVirtualThreadPerTaskExecutor();
@@ -86,10 +103,10 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
             if (!removed) {
                 throw new BlogException(BlogConstants.UnfollowError);
             }
-            
+
             // 异步更新用户计数（取消关注）
             asyncUpdateUserCounts(followerId, followedId, false);
-            
+
             return false; // 返回false表示已取消关注
         } else {
             // 未关注，执行关注
@@ -102,12 +119,43 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
             if (!saved) {
                 throw new BlogException(BlogConstants.FollowError);
             }
-            
+
             // 异步更新用户计数（关注）
             asyncUpdateUserCounts(followerId, followedId, true);
-            
+
+            // 发送关注通知
+            sendFollowNotification(followerId, followedId);
+
             return true; // 返回true表示已关注
         }
+    }
+
+    /**
+     * 发送关注通知（异步）
+     * 
+     * @param followerId 关注者ID
+     * @param followedId 被关注者ID
+     */
+    private void sendFollowNotification(Integer followerId, Integer followedId) {
+        // 使用线程池异步执行
+        notificationExecutor.execute(() -> {
+            try {
+                // 查询关注者信息
+                SysUser follower = sysUserMapper.selectById(followerId);
+                if (follower == null) {
+                    log.warn("发送关注通知失败：关注者不存在，followerId={}", followerId);
+                    return;
+                }
+
+                // 发送通知
+                messageService.sendFollowNotification(
+                        followerId,
+                        followedId,
+                        follower.getNickname());
+            } catch (Exception e) {
+                log.error("发送关注通知失败：followerId={}, followedId={}", followerId, followedId, e);
+            }
+        });
     }
 
     @Override
@@ -241,8 +289,8 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
                     updateFansCount(followedId, -1);
                 }
             } catch (Exception e) {
-                log.error("异步更新用户计数失败：关注者ID={}, 被关注者ID={}, 操作类型={}", 
-                    followerId, followedId, isFollow ? "关注" : "取消关注", e);
+                log.error("异步更新用户计数失败：关注者ID={}, 被关注者ID={}, 操作类型={}",
+                        followerId, followedId, isFollow ? "关注" : "取消关注", e);
             }
         }, asyncExecutor);
     }
@@ -257,7 +305,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
         try {
             LambdaUpdateWrapper<SysUser> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.eq(SysUser::getId, userId);
-            
+
             if (increment > 0) {
                 // 增加关注数，使用 MySQL 的 COALESCE 函数处理 NULL 值
                 updateWrapper.setSql("follow_count = COALESCE(follow_count, 0) + " + increment);
@@ -265,7 +313,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
                 // 减少关注数，确保不会小于0
                 updateWrapper.setSql("follow_count = GREATEST(COALESCE(follow_count, 0) + " + increment + ", 0)");
             }
-            
+
             int updateResult = sysUserMapper.update(null, updateWrapper);
             if (updateResult == 0) {
                 log.warn("更新用户关注数失败，可能用户不存在：userId={}", userId);
@@ -286,7 +334,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
         try {
             LambdaUpdateWrapper<SysUser> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.eq(SysUser::getId, userId);
-            
+
             if (increment > 0) {
                 // 增加粉丝数，使用 MySQL 的 COALESCE 函数处理 NULL 值
                 updateWrapper.setSql("fans_count = COALESCE(fans_count, 0) + " + increment);
@@ -294,7 +342,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
                 // 减少粉丝数，确保不会小于0
                 updateWrapper.setSql("fans_count = GREATEST(COALESCE(fans_count, 0) + " + increment + ", 0)");
             }
-            
+
             int updateResult = sysUserMapper.update(null, updateWrapper);
             if (updateResult == 0) {
                 log.warn("更新用户粉丝数失败，可能用户不存在：userId={}", userId);

@@ -10,13 +10,16 @@ import com.sidifensen.domain.dto.UpdateFavoriteDto;
 import com.sidifensen.domain.entity.Article;
 import com.sidifensen.domain.entity.ArticleFavorite;
 import com.sidifensen.domain.entity.Favorite;
+import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.vo.ArticleVo;
 import com.sidifensen.domain.vo.FavoriteVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.ArticleFavoriteMapper;
 import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.FavoriteMapper;
+import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.FavoriteService;
+import com.sidifensen.service.MessageService;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +28,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +54,27 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
 
     @Resource
     private ArticleFavoriteMapper articleFavoriteMapper;
+
+    @Resource
+    private MessageService messageService;
+
+    @Resource
+    private SysUserMapper sysUserMapper;
+
+    // 通知发送专用线程池
+    private final ExecutorService notificationExecutor = new ThreadPoolExecutor(
+            3, // 核心线程数
+            5, // 最大线程数
+            60L, // 空闲线程存活时间
+            TimeUnit.SECONDS, // 时间单位
+            new LinkedBlockingQueue<>(500), // 任务队列
+            r -> {
+                Thread thread = new Thread(r);
+                thread.setName("favorite-notification-thread-" + thread.getId());
+                thread.setDaemon(true);
+                return thread;
+            },
+            new ThreadPoolExecutor.CallerRunsPolicy());
 
     @Override
     public void addFavorite(AddFavoriteDto addFavoriteDto) {
@@ -150,6 +178,39 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
             throw new BlogException(BlogConstants.UpdateArticleCollectCountError);
         }
 
+        // 发送收藏文章通知
+        sendCollectArticleNotification(currentUserId, article);
+
+    }
+
+    /**
+     * 发送收藏文章通知（异步）
+     * 
+     * @param collectorId 收藏者ID
+     * @param article     文章对象
+     */
+    private void sendCollectArticleNotification(Integer collectorId, Article article) {
+        // 使用线程池异步执行
+        notificationExecutor.execute(() -> {
+            try {
+                // 查询收藏者信息
+                SysUser collector = sysUserMapper.selectById(collectorId);
+                if (collector == null) {
+                    log.warn("发送收藏文章通知失败：收藏者不存在，collectorId={}", collectorId);
+                    return;
+                }
+
+                // 发送通知
+                messageService.sendCollectArticleNotification(
+                        collectorId,
+                        article.getUserId(),
+                        collector.getNickname(),
+                        article.getTitle(),
+                        article.getId());
+            } catch (Exception e) {
+                log.error("发送收藏文章通知失败：collectorId={}, articleId={}", collectorId, article.getId(), e);
+            }
+        });
     }
 
     @Override

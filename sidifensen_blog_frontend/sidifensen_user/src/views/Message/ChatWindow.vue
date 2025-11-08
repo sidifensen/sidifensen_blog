@@ -695,7 +695,6 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .chat-window-page {
-  background: transparent; // 使用 Layout 的背景
   min-height: 100vh; // 减去 Layout 的 padding-top
   padding-top: 70px !important;
 

@@ -264,15 +264,19 @@ const handleFavoriteSuccess = (result) => {
   const updatedArticle = { ...props.article };
 
   if (result.action === "add") {
-    // 如果之前没有收藏过任何收藏夹，现在收藏了
+    // 添加收藏：如果之前没有收藏过任何收藏夹，现在收藏了
     if (!updatedArticle.isCollected) {
       updatedArticle.isCollected = true;
       updatedArticle.collectCount = (updatedArticle.collectCount || 0) + 1;
     }
+    // 如果之前已经收藏过（在其他收藏夹中），只更新状态，不增加数量
   } else if (result.action === "remove") {
-    // 这里需要检查是否还有其他收藏夹收藏了这篇文章
-    // 为了简化，我们暂时不更新状态，让页面刷新时重新获取
-    // 如果需要精确控制，可以在后端返回当前文章的总收藏状态
+    // 取消收藏：只有当没有其他收藏夹收藏了这篇文章时，才更新状态和数量
+    if (!result.hasOtherCollected) {
+      updatedArticle.isCollected = false;
+      updatedArticle.collectCount = Math.max(0, (updatedArticle.collectCount || 0) - 1);
+    }
+    // 如果还有其他收藏夹收藏了这篇文章，保持 isCollected=true 和 collectCount 不变
   }
 
   // 通知父组件更新文章数据

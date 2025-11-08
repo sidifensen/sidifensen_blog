@@ -28,7 +28,9 @@ public class WebSocketMessage {
 
     private String content;
 
-    private Integer messageType; // 1-文本 2-图片
+    private Integer messageType; // 1-文本 2-图片（私信消息类型）
+
+    private Integer notificationType; // 通知类型：0-系统 1-评论 2-点赞 3-收藏 4-关注
 
     private String imageUrl;
 

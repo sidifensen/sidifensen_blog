@@ -137,7 +137,6 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .conversation-page {
-  background: transparent;
   min-height: 100vh;
   padding-top: 70px !important;
 

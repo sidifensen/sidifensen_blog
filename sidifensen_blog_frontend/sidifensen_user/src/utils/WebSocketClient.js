@@ -147,7 +147,44 @@ class WebSocketClient {
    */
   handleMessage(data) {
     const { type } = data;
+
+    // 如果是系统消息，显示通知
+    if (type === "SYSTEM") {
+      this.handleSystemNotification(data);
+    }
+
     this.triggerHandler(type, data);
+  }
+
+  /**
+   * 处理系统通知消息
+   * @param {object} data - 系统通知数据
+   */
+  handleSystemNotification(data) {
+    const { content, messageType } = data;
+
+    // 根据消息类型显示不同的通知
+    const typeMap = {
+      1: "评论",
+      2: "点赞",
+      3: "收藏",
+      4: "关注",
+    };
+
+    const typeName = typeMap[messageType] || "系统";
+
+    // 使用 Element Plus 的通知组件显示
+    if (window.ElNotification) {
+      window.ElNotification({
+        title: `${typeName}通知`,
+        message: content,
+        type: "info",
+        duration: 4500,
+        position: "top-right",
+      });
+    } else {
+      console.log(`[系统通知] ${content}`);
+    }
   }
 
   /**
@@ -161,7 +198,7 @@ class WebSocketClient {
       // 如果没有，创建一个空数组来存放订阅者
       this.messageHandlers.set(type, []);
     }
-    
+
     // 第2步：把这个处理函数加入订阅列表
     this.messageHandlers.get(type).push(handler);
   }
@@ -176,7 +213,7 @@ class WebSocketClient {
       const handlers = this.messageHandlers.get(type);
       const index = handlers.indexOf(handler);
       if (index > -1) {
-        handlers.splice(index, 1);  // 从数组中删除这个处理函数
+        handlers.splice(index, 1); // 从数组中删除这个处理函数
       }
     }
   }
@@ -191,7 +228,7 @@ class WebSocketClient {
     if (this.messageHandlers.has(type)) {
       // 遍历所有订阅者，逐个通知
       this.messageHandlers.get(type).forEach((handler) => {
-        handler(data);  // 执行每个订阅者的处理函数
+        handler(data); // 执行每个订阅者的处理函数
       });
     }
   }

@@ -98,6 +98,12 @@ const router = createRouter({
           meta: { title: "聊天窗口" },
         },
         {
+          path: "notification",
+          name: "Notification",
+          component: () => import("@/views/Notification/index.vue"),
+          meta: { title: "消息中心" },
+        },
+        {
           path: "account",
           name: "Account",
           component: () => import("@/views/Account/index.vue"),
