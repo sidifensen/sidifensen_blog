@@ -17,7 +17,7 @@
 - 🔒 **安全防护**：接口限流、IP 黑名单、内容审核、XSS 防护
 - 🚀 **性能优化**：Redis 缓存、连接池优化、异步任务处理
 - 📮 **消息队列**：RabbitMQ 实现邮件发送、审核通知
-- 🤖 **AI 能力**：DeepSeek API 智能提取文章摘要，配额管理、限流保护
+- 🤖 **AI 能力**：DeepSeek API 智能提取文章摘要、标题生成、标签推荐、评论回复建议，配额管理、限流保护，支持流式智能客服
 
 ## 🛠 技术栈
 
@@ -582,16 +582,18 @@ Authorization: <JWT Token>
 
 ## 🤖 AI 功能
 
-### AI 摘要提取
+### AI 能力总览
 
-项目集成了 DeepSeek API，可以智能提取文章摘要，帮助用户快速生成文章概述。
+项目集成了 DeepSeek API，提供多项实用 AI 能力，帮助创作者更高效地完成内容生产。
 
 #### 功能特性
 
-- ✨ **智能提取**：基于 DeepSeek 大语言模型自动分析文章内容，生成精准摘要
-- 📊 **配额管理**：每个用户每天最多调用 5 次（硬编码），防止滥用
-- 🚦 **限流保护**：单个接口每小时最多调用 2 次，避免频繁请求
-- 🔄 **实时查询**：支持查询当前用户的剩余配额
+- ✨ **智能提取摘要**：基于 DeepSeek 自动分析文章内容，生成精准摘要
+- 🧠 **写作助手**：生成文章标题建议（5 个）
+- 🏷️ **标签推荐**：基于标题+内容推荐 5-8 个标签
+- 💬 **评论回复建议**：为评论智能生成 3 条回复备选
+- 📞 **智能客服（流式）**：上下文记忆 + 流式输出的客服对话
+- 📊 **配额管理与限流**：每日配额限制 + 接口级限流，防滥用
 
 #### API 接口
 
@@ -623,8 +625,8 @@ Content-Type: application/json
 
 **限流规则：**
 
-- 每小时最多调用 2 次
-- 超出限制返回：`AI摘要提取过于频繁，请1小时后再试`
+- 每 10 分钟最多 5 次
+- 超出限制返回：`AI摘要提取过于频繁，请10分钟后再试`
 
 ##### 2. 查询配额
 
@@ -647,6 +649,92 @@ Authorization: <JWT Token>
 
 - 返回用户今日剩余的 AI 调用次数
 
+##### 3. 智能客服聊天（流式返回）
+
+```http
+POST /ai/customer-service?message=你好&chatId=session-123
+Authorization: <JWT Token>
+Accept: text/plain
+```
+
+**说明：**
+- 返回类型为 `text/plain` 的流式分片文本（适合前端逐段渲染）
+- `chatId` 用于维持对话上下文，会话记忆由服务端管理
+
+##### 4. 生成文章标题建议
+
+```http
+POST /ai/generate-titles
+Authorization: <JWT Token>
+Content-Type: application/json
+
+{
+  "content": "这里是文章的主要内容或摘要"
+}
+```
+
+**响应示例：**
+
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": ["标题建议1","标题建议2","标题建议3","标题建议4","标题建议5"]
+}
+```
+
+**限流规则：** 每小时最多 10 次；超限提示：`AI标题生成过于频繁，请稍后再试`
+
+##### 5. 推荐文章标签
+
+```http
+POST /ai/recommend-tags
+Authorization: <JWT Token>
+Content-Type: application/json
+
+{
+  "title": "文章标题",
+  "content": "文章内容"
+}
+```
+
+**响应示例：**
+
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": ["Java","Spring","后端","AI","实践","技巧"]
+}
+```
+
+**限流规则：** 每小时最多 10 次
+
+##### 6. 生成评论回复建议
+
+```http
+POST /ai/comment-replies
+Authorization: <JWT Token>
+Content-Type: application/json
+
+{
+  "articleTitle": "文章标题",
+  "commentContent": "用户的评论内容"
+}
+```
+
+**响应示例：**
+
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": ["回复建议1","回复建议2","回复建议3"]
+}
+```
+
+**限流规则：** 每小时最多 15 次
+
 #### 配置说明
 
 在 `.env` 文件中配置 DeepSeek API：
@@ -664,7 +752,7 @@ DEEPSEEK_MODEL=deepseek-chat
 
 **配额说明：**
 
-- 每个用户每天最多调用 5 次（代码中硬编码，不可配置）
+- 每个用户每天最多调用 50 次（代码中硬编码）
 - 如需修改配额，请在 `AiUsageServiceImpl.java` 中修改 `DAILY_LIMIT` 常量
 
 #### 技术实现

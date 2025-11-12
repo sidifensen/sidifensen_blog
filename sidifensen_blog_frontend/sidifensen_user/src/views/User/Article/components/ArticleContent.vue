@@ -108,40 +108,40 @@
         </div>
       </template>
     </el-skeleton>
-  </div>
 
-  <!-- 文章底部操作栏 -->
-  <div class="article-actions" v-if="article">
-    <div class="action-item">
-      <el-button :type="article.isLiked ? 'primary' : 'default'" :loading="likeLoading" @click="handleLike">
-        <svg-icon name="like" width="16px" height="16px" margin-right="6px" :color="article.isLiked ? '#ffffff' : '#909399'" />
-        {{ article.likeCount || 0 }}
-      </el-button>
+    <!-- 文章底部操作栏 -->
+    <div class="article-actions" v-if="article">
+      <div class="action-item">
+        <el-button :type="article.isLiked ? 'primary' : 'default'" :loading="likeLoading" @click="handleLike">
+          <svg-icon name="like" width="16px" height="16px" margin-right="6px" :color="article.isLiked ? '#ffffff' : '#909399'" />
+          {{ article.likeCount || 0 }}
+        </el-button>
+      </div>
+      <div class="action-item">
+        <el-button :type="article.isCollected ? 'primary' : 'default'" :icon="article.isCollected ? StarFilled : Star" @click="handleCollect">
+          {{ article.collectCount || 0 }}
+        </el-button>
+      </div>
+      <div class="action-item">
+        <el-button :icon="ChatLineRound" @click="handleComment">
+          {{ commentTotal || article.commentCount || 0 }}
+        </el-button>
+      </div>
     </div>
-    <div class="action-item">
-      <el-button :type="article.isCollected ? 'primary' : 'default'" :icon="article.isCollected ? StarFilled : Star" @click="handleCollect">
-        {{ article.collectCount || 0 }}
-      </el-button>
+
+    <!-- 返回顶部按钮 -->
+    <div class="back-to-top" @click="scrollToTop">
+      <el-icon>
+        <ArrowUp />
+      </el-icon>
     </div>
-    <div class="action-item">
-      <el-button :icon="ChatLineRound" @click="handleComment">
-        {{ commentTotal || article.commentCount || 0 }}
-      </el-button>
-    </div>
+
+    <!-- 评论抽屉 -->
+    <CommentDrawer v-if="article?.id" v-model="commentDrawerVisible" :article-id="article.id" :article-title="article.title" ref="commentDrawerRef" />
+
+    <!-- 收藏对话框 -->
+    <FavoriteDialog v-if="article?.id" v-model="favoriteDialogVisible" :article-id="article.id" @success="handleFavoriteSuccess" />
   </div>
-
-  <!-- 返回顶部按钮 -->
-  <div class="back-to-top" @click="scrollToTop">
-    <el-icon>
-      <ArrowUp />
-    </el-icon>
-  </div>
-
-  <!-- 评论抽屉 -->
-  <CommentDrawer v-if="article?.id" v-model:visible="commentDrawerVisible" :article-id="article.id" ref="commentDrawerRef" />
-
-  <!-- 收藏对话框 -->
-  <FavoriteDialog v-if="article?.id" v-model="favoriteDialogVisible" :article-id="article.id" @success="handleFavoriteSuccess" />
 </template>
 
 <script setup>

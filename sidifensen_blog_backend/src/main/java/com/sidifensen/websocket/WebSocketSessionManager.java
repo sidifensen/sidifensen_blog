@@ -133,7 +133,6 @@ public class WebSocketSessionManager {
                     }
             );
 
-            log.debug("消息已发送到 RabbitMQ，userId: {}", userId);
         } catch (Exception e) {
             log.error("发送消息到 RabbitMQ 失败，userId: {}", userId, e);
         }

@@ -14,7 +14,14 @@
     <div class="drawer-content">
       <!-- 发表评论区域 -->
       <div class="comment-form-section">
-        <CommentForm v-if="userStore.user" :article-id="articleId" :parent-id="0" placeholder="写下你的评论..." @comment-added="handleCommentAdded" />
+        <CommentForm
+          v-if="userStore.user"
+          :article-id="articleId"
+          :article-title="articleTitle"
+          :parent-id="0"
+          placeholder="写下你的评论..."
+          @comment-added="handleCommentAdded"
+        />
         <div v-else class="login-prompt">
           <p>请先登录后再发表评论</p>
           <el-button type="primary" size="small" @click="goToLogin">登录</el-button>
@@ -46,7 +53,15 @@
 
         <!-- 评论列表 -->
         <div v-else class="comment-items">
-          <CommentItem v-for="comment in commentList" :key="comment.id" :comment="comment" :article-id="articleId" @reply-added="handleReplyAdded" @comment-deleted="handleCommentDeleted" />
+          <CommentItem
+            v-for="comment in commentList"
+            :key="comment.id"
+            :comment="comment"
+            :article-id="articleId"
+            :article-title="articleTitle"
+            @reply-added="handleReplyAdded"
+            @comment-deleted="handleCommentDeleted"
+          />
         </div>
 
         <!-- 加载更多 -->
@@ -72,7 +87,10 @@ import CommentItem from "./CommentItem.vue";
 
 // Props
 const props = defineProps({
-  visible: {
+  /**
+   * 抽屉显示状态
+   */
+  modelValue: {
     type: Boolean,
     default: false,
   },
@@ -80,9 +98,13 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  articleTitle: {
+    type: String,
+    default: "",
+  },
 });
 
-const emit = defineEmits(["update:visible"]);
+const emit = defineEmits(["update:modelValue"]);
 
 const loading = ref(false); // 初始加载状态
 const loadingMore = ref(false); // 加载更多状态
@@ -98,13 +120,13 @@ const userStore = useUserStore();
 
 // 计算属性
 const drawerVisible = computed({
-  get: () => props.visible, // 从父组件接收的visible值
-  set: (value) => emit("update:visible", value), // 更新父组件的visible值
+  get: () => props.modelValue, // 从父组件接收的显示状态
+  set: (value) => emit("update:modelValue", value), // 更新父组件的显示状态
 });
 
 // 监听抽屉开关，初次打开时加载数据
 watch(
-  () => props.visible,
+  () => props.modelValue,
   (newVisible) => {
     if (newVisible && commentList.value.length === 0) {
       fetchCommentList(true);

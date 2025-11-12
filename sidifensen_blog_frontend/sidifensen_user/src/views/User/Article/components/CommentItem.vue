@@ -60,12 +60,31 @@
 
         <!-- 回复表单 -->
         <div v-if="showReplyForm" class="reply-form">
-          <CommentForm :article-id="articleId" :parent-id="isReply ? comment.parentId : comment.id" :reply-user-id="comment.userId" :reply-user-nickname="comment.nickname" :placeholder="`回复 ${comment.nickname}：`" @comment-added="handleReplyAdded" @cancel="hideReplyForm" />
+          <CommentForm
+            :article-id="articleId"
+            :article-title="articleTitle"
+            :parent-id="isReply ? comment.parentId : comment.id"
+            :reply-user-id="comment.userId"
+            :reply-user-nickname="comment.nickname"
+            :reply-comment-content="comment.content"
+            :placeholder="`回复 ${comment.nickname}：`"
+            @comment-added="handleReplyAdded"
+            @cancel="hideReplyForm"
+          />
         </div>
 
         <!-- 回复列表（只在父评论中显示） -->
         <div v-if="!isReply && showReplies && replyList.length > 0" class="reply-list">
-          <CommentItem v-for="reply in replyList" :key="reply.id" :comment="reply" :article-id="articleId" :is-reply="true" @reply-added="handleSubReplyAdded" @comment-deleted="handleReplyDeleted" />
+          <CommentItem
+            v-for="reply in replyList"
+            :key="reply.id"
+            :comment="reply"
+            :article-id="articleId"
+            :article-title="articleTitle"
+            :is-reply="true"
+            @reply-added="handleSubReplyAdded"
+            @comment-deleted="handleReplyDeleted"
+          />
 
           <!-- 加载更多回复 -->
           <div v-if="hasMoreReplies" class="load-more-replies">
@@ -99,6 +118,10 @@ const props = defineProps({
   articleId: {
     type: Number,
     required: true,
+  },
+  articleTitle: {
+    type: String,
+    default: "",
   },
   isReply: {
     type: Boolean,
