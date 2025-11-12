@@ -103,6 +103,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  initialData: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
 // 定义组件事件
@@ -180,8 +184,35 @@ watch(dialogVisible, (newVal) => {
   emit("update:modelValue", newVal);
   if (!newVal) {
     resetForm();
+  } else {
+    // 对话框打开时，如果有初始数据，填充表单
+    if (props.initialData && Object.keys(props.initialData).length > 0) {
+      fillFormWithInitialData();
+    }
   }
 });
+
+// 监听初始数据变化
+watch(
+  () => props.initialData,
+  (newData) => {
+    if (newData && Object.keys(newData).length > 0 && dialogVisible.value) {
+      fillFormWithInitialData();
+    }
+  },
+  { deep: true }
+);
+
+// 使用初始数据填充表单
+const fillFormWithInitialData = () => {
+  if (props.initialData) {
+    linkForm.name = props.initialData.name || "";
+    linkForm.url = props.initialData.url || "";
+    linkForm.coverUrl = props.initialData.coverUrl || "";
+    linkForm.description = props.initialData.description || "";
+    linkForm.email = props.initialData.email || "";
+  }
+};
 
 // 重置表单
 const resetForm = () => {

@@ -29,6 +29,14 @@ public interface LinkService extends IService<Link> {
     void applyLink(LinkRequestDto linkRequestDto);
 
     /**
+     * 申请友链（指定用户ID，用于异步场景）
+     *
+     * @param linkRequestDto 友链申请信息
+     * @param userId         用户ID
+     */
+    void applyLink(LinkRequestDto linkRequestDto, Integer userId);
+
+    /**
      * 删除友链
      *
      * @param linkId 友链ID
@@ -38,7 +46,7 @@ public interface LinkService extends IService<Link> {
     /**
      * 分页获取审核通过的友链列表
      *
-     * @param pageNum 页码
+     * @param pageNum  页码
      * @param pageSize 页面大小
      * @return 分页友链列表
      */

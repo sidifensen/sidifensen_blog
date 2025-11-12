@@ -49,7 +49,7 @@ public class SecurityConstants {
             // 关注相关
             "/follow/followList/{userId:\\d+}",
             "/follow/fansList/{userId:\\d+}",
-            
+
             // OAuth相关
             "/oauth/gitee/login",
             "/oauth/gitee/callback",
@@ -61,10 +61,13 @@ public class SecurityConstants {
             // 友链相关
             "/link/list",
 
+            // AI相关
+            "/ai/customer-service",
+
             // 其他
             "/favicon.ico",
 
-            //私信
+            // 私信
             "/ws/message",
     };
 

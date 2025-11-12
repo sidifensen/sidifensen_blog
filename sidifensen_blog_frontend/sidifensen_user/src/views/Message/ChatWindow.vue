@@ -695,7 +695,7 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .chat-window-page {
-  min-height: 100vh; // 减去 Layout 的 padding-top
+  min-height: 100vh; 
   padding-top: 70px !important;
 
   .container {

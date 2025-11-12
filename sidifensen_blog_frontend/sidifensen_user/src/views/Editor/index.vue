@@ -24,6 +24,7 @@
             <!-- 文章标题区域 -->
             <div class="article-title-container">
               <input v-model="article.title" class="article-title-input" maxlength="50" placeholder="请输入文章标题..." type="text" />
+              <el-button v-if="article.title || aiEditor?.getHtml()" :loading="isGeneratingTitle" class="ai-title-btn" icon="MagicStick" plain round size="small" type="primary" @click="generateAiTitles">AI 生成标题</el-button>
             </div>
             <!-- 文章正文区域 -->
             <div class="aie-container-main"></div>
@@ -36,6 +37,7 @@
                     {{ tag }}
                   </el-tag>
                   <el-button :disabled="tags.length >= 5" class="tag-add-button" icon="Plus" size="small" @click="showTagSelector">添加文章标签 </el-button>
+                  <el-button v-if="article.title || aiEditor?.getHtml()" :loading="isRecommendingTags" :disabled="tags.length >= 5" class="tag-add-button" icon="MagicStick" plain size="small" type="primary" @click="recommendAiTags">AI 推荐标签</el-button>
                 </div>
                 <div v-if="isTagSelectorVisible" class="tag-selector-container">
                   <div class="tag-selector">
@@ -173,11 +175,46 @@
         <el-button type="primary" :loading="isPublishing" :disabled="isSavingDraft" @click="handleClickPublish">发布文章</el-button>
       </div>
     </div>
+    <!-- AI 标签推荐对话框 -->
+    <el-dialog v-model="aiRecommendedTagsDialogVisible" title="AI 标签推荐" width="500px" @close="handleCloseAiTagDialog">
+      <div class="ai-tag-recommendation-dialog">
+        <p class="dialog-tip">AI 为你推荐了以下标签，点击选择（最多 5 个，您已选择 {{ tags.length }} 个，还可选择 {{ remainingTagSlots }} 个）：</p>
+        <div class="recommended-tags-container">
+          <el-tag v-for="tag in aiRecommendedTags" :key="tag" :type="aiSelectedRecommendedTags.includes(tag) ? 'success' : ''" :disabled="tags.length >= 5 && !aiSelectedRecommendedTags.includes(tag)" class="recommended-tag" size="medium" @click="toggleRecommendedTag(tag)">
+            {{ tag }}
+          </el-tag>
+        </div>
+        <p class="selected-count">
+          已选择 {{ aiSelectedRecommendedTags.length }} 个标签
+          <span v-if="existingRecommendedTagsCount > 0" class="current-tags-hint">（其中 {{ existingRecommendedTagsCount }} 个已存在）</span>
+        </p>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="handleCloseAiTagDialog">取消</el-button>
+          <el-button type="primary" @click="confirmRecommendedTags">确定</el-button>
+        </span>
+      </template>
+    </el-dialog>
+    <!-- AI 标题建议对话框 -->
+    <el-dialog v-model="aiTitleSuggestionsDialogVisible" title="AI 标题建议" :width="dialogWidth" custom-class="ai-title-suggestions-dialog-wrapper" @close="handleCloseAiTitleDialog">
+      <div class="ai-title-suggestions-dialog">
+        <p class="dialog-tip">AI 为你生成了以下标题建议，点击可直接使用：</p>
+        <div class="title-suggestions-container">
+          <div v-for="(title, index) in aiTitleSuggestions" :key="index" :class="['title-suggestion-item', { 'title-suggestion-item-selected': selectedTitleIndex === index }]" @click="selectTitle(title, index)">{{ index + 1 }}. {{ title }}</div>
+        </div>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="handleCloseAiTitleDialog">取消</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import EditorHeader from "@/components/EditorHeader.vue";
 import { AiEditor } from "aieditor";
@@ -190,7 +227,7 @@ import { addColumn, getColumnList } from "@/api/column";
 import { uploadArticlePhoto } from "@/api/photo";
 import { ArrowUp, Close, Search } from "@element-plus/icons-vue";
 import { addArticle, getArticleDetail, saveDraft, updateArticle } from "@/api/article";
-import { extractSummary as extractSummaryApi, getAiQuota } from "@/api/ai";
+import { extractSummary as extractSummaryApi, getAiQuota, generateTitles as generateTitlesApi, recommendTags as recommendTagsApi } from "@/api/ai";
 
 const darkStore = useDarkStore();
 const { isDark } = storeToRefs(darkStore);
@@ -358,8 +395,14 @@ onMounted(async () => {
   // 获取AI配额
   await fetchAiQuota();
 
+  // 初始化对话框宽度
+  updateDialogWidth();
+
   // 添加页面刷新事件监听
   window.addEventListener("beforeunload", handleBeforeUnload);
+
+  // 监听窗口大小变化，更新对话框宽度
+  window.addEventListener("resize", updateDialogWidth);
 
   if (divRef.value) {
     aiEditor = new AiEditor({
@@ -553,6 +596,8 @@ onUnmounted(() => {
   }
   // 移除页面刷新事件监听
   window.removeEventListener("beforeunload", handleBeforeUnload);
+  // 移除窗口大小变化监听
+  window.removeEventListener("resize", updateDialogWidth);
 });
 
 // 标记内容是否已修改(阻止刷新页面)
@@ -795,6 +840,212 @@ const extractSummary = async () => {
   } catch (error) {
     console.error("AI提取摘要失败:", error);
     ElMessage.error(error.response?.data?.msg || "AI提取摘要失败，请重试");
+  }
+};
+
+// AI 生成标题状态
+const isGeneratingTitle = ref(false);
+// AI 标题建议对话框显示状态
+const aiTitleSuggestionsDialogVisible = ref(false);
+// AI 标题建议列表
+const aiTitleSuggestions = ref([]);
+// 当前选中的标题索引
+const selectedTitleIndex = ref(-1);
+
+// 响应式对话框宽度
+const dialogWidth = ref("700px");
+
+// 更新对话框宽度
+const updateDialogWidth = () => {
+  if (window.innerWidth <= 768) {
+    dialogWidth.value = "90%";
+  } else {
+    dialogWidth.value = "700px";
+  }
+};
+
+// 选择标题
+const selectTitle = (title, index) => {
+  selectedTitleIndex.value = index;
+  article.value.title = title;
+  ElMessage.success("标题已应用");
+  // 延迟关闭对话框，让用户看到成功提示
+  setTimeout(() => {
+    handleCloseAiTitleDialog();
+  }, 300);
+};
+
+// 关闭AI标题建议对话框
+const handleCloseAiTitleDialog = () => {
+  aiTitleSuggestionsDialogVisible.value = false;
+  // 重置状态
+  aiTitleSuggestions.value = [];
+  selectedTitleIndex.value = -1;
+};
+
+// AI 生成标题
+const generateAiTitles = async () => {
+  try {
+    isGeneratingTitle.value = true;
+
+    // 获取编辑器内容
+    if (!aiEditor) {
+      ElMessage.warning("编辑器未初始化");
+      return;
+    }
+
+    const content = aiEditor.getHtml();
+
+    // 检查内容是否为空
+    if (!content || content.trim() === "" || content === "<p></p>") {
+      ElMessage.warning("请先输入文章内容");
+      return;
+    }
+
+    ElMessage.info("AI 正在生成标题建议，请稍候...");
+
+    // 调用后端接口生成标题
+    const response = await generateTitlesApi(content);
+    const titles = response.data.data;
+
+    if (!titles || titles.length === 0) {
+      ElMessage.warning("AI 未能生成标题建议");
+      return;
+    }
+
+    // 设置标题建议列表
+    aiTitleSuggestions.value = titles;
+    selectedTitleIndex.value = -1;
+
+    // 更新对话框宽度（确保移动端宽度正确）
+    updateDialogWidth();
+
+    // 显示对话框
+    aiTitleSuggestionsDialogVisible.value = true;
+  } catch (error) {
+    console.error("AI 生成标题失败:", error);
+    ElMessage.error(error.response?.data?.msg || "AI 生成标题失败，请重试");
+  } finally {
+    isGeneratingTitle.value = false;
+  }
+};
+
+// AI 推荐标签状态
+const isRecommendingTags = ref(false);
+// AI 推荐标签对话框显示状态
+const aiRecommendedTagsDialogVisible = ref(false);
+// AI 推荐的标签列表
+const aiRecommendedTags = ref([]);
+// AI 推荐标签中已选中的标签
+const aiSelectedRecommendedTags = ref([]);
+
+// 计算剩余可选择的标签数量
+const remainingTagSlots = computed(() => {
+  return Math.max(0, 5 - tags.value.length);
+});
+
+// 计算推荐标签中已存在的标签数量
+const existingRecommendedTagsCount = computed(() => {
+  return aiSelectedRecommendedTags.value.filter((tag) => tags.value.includes(tag)).length;
+});
+
+// 切换推荐标签的选中状态
+const toggleRecommendedTag = (tag) => {
+  const index = aiSelectedRecommendedTags.value.indexOf(tag);
+  if (index > -1) {
+    // 如果已选中，则取消选中
+    aiSelectedRecommendedTags.value.splice(index, 1);
+  } else {
+    // 如果未选中，检查是否超过限制（需要考虑已选择的标签数量）
+    const currentTagCount = tags.value.length; // 当前已选择的标签数量
+    const maxTags = 5; // 最大标签数量
+    const remainingSlots = maxTags - currentTagCount; // 剩余可选择的标签数量
+
+    // 计算在推荐标签中已选择的数量（不包括当前已存在的标签）
+    const newSelectedCount = aiSelectedRecommendedTags.value.filter((selectedTag) => !tags.value.includes(selectedTag)).length;
+
+    if (newSelectedCount >= remainingSlots) {
+      ElMessage.warning(`最多只能选择 ${maxTags} 个标签，您已选择 ${currentTagCount} 个，还可选择 ${remainingSlots} 个`);
+      return;
+    }
+    // 添加选中
+    aiSelectedRecommendedTags.value.push(tag);
+  }
+};
+
+// 关闭AI标签推荐对话框
+const handleCloseAiTagDialog = () => {
+  aiRecommendedTagsDialogVisible.value = false;
+  // 重置状态
+  aiRecommendedTags.value = [];
+  aiSelectedRecommendedTags.value = [];
+};
+
+// 确认选择的推荐标签
+const confirmRecommendedTags = () => {
+  if (aiSelectedRecommendedTags.value.length > 0) {
+    // 添加未重复的标签
+    let addedCount = 0;
+    aiSelectedRecommendedTags.value.forEach((tag) => {
+      if (!tags.value.includes(tag) && tags.value.length < 5) {
+        tags.value.push(tag);
+        addedCount++;
+      }
+    });
+    if (addedCount > 0) {
+      ElMessage.success(`已添加 ${addedCount} 个标签`);
+    }
+    // 更新article中的tag值
+    article.value.tag = tags.value.join(",");
+  }
+  // 关闭对话框并重置状态
+  handleCloseAiTagDialog();
+};
+
+// AI 推荐标签
+const recommendAiTags = async () => {
+  try {
+    isRecommendingTags.value = true;
+
+    // 获取编辑器内容
+    if (!aiEditor) {
+      ElMessage.warning("编辑器未初始化");
+      return;
+    }
+
+    const content = aiEditor.getHtml();
+    const title = article.value.title;
+
+    // 检查标题或内容是否为空
+    if ((!title || title.trim() === "") && (!content || content.trim() === "" || content === "<p></p>")) {
+      ElMessage.warning("请先输入文章标题或内容");
+      return;
+    }
+
+    ElMessage.info("AI 正在推荐标签，请稍候...");
+
+    // 调用后端接口推荐标签
+    const response = await recommendTagsApi(title, content);
+    const recommendedTags = response.data.data;
+
+    if (!recommendedTags || recommendedTags.length === 0) {
+      ElMessage.warning("AI 未能推荐标签");
+      return;
+    }
+
+    // 设置推荐的标签列表
+    aiRecommendedTags.value = recommendedTags;
+
+    // 初始化已选中的标签（与当前标签列表的交集）
+    aiSelectedRecommendedTags.value = recommendedTags.filter((tag) => tags.value.includes(tag));
+
+    // 显示对话框
+    aiRecommendedTagsDialogVisible.value = true;
+  } catch (error) {
+    console.error("AI 推荐标签失败:", error);
+    ElMessage.error(error.response?.data?.msg || "AI 推荐标签失败，请重试");
+  } finally {
+    isRecommendingTags.value = false;
   }
 };
 
@@ -1214,10 +1465,13 @@ const handleSaveDraft = async () => {
         // 文章标题区域样式
         .article-title-container {
           width: 100%;
+          position: relative;
+
           .article-title-input {
             box-sizing: border-box;
             width: 100%;
             padding: 28px;
+            padding-right: 140px; // 为 AI 按钮留出空间
             font-size: 24px;
             color: var(--el-text-color-primary);
             background: var(--el-bg-color);
@@ -1230,6 +1484,15 @@ const handleSaveDraft = async () => {
               color: var(--el-text-color-placeholder);
             }
           }
+
+          .ai-title-btn {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: fadeIn 0.3s ease;
+          }
+
           @media screen and (max-width: 768px) {
             margin-top: 60px;
           }
@@ -1305,6 +1568,7 @@ const handleSaveDraft = async () => {
                 height: 22px;
                 margin-bottom: 10px;
                 margin-left: 0px;
+                margin-right: 10px;
               }
             }
             // 标签选择器
@@ -1657,6 +1921,8 @@ const handleSaveDraft = async () => {
         border-radius: 50%;
         cursor: pointer;
         @media screen and (max-width: 768px) {
+          right: 22px;
+          bottom: 150px;
           width: 50px;
           height: 50px;
           font-size: 24px;
@@ -1738,6 +2004,157 @@ const handleSaveDraft = async () => {
           }
         }
       }
+    }
+  }
+}
+
+// AI 标签推荐对话框样式
+.ai-tag-recommendation-dialog {
+  .dialog-tip {
+    margin-bottom: 16px;
+    color: var(--el-text-color-regular);
+    font-size: 14px;
+  }
+
+  .recommended-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 16px;
+    background: var(--el-bg-color-page);
+    border-radius: 6px;
+    max-height: 300px;
+    overflow-y: auto;
+
+    .recommended-tag {
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+  }
+
+  .selected-count {
+    margin-top: 12px;
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+  }
+}
+
+// AI 标题建议对话框样式
+.ai-title-suggestions-dialog {
+  width: 100%;
+  box-sizing: border-box;
+
+  .dialog-tip {
+    margin-bottom: 16px;
+    color: var(--el-text-color-regular);
+    font-size: 14px;
+  }
+
+  .title-suggestions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden; // 隐藏水平滚动条
+    width: 100%;
+    box-sizing: border-box;
+
+    .title-suggestion-item {
+      padding: 16px;
+      background: var(--el-bg-color-page);
+      border: 1px solid var(--el-border-color);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+      line-height: 1.6; // 增加行高，提升可读性
+      color: var(--el-text-color-primary);
+      overflow-x: hidden; // 隐藏水平滚动条
+      word-wrap: break-word; // 允许长单词换行
+      overflow-wrap: break-word; // 现代浏览器支持
+      word-break: break-word; // 在必要时断行
+      white-space: normal; // 确保文本可以换行
+      width: 100%;
+      box-sizing: border-box;
+      min-width: 0; // 允许 flex 子元素收缩
+      min-height: auto; // 允许高度自适应内容
+      height: auto; // 高度自适应内容
+      display: block; // 确保是块级元素
+
+      &:hover {
+        background: var(--el-color-primary-light-9);
+        border-color: var(--el-color-primary);
+        // 移除 transform，避免内容超出容器
+      }
+
+      &.title-suggestion-item-selected {
+        background: var(--el-color-primary-light-9);
+        border-color: var(--el-color-primary);
+        color: var(--el-color-primary);
+        font-weight: 500;
+      }
+    }
+  }
+
+  // 移动端优化
+  @media screen and (max-width: 768px) {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+
+    .dialog-tip {
+      font-size: 13px;
+      margin-bottom: 12px;
+      word-break: break-word;
+    }
+
+    .title-suggestions-container {
+      max-height: 60vh; // 移动端使用视口高度，提供更多空间
+      gap: 10px;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      padding: 0 !important;
+
+      .title-suggestion-item {
+        padding: 14px 12px; // 移动端适当减少内边距
+        font-size: 13px;
+        line-height: 1.8; // 移动端进一步增加行高，确保文字清晰
+        // 确保高度完全自适应内容
+        min-height: auto !important;
+        height: auto !important;
+        max-height: none !important;
+        display: block !important; // 确保是块级元素
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        // 强制文本换行
+        word-break: break-all; // 移动端允许在任何字符间换行
+        overflow-wrap: anywhere; // 更激进的换行策略
+        white-space: normal !important; // 确保文本可以换行
+        overflow: visible !important; // 允许内容完全显示
+      }
+    }
+  }
+}
+
+// 深度选择器：覆盖 Element Plus AI 标题建议对话框的默认样式（移动端）
+:deep(.ai-title-suggestions-dialog-wrapper) {
+  @media screen and (max-width: 768px) {
+    width: 90% !important;
+    margin: 5vh auto !important;
+    max-width: 90% !important;
+
+    .el-dialog__body {
+      padding: 15px 12px !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
     }
   }
 }

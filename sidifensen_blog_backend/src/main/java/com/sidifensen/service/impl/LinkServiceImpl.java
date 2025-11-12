@@ -72,17 +72,27 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
 
     @Override
     public void applyLink(LinkRequestDto linkRequestDto) {
+        // 获取当前登录用户ID
+        Integer currentUserId = SecurityUtils.getUserId();
+        if (ObjectUtil.isEmpty(currentUserId) || currentUserId == 0) {
+            throw new BlogException(BlogConstants.LoginRequired);
+        }
+        // 调用重载方法
+        applyLink(linkRequestDto, currentUserId);
+    }
+
+    @Override
+    public void applyLink(LinkRequestDto linkRequestDto, Integer userId) {
         try {
-            // 获取当前登录用户ID
-            Integer currentUserId = SecurityUtils.getUserId();
-            if (ObjectUtil.isEmpty(currentUserId) || currentUserId == 0) {
+            // 验证用户ID
+            if (ObjectUtil.isEmpty(userId) || userId == 0) {
                 throw new BlogException(BlogConstants.LoginRequired);
             }
 
             // 创建友链实体
             Link link = new Link();
             BeanUtil.copyProperties(linkRequestDto, link);
-            link.setUserId(currentUserId);
+            link.setUserId(userId);
 
             // 保存友链申请
             int result = linkMapper.insert(link);
@@ -106,7 +116,8 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
 
             HashMap<String, Object> sendEmail = new HashMap<>();
             sendEmail.put("text", String.format(MessageConstants.LINK_NEED_REVIEW, link.getId(), link.getName()));
-            rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key,sendEmail);
+            rabbitTemplate.convertAndSend(RabbitMQConstants.Examine_Exchange, RabbitMQConstants.Examine_Routing_Key,
+                    sendEmail);
         });
     }
 
@@ -180,11 +191,14 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
         try {
             // 构建查询条件
             LambdaQueryWrapper<Link> qw = new LambdaQueryWrapper<Link>()
-                    .eq(ObjectUtil.isNotEmpty(linkSearchDto.getExamineStatus()), Link::getExamineStatus,linkSearchDto.getExamineStatus())
+                    .eq(ObjectUtil.isNotEmpty(linkSearchDto.getExamineStatus()), Link::getExamineStatus,
+                            linkSearchDto.getExamineStatus())
                     .eq(ObjectUtil.isNotEmpty(linkSearchDto.getUserId()), Link::getUserId, linkSearchDto.getUserId())
                     .like(StrUtil.isNotBlank(linkSearchDto.getKeyword()), Link::getName, linkSearchDto.getKeyword())
-                    .ge(ObjectUtil.isNotEmpty(linkSearchDto.getCreateTimeStart()), Link::getCreateTime,linkSearchDto.getCreateTimeStart())
-                    .le(ObjectUtil.isNotEmpty(linkSearchDto.getCreateTimeEnd()), Link::getCreateTime,linkSearchDto.getCreateTimeEnd())
+                    .ge(ObjectUtil.isNotEmpty(linkSearchDto.getCreateTimeStart()), Link::getCreateTime,
+                            linkSearchDto.getCreateTimeStart())
+                    .le(ObjectUtil.isNotEmpty(linkSearchDto.getCreateTimeEnd()), Link::getCreateTime,
+                            linkSearchDto.getCreateTimeEnd())
                     .orderByDesc(Link::getCreateTime);
 
             // 查询友链列表
@@ -213,7 +227,8 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
             }
 
             // 审核通过时发送邮件通知
-            if (ExamineStatusEnum.PASS.getCode().equals(linkAuditDto.getExamineStatus()) && StrUtil.isNotEmpty(link.getEmail())) {
+            if (ExamineStatusEnum.PASS.getCode().equals(linkAuditDto.getExamineStatus())
+                    && StrUtil.isNotEmpty(link.getEmail())) {
                 sendLinkApprovalEmail(link);
             }
 

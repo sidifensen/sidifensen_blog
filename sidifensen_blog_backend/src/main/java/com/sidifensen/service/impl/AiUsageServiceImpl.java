@@ -28,7 +28,7 @@ public class AiUsageServiceImpl implements AiUsageService {
     /**
      * 每个用户每天最多调用AI接口的次数
      */
-    private static final int DAILY_LIMIT = 10;
+    private static final int DAILY_LIMIT = 50;
 
     /**
      * 检查用户今日AI调用次数是否已达上限

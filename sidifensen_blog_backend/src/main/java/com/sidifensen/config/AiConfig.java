@@ -1,5 +1,11 @@
 package com.sidifensen.config;
 
+import com.sidifensen.domain.constants.AiPromptConstants;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
@@ -42,5 +48,40 @@ public class AiConfig {
 
         // 创建并返回 OpenAI Chat 模型
         return new OpenAiChatModel(openAiApi, options);
+    }
+
+    /**
+     * 配置会话记忆存储（用于智能客服）
+     * 使用内存存储，实际生产环境建议使用 Redis
+     */
+    @Bean
+    public ChatMemory chatMemory() {
+        return new InMemoryChatMemory();
+    }
+
+    /**
+     * 配置智能客服专用的 ChatClient
+     * 支持会话记忆，可以记住用户的上下文对话
+     */
+    @Bean
+    public ChatClient customerServiceChatClient(OpenAiChatModel openAiChatModel, ChatMemory chatMemory) {
+        return ChatClient.builder(openAiChatModel)
+                .defaultSystem(AiPromptConstants.CUSTOMER_SERVICE_SYSTEM_PROMPT)
+                .defaultAdvisors(
+                        new SimpleLoggerAdvisor(),
+                        new MessageChatMemoryAdvisor(chatMemory))
+                .build();
+    }
+
+    /**
+     * 配置写作助手专用的 ChatClient
+     * 专注于帮助用户进行内容创作
+     */
+    @Bean
+    public ChatClient writingAssistantChatClient(OpenAiChatModel openAiChatModel) {
+        return ChatClient.builder(openAiChatModel)
+                .defaultSystem(AiPromptConstants.WRITING_ASSISTANT_SYSTEM_PROMPT)
+                .defaultAdvisors(new SimpleLoggerAdvisor())
+                .build();
     }
 }

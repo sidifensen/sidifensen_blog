@@ -9,7 +9,6 @@ import { GetJwt, RemoveJwt } from "@/utils/Auth.js";
 import { ElMessage } from "element-plus";
 // 引入userStore
 import { useUserStore } from "@/stores/userStore.js";
-const userStore = useUserStore();
 
 // 创建axios
 const request = axios.create({
@@ -59,6 +58,7 @@ request.interceptors.response.use(
         // 401 代表token过期或被禁用或被删除，需要重新登录
         ElMessage.error(data.msg);
         // 清除userStore数据
+        const userStore = useUserStore();
         userStore.clearUser();
         // 需要重新登陆，跳转到登录页面
         router.push("/login");
