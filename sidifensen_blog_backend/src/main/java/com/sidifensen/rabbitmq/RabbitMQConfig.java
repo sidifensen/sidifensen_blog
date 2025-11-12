@@ -176,6 +176,41 @@ public class RabbitMQConfig {
                 .with(RabbitMQConstants.Blacklist_Routing_Key);
     }
 
+    // ==================== WebSocket 消息队列配置 ====================
+
+    /**
+     * WebSocket 消息交换机
+     * 使用 TopicExchange 支持通配符路由键（如 websocket.user.*）
+     */
+    @Bean
+    public TopicExchange websocketExchange() {
+        return new TopicExchange(RabbitMQConstants.WebSocket_Exchange, true, false);
+    }
+
+    /**
+     * WebSocket 消息队列
+     * 使用持久化队列，确保服务器重启后消息不丢失
+     */
+    @Bean
+    public Queue websocketQueue() {
+        return QueueBuilder.durable(RabbitMQConstants.WebSocket_Queue)
+                .withArguments(DEAD_LETTER_ARGS)  // 配置死信队列
+                .build();
+    }
+
+    /**
+     * 绑定 WebSocket 队列到交换机
+     * 使用通配符路由键，支持所有用户的消息
+     * websocket.user.* 匹配所有以 websocket.user. 开头的路由键
+     */
+    @Bean
+    public Binding bindingWebSocketQueueToExchange() {
+        return BindingBuilder
+                .bind(websocketQueue())
+                .to(websocketExchange())
+                .with(RabbitMQConstants.WebSocket_Routing_Key_Prefix + "*");
+    }
+
     // ==================== RabbitTemplate 配置 ====================
 
     /**

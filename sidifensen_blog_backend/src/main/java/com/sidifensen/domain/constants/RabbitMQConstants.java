@@ -86,4 +86,22 @@ public class RabbitMQConstants {
      */
     public static final String Blacklist_Routing_Key = "blacklist_routing_key";
 
+    // ==================== WebSocket 消息相关 ====================
+    
+    /**
+     * WebSocket 消息交换机
+     */
+    public static final String WebSocket_Exchange = "websocket_exchange";
+
+    /**
+     * WebSocket 消息队列
+     */
+    public static final String WebSocket_Queue = "websocket_queue";
+
+    /**
+     * WebSocket 消息路由键前缀
+     * 完整路由键格式：websocket.user.{userId}
+     */
+    public static final String WebSocket_Routing_Key_Prefix = "websocket.user.";
+
 }
