@@ -1,0 +1,62 @@
+services:
+  # Gitea Git 服务器
+  gitea:
+    image: gitea/gitea:latest
+    container_name: sidifensen-gitea
+    restart: unless-stopped
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      # 数据库配置：强制使用 MySQL
+      - GITEA__database__DB_TYPE=mysql
+      - GITEA__database__HOST=${GITEA_DB_HOST:-sidifensen-mysql}
+      - GITEA__database__NAME=${GITEA_DB_NAME:-gitea}
+      - GITEA__database__USER=${GITEA_DB_USER:-sidifensen}
+      - GITEA__database__PASSWD=${GITEA_DB_PASSWORD:-sidifensen123}
+      - GITEA__database__PORT=${GITEA_DB_PORT:-3306}
+      # 服务器配置
+      - GITEA__server__DOMAIN=${GITEA_DOMAIN:-localhost}
+      - GITEA__server__SSH_DOMAIN=${GITEA_DOMAIN:-localhost}
+      - GITEA__server__HTTP_PORT=3000
+      - GITEA__server__ROOT_URL=http://${GITEA_DOMAIN:-localhost}:${GITEA_PORT:-3000}/
+      - GITEA__server__SSH_PORT=${GITEA_SSH_PORT:-2222}
+      # 应用配置
+      - GITEA__app__NAME=${GITEA_APP_NAME:-斯蒂芬森}
+      - GITEA__repository__ROOT=${GITEA_REPOSITORY_ROOT:-/data/git/repositories}
+      - GITEA__lfs__PATH=${GITEA_LFS_PATH:-/data/git/lfs}
+      - GITEA__log__ROOT_PATH=${GITEA_LOG_PATH:-/data/gitea/log}
+      # 服务配置
+      # 注意：初始化时必须允许注册，否则无法创建管理员账户
+      # 初始化完成后，可以在管理界面禁用注册
+      - GITEA__service__DISABLE_REGISTRATION=${GITEA_DISABLE_REGISTRATION:-false}
+      - GITEA__service__ENABLE_CAPTCHA=${GITEA_ENABLE_CAPTCHA:-false}
+      - TZ=Asia/Shanghai
+    ports:
+      - "${GITEA_PORT:-3000}:3000"
+      - "${GITEA_SSH_PORT:-2222}:22"
+    volumes:
+      - gitea_data:/data
+      - gitea_config:/app/gitea
+    networks:
+      - sidifensen-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# 数据卷
+volumes:
+  gitea_data:
+    driver: local
+    name: sidifensen-gitea-data
+  gitea_config:
+    driver: local
+    name: sidifensen-gitea-config
+
+# 网络
+networks:
+  sidifensen-network:
+    driver: bridge
+    name: sidifensen-blog-network

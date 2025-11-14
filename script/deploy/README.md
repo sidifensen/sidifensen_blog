@@ -1,0 +1,401 @@
+# 自动化部署指南
+
+本目录包含 Jenkins 自动化部署和 Gitea 私有仓库相关的脚本、配置和文档。
+
+## 📁 文件说明
+
+### Jenkins 部署相关
+
+| 文件名              | 用途             | 执行位置                               |
+| ------------------- | ---------------- | -------------------------------------- |
+| `jenkins-deploy.sh` | 服务器端部署脚本 | 服务器上执行，由 Jenkins Pipeline 调用 |
+
+### Gitea 私有仓库相关
+
+| 文件名                     | 用途               | 执行位置            |
+| -------------------------- | ------------------ | ------------------- |
+| `docker-compose-gitea.yml` | Gitea Docker 配置  | Docker Compose 使用 |
+| `gitea-setup.sh`           | Gitea 初始化脚本   | 本地执行            |
+| `env.example`              | Gitea 环境变量示例 | 配置文件模板        |
+
+---
+
+## 🚀 快速开始
+
+### 前置条件
+
+- ✅ 服务器已安装 Docker 和 Docker Compose
+- ✅ 服务器已配置 SSH 访问
+- ✅ 服务器有足够资源（建议 2GB+ 内存）
+
+---
+
+## 📋 完整部署流程
+
+### 步骤 1: 部署 Gitea 私有仓库
+
+#### 1.1 配置环境变量
+
+```bash
+cd script/deploy
+cp env.example .env
+# 编辑 .env 文件，修改服务器 IP
+# GITEA_DOMAIN=your-server-ip
+# GITEA_PORT=3000
+```
+
+#### 1.2 启动 Gitea
+
+```bash
+docker-compose -f docker-compose-gitea.yml --env-file .env up -d
+```
+
+#### 1.3 初始化 Gitea
+
+1. 访问 `http://your-server-ip:3000`
+2. 点击 **"立即安装"**
+3. 数据库类型选择：`SQLite3`
+4. 配置管理员账户
+5. 完成安装
+
+#### 1.4 创建私有仓库
+
+1. 登录 Gitea
+2. 点击 **"+"** → **"新建仓库"**
+3. 仓库名称：`sidifensen_blog`
+4. 选择 **"私有"**
+5. 创建仓库
+
+#### 1.5 配置本地推送
+
+```bash
+# 添加 Gitea 远程仓库
+git remote add gitea http://your-server-ip:3000/username/sidifensen_blog.git
+
+# 推送代码
+git push gitea main
+```
+
+---
+
+### 步骤 2: 安装 Jenkins
+
+#### 2.1 Docker 安装（推荐）
+
+```bash
+# 创建 Jenkins 数据目录
+sudo mkdir -p /opt/jenkins_home
+sudo chown -R 1000:1000 /opt/jenkins_home
+
+# 运行 Jenkins
+docker run -d \
+  --name jenkins \
+  -p 8080:8080 \
+  -p 50000:50000 \
+  -v /opt/jenkins_home:/var/jenkins_home \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  jenkins/jenkins:lts
+```
+
+#### 2.2 初始化 Jenkins
+
+1. 访问 `http://your-server:8080`
+2. 获取初始密码：
+   ```bash
+   docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+   ```
+3. 安装推荐插件
+4. 创建管理员账户
+
+---
+
+### 步骤 3: 配置 Jenkins
+
+#### 3.1 安装必要插件
+
+进入 `Manage Jenkins` → `Plugins` → `Available plugins`，安装：
+
+- **SSH Pipeline Steps**
+- **Pipeline**
+- **Git**
+- **Gitea Plugin**（用于 Gitea 集成）
+
+#### 3.2 配置工具
+
+进入 `Manage Jenkins` → `Global Tool Configuration`：
+
+- **JDK**: `JDK-21`，选择 `Install automatically`，版本 `21`
+- **Maven**: `Maven-3`，选择 `Install automatically`，版本 `3.9.x`
+- **Node.js**: `NodeJS-20`，选择 `Install automatically`，版本 `20.x.x`
+
+#### 3.3 配置 SSH 凭据
+
+进入 `Manage Jenkins` → `Credentials` → `System` → `Global credentials`：
+
+1. 点击 `Add Credentials`
+2. 类型：`SSH Username with private key`
+3. 配置：
+   - **ID**: `jenkins-ssh-key`
+   - **Username**: `root`
+   - **Private Key**: 粘贴 SSH 私钥
+   - **Description**: `Jenkins SSH Key`
+
+#### 3.4 配置环境变量
+
+进入 `Manage Jenkins` → `Configure System`：
+
+在 `Global properties` → `Environment variables` 添加：
+
+- `DEPLOY_PATH`: `/opt/sidifensen_blog`
+- `SERVER_HOST`: `your-server-ip`
+- `SERVER_USER`: `root`
+
+#### 3.5 配置 Gitea 服务器
+
+1. 进入 `Manage Jenkins` → `Configure System`
+2. 找到 **Gitea Servers** 部分
+3. 点击 **"Add Gitea Server"**
+4. 配置：
+   - **Server URL**: `http://your-server-ip:3000`
+   - **Display Name**: `Gitea Server`
+   - **Credentials**: 创建 Gitea API Token 凭据
+
+**生成 Gitea API Token**：
+
+1. 登录 Gitea → **设置** → **应用** → **生成新令牌**
+2. 令牌名称：`Jenkins`
+3. 权限：勾选 `read:repository`, `read:user`
+4. 复制令牌并添加到 Jenkins 凭据
+
+---
+
+### 步骤 4: 创建 Jenkins 任务
+
+#### 4.1 创建 Pipeline 任务
+
+1. 点击 `New Item`
+2. 任务名称：`sidifensen-blog-deploy`
+3. 选择 `Pipeline`
+4. 点击 `OK`
+
+#### 4.2 配置 Pipeline
+
+- **Definition**: `Pipeline script from SCM`
+- **SCM**: `Git`
+- **Repository URL**: `http://your-server-ip:3000/username/sidifensen_blog.git`
+- **Credentials**: 添加 Gitea 凭据（如果需要）
+- **Branches to build**: `*/main`
+- **Script Path**: `Jenkinsfile`
+
+#### 4.3 配置构建触发器
+
+在 **构建触发器** 部分：
+
+- ✅ 勾选 **"Gitea webhook trigger for GITScm polling"**
+- 或选择 **"Build when a change is pushed to Gitea"**
+
+---
+
+### 步骤 5: 配置 Gitea Webhook
+
+1. 进入 Gitea 仓库 → **设置** → **Webhooks**
+2. 点击 **"添加 Webhook"** → **"Gitea"**
+3. 配置：
+   - **目标 URL**: `http://jenkins-server-ip:8080/gitea-webhook/post`
+   - **HTTP 方法**: `POST`
+   - **触发事件**: ✅ **推送事件**
+   - **激活**: ✅ 勾选
+4. 点击 **"添加 Webhook"**
+
+---
+
+### 步骤 6: 测试部署
+
+#### 手动触发
+
+1. 进入 Jenkins 任务页面
+2. 点击 `Build Now`
+3. 查看构建日志
+
+#### 自动触发
+
+推送代码到 `main` 分支：
+
+```bash
+git push gitea main
+```
+
+Jenkins 会自动检测并执行部署。
+
+---
+
+## ✅ 验证部署
+
+部署成功后，访问：
+
+- 后端 API: `http://your-server:5000`
+- 管理端前端: `http://your-server:8000`
+- 用户端前端: `http://your-server:7000`
+
+---
+
+## ⚙️ 工作流程
+
+```
+本地开发
+  ↓
+git push gitea main
+  ↓
+Gitea 接收推送
+  ↓
+Webhook 触发 Jenkins
+  ↓
+Jenkins 自动构建和部署
+  ↓
+服务器更新完成
+```
+
+每次推送代码到主分支，Jenkins 会自动：
+
+1. 检出代码
+2. 构建后端和前端
+3. 打包部署文件
+4. 部署到服务器
+5. 重启 Docker 容器
+
+---
+
+## 🔧 常用命令
+
+### Gitea 管理
+
+```bash
+cd script/deploy
+
+# 启动
+docker-compose -f docker-compose-gitea.yml --env-file .env up -d
+
+# 停止
+docker-compose -f docker-compose-gitea.yml --env-file .env down
+
+# 查看日志
+docker logs -f sidifensen-gitea
+
+# 重启
+docker-compose -f docker-compose-gitea.yml --env-file .env restart
+
+# 查看状态
+docker-compose -f docker-compose-gitea.yml --env-file .env ps
+```
+
+### Jenkins 管理
+
+```bash
+# 查看日志
+docker logs -f jenkins
+
+# 重启
+docker restart jenkins
+
+# 查看容器状态
+docker ps | grep jenkins
+```
+
+---
+
+## 🔧 常见问题
+
+### SSH 连接失败
+
+```bash
+# 确保服务器上已添加公钥
+cat ~/.ssh/authorized_keys
+
+# 测试 SSH 连接
+ssh -i /path/to/private/key user@server
+```
+
+### Docker 权限问题
+
+```bash
+# 将 Jenkins 用户添加到 docker 组
+sudo usermod -aG docker jenkins
+sudo systemctl restart jenkins
+```
+
+### Webhook 未触发
+
+1. 检查 Gitea Webhook 配置是否正确
+2. 检查 Jenkins Gitea 插件是否安装
+3. 查看 Gitea Webhook 日志（在 Webhook 设置页面）
+
+### 构建工具未找到
+
+检查 `Global Tool Configuration` 中的工具路径是否正确，或使用自动安装选项。
+
+---
+
+## 📖 详细文档
+
+如需更详细的配置说明和故障排查，请查看：
+
+- **[Jenkins 部署详细指南](./Jenkins部署指南.md)** - Jenkins 完整配置、Pipeline 说明和故障排查
+- **[Gitea 配置详细指南](./Gitea配置指南.md)** - Gitea 完整配置、监控维护和故障排查
+
+---
+
+## 🔒 安全提示
+
+### 通用安全建议
+
+1. 确保 Jenkins SSH 密钥安全
+2. 生产环境建议使用非 root 用户
+3. 定期更新服务器和依赖
+4. 配置防火墙规则，限制访问
+
+### Gitea 安全加固
+
+1. **修改默认端口**（重要）
+
+   - 将 HTTP 端口从 `3000` 改为非标准端口（如 `30001`）
+   - 将 SSH 端口从 `2222` 改为非标准端口（如 `22222`）
+   - 降低被自动扫描和攻击的风险
+
+2. **防火墙配置**（强烈推荐）
+
+   ```bash
+   # 只允许特定 IP 访问 Gitea（如果可能）
+   # 或使用云服务商的安全组规则
+   ```
+
+3. **使用 HTTPS**（生产环境必须）
+
+   - 配置 Nginx 反向代理，使用 HTTPS
+   - 避免 HTTP 明文传输
+
+4. **禁用公开注册**
+
+   - 设置 `GITEA_DISABLE_REGISTRATION=true`
+
+5. **仅内网访问**（最安全）
+
+   - 如果 Gitea 只在内网使用，不要暴露到公网
+   - 使用 VPN 或跳板机访问
+
+6. **强密码策略**
+
+   - 使用复杂密码
+   - 定期更换密码
+
+7. **SSH 密钥认证**
+   - 优先使用 SSH 密钥，而非密码登录
+
+---
+
+## 🎯 下一步
+
+1. 按照本文档完成配置
+2. 推送代码测试自动部署
+3. 查看详细文档解决遇到的问题
+
+如有问题，请查看详细文档或联系项目维护者。
