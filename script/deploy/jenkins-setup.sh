@@ -51,6 +51,18 @@ require_root() {
     fi
 }
 
+# 带超时的命令执行（如果 timeout 命令可用）
+run_with_timeout() {
+    local timeout_seconds=$1
+    shift
+    if command_exists timeout; then
+        timeout "$timeout_seconds" "$@"
+    else
+        print_warn "timeout 命令不可用，直接执行命令（无超时保护）"
+        "$@"
+    fi
+}
+
 # 默认配置，可通过环境变量覆盖
 CONTAINER_NAME="${CONTAINER_NAME:-jenkins}"
 JENKINS_HOME="${JENKINS_HOME:-/opt/jenkins_home}"
@@ -114,6 +126,17 @@ docker pull "$JENKINS_IMAGE"
 
 # 启动 Jenkins 容器
 print_title "启动 Jenkins 容器"
+
+# 获取 docker 组的 GID，用于容器内权限配置
+DOCKER_GID=$(getent group docker | cut -d: -f3)
+if [ -z "$DOCKER_GID" ]; then
+    print_warn "未找到 docker 组，Jenkins 容器可能无法访问 Docker"
+    DOCKER_GROUP_ADD=""
+else
+    print_info "检测到 docker 组 GID: $DOCKER_GID"
+    DOCKER_GROUP_ADD="--group-add $DOCKER_GID"
+fi
+
 docker run -d \
     --name "$CONTAINER_NAME" \
     -p "${HTTP_PORT}:8080" \
@@ -125,6 +148,7 @@ docker run -d \
     -v "$(command -v docker):/usr/bin/docker" \
     -v /etc/localtime:/etc/localtime:ro \
     -v /etc/timezone:/etc/timezone:ro \
+    $DOCKER_GROUP_ADD \
     --restart unless-stopped \
     "$JENKINS_IMAGE"
 
@@ -133,36 +157,109 @@ print_info "Jenkins 容器已启动"
 # 安装 Node.js 依赖库
 print_title "安装 Node.js 依赖库"
 print_info "检查并安装 libatomic.so.1（Node.js 运行所需）..."
-sleep 2  # 等待容器完全启动
+print_info "等待容器完全启动..."
+sleep 5  # 等待容器完全启动
 
-if docker exec -u root "$CONTAINER_NAME" sh -c "command -v apt-get >/dev/null 2>&1"; then
-    # Debian/Ubuntu 系统
-    print_info "检测到 Debian/Ubuntu 系统，安装 libatomic1..."
-    docker exec -u root "$CONTAINER_NAME" sh -c "apt-get update -qq && apt-get install -y libatomic1" || {
-        print_warn "无法自动安装 libatomic1，请手动执行:"
-        echo "  docker exec -it -u root ${CONTAINER_NAME} bash"
-        echo "  apt-get update && apt-get install -y libatomic1"
-    }
-elif docker exec -u root "$CONTAINER_NAME" sh -c "command -v yum >/dev/null 2>&1"; then
-    # CentOS/RHEL 系统
-    print_info "检测到 CentOS/RHEL 系统，安装 libatomic..."
-    docker exec -u root "$CONTAINER_NAME" sh -c "yum install -y libatomic" || {
-        print_warn "无法自动安装 libatomic，请手动执行:"
-        echo "  docker exec -it -u root ${CONTAINER_NAME} bash"
-        echo "  yum install -y libatomic"
-    }
-elif docker exec -u root "$CONTAINER_NAME" sh -c "command -v apk >/dev/null 2>&1"; then
-    # Alpine 系统
-    print_info "检测到 Alpine 系统，安装 libatomic..."
-    docker exec -u root "$CONTAINER_NAME" sh -c "apk add --no-cache libatomic" || {
-        print_warn "无法自动安装 libatomic，请手动执行:"
-        echo "  docker exec -it -u root ${CONTAINER_NAME} bash"
-        echo "  apk add --no-cache libatomic"
-    }
+# 检查容器是否运行
+if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}\$"; then
+    print_error "Jenkins 容器未运行，无法安装依赖库"
+    exit 1
+fi
+
+# 检查 libatomic.so.1 是否已存在
+if docker exec "$CONTAINER_NAME" sh -c "ldconfig -p 2>/dev/null | grep -q libatomic.so.1 || find /usr/lib* /lib* -name 'libatomic.so.1' 2>/dev/null | head -1 | grep -q ."; then
+    print_info "✅ libatomic.so.1 已存在，跳过安装"
 else
-    print_warn "无法识别系统包管理器，请手动安装 libatomic.so.1"
-    echo "  进入容器: docker exec -it -u root ${CONTAINER_NAME} bash"
-    echo "  然后根据系统类型安装相应的 libatomic 包"
+    print_info "检测到缺少 libatomic.so.1，开始安装..."
+    
+    if docker exec -u root "$CONTAINER_NAME" sh -c "command -v apt-get >/dev/null 2>&1"; then
+        # Debian/Ubuntu 系统
+        print_info "检测到 Debian/Ubuntu 系统，安装 libatomic1..."
+        
+        # 尝试配置国内镜像源（可选，如果网络慢）
+        print_info "尝试配置国内镜像源以加速下载..."
+        docker exec -u root "$CONTAINER_NAME" sh -c "
+            if [ ! -f /etc/apt/sources.list.backup ]; then
+                cp /etc/apt/sources.list /etc/apt/sources.list.backup 2>/dev/null || true
+                # 检测 Debian 版本并配置阿里云镜像源
+                DEBIAN_VERSION=\$(cat /etc/debian_version 2>/dev/null | cut -d. -f1)
+                if [ \"\$DEBIAN_VERSION\" = \"11\" ] || [ \"\$DEBIAN_VERSION\" = \"bullseye\" ]; then
+                    cat > /etc/apt/sources.list << 'EOF'
+deb http://mirrors.aliyun.com/debian/ bullseye main contrib non-free
+deb http://mirrors.aliyun.com/debian/ bullseye-updates main contrib non-free
+deb http://mirrors.aliyun.com/debian-security bullseye-security main contrib non-free
+EOF
+                elif [ \"\$DEBIAN_VERSION\" = \"12\" ] || [ \"\$DEBIAN_VERSION\" = \"bookworm\" ]; then
+                    cat > /etc/apt/sources.list << 'EOF'
+deb http://mirrors.aliyun.com/debian/ bookworm main contrib non-free
+deb http://mirrors.aliyun.com/debian/ bookworm-updates main contrib non-free
+deb http://mirrors.aliyun.com/debian-security bookworm-security main contrib non-free
+EOF
+                fi
+            fi
+        " || print_warn "镜像源配置失败，使用默认源"
+        
+        print_info "正在更新软件包列表（最多等待3分钟）..."
+        # 使用超时机制，并设置非交互式环境变量
+        if run_with_timeout 180 docker exec -u root -e DEBIAN_FRONTEND=noninteractive "$CONTAINER_NAME" sh -c "apt-get update -qq 2>&1" && \
+           run_with_timeout 180 docker exec -u root -e DEBIAN_FRONTEND=noninteractive "$CONTAINER_NAME" sh -c "apt-get install -y --no-install-recommends libatomic1 2>&1"; then
+            print_info "✅ libatomic1 安装成功"
+        else
+            print_error "❌ 无法自动安装 libatomic1（可能超时或网络问题）"
+            print_warn "请手动执行以下命令（使用国内镜像源）:"
+            echo "  docker exec -it -u root ${CONTAINER_NAME} bash"
+            echo "  cat > /etc/apt/sources.list << 'EOF'"
+            echo "  deb http://mirrors.aliyun.com/debian/ bullseye main contrib non-free"
+            echo "  deb http://mirrors.aliyun.com/debian/ bullseye-updates main contrib non-free"
+            echo "  deb http://mirrors.aliyun.com/debian-security bullseye-security main contrib non-free"
+            echo "  EOF"
+            echo "  export DEBIAN_FRONTEND=noninteractive"
+            echo "  apt-get update"
+            echo "  apt-get install -y libatomic1"
+            print_warn "或者跳过此步骤，稍后手动安装（不影响 Docker 权限测试）"
+            # 不退出，允许继续执行
+        fi
+    elif docker exec -u root "$CONTAINER_NAME" sh -c "command -v yum >/dev/null 2>&1"; then
+        # CentOS/RHEL 系统
+        print_info "检测到 CentOS/RHEL 系统，安装 libatomic..."
+        print_info "正在安装（可能需要一些时间，最多等待5分钟）..."
+        if run_with_timeout 300 docker exec -u root "$CONTAINER_NAME" sh -c "yum install -y libatomic 2>&1"; then
+            print_info "✅ libatomic 安装成功"
+        else
+            print_error "❌ 无法自动安装 libatomic（可能超时或网络问题）"
+            print_warn "请手动执行以下命令:"
+            echo "  docker exec -it -u root ${CONTAINER_NAME} bash"
+            echo "  yum install -y libatomic"
+            exit 1
+        fi
+    elif docker exec -u root "$CONTAINER_NAME" sh -c "command -v apk >/dev/null 2>&1"; then
+        # Alpine 系统
+        print_info "检测到 Alpine 系统，安装 libatomic..."
+        print_info "正在安装（可能需要一些时间，最多等待5分钟）..."
+        if run_with_timeout 300 docker exec -u root "$CONTAINER_NAME" sh -c "apk add --no-cache libatomic 2>&1"; then
+            print_info "✅ libatomic 安装成功"
+        else
+            print_error "❌ 无法自动安装 libatomic（可能超时或网络问题）"
+            print_warn "请手动执行以下命令:"
+            echo "  docker exec -it -u root ${CONTAINER_NAME} sh"
+            echo "  apk add --no-cache libatomic"
+            exit 1
+        fi
+    else
+        print_error "❌ 无法识别系统包管理器"
+        print_warn "请手动安装 libatomic.so.1:"
+        echo "  docker exec -it -u root ${CONTAINER_NAME} bash"
+        echo "  然后根据系统类型安装相应的 libatomic 包"
+        exit 1
+    fi
+    
+    # 验证安装
+    print_info "验证 libatomic.so.1 安装..."
+    if docker exec "$CONTAINER_NAME" sh -c "ldconfig -p 2>/dev/null | grep -q libatomic.so.1 || find /usr/lib* /lib* -name 'libatomic.so.1' 2>/dev/null | head -1 | grep -q ."; then
+        print_info "✅ libatomic.so.1 安装验证成功"
+    else
+        print_warn "⚠️  安装完成但验证失败，请手动检查"
+    fi
 fi
 
 # 检查 Docker Compose
@@ -174,50 +271,51 @@ elif docker exec "$CONTAINER_NAME" docker-compose version >/dev/null 2>&1; then
     print_info "✅ Docker Compose V1 已可用 (docker-compose)"
 else
     print_warn "未检测到 Docker Compose，尝试安装..."
-    if docker exec -u root "$CONTAINER_NAME" sh -c "command -v apt-get >/dev/null 2>&1"; then
-        # 尝试安装 docker-compose-plugin（Docker Compose V2）
-        print_info "尝试安装 Docker Compose V2 (docker-compose-plugin)..."
-        docker exec -u root "$CONTAINER_NAME" sh -c "apt-get update -qq && apt-get install -y docker-compose-plugin" || {
-            print_warn "无法自动安装 docker-compose-plugin，尝试使用国内镜像安装 docker-compose V1..."
-            # 使用国内镜像安装 docker-compose V1
-            # 使用 gitee 镜像或直接下载（如果 gitee 不可用，使用 daocloud 镜像）
-            docker exec -u root "$CONTAINER_NAME" sh -c "
-                ARCH=\$(uname -m)
-                OS=\$(uname -s | tr '[:upper:]' '[:lower:]')
-                [ \"\$ARCH\" = \"x86_64\" ] && ARCH=\"amd64\" || true
-                [ \"\$ARCH\" = \"aarch64\" ] && ARCH=\"arm64\" || true
-                
-                # 尝试使用 gitee 镜像
-                curl -L \"https://gitee.com/mirrors/docker-compose/releases/download/v2.24.5/docker-compose-\${OS}-\${ARCH}\" -o /usr/local/bin/docker-compose 2>/dev/null || \
-                # 如果 gitee 失败，尝试使用 daocloud 镜像
-                curl -L \"https://get.daocloud.io/docker/compose/releases/download/v2.24.5/docker-compose-\${OS}-\${ARCH}\" -o /usr/local/bin/docker-compose 2>/dev/null || \
-                # 如果都失败，使用 GitHub（可能需要代理）
-                curl -L \"https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-\${OS}-\${ARCH}\" -o /usr/local/bin/docker-compose && \
-                chmod +x /usr/local/bin/docker-compose
-            " || {
-                print_warn "无法自动安装 Docker Compose，请手动安装:"
-                echo "  docker exec -it -u root ${CONTAINER_NAME} bash"
-                echo "  # 方法1: 使用 gitee 镜像"
-                echo "  curl -L \"https://gitee.com/mirrors/docker-compose/releases/download/v2.24.5/docker-compose-\$(uname -s | tr '[:upper:]' '[:lower:]')-\$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')\" -o /usr/local/bin/docker-compose"
-                echo "  chmod +x /usr/local/bin/docker-compose"
-                echo ""
-                echo "  # 方法2: 使用 daocloud 镜像"
-                echo "  curl -L \"https://get.daocloud.io/docker/compose/releases/download/v2.24.5/docker-compose-\$(uname -s | tr '[:upper:]' '[:lower:]')-\$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')\" -o /usr/local/bin/docker-compose"
-                echo "  chmod +x /usr/local/bin/docker-compose"
-            }
-        }
-    else
-        print_warn "无法自动安装 Docker Compose，请手动安装:"
-        echo "  docker exec -it -u root ${CONTAINER_NAME} bash"
-        echo "  # 使用 gitee 镜像（推荐）"
-        echo "  ARCH=\$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"
-        echo "  OS=\$(uname -s | tr '[:upper:]' '[:lower:]')"
-        echo "  curl -L \"https://gitee.com/mirrors/docker-compose/releases/download/v2.24.5/docker-compose-\${OS}-\${ARCH}\" -o /usr/local/bin/docker-compose"
-        echo "  chmod +x /usr/local/bin/docker-compose"
+    INSTALLED=false
+    
+    # 方法1: 从宿主机复制（最简单，如果宿主机已安装）
+    if command -v docker-compose >/dev/null 2>&1; then
+        print_info "方法1: 从宿主机复制 docker-compose..."
+        if docker cp "$(command -v docker-compose)" "${CONTAINER_NAME}:/usr/local/bin/docker-compose" 2>/dev/null && \
+           docker exec -u root "$CONTAINER_NAME" chmod +x /usr/local/bin/docker-compose 2>/dev/null && \
+           docker exec "$CONTAINER_NAME" docker-compose version >/dev/null 2>&1; then
+            print_info "✅ 从宿主机复制成功"
+            INSTALLED=true
+        fi
+    fi
+    
+    # 方法2: 使用包管理器安装（如果方法1失败）
+    if [ "$INSTALLED" = false ] && docker exec -u root "$CONTAINER_NAME" sh -c "command -v apt-get >/dev/null 2>&1"; then
+        print_info "方法2: 使用包管理器安装 docker-compose-plugin..."
+        if docker exec -u root "$CONTAINER_NAME" sh -c "apt-get update -qq && apt-get install -y docker-compose-plugin 2>/dev/null" && \
+           docker exec "$CONTAINER_NAME" docker compose version >/dev/null 2>&1; then
+            print_info "✅ 包管理器安装成功"
+            INSTALLED=true
+        fi
+    fi
+    
+    # 如果所有方法都失败，给出建议
+    if [ "$INSTALLED" = false ]; then
+        print_error "❌ 自动安装失败"
         echo ""
-        echo "  # 或使用 daocloud 镜像"
-        echo "  curl -L \"https://get.daocloud.io/docker/compose/releases/download/v2.24.5/docker-compose-\${OS}-\${ARCH}\" -o /usr/local/bin/docker-compose"
-        echo "  chmod +x /usr/local/bin/docker-compose"
+        print_warn "建议的解决方案:"
+        echo ""
+        echo "  1. 如果宿主机已安装 docker-compose，手动复制:"
+        echo "     docker cp \$(which docker-compose) ${CONTAINER_NAME}:/usr/local/bin/docker-compose"
+        echo "     docker exec -u root ${CONTAINER_NAME} chmod +x /usr/local/bin/docker-compose"
+        echo ""
+        echo "  2. 检查 Docker 版本是否支持 docker compose (V2):"
+        echo "     docker exec ${CONTAINER_NAME} docker compose version"
+        echo "     如果支持，Jenkinsfile 会自动使用 'docker compose' 命令"
+        echo ""
+        echo "  3. 或者手动在宿主机下载后复制到容器:"
+        echo "     # 在宿主机上下载（如果可以访问网络）"
+        echo "     ARCH=\$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"
+        echo "     OS=\$(uname -s | tr '[:upper:]' '[:lower:]')"
+        echo "     curl -L \"https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-\${OS}-\${ARCH}\" -o /tmp/docker-compose"
+        echo "     chmod +x /tmp/docker-compose"
+        echo "     docker cp /tmp/docker-compose ${CONTAINER_NAME}:/usr/local/bin/docker-compose"
+        echo ""
     fi
     
     # 再次检查
@@ -239,4 +337,5 @@ print_info "4. 根据提示完成插件安装和管理员账户创建"
 print_title "安装完成"
 print_info "Jenkins 已成功启动并以 Docker 方式运行"
 print_info "使用 'docker logs -f ${CONTAINER_NAME}' 查看初始化日志"
+
 

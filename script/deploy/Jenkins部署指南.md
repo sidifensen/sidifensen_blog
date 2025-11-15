@@ -14,180 +14,96 @@
 
 ## 🚀 Jenkins 安装
 
-### 方式一：Docker 安装（推荐）
+本项目使用自动化脚本 `jenkins-setup.sh` 来安装和配置 Jenkins，脚本会自动处理所有必要的配置和依赖安装。
+
+### 前置要求
+
+- **Docker**：确保已安装 Docker（脚本会自动检查）
+- **root 权限**：需要使用 root 用户或 sudo 执行脚本
+
+### 使用脚本安装
+
+1. **进入部署脚本目录**：
+
+   ```bash
+   cd script/deploy
+   ```
+
+2. **执行安装脚本**：
+
+   ```bash
+   sudo ./jenkins-setup.sh
+   ```
+
+   脚本会自动完成以下操作：
+
+   - ✅ 创建并配置 Jenkins 数据目录（`/opt/jenkins_home`）
+   - ✅ 创建并配置部署目录（`/opt/sidifensen_blog`）
+   - ✅ 拉取 Jenkins LTS 镜像
+   - ✅ 启动 Jenkins Docker 容器（包含所有必要的挂载和配置）
+   - ✅ 自动安装 Node.js 依赖库（`libatomic.so.1`）
+   - ✅ 自动检查并安装 Docker Compose（如需要）
+   - ✅ 配置时区为 `Asia/Shanghai`
+
+### 自定义配置（可选）
+
+脚本支持通过环境变量自定义配置：
 
 ```bash
-# 创建 Jenkins 数据目录
-sudo mkdir -p /opt/jenkins_home
-sudo chown -R 1000:1000 /opt/jenkins_home
+# 自定义配置示例
+export CONTAINER_NAME=my-jenkins
+export JENKINS_HOME=/custom/jenkins_home
+export DEPLOY_PATH=/custom/deploy_path
+export HTTP_PORT=9090
+export AGENT_PORT=50001
+export JENKINS_IMAGE=jenkins/jenkins:lts
 
-# 运行 Jenkins
-docker run -d \
-  --name jenkins \
-  -p 8080:8080 \
-  -p 50000:50000 \
-  -e TZ=Asia/Shanghai \
-  -v /opt/jenkins_home:/var/jenkins_home \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /usr/bin/docker:/usr/bin/docker \
-  -v /etc/localtime:/etc/localtime:ro \
-  -v /etc/timezone:/etc/timezone:ro \
-  jenkins/jenkins:lts
+sudo ./jenkins-setup.sh
 ```
 
-> ℹ️ 上述命令额外指定了 `TZ=Asia/Shanghai` 并挂载宿主机时区文件，确保 Jenkins 界面显示为北京时间。如需使用其他时区，可调整 `TZ` 值并保持两个挂载项。
+**默认配置**：
 
-### 方式二：系统安装
-
-```bash
-# Ubuntu/Debian
-wget -q -O - https://pkg.jenkins.io/debian/jenkins.io-2023.key | sudo apt-key add -
-sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
-sudo apt update
-sudo apt install jenkins
-
-# 启动 Jenkins
-sudo systemctl start jenkins
-sudo systemctl enable jenkins
-```
+- 容器名称：`jenkins`
+- Jenkins 数据目录：`/opt/jenkins_home`
+- 部署目录：`/opt/sidifensen_blog`
+- HTTP 端口：`8080`
+- Agent 端口：`50000`
+- Docker 镜像：`jenkins/jenkins:lts`
 
 ### 初始化 Jenkins
 
-1. 访问 `http://your-server:8080`
-2. 获取初始管理员密码：
+脚本执行完成后，按以下步骤初始化 Jenkins：
+
+1. **等待容器启动**（首次启动可能需要 1-2 分钟）
+
+2. **访问 Jenkins**：
+
+   在浏览器中访问 `http://<服务器IP>:8080`
+
+3. **获取初始管理员密码**：
 
    ```bash
-   # Docker 方式
    docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
-
-   # 系统安装方式
-   sudo cat /var/lib/jenkins/secrets/initialAdminPassword
    ```
 
-3. 安装推荐插件
-4. 创建管理员账户
+4. **完成初始化**：
+   - 输入初始管理员密码
+   - 安装推荐插件（或选择自定义插件）
+   - 创建管理员账户
 
-### 安装必要的系统依赖（Docker 方式）
+### 脚本自动处理的内容
 
-如果使用 Docker 方式安装 Jenkins，需要在容器中安装以下依赖：
+`jenkins-setup.sh` 脚本已经自动处理了以下内容，**无需手动操作**：
 
-#### 1. 安装 libatomic.so.1（Node.js 运行所需）
+- ✅ **Docker 容器配置**：自动配置所有必要的挂载和权限
+- ✅ **时区设置**：自动设置为 `Asia/Shanghai`
+- ✅ **部署目录挂载**：自动挂载部署目录到容器
+- ✅ **Docker 访问权限**：自动配置容器内 Docker 访问权限
+- ✅ **Node.js 依赖**：自动检测并安装 `libatomic.so.1`（支持 Debian/Ubuntu/CentOS/Alpine）
+- ✅ **Docker Compose**：自动检测并尝试安装 Docker Compose（如需要）
+- ✅ **国内镜像源**：自动配置阿里云镜像源以加速下载（Debian/Ubuntu 系统）
 
-```bash
-# 进入 Jenkins 容器（以 root 用户）
-docker exec -it -u root jenkins bash
-
-# 在容器内安装（Debian/Ubuntu 系统）
-apt-get update
-apt-get install -y libatomic1
-
-# 验证安装
-ldconfig -p | grep libatomic
-
-# 退出容器
-exit
-
-# 验证 Node.js 是否可以运行
-docker exec jenkins node -v
-```
-
-**或者一行命令安装**：
-
-```bash
-docker exec -u root jenkins apt-get update && docker exec -u root jenkins apt-get install -y libatomic1
-```
-
-#### 2. 安装 Docker Compose
-
-**方法一：使用包管理器安装（推荐，最简单）**
-
-```bash
-# 进入 Jenkins 容器（以 root 用户）
-docker exec -it -u root jenkins bash
-
-# 在容器内安装 Docker Compose V2（推荐）
-apt-get update
-apt-get install -y docker-compose-plugin
-
-# 验证安装
-docker compose version
-
-# 退出容器
-exit
-```
-
-**方法二：使用国内镜像下载安装**
-
-如果包管理器安装失败，可以使用国内镜像：
-
-```bash
-# 进入 Jenkins 容器（以 root 用户）
-docker exec -it -u root jenkins bash
-
-# 设置变量
-ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
-OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-
-# 使用 gitee 镜像下载（推荐）
-curl -L "https://gitee.com/mirrors/docker-compose/releases/download/v2.24.5/docker-compose-${OS}-${ARCH}" -o /usr/local/bin/docker-compose
-
-# 如果 gitee 不可用，可以使用 daocloud 镜像
-# curl -L "https://get.daocloud.io/docker/compose/releases/download/v2.24.5/docker-compose-${OS}-${ARCH}" -o /usr/local/bin/docker-compose
-
-chmod +x /usr/local/bin/docker-compose
-
-# 验证安装
-docker-compose version
-
-# 退出容器
-exit
-```
-
-**或者一行命令安装（使用 gitee 镜像）**：
-
-```bash
-docker exec -u root jenkins sh -c 'ARCH=$(uname -m | sed "s/x86_64/amd64/;s/aarch64/arm64/"); OS=$(uname -s | tr "[:upper:]" "[:lower:]"); curl -L "https://gitee.com/mirrors/docker-compose/releases/download/v2.24.5/docker-compose-${OS}-${ARCH}" -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose'
-```
-
-**注意**：如果 Docker 版本较新（>= 20.10），可能已经包含 Docker Compose V2，可以使用 `docker compose`（注意是空格）命令：
-
-```bash
-# 检查是否已有 Docker Compose V2
-docker exec jenkins docker compose version
-```
-
-如果这个命令成功，说明已经可以使用 `docker compose` 命令，无需额外安装。
-
-#### 3. 挂载部署目录（重要）
-
-确保 Jenkins 容器可以访问部署目录，需要在启动容器时挂载：
-
-```bash
-# 如果使用 docker run 启动，添加以下挂载参数
--v /opt/sidifensen_blog:/opt/sidifensen_blog
-
-# 完整的启动命令示例
-docker run -d \
-  --name jenkins \
-  -p 8080:8080 \
-  -p 50000:50000 \
-  -e TZ=Asia/Shanghai \
-  -v /opt/jenkins_home:/var/jenkins_home \
-  -v /opt/sidifensen_blog:/opt/sidifensen_blog \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /usr/bin/docker:/usr/bin/docker \
-  -v /etc/localtime:/etc/localtime:ro \
-  -v /etc/timezone:/etc/timezone:ro \
-  --restart unless-stopped \
-  jenkins/jenkins:lts
-```
-
-如果容器已经启动，需要：
-1. 停止容器
-2. 删除容器
-3. 使用新的挂载参数重新创建容器
-
-或者使用项目提供的 `jenkins-setup.sh` 脚本，它会自动处理这些配置。
+> 💡 **提示**：如果脚本执行过程中遇到网络问题导致依赖安装失败，脚本会给出详细的手动安装指导，你可以稍后手动完成安装。
 
 ---
 
@@ -463,13 +379,26 @@ permission denied
 
 **解决方案**:
 
-1. 确保 Jenkins 可以访问 Docker：
+> ✅ **注意**：如果使用 `jenkins-setup.sh` 脚本安装，脚本已经自动配置了 Docker 访问权限，通常不会出现此问题。
+
+如果仍然遇到问题：
+
+1. 检查容器是否正常挂载了 Docker socket：
+
    ```bash
-   # 将 Jenkins 用户添加到 docker 组
-   sudo usermod -aG docker jenkins
-   sudo systemctl restart jenkins
+   docker exec jenkins ls -la /var/run/docker.sock
    ```
-2. 如果使用 Docker 方式安装 Jenkins，确保挂载了 Docker socket
+
+2. 检查容器内的 docker 命令：
+
+   ```bash
+   docker exec jenkins docker --version
+   ```
+
+3. 如果问题仍然存在，可以重新运行安装脚本：
+   ```bash
+   sudo ./jenkins-setup.sh
+   ```
 
 ### 问题 4: 文件上传失败
 
@@ -495,33 +424,47 @@ docker-compose: command not found
 
 **解决方案**:
 
-1. **如果 Jenkins 在 Docker 容器中运行**，需要在容器内安装 Docker Compose：
+> ✅ **注意**：`jenkins-setup.sh` 脚本已经自动检测并尝试安装 Docker Compose，通常不会出现此问题。
+
+如果仍然遇到问题：
+
+1. **检查 Docker Compose 是否已安装**：
+
+   ```bash
+   # 检查 Docker Compose V2（推荐）
+   docker exec jenkins docker compose version
+
+   # 检查 Docker Compose V1
+   docker exec jenkins docker-compose version
+   ```
+
+2. **如果未安装，手动安装**：
+
    ```bash
    # 进入容器
    docker exec -it -u root jenkins bash
-   
+
    # 方法1: 使用包管理器安装（推荐）
    apt-get update
    apt-get install -y docker-compose-plugin
-   
+
    # 方法2: 使用国内镜像下载安装
    ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
    OS=$(uname -s | tr '[:upper:]' '[:lower:]')
    # 使用 gitee 镜像
    curl -L "https://gitee.com/mirrors/docker-compose/releases/download/v2.24.5/docker-compose-${OS}-${ARCH}" -o /usr/local/bin/docker-compose
-   # 或使用 daocloud 镜像
-   # curl -L "https://get.daocloud.io/docker/compose/releases/download/v2.24.5/docker-compose-${OS}-${ARCH}" -o /usr/local/bin/docker-compose
    chmod +x /usr/local/bin/docker-compose
-   
+
    # 验证
    docker-compose version
+   exit
    ```
 
-2. **如果使用 Docker Compose V2**（Docker >= 20.10），可以使用 `docker compose` 命令（注意是空格）
+3. **如果使用 Docker Compose V2**（Docker >= 20.10），Jenkinsfile 会自动使用 `docker compose` 命令（注意是空格）
 
-3. 检查部署路径是否正确
+4. 检查部署路径是否正确
 
-4. 查看服务器上的部署日志
+5. 查看服务器上的部署日志
 
 ### 问题 6: Node.js 无法运行
 
@@ -533,28 +476,33 @@ node: error while loading shared libraries: libatomic.so.1: cannot open shared o
 
 **解决方案**:
 
-如果 Jenkins 在 Docker 容器中运行，需要在容器内安装缺失的库：
+> ✅ **注意**：`jenkins-setup.sh` 脚本已经自动检测并安装 `libatomic.so.1`，通常不会出现此问题。
 
-```bash
-# 进入容器
-docker exec -it -u root jenkins bash
+如果仍然遇到问题（可能是脚本安装失败或网络问题）：
 
-# 安装 libatomic1（Debian/Ubuntu）
-apt-get update
-apt-get install -y libatomic1
+1. **验证 libatomic.so.1 是否已安装**：
 
-# 验证
-ldconfig -p | grep libatomic
+   ```bash
+   docker exec jenkins sh -c "ldconfig -p 2>/dev/null | grep libatomic.so.1 || find /usr/lib* /lib* -name 'libatomic.so.1' 2>/dev/null | head -1"
+   ```
 
-# 验证 Node.js
-node -v
-```
+2. **如果未安装，手动安装**：
 
-**或者一行命令安装**：
+   ```bash
+   # Debian/Ubuntu 系统
+   docker exec -u root jenkins apt-get update && docker exec -u root jenkins apt-get install -y libatomic1
 
-```bash
-docker exec -u root jenkins apt-get update && docker exec -u root jenkins apt-get install -y libatomic1
-```
+   # CentOS/RHEL 系统
+   docker exec -u root jenkins yum install -y libatomic
+
+   # Alpine 系统
+   docker exec -u root jenkins apk add --no-cache libatomic
+   ```
+
+3. **验证 Node.js**：
+   ```bash
+   docker exec jenkins node -v
+   ```
 
 ### 问题 7: Webhook 未触发
 
@@ -589,9 +537,18 @@ docker exec -u root jenkins apt-get update && docker exec -u root jenkins apt-ge
 
 ## 🎯 下一步
 
-1. 按照本文档完成 Jenkins 安装和配置
-2. 创建 Jenkins 任务并测试部署
-3. 配置自动触发机制
-4. 设置通知和监控
+1. **执行安装脚本**：运行 `sudo ./jenkins-setup.sh` 完成 Jenkins 安装
+2. **初始化 Jenkins**：访问 Jenkins Web 界面，完成初始配置
+3. **配置 Jenkins**：按照本文档的"Jenkins 配置"部分安装插件和配置工具
+4. **创建 Jenkins 任务**：按照"项目配置"部分创建 Pipeline 任务
+5. **测试部署**：手动触发一次构建，验证部署流程
+6. **配置自动触发**：配置 Webhook 或定时触发机制
+7. **设置通知和监控**：配置构建成功/失败通知
 
 如有问题，请查看 Jenkins 日志或联系项目维护者。
+
+**查看 Jenkins 日志**：
+
+```bash
+docker logs -f jenkins
+```

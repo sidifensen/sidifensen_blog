@@ -6,17 +6,27 @@
 
 ### Jenkins 部署相关
 
-| 文件名              | 用途             | 执行位置                               |
-| ------------------- | ---------------- | -------------------------------------- |
-| `jenkins-deploy.sh` | 服务器端部署脚本 | 服务器上执行，由 Jenkins Pipeline 调用 |
+| 文件名              | 用途                       | 执行位置                           |
+| ------------------- | -------------------------- | ---------------------------------- |
+| `Jenkinsfile`       | Jenkins Pipeline 配置      | Jenkins 自动执行（项目根目录）     |
+| `jenkins-setup.sh`  | Jenkins 安装和配置脚本     | 服务器上执行（可选，用于快速配置） |
+| `jenkins-deploy.sh` | 服务器端部署脚本（已弃用） | 已集成到 Jenkinsfile，不再单独使用 |
 
 ### Gitea 私有仓库相关
 
-| 文件名                     | 用途               | 执行位置            |
-| -------------------------- | ------------------ | ------------------- |
-| `docker-compose-gitea.yml` | Gitea Docker 配置  | Docker Compose 使用 |
-| `gitea-setup.sh`           | Gitea 初始化脚本   | 本地执行            |
-| `env.example`              | Gitea 环境变量示例 | 配置文件模板        |
+| 文件名                     | 用途                     | 执行位置            |
+| -------------------------- | ------------------------ | ------------------- |
+| `docker-compose-gitea.yml` | Gitea Docker 配置        | Docker Compose 使用 |
+| `gitea-setup.sh`           | Gitea 初始化脚本         | 本地或服务器执行    |
+| `create-gitea-user.sql`    | Gitea MySQL 用户创建脚本 | MySQL 执行（可选）  |
+| `env.example`              | 环境变量配置示例         | 配置文件模板        |
+
+### 文档相关
+
+| 文件名               | 用途                       |
+| -------------------- | -------------------------- |
+| `Jenkins部署指南.md` | Jenkins 详细配置和部署指南 |
+| `Gitea配置指南.md`   | Gitea 详细配置和维护指南   |
 
 ---
 
@@ -82,20 +92,37 @@ git push gitea main
 
 #### 2.1 Docker 安装（推荐）
 
+**方式一：使用脚本快速安装（推荐）**
+
 ```bash
-# 创建 Jenkins 数据目录
+cd script/deploy
+chmod +x jenkins-setup.sh
+sudo ./jenkins-setup.sh
+```
+
+**方式二：手动安装**
+
+```bash
+# 创建 Jenkins 数据目录和部署目录
 sudo mkdir -p /opt/jenkins_home
+sudo mkdir -p /opt/sidifensen_blog
 sudo chown -R 1000:1000 /opt/jenkins_home
 
-# 运行 Jenkins
+# 运行 Jenkins（需要挂载部署目录）
 docker run -d \
   --name jenkins \
   -p 8080:8080 \
   -p 50000:50000 \
   -v /opt/jenkins_home:/var/jenkins_home \
+  -v /opt/sidifensen_blog:/opt/sidifensen_blog \
   -v /var/run/docker.sock:/var/run/docker.sock \
   jenkins/jenkins:lts
 ```
+
+**重要提示**：
+
+- Jenkins 容器需要挂载部署目录 `/opt/sidifensen_blog`，以便 Pipeline 可以直接部署
+- Jenkins 容器需要访问 Docker，因此需要挂载 `/var/run/docker.sock`
 
 #### 2.2 初始化 Jenkins
 
@@ -106,6 +133,17 @@ docker run -d \
    ```
 3. 安装推荐插件
 4. 创建管理员账户
+
+#### 2.3 安装 Node.js 依赖库（重要）
+
+Jenkins 容器中需要安装 `libatomic1` 库才能运行 Node.js：
+
+```bash
+docker exec -u root jenkins apt-get update
+docker exec -u root jenkins apt-get install -y libatomic1
+```
+
+**注意**：只需执行一次，后续构建会自动检测该库是否存在。
 
 ---
 
@@ -146,9 +184,12 @@ docker run -d \
 
 在 `Global properties` → `Environment variables` 添加：
 
-- `DEPLOY_PATH`: `/opt/sidifensen_blog`
-- `SERVER_HOST`: `your-server-ip`
-- `SERVER_USER`: `root`
+- `DEPLOY_PATH`: `/opt/sidifensen_blog`（必须与 Jenkins 容器挂载的目录一致）
+
+**重要提示**：
+
+- `DEPLOY_PATH` 必须与启动 Jenkins 容器时挂载的目录路径完全一致
+- 如果使用默认路径 `/opt/sidifensen_blog`，确保容器启动时已挂载该目录
 
 #### 3.5 配置 Gitea 服务器
 
@@ -185,7 +226,13 @@ docker run -d \
 - **Repository URL**: `http://your-server-ip:3000/username/sidifensen_blog.git`
 - **Credentials**: 添加 Gitea 凭据（如果需要）
 - **Branches to build**: `*/main`
-- **Script Path**: `Jenkinsfile`
+- **Script Path**: `Jenkinsfile`（项目根目录下的 Jenkinsfile）
+
+**Pipeline 说明**：
+
+- Pipeline 会自动构建后端（Maven）和前端（Node.js）
+- 构建完成后会自动部署到服务器并重启 Docker 容器
+- 无需手动执行 `jenkins-deploy.sh`，所有部署逻辑已集成到 Pipeline 中
 
 #### 4.3 配置构建触发器
 
@@ -257,11 +304,17 @@ Jenkins 自动构建和部署
 
 每次推送代码到主分支，Jenkins 会自动：
 
-1. 检出代码
-2. 构建后端和前端
-3. 打包部署文件
-4. 部署到服务器
-5. 重启 Docker 容器
+1. **准备工具链**：检查并配置 JDK、Maven、Node.js
+2. **检出代码**：从 Gitea 仓库拉取最新代码
+3. **构建后端**：使用 Maven 构建 Spring Boot 应用
+4. **构建管理端前端**：使用 Node.js 构建管理端前端
+5. **构建用户端前端**：使用 Node.js 构建用户端前端
+6. **部署到服务器**：
+   - 复制后端 jar 包到部署目录
+   - 复制前端 dist 目录到部署目录
+   - 停止旧容器
+   - 重新构建并启动新容器
+7. **健康检查**：验证服务是否正常启动
 
 ---
 
@@ -299,6 +352,16 @@ docker restart jenkins
 
 # 查看容器状态
 docker ps | grep jenkins
+
+# 进入 Jenkins 容器
+docker exec -it jenkins bash
+
+# 安装 Node.js 依赖库（首次需要）
+docker exec -u root jenkins apt-get update
+docker exec -u root jenkins apt-get install -y libatomic1
+
+# 检查部署目录挂载
+docker inspect jenkins | grep -A 10 Mounts
 ```
 
 ---
@@ -332,6 +395,57 @@ sudo systemctl restart jenkins
 ### 构建工具未找到
 
 检查 `Global Tool Configuration` 中的工具路径是否正确，或使用自动安装选项。
+
+### Node.js 运行失败
+
+如果 Pipeline 中 Node.js 运行失败，提示缺少 `libatomic.so.1` 库：
+
+```bash
+# 在 Jenkins 容器中安装依赖库
+docker exec -u root jenkins apt-get update
+docker exec -u root jenkins apt-get install -y libatomic1
+```
+
+### 部署目录无法访问
+
+如果 Pipeline 报错 "无法访问部署目录"：
+
+1. 检查 Jenkins 容器是否挂载了部署目录：
+
+   ```bash
+   docker inspect jenkins | grep -A 10 Mounts
+   ```
+
+2. 确保挂载路径正确：
+   ```bash
+   # 重新启动 Jenkins 容器并挂载目录
+   docker stop jenkins
+   docker rm jenkins
+   docker run -d \
+     --name jenkins \
+     -p 8080:8080 \
+     -p 50000:50000 \
+     -v /opt/jenkins_home:/var/jenkins_home \
+     -v /opt/sidifensen_blog:/opt/sidifensen_blog \
+     -v /var/run/docker.sock:/var/run/docker.sock \
+     jenkins/jenkins:lts
+   ```
+
+### Docker Compose 未找到
+
+如果 Pipeline 报错 "未找到 docker-compose 或 docker compose 命令"：
+
+1. 检查 Docker 版本（Docker 20.10+ 已包含 Compose V2）：
+
+   ```bash
+   docker compose version
+   ```
+
+2. 如果未安装，在 Jenkins 容器中安装：
+   ```bash
+   docker exec -it -u root jenkins bash
+   # 在容器内安装 Docker Compose（参考 Jenkinsfile 中的说明）
+   ```
 
 ---
 
@@ -397,5 +511,25 @@ sudo systemctl restart jenkins
 1. 按照本文档完成配置
 2. 推送代码测试自动部署
 3. 查看详细文档解决遇到的问题
+
+## 📝 重要提示
+
+### Pipeline 部署说明
+
+- **Jenkinsfile** 位于项目根目录，包含完整的构建和部署流程
+- Pipeline 会自动处理所有部署步骤，无需手动执行 `jenkins-deploy.sh`
+- 部署目录必须在 Jenkins 容器启动时挂载，路径为 `/opt/sidifensen_blog`
+- Pipeline 使用 `docker-compose-ssl.yml` 进行部署，确保 `script/ssl/.env` 文件已正确配置
+
+### 首次部署前检查清单
+
+- [ ] Gitea 已部署并创建仓库
+- [ ] Jenkins 已安装并配置工具（JDK、Maven、Node.js）
+- [ ] Jenkins 容器已挂载部署目录 `/opt/sidifensen_blog`
+- [ ] Jenkins 容器已安装 `libatomic1` 库
+- [ ] Jenkins 已配置 Gitea 服务器和凭据
+- [ ] Gitea Webhook 已配置
+- [ ] 服务器上已配置 `script/ssl/.env` 文件
+- [ ] 服务器上已准备好 `docker-compose-ssl.yml` 文件
 
 如有问题，请查看详细文档或联系项目维护者。

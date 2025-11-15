@@ -45,6 +45,7 @@
 - 📱 **响应式设计**: 完美适配桌面端和移动端
 - 🔧 **易于扩展**: 模块化架构，支持功能定制
 - 🚀 **开箱即用**: Docker 一键部署，快速上线
+- 🤖 **自动化部署**: Jenkins + Gitea CI/CD 自动化构建和部署
 
 ## 🛠️ 技术架构
 
@@ -154,9 +155,17 @@ sidifensen_blog/
 ├── README.md                         # 📖 项目说明文档
 │
 ├── script/                           # 📜 部署脚本和配置
-│   ├── deploy/                       # 自动化部署脚本
-│   │   ├── deploy.sh                 # 一键部署脚本
-│   │   └── deploy.md                 # 部署文档
+│   ├── deploy/                       # 自动化部署脚本和配置
+│   │   ├── Jenkinsfile               # Jenkins Pipeline 配置
+│   │   ├── jenkins-setup.sh          # Jenkins 安装和配置脚本
+│   │   ├── jenkins-deploy.sh         # 服务器端部署脚本
+│   │   ├── gitea-setup.sh            # Gitea 初始化脚本
+│   │   ├── docker-compose-gitea.yml  # Gitea Docker 配置
+│   │   ├── create-gitea-user.sql    # Gitea MySQL 用户创建脚本
+│   │   ├── env.example               # 环境变量配置示例
+│   │   ├── README.md                 # 自动化部署快速指南
+│   │   ├── Jenkins部署指南.md        # Jenkins 详细配置指南
+│   │   └── Gitea配置指南.md          # Gitea 详细配置指南
 │   ├── ssl/                          # HTTPS SSL 证书配置
 │   │   ├── docker-compose-apps.yml   # SSL 应用编排
 │   │   ├── docker-compose-backend.yml    # 后端 SSL 配置
@@ -348,7 +357,8 @@ sidifensen_blog/
 
 提供 **多种部署方式**，灵活适配不同场景：
 
-- **Docker Compose**: 推荐方式，一键启动所有服务
+- **自动化部署**: Jenkins + Gitea CI/CD 方案，代码推送自动部署（推荐生产环境）
+- **Docker Compose**: 一键启动所有服务，适合快速部署
 - **传统部署**: 手动部署前后端和依赖服务
 - **SSL 支持**: HTTPS 证书配置和自动续期
 - **跨平台**: Windows、Linux、macOS 全平台支持
@@ -420,6 +430,9 @@ sidifensen_blog/
 ### 🚀 部署运维
 
 - **Docker 支持**: 一键容器化部署 + Docker Compose 编排
+- **CI/CD 自动化**: Jenkins Pipeline 自动化构建和部署
+- **私有代码仓库**: Gitea 私有 Git 仓库支持
+- **Webhook 触发**: 代码推送自动触发部署流程
 - **多环境配置**: 开发、测试、生产环境分离
 - **SSL 支持**: HTTPS 证书配置和自动续期
 - **日志管理**: 结构化日志记录和分析
@@ -553,7 +566,74 @@ npm run dev
 
 ## 🐳 部署指南
 
-### 🔧 生产环境部署
+### 🤖 自动化部署（推荐）
+
+项目支持 **Jenkins + Gitea** 自动化 CI/CD 部署方案，实现代码推送后自动构建和部署。
+
+#### 方案特点
+
+- ✅ **一键安装**: 提供自动化脚本快速安装 Jenkins 和 Gitea
+- ✅ **自动触发**: 代码推送到 Gitea 后自动触发 Jenkins 构建
+- ✅ **完整流程**: 自动构建后端、前端，并部署到服务器
+- ✅ **私有仓库**: 使用 Gitea 搭建私有 Git 仓库，代码安全可控
+- ✅ **Webhook 集成**: Gitea Webhook 自动触发 Jenkins Pipeline
+
+#### 快速开始
+
+1. **部署 Gitea 私有仓库**
+
+   ```bash
+   cd script/deploy
+   cp env.example .env
+   # 编辑 .env 文件，配置服务器 IP 等信息
+   docker-compose -f docker-compose-gitea.yml --env-file .env up -d
+   ```
+
+2. **安装 Jenkins**
+
+   ```bash
+   cd script/deploy
+   chmod +x jenkins-setup.sh
+   sudo ./jenkins-setup.sh
+   ```
+
+3. **配置 Jenkins 和 Gitea**
+
+   详细配置步骤请参考：
+
+   - [自动化部署快速指南](./script/deploy/README.md)
+   - [Jenkins 部署详细指南](./script/deploy/Jenkins部署指南.md)
+   - [Gitea 配置详细指南](./script/deploy/Gitea配置指南.md)
+
+4. **创建 Jenkins 任务并配置 Webhook**
+
+   按照文档完成 Jenkins Pipeline 任务配置和 Gitea Webhook 设置。
+
+5. **推送代码自动部署**
+
+   ```bash
+   # 添加 Gitea 远程仓库
+   git remote add gitea http://your-server-ip:3000/username/sidifensen_blog.git
+
+   # 推送代码，自动触发部署
+   git push gitea main
+   ```
+
+#### 工作流程
+
+```
+本地开发 → git push → Gitea 仓库 → Webhook 触发 → Jenkins Pipeline
+  ↓
+自动构建后端 (Maven) → 自动构建前端 (Node.js) → 自动部署到服务器
+  ↓
+Docker 容器重启 → 服务更新完成
+```
+
+> 💡 **提示**: 自动化部署方案适合生产环境，可以显著提升部署效率和代码安全性。详细配置请查看 `script/deploy/` 目录下的文档。
+
+---
+
+### 🔧 生产环境部署（传统方式）
 
 #### 💻 服务器配置要求
 
