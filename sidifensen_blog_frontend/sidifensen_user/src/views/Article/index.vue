@@ -278,6 +278,16 @@ onUnmounted(() => {
 .article-page {
   min-height: 100vh;
 
+  // 全局a标签样式
+  a {
+    color: #409eff;
+    text-decoration: none;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
   // 内容区域
   .content-section {
     padding: 20px 0;

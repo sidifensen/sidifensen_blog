@@ -88,9 +88,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx-ssl.conf:/etc/nginx/conf.d/default.conf
-      - /etc/letsencrypt:/etc/letsencrypt:ro
       - /etc/nginx/ssl:/etc/nginx/ssl:ro
-      - ./certbot-webroot:/var/www/certbot:ro
     depends_on:
       - frontend-admin
       - frontend-user

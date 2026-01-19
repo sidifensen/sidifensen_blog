@@ -52,6 +52,15 @@ check_compose_file() {
     fi
 }
 
+check_nginx_config() {
+    # 检查 nginx-ssl.conf 文件是否存在
+    if [ ! -f "nginx-ssl.conf" ]; then
+        print_error "未找到 nginx-ssl.conf 文件，这是启动 SSL 服务所必需的"
+        print_error "请先运行 ./get_ssl_cert.sh 脚本生成 SSL 证书和配置文件"
+        exit 1
+    fi
+}
+
 check_env_file() {
     print_title "检查环境配置"
     if [ ! -f ".env" ]; then
@@ -81,6 +90,10 @@ start_backend() {
 
 start_frontend() {
     print_title "启动前端服务"
+    
+    # 检查 SSL 配置
+    check_nginx_config
+    
     print_message "正在启动前端服务..."
     print_message "使用项目路径: ${PROJECT_ROOT}"
     PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-frontend.yml up -d --build
@@ -93,6 +106,10 @@ start_frontend() {
 
 start_apps() {
     print_title "启动前后端服务"
+    
+    # 检查 SSL 配置
+    check_nginx_config
+    
     print_message "正在启动后端和前端服务..."
     print_message "使用项目路径: ${PROJECT_ROOT}"
     PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-apps.yml up -d --build
@@ -117,6 +134,10 @@ start_services() {
 
 start_stack() {
     print_title "启动 SSL 生产环境"
+    
+    # 检查 SSL 配置
+    check_nginx_config
+    
     print_message "正在构建并启动服务..."
     print_message "使用项目路径: ${PROJECT_ROOT}"
     PROJECT_ROOT="${PROJECT_ROOT}" docker-compose -f docker-compose-ssl.yml up -d --build

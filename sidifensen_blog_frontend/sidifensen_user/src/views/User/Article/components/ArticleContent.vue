@@ -617,6 +617,16 @@ const handleEditArticle = () => {
         border-radius: 3px;
       }
 
+      // 链接样式
+      :deep(a) {
+        color: #409eff;
+        text-decoration: none;
+        
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
       // 引用
       :deep(blockquote) {
         margin: 0;
