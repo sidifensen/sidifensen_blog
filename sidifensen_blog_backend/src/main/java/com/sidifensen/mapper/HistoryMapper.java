@@ -31,5 +31,13 @@ public interface HistoryMapper extends BaseMapper<History> {
      * @return 文章访问量统计列表，每个元素包含 articleId 和 viewCount
      */
     List<Map<String, Object>> getArticleViewCountLast7Days();
+    
+    /**
+     * 统计近7天的文章多维度数据（访问量、评论数、点赞数等）
+     * 用于综合热度排行榜
+     * 
+     * @return 文章多维度统计列表，每个元素包含 articleId、viewCount、commentCount、likeCount、collectCount、createTime
+     */
+    List<Map<String, Object>> getArticleMultiDimStatsLast7Days();
 
 }

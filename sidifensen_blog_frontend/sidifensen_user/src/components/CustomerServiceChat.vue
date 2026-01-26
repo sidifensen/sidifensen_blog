@@ -5,7 +5,7 @@
       <div v-if="messageList.length === 0" class="welcome-message">
         <div class="welcome-icon">👋</div>
         <p>你好！我是小林，很高兴为你服务~</p>
-        <p class="welcome-tips">你可以问我关于博客使用的任何问题哦！</p>
+        <p class="welcome-tips">你可以问我关于社区使用的任何问题哦！</p>
       </div>
 
       <!-- 消息列表 -->

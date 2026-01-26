@@ -43,5 +43,27 @@
         HAVING viewCount > 0
         ORDER BY viewCount DESC
     </select>
+    
+    <!-- 统计近7天的文章多维度数据（访问量、评论数、点赞数等） -->
+    <select id="getArticleMultiDimStatsLast7Days" resultType="map">
+        SELECT h.article_id                       as articleId,
+               COUNT(DISTINCT h.user_id)          as viewCount,
+               a.comment_count                    as commentCount,
+               a.like_count                       as likeCount,
+               a.collect_count                    as collectCount,
+               a.create_time                      as createTime
+        FROM history h
+                 INNER JOIN
+             article a ON h.article_id = a.id
+                 AND a.examine_status = 1
+                 AND a.edit_status = 0
+                 AND a.visible_range = 0
+                 AND a.is_deleted = 0
+        WHERE h.is_deleted = 0
+          AND h.view_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        GROUP BY h.article_id, a.id
+        HAVING viewCount > 0
+        ORDER BY viewCount DESC
+    </select>
 
 </mapper>

@@ -1,10 +1,10 @@
-# Sidifensen Blog 后端项目
+# Sidifensen Community 后端项目
 
-> 基于 Spring Boot 3.4.0 + Java 21 的现代化博客系统后端
+> 基于 Spring Boot 3.4.0 + Java 21 的现代化社区系统后端
 
 ## 📖 项目简介
 
-功能完善的博客系统后端服务，采用 Spring Boot 3.4.0 + Java 21 构建，提供用户管理、文章管理、评论互动、相册管理等核心功能。
+功能完善的社区系统后端服务，采用 Spring Boot 3.4.0 + Java 21 构建，提供用户管理、文章管理、评论互动、相册管理等核心功能。
 
 ## ✨ 核心特性
 
@@ -78,7 +78,7 @@
 # 数据库配置
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
-MYSQL_DATABASE=sidifensen_blog
+MYSQL_DATABASE=sidifensen_community
 MYSQL_USERNAME=root
 MYSQL_PASSWORD=root
 
@@ -147,10 +147,10 @@ SPRING_PROFILES_ACTIVE=dev
 ```bash
 # 创建数据库
 mysql -u root -p
-CREATE DATABASE sidifensen_blog CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE sidifensen_community CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 # 导入数据
-mysql -u root -p sidifensen_blog < ../../sql/sidifensen_blog.sql
+mysql -u root -p sidifensen_community < ../../sql/sidifensen_blog.sql
 ```
 
 ### 编译运行
@@ -160,7 +160,7 @@ mysql -u root -p sidifensen_blog < ../../sql/sidifensen_blog.sql
 mvn clean package -DskipTests
 
 # 运行
-java -jar target/sidifensen_blog_backend-1.0-SNAPSHOT.jar
+java -jar target/sidifensen_community_backend-1.0-SNAPSHOT.jar
 ```
 
 或使用 IDEA 直接运行 `Main.java`
@@ -894,10 +894,10 @@ docker run -d \
 ```
 sidifensen_blog/
 ├── logs/
-│   ├── sidifensen-blog.log              # 当前普通日志
-│   ├── sidifensen-blog.2025-10-11.0.log # 历史日志（按日期归档）
-│   ├── sidifensen-blog-error.log        # 当前错误日志
-│   └── sidifensen-blog-error.2025-10-11.0.log # 历史错误日志
+│   ├──- sidifensen-community.log              # 当前普通日志
+│   ├──- sidifensen-community.2025-10-11.0.log # 历史日志（按日期归档）
+│   ├──- sidifensen-community-error.log        # 当前错误日志
+│   └──- sidifensen-community-error.2025-10-11.0.log # 历史错误日志
 ```
 
 ### 日志配置

@@ -6,7 +6,7 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <h1 class="page-title">管理后台首页</h1>
-      <p class="page-description">欢迎使用斯蒂芬森博客管理系统</p>
+      <p class="page-description">欢迎使用斯蒂芬森社区管理系统</p>
     </div>
 
     <!-- 统计数据卡片区域 -->

@@ -1,6 +1,6 @@
 <div align="center">
   <h1>🚀 Sidifensen Blog</h1>
-  <p>现代化个人博客/论坛系统 | 前后端分离架构</p>
+  <p>现代化社区系统 | 前后端分离架构</p>
   
   ![Java](https://img.shields.io/badge/Java-21-orange.svg)
   ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.0-brightgreen.svg)
@@ -32,7 +32,7 @@
 
 ## 📋 项目概述
 
-**Sidifensen Blog** 是一个功能完整的现代化个人博客/论坛系统，采用前后端分离架构设计。系统包含用户端展示界面和管理端后台系统，提供了从内容创作到用户交互的完整博客解决方案。
+**Sidifensen Blog** 是一个功能完整的现代化社区系统，采用前后端分离架构设计。系统包含用户端展示界面和管理端后台系统，提供了从内容创作到用户交互的完整社区解决方案。
 
 ### ✨ 项目亮点
 
@@ -346,7 +346,7 @@ sidifensen_blog/
 
 基于 **Vue 3 Composition API** 的模块化架构：
 
-- **User 端**: 面向普通用户的博客前台，注重用户体验和内容展示
+- **User 端**: 面向普通用户的社区前台，注重用户体验和内容展示
 - **Admin 端**: 面向管理员的后台系统，注重功能管理和数据操作
 - **API 层**: 封装所有后端接口调用，统一请求响应处理
 - **Stores 层**: Pinia 状态管理，支持持久化
@@ -550,13 +550,13 @@ npm run dev
 
 #### 传统方式启动
 
-- 📱 **用户端**: http://localhost:5173 (博客前台)
+- 📱 **用户端**: http://localhost:5173 (社区前台)
 - 🔧 **管理端**: http://localhost:5174 (后台管理)
 - 🔌 **后端 API**: http://localhost:8080 (REST API)
 
 #### Docker Compose 方式启动（推荐）
 
-- 📱 **用户端**: http://localhost:7000 (博客前台)
+- 📱 **用户端**: http://localhost:7000 (社区前台)
 - 🔧 **管理端**: http://localhost:8000 (后台管理)
 - 🔌 **后端 API**: http://localhost:5000 (REST API)
 - ☁️ **MinIO 控制台**: http://localhost:9001 (对象存储管理)
@@ -600,7 +600,6 @@ npm run dev
 3. **配置 Jenkins 和 Gitea**
 
    详细配置步骤请参考：
-
    - [自动化部署快速指南](./script/deploy/README.md)
    - [Jenkins 部署详细指南](./script/deploy/Jenkins部署指南.md)
    - [Gitea 配置详细指南](./script/deploy/Gitea配置指南.md)
@@ -751,7 +750,7 @@ chmod +x docker.sh
 
 | 服务        | 地址                     | 说明          |
 | ----------- | ------------------------ | ------------- |
-| 📱 用户端   | http://your-domain:7000  | 博客前台展示  |
+| 📱 用户端   | http://your-domain:7000  | 社区前台展示  |
 | 🔧 管理端   | http://your-domain:8000  | 后台管理系统  |
 | 🔌 后端 API | http://your-domain:5000  | REST API 接口 |
 | ☁️ MinIO    | http://your-domain:9001  | 对象存储管理  |
@@ -778,9 +777,9 @@ chmod +x docker.sh
 
 <div align="center">
 
-**博客首页 - 欢迎页面**
+**社区首页 - 欢迎页面**
 
-<img src="img/Snipaste_2025-10-14_15-38-11.png" alt="博客首页" width="800"/>
+<img src="img/Snipaste_2025-10-14_15-38-11.png" alt="社区首页" width="800"/>
 
 </div>
 
@@ -914,7 +913,6 @@ chmod +x docker.sh
 ### ✅ 已完成功能
 
 - [x] **💬 私信功能**
-
   - ✅ 用户之间一对一私信交流
   - ✅ 消息已读/未读状态
   - ✅ 消息列表和会话管理
@@ -941,10 +939,10 @@ chmod +x docker.sh
 
 ### 🌟 如果这个项目对你有帮助，请给一个 Star ⭐
 
-**💡 这是一个设计精良、功能完整的现代化博客系统，适合：**
+**💡 这是一个设计精良、功能完整的现代化社区系统，适合：**
 
 - 🎓 学习 Spring Boot + Vue 3 全栈开发
-- 🚀 快速搭建个人博客网站
+- 🚀 快速搭建社区平台
 - 📚 作为企业级项目开发参考
 - 🔧 二次开发和功能扩展
 

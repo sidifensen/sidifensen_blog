@@ -4,7 +4,7 @@
     <section class="fullscreen-hero">
       <div class="hero-background"></div>
       <div class="hero-content">
-        <h1 class="hero-title">sidifensen-blog</h1>
+        <h1 class="hero-title">sidifensen-community</h1>
         <p class="hero-subtitle">分享技术、经验和见解</p>
       </div>
       <div class="scroll-indicator" @click="scrollToContent">
@@ -130,7 +130,7 @@
           <div class="footer-brand">
             <h3 class="brand-title">
               <span class="brand-icon">✨</span>
-              sidifensen博客
+              sidifensen社区
             </h3>
             <p class="brand-description">分享技术、经验和见解<br />用代码改变世界</p>
             <div class="social-links">
@@ -165,7 +165,7 @@
           <div class="footer-divider"></div>
           <div class="footer-bottom-content">
             <div class="footer-left">
-              <p class="copyright">&copy; {{ currentYear }} <strong>sidifensen博客</strong>. All Rights Reserved.</p>
+              <p class="copyright">&copy; {{ currentYear }} <strong>sidifensen社区</strong>. All Rights Reserved.</p>
               <p class="beian">
                 <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">粤ICP备2024324512号-2</a>
               </p>

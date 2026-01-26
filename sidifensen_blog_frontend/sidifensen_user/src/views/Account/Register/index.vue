@@ -176,7 +176,7 @@ function registerBtn() {
       const RegisterDto = { ...formData.value };
       delete RegisterDto.password_repeat;
       register(RegisterDto).then(() => {
-        ElMessage.success("注册成功，欢迎进入博客");
+        ElMessage.success("注册成功，欢迎进入社区");
         router.push("/login");
       });
     } else {

@@ -311,7 +311,7 @@ public class RedisComponent {
      * 2. 同步完成后，使用RENAME原子操作切换key
      * 3. 这样用户始终能读取到完整数据
      *
-     * @param articleScores Map<文章ID, 访问量>
+     * @param articleScores Map<文章ID, 综合热度分数>
      */
     public void batchSetArticleHotScore(Map<Integer, Double> articleScores) {
         if (articleScores == null || articleScores.isEmpty()) {

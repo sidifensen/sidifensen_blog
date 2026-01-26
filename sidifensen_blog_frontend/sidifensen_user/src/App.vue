@@ -6,7 +6,7 @@
   </router-view>
 
   <!-- 智能客服悬浮按钮 -->
-  <div class="customer-service-float-btn" @click="openCustomerService" v-if="userStore.user">
+  <div class="customer-service-float-btn" @click="openCustomerService">
     <el-tooltip content="智能客服小林" placement="left">
       <div class="service-btn">
         <!-- 脉冲动画背景 -->
