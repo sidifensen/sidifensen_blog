@@ -19,3 +19,6 @@ job
 
 # 文档文件夹
 docs/
+
+# Claude Code 配置
+.claude/

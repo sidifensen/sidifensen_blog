@@ -211,6 +211,37 @@ public class RabbitMQConfig {
                 .with(RabbitMQConstants.WebSocket_Routing_Key_Prefix + "*");
     }
 
+    // ==================== 操作日志队列配置 ====================
+
+    /**
+     * 操作日志交换机
+     */
+    @Bean
+    public DirectExchange operationlogExchange() {
+        return new DirectExchange(RabbitMQConstants.Operationlog_Exchange, true, false);
+    }
+
+    /**
+     * 操作日志队列
+     */
+    @Bean
+    public Queue operationlogQueue() {
+        return QueueBuilder.durable(RabbitMQConstants.Operationlog_Queue)
+                .withArguments(DEAD_LETTER_ARGS)
+                .build();
+    }
+
+    /**
+     * 绑定操作日志队列到交换机
+     */
+    @Bean
+    public Binding bindingOperationlogQueueToExchange() {
+        return BindingBuilder
+                .bind(operationlogQueue())
+                .to(operationlogExchange())
+                .with(RabbitMQConstants.Operationlog_Routing_Key);
+    }
+
     // ==================== RabbitTemplate 配置 ====================
 
     /**

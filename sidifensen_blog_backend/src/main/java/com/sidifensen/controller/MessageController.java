@@ -1,8 +1,10 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.MessageVo;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.MessageService;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
@@ -31,6 +33,7 @@ public class MessageController {
      * @param
      * @return
      */
+    @OperationLog(module = "消息管理", type = OperationTypeEnum.GET, description = "管理员获取未读消息数量")
     @PreAuthorize("hasAuthority('message:count')")
     @GetMapping("/admin/count")
     public Result getAdminMessagesCount() {
@@ -44,6 +47,7 @@ public class MessageController {
      * @param
      * @return
      */
+    @OperationLog(module = "消息管理", type = OperationTypeEnum.SELECT, description = "管理员获取消息列表")
     @PreAuthorize("hasAuthority('message:list')")
     @GetMapping("/admin/list")
     public Result getAdminMessages() {
@@ -57,6 +61,7 @@ public class MessageController {
      * @param messageIds
      * @return
      */
+    @OperationLog(module = "消息管理", type = OperationTypeEnum.OTHER, description = "管理员读取消息")
     @PreAuthorize("hasAuthority('message:read')")
     @PutMapping("/admin/read")
     public Result readAdminMessage(@RequestBody @NotNull(message = "消息ID列表不能为空") List<Integer> messageIds) {
@@ -70,6 +75,7 @@ public class MessageController {
      * @param messageIds
      * @return
      */
+    @OperationLog(module = "消息管理", type = OperationTypeEnum.DELETE, description = "管理员删除消息")
     @PreAuthorize("hasAuthority('message:delete')")
     @DeleteMapping("/admin/delete")
     public Result deleteAdminMessage(@RequestBody @NotNull(message = "消息ID列表不能为空") List<Integer> messageIds) {

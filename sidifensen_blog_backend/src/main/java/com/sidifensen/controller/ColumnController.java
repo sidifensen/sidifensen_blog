@@ -1,11 +1,12 @@
 package com.sidifensen.controller;
 
-
+import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.ColumnArticleSortDto;
 import com.sidifensen.domain.dto.ColumnDto;
 import com.sidifensen.domain.dto.ColumnFilterDto;
 import com.sidifensen.domain.dto.ColumnSearchDto;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.ColumnDetailVo;
 import com.sidifensen.domain.vo.ColumnStatisticsVo;
@@ -57,13 +58,13 @@ public class ColumnController {
      */
     @RateLimit
     @GetMapping("/list/{userId}")
-    public Result<PageVo<List<ColumnVo>>> getColumnListByUserId(@PathVariable @NotNull(message = "用户ID不能为空") Integer userId,
-                                                                @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
-                                                                @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+    public Result<PageVo<List<ColumnVo>>> getColumnListByUserId(
+            @PathVariable @NotNull(message = "用户ID不能为空") Integer userId,
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<ColumnVo>> columnList = columnService.getColumnListByUserId(userId, pageNum, pageSize);
         return Result.success(columnList);
     }
-
 
     /**
      * 获取专栏详情（包含专栏内的文章列表）
@@ -78,7 +79,6 @@ public class ColumnController {
         return Result.success(columnDetail);
     }
 
-
     /**
      * 搜索专栏列表
      *
@@ -88,9 +88,10 @@ public class ColumnController {
      * @return 专栏列表
      */
     @GetMapping("/search")
-    public Result<PageVo<List<ColumnVo>>> searchColumnList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
-                                                           @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
-                                                           @RequestParam @NotNull(message = "搜索关键词不能为空") String keyword) {
+    public Result<PageVo<List<ColumnVo>>> searchColumnList(
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
+            @RequestParam @NotNull(message = "搜索关键词不能为空") String keyword) {
         PageVo<List<ColumnVo>> columnList = columnService.searchColumnList(pageNum, pageSize, keyword);
         return Result.success(columnList);
     }
@@ -105,10 +106,12 @@ public class ColumnController {
      */
     @PostMapping("/manage/list")
     @RateLimit
-    public Result<PageVo<List<UserColumnManageVo>>> getUserColumnManageList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
-                                                                            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
-                                                                            @RequestBody ColumnFilterDto columnFilterDto) {
-        PageVo<List<UserColumnManageVo>> columnList = columnService.getUserColumnManageList(pageNum, pageSize, columnFilterDto);
+    public Result<PageVo<List<UserColumnManageVo>>> getUserColumnManageList(
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
+            @RequestBody ColumnFilterDto columnFilterDto) {
+        PageVo<List<UserColumnManageVo>> columnList = columnService.getUserColumnManageList(pageNum, pageSize,
+                columnFilterDto);
         return Result.success(columnList);
     }
 
@@ -157,7 +160,7 @@ public class ColumnController {
      */
     @PutMapping("/{columnId}/article/sort")
     public Result<Void> updateColumnArticleSort(@PathVariable @NotNull(message = "专栏ID不能为空") Integer columnId,
-                                                @RequestBody @Valid List<ColumnArticleSortDto> sortList) {
+            @RequestBody @Valid List<ColumnArticleSortDto> sortList) {
         columnService.updateColumnArticleSort(columnId, sortList);
         return Result.success();
     }
@@ -171,7 +174,7 @@ public class ColumnController {
      */
     @DeleteMapping("/{columnId}/article/{articleId}")
     public Result<Void> removeArticleFromColumn(@PathVariable @NotNull(message = "专栏ID不能为空") Integer columnId,
-                                                @PathVariable @NotNull(message = "文章ID不能为空") Integer articleId) {
+            @PathVariable @NotNull(message = "文章ID不能为空") Integer articleId) {
         columnService.removeArticleFromColumn(columnId, articleId);
         return Result.success();
     }
@@ -182,6 +185,7 @@ public class ColumnController {
      * @param columnFilterDto 专栏筛选条件
      * @return 专栏列表
      */
+    @OperationLog(module = "专栏管理", type = OperationTypeEnum.SELECT, description = "管理员获取专栏列表")
     @PreAuthorize("hasAuthority('column:list')")
     @PostMapping("/admin/list")
     public Result<List<UserColumnManageVo>> adminGetColumnList(@RequestBody ColumnFilterDto columnFilterDto) {
@@ -195,9 +199,11 @@ public class ColumnController {
      * @param userId 用户ID
      * @return 用户专栏列表
      */
+    @OperationLog(module = "专栏管理", type = OperationTypeEnum.SELECT, description = "管理员根据用户 ID 获取专栏列表")
     @PreAuthorize("hasAuthority('column:user:list')")
     @GetMapping("/admin/user/{userId}")
-    public Result<List<UserColumnManageVo>> adminGetColumnsByUserId(@PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
+    public Result<List<UserColumnManageVo>> adminGetColumnsByUserId(
+            @PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
         List<UserColumnManageVo> columnList = columnService.adminGetColumnsByUserId(userId);
         return Result.success(columnList);
     }
@@ -208,6 +214,7 @@ public class ColumnController {
      * @param columnSearchDto 专栏搜索条件
      * @return 搜索结果
      */
+    @OperationLog(module = "专栏管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索专栏")
     @PreAuthorize("hasAuthority('column:search')")
     @PostMapping("/admin/search")
     public Result<List<UserColumnManageVo>> adminSearchColumn(@RequestBody ColumnSearchDto columnSearchDto) {
@@ -222,9 +229,11 @@ public class ColumnController {
      * @param examineStatus 审核状态 1-审核通过 2-审核未通过
      * @return 操作结果
      */
+    @OperationLog(module = "专栏管理", type = OperationTypeEnum.AUDIT, description = "管理员审核专栏")
     @PreAuthorize("hasAuthority('column:examine')")
     @PutMapping("/admin/{columnId}/examine")
-    public Result<Void> adminExamineColumn(@PathVariable @NotNull(message = "专栏ID不能为空") Integer columnId, @RequestParam @NotNull(message = "审核状态不能为空") Integer examineStatus) {
+    public Result<Void> adminExamineColumn(@PathVariable @NotNull(message = "专栏ID不能为空") Integer columnId,
+            @RequestParam @NotNull(message = "审核状态不能为空") Integer examineStatus) {
         columnService.adminExamineColumn(columnId, examineStatus);
         return Result.success();
     }
@@ -236,9 +245,11 @@ public class ColumnController {
      * @param examineStatus 审核状态 1-审核通过 2-审核未通过
      * @return 操作结果
      */
+    @OperationLog(module = "专栏管理", type = OperationTypeEnum.AUDIT, description = "管理员批量审核专栏")
     @PreAuthorize("hasAuthority('column:examine')")
     @PutMapping("/admin/batch/examine")
-    public Result<Void> adminBatchExamineColumn(@RequestBody @NotNull(message = "专栏ID列表不能为空") List<Integer> columnIds, @RequestParam @NotNull(message = "审核状态不能为空") Integer examineStatus) {
+    public Result<Void> adminBatchExamineColumn(@RequestBody @NotNull(message = "专栏ID列表不能为空") List<Integer> columnIds,
+            @RequestParam @NotNull(message = "审核状态不能为空") Integer examineStatus) {
         columnService.adminBatchExamineColumn(columnIds, examineStatus);
         return Result.success();
     }
@@ -249,6 +260,7 @@ public class ColumnController {
      * @param columnDto 专栏信息
      * @return 操作结果
      */
+    @OperationLog(module = "专栏管理", type = OperationTypeEnum.UPDATE, description = "管理员更新专栏")
     @PreAuthorize("hasAuthority('column:update')")
     @PutMapping("/admin/update")
     public Result<Void> adminUpdateColumn(@RequestBody @Valid ColumnDto columnDto) {
@@ -262,6 +274,7 @@ public class ColumnController {
      * @param columnId 专栏ID
      * @return 操作结果
      */
+    @OperationLog(module = "专栏管理", type = OperationTypeEnum.DELETE, description = "管理员删除专栏")
     @PreAuthorize("hasAuthority('column:delete')")
     @DeleteMapping("/admin/{columnId}")
     public Result<Void> adminDeleteColumn(@PathVariable @NotNull(message = "专栏ID不能为空") Integer columnId) {
@@ -275,6 +288,7 @@ public class ColumnController {
      * @param columnIds 专栏ID列表
      * @return 操作结果
      */
+    @OperationLog(module = "专栏管理", type = OperationTypeEnum.DELETE, description = "管理员批量删除专栏")
     @PreAuthorize("hasAuthority('column:delete')")
     @DeleteMapping("/admin/batch")
     public Result<Void> adminBatchDeleteColumn(@RequestBody @NotNull(message = "专栏ID列表不能为空") List<Integer> columnIds) {
@@ -288,6 +302,7 @@ public class ColumnController {
      * @param columnId 专栏ID
      * @return 专栏详情
      */
+    @OperationLog(module = "专栏管理", type = OperationTypeEnum.GET, description = "管理员获取专栏详情")
     @PreAuthorize("hasAuthority('column:detail')")
     @GetMapping("/admin/detail/{columnId}")
     public Result<ColumnDetailVo> adminGetColumnDetail(@PathVariable @NotNull(message = "专栏ID不能为空") Integer columnId) {
@@ -300,6 +315,7 @@ public class ColumnController {
      *
      * @return 专栏统计数据
      */
+    @OperationLog(module = "专栏管理", type = OperationTypeEnum.GET, description = "管理员获取专栏统计数据")
     @PreAuthorize("hasAuthority('column:list')")
     @GetMapping("/admin/statistics")
     public Result<ColumnStatisticsVo> getColumnStatistics() {

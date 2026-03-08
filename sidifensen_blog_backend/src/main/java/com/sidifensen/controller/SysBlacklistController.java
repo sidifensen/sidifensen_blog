@@ -1,11 +1,13 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.BlacklistAddDto;
 import com.sidifensen.domain.dto.BlacklistSearchDto;
 import com.sidifensen.domain.dto.BlacklistUpdateDto;
 import com.sidifensen.domain.entity.SysBlacklist;
 import com.sidifensen.domain.result.Result;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.SysBlacklistService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -34,6 +36,7 @@ public class SysBlacklistController {
      *
      * @return 黑名单列表
      */
+    @OperationLog(module = "黑名单管理", type = OperationTypeEnum.SELECT, description = "管理员获取黑名单列表")
     @PreAuthorize("hasAuthority('system:blacklist:list')")
     @GetMapping("/admin/list")
     public Result<List<SysBlacklist>> adminGetBlacklistList() {
@@ -47,6 +50,7 @@ public class SysBlacklistController {
      * @param blacklistAddDto 黑名单新增信息
      * @return 操作结果
      */
+    @OperationLog(module = "黑名单管理", type = OperationTypeEnum.INSERT, description = "管理员批量新增黑名单用户")
     @PreAuthorize("hasAuthority('system:blacklist:add')")
     @PostMapping("/admin/add")
     public Result<Void> adminAddBlacklist(@RequestBody @Valid BlacklistAddDto blacklistAddDto) {
@@ -60,6 +64,7 @@ public class SysBlacklistController {
      * @param blacklistSearchDto 搜索条件
      * @return 黑名单列表
      */
+    @OperationLog(module = "黑名单管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索黑名单")
     @PreAuthorize("hasAuthority('system:blacklist:search')")
     @PostMapping("/admin/search")
     public Result<List<SysBlacklist>> adminSearchBlacklist(@RequestBody @Valid BlacklistSearchDto blacklistSearchDto) {
@@ -73,6 +78,7 @@ public class SysBlacklistController {
      * @param blacklistUpdateDto 黑名单修改信息
      * @return 操作结果
      */
+    @OperationLog(module = "黑名单管理", type = OperationTypeEnum.UPDATE, description = "管理员修改黑名单")
     @PreAuthorize("hasAuthority('system:blacklist:update')")
     @PutMapping("/admin/update")
     public Result<Void> adminUpdateBlacklist(@RequestBody @Valid BlacklistUpdateDto blacklistUpdateDto) {
@@ -86,6 +92,7 @@ public class SysBlacklistController {
      * @param blacklistIds 黑名单ID列表
      * @return 操作结果
      */
+    @OperationLog(module = "黑名单管理", type = OperationTypeEnum.DELETE, description = "管理员批量删除黑名单")
     @PreAuthorize("hasAuthority('system:blacklist:delete')")
     @DeleteMapping("/admin/delete")
     public Result<Void> adminDeleteBlacklist(@RequestBody @NotNull(message = "黑名单ID列表不能为空") List<Integer> blacklistIds) {

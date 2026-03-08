@@ -1,5 +1,6 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.LinkAuditDto;
 import com.sidifensen.domain.dto.LinkRequestDto;
@@ -8,6 +9,7 @@ import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.AdminLinkVo;
 import com.sidifensen.domain.vo.LinkVo;
 import com.sidifensen.domain.vo.PageVo;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.LinkService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -75,6 +77,7 @@ public class LinkController {
      *
      * @return 友链列表
      */
+    @OperationLog(module = "友链管理", type = OperationTypeEnum.SELECT, description = "管理员获取友链列表")
     @PreAuthorize("hasAuthority('link:list')")
     @GetMapping("/admin/list")
     public Result<List<AdminLinkVo>> adminGetLinkList() {
@@ -88,6 +91,7 @@ public class LinkController {
      * @param linkSearchDto 搜索条件
      * @return 搜索结果
      */
+    @OperationLog(module = "友链管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索友链")
     @PreAuthorize("hasAuthority('link:search')")
     @PostMapping("/admin/search")
     public Result<List<AdminLinkVo>> adminSearchLink(@RequestBody @Valid LinkSearchDto linkSearchDto) {
@@ -101,6 +105,7 @@ public class LinkController {
      * @param linkAuditDto 友链审核信息
      * @return 操作结果
      */
+    @OperationLog(module = "友链管理", type = OperationTypeEnum.AUDIT, description = "管理员审核友链")
     @PreAuthorize("hasAuthority('link:examine')")
     @PutMapping("/admin/examine")
     public Result<Void> adminExamineLink(@RequestBody @Valid LinkAuditDto linkAuditDto) {
@@ -114,6 +119,7 @@ public class LinkController {
      * @param linkAuditDtos 友链审核信息列表
      * @return 操作结果
      */
+    @OperationLog(module = "友链管理", type = OperationTypeEnum.AUDIT, description = "管理员批量审核友链")
     @PreAuthorize("hasAuthority('link:examine')")
     @PutMapping("/admin/examine/batch")
     public Result<Void> adminExamineBatchLink(@RequestBody @Valid List<LinkAuditDto> linkAuditDtos) {
@@ -127,6 +133,7 @@ public class LinkController {
      * @param linkId 友链ID
      * @return 操作结果
      */
+    @OperationLog(module = "友链管理", type = OperationTypeEnum.DELETE, description = "管理员删除友链")
     @PreAuthorize("hasAuthority('link:delete')")
     @DeleteMapping("/admin/{linkId}")
     public Result<Void> adminDeleteLink(@PathVariable @NotNull(message = "友链ID不能为空") Integer linkId) {
@@ -140,6 +147,7 @@ public class LinkController {
      * @param linkIds 友链ID列表
      * @return 操作结果
      */
+    @OperationLog(module = "友链管理", type = OperationTypeEnum.DELETE, description = "管理员批量删除友链")
     @PreAuthorize("hasAuthority('link:delete')")
     @DeleteMapping("/admin/delete/batch")
     public Result<Void> adminDeleteBatchLink(@RequestBody @NotNull(message = "友链ID列表不能为空") List<Integer> linkIds) {

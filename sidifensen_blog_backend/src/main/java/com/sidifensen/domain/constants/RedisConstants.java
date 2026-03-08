@@ -101,4 +101,62 @@ public class RedisConstants {
      */
     public static final String USER_ONLINE_STATUS_KEY = RedisKeyPrefix + "UserOnline:";
 
+    // ==================== 推荐系统相关常量 ====================
+
+    /**
+     * 用户画像缓存键前缀
+     * 格式：sidifensen_blog:UserProfile:用户 ID
+     */
+    public static final String UserProfile = RedisKeyPrefix + "UserProfile:";
+
+    /**
+     * 用户画像缓存过期时间（7 天，单位：秒）
+     */
+    public static final long USER_PROFILE_EXPIRE_TIME = 7 * 24 * 60 * 60;
+
+    /**
+     * 用户行为记录缓存键前缀
+     * 格式：sidifensen_blog:UserBehavior:用户 ID
+     */
+    public static final String UserBehavior = RedisKeyPrefix + "UserBehavior:";
+
+    /**
+     * 用户行为记录缓存过期时间（30 天，单位：秒）
+     */
+    public static final long USER_BEHAVIOR_EXPIRE_TIME = 30 * 24 * 60 * 60;
+
+    /**
+     * 文章相似度矩阵缓存键前缀
+     * 格式：sidifensen_blog:ArticleSimilarity:文章 ID
+     */
+    public static final String ArticleSimilarity = RedisKeyPrefix + "ArticleSimilarity:";
+
+    /**
+     * 文章相似度矩阵缓存过期时间（1 天，单位：秒）
+     */
+    public static final long ARTICLE_SIMILARITY_EXPIRE_TIME = 24 * 60 * 60;
+
+    /**
+     * 用户推荐结果缓存键前缀
+     * 格式：sidifensen_blog:UserRecommend:用户 ID
+     */
+    public static final String UserRecommend = RedisKeyPrefix + "UserRecommend:";
+
+    /**
+     * 用户推荐结果缓存过期时间（30 分钟，单位：秒）
+     */
+    public static final long USER_RECOMMEND_EXPIRE_TIME = 30 * 60;
+
+    /**
+     * 实时热度衰减缓存键前缀
+     * 格式：sidifensen_blog:HotScoreUpdate:文章 ID
+     */
+    public static final String HotScoreUpdate = RedisKeyPrefix + "HotScoreUpdate:";
+
+    /**
+     * 标签共现矩阵缓存键前缀
+     * 格式：sidifensen_blog:TagCooccurrence:标签
+     */
+    public static final String TagCooccurrence = RedisKeyPrefix + "TagCooccurrence:";
+
 }

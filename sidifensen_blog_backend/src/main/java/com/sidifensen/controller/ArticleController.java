@@ -1,11 +1,13 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.ArticleAuditDto;
 import com.sidifensen.domain.dto.ArticleDto;
 import com.sidifensen.domain.dto.ArticleStatusDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.*;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.ArticleService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -243,6 +245,7 @@ public class ArticleController {
      *
      * @return 管理员文章列表
      */
+    @OperationLog(module = "文章管理", type = OperationTypeEnum.SELECT, description = "管理员获取文章列表")
     @PreAuthorize("hasAuthority('article:list')")
     @GetMapping("/admin/list")
     public Result adminGetArticleList() {
@@ -255,6 +258,7 @@ public class ArticleController {
      *
      * @return 管理员根据用户ID获取文章列表
      */
+    @OperationLog(module = "文章管理", type = OperationTypeEnum.SELECT, description = "管理员根据用户 ID 获取文章列表")
     @PreAuthorize("hasAuthority('article:user:list')")
     @GetMapping("/admin/user/{userId}")
     public Result adminGetArticlesByUserId(@PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
@@ -267,6 +271,7 @@ public class ArticleController {
      *
      * @return 管理员文章详情
      */
+    @OperationLog(module = "文章管理", type = OperationTypeEnum.GET, description = "管理员获取文章详情")
     @PreAuthorize("hasAuthority('article:get')")
     @GetMapping("/admin/{articleId}")
     public Result adminGetArticle(@PathVariable @NotNull(message = "文章ID不能为空") Integer articleId) {
@@ -279,6 +284,7 @@ public class ArticleController {
      *
      * @return 管理员更新文章
      */
+    @OperationLog(module = "文章管理", type = OperationTypeEnum.UPDATE, description = "管理员更新文章")
     @PreAuthorize("hasAuthority('article:update')")
     @PutMapping("/admin/update")
     public Result adminUpdateArticle(@RequestBody @Valid ArticleDto articleDto) {
@@ -291,6 +297,7 @@ public class ArticleController {
      *
      * @return 管理员搜索文章
      */
+    @OperationLog(module = "文章管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索文章")
     @PreAuthorize("hasAuthority('article:search')")
     @PostMapping("/admin/search")
     public Result adminSearchArticle(@RequestBody @Valid ArticleDto articleDto) {
@@ -303,6 +310,7 @@ public class ArticleController {
      *
      * @return 管理员审核文章
      */
+    @OperationLog(module = "文章管理", type = OperationTypeEnum.AUDIT, description = "管理员审核文章")
     @PreAuthorize("hasAuthority('article:examine')")
     @PutMapping("/admin/examine")
     public Result adminExamineArticle(@RequestBody @Valid ArticleAuditDto articleAuditDto) {
@@ -315,6 +323,7 @@ public class ArticleController {
      *
      * @return 管理员批量审核文章
      */
+    @OperationLog(module = "文章管理", type = OperationTypeEnum.AUDIT, description = "管理员批量审核文章")
     @PreAuthorize("hasAuthority('article:examine')")
     @PutMapping("/admin/examine/batch")
     public Result adminExamineBatchArticle(@RequestBody @Valid List<ArticleAuditDto> articleAuditDtos) {
@@ -327,6 +336,7 @@ public class ArticleController {
      *
      * @return 管理员删除文章
      */
+    @OperationLog(module = "文章管理", type = OperationTypeEnum.DELETE, description = "管理员删除文章")
     @PreAuthorize("hasAuthority('article:delete')")
     @DeleteMapping("/admin/{articleId}")
     public Result adminDeleteArticle(@PathVariable @NotNull(message = "文章ID不能为空") Integer articleId) {
@@ -340,6 +350,7 @@ public class ArticleController {
      * @param articleIds 文章ID列表
      * @return 管理员批量删除文章
      */
+    @OperationLog(module = "文章管理", type = OperationTypeEnum.DELETE, description = "管理员批量删除文章")
     @PreAuthorize("hasAuthority('article:delete')")
     @DeleteMapping("/admin/delete/batch")
     public Result adminDeleteBatchArticle(@RequestBody @NotNull(message = "文章ID列表不能为空") List<Integer> articleIds) {
@@ -352,6 +363,7 @@ public class ArticleController {
      *
      * @return 文章统计数据
      */
+    @OperationLog(module = "文章管理", type = OperationTypeEnum.GET, description = "管理员获取文章统计数据")
     @PreAuthorize("hasAuthority('article:list')")
     @GetMapping("/admin/statistics")
     public Result getAdminStatistics() {

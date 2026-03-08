@@ -1,10 +1,12 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.CommentAuditDto;
 import com.sidifensen.domain.dto.CommentDto;
 import com.sidifensen.domain.dto.CommentFilterDto;
 import com.sidifensen.domain.dto.CommentSearchDto;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.AdminCommentVo;
 import com.sidifensen.domain.vo.CommentVo;
@@ -14,6 +16,7 @@ import com.sidifensen.service.CommentService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.boot.actuate.endpoint.OperationType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -67,9 +70,10 @@ public class CommentController {
      */
     @RateLimit
     @GetMapping("/list")
-    public Result<PageVo<List<CommentVo>>> getCommentList(@RequestParam @NotNull(message = "文章ID不能为空") Integer articleId,
-                                                          @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
-                                                          @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+    public Result<PageVo<List<CommentVo>>> getCommentList(
+            @RequestParam @NotNull(message = "文章ID不能为空") Integer articleId,
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<CommentVo>> commentList = commentService.getCommentList(articleId, pageNum, pageSize);
         return Result.success(commentList);
     }
@@ -84,10 +88,12 @@ public class CommentController {
      */
     @RateLimit
     @PostMapping("/manage/list")
-    public Result<PageVo<List<UserCommentManageVo>>> getUserCommentManageList(@RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
-                                                                              @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
-                                                                              @RequestBody @Valid CommentFilterDto commentFilterDto) {
-        PageVo<List<UserCommentManageVo>> commentList = commentService.getUserCommentManageList(pageNum, pageSize, commentFilterDto);
+    public Result<PageVo<List<UserCommentManageVo>>> getUserCommentManageList(
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize,
+            @RequestBody @Valid CommentFilterDto commentFilterDto) {
+        PageVo<List<UserCommentManageVo>> commentList = commentService.getUserCommentManageList(pageNum, pageSize,
+                commentFilterDto);
         return Result.success(commentList);
     }
 
@@ -102,17 +108,20 @@ public class CommentController {
     @RateLimit
     @GetMapping("/reply/list")
     public Result<PageVo<List<CommentVo>>> getReplyList(@RequestParam @NotNull(message = "评论ID不能为空") Integer commentId,
-                                                        @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
-                                                        @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<CommentVo>> replyList = commentService.getReplyList(commentId, pageNum, pageSize);
         return Result.success(replyList);
     }
+
+    // 管理端
 
     /**
      * 管理员获取所有评论列表
      *
      * @return 评论列表
      */
+    @OperationLog(module = "评论管理", type = OperationTypeEnum.GET, description = "管理员获取所有评论列表")
     @PreAuthorize("hasAuthority('comment:list')")
     @GetMapping("/admin/list")
     public Result<List<AdminCommentVo>> adminGetCommentList() {
@@ -126,9 +135,11 @@ public class CommentController {
      * @param userId 用户ID
      * @return 用户评论列表
      */
-    @PreAuthorize("hasAuthority('comment:user:list')")
+    @OperationLog(module = "评论管理", type = OperationTypeEnum.SELECT, description = "管理员根据用户ID获取评论列表")
+    @PreAuthorize("hasAuthority('comment:list')")
     @GetMapping("/admin/user/{userId}")
-    public Result<List<AdminCommentVo>> adminGetCommentsByUserId(@PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
+    public Result<List<AdminCommentVo>> adminGetCommentsByUserId(
+            @PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
         List<AdminCommentVo> commentList = commentService.adminGetCommentsByUserId(userId);
         return Result.success(commentList);
     }
@@ -139,6 +150,7 @@ public class CommentController {
      * @param commentSearchDto 搜索条件
      * @return 搜索结果
      */
+    @OperationLog(module = "评论管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索评论")
     @PreAuthorize("hasAuthority('comment:search')")
     @PostMapping("/admin/search")
     public Result<List<AdminCommentVo>> adminSearchComment(@RequestBody @Valid CommentSearchDto commentSearchDto) {
@@ -152,6 +164,7 @@ public class CommentController {
      * @param commentAuditDto 评论审核信息
      * @return 操作结果
      */
+    @OperationLog(module = "评论管理", type = OperationTypeEnum.AUDIT, description = "管理员审核评论")
     @PreAuthorize("hasAuthority('comment:examine')")
     @PutMapping("/admin/examine")
     public Result<Void> adminExamineComment(@RequestBody @Valid CommentAuditDto commentAuditDto) {
@@ -165,6 +178,7 @@ public class CommentController {
      * @param commentAuditDtos 评论审核信息列表
      * @return 操作结果
      */
+    @OperationLog(module = "评论管理", type = OperationTypeEnum.AUDIT, description = "管理员批量审核评论")
     @PreAuthorize("hasAuthority('comment:examine')")
     @PutMapping("/admin/examine/batch")
     public Result<Void> adminExamineBatchComment(@RequestBody @Valid List<CommentAuditDto> commentAuditDtos) {
@@ -178,6 +192,7 @@ public class CommentController {
      * @param commentId 评论id
      * @return 操作结果
      */
+    @OperationLog(module = "评论管理", type = OperationTypeEnum.DELETE, description = "管理员删除评论")
     @PreAuthorize("hasAuthority('comment:delete')")
     @DeleteMapping("/admin/{commentId}")
     public Result<Void> adminDeleteComment(@PathVariable @NotNull(message = "评论ID不能为空") Integer commentId) {
@@ -191,9 +206,11 @@ public class CommentController {
      * @param commentIds 评论ID列表
      * @return 操作结果
      */
+    @OperationLog(module = "评论管理", type = OperationTypeEnum.DELETE, description = "管理员批量删除评论")
     @PreAuthorize("hasAuthority('comment:delete')")
     @DeleteMapping("/admin/delete/batch")
-    public Result<Void> adminDeleteBatchComment(@RequestBody @NotNull(message = "评论ID列表不能为空") List<Integer> commentIds) {
+    public Result<Void> adminDeleteBatchComment(
+            @RequestBody @NotNull(message = "评论ID列表不能为空") List<Integer> commentIds) {
         commentService.adminDeleteBatchComment(commentIds);
         return Result.success();
     }
@@ -203,7 +220,7 @@ public class CommentController {
      *
      * @return 评论总数
      */
-    @PreAuthorize("hasAuthority('comment:list')")
+    @OperationLog(type = OperationTypeEnum.GET, description = "管理员获取评论总数统计")
     @GetMapping("/admin/statistics")
     public Result<Long> getCommentStatistics() {
         Long totalCount = commentService.getCommentTotalCount();

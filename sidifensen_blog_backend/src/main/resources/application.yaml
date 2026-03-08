@@ -1,6 +1,8 @@
 server:
   port: 5000
 spring:
+  profiles:
+    active: dev
   application:
     name: sidifensen-blog
   mvc:
@@ -91,7 +93,7 @@ spring:
         default-requeue-rejected: false # 重试失败后不重新入队，而是发送到死信队列
   ai:
     openai:
-      api-key: ${SPRING_AI_OPENAI_API_KEY} # DeepSeek API Key
+      api-key: ${SPRING_AI_OPENAI_API_KEY:sk-6666666666666666666666666666666} # DeepSeek API Key
       base-url: ${SPRING_AI_OPENAI_BASE_URL:https://api.deepseek.com} # DeepSeek API 地址
       chat:
         options:
@@ -125,8 +127,8 @@ frontend:
   adminHost: ${FRONTEND_ADMIN_HOST:http://localhost:8000/} # 前端管理员地址
 # 阿里云配置
 aliyun:
-  accessKeyId: ${ALIYUN_ACCESS_KEY_ID}
-  accessKeySecret: ${ALIYUN_ACCESS_KEY_SECRET}
+  accessKeyId: ${ALIYUN_ACCESS_KEY_ID:LTAI5t6TmzCVTEMc6M666666}
+  accessKeySecret: ${ALIYUN_ACCESS_KEY_SECRET:gLDU5WfgcwMJxcEDMozypStj666666}
   imageaudit:
     endpoint: imageaudit.cn-shanghai.aliyuncs.com
 sidifensen:

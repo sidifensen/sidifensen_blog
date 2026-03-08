@@ -482,10 +482,15 @@ git clone https://github.com/your-username/sidifensen_blog.git
 cd sidifensen_blog/sidifensen_blog_backend
 
 # 配置数据库连接
-# 编辑 src/main/resources/application-dev.yaml 文件
+# 编辑 src/main/resources/application.yaml 文件
 # 修改数据库、Redis、RabbitMQ 连接信息
 
-# 启动后端服务
+# 方式一：使用 dotenv 加载 .env 文件启动（推荐）
+# 需要先安装 dotenv-cli: npm install -g dotenv-cli
+mvn clean install
+dotenv -- mvn spring-boot:run
+
+# 方式二：直接启动（不加载 .env 文件）
 mvn clean install
 mvn spring-boot:run
 

@@ -1,10 +1,12 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.SysMenuDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysMenuVo;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.SysMenuService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -34,6 +36,7 @@ public class SysMenuController {
      *
      * @return
      */
+    @OperationLog(module = "菜单管理", type = OperationTypeEnum.SELECT, description = "管理员获取用户菜单列表")
     @PreAuthorize("hasAuthority('system:menu:list')")
     @GetMapping("list")
     public Result list() {
@@ -46,6 +49,7 @@ public class SysMenuController {
      *
      * @return
      */
+    @OperationLog(module = "菜单管理", type = OperationTypeEnum.SELECT, description = "管理员获取所有菜单列表")
     @PreAuthorize("hasAuthority('system:menu:listAll')")
     @GetMapping("listAll")
     public Result listAll() {
@@ -59,6 +63,7 @@ public class SysMenuController {
      * @param sysMenuDto
      * @return
      */
+    @OperationLog(module = "菜单管理", type = OperationTypeEnum.INSERT, description = "管理员新增菜单")
     @PreAuthorize("hasAuthority('system:menu:add')")
     @PostMapping("add")
     public Result add(@RequestBody @Valid SysMenuDto sysMenuDto) {
@@ -72,6 +77,7 @@ public class SysMenuController {
      * @param sysMenuDto 包含更新信息的菜单数据传输对象
      * @return
      */
+    @OperationLog(module = "菜单管理", type = OperationTypeEnum.UPDATE, description = "管理员修改菜单")
     @PreAuthorize("hasAuthority('system:menu:update')")
     @PutMapping("update")
     public Result update(@RequestBody @Valid SysMenuDto sysMenuDto) {
@@ -85,6 +91,7 @@ public class SysMenuController {
      * @param menuId 菜单ID
      * @return
      */
+    @OperationLog(module = "菜单管理", type = OperationTypeEnum.DELETE, description = "管理员删除菜单")
     @PreAuthorize("hasAuthority('system:menu:delete')")
     @DeleteMapping("{menuId}")
     public Result delete(@PathVariable @NotEmpty Integer menuId) {
@@ -98,6 +105,7 @@ public class SysMenuController {
      * @param name 菜单名称
      * @return
      */
+    @OperationLog(module = "菜单管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索菜单")
     @PreAuthorize("hasAuthority('system:menu:search')")
     @GetMapping("search")
     public Result search(@RequestParam("name") @NotNull(message = "菜单名称不能为空") String name) {

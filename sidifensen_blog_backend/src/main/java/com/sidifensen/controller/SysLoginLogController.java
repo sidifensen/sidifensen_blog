@@ -1,9 +1,11 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.SysLoginLogQueryDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysLoginLogVo;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.SysLoginLogService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -32,6 +34,7 @@ public class SysLoginLogController {
      *
      * @return 登录日志列表
      */
+    @OperationLog(module = "登录日志管理", type = OperationTypeEnum.SELECT, description = "管理员获取登录日志列表")
     @PreAuthorize("hasAuthority('system:loginLog:list')")
     @GetMapping("/admin/list")
     public Result<List<SysLoginLogVo>> getLoginLogList() {
@@ -45,6 +48,7 @@ public class SysLoginLogController {
      * @param queryDto 查询条件
      * @return 登录日志列表
      */
+    @OperationLog(module = "登录日志管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索登录日志")
     @PreAuthorize("hasAuthority('system:loginLog:search')")
     @PostMapping("/admin/search")
     public Result<List<SysLoginLogVo>> searchLoginLog(@RequestBody @Valid SysLoginLogQueryDto queryDto) {
@@ -58,6 +62,7 @@ public class SysLoginLogController {
      * @param ids 登录日志ID列表
      * @return 操作结果
      */
+    @OperationLog(module = "登录日志管理", type = OperationTypeEnum.DELETE, description = "管理员批量删除登录日志")
     @PreAuthorize("hasAuthority('system:loginLog:delete')")
     @DeleteMapping("/admin/batch")
     public Result<Void> deleteLoginLogs(@RequestBody @NotEmpty List<Integer> ids) {

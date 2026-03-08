@@ -1,11 +1,13 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.SysVisitorLogQueryDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysVisitorLogVo;
 import com.sidifensen.domain.vo.VisitorStatisticsVo;
 import com.sidifensen.domain.vo.VisitorTrendVo;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.SysVisitorLogService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -35,6 +37,7 @@ public class SysVisitorLogController {
      *
      * @return 访客日志列表
      */
+    @OperationLog(module = "访客日志管理", type = OperationTypeEnum.SELECT, description = "管理员获取访客日志列表")
     @PreAuthorize("hasAuthority('system:visitorLog:list')")
     @GetMapping("/admin/list")
     public Result<List<SysVisitorLogVo>> getVisitorLogList() {
@@ -48,6 +51,7 @@ public class SysVisitorLogController {
      * @param queryDto 查询条件
      * @return 访客日志列表
      */
+    @OperationLog(module = "访客日志管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索访客日志")
     @PreAuthorize("hasAuthority('system:visitorLog:search')")
     @PostMapping("/admin/search")
     public Result<List<SysVisitorLogVo>> searchVisitorLog(@RequestBody @Valid SysVisitorLogQueryDto queryDto) {
@@ -61,6 +65,7 @@ public class SysVisitorLogController {
      * @param ids 访客日志ID列表
      * @return 操作结果
      */
+    @OperationLog(module = "访客日志管理", type = OperationTypeEnum.DELETE, description = "管理员批量删除访客日志")
     @PreAuthorize("hasAuthority('system:visitorLog:delete')")
     @DeleteMapping("/admin/batch")
     public Result<Void> deleteVisitorLogs(@RequestBody @NotEmpty List<Integer> ids) {
@@ -72,6 +77,7 @@ public class SysVisitorLogController {
      * 获取访客统计数据
      * 仅管理员可访问
      */
+    @OperationLog(module = "访客日志管理", type = OperationTypeEnum.GET, description = "管理员获取访客统计数据")
     @PreAuthorize("hasAuthority('system:visitorLog:list')")
     @GetMapping("/statistics")
     public Result<VisitorStatisticsVo> getStatistics() {
@@ -85,6 +91,7 @@ public class SysVisitorLogController {
      *
      * @param days 天数，默认7天
      */
+    @OperationLog(module = "访客日志管理", type = OperationTypeEnum.GET, description = "管理员获取访客趋势数据")
     @PreAuthorize("hasAuthority('system:visitorLog:list')")
     @GetMapping("/trend")
     public Result<List<VisitorTrendVo>> getTrend(
@@ -96,6 +103,7 @@ public class SysVisitorLogController {
     /**
      * 获取今日访问量
      */
+    @OperationLog(module = "访客日志管理", type = OperationTypeEnum.GET, description = "管理员获取今日访问量")
     @PreAuthorize("hasAuthority('system:visitorLog:list')")
     @GetMapping("/today/count")
     public Result<Long> getTodayCount() {
@@ -106,6 +114,7 @@ public class SysVisitorLogController {
     /**
      * 获取总访问量
      */
+    @OperationLog(module = "访客日志管理", type = OperationTypeEnum.GET, description = "管理员获取总访问量")
     @PreAuthorize("hasAuthority('system:visitorLog:list')")
     @GetMapping("/total/count")
     public Result<Long> getTotalCount() {

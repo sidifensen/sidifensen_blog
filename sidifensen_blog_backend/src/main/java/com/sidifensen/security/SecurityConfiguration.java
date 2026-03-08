@@ -69,7 +69,6 @@ public class SecurityConfiguration {
         corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
         corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
         corsConfiguration.setAllowedOrigins(sidifensenConfig.getAllowOrigins());
-        corsConfiguration.setAllowedOrigins(Collections.singletonList("*"));
 
         // 创建 CorsConfigurationSource对象
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

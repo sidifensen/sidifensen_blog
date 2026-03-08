@@ -1,10 +1,12 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.PhotoAuditDto;
 import com.sidifensen.domain.dto.PhotoDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.PhotoVo;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.PhotoService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -103,6 +105,7 @@ public class PhotoController {
     /**
      * 管理端删除照片
      */
+    @OperationLog(module = "图片管理", type = OperationTypeEnum.DELETE, description = "管理员删除图片")
     @PreAuthorize("hasAuthority('photo:delete')")
     @DeleteMapping("/admin/delete/{photoId}")
     public Result adminDelete(@PathVariable("photoId") @NotNull(message = "照片ID不能为空") Integer photoId) {
@@ -113,6 +116,7 @@ public class PhotoController {
     /**
      * 管理端批量删除照片
      */
+    @OperationLog(module = "图片管理", type = OperationTypeEnum.DELETE, description = "管理员批量删除图片")
     @PreAuthorize("hasAuthority('photo:deleteBatch')")
     @DeleteMapping("/admin/delete/batch")
     public Result<String> adminBatchDelete(@RequestBody @NotNull(message = "照片ID列表不能为空") List<Integer> photoIds) {
@@ -123,6 +127,7 @@ public class PhotoController {
     /**
      * 管理端审核图片
      */
+    @OperationLog(module = "图片管理", type = OperationTypeEnum.AUDIT, description = "管理员审核图片")
     @PreAuthorize("hasAuthority('photo:audit')")
     @PutMapping("/admin/audit")
     public Result<String> adminAudit(@RequestBody @Valid PhotoAuditDto photoAuditDto) {
@@ -133,6 +138,7 @@ public class PhotoController {
     /**
      * 管理端批量审核图片
      */
+    @OperationLog(module = "图片管理", type = OperationTypeEnum.AUDIT, description = "管理员批量审核图片")
     @PreAuthorize("hasAuthority('photo:auditBatch')")
     @PutMapping("/admin/auditBatch")
     public Result<String> adminAuditBatch(@RequestBody @Valid List<PhotoAuditDto> photoAuditDto) {
@@ -143,6 +149,7 @@ public class PhotoController {
     /**
      * 获取图片列表
      */
+    @OperationLog(module = "图片管理", type = OperationTypeEnum.SELECT, description = "管理员获取图片列表")
     @PreAuthorize("hasAuthority('photo:list')")
     @GetMapping("/admin/list")
     public Result list() {
@@ -153,6 +160,7 @@ public class PhotoController {
     /**
      * 搜索图片列表
      */
+    @OperationLog(module = "图片管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索图片")
     @PreAuthorize("hasAuthority('photo:search')")
     @PostMapping("/admin/search")
     public Result adminSearch(@RequestBody @Valid PhotoDto photoDto) {

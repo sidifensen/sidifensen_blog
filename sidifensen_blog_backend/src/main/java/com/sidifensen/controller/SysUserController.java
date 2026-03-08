@@ -1,9 +1,11 @@
 package com.sidifensen.controller;
 
+import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.*;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.SysUserService;
 import com.wf.captcha.ArithmeticCaptcha;
@@ -202,6 +204,7 @@ public class SysUserController {
      *
      * @return
      */
+    @OperationLog(module = "用户管理", type = OperationTypeEnum.SELECT, description = "管理员获取用户列表")
     @PreAuthorize("hasAuthority('system:user:list')")
     @GetMapping("/admin/list")
     public Result listUser() {
@@ -214,6 +217,7 @@ public class SysUserController {
      *
      * @return
      */
+    @OperationLog(module = "用户管理", type = OperationTypeEnum.SELECT, description = "管理员获取用户列表（含文章数量）")
     @PreAuthorize("hasAuthority('system:user:list')")
     @GetMapping("/admin/listWithArticleCount")
     public Result listUserWithArticleCount() {
@@ -226,6 +230,7 @@ public class SysUserController {
      *
      * @return
      */
+    @OperationLog(module = "用户管理", type = OperationTypeEnum.SELECT, description = "管理员获取用户列表（含评论数量）")
     @PreAuthorize("hasAuthority('system:user:list')")
     @GetMapping("/admin/listWithCommentCount")
     public Result listUserWithCommentCount() {
@@ -238,6 +243,7 @@ public class SysUserController {
      *
      * @return
      */
+    @OperationLog(module = "用户管理", type = OperationTypeEnum.SELECT, description = "管理员获取用户列表（含专栏数量）")
     @PreAuthorize("hasAuthority('system:user:list')")
     @GetMapping("/admin/listWithColumnCount")
     public Result listUserWithColumnCount() {
@@ -250,6 +256,7 @@ public class SysUserController {
      *
      * @return
      */
+    @OperationLog(module = "用户管理", type = OperationTypeEnum.UPDATE, description = "管理员修改用户信息")
     @PreAuthorize("hasAuthority('system:user:update')")
     @PostMapping("/admin/update")
     public Result updateUser(@RequestBody @Valid SysUserDto sysUserDto) {
@@ -262,6 +269,7 @@ public class SysUserController {
      *
      * @return
      */
+    @OperationLog(module = "用户管理", type = OperationTypeEnum.DELETE, description = "管理员删除用户")
     @PreAuthorize("hasAuthority('system:user:delete')")
     @DeleteMapping("/admin/{userId}")
     public Result deleteUser(@PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
@@ -274,6 +282,7 @@ public class SysUserController {
      *
      * @return
      */
+    @OperationLog(module = "用户管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索用户")
     @PreAuthorize("hasAuthority('system:user:search')")
     @PostMapping("/admin/search")
     public Result searchUser(@RequestBody @Valid SysUserSearchDTO sysUserSearchDTO) {
@@ -284,6 +293,7 @@ public class SysUserController {
     /**
      * 管理端获取用户详细信息
      */
+    @OperationLog(module = "用户管理", type = OperationTypeEnum.GET, description = "管理员获取用户详细信息")
     @PreAuthorize("hasAuthority('system:user:info')")
     @GetMapping("/admin/{userId}")
     public Result getUserInfo(@PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
@@ -296,6 +306,7 @@ public class SysUserController {
      *
      * @return 用户总数
      */
+    @OperationLog(module = "用户管理", type = OperationTypeEnum.GET, description = "管理员获取用户总数统计")
     @PreAuthorize("hasAuthority('system:user:list')")
     @GetMapping("/admin/count")
     public Result getUserTotalCount() {

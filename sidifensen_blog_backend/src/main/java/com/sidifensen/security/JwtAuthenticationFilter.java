@@ -62,8 +62,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
         // 发送访客记录消息（异步处理，不影响主业务）
         sendVisitorRecordMessage(request);
+
         // 检查是否是可选认证接口（有token就认证，没有就跳过）
         boolean isOptionalAuth = false;
         for (String url : SecurityConstants.Optional_Auth_Urls) {

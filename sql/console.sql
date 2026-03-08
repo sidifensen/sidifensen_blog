@@ -370,3 +370,29 @@ create table conversation
     -- 查询某用户的会话列表
     index idx_user_update (user_id, update_time desc)
 );
+
+-- 操作日志表
+create table sys_operationlog (
+    id              int   primary key not null auto_increment comment '主键id',
+    module          varchar(50)   default null comment '功能模块',
+    operation       varchar(50)   default null comment '操作类型',
+    description     varchar(200)  default null comment '操作描述',
+    method          varchar(100)  default null comment '请求方法 (类名：方法名)',
+    request_method  varchar(10)   default null comment '请求方式 (get/post/put/delete)',
+    request_url     varchar(255)  default null comment '请求 url',
+    request_param   text          default null comment '请求参数',
+    response_result text          default null comment '返回结果',
+    operator_id     int           not null comment '操作人员 id',
+    operator_role   varchar(50)   not null comment '操作人员角色',
+    operator_name   varchar(50)   not null comment '操作人员名字',
+    ip              varchar(100)  default null comment '操作 ip',
+    address         varchar(100)  default null comment '操作地址',
+    time            bigint(20)    default 0 comment '消耗时间 (ms)',
+    status          tinyint       not null default 0 comment '操作状态 0-成功 1-失败 2-异常',
+    exception       varchar(2000) default null comment '异常消息',
+    create_time     datetime      not null comment '创建时间',
+    update_time     datetime      not null comment '更新时间',
+    is_deleted      tinyint       not null default 0 comment '是否删除 0-正常 1-删除',
+    -- 按操作人员查询操作日志
+    index idx_operator_time (operator_id, create_time desc)
+);

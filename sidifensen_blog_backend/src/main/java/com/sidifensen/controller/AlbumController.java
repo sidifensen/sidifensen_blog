@@ -1,10 +1,12 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.AlbumDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.AlbumVo;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.AlbumService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -128,6 +130,7 @@ public class AlbumController {
     /**
      * 管理端查看所有用户的相册
      */
+    @OperationLog(module = "相册管理", type = OperationTypeEnum.SELECT, description = "管理员获取相册列表")
     @PreAuthorize("hasAuthority('album:list')")
     @GetMapping("/admin/list")
     public Result<Object> adminList() {
@@ -141,6 +144,7 @@ public class AlbumController {
      * @param albumId
      * @return
      */
+    @OperationLog(module = "相册管理", type = OperationTypeEnum.GET, description = "管理员获取相册详情")
     @PreAuthorize("hasAuthority('album:detail')")
     @GetMapping("/admin/get/{albumId}")
     public Result<Object> adminGetAlbum(@PathVariable("albumId") @NotNull(message = "相册ID不能为空") Integer albumId) {
@@ -154,6 +158,7 @@ public class AlbumController {
      * @param albumDto
      * @return
      */
+    @OperationLog(module = "相册管理", type = OperationTypeEnum.UPDATE, description = "管理员更新相册")
     @PreAuthorize("hasAuthority('album:update')")
     @PutMapping("/admin/update")
     public Result<String> adminUpdateAlbum(@RequestBody @Valid AlbumDto albumDto) {
@@ -164,6 +169,7 @@ public class AlbumController {
     /**
      * 管理端搜索相册
      */
+    @OperationLog(module = "相册管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索相册")
     @PreAuthorize("hasAuthority('album:search')")
     @PostMapping("/admin/search")
     public Result<Object> searchAlbum(@RequestBody @Valid AlbumDto albumDto) {
@@ -177,6 +183,7 @@ public class AlbumController {
      * @param albumId
      * @return
      */
+    @OperationLog(module = "相册管理", type = OperationTypeEnum.DELETE, description = "管理员删除相册")
     @PreAuthorize("hasAuthority('album:delete')")
     @DeleteMapping("/admin/delete/{albumId}")
     public Result<String> adminDeleteAlbum(@PathVariable("albumId") @NotNull(message = "相册ID不能为空") Integer albumId) {

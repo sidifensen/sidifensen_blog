@@ -1,10 +1,12 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.SysPermissionDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysPermissionVo;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.SysPermissionService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -33,6 +35,7 @@ public class SysPermissionController {
      *
      * @return
      */
+    @OperationLog(module = "权限管理", type = OperationTypeEnum.SELECT, description = "管理员获取权限列表")
     @PreAuthorize("hasAuthority('system:permission:list')")
     @GetMapping("list")
     public Result list() {
@@ -46,6 +49,7 @@ public class SysPermissionController {
      * @param sysPermissionDto 权限信息
      * @return
      */
+    @OperationLog(module = "权限管理", type = OperationTypeEnum.INSERT, description = "管理员新增权限")
     @PreAuthorize("hasAuthority('system:permission:add')")
     @PostMapping("add")
     public Result add(@RequestBody @Valid SysPermissionDto sysPermissionDto) {
@@ -59,6 +63,7 @@ public class SysPermissionController {
      * @param sysPermissionDto 包含更新信息的权限数据
      * @return
      */
+    @OperationLog(module = "权限管理", type = OperationTypeEnum.UPDATE, description = "管理员修改权限")
     @PreAuthorize("hasAuthority('system:permission:update')")
     @PutMapping("update")
     public Result update(@RequestBody @Valid SysPermissionDto sysPermissionDto) {
@@ -72,6 +77,7 @@ public class SysPermissionController {
      * @param permissionId 权限ID
      * @return
      */
+    @OperationLog(module = "权限管理", type = OperationTypeEnum.DELETE, description = "管理员删除权限")
     @PreAuthorize("hasAuthority('system:permission:delete')")
     @DeleteMapping("{permissionId}")
     public Result delete(@PathVariable @NotEmpty Integer permissionId) {
@@ -85,6 +91,7 @@ public class SysPermissionController {
      * @param sysPermissionDto 权限信息
      * @return
      */
+    @OperationLog(module = "权限管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索权限")
     @PreAuthorize("hasAuthority('system:permission:search')")
     @PostMapping("search")
     public Result search(@RequestBody @Valid SysPermissionDto sysPermissionDto) {

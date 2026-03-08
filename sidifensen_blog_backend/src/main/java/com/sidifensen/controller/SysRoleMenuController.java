@@ -1,10 +1,12 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.SysRoleMenuDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysRoleVo;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.SysRoleMenuService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -34,6 +36,7 @@ public class SysRoleMenuController {
      * @param sysRoleMenuDto 角色菜单信息
      * @return
      */
+    @OperationLog(module = "角色菜单管理", type = OperationTypeEnum.ASSIGN, description = "管理员给角色分配菜单")
     @PreAuthorize("hasAuthority('system:role:menu:add')")
     @PostMapping("add")
     public Result add(@RequestBody @Valid SysRoleMenuDto sysRoleMenuDto) {
@@ -47,6 +50,7 @@ public class SysRoleMenuController {
      * @param menuId 菜单ID
      * @return
      */
+    @OperationLog(module = "角色菜单管理", type = OperationTypeEnum.SELECT, description = "管理员获取拥有指定菜单的角色列表")
     @PreAuthorize("hasAuthority('system:role:menu:get')")
     @GetMapping("{menuId}")
     public Result getRoles(@PathVariable @NotNull(message = "菜单ID不能为空") Integer menuId) {

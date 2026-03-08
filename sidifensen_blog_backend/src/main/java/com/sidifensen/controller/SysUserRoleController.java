@@ -1,11 +1,13 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.SysUserRoleDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.SysRoleVo;
 import com.sidifensen.domain.vo.SysUserVo;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.SysUserRoleService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -36,6 +38,7 @@ public class SysUserRoleController {
      * @param sysUserRoleDto 角色菜单信息
      * @return
      */
+    @OperationLog(module = "用户角色管理", type = OperationTypeEnum.ASSIGN, description = "管理员给角色分配用户")
     @PreAuthorize("hasAuthority('system:user:role:addUser')")
     @PostMapping("addUser")
     public Result addUser(@RequestBody @Valid SysUserRoleDto sysUserRoleDto) {
@@ -49,6 +52,7 @@ public class SysUserRoleController {
      * @param roleId 角色id
      * @return
      */
+    @OperationLog(module = "用户角色管理", type = OperationTypeEnum.SELECT, description = "管理员获取拥有指定角色的用户列表")
     @PreAuthorize("hasAuthority('system:user:role:getUsers')")
     @GetMapping("getUsers/{roleId}")
     public Result getUsers(@PathVariable @NotNull(message = "角色ID不能为空") Integer roleId) {
@@ -62,6 +66,7 @@ public class SysUserRoleController {
      * @param sysUserRoleDto 角色菜单信息
      * @return
      */
+    @OperationLog(module = "用户角色管理", type = OperationTypeEnum.ASSIGN, description = "管理员给用户分配角色")
     @PreAuthorize("hasAuthority('system:user:role:addRole')")
     @PostMapping("addRole")
     public Result addRole(@RequestBody @Valid SysUserRoleDto sysUserRoleDto) {
@@ -75,6 +80,7 @@ public class SysUserRoleController {
      * @param userId 用户id
      * @return
      */
+    @OperationLog(module = "用户角色管理", type = OperationTypeEnum.SELECT, description = "管理员获取用户拥有的角色列表")
     @PreAuthorize("hasAuthority('system:user:role:getRoles')")
     @GetMapping("getRoles/{userId}")
     public Result getRoles(@PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {

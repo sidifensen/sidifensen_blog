@@ -1,11 +1,13 @@
 package com.sidifensen.controller;
 
 
+import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.CategorySortDto;
 import com.sidifensen.domain.dto.TagDto;
 import com.sidifensen.domain.entity.Tag;
 import com.sidifensen.domain.result.Result;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.TagService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -34,6 +36,7 @@ public class TagController {
     /**
      * 新增标签
      */
+    @OperationLog(module = "标签管理", type = OperationTypeEnum.INSERT, description = "管理员新增标签")
     @PreAuthorize("hasAuthority('tag:add')")
     @PostMapping("/add")
     public Result addTag(@RequestBody @Valid TagDto tagDto) {
@@ -54,6 +57,7 @@ public class TagController {
      * 调整分类排序
      * 说明：调整某个分类的排序值，该分类下所有标签的 sort 值都会更新，并自动处理排序冲突
      */
+    @OperationLog(module = "标签管理", type = OperationTypeEnum.UPDATE, description = "管理员调整标签分类排序")
     @PreAuthorize("hasAuthority('tag:update')")
     @PutMapping("/sort/category")
     public Result updateCategorySort(@RequestBody @Valid CategorySortDto categorySortDto) {
@@ -64,6 +68,7 @@ public class TagController {
     /**
      * 批量删除标签
      */
+    @OperationLog(module = "标签管理", type = OperationTypeEnum.DELETE, description = "管理员批量删除标签")
     @PreAuthorize("hasAuthority('tag:delete')")
     @DeleteMapping("/delete")
     public Result deleteTag(@RequestBody @NotNull(message = "标签ID列表不能为空") List<Integer> ids) {

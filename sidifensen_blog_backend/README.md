@@ -155,6 +155,26 @@ mysql -u root -p sidifensen_community < ../../sql/sidifensen_blog.sql
 
 ### 编译运行
 
+**方式一：使用 dotenv 启动（推荐）(Windows 环境下可以自动获取后端根目录下的.env 配置文件)**
+
+> 💡 **提示**：`dotenv` 需要提前安装，安装命令：`npm install -g dotenv-cli`
+
+```bash
+# 使用 dotenv 加载环境变量并启动项目
+mvn clean install
+dotenv -- mvn spring-boot:run
+```
+
+**方式二：使用 Maven 直接启动（不加载 .env 文件）**
+
+```bash
+# 直接启动项目
+mvn clean install
+mvn spring-boot:run
+```
+
+**方式三：打包后运行**
+
 ```bash
 # 编译打包
 mvn clean package -DskipTests
@@ -658,6 +678,7 @@ Accept: text/plain
 ```
 
 **说明：**
+
 - 返回类型为 `text/plain` 的流式分片文本（适合前端逐段渲染）
 - `chatId` 用于维持对话上下文，会话记忆由服务端管理
 
@@ -679,7 +700,7 @@ Content-Type: application/json
 {
   "code": 200,
   "message": "操作成功",
-  "data": ["标题建议1","标题建议2","标题建议3","标题建议4","标题建议5"]
+  "data": ["标题建议1", "标题建议2", "标题建议3", "标题建议4", "标题建议5"]
 }
 ```
 
@@ -704,7 +725,7 @@ Content-Type: application/json
 {
   "code": 200,
   "message": "操作成功",
-  "data": ["Java","Spring","后端","AI","实践","技巧"]
+  "data": ["Java", "Spring", "后端", "AI", "实践", "技巧"]
 }
 ```
 
@@ -729,7 +750,7 @@ Content-Type: application/json
 {
   "code": 200,
   "message": "操作成功",
-  "data": ["回复建议1","回复建议2","回复建议3"]
+  "data": ["回复建议1", "回复建议2", "回复建议3"]
 }
 ```
 

@@ -151,6 +151,10 @@ public class BlogConstants {
     public static final String LoginLogIdsRequired = "登录日志ID列表不能为空";
     public static final String DeleteLoginLogError = "删除登录日志失败";
 
+    // 操作日志相关错误信息
+    public static final String OperationlogIdsRequired = "操作日志 ID 列表不能为空";
+    public static final String DeleteOperationlogError = "删除操作日志失败";
+
     // 友链相关错误信息（补充）
     public static final String SearchLinkError = "搜索友链失败";
     public static final String LinkAuditError = "友链审核失败";

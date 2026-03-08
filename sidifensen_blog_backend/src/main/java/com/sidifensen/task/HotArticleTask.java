@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -89,10 +91,13 @@ public class HotArticleTask {
                 Integer commentCount = (Integer) stat.get("commentCount");
                 Integer likeCount = (Integer) stat.get("likeCount");
                 Integer collectCount = (Integer) stat.get("collectCount");
-                Date createTime = (Date) stat.get("createTime");
-
-                // 计算时效性因子（近7天的文章时效性最高，每超过7天衰减10%）
-                long articleAgeMillis = now - createTime.getTime();
+                LocalDateTime createTime = (LocalDateTime) stat.get("createTime");
+            
+                // 将 LocalDateTime 转换为时间戳（毫秒）
+                long createTimeMillis = createTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            
+                // 计算时效性因子（近 7 天的文章时效性最高，每超过 7 天衰减 10%）
+                long articleAgeMillis = now - createTimeMillis;
                 double timeFactor = 100.0;
                 if (articleAgeMillis > sevenDaysMillis) {
                     // 计算衰减系数，每超过7天衰减10%
