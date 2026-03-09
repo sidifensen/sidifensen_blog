@@ -358,6 +358,7 @@ INSERT INTO `sys_menu` VALUES (20, 2, '黑名单管理', 4, '/system/backlist', 
 INSERT INTO `sys_menu` VALUES (21, 0, '标签管理', 8, '/tag', '/tag', 'CollectionTag', 0, '2025-10-05 13:20:54', '2025-10-05 13:20:54', 0);
 INSERT INTO `sys_menu` VALUES (22, 2, '登录日志', 5, '/system/loginLog', '/system/loginLog', 'Calendar', 0, '2025-10-06 19:31:12', '2025-10-08 18:09:05', 0);
 INSERT INTO `sys_menu` VALUES (23, 2, '访客日志', 6, '/system/visitorLog', '/system/visitorLog', 'DataAnalysis', 0, '2025-10-07 11:15:51', '2025-10-08 18:09:08', 0);
+INSERT INTO `sys_menu` VALUES (24, 2, '操作日志', 7, '/system/operationLog', '/system/operationLog', 'Timer', 0, '2026-03-09 00:00:00', '2026-03-09 00:00:00', 0);
 
 -- ----------------------------
 -- Table structure for sys_permission
@@ -460,6 +461,9 @@ INSERT INTO `sys_permission` VALUES (80, '删除登录日志', 'system:loginLog:
 INSERT INTO `sys_permission` VALUES (81, '获取访客列表', 'system:visitorLog:list', 23, '2025-10-07 11:14:35', '2025-10-07 11:16:07', 0);
 INSERT INTO `sys_permission` VALUES (82, '搜索访客日志', 'system:visitorLog:search', 23, '2025-10-07 15:46:53', '2025-10-07 15:47:16', 0);
 INSERT INTO `sys_permission` VALUES (83, '删除访客日志', 'system:visitorLog:delete', 23, '2025-10-07 15:47:11', '2025-10-07 15:47:11', 0);
+INSERT INTO `sys_permission` VALUES (84, '获取操作日志', 'system:operationlog:list', 24, '2026-03-09 00:00:00', '2026-03-09 00:00:00', 0);
+INSERT INTO `sys_permission` VALUES (85, '搜索操作日志', 'system:operationlog:search', 24, '2026-03-09 00:00:00', '2026-03-09 00:00:00', 0);
+INSERT INTO `sys_permission` VALUES (86, '删除操作日志', 'system:operationlog:delete', 24, '2026-03-09 00:00:00', '2026-03-09 00:00:00', 0);
 
 -- ----------------------------
 -- Table structure for sys_role
@@ -546,6 +550,8 @@ INSERT INTO `sys_role_menu` VALUES (59, 2, 21);
 INSERT INTO `sys_role_menu` VALUES (60, 2, 20);
 INSERT INTO `sys_role_menu` VALUES (61, 2, 22);
 INSERT INTO `sys_role_menu` VALUES (62, 2, 23);
+INSERT INTO `sys_role_menu` VALUES (63, 1, 24);
+INSERT INTO `sys_role_menu` VALUES (64, 2, 24);
 
 -- ----------------------------
 -- Table structure for sys_role_permission
@@ -685,6 +691,10 @@ INSERT INTO `sys_role_permission` VALUES (138, 2, 81);
 INSERT INTO `sys_role_permission` VALUES (139, 2, 82);
 INSERT INTO `sys_role_permission` VALUES (140, 2, 43);
 INSERT INTO `sys_role_permission` VALUES (141, 2, 44);
+INSERT INTO `sys_role_permission` VALUES (142, 1, 84);
+INSERT INTO `sys_role_permission` VALUES (143, 1, 85);
+INSERT INTO `sys_role_permission` VALUES (144, 1, 86);
+INSERT INTO `sys_role_permission` VALUES (145, 2, 84);
 
 -- ----------------------------
 -- Table structure for sys_user

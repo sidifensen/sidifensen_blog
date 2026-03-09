@@ -1,8 +1,6 @@
 server:
   port: 5000
 spring:
-  profiles:
-    active: dev
   application:
     name: sidifensen-blog
   mvc:
@@ -145,6 +143,7 @@ sidifensen:
     - http://115.190.116.72:8000
     - https://sidifensen.com
     - https://www.sidifensen.com
+    - https://admin.sidifensen.com
 logging:
   level:
     org.springframework.boot.autoconfigure: INFO

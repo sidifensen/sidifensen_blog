@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "mysql": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "mysql-mcp-server"],
+      "env": {
+        "MYSQL_HOST": "localhost",
+        "MYSQL_PORT": "3306",
+        "MYSQL_USER": "root",
+        "MYSQL_PASSWORD": "root",
+        "MYSQL_DATABASE": "sidifensen_blog"
+      }
+    }
+  }
+}

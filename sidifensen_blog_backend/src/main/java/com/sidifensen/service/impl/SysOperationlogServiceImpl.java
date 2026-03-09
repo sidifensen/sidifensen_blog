@@ -8,6 +8,7 @@ import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.SysOperationlogQueryDto;
 import com.sidifensen.domain.entity.SysOperationlog;
 import com.sidifensen.domain.entity.SysUser;
+import com.sidifensen.domain.vo.SysOperationlogListVo;
 import com.sidifensen.domain.vo.SysOperationlogVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysOperationlogMapper;
@@ -44,7 +45,7 @@ public class SysOperationlogServiceImpl extends ServiceImpl<SysOperationlogMappe
     }
 
     @Override
-    public List<SysOperationlogVo> getOperationlogList() {
+    public List<SysOperationlogListVo> getOperationlogList() {
         // 查询所有操作日志，按创建时间倒序
         LambdaQueryWrapper<SysOperationlog> qw = new LambdaQueryWrapper<SysOperationlog>()
                 .orderByDesc(SysOperationlog::getCreateTime);
@@ -53,7 +54,7 @@ public class SysOperationlogServiceImpl extends ServiceImpl<SysOperationlogMappe
 
         // 转换为 VO 并填充用户名
         return logs.stream().map(log -> {
-            SysOperationlogVo vo = BeanUtil.copyProperties(log, SysOperationlogVo.class);
+            SysOperationlogListVo vo = BeanUtil.copyProperties(log, SysOperationlogListVo.class);
 
             // 如果有用户 ID，查询用户名
             if (log.getOperatorId() != null) {
@@ -68,7 +69,7 @@ public class SysOperationlogServiceImpl extends ServiceImpl<SysOperationlogMappe
     }
 
     @Override
-    public List<SysOperationlogVo> searchOperationlog(SysOperationlogQueryDto queryDto) {
+    public List<SysOperationlogListVo> searchOperationlog(SysOperationlogQueryDto queryDto) {
         // 构建查询条件
         LambdaQueryWrapper<SysOperationlog> qw = new LambdaQueryWrapper<SysOperationlog>()
                 .eq(queryDto.getOperatorId() != null, SysOperationlog::getOperatorId, queryDto.getOperatorId())
@@ -83,7 +84,7 @@ public class SysOperationlogServiceImpl extends ServiceImpl<SysOperationlogMappe
 
         // 转换为 VO 并填充用户名
         return logs.stream().map(log -> {
-            SysOperationlogVo vo = BeanUtil.copyProperties(log, SysOperationlogVo.class);
+            SysOperationlogListVo vo = BeanUtil.copyProperties(log, SysOperationlogListVo.class);
 
             // 如果有用户 ID，查询用户名
             if (log.getOperatorId() != null) {
@@ -95,6 +96,30 @@ public class SysOperationlogServiceImpl extends ServiceImpl<SysOperationlogMappe
 
             return vo;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public SysOperationlogVo getOperationlogDetail(Integer id) {
+        if (id == null) {
+            throw new BlogException(BlogConstants.NotFoundOperationlog);
+        }
+
+        SysOperationlog log = sysOperationlogMapper.selectById(id);
+        if (log == null) {
+            throw new BlogException(BlogConstants.NotFoundOperationlog);
+        }
+
+        SysOperationlogVo vo = BeanUtil.copyProperties(log, SysOperationlogVo.class);
+
+        // 如果有用户 ID，查询用户名
+        if (log.getOperatorId() != null) {
+            SysUser user = sysUserMapper.selectById(log.getOperatorId());
+            if (user != null) {
+                vo.setOperatorName(user.getUsername());
+            }
+        }
+
+        return vo;
     }
 
     @Override

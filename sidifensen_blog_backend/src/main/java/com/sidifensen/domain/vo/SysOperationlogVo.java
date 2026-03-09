@@ -29,6 +29,11 @@ public class SysOperationlogVo implements Serializable {
     private String module;
 
     /**
+     * 操作描述
+     */
+    private String description;
+
+    /**
      * 操作类型
      */
     private String operation;

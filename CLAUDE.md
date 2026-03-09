@@ -155,6 +155,8 @@ cd sidifensen_blog_backend
 mvn clean compile -DskipTests
 ```
 
+**注意**: 调试代码时不要自动重启后端服务，用户会自行重启。
+
 ## 前端规范（来自 .cursor/rules/frontend.mdc）
 
 ### 最高优先级规则
@@ -171,6 +173,7 @@ mvn clean compile -DskipTests
 - **命名**: 页面/组件使用 PascalCase，如 `Home.vue`, `ArticleDetail.vue`
 - **模板**: 使用 kebab-case 属性名，组件标签使用 PascalCase
 - **⚠️ 禁止导入 Element Plus 消息组件**: `ElMessage` 已全局注册，直接可用
+- **el-table-column 宽度**: 前端页面调试时，`el-table-column` 的宽度要自动调整，尽量避免列名占两行（可使用 `min-width` 或 `show-overflow-tooltip`）
 
 ### 代码结构规范
 
@@ -245,6 +248,14 @@ onMounted(() => {
 
 运行前从 `script/env.example` 复制并配置 `.env` 文件。
 
+## 数据库操作工具（本地开发）
+
+项目已配置 MySQL MCP 工具，在本地开发时可以使用该工具进行数据库操作：
+
+- **新增表/字段**：开发新功能时创建数据库表结构
+- **调试数据**：查看表中数据验证业务逻辑
+- **数据验证**：检查数据是否正确写入或更新
+
 ## 核心功能
 
 - **认证**: JWT + Spring Security, OAuth (Gitee/GitHub/QQ)
@@ -275,3 +286,22 @@ mvn test
 # 前端测试（如已配置）
 npm run test
 ```
+
+## Git 远程仓库配置
+
+项目同步推送到三个平台：
+
+```bash
+# 查看远程仓库
+git remote -v
+
+# 推送到所有平台
+git push origin main    # Gitee
+git push github main    # GitHub
+git push gitea main     # Gitea (自建)
+```
+
+**远程仓库地址：**
+- `origin`: https://gitee.com/sidifensen/sidifensen_blog.git
+- `github`: https://github.com/sidifensen/sidifensen_blog.git
+- `gitea`: http://115.190.116.72:3000/sidifensen/sidifensen_blog.git

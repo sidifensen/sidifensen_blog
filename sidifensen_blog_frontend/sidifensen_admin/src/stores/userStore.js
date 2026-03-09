@@ -5,11 +5,10 @@ import { info } from "@/api/user";
 import { RemoveJwt } from "@/utils/Auth";
 import { formatMenu } from "@/utils/Menu";
 
-// 使用import.meta.glob批量导入视图组件和404组件
 const modules = {};
 // 导入视图组件
 Object.assign(modules, import.meta.glob("../views/**/*.vue"));
-// 导入404组件
+// 导入 404 组件
 Object.assign(modules, import.meta.glob("../components/404.vue"));
 
 export const useUserStore = defineStore("user", () => {
@@ -74,7 +73,7 @@ export const useUserStore = defineStore("user", () => {
     try {
       const res = await getMenuList();
 
-      // 按照sort排序并树形化
+      // 按照 sort 排序并树形化
       menus.value = formatMenu(res.data.data);
 
       //生成路由

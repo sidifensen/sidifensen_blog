@@ -4,6 +4,7 @@ import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.SysOperationlogQueryDto;
 import com.sidifensen.domain.result.Result;
+import com.sidifensen.domain.vo.SysOperationlogListVo;
 import com.sidifensen.domain.vo.SysOperationlogVo;
 import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.SysOperationlogService;
@@ -36,13 +37,13 @@ public class SysOperationlogController {
     /**
      * 查询所有操作日志（按时间倒序）
      *
-     * @return 操作日志列表
+     * @return 操作日志列表（精简版）
      */
     @OperationLog(module = "操作日志管理", type = OperationTypeEnum.SELECT, description = "管理员获取操作日志列表")
     @PreAuthorize("hasAuthority('system:operationlog:list')")
     @GetMapping("/admin/list")
-    public Result<List<SysOperationlogVo>> getOperationlogList() {
-        List<SysOperationlogVo> result = sysOperationlogService.getOperationlogList();
+    public Result<List<SysOperationlogListVo>> getOperationlogList() {
+        List<SysOperationlogListVo> result = sysOperationlogService.getOperationlogList();
         return Result.success(result);
     }
 
@@ -50,13 +51,27 @@ public class SysOperationlogController {
      * 搜索操作日志
      *
      * @param queryDto 查询条件
-     * @return 操作日志列表
+     * @return 操作日志列表（精简版）
      */
     @OperationLog(module = "操作日志管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索操作日志")
     @PreAuthorize("hasAuthority('system:operationlog:search')")
     @PostMapping("/admin/search")
-    public Result<List<SysOperationlogVo>> searchOperationlog(@RequestBody @Valid SysOperationlogQueryDto queryDto) {
-        List<SysOperationlogVo> result = sysOperationlogService.searchOperationlog(queryDto);
+    public Result<List<SysOperationlogListVo>> searchOperationlog(@RequestBody @Valid SysOperationlogQueryDto queryDto) {
+        List<SysOperationlogListVo> result = sysOperationlogService.searchOperationlog(queryDto);
+        return Result.success(result);
+    }
+
+    /**
+     * 获取操作日志详情
+     *
+     * @param id 操作日志 ID
+     * @return 操作日志详情
+     */
+    @OperationLog(module = "操作日志管理", type = OperationTypeEnum.SELECT, description = "管理员获取操作日志详情")
+    @PreAuthorize("hasAuthority('system:operationlog:list')")
+    @GetMapping("/admin/detail/{id}")
+    public Result<SysOperationlogVo> getOperationlogDetail(@PathVariable @NotNull Integer id) {
+        SysOperationlogVo result = sysOperationlogService.getOperationlogDetail(id);
         return Result.success(result);
     }
 
