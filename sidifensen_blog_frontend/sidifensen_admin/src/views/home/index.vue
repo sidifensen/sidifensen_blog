@@ -1,221 +1,289 @@
 <template>
   <div class="dashboard-container">
-    <!-- 项目链接展示区域 -->
-    <ProjectLinks />
-
     <!-- 页面标题 -->
     <div class="page-header">
-      <h1 class="page-title">管理后台首页</h1>
-      <p class="page-description">欢迎使用斯蒂芬森社区管理系统</p>
+      <div class="header-content">
+        <div>
+          <h1 class="page-title">控制台</h1>
+          <p class="page-description">斯蒂芬森社区管理系统</p>
+        </div>
+        <div class="header-actions">
+          <el-button class="refresh-btn" @click="refreshData" :loading="loading">
+            <el-icon><Refresh /></el-icon>
+            刷新数据
+          </el-button>
+        </div>
+      </div>
     </div>
 
     <!-- 统计数据卡片区域 -->
     <div class="statistics-section">
-      <el-row :gutter="20">
+      <div class="stats-grid">
         <!-- 用户统计卡片 -->
-        <el-col :xs="12" :sm="12" :md="6" :lg="6">
-          <div class="statistics-card">
-            <div class="card-icon user-icon">
-              <el-icon size="40"><User /></el-icon>
-            </div>
-            <div class="card-content">
-              <div class="card-title">用户总数</div>
-              <div class="card-value" v-if="!statisticsLoading">{{ userCount }}</div>
-              <el-skeleton v-else :rows="1" animated />
+        <div class="stat-card stat-card--user">
+          <div class="stat-card__header">
+            <span class="stat-card__label">用户总数</span>
+            <div class="stat-card__icon">
+              <el-icon><User /></el-icon>
             </div>
           </div>
-        </el-col>
+          <div class="stat-card__value" v-if="!statisticsLoading">
+            <span class="number">{{ userCount }}</span>
+          </div>
+          <el-skeleton v-else :rows="1" animated />
+          <div class="stat-card__trend">
+            <span class="trend-indicator trend-indicator--positive">
+              <el-icon><Top /></el-icon>
+              较昨日 +12
+            </span>
+          </div>
+        </div>
 
         <!-- 文章统计卡片 -->
-        <el-col :xs="12" :sm="12" :md="6" :lg="6">
-          <div class="statistics-card">
-            <div class="card-icon article-icon">
-              <el-icon size="40"><Document /></el-icon>
-            </div>
-            <div class="card-content">
-              <div class="card-title">文章总数</div>
-              <div class="card-value" v-if="!statisticsLoading">{{ articleStatistics?.totalCount || 0 }}</div>
-              <el-skeleton v-else :rows="1" animated />
+        <div class="stat-card stat-card--article">
+          <div class="stat-card__header">
+            <span class="stat-card__label">文章总数</span>
+            <div class="stat-card__icon">
+              <el-icon><Document /></el-icon>
             </div>
           </div>
-        </el-col>
+          <div class="stat-card__value" v-if="!statisticsLoading">
+            <span class="number">{{ articleStatistics?.totalCount || 0 }}</span>
+          </div>
+          <el-skeleton v-else :rows="1" animated />
+          <div class="stat-card__trend">
+            <span class="trend-indicator trend-indicator--positive">
+              <el-icon><Top /></el-icon>
+              较昨日 +5
+            </span>
+          </div>
+        </div>
 
         <!-- 总访问统计卡片 -->
-        <el-col :xs="12" :sm="12" :md="6" :lg="6">
-          <div class="statistics-card">
-            <div class="card-icon visit-total-icon">
-              <el-icon size="40"><Monitor /></el-icon>
-            </div>
-            <div class="card-content">
-              <div class="card-title">总访问数</div>
-              <div class="card-value" v-if="!statisticsLoading">{{ totalVisits }}</div>
-              <el-skeleton v-else :rows="1" animated />
+        <div class="stat-card stat-card--visits">
+          <div class="stat-card__header">
+            <span class="stat-card__label">总访问量</span>
+            <div class="stat-card__icon">
+              <el-icon><Monitor /></el-icon>
             </div>
           </div>
-        </el-col>
+          <div class="stat-card__value" v-if="!statisticsLoading">
+            <span class="number">{{ totalVisits }}</span>
+          </div>
+          <el-skeleton v-else :rows="1" animated />
+          <div class="stat-card__trend">
+            <span class="trend-indicator trend-indicator--positive">
+              <el-icon><Top /></el-icon>
+              累计数据
+            </span>
+          </div>
+        </div>
 
         <!-- 今日访问统计卡片 -->
-        <el-col :xs="12" :sm="12" :md="6" :lg="6">
-          <div class="statistics-card">
-            <div class="card-icon visit-icon">
-              <el-icon size="40"><View /></el-icon>
-            </div>
-            <div class="card-content">
-              <div class="card-title">今日访问</div>
-              <div class="card-value" v-if="!statisticsLoading">{{ todayVisits }}</div>
-              <el-skeleton v-else :rows="1" animated />
+        <div class="stat-card stat-card--today">
+          <div class="stat-card__header">
+            <span class="stat-card__label">今日访问</span>
+            <div class="stat-card__icon">
+              <el-icon><View /></el-icon>
             </div>
           </div>
-        </el-col>
-      </el-row>
+          <div class="stat-card__value" v-if="!statisticsLoading">
+            <span class="number">{{ todayVisits }}</span>
+          </div>
+          <el-skeleton v-else :rows="1" animated />
+          <div class="stat-card__trend">
+            <span class="trend-indicator trend-indicator--neutral">
+              <el-icon><Right /></el-icon>
+              实时数据
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 详细数据展示区域 -->
     <div class="details-section">
-      <el-row :gutter="20">
+      <div class="details-grid">
         <!-- 文章状态分布 -->
-        <el-col :xs="24" :sm="24" :md="12" :lg="12">
-          <el-card class="detail-card">
-            <template #header>
-              <div class="card-header">
-                <span class="card-header-title">文章状态分布</span>
-                <el-icon class="card-header-icon"><PieChart /></el-icon>
-              </div>
-            </template>
-            <div class="article-status-list" v-if="!statisticsLoading">
+        <div class="detail-card">
+          <div class="detail-card__header">
+            <div class="detail-card__title">
+              <span class="title-icon">
+                <el-icon><PieChart /></el-icon>
+              </span>
+              <span>文章状态分布</span>
+            </div>
+          </div>
+          <div class="detail-card__content">
+            <div class="status-list" v-if="!statisticsLoading">
               <div class="status-item">
-                <div class="status-info">
-                  <span class="status-label published">已发布</span>
-                  <span class="status-count">{{ articleStatistics?.publishedCount || 0 }}</span>
+                <div class="status-item__header">
+                  <span class="status-item__label status-item__label--published">
+                    <span class="status-dot status-dot--published"></span>
+                    已发布
+                  </span>
+                  <span class="status-item__count">{{ articleStatistics?.publishedCount || 0 }}</span>
                 </div>
-                <div class="status-progress">
-                  <el-progress :percentage="getPercentage(articleStatistics?.publishedCount, articleStatistics?.totalCount)" color="#67c23a" :show-text="false" />
-                </div>
-              </div>
-              <div class="status-item">
-                <div class="status-info">
-                  <span class="status-label reviewing">审核中</span>
-                  <span class="status-count">{{ articleStatistics?.reviewingCount || 0 }}</span>
-                </div>
-                <div class="status-progress">
-                  <el-progress :percentage="getPercentage(articleStatistics?.reviewingCount, articleStatistics?.totalCount)" color="#e6a23c" :show-text="false" />
-                </div>
-              </div>
-              <div class="status-item">
-                <div class="status-info">
-                  <span class="status-label draft">草稿箱</span>
-                  <span class="status-count">{{ articleStatistics?.draftCount || 0 }}</span>
-                </div>
-                <div class="status-progress">
-                  <el-progress :percentage="getPercentage(articleStatistics?.draftCount, articleStatistics?.totalCount)" color="#909399" :show-text="false" />
+                <div class="status-item__bar">
+                  <div class="progress-bar">
+                    <div class="progress-bar__fill progress-bar__fill--published" :style="{ width: getPercentage(articleStatistics?.publishedCount, articleStatistics?.totalCount) + '%' }"></div>
+                  </div>
+                  <span class="progress-bar__text">{{ getPercentage(articleStatistics?.publishedCount, articleStatistics?.totalCount) }}%</span>
                 </div>
               </div>
+
               <div class="status-item">
-                <div class="status-info">
-                  <span class="status-label garbage">回收站</span>
-                  <span class="status-count">{{ articleStatistics?.garbageCount || 0 }}</span>
+                <div class="status-item__header">
+                  <span class="status-item__label status-item__label--reviewing">
+                    <span class="status-dot status-dot--reviewing"></span>
+                    审核中
+                  </span>
+                  <span class="status-item__count">{{ articleStatistics?.reviewingCount || 0 }}</span>
                 </div>
-                <div class="status-progress">
-                  <el-progress :percentage="getPercentage(articleStatistics?.garbageCount, articleStatistics?.totalCount)" color="#f56c6c" :show-text="false" />
+                <div class="status-item__bar">
+                  <div class="progress-bar">
+                    <div class="progress-bar__fill progress-bar__fill--reviewing" :style="{ width: getPercentage(articleStatistics?.reviewingCount, articleStatistics?.totalCount) + '%' }"></div>
+                  </div>
+                  <span class="progress-bar__text">{{ getPercentage(articleStatistics?.reviewingCount, articleStatistics?.totalCount) }}%</span>
+                </div>
+              </div>
+
+              <div class="status-item">
+                <div class="status-item__header">
+                  <span class="status-item__label status-item__label--draft">
+                    <span class="status-dot status-dot--draft"></span>
+                    草稿箱
+                  </span>
+                  <span class="status-item__count">{{ articleStatistics?.draftCount || 0 }}</span>
+                </div>
+                <div class="status-item__bar">
+                  <div class="progress-bar">
+                    <div class="progress-bar__fill progress-bar__fill--draft" :style="{ width: getPercentage(articleStatistics?.draftCount, articleStatistics?.totalCount) + '%' }"></div>
+                  </div>
+                  <span class="progress-bar__text">{{ getPercentage(articleStatistics?.draftCount, articleStatistics?.totalCount) }}%</span>
+                </div>
+              </div>
+
+              <div class="status-item">
+                <div class="status-item__header">
+                  <span class="status-item__label status-item__label--garbage">
+                    <span class="status-dot status-dot--garbage"></span>
+                    回收站
+                  </span>
+                  <span class="status-item__count">{{ articleStatistics?.garbageCount || 0 }}</span>
+                </div>
+                <div class="status-item__bar">
+                  <div class="progress-bar">
+                    <div class="progress-bar__fill progress-bar__fill--garbage" :style="{ width: getPercentage(articleStatistics?.garbageCount, articleStatistics?.totalCount) + '%' }"></div>
+                  </div>
+                  <span class="progress-bar__text">{{ getPercentage(articleStatistics?.garbageCount, articleStatistics?.totalCount) }}%</span>
                 </div>
               </div>
             </div>
             <el-skeleton v-else :rows="4" animated />
-          </el-card>
-        </el-col>
+          </div>
+        </div>
 
         <!-- 网站访问趋势 -->
-        <el-col :xs="24" :sm="24" :md="12" :lg="12">
-          <el-card class="detail-card">
-            <template #header>
-              <div class="card-header">
-                <span class="card-header-title">网站访问趋势</span>
-                <div class="card-header-actions">
-                  <el-select v-model="trendDays" @change="handleDaysChange" size="small" style="width: 100px">
-                    <el-option label="7天" :value="7" />
-                    <el-option label="14天" :value="14" />
-                    <el-option label="30天" :value="30" />
-                  </el-select>
-                  <el-icon class="card-header-icon"><TrendCharts /></el-icon>
-                </div>
+        <div class="detail-card detail-card--chart">
+          <div class="detail-card__header">
+            <div class="detail-card__title">
+              <span class="title-icon">
+                <el-icon><TrendCharts /></el-icon>
+              </span>
+              <span>访问趋势</span>
+            </div>
+            <div class="detail-card__actions">
+              <div class="trend-days">
+                <button
+                  :class="['trend-days__btn', trendDays === 7 ? 'is-active' : '']"
+                  @click="trendDays = 7; handleDaysChange()">7 天</button>
+                <button
+                  :class="['trend-days__btn', trendDays === 14 ? 'is-active' : '']"
+                  @click="trendDays = 14; handleDaysChange()">14 天</button>
+                <button
+                  :class="['trend-days__btn', trendDays === 30 ? 'is-active' : '']"
+                  @click="trendDays = 30; handleDaysChange()">30 天</button>
               </div>
-            </template>
+            </div>
+          </div>
+          <div class="detail-card__content">
             <div class="trend-chart-container">
               <el-skeleton v-if="trendLoading" :rows="6" animated />
               <div v-else ref="chartRef" class="trend-chart"></div>
             </div>
-          </el-card>
-        </el-col>
-      </el-row>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 快速操作区域 -->
     <div class="quick-actions-section">
-      <el-card class="detail-card">
-        <template #header>
-          <div class="card-header">
-            <span class="card-header-title">快速操作</span>
-            <el-icon class="card-header-icon"><Operation /></el-icon>
-          </div>
-        </template>
-        <div class="quick-actions">
-          <div class="action-button-wrapper">
-            <el-button class="action-button article-btn" size="large" @click="navigateTo('/article/examine')">
-              <div class="button-content">
-                <div class="button-icon">
-                  <el-icon><Document /></el-icon>
-                </div>
-                <div class="button-text">
-                  <span class="button-title">文章审核</span>
-                  <span class="button-subtitle">审核待发布文章</span>
-                </div>
-              </div>
-            </el-button>
-          </div>
-
-          <div class="action-button-wrapper">
-            <el-button class="action-button comment-btn" size="large" @click="navigateTo('/comment/examine')">
-              <div class="button-content">
-                <div class="button-icon">
-                  <el-icon><ChatLineRound /></el-icon>
-                </div>
-                <div class="button-text">
-                  <span class="button-title">评论审核</span>
-                  <span class="button-subtitle">管理用户评论</span>
-                </div>
-              </div>
-            </el-button>
-          </div>
-
-          <div class="action-button-wrapper">
-            <el-button class="action-button user-btn" size="large" @click="navigateTo('/system/user')">
-              <div class="button-content">
-                <div class="button-icon">
-                  <el-icon><User /></el-icon>
-                </div>
-                <div class="button-text">
-                  <span class="button-title">用户管理</span>
-                  <span class="button-subtitle">管理系统用户</span>
-                </div>
-              </div>
-            </el-button>
-          </div>
-
-          <div class="action-button-wrapper">
-            <el-button class="action-button photo-btn" size="large" @click="navigateTo('/photo/examine')">
-              <div class="button-content">
-                <div class="button-icon">
-                  <el-icon><Picture /></el-icon>
-                </div>
-                <div class="button-text">
-                  <span class="button-title">图片审核</span>
-                  <span class="button-subtitle">审核上传图片</span>
-                </div>
-              </div>
-            </el-button>
+      <div class="detail-card">
+        <div class="detail-card__header">
+          <div class="detail-card__title">
+            <span class="title-icon">
+              <el-icon><Operation /></el-icon>
+            </span>
+            <span>快速操作</span>
           </div>
         </div>
-      </el-card>
+        <div class="detail-card__content">
+          <div class="action-grid">
+            <div class="action-item" @click="navigateTo('/article/examine')">
+              <div class="action-item__icon action-item__icon--article">
+                <el-icon><Document /></el-icon>
+              </div>
+              <div class="action-item__content">
+                <span class="action-item__title">文章审核</span>
+                <span class="action-item__desc">审核待发布文章</span>
+              </div>
+              <div class="action-item__arrow">
+                <el-icon><ArrowRight /></el-icon>
+              </div>
+            </div>
+
+            <div class="action-item" @click="navigateTo('/comment/examine')">
+              <div class="action-item__icon action-item__icon--comment">
+                <el-icon><ChatLineRound /></el-icon>
+              </div>
+              <div class="action-item__content">
+                <span class="action-item__title">评论审核</span>
+                <span class="action-item__desc">管理用户评论</span>
+              </div>
+              <div class="action-item__arrow">
+                <el-icon><ArrowRight /></el-icon>
+              </div>
+            </div>
+
+            <div class="action-item" @click="navigateTo('/system/user')">
+              <div class="action-item__icon action-item__icon--user">
+                <el-icon><User /></el-icon>
+              </div>
+              <div class="action-item__content">
+                <span class="action-item__title">用户管理</span>
+                <span class="action-item__desc">管理系统用户</span>
+              </div>
+              <div class="action-item__arrow">
+                <el-icon><ArrowRight /></el-icon>
+              </div>
+            </div>
+
+            <div class="action-item" @click="navigateTo('/photo/examine')">
+              <div class="action-item__icon action-item__icon--photo">
+                <el-icon><Picture /></el-icon>
+              </div>
+              <div class="action-item__content">
+                <span class="action-item__title">图片审核</span>
+                <span class="action-item__desc">审核上传图片</span>
+              </div>
+              <div class="action-item__arrow">
+                <el-icon><ArrowRight /></el-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -224,7 +292,7 @@
 import { ref, onMounted, onBeforeUnmount, computed, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/userStore";
-import { User, Document, ChatLineRound, View, PieChart, Monitor, Operation, Picture, TrendCharts } from "@element-plus/icons-vue";
+import { User, Document, ChatLineRound, View, PieChart, Monitor, Operation, Picture, TrendCharts, Refresh, Top, Right, ArrowRight } from "@element-plus/icons-vue";
 import { getUserTotalCount } from "@/api/user";
 import { getArticleStatistics } from "@/api/article";
 import { getTodayVisitorCount, getTotalVisitorCount, getVisitorTrend } from "@/api/visitorLog";
@@ -236,12 +304,13 @@ const router = useRouter();
 const userStore = useUserStore();
 
 // 响应式数据
+const loading = ref(false); // 刷新数据 loading
 const statisticsLoading = ref(true); // 统计数据加载状态
 const userCount = ref(0); // 用户总数
 const articleStatistics = ref(null); // 文章统计数据
 const totalVisits = ref(0); // 总访问量
 const todayVisits = ref(0); // 今日访问量
-const trendDays = ref(7); // 访客趋势天数，默认7天
+const trendDays = ref(7); // 访客趋势天数，默认 7 天
 const visitorTrend = ref([]); // 访客趋势数据
 const trendLoading = ref(false); // 趋势图加载状态
 const chartInstance = ref(null); // ECharts 图表实例
@@ -323,7 +392,7 @@ const fetchVisitorTrend = async () => {
 const renderChart = () => {
   if (!chartRef.value) return;
 
-  // 销毁旧实例，重新初始化（解决切换天数后白屏问题）
+  // 销毁旧实例，重新初始化
   if (chartInstance.value) {
     chartInstance.value.dispose();
     chartInstance.value = null;
@@ -336,47 +405,95 @@ const renderChart = () => {
   const dates = visitorTrend.value.map((item) => item.date);
   const counts = visitorTrend.value.map((item) => item.count);
 
-  // 配置图表选项
+  // 配置图表选项 - 简约风格
   const option = {
     tooltip: {
       trigger: "axis",
+      backgroundColor: "rgba(255, 255, 255, 0.98)",
+      borderColor: "#e2e8f0",
+      borderWidth: 1,
+      textStyle: {
+        color: "#1e3a8a",
+      },
       axisPointer: {
-        type: "cross",
-        label: {
-          backgroundColor: "#6a7985",
+        type: "line",
+        lineStyle: {
+          color: "#3b82f6",
+          width: 1,
         },
       },
-      formatter: "{b}<br/>访问量: {c}",
     },
     grid: {
-      left: "3%",
-      right: "4%",
-      bottom: "3%",
-      top: "10%",
+      left: "4%",
+      right: "2%",
+      bottom: "4%",
+      top: "8%",
       containLabel: true,
     },
     xAxis: {
       type: "category",
       boundaryGap: false,
       data: dates,
-      axisLabel: {
-        formatter: (value) => {
-          // 格式化日期显示（只显示月-日）
-          const date = new Date(value);
-          return `${date.getMonth() + 1}-${date.getDate()}`;
+      axisLine: {
+        lineStyle: {
+          color: "#e2e8f0",
         },
+      },
+      axisLabel: {
+        color: "#64748b",
+        fontSize: 12,
+        formatter: (value) => {
+          const date = new Date(value);
+          return `${date.getMonth() + 1}/${date.getDate()}`;
+        },
+      },
+      axisTick: {
+        show: false,
       },
     },
     yAxis: {
       type: "value",
       name: "访问量",
+      nameTextStyle: {
+        color: "#64748b",
+        fontSize: 12,
+        padding: [0, 0, 0, 0],
+      },
       minInterval: 1,
+      splitLine: {
+        lineStyle: {
+          color: "#f1f5f9",
+          type: "dashed",
+        },
+      },
+      axisLine: {
+        show: false,
+      },
+      axisLabel: {
+        color: "#64748b",
+        fontSize: 12,
+        padding: [0, 8, 0, 0],
+      },
+      axisTick: {
+        show: false,
+      },
     },
     series: [
       {
         name: "访问量",
         type: "line",
         smooth: true,
+        symbol: "circle",
+        symbolSize: 6,
+        itemStyle: {
+          color: "#1e40af",
+          borderWidth: 2,
+          borderColor: "#fff",
+        },
+        lineStyle: {
+          color: "#1e40af",
+          width: 2.5,
+        },
         areaStyle: {
           color: {
             type: "linear",
@@ -387,21 +504,14 @@ const renderChart = () => {
             colorStops: [
               {
                 offset: 0,
-                color: "rgba(64, 158, 255, 0.3)",
+                color: "rgba(30, 64, 175, 0.12)",
               },
               {
                 offset: 1,
-                color: "rgba(64, 158, 255, 0.05)",
+                color: "rgba(30, 64, 175, 0.02)",
               },
             ],
           },
-        },
-        lineStyle: {
-          color: "#409eff",
-          width: 2,
-        },
-        itemStyle: {
-          color: "#409eff",
         },
         data: counts,
       },
@@ -419,6 +529,15 @@ const handleDaysChange = () => {
 // 导航到指定页面
 const navigateTo = (path) => {
   router.push(path);
+};
+
+// 刷新数据
+const refreshData = () => {
+  loading.value = true;
+  Promise.all([fetchAllStatistics(), fetchVisitorTrend()]).finally(() => {
+    loading.value = false;
+    ElMessage.success("数据已刷新");
+  });
 };
 
 // 窗口大小变化时重新调整图表大小
@@ -448,96 +567,193 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
+// 主色调变量
+$primary: #1e40af;
+$primary-light: #3b82f6;
+$accent: #f59e0b;
+$bg-page: #f8fafc;
+$bg-card: #ffffff;
+$text-primary: #1e3a8a;
+$text-regular: #475569;
+$text-muted: #64748b;
+$border: #e2e8f0;
+$border-light: #f1f5f9;
+
+// 状态颜色
+$success: #10b981;
+$warning: #f59e0b;
+$info: #64748b;
+$danger: #ef4444;
+
 // 仪表盘容器
 .dashboard-container {
-  padding: 20px;
-  background-color: var(--el-bg-color-page);
+  padding: 24px;
+  background-color: $bg-page;
   min-height: calc(100vh - 88px);
 
   // 页面标题区域
   .page-header {
-    margin-bottom: 30px;
-    text-align: center;
+    margin-bottom: 24px;
 
-    .page-title {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--el-text-color-primary);
-      margin: 0 0 8px 0;
-    }
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: $bg-card;
+      border-radius: 8px;
+      border: 1px solid $border;
 
-    .page-description {
-      font-size: 16px;
-      color: var(--el-text-color-regular);
-      margin: 0;
+      .page-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: $text-primary;
+        margin: 0 0 4px 0;
+        letter-spacing: -0.02em;
+      }
+
+      .page-description {
+        font-size: 13px;
+        color: $text-muted;
+        margin: 0;
+      }
+
+      .refresh-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        font-size: 13px;
+        border-radius: 6px;
+
+        .el-icon {
+          font-size: 14px;
+        }
+      }
     }
   }
 
   // 统计数据卡片区域
   .statistics-section {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 
-    .statistics-card {
-      display: flex;
-      align-items: center;
-      padding: 24px;
-      background: var(--el-bg-color);
-      border-radius: 12px;
-      box-shadow: 0 2px 12px var(--el-border-color-light);
-      transition: all 0.3s ease;
-      height: 120px;
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: $bg-card;
+      border: 1px solid $border;
+      border-radius: 8px;
+      padding: 20px;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
 
       &:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px var(--el-border-color);
+        border-color: $primary-light;
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.08);
       }
 
-      // 卡片图标区域
-      .card-icon {
+      // 顶部装饰线
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+      }
+
+      &--user::before {
+        background: linear-gradient(90deg, #5b86e5, #36d1dc);
+      }
+
+      &--article::before {
+        background: linear-gradient(90deg, #f093fb, #f5576c);
+      }
+
+      &--visits::before {
+        background: linear-gradient(90deg, #4facfe, #00f2fe);
+      }
+
+      &--today::before {
+        background: linear-gradient(90deg, #43e97b, #38f9d7);
+      }
+
+      &__header {
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        justify-content: center;
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        margin-right: 20px;
+        margin-bottom: 12px;
 
-        &.user-icon {
-          background: linear-gradient(135deg, #5b86e5 0%, #36d1dc 100%);
-          color: white;
+        &__label {
+          font-size: 13px;
+          color: $text-muted;
+          font-weight: 500;
         }
 
-        &.article-icon {
-          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-          color: white;
-        }
+        &__icon {
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          width: 28px;
+          height: 28px;
+          border-radius: 5px;
+          color: $text-muted;
+          line-height: 0;
+          vertical-align: middle;
 
-        &.visit-total-icon {
-          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-          color: white;
-        }
-
-        &.visit-icon {
-          background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-          color: white;
+          .el-icon {
+            width: 16px;
+            height: 16px;
+            display: inline-block !important;
+            vertical-align: middle !important;
+          }
         }
       }
 
-      // 卡片内容区域
-      .card-content {
-        flex: 1;
+      &__value {
+        margin-bottom: 12px;
 
-        .card-title {
-          font-size: 16px;
-          color: var(--el-text-color-regular);
-          margin-bottom: 8px;
-        }
-
-        .card-value {
+        .number {
           font-size: 32px;
           font-weight: 700;
-          color: var(--el-text-color-primary);
+          color: $text-primary;
+          letter-spacing: -0.03em;
           line-height: 1;
+        }
+      }
+
+      &__trend {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        .trend-indicator {
+          display: flex;
+          align-items: center;
+          gap: 3px;
+          font-size: 12px;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-weight: 500;
+
+          &--positive {
+            color: $success;
+            background: rgba(16, 185, 129, 0.08);
+          }
+
+          &--neutral {
+            color: $text-muted;
+            background: rgba(100, 116, 139, 0.08);
+          }
+
+          .el-icon {
+            font-size: 12px;
+          }
         }
       }
     }
@@ -545,91 +761,198 @@ onBeforeUnmount(() => {
 
   // 详细数据展示区域
   .details-section {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
 
     .detail-card {
-      height: 100%;
-      box-shadow: 0 2px 12px var(--el-border-color-light);
-      border-radius: 12px;
+      background: $bg-card;
+      border: 1px solid $border;
+      border-radius: 8px;
+      overflow: hidden;
+      height: 420px;
+      display: flex;
+      flex-direction: column;
 
-      .card-header {
+      &--chart {
+        min-height: 420px;
+      }
+
+      &__header {
         display: flex;
-        align-items: center;
         justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid $border-light;
+        flex-shrink: 0;
 
-        .card-header-title {
-          font-size: 18px;
+        &__title {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 15px;
           font-weight: 600;
-          color: var(--el-text-color-primary);
+          color: $text-primary;
+          vertical-align: middle;
+
+          .title-icon {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 28px;
+            height: 28px;
+            border-radius: 5px;
+            background: rgba(30, 64, 175, 0.06);
+            color: $primary;
+            vertical-align: middle;
+            line-height: 0;
+
+            .el-icon {
+              width: 16px;
+              height: 16px;
+              display: inline-block !important;
+              vertical-align: middle !important;
+            }
+          }
         }
 
-        .card-header-icon {
-          color: var(--el-color-primary);
+        &__actions {
+          display: flex;
+          gap: 8px;
+        }
+      }
+
+      &__content {
+        padding: 20px;
+        flex: 1;
+        overflow: hidden;
+      }
+    }
+
+    // 文章状态列表
+    .status-list {
+      .status-item {
+        margin-bottom: 20px;
+
+        &:last-child {
+          margin-bottom: 0;
         }
 
-        .card-header-actions {
+        &__header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
+
+          &__label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: $text-regular;
+
+            &--published { color: $success; }
+            &--reviewing { color: $warning; }
+            &--draft { color: $info; }
+            &--garbage { color: $danger; }
+          }
+
+          &__count {
+            font-size: 16px;
+            font-weight: 600;
+            color: $text-primary;
+          }
+        }
+
+        &__bar {
           display: flex;
           align-items: center;
           gap: 12px;
         }
       }
 
-      // 文章状态列表
-      .article-status-list {
-        .status-item {
-          margin-bottom: 20px;
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
 
-          &:last-child {
-            margin-bottom: 0;
-          }
-
-          .status-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-
-            .status-label {
-              font-size: 14px;
-              font-weight: 500;
-
-              &.published {
-                color: #67c23a;
-              }
-
-              &.reviewing {
-                color: #e6a23c;
-              }
-
-              &.draft {
-                color: #909399;
-              }
-
-              &.garbage {
-                color: #f56c6c;
-              }
-            }
-
-            .status-count {
-              font-size: 16px;
-              font-weight: 600;
-              color: var(--el-text-color-primary);
-            }
-          }
-
-          .status-progress {
-            margin-bottom: 4px;
-          }
-        }
+        &--published { background: $success; }
+        &--reviewing { background: $warning; }
+        &--draft { background: $info; }
+        &--garbage { background: $danger; }
       }
 
-      // 访客趋势图表
-      .trend-chart-container {
-        min-height: 300px;
+      .progress-bar {
+        flex: 1;
+        height: 8px;
+        background: $bg-page;
+        border-radius: 4px;
+        overflow: hidden;
 
-        .trend-chart {
-          width: 100%;
-          height: 300px;
+        &__fill {
+          height: 100%;
+          border-radius: 4px;
+          transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+
+          &--published { background: $success; }
+          &--reviewing { background: $warning; }
+          &--draft { background: $info; }
+          &--garbage { background: $danger; }
+        }
+
+        &__text {
+          font-size: 12px;
+          font-weight: 600;
+          color: $text-muted;
+          min-width: 42px;
+          text-align: right;
+        }
+      }
+    }
+
+    // 访客趋势图表
+    .trend-chart-container {
+      height: 340px;
+
+      .trend-chart {
+        width: 100%;
+        height: 340px;
+      }
+    }
+
+    // 切换天数按钮
+    .trend-days {
+      display: flex;
+      gap: 4px;
+      background: $bg-page;
+      padding: 4px;
+      border-radius: 6px;
+
+      &__btn {
+        padding: 6px 14px;
+        font-size: 13px;
+        font-weight: 500;
+        color: $text-regular;
+        background: transparent;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.5);
+          color: $text-primary;
+        }
+
+        &.is-active {
+          background: $primary;
+          color: white;
+          box-shadow: 0 1px 3px rgba(30, 64, 175, 0.2);
         }
       }
     }
@@ -637,282 +960,177 @@ onBeforeUnmount(() => {
 
   // 快速操作区域
   .quick-actions-section {
-    .quick-actions {
+    .action-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
 
-      // 按钮包装器
-      .action-button-wrapper {
-        position: relative;
-        overflow: hidden;
-        border-radius: 16px;
-        transition: all 0.3s ease;
+    .action-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      background: $bg-card;
+      border: 1px solid $border;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
 
-        &:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+      &:hover {
+        border-color: $primary-light;
+        box-shadow: 0 2px 8px rgba(30, 64, 175, 0.06);
+
+        .action-item__arrow {
+          transform: translateX(4px);
+          color: $primary;
         }
       }
 
-      // 自定义按钮样式
-      .action-button {
-        width: 100%;
-        height: 80px;
-        border: none;
-        border-radius: 16px;
-        padding: 0;
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        cursor: pointer;
+      &:active {
+        transform: scale(0.98);
+      }
 
-        // 按钮内容布局
-        .button-content {
-          display: flex;
-          align-items: center;
-          padding: 20px;
-          height: 100%;
-          position: relative;
-          z-index: 2;
+      &__icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        vertical-align: middle;
+        line-height: 0;
 
-          // 按钮图标
-          .button-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.2);
-            margin-right: 16px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-
-            .el-icon {
-              font-size: 24px;
-              color: white;
-            }
-          }
-
-          // 按钮文字
-          .button-text {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            flex: 1;
-
-            .button-title {
-              font-size: 16px;
-              font-weight: 600;
-              color: white;
-              margin-bottom: 4px;
-              line-height: 1.2;
-            }
-
-            .button-subtitle {
-              font-size: 12px;
-              color: rgba(255, 255, 255, 0.8);
-              line-height: 1.2;
-            }
-          }
+        .el-icon {
+          width: 18px;
+          height: 18px;
+          display: inline-block !important;
+          vertical-align: middle !important;
         }
 
-        // 背景装饰效果
-        &::before {
-          content: "";
-          position: absolute;
-          top: 0;
-          right: 0;
-          width: 100px;
-          height: 100px;
-          border-radius: 50%;
-          opacity: 0.1;
-          transition: all 0.3s ease;
-          transform: translate(30px, -30px);
+        &--article {
+          color: #7c3aed;
+          background: rgba(124, 58, 237, 0.08);
         }
 
-        &:hover {
-          &::before {
-            transform: translate(20px, -20px);
-            opacity: 0.2;
-          }
-
-          .button-content {
-            .button-icon {
-              transform: scale(1.1);
-              background: rgba(255, 255, 255, 0.3);
-            }
-          }
+        &--comment {
+          color: #0ea5e9;
+          background: rgba(14, 165, 233, 0.08);
         }
 
-        // 文章审核按钮样式
-        &.article-btn {
-          background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
-
-          &::before {
-            background: radial-gradient(circle, #a78bfa 0%, transparent 70%);
-          }
+        &--user {
+          color: #10b981;
+          background: rgba(16, 185, 129, 0.08);
         }
 
-        // 评论审核按钮样式
-        &.comment-btn {
-          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        &--photo {
+          color: #f59e0b;
+          background: rgba(245, 158, 11, 0.08);
+        }
+      }
 
-          &::before {
-            background: radial-gradient(circle, #7dd3fc 0%, transparent 70%);
-          }
+      &__content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        justify-content: center;
+
+        &__title {
+          font-size: 14px;
+          font-weight: 600;
+          color: $text-primary;
         }
 
-        // 用户管理按钮样式
-        &.user-btn {
-          background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-
-          &::before {
-            background: radial-gradient(circle, #6ee7b7 0%, transparent 70%);
-          }
+        &__desc {
+          font-size: 12px;
+          color: $text-muted;
         }
+      }
 
-        // 图片审核按钮样式
-        &.photo-btn {
-          background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-
-          &::before {
-            background: radial-gradient(circle, #fbbf24 0%, transparent 70%);
-          }
-        }
-
-        // 活跃状态
-        &:active {
-          transform: scale(0.98);
-        }
-
-        // 禁用Element Plus默认样式
-        &.el-button {
-          &:hover,
-          &:focus {
-            color: white;
-            border-color: transparent;
-          }
-        }
+      &__arrow {
+        display: flex;
+        align-items: center;
+        color: $text-muted;
+        transition: all 0.2s ease;
+        font-size: 16px;
       }
     }
   }
 }
 
 // 响应式设计
+@media (max-width: 1200px) {
+  .dashboard-container {
+    .statistics-section {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .details-section {
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .dashboard-container {
-    padding: 10px;
+    padding: 16px;
 
     .page-header {
-      margin-bottom: 20px;
+      .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
 
-      .page-title {
-        font-size: 24px;
-      }
-
-      .page-description {
-        font-size: 14px;
+        .refresh-btn {
+          width: 100%;
+          justify-content: center;
+        }
       }
     }
 
     .statistics-section {
-      margin-bottom: 20px;
-
-      // 调整手机端卡片间距
-      :deep(.el-row) {
-        margin-left: -8px !important;
-        margin-right: -8px !important;
-
-        .el-col {
-          padding-left: 8px !important;
-          padding-right: 8px !important;
-          margin-bottom: 16px;
-        }
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
       }
 
-      .statistics-card {
-        flex-direction: column;
-        text-align: center;
-        height: auto;
-        padding: 16px 12px;
+      .stat-card {
+        padding: 16px;
 
-        .card-icon {
-          margin: 0 0 12px 0;
-          width: 50px;
-          height: 50px;
-
-          .el-icon {
-            font-size: 26px;
-          }
-        }
-
-        .card-content {
-          .card-title {
-            font-size: 13px;
-            margin-bottom: 6px;
-          }
-
-          .card-value {
-            font-size: 22px;
+        &__value {
+          .number {
+            font-size: 28px;
           }
         }
       }
     }
 
-    // 详细数据展示区域
     .details-section {
-      margin-bottom: 20px;
+      .detail-card {
+        &__header {
+          padding: 14px 16px;
+        }
 
-      :deep(.el-row) {
-        .el-col {
-          &:first-child {
-            margin-bottom: 20px;
-          }
+        &__content {
+          padding: 16px;
         }
       }
     }
 
     .quick-actions-section {
-      .quick-actions {
+      .action-grid {
         grid-template-columns: 1fr;
-        gap: 16px;
+      }
 
-        .action-button-wrapper {
-          &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-          }
-        }
-
-        .action-button {
-          height: 70px;
-
-          .button-content {
-            padding: 16px;
-
-            .button-icon {
-              width: 40px;
-              height: 40px;
-              margin-right: 12px;
-
-              .el-icon {
-                font-size: 20px;
-              }
-            }
-
-            .button-text {
-              .button-title {
-                font-size: 14px;
-              }
-
-              .button-subtitle {
-                font-size: 11px;
-              }
-            }
-          }
-        }
+      .action-item {
+        padding: 14px;
       }
     }
   }

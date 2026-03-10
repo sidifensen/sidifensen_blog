@@ -1,6 +1,5 @@
 <template>
-  <el-watermark content="sidifensen_blog" z-index="1000">
-    <el-container class="layout-container">
+  <el-container class="layout-container">
       <!-- 侧边栏 -->
       <el-aside class="sidebar">
         <div class="logo-container">
@@ -144,7 +143,6 @@
         </el-main>
       </el-container>
     </el-container>
-  </el-watermark>
 </template>
 
 <script setup>

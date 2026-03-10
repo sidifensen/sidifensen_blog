@@ -1244,7 +1244,7 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
       background: linear-gradient(
         135deg,
         var(--el-bg-color) 0%,
-        rgba(248, 250, 252, 0.5) 50%,
+        var(--el-fill-color-light, rgba(240, 240, 240, 0.5)) 50%,
         var(--el-bg-color) 100%
       );
       border-radius: 24px;
@@ -1271,7 +1271,7 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         .section-title {
           font-size: 1.9rem;
           font-weight: 700;
-          color: $text-color;
+          color: var(--el-text-color-primary);
           display: flex;
           align-items: center;
           gap: 12px;
@@ -1424,7 +1424,7 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             background: linear-gradient(
               135deg,
               var(--el-bg-color) 0%,
-              rgba(248, 250, 252, 0.8) 50%,
+              var(--el-fill-color-light, rgba(248, 250, 252, 0.8)) 50%,
               var(--el-bg-color) 100%
             );
             border-radius: 20px;
@@ -1441,7 +1441,7 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             transform: translateY(25px);
             animation: fadeInUp 0.6s ease-out forwards;
             animation-delay: var(--animation-delay, 0s);
-            border: 1px solid rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--el-border-color-light, rgba(59, 130, 246, 0.1));
             position: relative;
 
             // 添加微妙的内发光
@@ -1678,7 +1678,7 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
                 border-bottom: 1px solid var(--el-border-color-lighter);
 
                 .date {
-                  color: $text-color-light;
+                  color: var(--el-text-color-secondary);
                   font-weight: 500;
                   display: flex;
                   align-items: center;
@@ -1702,7 +1702,7 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
                 margin-bottom: 10px;
 
                 .article-title-link {
-                  color: $text-color;
+                  color: var(--el-text-color-primary);
                   text-decoration: none;
                   transition: $transition-base;
                   font-weight: 700;
@@ -1722,7 +1722,7 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
               // 文章描述 - 增强版
               .article-description {
                 margin: 8px 0 10px 0;
-                color: $text-color-light;
+                color: var(--el-text-color-regular);
                 line-height: 1.7;
                 min-height: 3.4rem;
                 display: -webkit-box;
@@ -1754,7 +1754,7 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
                     align-items: center;
                     gap: 5px;
                     font-size: 0.83rem;
-                    color: $text-color-light;
+                    color: var(--el-text-color-secondary);
                     font-weight: 500;
                     transition: $transition-base;
 

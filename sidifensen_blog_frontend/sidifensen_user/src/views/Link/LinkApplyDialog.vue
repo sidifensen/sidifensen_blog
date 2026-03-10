@@ -276,11 +276,12 @@ onUnmounted(() => {
 // 友链申请对话框样式
 .link-apply-dialog {
   :deep(.el-dialog) {
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    border-radius: 20px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.15);
     margin: 0 auto;
     max-height: 90vh;
     overflow-y: auto;
+    background: var(--el-bg-color);
   }
 
   :deep(.el-dialog__header) {
@@ -289,118 +290,144 @@ onUnmounted(() => {
   }
 
   :deep(.el-dialog__body) {
-    padding: 24px;
-    max-height: calc(90vh - 120px);
+    padding: 28px;
+    max-height: calc(90vh - 140px);
     overflow-y: auto;
   }
 
   :deep(.el-dialog__footer) {
-    padding: 0 24px 24px;
+    padding: 0 28px 28px;
     border-top: 1px solid var(--el-border-color-lighter);
-    background-color: var(--el-bg-color-page);
-    border-radius: 0 0 12px 12px;
+    background-color: var(--el-fill-color-lighter);
+    border-radius: 0 0 20px 20px;
+    margin: 0 -28px -28px;
+    padding: 20px 28px;
   }
 
   // 对话框头部
   .dialog-header {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 24px 24px 20px;
-    background: linear-gradient(135deg, var(--el-color-primary-light-9) 0%, var(--el-color-primary-light-8) 100%);
-    border-radius: 12px 12px 0 0;
+    gap: 20px;
+    padding: 28px 28px 24px;
+    background: linear-gradient(135deg, rgba(64, 158, 255, 0.1) 0%, rgba(103, 194, 255, 0.05) 100%);
+    border-radius: 20px 20px 0 0;
+    margin: 0 -28px;
+    padding-bottom: 24px;
 
     .header-icon {
-      font-size: 32px;
-      color: var(--el-color-primary);
-      background: var(--el-color-primary-light-9);
-      padding: 12px;
-      border-radius: 50%;
-      box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: white;
+      background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-light-3) 100%);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(64, 158, 255, 0.35), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+      flex-shrink: 0;
     }
 
     .header-content {
       flex: 1;
+      min-width: 0;
 
       .header-title {
-        font-size: 20px;
-        font-weight: 600;
+        font-size: 22px;
+        font-weight: 700;
         color: var(--el-text-color-primary);
-        margin: 0 0 4px 0;
+        margin: 0 0 6px 0;
+        background: linear-gradient(135deg, var(--el-text-color-primary) 0%, var(--el-color-primary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
 
       .header-description {
         font-size: 14px;
         color: var(--el-text-color-regular);
         margin: 0;
-        line-height: 1.4;
+        line-height: 1.6;
+        opacity: 0.9;
       }
     }
   }
 
   // 申请表单
   .link-apply-form {
-    margin-top: 20px;
+    margin-top: 24px;
 
     :deep(.el-form-item) {
-      margin-bottom: 20px;
+      margin-bottom: 22px;
 
       .el-form-item__label {
         font-weight: 600;
         color: var(--el-text-color-primary);
+        font-size: 14px;
+        margin-bottom: 8px;
       }
     }
 
     :deep(.el-input) {
       .el-input__wrapper {
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        border: 1px solid var(--el-border-color-lighter);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        padding: 12px 14px;
 
         &:hover {
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+          border-color: var(--el-color-primary-light-5);
         }
 
         &.is-focus {
-          box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
+          box-shadow: 0 4px 20px rgba(64, 158, 255, 0.25);
+          border-color: var(--el-color-primary);
         }
       }
     }
 
     :deep(.el-textarea) {
       .el-textarea__inner {
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        border: 1px solid var(--el-border-color-lighter);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        padding: 12px 14px;
 
         &:hover {
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+          border-color: var(--el-color-primary-light-5);
         }
 
         &:focus {
-          box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
+          box-shadow: 0 4px 20px rgba(64, 158, 255, 0.25);
+          border-color: var(--el-color-primary);
         }
       }
     }
 
     // 封面预览
     .cover-preview {
-      margin-top: 12px;
+      margin-top: 14px;
       display: flex;
-      justify-content: center;
 
       .preview-image {
-        width: 120px;
-        height: 80px;
-        border-radius: 8px;
+        width: 140px;
+        height: 90px;
+        border-radius: 12px;
         border: 2px solid var(--el-border-color-lighter);
         overflow: hidden;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 
         &:hover {
           border-color: var(--el-color-primary);
-          transform: scale(1.02);
+          transform: scale(1.03);
+          box-shadow: 0 8px 24px rgba(64, 158, 255, 0.2);
         }
       }
 
@@ -413,11 +440,11 @@ onUnmounted(() => {
         height: 100%;
         color: var(--el-text-color-placeholder);
         font-size: 12px;
-        background-color: var(--el-bg-color-page);
+        background: linear-gradient(135deg, var(--el-color-primary-light-9) 0%, var(--el-color-info-light-9) 100%);
+        gap: 8px;
 
         .el-icon {
-          font-size: 24px;
-          margin-bottom: 4px;
+          font-size: 28px;
         }
       }
 
@@ -431,23 +458,23 @@ onUnmounted(() => {
 
   // 申请须知
   .apply-notice {
-    margin-top: 24px;
-    padding: 16px;
-    background-color: var(--el-color-info-light-9);
-    border: 1px solid var(--el-color-info-light-7);
-    border-radius: 8px;
+    margin-top: 28px;
+    padding: 18px;
+    background: linear-gradient(135deg, rgba(64, 158, 255, 0.05) 0%, rgba(103, 194, 255, 0.03) 100%);
+    border: 1px solid rgba(64, 158, 255, 0.15);
+    border-radius: 14px;
 
     .notice-title {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 14px;
+      gap: 10px;
+      font-size: 15px;
       font-weight: 600;
-      color: var(--el-color-info);
-      margin: 0 0 12px 0;
+      color: var(--el-color-primary);
+      margin: 0 0 14px 0;
 
       .el-icon {
-        font-size: 16px;
+        font-size: 18px;
       }
     }
 
@@ -458,8 +485,8 @@ onUnmounted(() => {
 
       li {
         font-size: 13px;
-        line-height: 1.6;
-        margin-bottom: 4px;
+        line-height: 1.8;
+        margin-bottom: 6px;
 
         &:last-child {
           margin-bottom: 0;
@@ -473,26 +500,42 @@ onUnmounted(() => {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    padding-top: 20px;
+    padding-top: 8px;
 
     .el-button {
-      border-radius: 8px;
-      padding: 12px 24px;
-      font-weight: 500;
+      border-radius: 10px;
+      padding: 12px 28px;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+      &.el-button--default {
+        border-color: var(--el-border-color);
+        background: var(--el-bg-color);
+
+        &:hover {
+          color: var(--el-color-primary);
+          border-color: var(--el-color-primary-light-5);
+          background: var(--el-color-primary-light-9);
+        }
+      }
 
       &.el-button--primary {
         background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-dark-2) 100%);
         border: none;
-        box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+        box-shadow: 0 6px 20px rgba(64, 158, 255, 0.35), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
 
         &:hover {
-          background: linear-gradient(135deg, var(--el-color-primary-light-3) 0%, var(--el-color-primary) 100%);
-          transform: translateY(-1px);
-          box-shadow: 0 6px 16px rgba(64, 158, 255, 0.4);
+          transform: translateY(-2px);
+          box-shadow: 0 10px 32px rgba(64, 158, 255, 0.45), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        &:active {
+          transform: translateY(0);
         }
 
         .el-icon {
-          margin-right: 4px;
+          margin-right: 6px;
         }
       }
     }
@@ -503,28 +546,33 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .link-apply-dialog {
     :deep(.el-dialog) {
-      width: 95% !important;
-      margin: 5vh auto;
-      max-height: 90vh;
+      width: 92% !important;
+      margin: 4vh auto;
+      max-height: 92vh;
+      border-radius: 16px;
     }
 
     :deep(.el-dialog__body) {
-      padding: 16px;
-      max-height: calc(90vh - 100px);
+      padding: 20px;
+      max-height: calc(92vh - 120px);
     }
 
     :deep(.el-dialog__footer) {
-      padding: 0 16px 16px;
+      padding: 16px 20px;
+      margin: 0 -20px -20px;
     }
 
     // 对话框头部移动端优化
     .dialog-header {
-      padding: 16px;
-      gap: 12px;
+      padding: 20px 20px 18px;
+      margin: 0 -20px;
+      gap: 14px;
 
       .header-icon {
+        width: 48px;
+        height: 48px;
         font-size: 24px;
-        padding: 8px;
+        border-radius: 14px;
       }
 
       .header-content {
@@ -540,65 +588,49 @@ onUnmounted(() => {
 
     // 表单移动端优化
     .link-apply-form {
-      margin-top: 16px;
+      margin-top: 20px;
 
       :deep(.el-form-item) {
-        margin-bottom: 16px;
-
-        .el-form-item__label {
-          font-size: 14px;
-          padding-bottom: 4px;
-        }
-      }
-
-      :deep(.el-input) {
-        .el-input__wrapper {
-          padding: 8px 12px;
-        }
-      }
-
-      :deep(.el-textarea) {
-        .el-textarea__inner {
-          padding: 8px 12px;
-        }
+        margin-bottom: 18px;
       }
 
       // 封面预览移动端优化
       .cover-preview {
         .preview-image {
-          width: 100px;
-          height: 70px;
+          width: 120px;
+          height: 80px;
         }
       }
     }
 
     // 申请须知移动端优化
     .apply-notice {
-      margin-top: 16px;
-      padding: 12px;
+      margin-top: 20px;
+      padding: 14px;
 
       .notice-title {
-        font-size: 13px;
-        margin-bottom: 8px;
+        font-size: 14px;
+        margin-bottom: 10px;
       }
 
       .notice-list {
         li {
           font-size: 12px;
-          line-height: 1.5;
+          line-height: 1.7;
         }
       }
     }
 
     // 底部按钮移动端优化
     .dialog-footer {
-      padding-top: 16px;
-      gap: 8px;
+      padding-top: 4px;
+      gap: 10px;
+      flex-direction: column;
 
       .el-button {
-        padding: 10px 20px;
-        font-size: 14px;
-        flex: 1;
+        width: 100%;
+        padding: 13px 20px;
+        font-size: 15px;
       }
     }
   }

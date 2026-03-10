@@ -1,10 +1,58 @@
 <template>
-  <el-dialog v-model="dialogVisible" title="智能客服小林 💬" :width="dialogWidth" :close-on-click-modal="false" draggable class="customer-service-dialog">
+  <el-dialog v-model="dialogVisible" title="" :width="dialogWidth" :close-on-click-modal="false" :show-close="false" draggable class="customer-service-dialog">
+    <!-- 自定义 header -->
+    <template #header>
+      <div class="dialog-header">
+        <div class="header-logo">
+          <div class="logo-icon">
+            <!-- 机器人图标 -->
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="10" rx="2"/>
+              <circle cx="12" cy="5" r="2"/>
+              <path d="M12 7v4"/>
+              <line x1="8" y1="16" x2="8" y2="16"/>
+              <line x1="16" y1="16" x2="16" y2="16"/>
+            </svg>
+          </div>
+          <div class="header-info">
+            <span class="header-title">智能客服小林</span>
+            <span class="header-status">
+              <span class="status-dot"></span>
+              在线服务
+            </span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <el-button text class="clear-btn" @click="clearChat" title="清空对话">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/>
+            </svg>
+          </el-button>
+          <el-button text class="close-btn" @click="dialogVisible = false" title="关闭">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </el-button>
+        </div>
+      </div>
+    </template>
+
     <div class="chat-container">
       <!-- 欢迎消息 -->
       <div v-if="messageList.length === 0" class="welcome-message">
-        <div class="welcome-icon">👋</div>
-        <p>你好！我是小林，很高兴为你服务~</p>
+        <div class="welcome-avatar">
+          <div class="avatar-icon">
+            <!-- 机器人图标 -->
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="10" rx="2"/>
+              <circle cx="12" cy="5" r="2"/>
+              <path d="M12 7v4"/>
+              <line x1="8" y1="16" x2="8" y2="16"/>
+              <line x1="16" y1="16" x2="16" y2="16"/>
+            </svg>
+          </div>
+        </div>
+        <p class="welcome-text">你好！我是小林，很高兴为你服务~</p>
         <p class="welcome-tips">你可以问我关于社区使用的任何问题哦！</p>
       </div>
 
@@ -12,55 +60,95 @@
       <div class="message-list" ref="messageListRef">
         <div v-for="(msg, index) in messageList" :key="index" :class="['message-item', msg.role === 'user' ? 'user-message' : 'ai-message']">
           <div class="message-avatar">
-            <el-avatar v-if="msg.role === 'user'" :size="32" :src="userStore.user?.avatar" />
-            <div v-else class="ai-avatar">🤖</div>
+            <el-avatar v-if="msg.role === 'user'" :size="36" :src="userStore.user?.avatar" class="user-avatar" />
+            <div v-else class="ai-avatar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="10" rx="2"/>
+                <circle cx="12" cy="5" r="2"/>
+                <path d="M12 7v4"/>
+                <line x1="8" y1="16" x2="8" y2="16"/>
+                <line x1="16" y1="16" x2="16" y2="16"/>
+              </svg>
+            </div>
           </div>
           <div class="message-content">
-            <div class="message-bubble">{{ msg.content }}</div>
+            <div class="message-sender" v-if="msg.role === 'ai'">小林</div>
+            <div class="message-bubble">
+              <span class="bubble-text">{{ msg.content }}</span>
+            </div>
             <div class="message-time">{{ msg.time }}</div>
           </div>
         </div>
 
         <!-- AI 正在输入提示 -->
         <div v-if="isAiTyping" class="typing-indicator">
-          <div class="ai-avatar-small">🤖</div>
-          <div class="typing-dots">
-            <span></span>
-            <span></span>
-            <span></span>
+          <div class="ai-avatar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="10" rx="2"/>
+              <circle cx="12" cy="5" r="2"/>
+              <path d="M12 7v4"/>
+              <line x1="8" y1="16" x2="8" y2="16"/>
+              <line x1="16" y1="16" x2="16" y2="16"/>
+            </svg>
+          </div>
+          <div class="typing-bubble">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
           </div>
         </div>
       </div>
 
       <!-- 输入框 -->
-      <div class="input-container">
+      <div class="input-area">
         <div class="input-wrapper">
-          <el-input v-model="inputMessage" type="textarea" :autosize="{ minRows: 1, maxRows: 4 }" placeholder="输入你的问题..." @keydown="handleKeydown" :disabled="isSending" maxlength="500" show-word-limit class="textarea-input" />
-          <el-button :icon="Promotion" circle size="small" type="primary" @click="sendMessage" :loading="isSending" :disabled="!inputMessage.trim()" class="send-button" />
+          <el-input
+            v-model="inputMessage"
+            type="textarea"
+            :autosize="{ minRows: 1, maxRows: 4 }"
+            placeholder="输入你的问题，按 Enter 发送..."
+            @keydown="handleKeydown"
+            :disabled="isSending"
+            maxlength="500"
+            show-word-limit
+            class="chat-input"
+          />
+          <el-button class="send-button" @click="sendMessage" :loading="isSending" :disabled="!inputMessage.trim()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            发送
+          </el-button>
         </div>
       </div>
 
       <!-- 快捷问题 -->
       <div v-if="messageList.length === 0" class="quick-questions">
-        <div class="quick-question-title">常见问题：</div>
-        <el-tag v-for="(question, index) in quickQuestions" :key="index" class="quick-question-tag" @click="selectQuickQuestion(question)">
-          {{ question }}
-        </el-tag>
+        <div class="quick-question-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/>
+          </svg>
+          常见问题
+        </div>
+        <div class="quick-tags">
+          <el-tag
+            v-for="(question, index) in quickQuestions"
+            :key="index"
+            class="quick-tag"
+            @click="selectQuickQuestion(question)"
+          >
+            {{ question }}
+          </el-tag>
+        </div>
       </div>
     </div>
-
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button size="small" @click="clearChat">清空对话</el-button>
-        <el-button size="small" type="primary" @click="dialogVisible = false">关闭</el-button>
-      </div>
-    </template>
   </el-dialog>
 </template>
 
 <script setup>
 import { ref, nextTick, watch, computed, onMounted, onUnmounted } from "vue";
-import { Promotion } from "@element-plus/icons-vue";
 import { customerServiceChat } from "@/api/ai";
 import { useUserStore } from "@/stores/userStore";
 
@@ -75,10 +163,10 @@ const dialogWidth = computed(() => {
   }
   // 平板端
   if (windowWidth.value <= 992) {
-    return "500px";
+    return "600px";
   }
   // 桌面端
-  return "450px";
+  return "700px";
 });
 
 // 监听窗口大小变化
@@ -94,7 +182,7 @@ onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
 });
 
-// 生成唯一ID的函数
+// 生成唯一 ID 的函数
 const generateUniqueId = () => {
   return `chat_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 };
@@ -102,7 +190,7 @@ const generateUniqueId = () => {
 // 对话框显示状态
 const dialogVisible = ref(false);
 
-// 会话ID（用于维持上下文）
+// 会话 ID（用于维持上下文）
 const chatId = ref(generateUniqueId());
 
 // 消息列表
@@ -251,7 +339,7 @@ const clearChat = () => {
   })
     .then(() => {
       messageList.value = [];
-      chatId.value = generateUniqueId(); // 重新生成会话ID
+      chatId.value = generateUniqueId(); // 重新生成会话 ID
       ElMessage.success("对话已清空");
     })
     .catch(() => {});
@@ -276,232 +364,393 @@ watch(dialogVisible, (newVal) => {
 </script>
 
 <style lang="scss" scoped>
+// 对话头部样式
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: #3b82f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .header-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .header-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--el-text-color-primary);
+        line-height: 1.4;
+      }
+
+      .header-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--el-text-color-regular);
+
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #10b981;
+          animation: pulse 2s infinite;
+        }
+      }
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .clear-btn,
+    .close-btn {
+      color: var(--el-text-color-secondary);
+      border-radius: 8px;
+      transition: all 0.2s;
+
+      &:hover {
+        background: var(--el-fill-color);
+        color: var(--el-text-color-primary);
+      }
+
+      :deep(.svg-icon) {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
 // 聊天容器
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 600px;
+  height: 650px;
+  background: transparent;
 
   // 手机端高度调整
   @media (max-width: 768px) {
-    height: calc(100vh - 8vh - 200px); // 配合对话框的上边距和下边距
-    min-height: 350px;
-    max-height: calc(100vh - 8vh - 200px); // 确保不超过对话框的最大高度
+    height: calc(100vh - 12vh);
+    min-height: 400px;
+    max-height: calc(100vh - 12vh);
   }
 
-  // 欢迎消息
-  .welcome-message {
-    text-align: center;
-    padding: 30px 20px 20px 20px; // 减少 padding，为问题列表留出空间
-    color: var(--el-text-color-regular);
-
-    .welcome-icon {
-      font-size: 40px; // 稍微减小图标
-      margin-bottom: 12px;
-    }
-
-    p {
-      margin: 6px 0;
-      font-size: 15px;
-    }
-
-    .welcome-tips {
-      font-size: 13px;
-      color: var(--el-text-color-secondary);
-    }
+  // 平板端高度
+  @media (min-width: 769px) and (max-width: 992px) {
+    height: 600px;
   }
 
   // 消息列表
   .message-list {
     flex: 1;
     overflow-y: auto;
-    overflow-x: hidden; // 防止横向滚动
-    padding: 16px;
+    overflow-x: hidden;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    width: 100%; // 确保宽度为 100%
-    box-sizing: border-box; // 包含 padding 在宽度计算中
+    gap: 20px;
+    background: transparent;
+    backdrop-filter: blur(10px);
+    min-height: 0; // 关键：允许 flex 子项正确滚动
+  }
 
-    // 自定义滚动条
-    &::-webkit-scrollbar {
-      width: 6px;
-    }
+  // 欢迎消息
+  .welcome-message {
+    flex-shrink: 0; // 防止被压缩
+    text-align: center;
+    padding: 50px 30px 40px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
 
-    &::-webkit-scrollbar-thumb {
-      background: var(--el-border-color);
-      border-radius: 3px;
-
-      &:hover {
-        background: var(--el-border-color-dark);
-      }
-    }
-
-    // 消息项
-    .message-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      width: 100%; // 确保宽度为 100%
-      min-width: 0; // 允许收缩
-      box-sizing: border-box; // 包含 padding 在宽度计算中
-
-      // 消息头像
-      .message-avatar {
-        flex-shrink: 0;
-
-        .ai-avatar {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 18px;
-        }
-      }
-
-      // 消息内容
-      .message-content {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        max-width: 70%;
-        min-width: 0; // 确保 flex 子元素可以收缩
-        flex: 0 1 auto; // 允许收缩但不会自动扩展
-
-        .message-bubble {
-          padding: 10px 14px;
-          border-radius: 12px;
-          font-size: 14px;
-          line-height: 1.6;
-          word-wrap: break-word;
-          word-break: break-word; // 强制长单词换行
-          overflow-wrap: break-word; // 确保长文本换行
-          white-space: pre-wrap;
-          max-width: 100%; // 确保不超出父容器
-          box-sizing: border-box; // 包含 padding 在宽度计算中
-          overflow: hidden; // 防止内容溢出
-        }
-
-        .message-time {
-          font-size: 12px;
-          color: var(--el-text-color-secondary);
-          padding: 0 4px;
-        }
-      }
-    }
-
-    // 用户消息样式
-    .user-message {
-      flex-direction: row-reverse;
-
-      .message-content {
-        align-items: flex-end;
-
-        .message-bubble {
-          background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
-          color: white;
-        }
-      }
-    }
-
-    // AI 消息样式
-    .ai-message {
-      .message-content {
-        .message-bubble {
-          background: var(--el-fill-color-light);
-          color: var(--el-text-color-primary);
-        }
-      }
-    }
-
-    // 正在输入指示器
-    .typing-indicator {
+    .welcome-avatar {
+      width: 80px;
+      height: 80px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
 
-      .ai-avatar-small {
-        width: 24px;
-        height: 24px;
+      .avatar-icon {
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
+        background: #3b82f6;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 14px;
+        color: white;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+
+        svg {
+          width: 40px;
+          height: 40px;
+        }
+      }
+    }
+
+    .welcome-text {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+      margin: 0;
+    }
+
+    .welcome-tips {
+      font-size: 15px;
+      color: var(--el-text-color-regular);
+      margin: 0;
+      opacity: 0.8;
+    }
+  }
+
+  // 消息项
+  .message-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+    min-width: 0;
+    animation: messageSlideIn 0.3s ease-out;
+
+    .message-avatar {
+      flex-shrink: 0;
+
+      .user-avatar {
+        border: 2px solid white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       }
 
-      .typing-dots {
+      .ai-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #3b82f6;
         display: flex;
-        gap: 4px;
-        padding: 8px 12px;
-        background: var(--el-fill-color-light);
-        border-radius: 12px;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+      }
+    }
 
-        span {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: var(--el-text-color-secondary);
-          animation: typing 1.4s infinite;
+    // 消息内容
+    .message-content {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-width: 75%;
+      min-width: 0;
+      flex: 0 1 auto;
 
-          &:nth-child(2) {
-            animation-delay: 0.2s;
-          }
+      .message-sender {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--el-text-color-secondary);
+        padding: 0 4px;
+      }
 
-          &:nth-child(3) {
-            animation-delay: 0.4s;
-          }
+      .message-bubble {
+        padding: 12px 16px;
+        border-radius: 16px;
+        font-size: 14px;
+        line-height: 1.6;
+        word-wrap: break-word;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        white-space: pre-wrap;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+        .bubble-text {
+          color: var(--el-text-color-primary);
+        }
+      }
+
+      .message-time {
+        font-size: 11px;
+        color: var(--el-text-color-secondary);
+        padding: 0 4px;
+        opacity: 0.7;
+      }
+    }
+  }
+
+  // 用户消息样式
+  .user-message {
+    flex-direction: row-reverse;
+
+    .message-content {
+      align-items: flex-end;
+
+      .message-sender {
+        text-align: right;
+      }
+
+      .message-bubble {
+        background: #3b82f6;
+
+        .bubble-text {
+          color: white;
         }
       }
     }
   }
 
-  // 输入容器
-  .input-container {
-    padding: 12px 16px;
-    border-top: 1px solid var(--el-border-color-light);
+  // AI 消息样式
+  .ai-message {
+    .message-content {
+      .message-bubble {
+        background: var(--el-bg-color);
+        border: 1px solid var(--el-border-color-light, rgba(0, 0, 0, 0.1));
+      }
+    }
+  }
 
-    // 输入框包装器
+  // 正在输入指示器
+  .typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: messageSlideIn 0.3s ease-out;
+
+    .ai-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #3b82f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+
+      svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    .typing-bubble {
+      display: flex;
+      gap: 4px;
+      padding: 10px 14px;
+      background: var(--el-bg-color);
+      border: 1px solid var(--el-border-color-light, rgba(0, 0, 0, 0.1));
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+      .typing-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #3b82f6;
+        animation: typing 1.4s infinite;
+
+        &:nth-child(2) {
+          animation-delay: 0.2s;
+        }
+
+        &:nth-child(3) {
+          animation-delay: 0.4s;
+        }
+      }
+    }
+  }
+
+  // 输入区域
+  .input-area {
+    flex-shrink: 0;
+    padding: 16px 20px;
+    background: var(--el-bg-color);
+    border-top: 1px solid var(--el-border-color-light, rgba(0, 0, 0, 0.1));
+
     .input-wrapper {
       display: flex;
       align-items: flex-end;
-      gap: 8px;
-      position: relative;
+      gap: 12px;
+      background: var(--el-fill-color-light);
+      border-radius: 16px;
+      padding: 8px;
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      transition: all 0.3s;
 
-      // 文本域输入框
-      .textarea-input {
+      &:focus-within {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        background: var(--el-bg-color);
+      }
+
+      // 手机端样式
+      @media (max-width: 768px) {
+        padding: 6px;
+        gap: 8px;
+      }
+
+      .chat-input {
         flex: 1;
-        min-width: 0; // 确保可以收缩
+        min-width: 0;
 
         :deep(.el-textarea__inner) {
-          //   padding-right: 54px; // 为字数统计和滚动条留出空间（50px + 4px滚动条）
-          //   padding-bottom: 30px; // 为字数统计留出空间
-          resize: none; // 禁用手动调整大小
+          resize: none;
           font-family: inherit;
           line-height: 1.5;
           word-wrap: break-word;
           word-break: break-word;
           overflow-wrap: break-word;
-          max-height: 120px; // 最大高度（约4行）
-          overflow-y: auto; // 超过最大高度时显示滚动条
-          box-sizing: border-box; // 包含 padding 在高度计算中
+          max-height: 120px;
+          overflow-y: auto;
+          box-sizing: border-box;
+          border: none !important;
+          box-shadow: none !important;
+          background: transparent;
+          padding: 8px 12px;
+          font-size: 14px;
 
-          // 自定义滚动条样式
           &::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
           }
 
           &::-webkit-scrollbar-thumb {
-            background: var(--el-text-color-secondary);
-            border-radius: 2px;
-            min-height: 18px; // 最小高度，确保可见性
+            background: #c0c4cc;
+            border-radius: 3px;
 
             &:hover {
-              background: var(--el-border-color-dark);
+              background: #909399;
             }
           }
 
@@ -510,78 +759,146 @@ watch(dialogVisible, (newVal) => {
           }
         }
 
-        // 字数统计样式
         :deep(.el-input__count) {
-          bottom: 5px;
-          right: 10px;
+          bottom: 4px;
+          right: 8px;
           line-height: 1;
+          font-size: 11px;
+          background: transparent;
         }
       }
 
-      // 发送按钮
       .send-button {
-        flex-shrink: 0; // 按钮不收缩
-        margin-bottom: 0; // 与输入框底部对齐
+        flex-shrink: 0;
+        background: #3b82f6;
+        border: none;
+        border-radius: 12px;
+        padding: 10px 20px;
+        height: auto;
+        font-weight: 500;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s;
+        white-space: nowrap;
+
+        &:hover:not(:disabled) {
+          background: #2563eb;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        &:active:not(:disabled) {
+          transform: translateY(0);
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        // 手机端样式
+        @media (max-width: 768px) {
+          padding: 8px 16px;
+          font-size: 13px;
+        }
       }
     }
   }
 
   // 快捷问题
   .quick-questions {
-    padding: 12px 16px 20px 16px; // 增加底部 padding，与底部按钮隔开
-    border-top: 1px solid var(--el-border-color-light);
-    max-height: 160px; // 限制最大高度
-    overflow-y: auto; // 如果内容过多，允许滚动
-
-    // 自定义滚动条样式
-    &::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: var(--el-border-color);
-      border-radius: 3px;
-
-      &:hover {
-        background: var(--el-border-color-dark);
-      }
-    }
+    flex-shrink: 0;
+    padding: 20px;
+    background: var(--el-fill-color-lighter);
+    border-top: 1px solid var(--el-border-color-light, rgba(0, 0, 0, 0.1));
 
     .quick-question-title {
-      font-size: 12px;
-      color: var(--el-text-color-secondary);
-      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
       font-weight: 500;
+      color: var(--el-text-color-regular);
+      margin-bottom: 12px;
+      flex-shrink: 0;
+
+      svg {
+        color: #3b82f6;
+        flex-shrink: 0;
+      }
     }
 
-    .quick-question-tag {
-      margin: 4px 4px 4px 0; // 调整间距，右边距为0，让按钮可以紧贴
-      cursor: pointer;
-      transition: all 0.3s;
-      font-size: 12px;
-      padding: 6px 12px;
-      border-radius: 16px;
-      white-space: nowrap; // 防止文字换行
+    .quick-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-height: 100px;
+      overflow-y: auto;
 
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-        background-color: var(--el-color-primary);
-        color: white;
+      &::-webkit-scrollbar {
+        width: 4px;
       }
 
-      &:active {
-        transform: translateY(0);
+      &::-webkit-scrollbar-thumb {
+        background: #c0c4cc;
+        border-radius: 2px;
+      }
+
+      .quick-tag {
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 12px;
+        padding: 8px 14px;
+        border-radius: 20px;
+        white-space: nowrap;
+        background: var(--el-fill-color);
+        border-color: transparent;
+        color: var(--el-text-color-regular);
+        flex-shrink: 0;
+
+        &:hover {
+          background: #3b82f6;
+          color: white;
+        }
+
+        &:active {
+          transform: scale(0.98);
+        }
+      }
+    }
+
+    // 手机端样式
+    @media (max-width: 768px) {
+      padding: 12px 16px;
+
+      .quick-question-title {
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+
+      .quick-tags {
+        max-height: 100px;
+        gap: 6px;
+      }
+
+      .quick-tag {
+        padding: 6px 10px;
+        font-size: 11px;
       }
     }
   }
 }
 
-// 对话框底部
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 // 打字动画
@@ -594,34 +911,44 @@ watch(dialogVisible, (newVal) => {
   }
 
   30% {
-    transform: translateY(-8px);
+    transform: translateY(-6px);
     opacity: 1;
   }
 }
 
 // 对话框响应式样式
 :deep(.customer-service-dialog) {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+
+  .el-dialog__header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--el-border-color-light);
+    background: var(--el-fill-color-lighter);
+  }
+
+  .el-dialog__body {
+    padding: 0;
+    background: transparent;
+  }
+
+  .el-dialog__footer {
+    padding: 0;
+    border-top: 1px solid var(--el-border-color-light);
+    background: var(--el-fill-color-light);
+  }
+
   // 手机端样式
   @media (max-width: 768px) {
     .el-dialog {
       margin: 0 auto;
-      margin-top: 8vh !important; // 增加上边距，让弹窗往上移动
-      margin-bottom: 100px !important; // 增加下边距，为悬浮按钮留出空间（悬浮按钮高度约64px + 安全距离）
+      margin-top: 8vh !important;
+      margin-bottom: 100px !important;
       max-width: calc(100vw - 32px) !important;
       width: calc(100vw - 32px) !important;
-      max-height: calc(100vh - 8vh - 100px) !important; // 限制最大高度，确保不超出屏幕
-    }
-
-    .el-dialog__header {
-      padding: 16px 16px 12px 16px;
-    }
-
-    .el-dialog__body {
-      padding: 0;
-    }
-
-    .el-dialog__footer {
-      padding: 12px 16px;
+      max-height: calc(100vh - 8vh - 100px) !important;
+      border-radius: 16px 16px 0 0;
     }
   }
 

@@ -4,10 +4,12 @@
       <div class="conversation-container">
         <!-- 页面标题 -->
         <div class="page-header">
-          <h2 class="page-title">私信</h2>
-          <span class="unread-badge" v-if="messageStore.totalUnreadCount > 0">
-            {{ messageStore.totalUnreadCount }}
-          </span>
+          <div class="page-title-wrapper">
+            <h2 class="page-title">私信</h2>
+            <span class="unread-badge" v-if="messageStore.totalUnreadCount > 0">
+              {{ messageStore.totalUnreadCount }}
+            </span>
+          </div>
         </div>
 
         <!-- 会话列表 -->
@@ -138,101 +140,208 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .conversation-page {
   min-height: 100vh;
-  padding-top: 70px !important;
+  padding-top: 80px !important;
+
+  // 默认浅色模式 CSS 变量
+  --bg-page: #f5f7fa;
+  --bg-card: #ffffff;
+  --bg-hover: #f5f5f5;
+  --border-color: #f0f0f0;
+  --text-primary: #1a1a1a;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --accent-color: #3b82f6;
+  --danger-color: #ef4444;
+  --success-color: #22c55e;
 
   .container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 0 10px;
+    padding: 0 20px;
   }
 
   .conversation-container {
-    background: var(--el-bg-color);
-    border-radius: 8px;
-    box-shadow: 0 2px 12px var(--el-border-color-light);
+    background: var(--bg-card);
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
     overflow: hidden;
+    animation: fadeInUp 0.4s ease-out;
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
     .page-header {
       display: flex;
       align-items: center;
-      padding: 20px;
-      border-bottom: 1px solid var(--el-border-color-light);
+      justify-content: space-between;
+      padding: 24px 24px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 10;
 
-      .page-title {
-        font-size: 20px;
-        font-weight: 600;
-        margin: 0;
-        color: var(--el-text-color-primary);
-      }
+      .page-title-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 12px;
 
-      .unread-badge {
-        margin-left: 10px;
-        padding: 2px 8px;
-        background: var(--el-color-danger);
-        color: white;
-        border-radius: 10px;
-        font-size: 12px;
+        .page-title {
+          font-size: 22px;
+          font-weight: 700;
+          margin: 0;
+          color: var(--text-primary);
+          letter-spacing: -0.02em;
+        }
+
+        .unread-badge {
+          min-width: 22px;
+          height: 22px;
+          padding: 0 8px;
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+          color: white;
+          border-radius: 11px;
+          font-size: 12px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+          animation: badgePulse 2s ease-in-out infinite;
+
+          @keyframes badgePulse {
+            0%, 100% {
+              transform: scale(1);
+            }
+            50% {
+              transform: scale(1.05);
+            }
+          }
+        }
       }
     }
 
     .conversation-list {
+      max-height: calc(100vh - 180px);
+      overflow-y: auto;
+
+      // 滚动条样式
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 3px;
+
+        &:hover {
+          background: var(--text-muted);
+        }
+      }
+
       .conversation-item {
         display: flex;
         align-items: center;
-        padding: 15px 20px;
+        padding: 18px 24px;
         cursor: pointer;
-        transition: background 0.3s;
+        transition: all 0.2s ease;
         position: relative;
+        border-bottom: 1px solid var(--border-color);
+
+        &:last-child {
+          border-bottom: none;
+        }
 
         &:hover {
-          background: var(--el-bg-color-page);
+          background: var(--bg-hover);
 
           .delete-btn {
             opacity: 1;
+            transform: translateX(0);
           }
+        }
+
+        &:active {
+          background: var(--border-color);
         }
 
         .avatar-wrapper {
           position: relative;
           cursor: pointer;
-          transition: transform 0.3s;
+          transition: transform 0.2s ease;
+          flex-shrink: 0;
 
           &:hover {
-            transform: scale(1.05);
+            transform: scale(1.08);
+          }
+
+          :deep(.el-avatar) {
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.2s ease;
           }
 
           .online-status {
             position: absolute;
-            bottom: 2px;
-            right: 2px;
-            width: 12px;
-            height: 12px;
-            background: var(--el-color-success);
-            border: 2px solid white;
+            bottom: -2px;
+            right: -2px;
+            width: 14px;
+            height: 14px;
+            background: var(--success-color);
+            border: 3px solid var(--bg-card);
             border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(34, 197, 94, 0.4);
+            animation: onlinePulse 2s ease-in-out infinite;
+
+            @keyframes onlinePulse {
+              0%, 100% {
+                opacity: 1;
+              }
+              50% {
+                opacity: 0.7;
+              }
+            }
           }
         }
 
         .conversation-info {
           flex: 1;
-          margin-left: 15px;
+          margin-left: 16px;
           min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
 
           .conversation-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 5px;
 
             .nickname {
               font-size: 16px;
               font-weight: 600;
-              color: var(--el-text-color-primary);
+              color: var(--text-primary);
+              letter-spacing: -0.01em;
+              transition: color 0.2s ease;
             }
 
             .time {
               font-size: 12px;
-              color: var(--el-text-color-secondary);
+              color: var(--text-secondary);
+              font-weight: 500;
+              white-space: nowrap;
             }
           }
 
@@ -240,25 +349,72 @@ onUnmounted(() => {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
 
             .last-message {
               font-size: 14px;
-              color: var(--el-text-color-regular);
+              color: var(--text-muted);
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
-              max-width: 400px;
+              max-width: calc(100% - 60px);
+              line-height: 1.5;
+            }
+
+            .unread-badge {
+              flex-shrink: 0;
+              min-width: 20px;
+              height: 20px;
+              padding: 0 6px;
+              background: var(--accent-color);
+              color: white;
+              border-radius: 10px;
+              font-size: 11px;
+              font-weight: 700;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
             }
           }
         }
 
         .delete-btn {
-          margin-left: 15px;
+          margin-left: 12px;
           opacity: 0;
-          transition: opacity 0.3s;
+          transform: translateX(-10px);
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+
+          &:hover {
+            transform: scale(1.1);
+          }
         }
       }
     }
   }
+
+  // 空状态样式
+  :deep(.el-empty) {
+    padding: 60px 20px;
+  }
+
+  :deep(.el-empty__description) {
+    color: var(--text-muted);
+  }
+}
+
+// 黑夜模式适配 - 使用全局 .dark 类覆盖 CSS 变量
+html.dark .conversation-page {
+  --bg-page: #0a0a0a;
+  --bg-card: #141414;
+  --bg-hover: #1a1a1a;
+  --border-color: #27272a;
+  --text-primary: #f5f5f5;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --accent-color: #3b82f6;
+  --danger-color: #ef4444;
+  --success-color: #22c55e;
 }
 </style>

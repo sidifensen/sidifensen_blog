@@ -66,23 +66,35 @@ watch(
 .layout-container {
   height: 100vh;
   display: flex;
+  background: var(--el-bg-color-page);
+
   .header {
     height: 48px;
+    background: var(--el-bg-color);
+    border-bottom: 1px solid var(--el-border-color-lighter);
   }
+
   .menu {
     height: calc(100vh - 48px);
+
     .sidebar {
       width: 200px;
       height: calc(100vh - 48px);
+      background: var(--el-bg-color);
+      border-right: 1px solid var(--el-border-color-lighter);
+
       @media screen and (max-width: 768px) {
         display: none;
       }
+
       .pc-menu {
-        // border-right: none;
         height: 100%;
+        background: transparent;
+
         .create {
           padding: 10px;
           height: 60px;
+
           .create-button {
             width: 100%;
             border-radius: 10px;
@@ -90,26 +102,48 @@ watch(
             font-size: 20px;
             display: flex;
             align-items: center;
-            background-color: var(--el-bg-color-page);
+            background-color: var(--el-fill-color-light);
             cursor: pointer;
+            transition: background-color 0.2s ease;
+
             &:hover {
-              background-color: var(--el-text-color-disabled);
+              background-color: var(--el-fill-color);
             }
+
             .create-icon {
               margin: 0 5px 0 12px;
               color: var(--el-color-primary);
             }
           }
         }
+
         .menu-text {
           font-size: 18px;
+          color: var(--el-text-color-regular);
+        }
+
+        .el-menu-item {
+          color: var(--el-text-color-regular);
+
+          &:hover {
+            background-color: var(--el-fill-color-light);
+          }
+
+          &.is-active {
+            background-color: var(--el-color-primary-light-9);
+            color: var(--el-color-primary);
+          }
         }
       }
     }
+
     .main {
+      background: var(--el-bg-color-page);
+
       @media screen and (max-width: 768px) {
         padding: 10px;
       }
+
       .router-view {
         height: 100%;
       }
