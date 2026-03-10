@@ -469,7 +469,7 @@ npm run test
 # 查看远程仓库
 git remote -v
 
-# 推送到所有平台
+# 推送到所有平台（分别执行，不要合并命令）
 git push origin main    # Gitee
 git push github main    # GitHub
 git push gitea main     # Gitea (自建)
