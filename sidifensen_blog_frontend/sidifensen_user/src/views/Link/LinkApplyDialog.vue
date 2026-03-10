@@ -287,6 +287,8 @@ onUnmounted(() => {
   :deep(.el-dialog__header) {
     padding: 0;
     border-bottom: none;
+    background: var(--el-fill-color-lighter);
+    border-radius: 20px 20px 0 0;
   }
 
   :deep(.el-dialog__body) {
@@ -310,10 +312,6 @@ onUnmounted(() => {
     align-items: center;
     gap: 20px;
     padding: 28px 28px 24px;
-    background: linear-gradient(135deg, rgba(64, 158, 255, 0.1) 0%, rgba(103, 194, 255, 0.05) 100%);
-    border-radius: 20px 20px 0 0;
-    margin: 0 -28px;
-    padding-bottom: 24px;
 
     .header-icon {
       width: 56px;
@@ -565,7 +563,6 @@ onUnmounted(() => {
     // 对话框头部移动端优化
     .dialog-header {
       padding: 20px 20px 18px;
-      margin: 0 -20px;
       gap: 14px;
 
       .header-icon {

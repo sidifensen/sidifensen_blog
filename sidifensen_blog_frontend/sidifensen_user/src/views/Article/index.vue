@@ -279,8 +279,27 @@ onUnmounted(() => {
 
 // 文章页面容器
 .article-page {
+  --bg-page: #f8f9fa;
+  --bg-card: #ffffff;
+  --text-primary: #1f2d3d;
+  --text-regular: #606266;
+  --text-secondary: #909399;
+  --border-color: #ebeef5;
+  --shadow-color: rgba(0, 0, 0, 0.04);
+
+  // 黑夜模式适配
+  html.dark & {
+    --bg-page: #0a0a0a;
+    --bg-card: #1a1a1a;
+    --text-primary: #e5e5e5;
+    --text-regular: #a3a3a3;
+    --text-secondary: #737373;
+    --border-color: #262626;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+  }
+
   min-height: 100vh;
-  background: #f8f9fa;
+  background: var(--bg-page);
 
   // 内容区域
   .content-section {
@@ -313,10 +332,10 @@ onUnmounted(() => {
             // 文章列表区域
             .article-list-section {
               // 添加白色背景，确保内容不透明
-              background: #fff;
+              background: var(--bg-card);
               border-radius: 12px;
               padding: 24px;
-              box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+              box-shadow: 0 2px 12px var(--shadow-color);
 
               // 加载容器样式
               .loading-container {
@@ -328,7 +347,7 @@ onUnmounted(() => {
                 display: flex;
                 gap: 20px;
                 padding: 24px 0;
-                border-bottom: 1px solid #ebeef5;
+                border-bottom: 1px solid var(--border-color);
 
                 .skeleton-content {
                   flex: 1;
@@ -350,7 +369,7 @@ onUnmounted(() => {
                   display: flex;
                   gap: 24px;
                   padding: 24px 0;
-                  border-bottom: 1px solid #ebeef5;
+                  border-bottom: 1px solid var(--border-color);
                   cursor: pointer;
                   transition: all 0.25s ease;
 
@@ -360,7 +379,7 @@ onUnmounted(() => {
 
                   &:hover {
                     .article-title {
-                      color: #409eff;
+                      color: var(--el-color-primary);
                     }
 
                     .article-cover {
@@ -375,7 +394,7 @@ onUnmounted(() => {
                     border-radius: 8px;
                     flex-shrink: 0;
                     overflow: hidden;
-                    background: #f0f2f5;
+                    background: var(--el-fill-color-light);
                     transition: transform 0.3s ease;
 
                     &:hover {
@@ -389,8 +408,8 @@ onUnmounted(() => {
                       width: 100%;
                       height: 100%;
                       font-size: 13px;
-                      color: #909399;
-                      background-color: #f0f2f5;
+                      color: var(--text-secondary);
+                      background-color: var(--el-fill-color-light);
                     }
 
                     .error {
@@ -399,11 +418,11 @@ onUnmounted(() => {
                       align-items: center;
                       width: 100%;
                       height: 100%;
-                      background-color: #f0f2f5;
+                      background-color: var(--el-fill-color-light);
 
                       .el-icon {
                         font-size: 28px;
-                        color: #c0c4cc;
+                        color: var(--el-text-color-placeholder);
                       }
                     }
                   }
@@ -426,19 +445,19 @@ onUnmounted(() => {
 
                       &:hover {
                         .author-name {
-                          color: #409eff;
+                          color: var(--el-color-primary);
                         }
                       }
 
                       .author-avatar {
-                        border: 2px solid #fff;
-                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                        border: 2px solid var(--bg-card);
+                        box-shadow: 0 2px 8px var(--shadow-color);
                       }
 
                       .author-name {
                         font-size: 14px;
                         font-weight: 500;
-                        color: #606266;
+                        color: var(--text-regular);
                         transition: color 0.2s ease;
                       }
                     }
@@ -446,7 +465,7 @@ onUnmounted(() => {
                     .article-title {
                       font-size: 18px;
                       font-weight: 600;
-                      color: #1f2d3d;
+                      color: var(--text-primary);
                       margin: 0 0 12px 0;
                       line-height: 1.5;
                       display: -webkit-box;
@@ -459,7 +478,7 @@ onUnmounted(() => {
 
                     .article-description {
                       font-size: 14px;
-                      color: #909399;
+                      color: var(--text-secondary);
                       margin: 0 0 16px 0;
                       line-height: 1.7;
                       display: -webkit-box;
@@ -472,19 +491,19 @@ onUnmounted(() => {
                     // 文章元信息
                     .article-meta {
                       font-size: 13px;
-                      color: #909399;
+                      color: var(--text-secondary);
                       display: flex;
                       align-items: center;
                       gap: 16px;
 
                       .article-date {
-                        color: #909399;
+                        color: var(--text-secondary);
                       }
 
                       .article-readCount,
                       .article-likes,
                       .article-collections {
-                        color: #909399;
+                        color: var(--text-secondary);
                         display: flex;
                         align-items: center;
                         gap: 5px;
@@ -495,7 +514,7 @@ onUnmounted(() => {
                       }
 
                       &:hover {
-                        color: #606266;
+                        color: var(--text-regular);
                       }
                     }
                   }
@@ -510,14 +529,14 @@ onUnmounted(() => {
 
                   span {
                     font-size: 13px;
-                    color: #909399;
+                    color: var(--text-secondary);
                   }
 
                   .loading-spinner {
                     width: 20px;
                     height: 20px;
-                    border: 2px solid #ebeef5;
-                    border-top-color: #409eff;
+                    border: 2px solid var(--border-color);
+                    border-top-color: var(--el-color-primary);
                     border-radius: 50%;
                     animation: spin 1s linear infinite;
                     margin-right: 10px;
@@ -532,9 +551,9 @@ onUnmounted(() => {
                 bottom: 48px;
                 width: 44px;
                 height: 44px;
-                background: #fff;
-                border: 1px solid #ebeef5;
-                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+                background: var(--bg-card);
+                border: 1px solid var(--border-color);
+                box-shadow: 0 4px 16px var(--shadow-color);
                 border-radius: 50%;
                 cursor: pointer;
                 transition: all 0.25s ease;
@@ -544,7 +563,7 @@ onUnmounted(() => {
                 z-index: 100;
 
                 &:hover {
-                  background: #409eff;
+                  background: var(--el-color-primary);
                   color: #fff;
                   transform: translateY(-4px);
                   box-shadow: 0 8px 24px rgba(64, 158, 255, 0.25);
@@ -566,26 +585,26 @@ onUnmounted(() => {
 
           // 侧边栏卡片
           .sidebar-card {
-            background: #fff;
+            background: var(--bg-card);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-            border: none;
+            box-shadow: 0 2px 12px var(--shadow-color);
+            border: 1px solid var(--border-color);
 
             // 卡片标题
             .card-title {
               font-size: 16px;
               font-weight: 600;
-              color: #1f2d3d;
+              color: var(--text-primary);
               margin: 0 0 18px 0;
               padding-bottom: 14px;
-              border-bottom: 2px solid #f0f2f5;
+              border-bottom: 2px solid var(--border-color);
               display: flex;
               align-items: center;
 
               .el-icon {
-                color: #409eff;
+                color: var(--el-color-primary);
               }
             }
 
@@ -594,7 +613,7 @@ onUnmounted(() => {
               .hot-skeleton-item {
                 padding: 14px;
                 border-radius: 8px;
-                background: #f8f9fa;
+                background: var(--el-fill-color-light);
                 margin-bottom: 10px;
               }
             }
@@ -616,16 +635,16 @@ onUnmounted(() => {
                 align-items: flex-start;
                 gap: 12px;
                 padding: 14px;
-                background: #f8f9fa;
+                background: var(--el-fill-color-light);
                 border-radius: 8px;
                 cursor: pointer;
                 transition: all 0.2s ease;
 
                 &:hover {
-                  background: #f0f4ff;
+                  background: var(--el-color-primary-light-9);
 
                   .hot-article-title {
-                    color: #409eff;
+                    color: var(--el-color-primary);
                   }
                 }
 
@@ -639,8 +658,8 @@ onUnmounted(() => {
                   justify-content: center;
                   font-size: 14px;
                   font-weight: 700;
-                  color: #606266;
-                  background: #e8ecef;
+                  color: var(--text-regular);
+                  background: var(--el-fill-color);
                   border-radius: 4px;
                 }
 
@@ -673,7 +692,7 @@ onUnmounted(() => {
                   .hot-article-title {
                     font-size: 14px;
                     font-weight: 500;
-                    color: #1f2d3d;
+                    color: var(--text-primary);
                     line-height: 1.5;
                     display: -webkit-box;
                     -webkit-line-clamp: 2;
@@ -689,7 +708,7 @@ onUnmounted(() => {
                     align-items: center;
                     gap: 12px;
                     font-size: 12px;
-                    color: #909399;
+                    color: var(--text-secondary);
 
                     .hot-article-readCount {
                       display: flex;
@@ -706,8 +725,8 @@ onUnmounted(() => {
                       align-items: center;
                       gap: 3px;
                       font-weight: 600;
-                      color: #f56c6c;
-                      background: #fef0f0;
+                      color: var(--el-color-danger);
+                      background: var(--el-color-danger-light-9);
                       padding: 2px 6px;
                       border-radius: 4px;
                     }
@@ -740,7 +759,7 @@ onUnmounted(() => {
 // 响应式设计
 @media (max-width: 768px) {
   .article-page {
-    background: #fff;
+    background: var(--bg-page);
 
     .content-section {
       padding: 0;

@@ -11,7 +11,7 @@ import Header from "@/components/Header.vue";
 .router-view {
   padding-top: 48px;
   min-height: 100vh;
-  background: url("https://bing.img.run/1920x1080.php") no-repeat center center / cover fixed;
+  // background: url("https://bing.img.run/1920x1080.php") no-repeat center center / cover fixed;
   overflow-y: auto;
 }
 </style>

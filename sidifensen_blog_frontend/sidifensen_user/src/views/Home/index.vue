@@ -39,10 +39,6 @@
         <div class="quick-nav" v-if="showQuickNav">
           <div class="nav-card" v-for="(item, index) in quickNavItems" :key="index" :style="{ animationDelay: `${0.6 + index * 0.12}s` }" @click="navigateTo(item.path)">
             <div class="nav-card-bg"></div>
-            <div class="nav-icon-wrapper">
-              <div class="nav-icon">{{ item.icon }}</div>
-              <div class="nav-icon-glow"></div>
-            </div>
             <div class="nav-content">
               <div class="nav-title">{{ item.title }}</div>
               <div class="nav-desc">{{ item.description }}</div>
@@ -281,9 +277,9 @@ let isDeleting = false;
 
 // 快速导航项
 const quickNavItems = ref([
-  { icon: "📝", title: "技术文章", description: "探索优质技术内容", path: "/article" },
-  { icon: "🖼️", title: "相册空间", description: "浏览精美图片", path: "/album" },
-  { icon: "🔗", title: "友情链接", description: "连接更多资源", path: "/link" },
+  { title: "技术文章", description: "探索优质技术内容", path: "/article" },
+  { title: "相册空间", description: "浏览精美图片", path: "/album" },
+  { title: "友情链接", description: "连接更多资源", path: "/link" },
 ]);
 
 // 打字机效果函数 - 循环播放多个副标题
@@ -565,6 +561,15 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 // ===== 首页容器 =====
 .home-container {
+  --bg-page: var(--el-bg-color-page);
+  --bg-card: var(--el-bg-color);
+  --text-primary: var(--el-text-color-primary);
+  --text-regular: var(--el-text-color-regular);
+  --text-secondary: var(--el-text-color-secondary);
+  --border-color: var(--el-border-color);
+  --border-color-light: var(--el-border-color-lighter);
+  --fill-color: var(--el-fill-color-light);
+
   position: relative;
   z-index: 1;
 
@@ -576,8 +581,8 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: var(--el-bg-color-page);
-    z-index: -1;
+    background-color: var(--bg-page);
+    z-index: 0;
     pointer-events: none;
   }
 
@@ -971,9 +976,10 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         .nav-card {
           flex: 0 0 calc(25% - 24px);
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
           align-items: center;
-          gap: 14px;
+          justify-content: space-between;
+          gap: 10px;
           padding: 24px 20px;
           background: linear-gradient(
             135deg,
@@ -1000,12 +1006,10 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
           @media screen and (max-width: 992px) {
             flex: 0 0 calc(50% - 20px);
             padding: 20px 16px;
-            gap: 12px;
           }
 
           @media screen and (max-width: 768px) {
             flex: 0 0 calc(50% - 16px);
-            gap: 10px;
             padding: 20px 14px;
             min-width: calc(50% - 16px);
           }
@@ -1013,7 +1017,6 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
           @media screen and (max-width: 480px) {
             flex: 0 0 100%;
             padding: 18px 12px;
-            gap: 8px;
             min-width: 100%;
           }
 
@@ -1074,16 +1077,6 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
               opacity: 1;
             }
 
-            .nav-icon-wrapper .nav-icon {
-              transform: scale(1.2) rotate(10deg);
-              filter: drop-shadow(0 12px 30px rgba(59, 130, 246, 0.5));
-            }
-
-            .nav-icon-glow {
-              opacity: 1;
-              transform: scale(1.5);
-            }
-
             .nav-arrow {
               transform: translateX(8px);
               opacity: 1;
@@ -1097,63 +1090,13 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
           }
 
-          .nav-icon-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 80px;
-            height: 80px;
-            z-index: 1;
-
-            @media screen and (max-width: 768px) {
-              width: 65px;
-              height: 65px;
-            }
-
-            @media screen and (max-width: 480px) {
-              width: 55px;
-              height: 55px;
-            }
-
-            .nav-icon {
-              font-size: 2.5rem;
-              transition: $transition-smooth;
-              filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.3));
-              z-index: 2;
-
-              @media screen and (max-width: 768px) {
-                font-size: 2rem;
-              }
-
-              @media screen and (max-width: 480px) {
-                font-size: 1.8rem;
-              }
-            }
-
-            .nav-icon-glow {
-              position: absolute;
-              width: 100%;
-              height: 100%;
-              background: radial-gradient(
-                circle,
-                rgba(59, 130, 246, 0.4) 0%,
-                transparent 70%
-              );
-              border-radius: 50%;
-              opacity: 0;
-              transition: $transition-smooth;
-              z-index: 1;
-            }
-          }
-
           .nav-content {
             flex: 1 1 auto;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            text-align: center;
-            width: 100%;
+            gap: 6px;
+            text-align: left;
+            width: auto;
             z-index: 1;
 
             .nav-title {
@@ -1221,9 +1164,9 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   // ===== 第二部分：主要内容区域 =====
   .main-content {
     padding: 80px 0;
-    background-color: var(--el-bg-color-page);
+    background-color: var(--bg-page);
     position: relative;
-    z-index: 2;
+    z-index: 3;
     min-height: 100vh;
 
     // 内容网格布局
@@ -1243,20 +1186,27 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     .latest-articles {
       background: linear-gradient(
         135deg,
-        var(--el-bg-color) 0%,
-        var(--el-fill-color-light, rgba(240, 240, 240, 0.5)) 50%,
-        var(--el-bg-color) 100%
+        var(--bg-card) 0%,
+        var(--fill-color) 50%,
+        var(--bg-card) 100%
       );
       border-radius: 24px;
       padding: 40px;
       box-shadow:
-        0 8px 40px rgba(0, 0, 0, 0.06),
+        0 8px 40px rgba(0, 0, 0, 0.08),
         0 2px 8px rgba(0, 0, 0, 0.04);
       position: relative;
       z-index: 2;
       min-height: 85vh;
-      border: 1px solid var(--el-border-color-light);
+      border: 1px solid var(--border-color-light);
       backdrop-filter: blur(10px);
+
+      // 黑夜模式适配 - 调整阴影
+      html.dark & {
+        box-shadow:
+          0 8px 40px rgba(0, 0, 0, 0.3),
+          0 2px 8px rgba(0, 0, 0, 0.15);
+      }
 
       // 章节标题 - 增强版
       .section-header {

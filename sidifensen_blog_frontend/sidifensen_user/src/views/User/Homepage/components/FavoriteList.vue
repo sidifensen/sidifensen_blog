@@ -460,15 +460,29 @@ $bg-color: #f5f7fa;
                     font-weight: 500;
 
                     &.public {
-                      background-color: #f0f9ff;
+                      background-color: var(--el-color-primary-light-9);
                       color: var(--el-color-primary);
                       border: 1px solid var(--el-color-primary-light-7);
                     }
 
                     &.private {
-                      background-color: #fef2f2;
-                      color: #dc2626;
-                      border: 1px solid #fecaca;
+                      background-color: var(--el-color-danger-light-9);
+                      color: var(--el-color-danger);
+                      border: 1px solid var(--el-color-danger-light-8);
+                    }
+
+                    // 黑夜模式适配
+                    html.dark & {
+                      &.public {
+                        background-color: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.15);
+                        border-color: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.3);
+                      }
+
+                      &.private {
+                        background-color: rgba(var(--el-color-danger-rgb, 245, 108, 108), 0.15);
+                        color: #fca5a5;
+                        border-color: rgba(var(--el-color-danger-rgb, 245, 108, 108), 0.3);
+                      }
                     }
                   }
                 }

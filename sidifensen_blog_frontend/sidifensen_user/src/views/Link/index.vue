@@ -366,17 +366,14 @@ onUnmounted(() => {
     padding: 80px 0 60px;
     overflow: hidden;
 
-    // 头部背景装饰
+    // 头部背景装饰 - 不透明纯色背景
     .header-bg-decoration {
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(135deg,
-        rgba(64, 158, 255, 0.08) 0%,
-        rgba(103, 194, 255, 0.05) 50%,
-        rgba(64, 158, 255, 0.03) 100%);
+      background: var(--el-color-primary-light-9);
       z-index: 0;
 
       &::before {
@@ -386,7 +383,7 @@ onUnmounted(() => {
         right: -20%;
         width: 80%;
         height: 200%;
-        background: radial-gradient(circle, rgba(64, 158, 255, 0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, var(--el-color-primary-light-8) 0%, var(--el-color-primary-light-9) 70%);
         animation: float 20s ease-in-out infinite;
       }
 
@@ -397,7 +394,7 @@ onUnmounted(() => {
         left: -10%;
         width: 60%;
         height: 150%;
-        background: radial-gradient(circle, rgba(103, 194, 255, 0.08) 0%, transparent 70%);
+        background: radial-gradient(circle, var(--el-color-primary-light-8) 0%, var(--el-color-primary-light-9) 70%);
         animation: float 25s ease-in-out infinite reverse;
       }
     }

@@ -1,10 +1,12 @@
 import { defineStore } from "pinia";
 import { ref, watch } from "vue";
 
- export const useDarkStore = defineStore(
+export const useDarkStore = defineStore(
   "dark",
   () => {
-    const isDark = ref(false);
+    // 初始化时从 localStorage 读取值
+    const storedDarkMode = localStorage.getItem("darkMode");
+    const isDark = ref(storedDarkMode ? JSON.parse(storedDarkMode) : false);
 
     const toggleDark = () => {
       isDark.value = !isDark.value;
