@@ -5,6 +5,7 @@ import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.PhotoAuditDto;
 import com.sidifensen.domain.dto.PhotoDto;
 import com.sidifensen.domain.result.Result;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.PhotoVo;
 import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.PhotoService;
@@ -152,8 +153,10 @@ public class PhotoController {
     @OperationLog(module = "图片管理", type = OperationTypeEnum.SELECT, description = "管理员获取图片列表")
     @PreAuthorize("hasAuthority('photo:list')")
     @GetMapping("/admin/list")
-    public Result list() {
-        List<PhotoVo> photoVoList = photoService.listPhotos();
+    public Result<PageVo<List<PhotoVo>>> list(
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<PhotoVo>> photoVoList = photoService.listPhotos(pageNum, pageSize);
         return Result.success(photoVoList);
     }
 
@@ -163,8 +166,8 @@ public class PhotoController {
     @OperationLog(module = "图片管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索图片")
     @PreAuthorize("hasAuthority('photo:search')")
     @PostMapping("/admin/search")
-    public Result adminSearch(@RequestBody @Valid PhotoDto photoDto) {
-        List<PhotoVo> photoVoList = photoService.adminSearch(photoDto);
+    public Result<PageVo<List<PhotoVo>>> adminSearch(@RequestBody @Valid PhotoDto photoDto) {
+        PageVo<List<PhotoVo>> photoVoList = photoService.adminSearch(photoDto);
         return Result.success(photoVoList);
     }
 

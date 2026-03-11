@@ -5,6 +5,7 @@ import com.sidifensen.domain.dto.BlacklistAddDto;
 import com.sidifensen.domain.dto.BlacklistSearchDto;
 import com.sidifensen.domain.dto.BlacklistUpdateDto;
 import com.sidifensen.domain.entity.SysBlacklist;
+import com.sidifensen.domain.vo.PageVo;
 
 import java.util.List;
 
@@ -41,7 +42,7 @@ public interface SysBlacklistService extends IService<SysBlacklist> {
      *
      * @return 黑名单列表
      */
-    List<SysBlacklist> adminGetBlacklistList();
+    PageVo<List<SysBlacklist>> adminGetBlacklistList(Integer pageNum, Integer pageSize);
 
     /**
      * 管理员批量新增黑名单用户
@@ -56,7 +57,7 @@ public interface SysBlacklistService extends IService<SysBlacklist> {
      * @param blacklistSearchDto 搜索条件
      * @return 黑名单列表
      */
-    List<SysBlacklist> adminSearchBlacklist(BlacklistSearchDto blacklistSearchDto);
+    PageVo<List<SysBlacklist>> adminSearchBlacklist(BlacklistSearchDto blacklistSearchDto);
 
     /**
      * 管理员修改黑名单

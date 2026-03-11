@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.RabbitMQConstants;
@@ -471,22 +472,20 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     // 管理端获取用户列表
     @Override
     public List<SysUserVo> listUser() {
-        List<SysUser> sysUsers = sysUserMapper.selectList(null);
+        List<SysUser> sysUsers = sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>().orderByAsc(SysUser::getId));
         List<SysUserVo> sysUserVos = BeanUtil.copyToList(sysUsers, SysUserVo.class);
-
-        // 获取当前登录用户
-        SysUser currentUser = SecurityUtils.getUser();
-
-        // 判断当前用户是否是admin角色
-        boolean isAdmin = currentUser.getSysRoles().stream()
-                .anyMatch(role -> "admin".equals(role.getRole()));
-
-        // 如果不是admin角色，移除邮箱信息以保护用户隐私
-        if (!isAdmin) {
-            sysUserVos.forEach(userVo -> userVo.setEmail(null));
-        }
-
+        maskEmailsForNonAdmin(sysUserVos);
         return sysUserVos;
+    }
+
+    @Override
+    public PageVo<List<SysUserVo>> pageUser(Integer pageNum, Integer pageSize) {
+        Page<SysUser> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<SysUser>().orderByAsc(SysUser::getId);
+        Page<SysUser> userPage = sysUserMapper.selectPage(page, queryWrapper);
+        List<SysUserVo> sysUserVos = BeanUtil.copyToList(userPage.getRecords(), SysUserVo.class);
+        maskEmailsForNonAdmin(sysUserVos);
+        return new PageVo<>(sysUserVos, userPage.getTotal());
     }
 
     // 管理端获取用户列表（包含文章数量）
@@ -581,9 +580,34 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                 sysUserSearchDTO.getCreateTimeStart());
         queryWrapper.le(ObjectUtil.isNotEmpty(sysUserSearchDTO.getCreateTimeEnd()), SysUser::getCreateTime,
                 sysUserSearchDTO.getCreateTimeEnd());
+        queryWrapper.orderByAsc(SysUser::getId);
 
         List<SysUser> sysUsers = sysUserMapper.selectList(queryWrapper);
-        return BeanUtil.copyToList(sysUsers, SysUserVo.class);
+        List<SysUserVo> sysUserVos = BeanUtil.copyToList(sysUsers, SysUserVo.class);
+        maskEmailsForNonAdmin(sysUserVos);
+        return sysUserVos;
+    }
+
+    @Override
+    public PageVo<List<SysUserVo>> searchUserPage(SysUserSearchDTO sysUserSearchDTO) {
+        Page<SysUser> page = new Page<>(sysUserSearchDTO.getPageNum(), sysUserSearchDTO.getPageSize());
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(ObjectUtil.isNotEmpty(sysUserSearchDTO.getUsername()), SysUser::getUsername,
+                sysUserSearchDTO.getUsername());
+        queryWrapper.like(ObjectUtil.isNotEmpty(sysUserSearchDTO.getEmail()), SysUser::getEmail,
+                sysUserSearchDTO.getEmail());
+        queryWrapper.eq(ObjectUtil.isNotEmpty(sysUserSearchDTO.getStatus()), SysUser::getStatus,
+                sysUserSearchDTO.getStatus());
+        queryWrapper.ge(ObjectUtil.isNotEmpty(sysUserSearchDTO.getCreateTimeStart()), SysUser::getCreateTime,
+                sysUserSearchDTO.getCreateTimeStart());
+        queryWrapper.le(ObjectUtil.isNotEmpty(sysUserSearchDTO.getCreateTimeEnd()), SysUser::getCreateTime,
+                sysUserSearchDTO.getCreateTimeEnd());
+        queryWrapper.orderByAsc(SysUser::getId);
+
+        Page<SysUser> userPage = sysUserMapper.selectPage(page, queryWrapper);
+        List<SysUserVo> sysUserVos = BeanUtil.copyToList(userPage.getRecords(), SysUserVo.class);
+        maskEmailsForNonAdmin(sysUserVos);
+        return new PageVo<>(sysUserVos, userPage.getTotal());
     }
 
     // 管理端获取用户详情
@@ -600,6 +624,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     public Long getUserTotalCount() {
         return sysUserMapper.selectCount(new LambdaQueryWrapper<SysUser>()
                 .eq(SysUser::getIsDeleted, 0)); // 只统计未删除的用户
+    }
+
+    private void maskEmailsForNonAdmin(List<SysUserVo> sysUserVos) {
+        SysUser currentUser = SecurityUtils.getUser();
+        boolean isAdmin = currentUser.getSysRoles().stream()
+                .anyMatch(role -> "admin".equals(role.getRole()));
+        if (!isAdmin) {
+            sysUserVos.forEach(userVo -> userVo.setEmail(null));
+        }
     }
 
 }

@@ -251,17 +251,8 @@ const handleResize = () => {
 
 // 获取相册列表
 const getAlbums = async () => {
-  loading.value = true;
-  try {
-    const res = await adminList();
-    albumList.value = res.data.data;
-    total.value = albumList.value.length;
-    updatePaginatedAlbumList();
-  } catch (error) {
-    ElMessage.error("获取相册列表失败");
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchAlbums();
 };
 
 // 初始化
@@ -276,25 +267,6 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
 });
-
-// 更新分页数据
-const updatePaginatedAlbumList = () => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  paginatedAlbumList.value = albumList.value.slice(startIndex, endIndex);
-};
-
-// 处理分页大小变化
-const handleSizeChange = (size) => {
-  pageSize.value = size;
-  updatePaginatedAlbumList();
-};
-
-// 处理当前页码变化
-const handleCurrentChange = (current) => {
-  currentPage.value = current;
-  updatePaginatedAlbumList();
-};
 
 const switchLoading = ref(false);
 // 处理状态变更
@@ -333,26 +305,68 @@ const searchCreateTimeStart = ref(null);
 // 搜索创建时间结束
 const searchCreateTimeEnd = ref(null);
 
-// 处理搜索
-const handleSearch = async () => {
+const hasSearchConditions = () => !!(searchAlbumName.value || searchUserId.value || searchStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value);
+
+const buildSearchPayload = () => ({
+  pageNum: currentPage.value,
+  pageSize: pageSize.value,
+  name: searchAlbumName.value || undefined,
+  userId: searchUserId.value || undefined,
+  showStatus: searchStatus.value || undefined,
+  createTimeStart: searchCreateTimeStart.value || undefined,
+  createTimeEnd: searchCreateTimeEnd.value || undefined,
+});
+
+const applyPageData = (pageData) => {
+  albumList.value = pageData?.data || [];
+  paginatedAlbumList.value = albumList.value;
+  total.value = Number(pageData?.total || 0);
+};
+
+const fetchAlbums = async () => {
   loading.value = true;
   try {
-    const res = await adminSearchAlbum({
-      name: searchAlbumName.value,
-      userId: searchUserId.value,
-      showStatus: searchStatus.value,
-      createTimeStart: searchCreateTimeStart.value,
-      createTimeEnd: searchCreateTimeEnd.value,
-    });
-    albumList.value = res.data.data;
-    total.value = albumList.value.length;
-    // 更新分页数据
-    updatePaginatedAlbumList();
+    let pageData = null;
+    if (hasSearchConditions()) {
+      const res = await adminSearchAlbum(buildSearchPayload());
+      pageData = res.data.data;
+    } else {
+      const res = await adminList({
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    }
+    applyPageData(pageData);
   } catch (error) {
-    ElMessage.error("搜索相册失败");
+    ElMessage.error(hasSearchConditions() ? "搜索相册失败" : "获取相册列表失败");
   } finally {
     loading.value = false;
   }
+};
+
+// 更新分页数据
+const updatePaginatedAlbumList = () => {
+  paginatedAlbumList.value = albumList.value;
+};
+
+// 处理分页大小变化
+const handleSizeChange = async (size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  await fetchAlbums();
+};
+
+// 处理当前页码变化
+const handleCurrentChange = async (current) => {
+  currentPage.value = current;
+  await fetchAlbums();
+};
+
+// 处理搜索
+const handleSearch = async () => {
+  currentPage.value = 1;
+  await fetchAlbums();
 };
 
 // 监听搜索输入变化 - 统一防抖处理

@@ -5,6 +5,7 @@ import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.SysRoleDto;
 import com.sidifensen.domain.result.Result;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.SysRoleVo;
 import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.SysRoleService;
@@ -42,6 +43,20 @@ public class SysRoleController {
     public Result list() {
         List<SysRoleVo> sysRoleVos = sysRoleService.listRole();
         return Result.success(sysRoleVos);
+    }
+
+    /**
+     * 分页查询角色列表
+     *
+     * @return 角色分页列表
+     */
+    @OperationLog(module = "角色管理", type = OperationTypeEnum.SELECT, description = "管理员分页获取角色列表")
+    @PreAuthorize("hasAuthority('system:role:list')")
+    @GetMapping("page")
+    public Result<PageVo<List<SysRoleVo>>> page(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(sysRoleService.pageRole(pageNum, pageSize));
     }
 
     /**
@@ -98,5 +113,20 @@ public class SysRoleController {
     public Result search(@RequestParam("name") @NotNull(message = "角色名称不能为空") String name) {
         List<SysRoleVo> roleList = sysRoleService.search(name);
         return Result.success(roleList);
+    }
+
+    /**
+     * 分页搜索角色
+     *
+     * @return 角色分页列表
+     */
+    @OperationLog(module = "角色管理", type = OperationTypeEnum.SEARCH, description = "管理员分页搜索角色")
+    @PreAuthorize("hasAuthority('system:role:search')")
+    @GetMapping("page/search")
+    public Result<PageVo<List<SysRoleVo>>> searchPage(
+            @RequestParam("name") @NotNull(message = "角色名称不能为空") String name,
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(sysRoleService.searchPage(name, pageNum, pageSize));
     }
 }

@@ -172,14 +172,15 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
     }
 
     @Override
-    public List<AdminLinkVo> adminGetLinkList() {
+    public PageVo<List<AdminLinkVo>> adminGetLinkList(Integer pageNum, Integer pageSize) {
         try {
+            Page<Link> page = new Page<>(pageNum, pageSize);
             // 查询所有友链
-            List<Link> linkList = this.list(new LambdaQueryWrapper<Link>()
-                    .orderByDesc(Link::getCreateTime));
+            List<Link> linkList = this.page(page, new LambdaQueryWrapper<Link>()
+                    .orderByDesc(Link::getCreateTime)).getRecords();
 
             // 转换为AdminLinkVo并填充用户信息
-            return convertToAdminLinkVo(linkList);
+            return new PageVo<>(convertToAdminLinkVo(linkList), page.getTotal());
         } catch (Exception e) {
             log.error("管理员获取友链列表失败：{}", e.getMessage(), e);
             throw new BlogException(BlogConstants.GetLinkListError);
@@ -187,8 +188,9 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
     }
 
     @Override
-    public List<AdminLinkVo> adminSearchLink(LinkSearchDto linkSearchDto) {
+    public PageVo<List<AdminLinkVo>> adminSearchLink(LinkSearchDto linkSearchDto) {
         try {
+            Page<Link> page = new Page<>(linkSearchDto.getPageNum(), linkSearchDto.getPageSize());
             // 构建查询条件
             LambdaQueryWrapper<Link> qw = new LambdaQueryWrapper<Link>()
                     .eq(ObjectUtil.isNotEmpty(linkSearchDto.getExamineStatus()), Link::getExamineStatus,
@@ -202,10 +204,10 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
                     .orderByDesc(Link::getCreateTime);
 
             // 查询友链列表
-            List<Link> linkList = this.list(qw);
+            List<Link> linkList = this.page(page, qw).getRecords();
 
             // 转换为AdminLinkVo并填充用户信息
-            return convertToAdminLinkVo(linkList);
+            return new PageVo<>(convertToAdminLinkVo(linkList), page.getTotal());
         } catch (Exception e) {
             log.error("管理员搜索友链失败：{}", e.getMessage(), e);
             throw new BlogException(BlogConstants.SearchLinkError);

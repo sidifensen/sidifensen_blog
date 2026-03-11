@@ -34,6 +34,13 @@ public interface AiUsageService {
     int getRemainingQuota(Integer userId);
 
     /**
+     * 获取每日AI调用总额度
+     *
+     * @return 每日总额度
+     */
+    int getDailyLimit();
+
+    /**
      * 检查是否为重复内容（基于内容hash）
      * 防止短时间内重复提交相同内容消耗token
      *

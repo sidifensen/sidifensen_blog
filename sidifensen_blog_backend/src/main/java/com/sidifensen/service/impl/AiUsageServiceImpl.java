@@ -91,6 +91,11 @@ public class AiUsageServiceImpl implements AiUsageService {
         return Math.max(0, DAILY_LIMIT - count.intValue());
     }
 
+    @Override
+    public int getDailyLimit() {
+        return DAILY_LIMIT;
+    }
+
     /**
      * 检查用户是否在短时间内重复提交相同内容
      * 通过MD5哈希值判断内容是否相同，防止重复请求

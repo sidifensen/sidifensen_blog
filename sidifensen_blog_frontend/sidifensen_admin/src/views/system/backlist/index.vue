@@ -282,16 +282,62 @@ const setExpireTime = (hours) => {
 
 // 获取黑名单列表
 const getBlacklists = async () => {
+  currentPage.value = 1;
+  await fetchBlacklists();
+};
+
+const hasSearchConditions = () => searchForm.type !== "" || searchForm.userId || searchForm.banTimeStart || searchForm.banTimeEnd || searchForm.expireTimeStart || searchForm.expireTimeEnd;
+
+const buildSearchPayload = () => {
+  const searchData = {
+    pageNum: currentPage.value,
+    pageSize: pageSize.value,
+  };
+  if (searchForm.type !== "" && searchForm.type !== null && searchForm.type !== undefined) {
+    searchData.type = searchForm.type;
+  }
+  if (searchForm.userId) {
+    searchData.userId = parseInt(searchForm.userId);
+  }
+  if (searchForm.banTimeStart) {
+    searchData.banTimeStart = searchForm.banTimeStart;
+  }
+  if (searchForm.banTimeEnd) {
+    searchData.banTimeEnd = searchForm.banTimeEnd;
+  }
+  if (searchForm.expireTimeStart) {
+    searchData.expireTimeStart = searchForm.expireTimeStart;
+  }
+  if (searchForm.expireTimeEnd) {
+    searchData.expireTimeEnd = searchForm.expireTimeEnd;
+  }
+  return searchData;
+};
+
+const applyPageData = (pageData) => {
+  blacklistList.value = pageData?.data || [];
+  paginatedBlacklistList.value = blacklistList.value;
+  total.value = Number(pageData?.total || 0);
+  selectedBlacklists.value = [];
+};
+
+const fetchBlacklists = async () => {
   loading.value = true;
   try {
-    const res = await getBlacklistList();
-    blacklistList.value = res.data.data.sort((a, b) => new Date(b.banTime) - new Date(a.banTime));
-    total.value = blacklistList.value.length;
-    currentPage.value = 1;
-    updatePaginatedBlacklistList();
+    let pageData = null;
+    if (hasSearchConditions()) {
+      const res = await searchBlacklist(buildSearchPayload());
+      pageData = res.data.data;
+    } else {
+      const res = await getBlacklistList({
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    }
+    applyPageData(pageData);
   } catch (error) {
-    ElMessage.error("获取黑名单列表失败");
-    console.error("获取黑名单列表失败:", error);
+    ElMessage.error(hasSearchConditions() ? "搜索失败" : "获取黑名单列表失败");
   } finally {
     loading.value = false;
   }
@@ -299,72 +345,34 @@ const getBlacklists = async () => {
 
 // 更新分页数据
 const updatePaginatedBlacklistList = () => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  paginatedBlacklistList.value = blacklistList.value.slice(startIndex, endIndex);
+  paginatedBlacklistList.value = blacklistList.value;
 };
 
 // 处理分页大小变化
-const handleSizeChange = (size) => {
+const handleSizeChange = async (size) => {
   pageSize.value = size;
   currentPage.value = 1;
-  updatePaginatedBlacklistList();
+  await fetchBlacklists();
 };
 
 // 处理当前页码变化
-const handleCurrentChange = (current) => {
+const handleCurrentChange = async (current) => {
   currentPage.value = current;
-  updatePaginatedBlacklistList();
+  await fetchBlacklists();
 };
 
 // 处理搜索
 const handleSearch = async () => {
-  loading.value = true;
-  try {
-    // 构建搜索参数
-    const searchData = {};
-    if (searchForm.type !== "" && searchForm.type !== null && searchForm.type !== undefined) {
-      searchData.type = searchForm.type;
-    }
-    if (searchForm.userId) {
-      searchData.userId = parseInt(searchForm.userId);
-    }
-    if (searchForm.banTimeStart) {
-      searchData.banTimeStart = searchForm.banTimeStart;
-    }
-    if (searchForm.banTimeEnd) {
-      searchData.banTimeEnd = searchForm.banTimeEnd;
-    }
-    if (searchForm.expireTimeStart) {
-      searchData.expireTimeStart = searchForm.expireTimeStart;
-    }
-    if (searchForm.expireTimeEnd) {
-      searchData.expireTimeEnd = searchForm.expireTimeEnd;
-    }
-
-    const res = await searchBlacklist(searchData);
-    blacklistList.value = res.data.data.sort((a, b) => new Date(b.banTime) - new Date(a.banTime));
-    total.value = blacklistList.value.length;
-    currentPage.value = 1;
-    updatePaginatedBlacklistList();
-  } catch (error) {
-    ElMessage.error("搜索失败");
-    console.error("搜索失败:", error);
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchBlacklists();
 };
 
 // 智能刷新列表
-const refreshBlacklistList = async () => {
-  // 检查是否有任何搜索条件
-  const hasSearchConditions = searchForm.type !== "" || searchForm.userId || searchForm.banTimeStart || searchForm.banTimeEnd || searchForm.expireTimeStart || searchForm.expireTimeEnd;
-
-  if (hasSearchConditions) {
-    await handleSearch();
-  } else {
-    await getBlacklists();
+const refreshBlacklistList = async (deletedCount = 0) => {
+  if (deletedCount > 0 && currentPage.value > 1 && blacklistList.value.length <= deletedCount) {
+    currentPage.value -= 1;
   }
+  await fetchBlacklists();
 };
 
 // 表格多选

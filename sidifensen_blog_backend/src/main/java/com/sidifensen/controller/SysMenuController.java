@@ -5,6 +5,7 @@ import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.SysMenuDto;
 import com.sidifensen.domain.result.Result;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.SysMenuVo;
 import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.SysMenuService;
@@ -55,6 +56,20 @@ public class SysMenuController {
     public Result listAll() {
         List<SysMenuVo> menuVoList = sysMenuService.listAllMenu();
         return Result.success(menuVoList);
+    }
+
+    /**
+     * 分页查询所有菜单
+     *
+     * @return 菜单分页列表
+     */
+    @OperationLog(module = "菜单管理", type = OperationTypeEnum.SELECT, description = "管理员分页获取菜单列表")
+    @PreAuthorize("hasAuthority('system:menu:listAll')")
+    @GetMapping("page")
+    public Result<PageVo<List<SysMenuVo>>> page(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(sysMenuService.pageMenu(pageNum, pageSize));
     }
 
     /**
@@ -111,6 +126,21 @@ public class SysMenuController {
     public Result search(@RequestParam("name") @NotNull(message = "菜单名称不能为空") String name) {
         List<SysMenuVo> menuList = sysMenuService.search(name);
         return Result.success(menuList);
+    }
+
+    /**
+     * 分页搜索菜单
+     *
+     * @return 菜单分页列表
+     */
+    @OperationLog(module = "菜单管理", type = OperationTypeEnum.SEARCH, description = "管理员分页搜索菜单")
+    @PreAuthorize("hasAuthority('system:menu:search')")
+    @GetMapping("page/search")
+    public Result<PageVo<List<SysMenuVo>>> searchPage(
+            @RequestParam("name") @NotNull(message = "菜单名称不能为空") String name,
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(sysMenuService.searchPage(name, pageNum, pageSize));
     }
 
 

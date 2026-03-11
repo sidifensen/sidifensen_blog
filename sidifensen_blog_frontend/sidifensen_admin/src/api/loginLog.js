@@ -3,10 +3,11 @@ import request from "@/utils/Request";
 /**
  * 查询所有登录日志（按时间倒序）
  */
-export const getLoginLogList = () => {
+export const getLoginLogList = (params) => {
   return request({
     url: "/loginLog/admin/list",
     method: "get",
+    params,
   });
 };
 

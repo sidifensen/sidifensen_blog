@@ -3,6 +3,7 @@ package com.sidifensen.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.SysRoleDto;
 import com.sidifensen.domain.entity.SysRole;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.SysRoleVo;
 
 import java.util.List;
@@ -31,5 +32,11 @@ public interface SysRoleService extends IService<SysRole> {
 
     // 查找角色
     List<SysRoleVo> search(String name);
+
+    // 分页查询角色列表
+    PageVo<List<SysRoleVo>> pageRole(Integer pageNum, Integer pageSize);
+
+    // 分页搜索角色
+    PageVo<List<SysRoleVo>> searchPage(String name, Integer pageNum, Integer pageSize);
 
 }

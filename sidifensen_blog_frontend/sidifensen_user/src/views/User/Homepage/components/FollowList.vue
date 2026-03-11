@@ -392,13 +392,30 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 // 关注列表容器
 .follow-list-wrapper {
-  background: var(--el-bg-color-page);
+  --bg-card: #f5f7fa;
+  --text-primary: #303133;
+  --text-regular: #606266;
+  --text-secondary: #909399;
+  --border-color: #e4e7ed;
+  --shadow-color: rgba(0, 0, 0, 0.06);
+
+  background: var(--bg-card);
   border-radius: 8px;
   padding: 20px;
-  border: 1px solid var(--el-border-color);
-  box-shadow: 0 2px 12px var(--el-border-color-light);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 12px var(--shadow-color);
   min-height: 580px; // 设置最小高度，与其他组件一致
   height: 100%; // 占据父容器的完整高度
+
+  // 黑夜模式适配 - 深蓝色背景 (与个人主页卡片背景一致)
+  html.dark & {
+    --bg-card: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-regular: #cbd5e1;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+  }
 
   // 关注列表区域
   .follow-list-section {

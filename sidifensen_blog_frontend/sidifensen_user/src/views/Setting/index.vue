@@ -1,208 +1,306 @@
-<template>
+﻿<template>
   <div class="setting-container">
     <div class="setting-content">
-      <!-- 页面标题 -->
       <div class="setting-header">
-        <h2>个人设置</h2>
-        <p class="header-desc">管理您的个人信息和账户设置</p>
+        <div class="setting-header__intro">
+          <p class="setting-header__eyebrow">Account</p>
+          <h2>个人设置</h2>
+          <p class="setting-header__desc">在这里维护你的公开资料、登录邮箱和账号安全信息。</p>
+        </div>
+        <div class="setting-header__meta">
+          <span class="setting-header__meta-label">资料完整度</span>
+          <strong class="setting-header__meta-value">{{ profileCompletion }}%</strong>
+        </div>
       </div>
 
-      <!-- 设置表单 -->
-      <div class="setting-form-container">
-        <el-skeleton :loading="userLoading" animated>
-          <template #template>
-            <div class="skeleton-container">
-              <el-skeleton-item variant="circle" style="width: 120px; height: 120px; margin: 0 auto 24px" />
-              <el-skeleton-item variant="text" style="width: 60%; margin: 0 auto 16px" />
-              <el-skeleton-item variant="text" style="width: 80%; margin: 0 auto 16px" />
-              <el-skeleton-item variant="text" style="width: 70%; margin: 0 auto 16px" />
+      <el-skeleton :loading="userLoading" animated>
+        <template #template>
+          <div class="setting-skeleton">
+            <el-skeleton-item variant="p" style="width: 180px; height: 18px" />
+            <el-skeleton-item variant="text" style="width: 68%; margin-top: 10px" />
+            <div class="setting-skeleton__card">
+              <el-skeleton-item variant="circle" style="width: 88px; height: 88px" />
+              <div class="setting-skeleton__info">
+                <el-skeleton-item variant="h3" style="width: 120px; margin-bottom: 12px" />
+                <el-skeleton-item variant="text" style="width: 200px; margin-bottom: 10px" />
+                <el-skeleton-item variant="text" style="width: 160px" />
+              </div>
             </div>
-          </template>
-          <template #default>
-            <div v-if="userInfo" class="user-info-container">
-              <!-- 头像上传 -->
-              <div class="info-item avatar-item">
-                <div class="item-label">头像</div>
-                <div class="item-content">
-                  <div class="avatar-upload-container">
+          </div>
+        </template>
+
+        <template #default>
+          <div v-if="userInfo" class="setting-main">
+            <div class="setting-main__overview">
+              <div class="setting-main__overview-card profile-card">
+                <div class="profile-card__main">
+                  <div class="profile-card__avatar">
                     <el-upload class="avatar-uploader" :action="''" :http-request="handleAvatarUpload" :show-file-list="false" :before-upload="beforeAvatarUpload" accept="image/*">
                       <img v-if="userInfo.avatar" :src="userInfo.avatar" class="avatar-preview" />
                       <div v-else class="avatar-placeholder">
-                        <el-icon class="avatar-uploader-icon">
+                        <el-icon class="avatar-placeholder__icon">
                           <Plus />
                         </el-icon>
-                        <div class="upload-text">点击上传头像</div>
+                        <span class="avatar-placeholder__text">上传头像</span>
                       </div>
                     </el-upload>
-                    <div class="avatar-tips">
-                      <p>支持 jpg, jpeg, png, webp 格式</p>
-                      <p>建议尺寸：200x200 像素，大小不超过 1MB</p>
+                  </div>
+
+                  <div class="profile-card__info">
+                    <h3>{{ userInfo.nickname || "未设置昵称" }}</h3>
+                    <p>{{ introductionPreview }}</p>
+                    <div class="profile-card__meta">
+                      <span>{{ maskedEmail }}</span>
+                      <span>{{ sexLabel }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="profile-card__foot">
+                  <span>支持 jpg、jpeg、png、webp，建议 200 x 200，大小不超过 1MB</span>
+                </div>
+              </div>
+
+              <div class="setting-main__overview-card security-card">
+                <div class="security-card__item">
+                  <span class="security-card__label">登录邮箱</span>
+                  <strong class="security-card__value">{{ maskedEmail }}</strong>
+                </div>
+                <div class="security-card__item">
+                  <span class="security-card__label">密码状态</span>
+                  <strong class="security-card__value">已设置</strong>
+                </div>
+                <div class="security-card__item">
+                  <span class="security-card__label">资料完整度</span>
+                  <strong class="security-card__value">{{ profileCompletion }}%</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-main__sections">
+              <div class="setting-main__section section-card">
+                <div class="section-card__header">
+                  <div class="section-card__title">
+                    <h3>基础资料</h3>
+                    <p>这些信息会影响你的个人主页展示。</p>
+                  </div>
+                </div>
+
+                <div class="section-card__body">
+                  <div class="section-card__row">
+                    <div class="section-card__row-label">
+                      <span>昵称</span>
+                      <p>建议使用 4-20 个字符的常用名称。</p>
+                    </div>
+                    <div class="section-card__row-content">
+                      <div v-if="!editingField.nickname" class="display-mode">
+                        <span class="display-value">{{ userInfo.nickname || "未设置" }}</span>
+                        <el-button class="inline-action" text @click="startEdit('nickname')">
+                          修改
+                          <el-icon><Edit /></el-icon>
+                        </el-button>
+                      </div>
+                      <div v-else class="edit-mode">
+                        <div class="edit-surface">
+                          <el-input v-model="editingData.nickname" placeholder="请输入昵称" maxlength="20" show-word-limit clearable @keydown.enter.prevent="saveField('nickname')" @keydown.esc.stop.prevent="cancelEdit('nickname')">
+                            <template #prefix>
+                              <el-icon>
+                                <User />
+                              </el-icon>
+                            </template>
+                          </el-input>
+                        </div>
+                        <div class="edit-toolbar">
+                          <span class="edit-toolbar__hint">回车保存，Esc 取消</span>
+                          <div class="edit-actions">
+                            <el-button type="primary" :loading="saveLoading.nickname" @click="saveField('nickname')">保存更改</el-button>
+                            <el-button text @click="cancelEdit('nickname')">取消</el-button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="section-card__row">
+                    <div class="section-card__row-label">
+                      <span>性别</span>
+                      <p>仅用于资料展示，可随时调整。</p>
+                    </div>
+                    <div class="section-card__row-content">
+                      <div v-if="!editingField.sex" class="display-mode">
+                        <span class="display-value">{{ sexLabel }}</span>
+                        <el-button class="inline-action" text @click="startEdit('sex')">
+                          修改
+                          <el-icon><Edit /></el-icon>
+                        </el-button>
+                      </div>
+                      <div v-else class="edit-mode">
+                        <div class="edit-surface edit-surface--choice">
+                          <el-radio-group v-model="editingData.sex">
+                            <el-radio :label="0">男</el-radio>
+                            <el-radio :label="1">女</el-radio>
+                          </el-radio-group>
+                        </div>
+                        <div class="edit-toolbar">
+                          <span class="edit-toolbar__hint">修改后会同步展示在个人主页</span>
+                          <div class="edit-actions">
+                            <el-button type="primary" :loading="saveLoading.sex" @click="saveField('sex')">保存更改</el-button>
+                            <el-button text @click="cancelEdit('sex')">取消</el-button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="section-card__row">
+                    <div class="section-card__row-label">
+                      <span>个人简介</span>
+                      <p>一句话说明你在这里关注什么、擅长什么。</p>
+                    </div>
+                    <div class="section-card__row-content">
+                      <div v-if="!editingField.introduction" class="display-mode display-mode--multiline">
+                        <span class="display-value">{{ introductionPreview }}</span>
+                        <el-button class="inline-action" text @click="startEdit('introduction')">
+                          修改
+                          <el-icon><Edit /></el-icon>
+                        </el-button>
+                      </div>
+                      <div v-else class="edit-mode">
+                        <div class="edit-surface edit-surface--textarea">
+                          <el-input v-model="editingData.introduction" type="textarea" placeholder="请输入个人简介" :autosize="{ minRows: 4, maxRows: 8 }" maxlength="200" show-word-limit resize="none" @keydown.ctrl.enter.prevent="saveField('introduction')" @keydown.esc.stop.prevent="cancelEdit('introduction')" />
+                        </div>
+                        <div class="edit-toolbar">
+                          <span class="edit-toolbar__hint">{{ editingData.introduction?.length || 0 }}/200，Ctrl + Enter 保存</span>
+                          <div class="edit-actions">
+                            <el-button type="primary" :loading="saveLoading.introduction" @click="saveField('introduction')">保存更改</el-button>
+                            <el-button text @click="cancelEdit('introduction')">取消</el-button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- 昵称 -->
-              <div class="info-item">
-                <div class="item-label">昵称</div>
-                <div class="item-content">
-                  <!-- 显示模式 -->
-                  <div v-if="!editingField.nickname" class="display-mode">
-                    <span class="display-value">{{ userInfo.nickname || "未设置" }}</span>
-                    <el-button type="primary" text @click="startEdit('nickname')">
-                      <el-icon><Edit /></el-icon>
-                      编辑
-                    </el-button>
+              <div class="setting-main__section section-card">
+                <div class="section-card__header">
+                  <div class="section-card__title">
+                    <h3>账号安全</h3>
+                    <p>建议保持邮箱可用，并定期更新密码。</p>
                   </div>
-                  <!-- 编辑模式 -->
-                  <div v-else class="edit-mode">
-                    <el-input v-model="editingData.nickname" placeholder="请输入昵称" maxlength="20" show-word-limit clearable>
-                      <template #prefix>
-                        <el-icon>
-                          <User />
-                        </el-icon>
-                      </template>
-                    </el-input>
-                    <div class="edit-actions">
-                      <el-button type="primary" size="small" :loading="saveLoading.nickname" @click="saveField('nickname')">保存</el-button>
-                      <el-button size="small" @click="cancelEdit('nickname')">取消</el-button>
+                </div>
+
+                <div class="section-card__body">
+                  <div class="section-card__row">
+                    <div class="section-card__row-label">
+                      <span>邮箱</span>
+                      <p>用于登录通知、验证码和找回密码。</p>
+                    </div>
+                    <div class="section-card__row-content">
+                      <div class="display-mode">
+                        <span class="display-value">{{ userInfo.email || "未设置" }}</span>
+                        <el-button class="inline-action" text @click="openEmailDialog">
+                          修改邮箱
+                          <el-icon><Edit /></el-icon>
+                        </el-button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <!-- 邮箱 -->
-              <div class="info-item">
-                <div class="item-label">邮箱</div>
-                <div class="item-content">
-                  <div class="display-mode">
-                    <span class="display-value">{{ userInfo.email || "未设置" }}</span>
-                    <el-button type="primary" text @click="openEmailDialog">
-                      <el-icon><Edit /></el-icon>
-                      修改邮箱
-                    </el-button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 性别 -->
-              <div class="info-item">
-                <div class="item-label">性别</div>
-                <div class="item-content">
-                  <!-- 显示模式 -->
-                  <div v-if="!editingField.sex" class="display-mode">
-                    <span class="display-value">{{ userInfo.sex === 0 ? "男" : userInfo.sex === 1 ? "女" : "未设置" }}</span>
-                    <el-button type="primary" text @click="startEdit('sex')">
-                      <el-icon><Edit /></el-icon>
-                      编辑
-                    </el-button>
-                  </div>
-                  <!-- 编辑模式 -->
-                  <div v-else class="edit-mode">
-                    <el-radio-group v-model="editingData.sex">
-                      <el-radio :label="0">男</el-radio>
-                      <el-radio :label="1">女</el-radio>
-                    </el-radio-group>
-                    <div class="edit-actions">
-                      <el-button type="primary" size="small" :loading="saveLoading.sex" @click="saveField('sex')">保存</el-button>
-                      <el-button size="small" @click="cancelEdit('sex')">取消</el-button>
+                  <div class="section-card__row">
+                    <div class="section-card__row-label">
+                      <span>密码</span>
+                      <p>建议使用不重复的高强度密码。</p>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 个人简介 -->
-              <div class="info-item">
-                <div class="item-label">个人简介</div>
-                <div class="item-content">
-                  <!-- 显示模式 -->
-                  <div v-if="!editingField.introduction" class="display-mode">
-                    <span class="display-value">{{ userInfo.introduction || "这个人很懒，什么都没写~" }}</span>
-                    <el-button type="primary" text @click="startEdit('introduction')">
-                      <el-icon><Edit /></el-icon>
-                      编辑
-                    </el-button>
-                  </div>
-                  <!-- 编辑模式 -->
-                  <div v-else class="edit-mode">
-                    <el-input v-model="editingData.introduction" type="textarea" placeholder="请输入个人简介" :autosize="{ minRows: 4, maxRows: 8 }" maxlength="200" show-word-limit resize="none" />
-                    <div class="edit-actions">
-                      <el-button type="primary" size="small" :loading="saveLoading.introduction" @click="saveField('introduction')">保存</el-button>
-                      <el-button size="small" @click="cancelEdit('introduction')">取消</el-button>
+                    <div class="section-card__row-content">
+                      <div class="display-mode">
+                        <span class="display-value">••••••••</span>
+                        <el-button class="inline-action" text @click="openPasswordDialog">
+                          修改密码
+                          <el-icon><Edit /></el-icon>
+                        </el-button>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 修改密码 -->
-              <div class="info-item">
-                <div class="item-label">密码</div>
-                <div class="item-content">
-                  <div class="display-mode">
-                    <span class="display-value">••••••••</span>
-                    <el-button type="primary" text @click="openPasswordDialog">
-                      <el-icon><Edit /></el-icon>
-                      修改密码
-                    </el-button>
                   </div>
                 </div>
               </div>
             </div>
-          </template>
-        </el-skeleton>
-      </div>
+          </div>
+        </template>
+      </el-skeleton>
     </div>
 
-    <!-- 修改密码对话框 -->
-    <el-dialog v-model="passwordDialogVisible" title="修改密码" :close-on-click-modal="false" @close="resetPasswordDialog">
-      <!-- 步骤条 -->
-      <el-steps :active="passwordStep" finish-status="success" align-center style="margin-bottom: 30px">
-        <el-step title="验证邮箱" />
-        <el-step title="修改密码" />
-      </el-steps>
+    <el-dialog v-model="passwordDialogVisible" title="修改密码" class="setting-dialog" :close-on-click-modal="false" @close="resetPasswordDialog">
+      <div class="setting-dialog__panel">
+        <div class="setting-dialog__hero">
+          <span class="setting-dialog__eyebrow">Security</span>
+          <h3>{{ passwordStep === 0 ? "验证身份" : "设置新密码" }}</h3>
+          <p>{{ passwordStep === 0 ? "先验证当前绑定邮箱，再继续修改密码。" : "使用新的登录密码，建议包含字母和数字。" }}</p>
+        </div>
 
-      <!-- 第一步：验证邮箱 -->
-      <el-form v-if="passwordStep === 0" ref="emailFormRef" :model="passwordForm" :rules="passwordRules" label-width="0">
-        <el-form-item prop="email">
-          <el-input v-model="passwordForm.email" type="email" placeholder="邮箱" :disabled="true">
-            <template #prefix>
-              <el-icon><Message /></el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
-        <el-form-item prop="emailCheckCode">
-          <div class="check-code-panel">
-            <el-input v-model="passwordForm.emailCheckCode" maxlength="6" placeholder="请输入验证码">
-              <template #prefix>
-                <el-icon><EditPen /></el-icon>
-              </template>
-            </el-input>
-            <el-button type="success" :disabled="waitTime > 0" @click="sendEmailCode" style="margin-left: 10px">
-              {{ waitTime > 0 ? `请稍后 ${waitTime} 秒` : "获取验证码" }}
-            </el-button>
-          </div>
-        </el-form-item>
-      </el-form>
+        <div class="setting-dialog__steps">
+          <el-steps :active="passwordStep" finish-status="success" align-center>
+            <el-step title="验证邮箱" />
+            <el-step title="修改密码" />
+          </el-steps>
+        </div>
 
-      <!-- 第二步：修改密码 -->
-      <el-form v-if="passwordStep === 1" ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" label-width="0">
-        <el-form-item prop="password">
-          <el-input v-model="passwordForm.password" placeholder="新密码">
-            <template #prefix>
-              <el-icon><Lock /></el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
-        <el-form-item prop="repeatPassword">
-          <el-input v-model="passwordForm.repeatPassword" placeholder="确认新密码">
-            <template #prefix>
-              <el-icon><Lock /></el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
-      </el-form>
+        <div class="setting-dialog__body">
+          <el-form v-if="passwordStep === 0" ref="emailFormRef" :model="passwordForm" :rules="passwordRules" label-width="0">
+            <div class="setting-dialog__group">
+              <span class="setting-dialog__group-label">当前邮箱</span>
+              <el-form-item prop="email">
+                <el-input v-model="passwordForm.email" type="email" placeholder="邮箱" :disabled="true">
+                  <template #prefix>
+                    <el-icon><Message /></el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
+            </div>
 
-      <!-- 对话框底部按钮 -->
+            <div class="setting-dialog__group">
+              <span class="setting-dialog__group-label">验证码</span>
+              <el-form-item prop="emailCheckCode">
+                <div class="check-code-panel">
+                  <el-input v-model="passwordForm.emailCheckCode" maxlength="6" placeholder="请输入验证码">
+                    <template #prefix>
+                      <el-icon><EditPen /></el-icon>
+                    </template>
+                  </el-input>
+                  <el-button type="success" :disabled="waitTime > 0" @click="sendEmailCode">
+                    {{ waitTime > 0 ? `请稍后 ${waitTime} 秒` : "获取验证码" }}
+                  </el-button>
+                </div>
+              </el-form-item>
+            </div>
+          </el-form>
+
+          <el-form v-if="passwordStep === 1" ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" label-width="0">
+            <div class="setting-dialog__group">
+              <span class="setting-dialog__group-label">新密码</span>
+              <el-form-item prop="password">
+                <el-input v-model="passwordForm.password" placeholder="新密码" show-password>
+                  <template #prefix>
+                    <el-icon><Lock /></el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
+            </div>
+
+            <div class="setting-dialog__group">
+              <span class="setting-dialog__group-label">确认密码</span>
+              <el-form-item prop="repeatPassword">
+                <el-input v-model="passwordForm.repeatPassword" placeholder="确认新密码" show-password>
+                  <template #prefix>
+                    <el-icon><Lock /></el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
+            </div>
+          </el-form>
+        </div>
+      </div>
+
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="passwordDialogVisible = false">取消</el-button>
@@ -212,49 +310,66 @@
       </template>
     </el-dialog>
 
-    <!-- 修改邮箱对话框 -->
-    <el-dialog v-model="emailDialogVisible" title="修改邮箱" :close-on-click-modal="false" @close="resetEmailDialog">
-      <!-- 步骤条 -->
-      <el-steps :active="emailStep" finish-status="success" align-center style="margin-bottom: 30px">
-        <el-step title="验证原邮箱" />
-        <el-step title="输入新邮箱" />
-      </el-steps>
+    <el-dialog v-model="emailDialogVisible" title="修改邮箱" class="setting-dialog" :close-on-click-modal="false" @close="resetEmailDialog">
+      <div class="setting-dialog__panel">
+        <div class="setting-dialog__hero">
+          <span class="setting-dialog__eyebrow">Account</span>
+          <h3>{{ emailStep === 0 ? "验证原邮箱" : "绑定新邮箱" }}</h3>
+          <p>{{ emailStep === 0 ? "为保证账号安全，需要先确认当前邮箱可用。" : "新邮箱将用于通知提醒、验证码和密码找回。" }}</p>
+        </div>
 
-      <!-- 第一步：验证原邮箱 -->
-      <el-form v-if="emailStep === 0" ref="oldEmailFormRef" :model="emailForm" :rules="oldEmailRules" label-width="0">
-        <el-form-item prop="email">
-          <el-input v-model="emailForm.email" type="email" placeholder="原邮箱" :disabled="true">
-            <template #prefix>
-              <el-icon><Message /></el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
-        <el-form-item prop="emailCheckCode">
-          <div class="check-code-panel">
-            <el-input v-model="emailForm.emailCheckCode" maxlength="6" placeholder="请输入验证码">
-              <template #prefix>
-                <el-icon><EditPen /></el-icon>
-              </template>
-            </el-input>
-            <el-button type="success" :disabled="emailWaitTime > 0" @click="sendOldEmailCode" style="margin-left: 10px">
-              {{ emailWaitTime > 0 ? `请稍后 ${emailWaitTime} 秒` : "获取验证码" }}
-            </el-button>
-          </div>
-        </el-form-item>
-      </el-form>
+        <div class="setting-dialog__steps">
+          <el-steps :active="emailStep" finish-status="success" align-center>
+            <el-step title="验证原邮箱" />
+            <el-step title="输入新邮箱" />
+          </el-steps>
+        </div>
 
-      <!-- 第二步：输入新邮箱 -->
-      <el-form v-if="emailStep === 1" ref="newEmailFormRef" :model="emailForm" :rules="newEmailRules" label-width="0">
-        <el-form-item prop="newEmail">
-          <el-input v-model="emailForm.newEmail" type="email" placeholder="请输入新邮箱">
-            <template #prefix>
-              <el-icon><Message /></el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
-      </el-form>
+        <div class="setting-dialog__body">
+          <el-form v-if="emailStep === 0" ref="oldEmailFormRef" :model="emailForm" :rules="oldEmailRules" label-width="0">
+            <div class="setting-dialog__group">
+              <span class="setting-dialog__group-label">原邮箱</span>
+              <el-form-item prop="email">
+                <el-input v-model="emailForm.email" type="email" placeholder="原邮箱" :disabled="true">
+                  <template #prefix>
+                    <el-icon><Message /></el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
+            </div>
 
-      <!-- 对话框底部按钮 -->
+            <div class="setting-dialog__group">
+              <span class="setting-dialog__group-label">验证码</span>
+              <el-form-item prop="emailCheckCode">
+                <div class="check-code-panel">
+                  <el-input v-model="emailForm.emailCheckCode" maxlength="6" placeholder="请输入验证码">
+                    <template #prefix>
+                      <el-icon><EditPen /></el-icon>
+                    </template>
+                  </el-input>
+                  <el-button type="success" :disabled="emailWaitTime > 0" @click="sendOldEmailCode">
+                    {{ emailWaitTime > 0 ? `请稍后 ${emailWaitTime} 秒` : "获取验证码" }}
+                  </el-button>
+                </div>
+              </el-form-item>
+            </div>
+          </el-form>
+
+          <el-form v-if="emailStep === 1" ref="newEmailFormRef" :model="emailForm" :rules="newEmailRules" label-width="0">
+            <div class="setting-dialog__group">
+              <span class="setting-dialog__group-label">新邮箱</span>
+              <el-form-item prop="newEmail">
+                <el-input v-model="emailForm.newEmail" type="email" placeholder="请输入新邮箱">
+                  <template #prefix>
+                    <el-icon><Message /></el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
+            </div>
+          </el-form>
+        </div>
+      </div>
+
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="emailDialogVisible = false">取消</el-button>
@@ -267,44 +382,76 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
-import { Plus, User, Message, Edit, EditPen, Lock } from "@element-plus/icons-vue";
-import { info, updateUserInfo, sendEmail, verifyResetPassword, resetPassword, updateEmail, verifyResetEmail } from "@/api/user";
+import { computed, onMounted, reactive, ref } from "vue";
+import { Edit, EditPen, Lock, Message, Plus, User } from "@element-plus/icons-vue";
+import { info, resetPassword, sendEmail, updateEmail, updateUserInfo, verifyResetEmail, verifyResetPassword } from "@/api/user";
 import { uploadAvatar } from "@/api/photo";
-import { validateAvatarImageFile, compressImage } from "@/utils/PhotoUtils";
+import { compressImage, validateAvatarImageFile } from "@/utils/PhotoUtils";
 import { useUserStore } from "@/stores/userStore";
 
-// Store
 const userStore = useUserStore();
 
-// 加载状态
 const userLoading = ref(false);
-
-// 用户信息数据
 const userInfo = ref(null);
 
-// 编辑状态管理（每个字段独立控制）
 const editingField = reactive({
   nickname: false,
   sex: false,
   introduction: false,
 });
 
-// 编辑中的数据
 const editingData = reactive({
   nickname: "",
   sex: 0,
   introduction: "",
 });
 
-// 保存加载状态（每个字段独立）
 const saveLoading = reactive({
   nickname: false,
   sex: false,
   introduction: false,
 });
 
-// 获取用户信息
+const sexLabel = computed(() => {
+  if (!userInfo.value) {
+    return "未设置";
+  }
+
+  return userInfo.value.sex === 0 ? "男" : userInfo.value.sex === 1 ? "女" : "未设置";
+});
+
+const introductionPreview = computed(() => {
+  return userInfo.value?.introduction || "这个人很懒，什么都没写。";
+});
+
+const maskedEmail = computed(() => {
+  const email = userInfo.value?.email;
+  if (!email) {
+    return "未设置邮箱";
+  }
+
+  const [name, domain] = email.split("@");
+  if (!name || !domain) {
+    return email;
+  }
+
+  if (name.length <= 2) {
+    return `${name[0] || ""}***@${domain}`;
+  }
+
+  return `${name.slice(0, 2)}***@${domain}`;
+});
+
+const profileCompletion = computed(() => {
+  if (!userInfo.value) {
+    return 0;
+  }
+
+  const fields = [userInfo.value.avatar, userInfo.value.nickname, userInfo.value.email, userInfo.value.introduction];
+  const completedCount = fields.filter((item) => (typeof item === "string" ? item.trim() !== "" : Boolean(item))).length;
+  return Math.round((completedCount / fields.length) * 100);
+});
+
 const fetchUserInfo = async () => {
   try {
     userLoading.value = true;
@@ -318,25 +465,17 @@ const fetchUserInfo = async () => {
   }
 };
 
-// 开始编辑某个字段
 const startEdit = (field) => {
-  // 将当前值复制到编辑数据中
   editingData[field] = userInfo.value[field] ?? "";
-  // 设置编辑状态
   editingField[field] = true;
 };
 
-// 取消编辑某个字段
 const cancelEdit = (field) => {
-  // 重置编辑状态
   editingField[field] = false;
-  // 清空编辑数据
   editingData[field] = "";
 };
 
-// 保存某个字段
 const saveField = async (field) => {
-  // 字段验证
   if (field === "nickname") {
     if (!editingData.nickname || editingData.nickname.trim() === "") {
       ElMessage.warning("昵称不能为空");
@@ -348,17 +487,14 @@ const saveField = async (field) => {
     }
   }
 
-  if (field === "introduction") {
-    if (editingData.introduction && editingData.introduction.length > 200) {
-      ElMessage.warning("简介长度不能超过 200 个字符");
-      return;
-    }
+  if (field === "introduction" && editingData.introduction && editingData.introduction.length > 200) {
+    ElMessage.warning("简介长度不能超过 200 个字符");
+    return;
   }
 
   try {
     saveLoading[field] = true;
 
-    // 构建更新数据
     const updateData = {
       nickname: userInfo.value.nickname,
       sex: userInfo.value.sex,
@@ -367,19 +503,13 @@ const saveField = async (field) => {
       [field]: editingData[field],
     };
 
-    // 调用更新接口
     await updateUserInfo(updateData);
-
-    // 更新本地用户信息
     userInfo.value[field] = editingData[field];
 
-    // 更新 store 中的用户信息
     const res = await info();
     userStore.user = res.data.data;
 
-    // 取消编辑状态
     editingField[field] = false;
-
     ElMessage.success("修改成功");
   } catch (error) {
     ElMessage.error("修改失败");
@@ -389,7 +519,6 @@ const saveField = async (field) => {
   }
 };
 
-// 头像上传前的校验
 const beforeAvatarUpload = (file) => {
   const validation = validateAvatarImageFile(file);
   if (!validation) {
@@ -398,18 +527,13 @@ const beforeAvatarUpload = (file) => {
   return true;
 };
 
-// 处理头像上传
 const handleAvatarUpload = async (options) => {
   const { file } = options;
   try {
-    // 压缩图片
     const compressedFile = await compressImage(file, 0.8, 800, 800);
-
-    // 上传到服务器（使用专门的头像上传接口）
     ElMessage.info("头像上传中...");
     await uploadAvatar(compressedFile);
 
-    // 调用成功回调
     options.onSuccess && options.onSuccess();
     ElMessage.success("头像上传成功，正在审核中，审核通过后将自动更新");
   } catch (error) {
@@ -419,24 +543,13 @@ const handleAvatarUpload = async (options) => {
   }
 };
 
-// ==================== 修改密码相关 ====================
-// 修改密码对话框显示状态
 const passwordDialogVisible = ref(false);
-
-// 修改密码步骤（0: 验证邮箱, 1: 修改密码）
 const passwordStep = ref(0);
-
-// 发送邮箱验证码倒计时
 const waitTime = ref(0);
-
-// 标记是否在当前会话中请求过验证码
 const hasRequestedPasswordCode = ref(false);
-
-// 验证和重置加载状态
 const verifyLoading = ref(false);
 const resetLoading = ref(false);
 
-// 修改密码表单数据
 const passwordForm = reactive({
   email: "",
   emailCheckCode: "",
@@ -444,14 +557,11 @@ const passwordForm = reactive({
   repeatPassword: "",
 });
 
-// 表单引用
 const emailFormRef = ref(null);
 const passwordFormRef = ref(null);
 
-// 邮箱正则表达式
 const EmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-// 验证邮箱格式
 const validateEmailFormat = (rule, value, callback) => {
   if (!value) {
     callback(new Error("请输入邮箱"));
@@ -462,7 +572,6 @@ const validateEmailFormat = (rule, value, callback) => {
   }
 };
 
-// 验证邮箱验证码
 const validateEmailCheckCode = (rule, value, callback) => {
   if (!value) {
     callback(new Error("请输入获取的验证码"));
@@ -473,7 +582,6 @@ const validateEmailCheckCode = (rule, value, callback) => {
   }
 };
 
-// 验证密码字符类型
 const validatePasswordCharacters = (rule, value, callback) => {
   if (value === "") {
     callback(new Error("请输入密码"));
@@ -486,7 +594,6 @@ const validatePasswordCharacters = (rule, value, callback) => {
   }
 };
 
-// 验证重复密码
 const validateRepeatPassword = (rule, value, callback) => {
   if (value === "") {
     callback(new Error("请再次输入密码"));
@@ -497,7 +604,6 @@ const validateRepeatPassword = (rule, value, callback) => {
   }
 };
 
-// 修改密码表单验证规则
 const passwordRules = {
   email: [{ validator: validateEmailFormat, trigger: ["blur", "change"] }],
   emailCheckCode: [{ validator: validateEmailCheckCode, trigger: ["blur", "change"] }],
@@ -505,7 +611,6 @@ const passwordRules = {
   repeatPassword: [{ validator: validateRepeatPassword, trigger: ["blur", "change"] }],
 };
 
-// 打开修改密码对话框
 const openPasswordDialog = () => {
   passwordDialogVisible.value = true;
   passwordStep.value = 0;
@@ -514,10 +619,9 @@ const openPasswordDialog = () => {
   passwordForm.password = "";
   passwordForm.repeatPassword = "";
   waitTime.value = 0;
-  hasRequestedPasswordCode.value = false; // 重置验证码请求标志
+  hasRequestedPasswordCode.value = false;
 };
 
-// 重置密码对话框
 const resetPasswordDialog = () => {
   passwordStep.value = 0;
   passwordForm.email = "";
@@ -525,10 +629,9 @@ const resetPasswordDialog = () => {
   passwordForm.password = "";
   passwordForm.repeatPassword = "";
   waitTime.value = 0;
-  hasRequestedPasswordCode.value = false; // 重置验证码请求标志
+  hasRequestedPasswordCode.value = false;
 };
 
-// 发送邮箱验证码
 const sendEmailCode = async () => {
   try {
     const emailDto = {
@@ -537,7 +640,7 @@ const sendEmailCode = async () => {
     };
     await sendEmail(emailDto);
     ElMessage.success(`验证码已发送到邮箱：${passwordForm.email}，请注意查收`);
-    hasRequestedPasswordCode.value = true; // 标记已请求验证码
+    hasRequestedPasswordCode.value = true;
     waitTime.value = 60;
     const interval = setInterval(() => {
       if (waitTime.value === 0) {
@@ -552,9 +655,10 @@ const sendEmailCode = async () => {
   }
 };
 
-// 验证邮箱
 const verifyEmail = async () => {
-  if (!emailFormRef.value) return;
+  if (!emailFormRef.value) {
+    return;
+  }
 
   try {
     await emailFormRef.value.validate();
@@ -570,7 +674,6 @@ const verifyEmail = async () => {
     ElMessage.success("邮箱验证成功");
   } catch (error) {
     if (error !== false) {
-      // false 是表单验证失败，不需要提示
       ElMessage.error("验证失败，请检查验证码是否正确");
       console.error("邮箱验证失败:", error);
     }
@@ -579,9 +682,10 @@ const verifyEmail = async () => {
   }
 };
 
-// 提交修改密码
 const resetPasswordSubmit = async () => {
-  if (!passwordFormRef.value) return;
+  if (!passwordFormRef.value) {
+    return;
+  }
 
   try {
     await passwordFormRef.value.validate();
@@ -596,7 +700,6 @@ const resetPasswordSubmit = async () => {
     await resetPassword(resetData);
     ElMessage.success("密码修改成功");
 
-    // 关闭对话框
     passwordDialogVisible.value = false;
     resetPasswordDialog();
   } catch (error) {
@@ -609,39 +712,22 @@ const resetPasswordSubmit = async () => {
   }
 };
 
-// ==================== 修改邮箱相关 ====================
-// 修改邮箱对话框显示状态
 const emailDialogVisible = ref(false);
-
-// 修改邮箱步骤（0: 验证原邮箱, 1: 输入新邮箱）
 const emailStep = ref(0);
-
-// 发送邮箱验证码倒计时
 const emailWaitTime = ref(0);
-
-// 标记是否在当前会话中请求过验证码
 const hasRequestedEmailCode = ref(false);
-
-// 验证原邮箱加载状态
 const emailVerifyLoading = ref(false);
-
-// 邮箱更新加载状态
 const emailUpdateLoading = ref(false);
 
-// 修改邮箱表单数据
 const emailForm = reactive({
   email: "",
   newEmail: "",
   emailCheckCode: "",
 });
 
-// 原邮箱表单引用
 const oldEmailFormRef = ref(null);
-
-// 新邮箱表单引用
 const newEmailFormRef = ref(null);
 
-// 验证新邮箱格式
 const validateNewEmailFormat = (rule, value, callback) => {
   if (!value) {
     callback(new Error("请输入新邮箱"));
@@ -652,18 +738,15 @@ const validateNewEmailFormat = (rule, value, callback) => {
   }
 };
 
-// 原邮箱表单验证规则
 const oldEmailRules = {
   email: [{ required: true, message: "原邮箱不能为空", trigger: "blur" }],
   emailCheckCode: [{ validator: validateEmailCheckCode, trigger: ["blur", "change"] }],
 };
 
-// 新邮箱表单验证规则
 const newEmailRules = {
   newEmail: [{ validator: validateNewEmailFormat, trigger: ["blur", "change"] }],
 };
 
-// 打开修改邮箱对话框
 const openEmailDialog = () => {
   emailDialogVisible.value = true;
   emailStep.value = 0;
@@ -671,20 +754,18 @@ const openEmailDialog = () => {
   emailForm.newEmail = "";
   emailForm.emailCheckCode = "";
   emailWaitTime.value = 0;
-  hasRequestedEmailCode.value = false; // 重置验证码请求标志
+  hasRequestedEmailCode.value = false;
 };
 
-// 重置邮箱对话框
 const resetEmailDialog = () => {
   emailStep.value = 0;
   emailForm.email = "";
   emailForm.newEmail = "";
   emailForm.emailCheckCode = "";
   emailWaitTime.value = 0;
-  hasRequestedEmailCode.value = false; // 重置验证码请求标志
+  hasRequestedEmailCode.value = false;
 };
 
-// 发送原邮箱验证码
 const sendOldEmailCode = async () => {
   try {
     const emailDto = {
@@ -693,7 +774,7 @@ const sendOldEmailCode = async () => {
     };
     await sendEmail(emailDto);
     ElMessage.success(`验证码已发送到原邮箱：${emailForm.email}，请注意查收`);
-    hasRequestedEmailCode.value = true; // 标记已请求验证码
+    hasRequestedEmailCode.value = true;
     emailWaitTime.value = 60;
     const interval = setInterval(() => {
       if (emailWaitTime.value === 0) {
@@ -708,9 +789,10 @@ const sendOldEmailCode = async () => {
   }
 };
 
-// 验证原邮箱
 const verifyOldEmail = async () => {
-  if (!oldEmailFormRef.value) return;
+  if (!oldEmailFormRef.value) {
+    return;
+  }
 
   try {
     await oldEmailFormRef.value.validate();
@@ -721,11 +803,8 @@ const verifyOldEmail = async () => {
       emailCheckCode: emailForm.emailCheckCode,
     };
 
-    // 调用验证接口
     await verifyResetEmail(verifyData);
     ElMessage.success("原邮箱验证成功");
-
-    // 进入下一步（保留验证码，用于最终提交）
     emailStep.value = 1;
   } catch (error) {
     if (error !== false) {
@@ -737,9 +816,10 @@ const verifyOldEmail = async () => {
   }
 };
 
-// 提交修改邮箱
 const updateEmailSubmit = async () => {
-  if (!newEmailFormRef.value) return;
+  if (!newEmailFormRef.value) {
+    return;
+  }
 
   try {
     await newEmailFormRef.value.validate();
@@ -754,14 +834,11 @@ const updateEmailSubmit = async () => {
     await updateEmail(updateData);
     ElMessage.success("邮箱修改成功");
 
-    // 更新本地用户信息
     userInfo.value.email = emailForm.newEmail;
 
-    // 更新 store 中的用户信息
     const res = await info();
     userStore.user = res.data.data;
 
-    // 关闭对话框
     emailDialogVisible.value = false;
     resetEmailDialog();
   } catch (error) {
@@ -774,227 +851,438 @@ const updateEmailSubmit = async () => {
   }
 };
 
-// 组件挂载时获取用户信息
 onMounted(() => {
   fetchUserInfo();
 });
 </script>
 
 <style lang="scss" scoped>
-// 设置页面容器
 .setting-container {
+  --setting-bg: #f4f6f8;
+  --setting-panel: #ffffff;
+  --setting-panel-soft: #f8fafb;
+  --setting-text-primary: #18222c;
+  --setting-text-regular: #536170;
+  --setting-text-muted: #7f8a96;
+  --setting-border: #dbe2e8;
+  --setting-border-soft: #edf1f4;
+  --setting-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+  --setting-shadow-soft: 0 1px 3px rgba(15, 23, 42, 0.08);
+
   min-height: 100vh;
-  background-color: var(--el-bg-color-page);
+  background:
+    radial-gradient(circle at top left, var(--setting-panel-soft) 0%, transparent 34%),
+    linear-gradient(180deg, var(--setting-bg) 0%, var(--setting-bg) 100%);
 
-  // 响应式：移动端优化背景
-  @media (max-width: 768px) {
-    background-attachment: scroll;
-    padding: 16px 0;
-  }
-
-  // 设置内容区域
   .setting-content {
-    max-width: 900px;
+    max-width: 1120px;
     margin: 0 auto;
-    padding: 20px 20px 0 20px;
+    padding: 32px 24px 40px;
 
-    // 页面标题
     .setting-header {
-      background: var(--el-bg-color-page);
-      backdrop-filter: blur(10px);
-      border-radius: 8px;
-      padding: 24px;
-      margin-bottom: 20px;
-      border: 1px solid var(--el-border-color);
-      box-shadow: 0 2px 12px var(--el-border-color-light);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 24px;
 
-      h2 {
-        font-size: 24px;
-        font-weight: 600;
-        color: var(--el-text-color-primary);
-        margin: 0 0 8px 0;
+      .setting-header__intro {
+        .setting-header__eyebrow {
+          margin: 0 0 10px;
+          font-size: 12px;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: var(--setting-text-muted);
+        }
+
+        h2 {
+          margin: 0;
+          font-size: 34px;
+          line-height: 1.1;
+          font-weight: 600;
+          color: var(--setting-text-primary);
+        }
+
+        .setting-header__desc {
+          margin: 12px 0 0;
+          font-size: 15px;
+          line-height: 1.7;
+          color: var(--setting-text-regular);
+        }
       }
 
-      .header-desc {
-        font-size: 14px;
-        color: var(--el-text-color-regular);
-        margin: 0;
+      .setting-header__meta {
+        min-width: 160px;
+        padding: 18px 20px;
+        border: 1px solid var(--setting-border);
+        border-radius: 18px;
+        background: var(--setting-panel);
+        box-shadow: var(--setting-shadow-soft);
+        text-align: right;
+
+        .setting-header__meta-label {
+          display: block;
+          margin-bottom: 8px;
+          font-size: 13px;
+          color: var(--setting-text-muted);
+        }
+
+        .setting-header__meta-value {
+          font-size: 28px;
+          line-height: 1;
+          color: var(--setting-text-primary);
+        }
       }
     }
 
-    // 设置表单容器
-    .setting-form-container {
-      background: var(--el-bg-color-page);
-      backdrop-filter: blur(10px);
-      border-radius: 8px;
-      padding: 32px;
-      border: 1px solid var(--el-border-color);
-      box-shadow: 0 2px 12px var(--el-border-color-light);
+    .setting-skeleton {
+      padding: 28px;
+      border: 1px solid var(--setting-border);
+      border-radius: 24px;
+      background: var(--setting-panel);
+      box-shadow: var(--setting-shadow);
 
-      // 响应式：移动端调整内边距
-      @media (max-width: 768px) {
-        padding: 20px;
+      .setting-skeleton__card {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        margin-top: 28px;
+        padding-top: 24px;
+        border-top: 1px solid var(--setting-border-soft);
+
+        .setting-skeleton__info {
+          flex: 1;
+        }
       }
+    }
 
-      // 骨架屏容器
-      .skeleton-container {
-        padding: 40px 20px;
-      }
+    .setting-main {
+      .setting-main__overview {
+        display: grid;
+        grid-template-columns: minmax(0, 1.8fr) minmax(280px, 1fr);
+        gap: 20px;
+        margin-bottom: 20px;
 
-      // 用户信息容器
-      .user-info-container {
-        // 信息项
-        .info-item {
-          display: flex;
-          padding: 24px 0;
-          border-bottom: 1px solid var(--el-border-color-lighter);
+        .setting-main__overview-card {
+          border: 1px solid var(--setting-border);
+          border-radius: 24px;
+          background: var(--setting-panel);
+          box-shadow: var(--setting-shadow);
+        }
 
-          &:last-child {
-            border-bottom: none;
-          }
+        .profile-card {
+          padding: 24px;
 
-          // 响应式：移动端垂直布局
-          @media (max-width: 768px) {
-            flex-direction: column;
-            gap: 12px;
-          }
+          .profile-card__main {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            margin-bottom: 18px;
 
-          // 头像项特殊处理
-          &.avatar-item {
-            flex-direction: column;
-            gap: 0;
+            .profile-card__avatar {
+              flex-shrink: 0;
 
-            .item-label {
-              width: 100%;
-              margin-bottom: 16px;
-            }
-
-            .item-content {
-              width: 100%;
-            }
-          }
-
-          // 标签
-          .item-label {
-            width: 120px;
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--el-text-color-primary);
-            flex-shrink: 0;
-          }
-
-          // 内容
-          .item-content {
-            flex: 1;
-
-            // 显示模式
-            .display-mode {
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              gap: 16px;
-
-              .display-value {
-                flex: 1;
-                font-size: 14px;
-                color: var(--el-text-color-regular);
-                line-height: 1.6;
-                word-break: break-word;
-              }
-            }
-
-            // 编辑模式
-            .edit-mode {
-              display: flex;
-              flex-direction: column;
-              gap: 12px;
-
-              .edit-actions {
-                display: flex;
-                gap: 8px;
-              }
-            }
-
-            // 头像上传容器
-            .avatar-upload-container {
-              display: flex;
-              align-items: flex-start;
-              gap: 24px;
-
-              // 响应式：移动端垂直布局
-              @media (max-width: 768px) {
-                flex-direction: column;
-                align-items: center;
-              }
-
-              // 头像上传器
               .avatar-uploader {
                 :deep(.el-upload) {
-                  border: 2px dashed var(--el-border-color);
-                  border-radius: 50%;
-                  cursor: pointer;
-                  position: relative;
+                  width: 88px;
+                  height: 88px;
+                  border-radius: 24px;
+                  border: 1px dashed var(--setting-border);
+                  background: var(--setting-panel-soft);
                   overflow: hidden;
-                  transition: all 0.3s;
-                  width: 120px;
-                  height: 120px;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
+                  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
                   &:hover {
                     border-color: var(--el-color-primary);
+                    box-shadow: 0 0 0 4px var(--el-color-primary-light-9);
                   }
                 }
               }
 
-              // 头像预览
               .avatar-preview {
-                width: 120px;
-                height: 120px;
-                border-radius: 50%;
+                width: 88px;
+                height: 88px;
                 object-fit: cover;
                 display: block;
               }
 
-              // 头像占位符
               .avatar-placeholder {
                 display: flex;
+                width: 88px;
+                height: 88px;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                width: 100%;
-                height: 100%;
-                color: var(--el-text-color-placeholder);
+                color: var(--setting-text-muted);
 
-                .avatar-uploader-icon {
-                  font-size: 32px;
-                  margin-bottom: 8px;
+                .avatar-placeholder__icon {
+                  margin-bottom: 6px;
+                  font-size: 22px;
                 }
 
-                .upload-text {
+                .avatar-placeholder__text {
                   font-size: 12px;
                 }
               }
+            }
+          }
 
-              // 头像上传提示
-              .avatar-tips {
-                flex: 1;
-                color: var(--el-text-color-secondary);
+          .profile-card__info {
+            min-width: 0;
+            flex: 1;
+
+            h3 {
+              margin: 0 0 10px;
+              font-size: 26px;
+              font-weight: 600;
+              color: var(--setting-text-primary);
+            }
+
+            p {
+              margin: 0;
+              font-size: 14px;
+              line-height: 1.8;
+              color: var(--setting-text-regular);
+            }
+
+            .profile-card__meta {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 10px;
+              margin-top: 14px;
+
+              span {
+                display: inline-flex;
+                align-items: center;
+                min-height: 32px;
+                padding: 0 12px;
+                border-radius: 999px;
+                background: var(--setting-panel-soft);
+                color: var(--setting-text-regular);
                 font-size: 13px;
-                line-height: 1.6;
+              }
+            }
+          }
+
+          .profile-card__foot {
+            padding-top: 18px;
+            border-top: 1px solid var(--setting-border-soft);
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--setting-text-muted);
+          }
+        }
+
+        .security-card {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 24px;
+          gap: 18px;
+
+          .security-card__item {
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--setting-border-soft);
+
+            &:last-child {
+              padding-bottom: 0;
+              border-bottom: none;
+            }
+
+            .security-card__label {
+              display: block;
+              margin-bottom: 8px;
+              font-size: 13px;
+              color: var(--setting-text-muted);
+            }
+
+            .security-card__value {
+              font-size: 20px;
+              font-weight: 600;
+              color: var(--setting-text-primary);
+            }
+          }
+        }
+      }
+
+      .setting-main__sections {
+        display: grid;
+        gap: 20px;
+
+        .setting-main__section {
+          &.section-card {
+            border: 1px solid var(--setting-border);
+            border-radius: 24px;
+            background: var(--setting-panel);
+            box-shadow: var(--setting-shadow);
+            overflow: hidden;
+
+            .section-card__header {
+              padding: 24px 28px 18px;
+              border-bottom: 1px solid var(--setting-border-soft);
+
+              .section-card__title {
+                h3 {
+                  margin: 0;
+                  font-size: 20px;
+                  font-weight: 600;
+                  color: var(--setting-text-primary);
+                }
 
                 p {
-                  margin: 0 0 4px 0;
+                  margin: 8px 0 0;
+                  font-size: 14px;
+                  color: var(--setting-text-regular);
+                }
+              }
+            }
 
-                  &:last-child {
-                    margin-bottom: 0;
+            .section-card__body {
+              .section-card__row {
+                display: grid;
+                grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+                gap: 28px;
+                padding: 24px 28px;
+                border-bottom: 1px solid var(--setting-border-soft);
+
+                &:last-child {
+                  border-bottom: none;
+                }
+
+                .section-card__row-label {
+                  span {
+                    display: block;
+                    margin-bottom: 8px;
+                    font-size: 15px;
+                    font-weight: 600;
+                    color: var(--setting-text-primary);
+                  }
+
+                  p {
+                    margin: 0;
+                    font-size: 13px;
+                    line-height: 1.7;
+                    color: var(--setting-text-muted);
                   }
                 }
 
-                // 响应式：移动端居中
-                @media (max-width: 768px) {
-                  text-align: center;
+                .section-card__row-content {
+                  .display-mode {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 16px;
+
+                    &.display-mode--multiline {
+                      align-items: flex-start;
+                    }
+
+                    .display-value {
+                      flex: 1;
+                      min-width: 0;
+                      font-size: 15px;
+                      line-height: 1.8;
+                      color: var(--setting-text-regular);
+                      word-break: break-word;
+                    }
+
+                    .inline-action {
+                      padding: 0;
+                      color: var(--setting-text-muted);
+                      font-size: 13px;
+                      font-weight: 500;
+                      transition: color 0.2s ease;
+
+                      :deep(span) {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                      }
+
+                      :deep(.el-icon) {
+                        font-size: 13px;
+                      }
+
+                      &:hover,
+                      &:focus-visible {
+                        color: var(--setting-text-primary);
+                      }
+                    }
+                  }
+
+                  .edit-mode {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+
+                    .edit-surface {
+                      padding: 12px;
+                      border: 1px solid var(--setting-border);
+                      border-radius: 16px;
+                      background: var(--setting-panel-soft);
+                      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+                      &:focus-within {
+                        border-color: var(--el-color-primary-light-5);
+                        box-shadow: 0 0 0 3px var(--el-color-primary-light-9);
+                      }
+
+                      &.edit-surface--choice {
+                        padding: 14px 16px;
+
+                        :deep(.el-radio-group) {
+                          display: flex;
+                          flex-wrap: wrap;
+                          gap: 20px;
+                        }
+                      }
+
+                      &.edit-surface--textarea {
+                        padding-bottom: 8px;
+                      }
+
+                      :deep(.el-input__wrapper) {
+                        padding-inline: 0;
+                        background: transparent;
+                        box-shadow: none;
+                      }
+
+                      :deep(.el-textarea__inner) {
+                        padding: 0;
+                        border: none;
+                        background: transparent;
+                        box-shadow: none;
+                      }
+                    }
+
+                    .edit-toolbar {
+                      display: flex;
+                      align-items: center;
+                      justify-content: space-between;
+                      gap: 12px;
+
+                      .edit-toolbar__hint {
+                        font-size: 12px;
+                        line-height: 1.6;
+                        color: var(--setting-text-muted);
+                      }
+                    }
+
+                    .edit-actions {
+                      display: flex;
+                      align-items: center;
+                      gap: 6px;
+
+                      :deep(.el-button + .el-button) {
+                        margin-left: 0;
+                      }
+
+                      :deep(.el-button--text) {
+                        padding-inline: 6px;
+                        color: var(--setting-text-regular);
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -1005,14 +1293,137 @@ onMounted(() => {
   }
 }
 
-// 对话框样式优化
+html.dark {
+  .setting-container {
+    --setting-bg: #0f1720;
+    --setting-panel: #16202a;
+    --setting-panel-soft: #1b2733;
+    --setting-text-primary: #e8edf2;
+    --setting-text-regular: #b8c2cb;
+    --setting-text-muted: #8d9aa6;
+    --setting-border: #293545;
+    --setting-border-soft: #212c3a;
+    --setting-shadow: 0 16px 36px rgba(0, 0, 0, 0.24);
+    --setting-shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+}
+
+@media (max-width: 992px) {
+  .setting-container {
+    .setting-content {
+      .setting-header {
+        align-items: flex-start;
+        flex-direction: column;
+
+        .setting-header__meta {
+          width: 100%;
+          text-align: left;
+        }
+      }
+
+      .setting-main {
+        .setting-main__overview {
+          grid-template-columns: 1fr;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .setting-container {
+    .setting-content {
+      padding: 20px 16px 32px;
+
+      .setting-header {
+        margin-bottom: 16px;
+
+        .setting-header__intro {
+          h2 {
+            font-size: 28px;
+          }
+        }
+      }
+
+      .setting-skeleton {
+        padding: 20px;
+
+        .setting-skeleton__card {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+
+      .setting-main {
+        .setting-main__overview {
+          gap: 16px;
+          margin-bottom: 16px;
+
+          .profile-card {
+            padding: 20px;
+
+            .profile-card__main {
+              flex-direction: column;
+              align-items: flex-start;
+            }
+          }
+        }
+
+        .setting-main__sections {
+          gap: 16px;
+
+          .setting-main__section {
+            &.section-card {
+              .section-card__header {
+                padding: 20px 20px 16px;
+              }
+
+              .section-card__body {
+                .section-card__row {
+                  grid-template-columns: 1fr;
+                  gap: 14px;
+                  padding: 20px;
+
+                  .section-card__row-content {
+                    .display-mode {
+                      align-items: flex-start;
+                      flex-direction: column;
+
+                      .el-button {
+                        padding-left: 0;
+                      }
+                    }
+
+                    .edit-mode {
+                      .edit-toolbar {
+                        align-items: flex-start;
+                        flex-direction: column;
+
+                        .edit-actions {
+                          width: 100%;
+                          justify-content: flex-start;
+
+                          .el-button:first-child {
+                            min-width: 108px;
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 :deep(.el-dialog) {
-  // 默认宽度
   width: 500px;
-  // 垂直居中显示
   margin: 15vh auto !important;
 
-  // 屏幕宽度小于768px时的宽度
   @media screen and (max-width: 767px) {
     width: 90% !important;
     margin: 20vh auto !important;
@@ -1020,13 +1431,12 @@ onMounted(() => {
     overflow-y: auto;
   }
 
-  // 验证码面板样式
   .check-code-panel {
     display: flex;
     width: 100%;
     align-items: center;
+    gap: 10px;
 
-    // 移动端验证码面板优化
     @media (max-width: 768px) {
       flex-direction: column;
       gap: 12px;
@@ -1038,26 +1448,11 @@ onMounted(() => {
     }
   }
 
-  // 成功消息样式
-  .success-message {
-    text-align: center;
-    padding: 20px 0;
-
-    // 跳转提示
-    .jump-tip {
-      font-size: 14px;
-      color: var(--el-text-color-regular);
-      margin: 0;
-    }
-  }
-
-  // 对话框底部按钮
   .dialog-footer {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
 
-    // 移动端按钮优化
     @media (max-width: 768px) {
       flex-direction: column;
       gap: 8px;
@@ -1069,7 +1464,121 @@ onMounted(() => {
   }
 }
 
-// 移动端步骤条优化
+:deep(.setting-dialog) {
+  .el-dialog__header {
+    margin-right: 0;
+    padding: 24px 24px 0;
+
+    .el-dialog__title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--setting-text-primary);
+    }
+  }
+
+  .el-dialog__body {
+    padding: 16px 24px 8px;
+  }
+
+  .el-dialog__footer {
+    padding: 0 24px 24px;
+  }
+
+  .setting-dialog__panel {
+    border: 1px solid var(--setting-border-soft);
+    border-radius: 20px;
+    background: var(--setting-panel-soft);
+    overflow: hidden;
+  }
+
+  .setting-dialog__hero {
+    padding: 20px 20px 18px;
+    border-bottom: 1px solid var(--setting-border-soft);
+    background: var(--setting-panel);
+
+    .setting-dialog__eyebrow {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--setting-text-muted);
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--setting-text-primary);
+    }
+
+    p {
+      margin: 10px 0 0;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--setting-text-regular);
+    }
+  }
+
+  .setting-dialog__steps {
+    padding: 18px 20px 0;
+  }
+
+  .setting-dialog__body {
+    padding: 20px;
+  }
+
+  .setting-dialog__group {
+    margin-bottom: 18px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .setting-dialog__group-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--setting-text-primary);
+    }
+
+    .el-form-item {
+      margin-bottom: 0;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .el-dialog__header {
+      padding: 20px 20px 0;
+    }
+
+    .el-dialog__body {
+      padding: 14px 20px 8px;
+    }
+
+    .el-dialog__footer {
+      padding: 0 20px 20px;
+    }
+
+    .setting-dialog__hero {
+      padding: 18px 16px 16px;
+
+      h3 {
+        font-size: 20px;
+      }
+    }
+
+    .setting-dialog__steps {
+      padding: 16px 16px 0;
+    }
+
+    .setting-dialog__body {
+      padding: 16px;
+    }
+  }
+}
+
 :deep(.el-steps) {
   @media (max-width: 768px) {
     .el-step__title {
@@ -1078,7 +1587,6 @@ onMounted(() => {
   }
 }
 
-// 移动端表单优化
 :deep(.el-form) {
   @media (max-width: 768px) {
     .el-form-item {
@@ -1087,7 +1595,6 @@ onMounted(() => {
   }
 }
 
-// 对话框按钮样式优化
 :deep(.dialog-footer) {
   .el-button {
     margin-left: 0 !important;

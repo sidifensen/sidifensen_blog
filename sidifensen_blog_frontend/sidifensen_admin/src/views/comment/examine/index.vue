@@ -313,17 +313,8 @@ const getUsers = async () => {
 
 // 获取评论列表
 const getComments = async () => {
-  loading.value = true;
-  try {
-    const res = await adminGetCommentList();
-    commentList.value = res.data.data.sort((a, b) => new Date(b.createTime) - new Date(a.createTime)); // 按照创建时间倒序展示
-    total.value = commentList.value.length;
-    updatePaginatedCommentList();
-  } catch (error) {
-    ElMessage.error("获取评论列表失败");
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchComments();
 };
 
 // 移动端检测
@@ -347,65 +338,82 @@ onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
 });
 
-// 更新分页数据
-const updatePaginatedCommentList = () => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  paginatedCommentList.value = commentList.value.slice(startIndex, endIndex);
-};
-
-// 处理分页大小变化
-const handleSizeChange = (size) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  updatePaginatedCommentList();
-};
-
-// 处理当前页码变化
-const handleCurrentChange = (current) => {
-  currentPage.value = current;
-  updatePaginatedCommentList();
-};
-
 // 搜索条件
 const searchUserId = ref("");
 const searchExamineStatus = ref("");
 const searchCreateTimeStart = ref(null);
 const searchCreateTimeEnd = ref(null);
 
-// 处理搜索
-const handleSearch = async () => {
+const hasSearchConditions = () => !!(searchUserId.value || searchExamineStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value);
+
+const buildSearchPayload = () => ({
+  pageNum: currentPage.value,
+  pageSize: pageSize.value,
+  userId: searchUserId.value || undefined,
+  examineStatus: searchExamineStatus.value || undefined,
+  createTimeStart: searchCreateTimeStart.value || undefined,
+  createTimeEnd: searchCreateTimeEnd.value || undefined,
+});
+
+const applyPageData = (pageData) => {
+  commentList.value = pageData?.data || [];
+  paginatedCommentList.value = commentList.value;
+  total.value = Number(pageData?.total || 0);
+  selectedComments.value = [];
+};
+
+const fetchComments = async () => {
   loading.value = true;
   try {
-    const res = await adminSearchComment({
-      userId: searchUserId.value,
-      examineStatus: searchExamineStatus.value,
-      createTimeStart: searchCreateTimeStart.value,
-      createTimeEnd: searchCreateTimeEnd.value,
-    });
-    commentList.value = res.data.data;
-    total.value = commentList.value.length;
-    currentPage.value = 1;
-    updatePaginatedCommentList();
+    let pageData = null;
+    if (hasSearchConditions()) {
+      const res = await adminSearchComment(buildSearchPayload());
+      pageData = res.data.data;
+    } else {
+      const res = await adminGetCommentList({
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    }
+    applyPageData(pageData);
   } catch (error) {
-    ElMessage.error("搜索评论失败");
+    ElMessage.error(hasSearchConditions() ? "搜索评论失败" : "获取评论列表失败");
   } finally {
     loading.value = false;
   }
 };
 
-// 智能刷新列表（根据是否有搜索条件决定调用搜索还是获取全部）
-const refreshCommentList = async () => {
-  // 检查是否有任何搜索条件
-  const hasSearchConditions = searchUserId.value || searchExamineStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value;
+// 更新分页数据
+const updatePaginatedCommentList = () => {
+  paginatedCommentList.value = commentList.value;
+};
 
-  if (hasSearchConditions) {
-    // 有搜索条件时重新执行搜索
-    await handleSearch();
-  } else {
-    // 没有搜索条件时获取全部评论
-    await getComments();
+// 处理分页大小变化
+const handleSizeChange = async (size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  await fetchComments();
+};
+
+// 处理当前页码变化
+const handleCurrentChange = async (current) => {
+  currentPage.value = current;
+  await fetchComments();
+};
+
+// 处理搜索
+const handleSearch = async () => {
+  currentPage.value = 1;
+  await fetchComments();
+};
+
+// 智能刷新列表（根据是否有搜索条件决定调用搜索还是获取全部）
+const refreshCommentList = async (deletedCount = 0) => {
+  if (deletedCount > 0 && currentPage.value > 1 && commentList.value.length <= deletedCount) {
+    currentPage.value -= 1;
   }
+  await fetchComments();
 };
 
 // 选中的评论

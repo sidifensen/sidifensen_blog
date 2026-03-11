@@ -5,6 +5,7 @@ import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.SysPermissionDto;
 import com.sidifensen.domain.result.Result;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.SysPermissionVo;
 import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.SysPermissionService;
@@ -41,6 +42,20 @@ public class SysPermissionController {
     public Result list() {
         List<SysPermissionVo> sysPermissionVos = sysPermissionService.listPermission();
         return Result.success(sysPermissionVos);
+    }
+
+    /**
+     * 分页查询权限列表
+     *
+     * @return 权限分页列表
+     */
+    @OperationLog(module = "权限管理", type = OperationTypeEnum.SELECT, description = "管理员分页获取权限列表")
+    @PreAuthorize("hasAuthority('system:permission:list')")
+    @GetMapping("page")
+    public Result<PageVo<List<SysPermissionVo>>> page(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(sysPermissionService.pagePermission(pageNum, pageSize));
     }
 
     /**
@@ -97,6 +112,18 @@ public class SysPermissionController {
     public Result search(@RequestBody @Valid SysPermissionDto sysPermissionDto) {
         List<SysPermissionVo> sysPermissionVos = sysPermissionService.search(sysPermissionDto);
         return Result.success(sysPermissionVos);
+    }
+
+    /**
+     * 分页搜索权限
+     *
+     * @return 权限分页列表
+     */
+    @OperationLog(module = "权限管理", type = OperationTypeEnum.SEARCH, description = "管理员分页搜索权限")
+    @PreAuthorize("hasAuthority('system:permission:search')")
+    @PostMapping("page/search")
+    public Result<PageVo<List<SysPermissionVo>>> searchPage(@RequestBody @Valid SysPermissionDto sysPermissionDto) {
+        return Result.success(sysPermissionService.searchPage(sysPermissionDto));
     }
 
 }

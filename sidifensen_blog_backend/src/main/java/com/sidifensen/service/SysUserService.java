@@ -3,6 +3,7 @@ package com.sidifensen.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.*;
 import com.sidifensen.domain.entity.SysUser;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.SysUserDetailVo;
 import com.sidifensen.domain.vo.SysUserVo;
 import com.sidifensen.domain.vo.SysUserWithArticleCountVo;
@@ -120,6 +121,9 @@ public interface SysUserService extends IService<SysUser> {
     // 管理端获取用户列表（包含专栏数量）
     List<SysUserWithColumnCountVo> listUserWithColumnCount();
 
+    // 管理端分页获取用户列表
+    PageVo<List<SysUserVo>> pageUser(Integer pageNum, Integer pageSize);
+
     // 管理端更新用户
     void updateUser(SysUserDto sysUserDto);
 
@@ -128,6 +132,9 @@ public interface SysUserService extends IService<SysUser> {
 
     // 管理端搜索用户
     List<SysUserVo> searchUser(SysUserSearchDTO sysUserSearchDTO);
+
+    // 管理端分页搜索用户
+    PageVo<List<SysUserVo>> searchUserPage(SysUserSearchDTO sysUserSearchDTO);
 
     // 管理的获取用户详情
     SysUserDetailVo getUserInfo(Integer userId);

@@ -1,18 +1,20 @@
 import request from "@/utils/Request";
 
 // 管理员获取所有评论列表
-export function adminGetCommentList() {
+export function adminGetCommentList(params) {
   return request({
     url: "/comment/admin/list",
     method: "get",
+    params,
   });
 }
 
 // 管理员根据用户ID获取评论列表
-export function adminGetCommentsByUserId(userId) {
+export function adminGetCommentsByUserId(userId, params) {
   return request({
     url: `/comment/admin/user/${userId}`,
     method: "get",
+    params,
   });
 }
 

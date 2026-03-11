@@ -3,12 +3,14 @@ package com.sidifensen.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.SysLoginLogQueryDto;
 import com.sidifensen.domain.entity.SysLoginLog;
 import com.sidifensen.domain.enums.LoginStatusEnum;
 import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.SysLoginLogVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysLoginLogMapper;
@@ -112,29 +114,29 @@ public class SysLoginLogServiceImpl extends ServiceImpl<SysLoginLogMapper, SysLo
      * 查询所有登录日志（按时间倒序）
      */
     @Override
-    public List<SysLoginLogVo> getLoginLogList() {
-        LambdaQueryWrapper<SysLoginLog> qw = new LambdaQueryWrapper<SysLoginLog>()
+    public PageVo<List<SysLoginLogVo>> getLoginLogList(Integer pageNum, Integer pageSize) {
+        Page<SysLoginLog> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<SysLoginLog> queryWrapper = new LambdaQueryWrapper<SysLoginLog>()
                 .orderByDesc(SysLoginLog::getLoginTime);
-
-        List<SysLoginLog> loginLogs = sysLoginLogMapper.selectList(qw);
-        return convertToVo(loginLogs);
+        Page<SysLoginLog> logPage = sysLoginLogMapper.selectPage(page, queryWrapper);
+        return new PageVo<>(convertToVo(logPage.getRecords()), logPage.getTotal());
     }
 
     /**
      * 搜索登录日志
      */
     @Override
-    public List<SysLoginLogVo> searchLoginLog(SysLoginLogQueryDto queryDto) {
-        LambdaQueryWrapper<SysLoginLog> qw = new LambdaQueryWrapper<SysLoginLog>()
+    public PageVo<List<SysLoginLogVo>> searchLoginLog(SysLoginLogQueryDto queryDto) {
+        Page<SysLoginLog> page = new Page<>(queryDto.getPageNum(), queryDto.getPageSize());
+        LambdaQueryWrapper<SysLoginLog> queryWrapper = new LambdaQueryWrapper<SysLoginLog>()
                 .eq(ObjectUtil.isNotEmpty(queryDto.getUserId()), SysLoginLog::getUserId, queryDto.getUserId())
                 .eq(ObjectUtil.isNotEmpty(queryDto.getLoginType()), SysLoginLog::getLoginType, queryDto.getLoginType())
                 .eq(ObjectUtil.isNotEmpty(queryDto.getStatus()), SysLoginLog::getStatus, queryDto.getStatus())
                 .ge(ObjectUtil.isNotEmpty(queryDto.getLoginTimeStart()), SysLoginLog::getLoginTime, queryDto.getLoginTimeStart())
                 .le(ObjectUtil.isNotEmpty(queryDto.getLoginTimeEnd()), SysLoginLog::getLoginTime, queryDto.getLoginTimeEnd())
                 .orderByDesc(SysLoginLog::getLoginTime);
-
-        List<SysLoginLog> loginLogs = sysLoginLogMapper.selectList(qw);
-        return convertToVo(loginLogs);
+        Page<SysLoginLog> logPage = sysLoginLogMapper.selectPage(page, queryWrapper);
+        return new PageVo<>(convertToVo(logPage.getRecords()), logPage.getTotal());
     }
 
     /**

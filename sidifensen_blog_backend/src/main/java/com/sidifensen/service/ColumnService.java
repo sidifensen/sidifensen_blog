@@ -52,13 +52,13 @@ public interface ColumnService extends IService<Column> {
     void removeArticleFromColumn(Integer columnId, Integer articleId);
 
     // 管理员获取专栏列表
-    List<UserColumnManageVo> adminGetColumnList(ColumnFilterDto columnFilterDto);
+    PageVo<List<UserColumnManageVo>> adminGetColumnList(ColumnFilterDto columnFilterDto);
 
     // 管理员根据用户ID获取专栏列表
-    List<UserColumnManageVo> adminGetColumnsByUserId(Integer userId);
+    PageVo<List<UserColumnManageVo>> adminGetColumnsByUserId(Integer userId, Integer pageNum, Integer pageSize);
     
     // 管理员搜索专栏
-    List<UserColumnManageVo> adminSearchColumn(ColumnSearchDto columnSearchDto);
+    PageVo<List<UserColumnManageVo>> adminSearchColumn(ColumnSearchDto columnSearchDto);
 
     // 管理员审核专栏
     void adminExamineColumn(Integer columnId, Integer examineStatus);

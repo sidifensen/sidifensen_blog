@@ -394,5 +394,11 @@ create table sys_operationlog (
     update_time     datetime      not null comment '更新时间',
     is_deleted      tinyint       not null default 0 comment '是否删除 0-正常 1-删除',
     -- 按操作人员查询操作日志
-    index idx_operator_time (operator_id, create_time desc)
+    index idx_operator_time (operator_id, create_time desc),
+    -- 按角色和时间筛选操作日志
+    index idx_role_time (operator_role, create_time desc),
+    -- 按状态和时间筛选操作日志
+    index idx_status_time (status, create_time desc),
+    -- 按时间倒序分页操作日志
+    index idx_create_time (create_time desc)
 );

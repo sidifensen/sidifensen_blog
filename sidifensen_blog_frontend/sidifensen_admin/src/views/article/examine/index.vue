@@ -392,17 +392,8 @@ const getUsers = async () => {
 
 // 获取文章列表
 const getArticles = async () => {
-  loading.value = true;
-  try {
-    const res = await adminGetArticleList();
-    articleList.value = res.data.data.sort((a, b) => new Date(b.updateTime) - new Date(a.updateTime)); // 按照更新时间倒序展示
-    total.value = articleList.value.length;
-    updatePaginatedArticleList();
-  } catch (error) {
-    ElMessage.error("获取文章列表失败");
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchArticles();
 };
 
 // 移动端检测
@@ -426,65 +417,82 @@ onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
 });
 
-// 更新分页数据
-const updatePaginatedArticleList = () => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  paginatedArticleList.value = articleList.value.slice(startIndex, endIndex);
-};
-
-// 处理分页大小变化
-const handleSizeChange = (size) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  updatePaginatedArticleList();
-};
-
-// 处理当前页码变化
-const handleCurrentChange = (current) => {
-  currentPage.value = current;
-  updatePaginatedArticleList();
-};
-
 // 搜索条件
 const searchUserId = ref("");
 const searchExamineStatus = ref("");
 const searchCreateTimeStart = ref(null);
 const searchCreateTimeEnd = ref(null);
 
-// 处理搜索
-const handleSearch = async () => {
+const hasSearchConditions = () => !!(searchUserId.value || searchExamineStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value);
+
+const buildSearchPayload = () => ({
+  pageNum: currentPage.value,
+  pageSize: pageSize.value,
+  userId: searchUserId.value || undefined,
+  examineStatus: searchExamineStatus.value || undefined,
+  createTimeStart: searchCreateTimeStart.value || undefined,
+  createTimeEnd: searchCreateTimeEnd.value || undefined,
+});
+
+const applyPageData = (pageData) => {
+  articleList.value = pageData?.data || [];
+  paginatedArticleList.value = articleList.value;
+  total.value = Number(pageData?.total || 0);
+  selectedArticles.value = [];
+};
+
+const fetchArticles = async () => {
   loading.value = true;
   try {
-    const res = await adminSearchArticle({
-      userId: searchUserId.value,
-      examineStatus: searchExamineStatus.value,
-      createTimeStart: searchCreateTimeStart.value,
-      createTimeEnd: searchCreateTimeEnd.value,
-    });
-    articleList.value = res.data.data;
-    total.value = articleList.value.length;
-    currentPage.value = 1;
-    updatePaginatedArticleList();
+    let pageData = null;
+    if (hasSearchConditions()) {
+      const res = await adminSearchArticle(buildSearchPayload());
+      pageData = res.data.data;
+    } else {
+      const res = await adminGetArticleList({
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    }
+    applyPageData(pageData);
   } catch (error) {
-    ElMessage.error("搜索文章失败");
+    ElMessage.error(hasSearchConditions() ? "搜索文章失败" : "获取文章列表失败");
   } finally {
     loading.value = false;
   }
 };
 
-// 智能刷新列表（根据是否有搜索条件决定调用搜索还是获取全部）
-const refreshArticleList = async () => {
-  // 检查是否有任何搜索条件
-  const hasSearchConditions = searchUserId.value || searchExamineStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value;
+// 更新分页数据
+const updatePaginatedArticleList = () => {
+  paginatedArticleList.value = articleList.value;
+};
 
-  if (hasSearchConditions) {
-    // 有搜索条件时重新执行搜索
-    await handleSearch();
-  } else {
-    // 没有搜索条件时获取全部文章
-    await getArticles();
+// 处理分页大小变化
+const handleSizeChange = async (size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  await fetchArticles();
+};
+
+// 处理当前页码变化
+const handleCurrentChange = async (current) => {
+  currentPage.value = current;
+  await fetchArticles();
+};
+
+// 处理搜索
+const handleSearch = async () => {
+  currentPage.value = 1;
+  await fetchArticles();
+};
+
+// 智能刷新列表（根据是否有搜索条件决定调用搜索还是获取全部）
+const refreshArticleList = async (deletedCount = 0) => {
+  if (deletedCount > 0 && currentPage.value > 1 && articleList.value.length <= deletedCount) {
+    currentPage.value -= 1;
   }
+  await fetchArticles();
 };
 
 // 选中的文章

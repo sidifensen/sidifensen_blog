@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.AlbumDto;
 import com.sidifensen.domain.entity.Album;
 import com.sidifensen.domain.vo.AlbumVo;
+import com.sidifensen.domain.vo.PageVo;
 
 import java.util.List;
 
@@ -44,7 +45,7 @@ public interface AlbumService extends IService<Album> {
     /*管理端*/
 
     // 查询所有相册
-    List<AlbumVo> adminList();
+    PageVo<List<AlbumVo>> adminList(Integer pageNum, Integer pageSize);
 
     // 更新相册信息
     void adminUpdateAlbum(AlbumDto albumDto);
@@ -53,7 +54,7 @@ public interface AlbumService extends IService<Album> {
     void adminDeleteAlbum(Integer albumId);
 
     // 搜索相册
-    List<AlbumVo> searchAlbum(AlbumDto albumDto);
+    PageVo<List<AlbumVo>> searchAlbum(AlbumDto albumDto);
 
     // 获取相册详情
     AlbumVo adminGetAlbum(Integer albumId);

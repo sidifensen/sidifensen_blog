@@ -4,10 +4,11 @@ import request from "@/utils/Request";
  * 管理员获取所有友链列表
  * @returns {Promise} 友链列表
  */
-export function adminGetLinkList() {
+export function adminGetLinkList(params) {
   return request({
     url: "/link/admin/list",
     method: "get",
+    params,
   });
 }
 

@@ -361,6 +361,38 @@ INSERT INTO `sys_menu` VALUES (23, 2, '访客日志', 6, '/system/visitorLog', '
 INSERT INTO `sys_menu` VALUES (24, 2, '操作日志', 7, '/system/operationLog', '/system/operationLog', 'Timer', 0, '2026-03-09 00:00:00', '2026-03-09 00:00:00', 0);
 
 -- ----------------------------
+-- Table structure for sys_operationlog
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_operationlog`;
+CREATE TABLE `sys_operationlog`  (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `module` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '功能模块',
+  `operation` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '操作类型',
+  `description` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '操作描述',
+  `method` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '请求方法 (类名：方法名)',
+  `request_method` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '请求方式 (GET/POST/PUT/DELETE)',
+  `request_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '请求 url',
+  `request_param` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '请求参数',
+  `response_result` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '返回结果',
+  `operator_id` int NOT NULL COMMENT '操作人员 id',
+  `operator_role` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '操作人员角色',
+  `operator_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '操作人员名字',
+  `ip` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '操作 ip',
+  `address` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '操作地址',
+  `time` bigint NULL DEFAULT 0 COMMENT '消耗时间 (ms)',
+  `status` tinyint NOT NULL DEFAULT 0 COMMENT '操作状态 0-成功 1-失败 2-异常',
+  `exception` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '异常消息',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
+  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '是否删除 0-正常 1-删除',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_operator_time`(`operator_id` ASC, `create_time` DESC) USING BTREE,
+  INDEX `idx_role_time`(`operator_role` ASC, `create_time` DESC) USING BTREE,
+  INDEX `idx_status_time`(`status` ASC, `create_time` DESC) USING BTREE,
+  INDEX `idx_create_time`(`create_time` DESC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
 -- Table structure for sys_permission
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_permission`;

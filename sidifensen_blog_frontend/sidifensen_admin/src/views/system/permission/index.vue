@@ -169,7 +169,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import { Search, Plus, Edit, Delete, Avatar, Download } from "@element-plus/icons-vue";
-import { getPermissionList, addPermission, updatePermission, deletePermission, queryPermission } from "@/api/permission";
+import { getPermissionList, getPermissionPage, addPermission, updatePermission, deletePermission, queryPermissionPage } from "@/api/permission";
 import { getRoleList } from "@/api/role";
 import { addBatchRolePermission, addRolePermission, getRolesByPermission } from "@/api/role-permission";
 import { getAllMenuList } from "@/api/menu";
@@ -178,9 +178,10 @@ import Pagination from "@/components/Pagination.vue";
 import FileSaver from "file-saver";
 import * as XLSX from "xlsx";
 
-const exportPermission = () => {
-  // 使用完整的权限列表数据
-  const data = permissionList.value.map((item) => {
+const exportPermission = async () => {
+  const res = await getPermissionList();
+  const fullPermissionList = res.data.data || [];
+  const data = fullPermissionList.map((item) => {
     return {
       权限id: item.id,
       权限描述: item.description,
@@ -238,20 +239,8 @@ const rules = {
 
 // 获取权限列表
 const getPermissions = async () => {
-  loading.value = true;
-  try {
-    const res = await getPermissionList();
-    permissionList.value = res.data.data;
-    total.value = permissionList.value.length;
-    // 对角色列表进行排序
-    permissionList.value.sort((a, b) => a.id - b.id);
-    // 更新分页数据
-    updatePaginatedPermissionList();
-  } catch (error) {
-    ElMessage.error("获取权限列表失败");
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchPermissions();
 };
 
 // 初始化
@@ -266,25 +255,6 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
 });
-
-// 更新分页数据
-const updatePaginatedPermissionList = () => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  paginatedPermissionList.value = permissionList.value.slice(startIndex, endIndex);
-};
-
-// 处理分页大小变化
-const handleSizeChange = (size) => {
-  pageSize.value = size;
-  updatePaginatedPermissionList();
-};
-
-// 处理当前页码变化
-const handleCurrentChange = (current) => {
-  currentPage.value = current;
-  updatePaginatedPermissionList();
-};
 
 // 菜单列表
 const menuList = ref([]);
@@ -307,20 +277,66 @@ const searchPermission = ref("");
 // 搜索菜单id
 const searchMenuId = ref("");
 
-// 处理搜索
-const handleSearch = async () => {
+const hasSearchConditions = () => !!(searchDescription.value || searchPermission.value || searchMenuId.value);
+
+const buildSearchPayload = () => ({
+  pageNum: currentPage.value,
+  pageSize: pageSize.value,
+  description: searchDescription.value || undefined,
+  permission: searchPermission.value || undefined,
+  menuId: searchMenuId.value || undefined,
+});
+
+const applyPageData = (pageData) => {
+  permissionList.value = pageData?.data || [];
+  paginatedPermissionList.value = permissionList.value;
+  total.value = Number(pageData?.total || 0);
+};
+
+const fetchPermissions = async () => {
   loading.value = true;
   try {
-    const res = await queryPermission({ description: searchDescription.value, permission: searchPermission.value, menuId: searchMenuId.value });
-    permissionList.value = res.data.data;
-    total.value = permissionList.value.length;
-    // 更新分页数据
-    updatePaginatedPermissionList();
+    let pageData = null;
+    if (hasSearchConditions()) {
+      const res = await queryPermissionPage(buildSearchPayload());
+      pageData = res.data.data;
+    } else {
+      const res = await getPermissionPage({
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    }
+    applyPageData(pageData);
   } catch (error) {
-    ElMessage.error("搜索权限失败");
+    ElMessage.error(hasSearchConditions() ? "搜索权限失败" : "获取权限列表失败");
   } finally {
     loading.value = false;
   }
+};
+
+// 更新分页数据
+const updatePaginatedPermissionList = () => {
+  paginatedPermissionList.value = permissionList.value;
+};
+
+// 处理分页大小变化
+const handleSizeChange = async (size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  await fetchPermissions();
+};
+
+// 处理当前页码变化
+const handleCurrentChange = async (current) => {
+  currentPage.value = current;
+  await fetchPermissions();
+};
+
+// 处理搜索
+const handleSearch = async () => {
+  currentPage.value = 1;
+  await fetchPermissions();
 };
 
 // 监听搜索输入变化

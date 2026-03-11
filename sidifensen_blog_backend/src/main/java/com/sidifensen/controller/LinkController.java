@@ -80,8 +80,10 @@ public class LinkController {
     @OperationLog(module = "友链管理", type = OperationTypeEnum.SELECT, description = "管理员获取友链列表")
     @PreAuthorize("hasAuthority('link:list')")
     @GetMapping("/admin/list")
-    public Result<List<AdminLinkVo>> adminGetLinkList() {
-        List<AdminLinkVo> linkList = linkService.adminGetLinkList();
+    public Result<PageVo<List<AdminLinkVo>>> adminGetLinkList(
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<AdminLinkVo>> linkList = linkService.adminGetLinkList(pageNum, pageSize);
         return Result.success(linkList);
     }
 
@@ -94,8 +96,8 @@ public class LinkController {
     @OperationLog(module = "友链管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索友链")
     @PreAuthorize("hasAuthority('link:search')")
     @PostMapping("/admin/search")
-    public Result<List<AdminLinkVo>> adminSearchLink(@RequestBody @Valid LinkSearchDto linkSearchDto) {
-        List<AdminLinkVo> linkList = linkService.adminSearchLink(linkSearchDto);
+    public Result<PageVo<List<AdminLinkVo>>> adminSearchLink(@RequestBody @Valid LinkSearchDto linkSearchDto) {
+        PageVo<List<AdminLinkVo>> linkList = linkService.adminSearchLink(linkSearchDto);
         return Result.success(linkList);
     }
 

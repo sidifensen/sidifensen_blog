@@ -1,13 +1,16 @@
 package com.sidifensen.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.SysRoleDto;
 import com.sidifensen.domain.entity.SysRole;
 import com.sidifensen.domain.entity.SysRoleMenu;
 import com.sidifensen.domain.entity.SysRolePermission;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.SysRoleVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysRoleMapper;
@@ -38,9 +41,17 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 
     @Override
     public List<SysRoleVo> listRole() {
-        List<SysRole> roleList = this.list();
+        List<SysRole> roleList = this.lambdaQuery().orderByAsc(SysRole::getId).list();
         List<SysRoleVo> sysRoleVos = BeanUtil.copyToList(roleList, SysRoleVo.class);
         return sysRoleVos;
+    }
+
+    @Override
+    public PageVo<List<SysRoleVo>> pageRole(Integer pageNum, Integer pageSize) {
+        Page<SysRole> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<SysRole> queryWrapper = new LambdaQueryWrapper<SysRole>().orderByAsc(SysRole::getId);
+        List<SysRole> roleList = this.page(page, queryWrapper).getRecords();
+        return new PageVo<>(BeanUtil.copyToList(roleList, SysRoleVo.class), page.getTotal());
     }
 
     @Override
@@ -69,8 +80,18 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 
     @Override
     public List<SysRoleVo> search(String name) {
-        List<SysRole> sysRoles = this.lambdaQuery().like(SysRole::getName, name).list();
+        List<SysRole> sysRoles = this.lambdaQuery().like(SysRole::getName, name).orderByAsc(SysRole::getId).list();
         List<SysRoleVo> sysRoleVos = BeanUtil.copyToList(sysRoles, SysRoleVo.class);
         return sysRoleVos;
+    }
+
+    @Override
+    public PageVo<List<SysRoleVo>> searchPage(String name, Integer pageNum, Integer pageSize) {
+        Page<SysRole> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<SysRole> queryWrapper = new LambdaQueryWrapper<SysRole>()
+                .like(SysRole::getName, name)
+                .orderByAsc(SysRole::getId);
+        List<SysRole> sysRoles = this.page(page, queryWrapper).getRecords();
+        return new PageVo<>(BeanUtil.copyToList(sysRoles, SysRoleVo.class), page.getTotal());
     }
 }

@@ -3,10 +3,11 @@ import request from "@/utils/Request";
 /**
  * 查询所有访客日志（按时间倒序）
  */
-export const getVisitorLogList = () => {
+export const getVisitorLogList = (params) => {
   return request({
     url: "/visitorLog/admin/list",
     method: "get",
+    params,
   });
 };
 

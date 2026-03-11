@@ -1,10 +1,11 @@
 import request from "@/utils/Request";
 
 // 管理端获取文章列表
-export function adminGetArticleList() {
+export function adminGetArticleList(params) {
   return request({
     url: `/article/admin/list`,
     method: "get",
+    params,
   });
 }
 
@@ -70,10 +71,11 @@ export function adminSearchArticle(data) {
 }
 
 // 管理端根据用户ID获取文章列表
-export function adminGetArticlesByUserId(userId) {
+export function adminGetArticlesByUserId(userId, params) {
   return request({
     url: `/article/admin/user/${userId}`,
     method: "get",
+    params,
   });
 }
 

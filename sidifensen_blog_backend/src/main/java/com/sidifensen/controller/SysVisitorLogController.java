@@ -3,14 +3,17 @@ package com.sidifensen.controller;
 import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.SysVisitorLogQueryDto;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.domain.result.Result;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.SysVisitorLogVo;
 import com.sidifensen.domain.vo.VisitorStatisticsVo;
 import com.sidifensen.domain.vo.VisitorTrendVo;
-import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.SysVisitorLogService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,8 +43,11 @@ public class SysVisitorLogController {
     @OperationLog(module = "访客日志管理", type = OperationTypeEnum.SELECT, description = "管理员获取访客日志列表")
     @PreAuthorize("hasAuthority('system:visitorLog:list')")
     @GetMapping("/admin/list")
-    public Result<List<SysVisitorLogVo>> getVisitorLogList() {
-        List<SysVisitorLogVo> result = sysVisitorLogService.getVisitorLogList();
+    public Result<PageVo<List<SysVisitorLogVo>>> getVisitorLogList(
+            @RequestParam(defaultValue = "1") @Min(value = 1, message = "页码不能小于 1") Integer pageNum,
+            @RequestParam(defaultValue = "10") @Min(value = 1, message = "每页大小不能小于 1")
+            @Max(value = 100, message = "每页大小不能超过 100") Integer pageSize) {
+        PageVo<List<SysVisitorLogVo>> result = sysVisitorLogService.getVisitorLogList(pageNum, pageSize);
         return Result.success(result);
     }
 
@@ -54,8 +60,8 @@ public class SysVisitorLogController {
     @OperationLog(module = "访客日志管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索访客日志")
     @PreAuthorize("hasAuthority('system:visitorLog:search')")
     @PostMapping("/admin/search")
-    public Result<List<SysVisitorLogVo>> searchVisitorLog(@RequestBody @Valid SysVisitorLogQueryDto queryDto) {
-        List<SysVisitorLogVo> result = sysVisitorLogService.searchVisitorLog(queryDto);
+    public Result<PageVo<List<SysVisitorLogVo>>> searchVisitorLog(@RequestBody @Valid SysVisitorLogQueryDto queryDto) {
+        PageVo<List<SysVisitorLogVo>> result = sysVisitorLogService.searchVisitorLog(queryDto);
         return Result.success(result);
     }
 

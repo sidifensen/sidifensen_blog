@@ -3,10 +3,11 @@ import request from "@/utils/Request";
 /**
  * 查询所有操作日志（按时间倒序）
  */
-export const getOperationLogList = () => {
+export const getOperationLogList = (params) => {
   return request({
     url: "/operationlog/admin/list",
     method: "get",
+    params,
   });
 };
 

@@ -188,8 +188,8 @@ public class ColumnController {
     @OperationLog(module = "专栏管理", type = OperationTypeEnum.SELECT, description = "管理员获取专栏列表")
     @PreAuthorize("hasAuthority('column:list')")
     @PostMapping("/admin/list")
-    public Result<List<UserColumnManageVo>> adminGetColumnList(@RequestBody ColumnFilterDto columnFilterDto) {
-        List<UserColumnManageVo> columnList = columnService.adminGetColumnList(columnFilterDto);
+    public Result<PageVo<List<UserColumnManageVo>>> adminGetColumnList(@RequestBody @Valid ColumnFilterDto columnFilterDto) {
+        PageVo<List<UserColumnManageVo>> columnList = columnService.adminGetColumnList(columnFilterDto);
         return Result.success(columnList);
     }
 
@@ -202,9 +202,11 @@ public class ColumnController {
     @OperationLog(module = "专栏管理", type = OperationTypeEnum.SELECT, description = "管理员根据用户 ID 获取专栏列表")
     @PreAuthorize("hasAuthority('column:user:list')")
     @GetMapping("/admin/user/{userId}")
-    public Result<List<UserColumnManageVo>> adminGetColumnsByUserId(
-            @PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
-        List<UserColumnManageVo> columnList = columnService.adminGetColumnsByUserId(userId);
+    public Result<PageVo<List<UserColumnManageVo>>> adminGetColumnsByUserId(
+            @PathVariable @NotNull(message = "用户ID不能为空") Integer userId,
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<UserColumnManageVo>> columnList = columnService.adminGetColumnsByUserId(userId, pageNum, pageSize);
         return Result.success(columnList);
     }
 
@@ -217,8 +219,8 @@ public class ColumnController {
     @OperationLog(module = "专栏管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索专栏")
     @PreAuthorize("hasAuthority('column:search')")
     @PostMapping("/admin/search")
-    public Result<List<UserColumnManageVo>> adminSearchColumn(@RequestBody ColumnSearchDto columnSearchDto) {
-        List<UserColumnManageVo> columnList = columnService.adminSearchColumn(columnSearchDto);
+    public Result<PageVo<List<UserColumnManageVo>>> adminSearchColumn(@RequestBody @Valid ColumnSearchDto columnSearchDto) {
+        PageVo<List<UserColumnManageVo>> columnList = columnService.adminSearchColumn(columnSearchDto);
         return Result.success(columnList);
     }
 

@@ -6,6 +6,7 @@ import com.sidifensen.domain.dto.OperationlogMessage;
 import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.enums.OperationStatusEnum;
 import com.sidifensen.domain.enums.OperationTypeEnum;
+import com.sidifensen.domain.result.Result;
 import com.sidifensen.rabbitmq.OperationlogProducer;
 import com.sidifensen.utils.IpUtils;
 import com.sidifensen.utils.SecurityUtils;
@@ -100,6 +101,8 @@ public class OperationLogAspect {
         String operation = operationLog.operation();
         if (operationLog.type() != OperationTypeEnum.OTHER) {
             operation = operationLog.type().getDescription();
+        } else if (StrUtil.isBlank(operation)) {
+            operation = operationLog.type().getDescription();
         }
 
         message.setModule(operationLog.module())
@@ -131,10 +134,18 @@ public class OperationLogAspect {
         try {
             // 执行目标方法
             result = joinPoint.proceed();
-        } catch (Exception e) {
+            if (result instanceof Result<?> resultWrapper
+                    && resultWrapper.getCode() != null
+                    && !Integer.valueOf(200).equals(resultWrapper.getCode())) {
+                status = OperationStatusEnum.FAILURE.getCode();
+                String resultMsg = StrUtil.isBlank(resultWrapper.getMsg()) ? "业务处理失败" : resultWrapper.getMsg();
+                exceptionMsg = StrUtil.sub(resultMsg, 0, 2000);
+            }
+        } catch (Throwable e) {
             // 记录异常
             status = OperationStatusEnum.ERROR.getCode();
-            exceptionMsg = StrUtil.sub(e.getMessage(), 0, 2000);
+            String errorMessage = StrUtil.isBlank(e.getMessage()) ? e.getClass().getSimpleName() : e.getMessage();
+            exceptionMsg = StrUtil.sub(errorMessage, 0, 2000);
             throw e;
         } finally {
             // 计算执行时间

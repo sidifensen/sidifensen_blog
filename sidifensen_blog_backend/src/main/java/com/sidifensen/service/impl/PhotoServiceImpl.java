@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.config.SidifensenConfig;
 import com.sidifensen.domain.constants.BlogConstants;
@@ -20,6 +21,7 @@ import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.enums.MessageTypeEnum;
 import com.sidifensen.domain.enums.UploadEnum;
 import com.sidifensen.domain.result.AuditResult;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.PhotoVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.AlbumMapper;
@@ -536,10 +538,12 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     }
 
     @Override
-    public List<PhotoVo> listPhotos() {
-        List<Photo> photos = photoMapper.selectList(null);
+    public PageVo<List<PhotoVo>> listPhotos(Integer pageNum, Integer pageSize) {
+        Page<Photo> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Photo> queryWrapper = new LambdaQueryWrapper<Photo>().orderByDesc(Photo::getId);
+        List<Photo> photos = photoMapper.selectPage(page, queryWrapper).getRecords();
         if (ObjectUtil.isEmpty(photos)) {
-            return List.of();
+            return new PageVo<>(List.of(), page.getTotal());
         }
         List<Integer> userIds = photos.stream().map(Photo::getUserId).collect(Collectors.toList());
         List<SysUser> sysUsers = sysUserMapper.selectBatchIds(userIds);
@@ -549,11 +553,12 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         List<PhotoVo> photoVos = BeanUtil.copyToList(photos, PhotoVo.class);
         // 填充用户名
         photoVos.forEach(photoVo -> photoVo.setUsername(userMap.get(photoVo.getUserId())));
-        return photoVos;
+        return new PageVo<>(photoVos, page.getTotal());
     }
 
     @Override
-    public List<PhotoVo> adminSearch(PhotoDto photoDto) {
+    public PageVo<List<PhotoVo>> adminSearch(PhotoDto photoDto) {
+        Page<Photo> page = new Page<>(photoDto.getPageNum(), photoDto.getPageSize());
         // 管理员搜索照片 (
         LambdaQueryWrapper<Photo> queryWrapper = new LambdaQueryWrapper();
         queryWrapper
@@ -563,10 +568,11 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 .ge(ObjectUtil.isNotEmpty(photoDto.getCreateTimeStart()), Photo::getCreateTime,
                         photoDto.getCreateTimeStart())
                 .le(ObjectUtil.isNotEmpty(photoDto.getCreateTimeEnd()), Photo::getCreateTime,
-                        photoDto.getCreateTimeEnd());
-        List<Photo> photos = photoMapper.selectList(queryWrapper);
+                        photoDto.getCreateTimeEnd())
+                .orderByDesc(Photo::getId);
+        List<Photo> photos = photoMapper.selectPage(page, queryWrapper).getRecords();
         if (ObjectUtil.isEmpty(photos)) {
-            return List.of();
+            return new PageVo<>(List.of(), page.getTotal());
         }
         List<Integer> userIds = photos.stream().map(Photo::getUserId).collect(Collectors.toList());
         List<SysUser> sysUsers = sysUserMapper.selectBatchIds(userIds);
@@ -576,7 +582,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         List<PhotoVo> photoVos = BeanUtil.copyToList(photos, PhotoVo.class);
         // 填充用户名
         photoVos.forEach(photoVo -> photoVo.setUsername(userMap.get(photoVo.getUserId())));
-        return photoVos;
+        return new PageVo<>(photoVos, page.getTotal());
     }
 
 }

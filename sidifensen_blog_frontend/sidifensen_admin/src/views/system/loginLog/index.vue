@@ -36,7 +36,7 @@
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table v-loading="loading" :data="paginatedLogList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
+        <el-table v-loading="loading" :data="logList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
           <el-table-column type="selection" width="30" />
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="userId" label="用户ID" width="80">
@@ -96,7 +96,7 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="log-cards">
-          <el-card v-for="log in paginatedLogList" :key="log.id" class="log-card" :class="{ 'is-selected': isLogSelected(log.id) }">
+          <el-card v-for="log in logList" :key="log.id" class="log-card" :class="{ 'is-selected': isLogSelected(log.id) }">
             <div class="log-card-content">
               <div class="log-header-section">
                 <div class="log-info">
@@ -162,7 +162,6 @@ import Pagination from "@/components/Pagination.vue";
 
 // 登录日志列表数据
 const logList = ref([]);
-const paginatedLogList = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
 const pageSize = ref(10);
@@ -201,87 +200,104 @@ const getLoginTypeClass = (loginType) => {
 };
 
 // 获取登录日志列表
-const getLoginLogs = async () => {
+const fetchLoginLogs = async () => {
   loading.value = true;
   try {
-    const res = await getLoginLogList();
-    logList.value = res.data.data;
-    total.value = logList.value.length;
-    currentPage.value = 1;
-    updatePaginatedLogList();
+    let pageData = null;
+    if (hasSearchConditions()) {
+      const res = await searchLoginLog(buildSearchPayload());
+      pageData = res.data.data;
+    } else {
+      const res = await getLoginLogList({
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    }
+    applyPageData(pageData);
   } catch (error) {
-    ElMessage.error("获取登录日志列表失败");
-    console.error("获取登录日志列表失败:", error);
+    ElMessage.error(hasSearchConditions() ? "搜索失败" : "获取登录日志列表失败");
+    console.error(hasSearchConditions() ? "搜索失败:" : "获取登录日志列表失败:", error);
   } finally {
     loading.value = false;
   }
 };
 
-// 更新分页数据
-const updatePaginatedLogList = () => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  paginatedLogList.value = logList.value.slice(startIndex, endIndex);
+// 获取登录日志列表并重置分页
+const getLoginLogs = async () => {
+  currentPage.value = 1;
+  await fetchLoginLogs();
+};
+
+// 判断是否存在搜索条件
+const hasSearchConditions = () => {
+  return !!(
+    searchForm.userId ||
+    searchForm.loginType !== "" ||
+    searchForm.status !== "" ||
+    searchForm.loginTimeStart ||
+    searchForm.loginTimeEnd
+  );
+};
+
+// 构建搜索参数
+const buildSearchPayload = () => {
+  const searchData = {
+    pageNum: currentPage.value,
+    pageSize: pageSize.value,
+  };
+
+  if (searchForm.userId) {
+    searchData.userId = Number(searchForm.userId);
+  }
+  if (searchForm.loginType !== "" && searchForm.loginType !== null && searchForm.loginType !== undefined) {
+    searchData.loginType = searchForm.loginType;
+  }
+  if (searchForm.status !== "" && searchForm.status !== null && searchForm.status !== undefined) {
+    searchData.status = searchForm.status;
+  }
+  if (searchForm.loginTimeStart) {
+    searchData.loginTimeStart = searchForm.loginTimeStart;
+  }
+  if (searchForm.loginTimeEnd) {
+    searchData.loginTimeEnd = searchForm.loginTimeEnd;
+  }
+
+  return searchData;
+};
+
+// 应用分页响应
+const applyPageData = (pageData) => {
+  logList.value = pageData?.data || [];
+  total.value = Number(pageData?.total || 0);
+  selectedLogs.value = [];
 };
 
 // 处理分页大小变化
-const handleSizeChange = (size) => {
+const handleSizeChange = async (size) => {
   pageSize.value = size;
   currentPage.value = 1;
-  updatePaginatedLogList();
+  await fetchLoginLogs();
 };
 
 // 处理当前页码变化
-const handleCurrentChange = (current) => {
+const handleCurrentChange = async (current) => {
   currentPage.value = current;
-  updatePaginatedLogList();
+  await fetchLoginLogs();
 };
 
 // 处理搜索
 const handleSearch = async () => {
-  loading.value = true;
-  try {
-    // 构建搜索参数
-    const searchData = {};
-    if (searchForm.userId) {
-      searchData.userId = parseInt(searchForm.userId);
-    }
-    if (searchForm.loginType !== "" && searchForm.loginType !== null && searchForm.loginType !== undefined) {
-      searchData.loginType = searchForm.loginType;
-    }
-    if (searchForm.status !== "" && searchForm.status !== null && searchForm.status !== undefined) {
-      searchData.status = searchForm.status;
-    }
-    if (searchForm.loginTimeStart) {
-      searchData.loginTimeStart = searchForm.loginTimeStart;
-    }
-    if (searchForm.loginTimeEnd) {
-      searchData.loginTimeEnd = searchForm.loginTimeEnd;
-    }
-
-    const res = await searchLoginLog(searchData);
-    logList.value = res.data.data;
-    total.value = logList.value.length;
-    currentPage.value = 1;
-    updatePaginatedLogList();
-  } catch (error) {
-    ElMessage.error("搜索失败");
-    console.error("搜索失败:", error);
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchLoginLogs();
 };
 
 // 智能刷新列表
-const refreshLogList = async () => {
-  // 检查是否有任何搜索条件
-  const hasSearchConditions = searchForm.userId || searchForm.loginType !== "" || searchForm.status !== "" || searchForm.loginTimeStart || searchForm.loginTimeEnd;
-
-  if (hasSearchConditions) {
-    await handleSearch();
-  } else {
-    await getLoginLogs();
+const refreshLogList = async (deletedCount = 0) => {
+  if (deletedCount > 0 && currentPage.value > 1 && logList.value.length <= deletedCount) {
+    currentPage.value -= 1;
   }
+  await fetchLoginLogs();
 };
 
 // 表格多选
@@ -317,7 +333,7 @@ const handleDelete = (id) => {
       try {
         await deleteLoginLogs([id]);
         ElMessage.success("删除成功");
-        await refreshLogList();
+        await refreshLogList(1);
       } catch (error) {
         ElMessage.error("删除失败");
         console.error("删除失败:", error);
@@ -341,7 +357,7 @@ const handleBatchDelete = () => {
         const logIds = selectedLogs.value.map((log) => log.id);
         await deleteLoginLogs(logIds);
         ElMessage.success("批量删除成功");
-        await refreshLogList();
+        await refreshLogList(logIds.length);
       } catch (error) {
         ElMessage.error("批量删除失败");
         console.error("批量删除失败:", error);

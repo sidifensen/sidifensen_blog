@@ -1,10 +1,11 @@
 import request from "@/utils/Request";
 
 // 管理端查看所有用户的相册
-export function adminList() {
+export function adminList(params) {
   return request({
     url: "/album/admin/list",
     method: "get",
+    params,
   });
 }
 

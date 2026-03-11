@@ -25,6 +25,15 @@ export function getUserList() {
   });
 }
 
+// 分页获取用户列表
+export function getUserPage(params) {
+  return request({
+    url: "/user/admin/page",
+    method: "get",
+    params,
+  });
+}
+
 // 获取用户列表（包含文章数量）
 export function getUserListWithArticleCount() {
   return request({
@@ -62,6 +71,15 @@ export function deleteUser(userId) {
 export function queryUser(data) {
   return request({
     url: "/user/admin/search",
+    method: "post",
+    data: data,
+  });
+}
+
+// 分页搜索用户
+export function queryUserPage(data) {
+  return request({
+    url: "/user/admin/page/search",
     method: "post",
     data: data,
   });

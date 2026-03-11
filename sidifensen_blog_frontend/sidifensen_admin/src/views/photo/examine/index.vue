@@ -135,17 +135,8 @@ const getUsers = async () => {
 
 // 获取图片列表
 const getPhotos = async () => {
-  loading.value = true;
-  try {
-    const res = await adminGetPhotoList();
-    photoList.value = res.data.data.sort((a, b) => b.id - a.id); //倒序展示
-    total.value = photoList.value.length;
-    updatePaginatedPhotoList();
-  } catch (error) {
-    ElMessage.error("获取图片列表失败");
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchPhotos();
 };
 
 // 移动端检测
@@ -169,25 +160,6 @@ onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
 });
 
-// 更新分页数据
-const updatePaginatedPhotoList = () => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  paginatedPhotoList.value = photoList.value.slice(startIndex, endIndex);
-};
-
-// 处理分页大小变化
-const handleSizeChange = (size) => {
-  pageSize.value = size;
-  updatePaginatedPhotoList();
-};
-
-// 处理当前页码变化
-const handleCurrentChange = (current) => {
-  currentPage.value = current;
-  updatePaginatedPhotoList();
-};
-
 // 搜索用户名称
 const searchUserId = ref("");
 // 搜索相册状态
@@ -197,25 +169,68 @@ const searchCreateTimeStart = ref(null);
 // 搜索创建时间结束
 const searchCreateTimeEnd = ref(null);
 
-// 处理搜索
-const handleSearch = async () => {
+const hasSearchConditions = () => !!(searchUserId.value || searchExamineStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value);
+
+const buildSearchPayload = () => ({
+  pageNum: currentPage.value,
+  pageSize: pageSize.value,
+  userId: searchUserId.value || undefined,
+  examineStatus: searchExamineStatus.value || undefined,
+  createTimeStart: searchCreateTimeStart.value || undefined,
+  createTimeEnd: searchCreateTimeEnd.value || undefined,
+});
+
+const applyPageData = (pageData) => {
+  photoList.value = pageData?.data || [];
+  paginatedPhotoList.value = photoList.value;
+  total.value = Number(pageData?.total || 0);
+  selectedPhotos.value = [];
+};
+
+const fetchPhotos = async () => {
   loading.value = true;
   try {
-    const res = await adminSearchPhoto({
-      userId: searchUserId.value,
-      examineStatus: searchExamineStatus.value,
-      createTimeStart: searchCreateTimeStart.value,
-      createTimeEnd: searchCreateTimeEnd.value,
-    });
-    photoList.value = res.data.data;
-    total.value = photoList.value.length;
-    // 更新分页数据
-    updatePaginatedPhotoList();
+    let pageData = null;
+    if (hasSearchConditions()) {
+      const res = await adminSearchPhoto(buildSearchPayload());
+      pageData = res.data.data;
+    } else {
+      const res = await adminGetPhotoList({
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    }
+    applyPageData(pageData);
   } catch (error) {
-    ElMessage.error("搜索图片失败");
+    ElMessage.error(hasSearchConditions() ? "搜索图片失败" : "获取图片列表失败");
   } finally {
     loading.value = false;
   }
+};
+
+// 更新分页数据
+const updatePaginatedPhotoList = () => {
+  paginatedPhotoList.value = photoList.value;
+};
+
+// 处理分页大小变化
+const handleSizeChange = async (size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  await fetchPhotos();
+};
+
+// 处理当前页码变化
+const handleCurrentChange = async (current) => {
+  currentPage.value = current;
+  await fetchPhotos();
+};
+
+// 处理搜索
+const handleSearch = async () => {
+  currentPage.value = 1;
+  await fetchPhotos();
 };
 
 // 选中的图片

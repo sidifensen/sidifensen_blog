@@ -23,6 +23,19 @@ public class BlacklistSearchDto implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 页码
+     */
+    @Min(value = 1, message = "页码不能小于1")
+    private Integer pageNum = 1;
+
+    /**
+     * 每页大小
+     */
+    @Min(value = 1, message = "每页大小不能小于1")
+    @Max(value = 100, message = "每页大小不能超过100")
+    private Integer pageSize = 10;
+
+    /**
      * 黑名单类型 0-用户 1-ip地址
      */
     @Min(value = 0, message = "黑名单类型错误")

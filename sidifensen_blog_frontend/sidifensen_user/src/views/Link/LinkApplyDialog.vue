@@ -1,92 +1,114 @@
 <template>
   <el-dialog v-model="dialogVisible" title="申请友链" :width="dialogWidth" :before-close="handleClose" class="link-apply-dialog">
-    <!-- 对话框头部说明 -->
-    <div class="dialog-header">
-      <el-icon class="header-icon"><Link /></el-icon>
-      <div class="header-content">
-        <h3 class="header-title">友链申请</h3>
-        <p class="header-description">请填写您的网站信息，我们会尽快审核您的申请</p>
+    <div class="link-apply-dialog__panel">
+      <div class="link-apply-dialog__hero">
+        <div class="link-apply-dialog__hero-mark">
+          <el-icon><Link /></el-icon>
+        </div>
+        <div class="link-apply-dialog__hero-copy">
+          <span class="link-apply-dialog__eyebrow">Directory Submission</span>
+          <h3>提交站点资料</h3>
+          <p>填写站点名称、地址和简介。通过审核后，会出现在友链目录中。</p>
+        </div>
+      </div>
+
+      <div class="link-apply-dialog__content">
+        <el-form ref="linkFormRef" :model="linkForm" :rules="linkFormRules" label-width="0" class="link-apply-form">
+          <div class="link-apply-form__grid">
+            <div class="link-apply-form__field">
+              <span class="link-apply-form__label">网站名称</span>
+              <el-form-item prop="name">
+                <el-input v-model="linkForm.name" placeholder="请输入网站名称" maxlength="20" show-word-limit clearable>
+                  <template #prefix>
+                    <el-icon><House /></el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
+            </div>
+
+            <div class="link-apply-form__field">
+              <span class="link-apply-form__label">联系邮箱</span>
+              <el-form-item prop="email">
+                <el-input v-model="linkForm.email" placeholder="请输入您的邮箱地址" clearable>
+                  <template #prefix>
+                    <el-icon><Message /></el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
+            </div>
+          </div>
+
+          <div class="link-apply-form__field">
+            <span class="link-apply-form__label">网站地址</span>
+            <el-form-item prop="url">
+              <el-input v-model="linkForm.url" placeholder="请输入完整的网站地址，如 https://example.com" maxlength="100" show-word-limit clearable>
+                <template #prefix>
+                  <el-icon><Link /></el-icon>
+                </template>
+              </el-input>
+            </el-form-item>
+          </div>
+
+          <div class="link-apply-form__field">
+            <span class="link-apply-form__label">网站封面</span>
+            <el-form-item prop="coverUrl">
+              <el-input v-model="linkForm.coverUrl" placeholder="请输入网站封面图片地址，可选" clearable>
+                <template #prefix>
+                  <el-icon><Picture /></el-icon>
+                </template>
+              </el-input>
+            </el-form-item>
+
+            <div v-if="linkForm.coverUrl" class="cover-preview">
+              <el-image :src="linkForm.coverUrl" fit="cover" class="preview-image" :preview-src-list="imagePreviewList" :preview-teleported="true">
+                <template #placeholder>
+                  <div class="image-placeholder">
+                    <el-icon><Loading /></el-icon>
+                    <span>加载中</span>
+                  </div>
+                </template>
+                <template #error>
+                  <div class="image-error">
+                    <el-icon><Picture /></el-icon>
+                    <span>图片加载失败</span>
+                  </div>
+                </template>
+              </el-image>
+            </div>
+          </div>
+
+          <div class="link-apply-form__field">
+            <span class="link-apply-form__label">网站描述</span>
+            <el-form-item prop="description">
+              <el-input v-model="linkForm.description" type="textarea" :rows="4" placeholder="请简要描述网站内容、方向或更新特点" maxlength="50" show-word-limit resize="none" />
+            </el-form-item>
+          </div>
+        </el-form>
+
+        <div class="apply-notice">
+          <div class="apply-notice__head">
+            <el-icon><InfoFilled /></el-icon>
+            <span>申请须知</span>
+          </div>
+          <ul class="apply-notice__list">
+            <li>网站需可正常访问，内容长期维护。</li>
+            <li>请确保站点内容健康、合规，且具备明确主题。</li>
+            <li>提交后会进入审核流程，结果通过邮箱通知。</li>
+          </ul>
+        </div>
       </div>
     </div>
 
-    <!-- 申请表单 -->
-    <el-form ref="linkFormRef" :model="linkForm" :rules="linkFormRules" label-width="80px" class="link-apply-form">
-      <el-form-item label="网站名称" prop="name">
-        <el-input v-model="linkForm.name" placeholder="请输入网站名称" maxlength="20" show-word-limit clearable>
-          <template #prefix>
-            <el-icon><House /></el-icon>
-          </template>
-        </el-input>
-      </el-form-item>
-
-      <el-form-item label="网站地址" prop="url">
-        <el-input v-model="linkForm.url" placeholder="请输入完整的网站地址 (如: https://example.com)" maxlength="100" show-word-limit clearable>
-          <template #prefix>
-            <el-icon><Link /></el-icon>
-          </template>
-        </el-input>
-      </el-form-item>
-
-      <el-form-item label="网站封面" prop="coverUrl">
-        <el-input v-model="linkForm.coverUrl" placeholder="请输入网站封面图片地址 (可选)" clearable>
-          <template #prefix>
-            <el-icon><Picture /></el-icon>
-          </template>
-        </el-input>
-        <!-- 封面预览 -->
-        <div v-if="linkForm.coverUrl" class="cover-preview">
-          <el-image :src="linkForm.coverUrl" fit="cover" class="preview-image" :preview-src-list="imagePreviewList" :preview-teleported="true">
-            <template #placeholder>
-              <div class="image-placeholder">
-                <el-icon><Loading /></el-icon>
-                <span>加载中...</span>
-              </div>
-            </template>
-            <template #error>
-              <div class="image-error">
-                <el-icon><Picture /></el-icon>
-                <span>图片加载失败</span>
-              </div>
-            </template>
-          </el-image>
-        </div>
-      </el-form-item>
-
-      <el-form-item label="网站描述" prop="description">
-        <el-input v-model="linkForm.description" type="textarea" :rows="3" placeholder="请简单描述您的网站内容和特色" maxlength="50" show-word-limit resize="none" />
-      </el-form-item>
-
-      <el-form-item label="联系邮箱" prop="email">
-        <el-input v-model="linkForm.email" placeholder="请输入您的邮箱地址" clearable>
-          <template #prefix>
-            <el-icon><Message /></el-icon>
-          </template>
-        </el-input>
-      </el-form-item>
-    </el-form>
-
-    <!-- 申请须知 -->
-    <div class="apply-notice">
-      <h4 class="notice-title">
-        <el-icon><InfoFilled /></el-icon>
-        申请须知
-      </h4>
-      <ul class="notice-list">
-        <li>请确保网站内容健康，符合相关法律法规</li>
-        <li>网站应正常运行，内容更新频率较高</li>
-        <li>管理员收到消息后会尽快完成审核</li>
-        <li>审核结果将通过邮箱通知您</li>
-      </ul>
-    </div>
-
-    <!-- 对话框底部按钮 -->
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleClose" size="large">取消</el-button>
-        <el-button type="primary" @click="handleSubmit" :loading="submitLoading" size="large">
-          <el-icon v-if="!submitLoading"><Check /></el-icon>
-          {{ submitLoading ? "提交中..." : "提交申请" }}
-        </el-button>
+        <span class="dialog-footer__hint">提交即表示你同意站点信息用于友链展示。</span>
+        <div class="dialog-footer__actions">
+          <el-button @click="handleClose">取消</el-button>
+          <el-button type="primary" @click="handleSubmit" :loading="submitLoading">
+            <el-icon v-if="!submitLoading"><Check /></el-icon>
+            {{ submitLoading ? "提交中..." : "提交申请" }}
+          </el-button>
+        </div>
       </div>
     </template>
   </el-dialog>
@@ -138,7 +160,7 @@ const imagePreviewList = computed(() => {
 
 // 计算属性 - 对话框宽度
 const dialogWidth = computed(() => {
-  return isMobile.value ? "95%" : "500px";
+  return isMobile.value ? "94%" : "680px";
 });
 
 // 表单验证规则
@@ -273,218 +295,216 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
-// 友链申请对话框样式
 .link-apply-dialog {
+  --dialog-panel: #ffffff;
+  --dialog-panel-soft: #f7f9fb;
+  --dialog-text-primary: #18212b;
+  --dialog-text-regular: #53606d;
+  --dialog-text-muted: #7f8a96;
+  --dialog-border: #dce3e9;
+  --dialog-border-soft: #ebf0f4;
+  --dialog-shadow: 0 18px 38px rgba(15, 23, 42, 0.12);
+
   :deep(.el-dialog) {
-    border-radius: 20px;
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.15);
-    margin: 0 auto;
-    max-height: 90vh;
-    overflow-y: auto;
-    background: var(--el-bg-color);
+    overflow: hidden;
+    border-radius: 24px;
+    background: var(--dialog-panel);
+    box-shadow: var(--dialog-shadow);
   }
 
   :deep(.el-dialog__header) {
-    padding: 0;
-    border-bottom: none;
-    background: var(--el-fill-color-lighter);
-    border-radius: 20px 20px 0 0;
+    margin-right: 0;
+    padding: 24px 28px 0;
+
+    .el-dialog__title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--dialog-text-primary);
+    }
   }
 
   :deep(.el-dialog__body) {
-    padding: 28px;
-    max-height: calc(90vh - 140px);
-    overflow-y: auto;
+    padding: 18px 28px 12px;
   }
 
   :deep(.el-dialog__footer) {
     padding: 0 28px 28px;
-    border-top: 1px solid var(--el-border-color-lighter);
-    background-color: var(--el-fill-color-lighter);
-    border-radius: 0 0 20px 20px;
-    margin: 0 -28px -28px;
-    padding: 20px 28px;
   }
 
-  // 对话框头部
-  .dialog-header {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 28px 28px 24px;
+  .link-apply-dialog__panel {
+    overflow: hidden;
+    border: 1px solid var(--dialog-border-soft);
+    border-radius: 22px;
+    background: var(--dialog-panel-soft);
 
-    .header-icon {
-      width: 56px;
-      height: 56px;
+    .link-apply-dialog__hero {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      color: white;
-      background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-light-3) 100%);
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(64, 158, 255, 0.35), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
-      flex-shrink: 0;
+      gap: 18px;
+      padding: 22px;
+      border-bottom: 1px solid var(--dialog-border-soft);
+      background: var(--dialog-panel);
+
+      .link-apply-dialog__hero-mark {
+        display: inline-flex;
+        width: 52px;
+        height: 52px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 18px;
+        background: var(--dialog-panel-soft);
+        color: var(--dialog-text-primary);
+        font-size: 24px;
+        flex-shrink: 0;
+      }
+
+      .link-apply-dialog__hero-copy {
+        .link-apply-dialog__eyebrow {
+          display: block;
+          margin-bottom: 8px;
+          font-size: 12px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--dialog-text-muted);
+        }
+
+        h3 {
+          margin: 0;
+          font-size: 24px;
+          font-weight: 600;
+          color: var(--dialog-text-primary);
+        }
+
+        p {
+          margin: 10px 0 0;
+          font-size: 14px;
+          line-height: 1.8;
+          color: var(--dialog-text-regular);
+        }
+      }
     }
 
-    .header-content {
-      flex: 1;
-      min-width: 0;
-
-      .header-title {
-        font-size: 22px;
-        font-weight: 700;
-        color: var(--el-text-color-primary);
-        margin: 0 0 6px 0;
-        background: linear-gradient(135deg, var(--el-text-color-primary) 0%, var(--el-color-primary) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-
-      .header-description {
-        font-size: 14px;
-        color: var(--el-text-color-regular);
-        margin: 0;
-        line-height: 1.6;
-        opacity: 0.9;
-      }
+    .link-apply-dialog__content {
+      padding: 22px;
     }
   }
 
-  // 申请表单
   .link-apply-form {
-    margin-top: 24px;
-
-    :deep(.el-form-item) {
-      margin-bottom: 22px;
-
-      .el-form-item__label {
-        font-weight: 600;
-        color: var(--el-text-color-primary);
-        font-size: 14px;
-        margin-bottom: 8px;
-      }
+    .link-apply-form__grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
     }
 
-    :deep(.el-input) {
-      .el-input__wrapper {
+    .link-apply-form__field {
+      margin-bottom: 18px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .link-apply-form__label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--dialog-text-primary);
+      }
+
+      :deep(.el-form-item) {
+        margin-bottom: 0;
+      }
+
+      :deep(.el-input__wrapper) {
         border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        border: 1px solid var(--el-border-color-lighter);
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        padding: 12px 14px;
+        background: var(--dialog-panel);
+        border: 1px solid var(--dialog-border);
+        box-shadow: none;
 
         &:hover {
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-          border-color: var(--el-color-primary-light-5);
+          border-color: var(--dialog-text-muted);
         }
 
         &.is-focus {
-          box-shadow: 0 4px 20px rgba(64, 158, 255, 0.25);
           border-color: var(--el-color-primary);
+          box-shadow: 0 0 0 3px var(--el-color-primary-light-9);
         }
       }
-    }
 
-    :deep(.el-textarea) {
-      .el-textarea__inner {
+      :deep(.el-textarea__inner) {
         border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        border: 1px solid var(--el-border-color-lighter);
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        padding: 12px 14px;
+        background: var(--dialog-panel);
+        border: 1px solid var(--dialog-border);
+        box-shadow: none;
 
         &:hover {
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-          border-color: var(--el-color-primary-light-5);
+          border-color: var(--dialog-text-muted);
         }
 
         &:focus {
-          box-shadow: 0 4px 20px rgba(64, 158, 255, 0.25);
           border-color: var(--el-color-primary);
-        }
-      }
-    }
-
-    // 封面预览
-    .cover-preview {
-      margin-top: 14px;
-      display: flex;
-
-      .preview-image {
-        width: 140px;
-        height: 90px;
-        border-radius: 12px;
-        border: 2px solid var(--el-border-color-lighter);
-        overflow: hidden;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-
-        &:hover {
-          border-color: var(--el-color-primary);
-          transform: scale(1.03);
-          box-shadow: 0 8px 24px rgba(64, 158, 255, 0.2);
+          box-shadow: 0 0 0 3px var(--el-color-primary-light-9);
         }
       }
 
-      .image-placeholder,
-      .image-error {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        color: var(--el-text-color-placeholder);
-        font-size: 12px;
-        background: linear-gradient(135deg, var(--el-color-primary-light-9) 0%, var(--el-color-info-light-9) 100%);
-        gap: 8px;
+      .cover-preview {
+        margin-top: 12px;
 
-        .el-icon {
-          font-size: 28px;
+        .preview-image {
+          width: 148px;
+          height: 92px;
+          overflow: hidden;
+          border: 1px solid var(--dialog-border);
+          border-radius: 14px;
+          background: var(--dialog-panel);
         }
-      }
 
-      .image-placeholder {
-        .el-icon {
-          animation: spin 1s linear infinite;
+        .image-placeholder,
+        .image-error {
+          display: flex;
+          width: 100%;
+          height: 100%;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          color: var(--dialog-text-muted);
+          font-size: 12px;
+          background: var(--dialog-panel-soft);
+
+          .el-icon {
+            font-size: 22px;
+          }
         }
       }
     }
   }
 
-  // 申请须知
   .apply-notice {
-    margin-top: 28px;
+    margin-top: 10px;
     padding: 18px;
-    background: linear-gradient(135deg, rgba(64, 158, 255, 0.05) 0%, rgba(103, 194, 255, 0.03) 100%);
-    border: 1px solid rgba(64, 158, 255, 0.15);
-    border-radius: 14px;
+    border: 1px solid var(--dialog-border);
+    border-radius: 18px;
+    background: var(--dialog-panel);
 
-    .notice-title {
+    .apply-notice__head {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 15px;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 14px;
       font-weight: 600;
-      color: var(--el-color-primary);
-      margin: 0 0 14px 0;
-
-      .el-icon {
-        font-size: 18px;
-      }
+      color: var(--dialog-text-primary);
     }
 
-    .notice-list {
+    .apply-notice__list {
       margin: 0;
-      padding-left: 20px;
-      color: var(--el-text-color-regular);
+      padding-left: 18px;
+      color: var(--dialog-text-regular);
 
       li {
+        margin-bottom: 6px;
         font-size: 13px;
         line-height: 1.8;
-        margin-bottom: 6px;
 
         &:last-child {
           margin-bottom: 0;
@@ -493,153 +513,90 @@ onUnmounted(() => {
     }
   }
 
-  // 对话框底部
   .dialog-footer {
     display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    padding-top: 8px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
 
-    .el-button {
-      border-radius: 10px;
-      padding: 12px 28px;
-      font-weight: 600;
-      font-size: 14px;
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    .dialog-footer__hint {
+      font-size: 12px;
+      line-height: 1.7;
+      color: var(--dialog-text-muted);
+    }
 
-      &.el-button--default {
-        border-color: var(--el-border-color);
-        background: var(--el-bg-color);
+    .dialog-footer__actions {
+      display: flex;
+      gap: 10px;
 
-        &:hover {
-          color: var(--el-color-primary);
-          border-color: var(--el-color-primary-light-5);
-          background: var(--el-color-primary-light-9);
-        }
+      :deep(.el-button + .el-button) {
+        margin-left: 0;
       }
 
-      &.el-button--primary {
-        background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-dark-2) 100%);
-        border: none;
-        box-shadow: 0 6px 20px rgba(64, 158, 255, 0.35), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
-
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 32px rgba(64, 158, 255, 0.45), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        &:active {
-          transform: translateY(0);
-        }
-
-        .el-icon {
-          margin-right: 6px;
-        }
+      .el-button {
+        min-width: 112px;
+        border-radius: 12px;
       }
     }
   }
 }
 
-// 移动端响应式样式
+html.dark {
+  .link-apply-dialog {
+    --dialog-panel: #16202a;
+    --dialog-panel-soft: #1a2631;
+    --dialog-text-primary: #e8edf2;
+    --dialog-text-regular: #bcc6cf;
+    --dialog-text-muted: #8d98a5;
+    --dialog-border: #2a3544;
+    --dialog-border-soft: #212c38;
+    --dialog-shadow: 0 18px 42px rgba(0, 0, 0, 0.3);
+  }
+}
+
 @media (max-width: 768px) {
   .link-apply-dialog {
-    :deep(.el-dialog) {
-      width: 92% !important;
-      margin: 4vh auto;
-      max-height: 92vh;
-      border-radius: 16px;
+    :deep(.el-dialog__header) {
+      padding: 20px 20px 0;
     }
 
     :deep(.el-dialog__body) {
-      padding: 20px;
-      max-height: calc(92vh - 120px);
+      padding: 16px 20px 10px;
     }
 
     :deep(.el-dialog__footer) {
-      padding: 16px 20px;
-      margin: 0 -20px -20px;
+      padding: 0 20px 20px;
     }
 
-    // 对话框头部移动端优化
-    .dialog-header {
-      padding: 20px 20px 18px;
-      gap: 14px;
-
-      .header-icon {
-        width: 48px;
-        height: 48px;
-        font-size: 24px;
-        border-radius: 14px;
+    .link-apply-dialog__panel {
+      .link-apply-dialog__hero {
+        padding: 18px;
       }
 
-      .header-content {
-        .header-title {
-          font-size: 18px;
-        }
-
-        .header-description {
-          font-size: 13px;
-        }
+      .link-apply-dialog__content {
+        padding: 18px;
       }
     }
 
-    // 表单移动端优化
     .link-apply-form {
-      margin-top: 20px;
-
-      :deep(.el-form-item) {
-        margin-bottom: 18px;
-      }
-
-      // 封面预览移动端优化
-      .cover-preview {
-        .preview-image {
-          width: 120px;
-          height: 80px;
-        }
+      .link-apply-form__grid {
+        grid-template-columns: 1fr;
       }
     }
 
-    // 申请须知移动端优化
-    .apply-notice {
-      margin-top: 20px;
-      padding: 14px;
-
-      .notice-title {
-        font-size: 14px;
-        margin-bottom: 10px;
-      }
-
-      .notice-list {
-        li {
-          font-size: 12px;
-          line-height: 1.7;
-        }
-      }
-    }
-
-    // 底部按钮移动端优化
     .dialog-footer {
-      padding-top: 4px;
-      gap: 10px;
+      align-items: stretch;
       flex-direction: column;
 
-      .el-button {
+      .dialog-footer__actions {
         width: 100%;
-        padding: 13px 20px;
-        font-size: 15px;
+        flex-direction: column;
+
+        .el-button {
+          width: 100%;
+        }
       }
     }
-  }
-}
-
-// 旋转动画
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
   }
 }
 </style>

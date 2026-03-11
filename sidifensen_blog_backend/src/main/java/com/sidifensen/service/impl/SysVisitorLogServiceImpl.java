@@ -3,11 +3,13 @@ package com.sidifensen.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.SysVisitorLogQueryDto;
 import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.entity.SysVisitorLog;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.SysVisitorLogVo;
 import com.sidifensen.domain.vo.VisitorStatisticsVo;
 import com.sidifensen.domain.vo.VisitorTrendVo;
@@ -82,56 +84,27 @@ public class SysVisitorLogServiceImpl extends ServiceImpl<SysVisitorLogMapper, S
     }
 
     @Override
-    public List<SysVisitorLogVo> getVisitorLogList() {
-        // 查询所有访客日志，按访问时间倒序
-        LambdaQueryWrapper<SysVisitorLog> qw = new LambdaQueryWrapper<SysVisitorLog>()
+    public PageVo<List<SysVisitorLogVo>> getVisitorLogList(Integer pageNum, Integer pageSize) {
+        Page<SysVisitorLog> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<SysVisitorLog> queryWrapper = new LambdaQueryWrapper<SysVisitorLog>()
                 .orderByDesc(SysVisitorLog::getVisitTime);
-
-        List<SysVisitorLog> logs = sysVisitorLogMapper.selectList(qw);
-
-        // 转换为VO并填充用户名
-        return logs.stream().map(log -> {
-            SysVisitorLogVo vo = BeanUtil.copyProperties(log, SysVisitorLogVo.class);
-
-            // 如果有用户ID，查询用户名
-            if (log.getUserId() != null) {
-                SysUser user = sysUserMapper.selectById(log.getUserId());
-                if (user != null) {
-                    vo.setUsername(user.getUsername());
-                }
-            }
-
-            return vo;
-        }).collect(Collectors.toList());
+        Page<SysVisitorLog> logPage = sysVisitorLogMapper.selectPage(page, queryWrapper);
+        return new PageVo<>(convertToVo(logPage.getRecords()), logPage.getTotal());
     }
 
     @Override
-    public List<SysVisitorLogVo> searchVisitorLog(SysVisitorLogQueryDto queryDto) {
+    public PageVo<List<SysVisitorLogVo>> searchVisitorLog(SysVisitorLogQueryDto queryDto) {
+        Page<SysVisitorLog> page = new Page<>(queryDto.getPageNum(), queryDto.getPageSize());
         // 构建查询条件
-        LambdaQueryWrapper<SysVisitorLog> qw = new LambdaQueryWrapper<SysVisitorLog>()
+        LambdaQueryWrapper<SysVisitorLog> queryWrapper = new LambdaQueryWrapper<SysVisitorLog>()
                 .eq(queryDto.getUserId() != null, SysVisitorLog::getUserId, queryDto.getUserId())
                 .like(StrUtil.isNotBlank(queryDto.getIp()), SysVisitorLog::getIp, queryDto.getIp())
                 .eq(StrUtil.isNotBlank(queryDto.getDevice()), SysVisitorLog::getDevice, queryDto.getDevice())
                 .ge(queryDto.getVisitTimeStart() != null, SysVisitorLog::getVisitTime, queryDto.getVisitTimeStart())
                 .le(queryDto.getVisitTimeEnd() != null, SysVisitorLog::getVisitTime, queryDto.getVisitTimeEnd())
                 .orderByDesc(SysVisitorLog::getVisitTime);
-
-        List<SysVisitorLog> logs = sysVisitorLogMapper.selectList(qw);
-
-        // 转换为VO并填充用户名
-        return logs.stream().map(log -> {
-            SysVisitorLogVo vo = BeanUtil.copyProperties(log, SysVisitorLogVo.class);
-
-            // 如果有用户ID，查询用户名
-            if (log.getUserId() != null) {
-                SysUser user = sysUserMapper.selectById(log.getUserId());
-                if (user != null) {
-                    vo.setUsername(user.getUsername());
-                }
-            }
-
-            return vo;
-        }).collect(Collectors.toList());
+        Page<SysVisitorLog> logPage = sysVisitorLogMapper.selectPage(page, queryWrapper);
+        return new PageVo<>(convertToVo(logPage.getRecords()), logPage.getTotal());
     }
 
     @Override
@@ -257,6 +230,24 @@ public class SysVisitorLogServiceImpl extends ServiceImpl<SysVisitorLogMapper, S
                 .le(SysVisitorLog::getVisitTime, endDateTime);
 
         return sysVisitorLogMapper.selectCount(qw);
+    }
+
+    /**
+     * 转换为 VO 并补充用户名
+     */
+    private List<SysVisitorLogVo> convertToVo(List<SysVisitorLog> logs) {
+        return logs.stream().map(log -> {
+            SysVisitorLogVo vo = BeanUtil.copyProperties(log, SysVisitorLogVo.class);
+
+            if (log.getUserId() != null) {
+                SysUser user = sysUserMapper.selectById(log.getUserId());
+                if (user != null) {
+                    vo.setUsername(user.getUsername());
+                }
+            }
+
+            return vo;
+        }).collect(Collectors.toList());
     }
 
 }

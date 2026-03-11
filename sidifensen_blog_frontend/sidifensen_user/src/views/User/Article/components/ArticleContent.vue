@@ -744,35 +744,36 @@ const handleEditArticle = () => {
   }
 }
 
-// 返回顶部按钮样式
+// 返回顶部按钮样式 - 极简设计
 .back-to-top {
   position: fixed;
   z-index: 9999;
-  right: 70px;
-  bottom: 150px; // 避免与底部操作栏重叠
+  right: 24px;
+  bottom: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 65px;
-  height: 65px;
-  font-size: 24px;
-  backdrop-filter: blur(2px);
-  background-color: color-mix(in srgb, var(--el-bg-color) 50%, transparent);
-  border: 1px solid var(--el-border-color);
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  backdrop-filter: blur(8px);
+  background-color: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 8px;
   cursor: pointer;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--el-text-color-secondary);
 
   &:hover {
-    background: var(--el-color-primary);
-    color: white;
+    background-color: var(--el-color-primary);
+    color: var(--el-color-white);
+    border-color: var(--el-color-primary);
+    box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
   }
 
   .el-icon {
-    font-size: 20px;
+    font-size: 16px;
   }
 }
 
@@ -924,14 +925,14 @@ const handleEditArticle = () => {
 
   // 移动端返回顶部按钮调整
   .back-to-top {
-    right: 15px;
-    bottom: 120px; // 为移动端底部操作栏留出更多空间
-    width: 44px;
-    height: 44px;
-    font-size: 20px;
+    right: 16px;
+    bottom: 100px;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
 
     .el-icon {
-      font-size: 18px;
+      font-size: 16px;
     }
   }
 }

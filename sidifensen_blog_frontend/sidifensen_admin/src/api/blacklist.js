@@ -1,10 +1,11 @@
 import request from "@/utils/Request";
 
 // 获取黑名单列表
-export function getBlacklistList() {
+export function getBlacklistList(params) {
   return request({
     url: "/blacklist/admin/list",
     method: "get",
+    params,
   });
 }
 

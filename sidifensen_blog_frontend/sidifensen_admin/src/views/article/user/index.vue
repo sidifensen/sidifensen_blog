@@ -562,6 +562,8 @@ const handleBackToUsers = () => {
   currentUser.value = null;
   articleList.value = [];
   paginatedArticleList.value = [];
+  currentPage.value = 1;
+  total.value = 0;
   // 重置搜索条件
   searchExamineStatus.value = "";
   searchCreateTimeStart.value = null;
@@ -571,15 +573,46 @@ const handleBackToUsers = () => {
 
 // 获取用户文章列表
 const getUserArticles = async (userId) => {
+  currentPage.value = 1;
+  await fetchUserArticles(userId);
+};
+
+const hasSearchConditions = () => !!(searchExamineStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value);
+
+const buildSearchPayload = () => ({
+  pageNum: currentPage.value,
+  pageSize: pageSize.value,
+  userId: currentUser.value?.id,
+  examineStatus: searchExamineStatus.value || undefined,
+  createTimeStart: searchCreateTimeStart.value || undefined,
+  createTimeEnd: searchCreateTimeEnd.value || undefined,
+});
+
+const applyPageData = (pageData) => {
+  articleList.value = pageData?.data || [];
+  paginatedArticleList.value = articleList.value;
+  total.value = Number(pageData?.total || 0);
+  selectedArticles.value = [];
+};
+
+const fetchUserArticles = async (userId = currentUser.value?.id) => {
+  if (!userId) return;
   loading.value = true;
   try {
-    const res = await adminGetArticlesByUserId(userId);
-    articleList.value = res.data.data.sort((a, b) => b.id - a.id);
-    total.value = articleList.value.length;
-    currentPage.value = 1;
-    updatePaginatedArticleList();
+    let pageData = null;
+    if (hasSearchConditions()) {
+      const res = await adminSearchArticle(buildSearchPayload());
+      pageData = res.data.data;
+    } else {
+      const res = await adminGetArticlesByUserId(userId, {
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    }
+    applyPageData(pageData);
   } catch (error) {
-    ElMessage.error("获取用户文章列表失败");
+    ElMessage.error(hasSearchConditions() ? "搜索文章失败" : "获取用户文章列表失败");
   } finally {
     loading.value = false;
   }
@@ -587,59 +620,36 @@ const getUserArticles = async (userId) => {
 
 // 更新分页数据
 const updatePaginatedArticleList = () => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  paginatedArticleList.value = articleList.value.slice(startIndex, endIndex);
+  paginatedArticleList.value = articleList.value;
 };
 
 // 处理分页大小变化
-const handleSizeChange = (size) => {
+const handleSizeChange = async (size) => {
   pageSize.value = size;
   currentPage.value = 1;
-  updatePaginatedArticleList();
+  await fetchUserArticles();
 };
 
 // 处理当前页码变化
-const handleCurrentChange = (current) => {
+const handleCurrentChange = async (current) => {
   currentPage.value = current;
-  updatePaginatedArticleList();
+  await fetchUserArticles();
 };
 
 // 处理搜索
 const handleSearch = async () => {
   if (!currentUser.value) return;
-
-  loading.value = true;
-  try {
-    const res = await adminSearchArticle({
-      userId: currentUser.value.id,
-      examineStatus: searchExamineStatus.value,
-      createTimeStart: searchCreateTimeStart.value,
-      createTimeEnd: searchCreateTimeEnd.value,
-    });
-    articleList.value = res.data.data;
-    total.value = articleList.value.length;
-    currentPage.value = 1;
-    updatePaginatedArticleList();
-  } catch (error) {
-    ElMessage.error("搜索文章失败");
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchUserArticles();
 };
 
 // 智能刷新列表
-const refreshArticleList = async () => {
+const refreshArticleList = async (deletedCount = 0) => {
   if (!currentUser.value) return;
-
-  // 检查是否有任何搜索条件
-  const hasSearchConditions = searchExamineStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value;
-
-  if (hasSearchConditions) {
-    await handleSearch();
-  } else {
-    await getUserArticles(currentUser.value.id);
+  if (deletedCount > 0 && currentPage.value > 1 && articleList.value.length <= deletedCount) {
+    currentPage.value -= 1;
   }
+  await fetchUserArticles();
 };
 
 // 表格多选

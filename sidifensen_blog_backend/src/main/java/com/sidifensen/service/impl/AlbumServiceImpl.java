@@ -3,6 +3,7 @@ package com.sidifensen.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.AlbumDto;
@@ -13,6 +14,7 @@ import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.enums.ExamineStatusEnum;
 import com.sidifensen.domain.enums.ShowStatusEnum;
 import com.sidifensen.domain.vo.AlbumVo;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.PhotoVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.AlbumMapper;
@@ -191,8 +193,9 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
 
     // 查询所有相册
     @Override
-    public List<AlbumVo> adminList() {
-        List<Album> albums = this.list();
+    public PageVo<List<AlbumVo>> adminList(Integer pageNum, Integer pageSize) {
+        Page<Album> page = new Page<>(pageNum, pageSize);
+        List<Album> albums = this.page(page, new LambdaQueryWrapper<Album>().orderByDesc(Album::getCreateTime)).getRecords();
         List<AlbumVo> albumVos = BeanUtil.copyToList(albums, AlbumVo.class);
         // 用userId把username查询出来
         HashMap<Integer, String> userMap = new HashMap<>();
@@ -205,7 +208,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         for (AlbumVo albumVo : albumVos) {
             albumVo.setUserName(userMap.get(albumVo.getUserId()));
         }
-        return albumVos;
+        return new PageVo<>(albumVos, page.getTotal());
     }
 
     // 更新相册
@@ -245,15 +248,17 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
 
     // 搜索相册
     @Override
-    public List<AlbumVo> searchAlbum(AlbumDto albumDto) {
+    public PageVo<List<AlbumVo>> searchAlbum(AlbumDto albumDto) {
+        Page<Album> page = new Page<>(albumDto.getPageNum(), albumDto.getPageSize());
         LambdaQueryWrapper<Album> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ObjectUtil.isNotEmpty(albumDto.getUserId()), Album::getUserId, albumDto.getUserId())
                 .like(ObjectUtil.isNotEmpty(albumDto.getName()), Album::getName, albumDto.getName())
                 .eq(ObjectUtil.isNotEmpty(albumDto.getShowStatus()), Album::getShowStatus, albumDto.getShowStatus())
                 .ge(ObjectUtil.isNotEmpty(albumDto.getCreateTimeStart()), Album::getCreateTime, albumDto.getCreateTimeStart())
-                .le(ObjectUtil.isNotEmpty(albumDto.getCreateTimeEnd()), Album::getCreateTime, albumDto.getCreateTimeEnd());
+                .le(ObjectUtil.isNotEmpty(albumDto.getCreateTimeEnd()), Album::getCreateTime, albumDto.getCreateTimeEnd())
+                .orderByDesc(Album::getCreateTime);
 
-        List<Album> albums = this.list(queryWrapper);
+        List<Album> albums = this.page(page, queryWrapper).getRecords();
         List<AlbumVo> albumVos = BeanUtil.copyToList(albums, AlbumVo.class);
         // 用userId把username查询出来
         HashMap<Integer, String> userMap = new HashMap<>();
@@ -266,7 +271,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         for (AlbumVo albumVo : albumVos) {
             albumVo.setUserName(userMap.get(albumVo.getUserId()));
         }
-        return albumVos;
+        return new PageVo<>(albumVos, page.getTotal());
     }
 
     // 管理员查询相册详情

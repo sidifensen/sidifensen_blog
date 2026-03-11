@@ -124,8 +124,10 @@ public class CommentController {
     @OperationLog(module = "评论管理", type = OperationTypeEnum.GET, description = "管理员获取所有评论列表")
     @PreAuthorize("hasAuthority('comment:list')")
     @GetMapping("/admin/list")
-    public Result<List<AdminCommentVo>> adminGetCommentList() {
-        List<AdminCommentVo> commentList = commentService.adminGetCommentList();
+    public Result<PageVo<List<AdminCommentVo>>> adminGetCommentList(
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<AdminCommentVo>> commentList = commentService.adminGetCommentList(pageNum, pageSize);
         return Result.success(commentList);
     }
 
@@ -138,9 +140,11 @@ public class CommentController {
     @OperationLog(module = "评论管理", type = OperationTypeEnum.SELECT, description = "管理员根据用户ID获取评论列表")
     @PreAuthorize("hasAuthority('comment:list')")
     @GetMapping("/admin/user/{userId}")
-    public Result<List<AdminCommentVo>> adminGetCommentsByUserId(
-            @PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
-        List<AdminCommentVo> commentList = commentService.adminGetCommentsByUserId(userId);
+    public Result<PageVo<List<AdminCommentVo>>> adminGetCommentsByUserId(
+            @PathVariable @NotNull(message = "用户ID不能为空") Integer userId,
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<AdminCommentVo>> commentList = commentService.adminGetCommentsByUserId(userId, pageNum, pageSize);
         return Result.success(commentList);
     }
 
@@ -153,8 +157,8 @@ public class CommentController {
     @OperationLog(module = "评论管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索评论")
     @PreAuthorize("hasAuthority('comment:search')")
     @PostMapping("/admin/search")
-    public Result<List<AdminCommentVo>> adminSearchComment(@RequestBody @Valid CommentSearchDto commentSearchDto) {
-        List<AdminCommentVo> commentList = commentService.adminSearchComment(commentSearchDto);
+    public Result<PageVo<List<AdminCommentVo>>> adminSearchComment(@RequestBody @Valid CommentSearchDto commentSearchDto) {
+        PageVo<List<AdminCommentVo>> commentList = commentService.adminSearchComment(commentSearchDto);
         return Result.success(commentList);
     }
 
@@ -220,7 +224,7 @@ public class CommentController {
      *
      * @return 评论总数
      */
-    @OperationLog(type = OperationTypeEnum.GET, description = "管理员获取评论总数统计")
+    @OperationLog(module = "评论管理", type = OperationTypeEnum.GET, description = "管理员获取评论总数统计")
     @GetMapping("/admin/statistics")
     public Result<Long> getCommentStatistics() {
         Long totalCount = commentService.getCommentTotalCount();

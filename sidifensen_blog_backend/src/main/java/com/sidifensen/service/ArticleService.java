@@ -66,10 +66,10 @@ public interface ArticleService extends IService<Article> {
     void deleteArticle(Integer articleId);
 
     // 管理员获取文章列表
-    List<ArticleVo> adminGetArticleList();
+    PageVo<List<ArticleVo>> adminGetArticleList(Integer pageNum, Integer pageSize);
 
     // 管理员根据用户ID获取文章列表
-    List<ArticleVo> adminGetArticlesByUserId(Integer userId);
+    PageVo<List<ArticleVo>> adminGetArticlesByUserId(Integer userId, Integer pageNum, Integer pageSize);
 
     // 管理员获取文章详情
     ArticleVo adminGetArticle(Integer articleId);
@@ -78,7 +78,7 @@ public interface ArticleService extends IService<Article> {
     void adminUpdateArticle(ArticleDto articleDto);
 
     // 管理员搜索文章
-    List<ArticleVo> adminSearchArticle(ArticleDto articleDto);
+    PageVo<List<ArticleVo>> adminSearchArticle(ArticleDto articleDto);
 
     // 管理员审核文章
     void adminExamineArticle(ArticleAuditDto articleAuditDto);

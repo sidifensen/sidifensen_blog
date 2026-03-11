@@ -1,108 +1,98 @@
 <template>
   <div class="notification-center">
     <div class="container">
-      <!-- 页面标题 -->
       <div class="page-header">
-        <h2 class="page-title">消息中心</h2>
+        <div class="header-copy">
+          <p class="header-copy__eyebrow">Notification Center</p>
+          <h2 class="header-copy__title">消息中心</h2>
+          <p class="header-copy__description">把系统提醒、评论互动和关注动态集中收进一个更清晰的收件箱。</p>
+        </div>
+        <div class="header-actions">
+          <el-button plain :icon="RefreshRight" @click="handleRefreshNotifications">刷新列表</el-button>
+          <el-button plain :icon="Select" :disabled="!hasUnreadInView" @click="handleMarkCurrentAsRead">全部已读</el-button>
+        </div>
       </div>
 
-      <!-- 标签页 -->
+      <div class="summary-grid">
+        <article v-for="card in summaryCards" :key="card.key" class="summary-card">
+          <div class="summary-card__label">{{ card.label }}</div>
+          <div class="summary-card__value">{{ card.value }}</div>
+          <div class="summary-card__hint">{{ card.hint }}</div>
+        </article>
+      </div>
+
       <div class="notification-tabs">
         <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-          <!-- 系统通知 -->
-          <el-tab-pane name="system">
+          <el-tab-pane v-for="tab in tabOptions" :key="tab.name" :name="tab.name">
             <template #label>
               <span class="tab-label">
-                系统
-                <el-badge v-if="unreadCount.system > 0" :value="unreadCount.system" :max="99" class="tab-badge" />
-              </span>
-            </template>
-          </el-tab-pane>
-
-          <!-- 评论通知 -->
-          <el-tab-pane name="comment">
-            <template #label>
-              <span class="tab-label">
-                评论
-                <el-badge v-if="unreadCount.comment > 0" :value="unreadCount.comment" :max="99" class="tab-badge" />
-              </span>
-            </template>
-          </el-tab-pane>
-
-          <!-- 点赞通知 -->
-          <el-tab-pane name="like">
-            <template #label>
-              <span class="tab-label">
-                点赞
-                <el-badge v-if="unreadCount.like > 0" :value="unreadCount.like" :max="99" class="tab-badge" />
-              </span>
-            </template>
-          </el-tab-pane>
-
-          <!-- 收藏通知 -->
-          <el-tab-pane name="collect">
-            <template #label>
-              <span class="tab-label">
-                收藏
-                <el-badge v-if="unreadCount.collect > 0" :value="unreadCount.collect" :max="99" class="tab-badge" />
-              </span>
-            </template>
-          </el-tab-pane>
-
-          <!-- 关注通知 -->
-          <el-tab-pane name="follow">
-            <template #label>
-              <span class="tab-label">
-                关注
-                <el-badge v-if="unreadCount.follow > 0" :value="unreadCount.follow" :max="99" class="tab-badge" />
+                <span>{{ tab.label }}</span>
+                <el-badge v-if="unreadCount[tab.name] > 0" :value="unreadCount[tab.name]" :max="99" class="tab-label__badge" />
               </span>
             </template>
           </el-tab-pane>
         </el-tabs>
       </div>
 
-      <!-- 通知列表 -->
       <div class="notification-list" v-loading="loading">
+        <div class="list-toolbar">
+          <span class="list-toolbar__meta">{{ currentTabLabel }}通知</span>
+          <span class="list-toolbar__meta">{{ total }} 条</span>
+        </div>
+
         <div v-if="notificationList.length === 0 && !loading" class="empty-state">
-          <el-empty description="暂无通知" />
+          <el-empty :description="`${currentTabLabel}通知暂时为空`" />
         </div>
 
         <div v-else class="notification-items">
-          <div v-for="notification in notificationList" :key="notification.id" class="notification-item" :class="{ unread: !notification.isRead }">
-            <!-- 左侧用户头像 -->
-            <div class="notification-avatar" @click.stop="goToUserPage(notification.contentData?.userId)">
-              <el-avatar :size="48" :src="notification.contentData?.avatar" class="user-avatar">
-                <el-icon v-if="notification.type === 0" class="icon-system"><Bell /></el-icon>
+          <article v-for="notification in notificationList" :key="notification.id" class="notification-item" :class="{ unread: isUnread(notification) }">
+            <div class="notification-item__avatar" @click.stop="goToUserPage(notification.contentData?.userId)">
+              <el-avatar :size="46" :src="notification.contentData?.avatar" class="user-avatar">
+                <el-icon v-if="notification.type === 0"><Bell /></el-icon>
                 <el-icon v-else><User /></el-icon>
               </el-avatar>
             </div>
 
-            <!-- 通知内容 -->
-            <div class="notification-content" @click="handleNotificationClick(notification)">
-              <div class="notification-text">
-                <!-- 用户昵称 -->
-                <span class="user-nickname" @click.stop="goToUserPage(notification.contentData?.userId)">{{ notification.contentData?.nickname }}</span>
-                <!-- 消息内容 -->
+            <div class="notification-item__content" @click="handleNotificationClick(notification)">
+              <div class="notification-item__top">
+                <span class="type-pill">{{ getTypeLabel(notification.type) }}</span>
+                <span class="notification-time">{{ formatTime(notification.createTime) }}</span>
+              </div>
+              <div class="notification-item__text">
+                <span class="user-nickname" @click.stop="goToUserPage(notification.contentData?.userId)">
+                  {{ notification.contentData?.nickname || "系统" }}
+                </span>
                 <span class="message-text">{{ getMessageText(notification) }}</span>
-                <!-- 文章标题（如果有） -->
-                <span v-if="notification.contentData?.articleTitle" class="article-title" @click.stop="goToArticle(notification.contentData?.authorId, notification.contentData?.articleId)"> 《{{ notification.contentData?.articleTitle }}》 </span>
+                <span
+                  v-if="notification.contentData?.articleTitle"
+                  class="article-title"
+                  @click.stop="goToArticle(notification.contentData?.authorId, notification.contentData?.articleId)"
+                >
+                  《{{ notification.contentData?.articleTitle }}》
+                </span>
               </div>
-              <!-- 评论内容（如果有） -->
               <div v-if="notification.contentData?.commentContent" class="comment-content">
-                <span class="comment-text">{{ notification.contentData.commentContent }}</span>
+                <span class="comment-content__text">{{ notification.contentData.commentContent }}</span>
               </div>
-              <div class="notification-time">{{ formatTime(notification.createTime) }}</div>
             </div>
 
-            <!-- 右侧操作 -->
-            <div class="notification-actions">
-              <el-button type="danger" size="small" circle :icon="Delete" @click.stop="handleDelete(notification.id)" title="删除" />
+            <div class="notification-item__actions">
+              <el-button
+                v-if="isUnread(notification)"
+                plain
+                size="small"
+                :icon="Select"
+                class="notification-action"
+                @click.stop="handleSingleRead(notification)"
+              >
+                已读
+              </el-button>
+              <el-button plain size="small" :icon="Delete" class="notification-action" @click.stop="handleDelete(notification.id)">删除</el-button>
             </div>
-          </div>
+          </article>
 
-          <!-- 加载更多提示 -->
           <div v-if="loadingMore" class="loading-more">
-            <div class="loading-spinner"></div>
+            <div class="loading-more__spinner"></div>
             <span>加载中...</span>
           </div>
           <div v-else-if="!hasMore && notificationList.length > 0" class="no-more">
@@ -115,25 +105,23 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import { ChatDotRound, Star, Collection, User, Bell, Delete } from "@element-plus/icons-vue";
-import { getUserNotifications, getUnreadNotificationCount, markNotificationsAsRead, deleteNotifications } from "@/api/notification";
+import { Bell, Delete, RefreshRight, Select, User } from "@element-plus/icons-vue";
+import { deleteNotifications, getUnreadNotificationCount, getUserNotifications, markNotificationsAsRead } from "@/api/notification";
 import { formatTimeAgo } from "@/utils/timeUtils";
 
 const router = useRouter();
 
-// 响应式数据
-const activeTab = ref("system"); // 当前标签页
-const loading = ref(false); // 加载状态
-const loadingMore = ref(false); // 加载更多状态
-const notificationList = ref([]); // 通知列表
-const currentPage = ref(1); // 当前页码
-const pageSize = ref(20); // 每页数量
-const total = ref(0); // 总数量
-const hasMore = ref(true); // 是否还有更多
+const activeTab = ref("system");
+const loading = ref(false);
+const loadingMore = ref(false);
+const notificationList = ref([]);
+const currentPage = ref(1);
+const pageSize = ref(20);
+const total = ref(0);
+const hasMore = ref(true);
 
-// 未读数量统计
 const unreadCount = reactive({
   total: 0,
   system: 0,
@@ -143,26 +131,45 @@ const unreadCount = reactive({
   follow: 0,
 });
 
-// 消息类型映射
+const tabOptions = [
+  { name: "system", label: "系统", type: 0 },
+  { name: "comment", label: "评论", type: 1 },
+  { name: "like", label: "点赞", type: 2 },
+  { name: "collect", label: "收藏", type: 3 },
+  { name: "follow", label: "关注", type: 4 },
+];
+
 const typeMap = {
-  system: 0, // 系统消息
-  comment: 1, // 评论通知
-  like: 2, // 点赞通知
-  collect: 3, // 收藏通知
-  follow: 4, // 关注通知
+  system: 0,
+  comment: 1,
+  like: 2,
+  collect: 3,
+  follow: 4,
 };
 
-// 解析通知内容 JSON
+const currentTabLabel = computed(() => tabOptions.find((item) => item.name === activeTab.value)?.label || "系统");
+const hasUnreadInView = computed(() => notificationList.value.some((item) => isUnread(item)));
+const summaryCards = computed(() => [
+  { key: "total", label: "全部未读", value: unreadCount.total || 0, hint: "跨分类汇总" },
+  { key: "current", label: `${currentTabLabel.value}未读`, value: unreadCount[activeTab.value] || 0, hint: "当前筛选" },
+  { key: "loaded", label: "当前列表", value: total.value || 0, hint: "已同步通知" },
+]);
+
+const isUnread = (notification) => Number(notification.isRead) !== 1;
+
+const getTypeLabel = (type) => tabOptions.find((item) => item.type === type)?.label || "系统";
+
 const parseNotificationContent = (notification) => {
   try {
-    const contentData = JSON.parse(notification.content);
+    const parsedContent = JSON.parse(notification.content);
     return {
       ...notification,
-      contentData,
+      contentData: {
+        ...parsedContent,
+        title: parsedContent.title || parsedContent.text || notification.content,
+      },
     };
   } catch (error) {
-    // 如果解析失败，说明是旧数据或纯文本，保留原样
-    console.warn("解析通知内容失败:", error);
     return {
       ...notification,
       contentData: {
@@ -173,22 +180,19 @@ const parseNotificationContent = (notification) => {
   }
 };
 
-// 获取通知列表
 const fetchNotifications = async (reset = false) => {
   try {
     if (reset) {
       loading.value = true;
       currentPage.value = 1;
       notificationList.value = [];
+      hasMore.value = true;
     } else {
       loadingMore.value = true;
     }
 
-    const type = typeMap[activeTab.value];
-    const res = await getUserNotifications(type, currentPage.value, pageSize.value);
-    const data = res.data.data;
-
-    // 解析通知内容
+    const res = await getUserNotifications(typeMap[activeTab.value], currentPage.value, pageSize.value);
+    const data = res.data.data || {};
     const parsedData = (data.data || []).map((item) => parseNotificationContent(item));
 
     if (reset) {
@@ -199,8 +203,6 @@ const fetchNotifications = async (reset = false) => {
 
     total.value = data.total || 0;
     hasMore.value = notificationList.value.length < total.value;
-
-    // 自动标记新加载的未读消息为已读
     autoMarkAsRead(parsedData);
   } catch (error) {
     ElMessage.error("获取通知列表失败");
@@ -211,51 +213,48 @@ const fetchNotifications = async (reset = false) => {
   }
 };
 
-// 自动标记消息为已读
 const autoMarkAsRead = async (newNotifications) => {
-  if (!newNotifications || newNotifications.length === 0) return;
-
-  // 筛选出未读消息
-  const unreadIds = newNotifications.filter((item) => !item.isRead).map((item) => item.id);
-
-  if (unreadIds.length === 0) return;
+  const unreadIds = (newNotifications || []).filter((item) => isUnread(item)).map((item) => item.id);
+  if (!unreadIds.length) {
+    return;
+  }
 
   try {
     await markNotificationsAsRead(unreadIds);
-    // 更新本地数据
     notificationList.value.forEach((item) => {
       if (unreadIds.includes(item.id)) {
         item.isRead = 1;
       }
     });
-    // 刷新未读数量（这会更新页面内的徽章）
     await fetchUnreadCount();
-
-    // 触发全局事件，通知 Header 更新未读数量
     window.dispatchEvent(new CustomEvent("notification-read"));
   } catch (error) {
     console.error("自动标记已读失败:", error);
   }
 };
 
-// 获取未读数量
 const fetchUnreadCount = async () => {
   try {
     const res = await getUnreadNotificationCount();
-    const data = res.data.data;
-    Object.assign(unreadCount, data);
+    const data = res.data.data || {};
+    Object.assign(unreadCount, {
+      total: data.total || 0,
+      system: data.system || 0,
+      comment: data.comment || 0,
+      like: data.like || 0,
+      collect: data.collect || 0,
+      follow: data.follow || 0,
+    });
   } catch (error) {
     console.error("获取未读数量失败:", error);
   }
 };
 
-// 标签页切换
 const handleTabChange = (tabName) => {
   activeTab.value = tabName;
   fetchNotifications(true);
 };
 
-// 处理滚动事件 - 无限滚动（整个窗口滚动）
 const handleScroll = () => {
   if (loading.value || loadingMore.value || !hasMore.value) {
     return;
@@ -265,14 +264,48 @@ const handleScroll = () => {
   const windowHeight = window.innerHeight;
   const documentHeight = document.documentElement.scrollHeight;
 
-  // 当滚动到距离底部 300px 时加载更多
   if (scrollTop + windowHeight >= documentHeight - 300) {
-    currentPage.value++;
+    currentPage.value += 1;
     fetchNotifications(false);
   }
 };
 
-// 删除通知
+const handleMarkCurrentAsRead = async () => {
+  const unreadIds = notificationList.value.filter((item) => isUnread(item)).map((item) => item.id);
+  if (!unreadIds.length) {
+    ElMessage.info("当前分类没有未读通知");
+    return;
+  }
+
+  try {
+    await markNotificationsAsRead(unreadIds);
+    notificationList.value.forEach((item) => {
+      if (unreadIds.includes(item.id)) {
+        item.isRead = 1;
+      }
+    });
+    await fetchUnreadCount();
+    window.dispatchEvent(new CustomEvent("notification-read"));
+    ElMessage.success("已标记为已读");
+  } catch (error) {
+    ElMessage.error("操作失败");
+    console.error("批量标记已读失败:", error);
+  }
+};
+
+const handleSingleRead = async (notification) => {
+  try {
+    await markNotificationsAsRead([notification.id]);
+    notification.isRead = 1;
+    await fetchUnreadCount();
+    window.dispatchEvent(new CustomEvent("notification-read"));
+    ElMessage.success("已标记为已读");
+  } catch (error) {
+    ElMessage.error("操作失败");
+    console.error("单条标记已读失败:", error);
+  }
+};
+
 const handleDelete = async (notificationId) => {
   try {
     await ElMessageBox.confirm("确定要删除这条通知吗？", "提示", {
@@ -282,11 +315,10 @@ const handleDelete = async (notificationId) => {
     });
 
     await deleteNotifications([notificationId]);
-    // 从列表中移除
     notificationList.value = notificationList.value.filter((item) => item.id !== notificationId);
-    total.value--;
-    // 刷新未读数量
-    fetchUnreadCount();
+    total.value = Math.max(total.value - 1, 0);
+    hasMore.value = notificationList.value.length < total.value;
+    await fetchUnreadCount();
     ElMessage.success("删除成功");
   } catch (error) {
     if (error !== "cancel") {
@@ -296,390 +328,526 @@ const handleDelete = async (notificationId) => {
   }
 };
 
-// 提取消息文本（去掉用户昵称和文章标题）
 const getMessageText = (notification) => {
   const contentData = notification.contentData;
-  if (!contentData || !contentData.title) {
+  if (!contentData) {
     return notification.content;
   }
 
-  let text = contentData.title;
-
-  // 去掉用户昵称
+  let text = contentData.title || contentData.text || notification.content;
   if (contentData.nickname) {
     text = text.replace(contentData.nickname, "").trim();
   }
-
-  // 去掉文章标题
   if (contentData.articleTitle) {
     text = text.replace(`《${contentData.articleTitle}》`, "").trim();
   }
-
   return text;
 };
 
-// 跳转到用户主页
 const goToUserPage = (userId) => {
-  if (!userId) return;
-  router.push(`/user/${userId}`);
+  if (userId) {
+    router.push(`/user/${userId}`);
+  }
 };
 
-// 跳转到文章详情页
 const goToArticle = (userId, articleId) => {
-  if (!userId || !articleId) return;
-  router.push(`/user/${userId}/article/${articleId}`);
+  if (userId && articleId) {
+    router.push(`/user/${userId}/article/${articleId}`);
+  }
 };
 
-// 点击通知（根据类型跳转）
 const handleNotificationClick = (notification) => {
   const contentData = notification.contentData;
-  if (!contentData) return;
+  if (!contentData) {
+    return;
+  }
 
-  // 如果有文章ID，跳转到文章详情（使用文章作者ID）
   if (contentData.articleId && contentData.authorId) {
     goToArticle(contentData.authorId, contentData.articleId);
-  }
-  // 如果没有文章ID但有用户ID（如关注通知），跳转到用户主页
-  else if (contentData.userId) {
+  } else if (contentData.userId) {
     goToUserPage(contentData.userId);
   }
 };
 
-// 格式化时间
-const formatTime = (time) => {
-  return formatTimeAgo(time);
-};
+const formatTime = (time) => formatTimeAgo(time);
 
-// 处理刷新通知列表事件
 const handleRefreshNotifications = async () => {
-  // 重置到第一页并重新加载
   currentPage.value = 1;
   hasMore.value = true;
   await fetchNotifications(true);
   await fetchUnreadCount();
 };
 
-// 组件挂载
 onMounted(async () => {
-  await fetchNotifications(true);
-  fetchUnreadCount();
-
-  // 添加窗口滚动监听
+  await handleRefreshNotifications();
   window.addEventListener("scroll", handleScroll);
-  // 添加刷新通知列表事件监听
   window.addEventListener("refresh-notifications", handleRefreshNotifications);
 });
 
-// 组件卸载
 onUnmounted(() => {
-  // 移除窗口滚动监听
   window.removeEventListener("scroll", handleScroll);
-  // 移除刷新通知列表事件监听
   window.removeEventListener("refresh-notifications", handleRefreshNotifications);
 });
 </script>
 
 <style lang="scss" scoped>
-// 通知中心容器
 .notification-center {
+  --bg-page: #f5f7fb;
+  --bg-card: #ffffff;
+  --bg-soft: #f8fafc;
+  --bg-accent: #eef4ff;
+  --text-title: #162033;
+  --text-primary: #344054;
+  --text-secondary: #667085;
+  --text-muted: #98a2b3;
+  --border: #dbe3ef;
+  --border-strong: #c6d2e3;
+  --accent: #2f6fec;
+  --accent-strong: #1f5bd0;
+  --shadow: 0 1px 3px rgba(17, 24, 39, 0.08);
+  --shadow-hover: 0 10px 24px rgba(17, 24, 39, 0.08);
+
   min-height: 100vh;
-  padding-top: 60px !important;
+  padding: 72px 0 48px;
+  background:
+    radial-gradient(circle at top left, var(--bg-accent), transparent 34%),
+    linear-gradient(180deg, var(--bg-page) 0%, var(--bg-soft) 100%);
 
-  // 工具类
   .container {
-    max-width: 1200px;
+    max-width: 1180px;
     margin: 0 auto;
-    padding: 0 10px;
-  }
+    padding: 0 20px;
 
-  // 页面标题
-  .page-header {
-    margin-bottom: 10px;
-    background: var(--el-bg-color-page);
-    backdrop-filter: blur(10px);
-    border-radius: 8px;
-    padding: 24px 30px;
-    border: 1px solid var(--el-border-color);
-    box-shadow: 0 2px 12px var(--el-border-color-light);
-
-    .page-title {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--el-text-color-primary);
-      margin: 0;
-    }
-  }
-
-  // 标签页容器
-  .notification-tabs {
-    background: var(--el-bg-color-page);
-    backdrop-filter: blur(10px);
-    border-radius: 8px 8px 0 0; // 只保留顶部圆角
-    padding: 20px;
-    padding-bottom: 0;
-    margin-bottom: 0; // 移除底部间距
-    border: 1px solid var(--el-border-color);
-    border-bottom: none; // 移除底部边框，与列表合并
-    box-shadow: none; // 移除阴影，让整体更统一
-    position: relative;
-
-    // 标签标题
-    .tab-label {
+    .page-header {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 28px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
 
-      .tab-badge {
-        margin-left: 4px;
-      }
-    }
-  }
-
-  // 通知列表
-  .notification-list {
-    background: var(--el-bg-color-page);
-    backdrop-filter: blur(10px);
-    border-radius: 0 0 8px 8px; // 只保留底部圆角
-    padding: 20px;
-    padding-top: 10px;
-    border: 1px solid var(--el-border-color);
-    border-top: none; // 移除顶部边框，与标签页无缝连接
-    box-shadow: 0 2px 12px var(--el-border-color-light); // 整体阴影
-    min-height: 400px;
-
-    // 空状态
-    .empty-state {
-      padding: 60px 0;
-      text-align: center;
-    }
-
-    // 通知项目容器
-    .notification-items {
-      // 通知项目
-      .notification-item {
+      .header-copy {
         display: flex;
-        align-items: center;
-        gap: 16px;
-        padding: 16px;
-        border-radius: 8px;
-        margin-bottom: 12px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: var(--el-bg-color);
+        flex-direction: column;
+        gap: 10px;
 
-        &:hover {
-          background: var(--el-fill-color-light);
-          transform: translateX(4px);
+        .header-copy__eyebrow {
+          margin: 0;
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: var(--accent);
         }
 
-        &.unread {
-          background: var(--el-color-primary-light-9);
-          border-left: 4px solid var(--el-color-primary);
+        .header-copy__title {
+          margin: 0;
+          font-family: "AlimamaShuHei", "Helvetica Neue", Arial, sans-serif;
+          font-size: 34px;
+          color: var(--text-title);
         }
 
-        // 通知用户头像
-        .notification-avatar {
-          flex-shrink: 0;
-          cursor: pointer;
-          transition: transform 0.3s ease;
-
-          &:hover {
-            transform: scale(1.1);
-          }
-
-          .user-avatar {
-            border: 2px solid var(--el-border-color);
-            transition: border-color 0.3s ease;
-
-            &:hover {
-              border-color: var(--el-color-primary);
-            }
-
-            .icon-system {
-              color: var(--el-color-info);
-              font-size: 24px;
-            }
-          }
-        }
-
-        // 通知内容
-        .notification-content {
-          flex: 1;
-          min-width: 0;
-          cursor: pointer;
-
-          .notification-text {
-            font-size: 14px;
-            color: var(--el-text-color-primary);
-            line-height: 1.8;
-            margin-bottom: 4px;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 4px;
-
-            // 用户昵称
-            .user-nickname {
-              font-weight: 600;
-              color: var(--el-color-primary);
-              cursor: pointer;
-              transition: color 0.3s ease;
-
-              &:hover {
-                color: var(--el-color-primary-light-3);
-              }
-            }
-
-            // 消息文本
-            .message-text {
-              color: var(--el-text-color-regular);
-            }
-
-            // 文章标题
-            .article-title {
-              color: var(--el-color-primary);
-              font-weight: 500;
-              cursor: pointer;
-              transition: color 0.3s ease;
-              max-width: 300px;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-
-              &:hover {
-                color: var(--el-color-primary-light-3);
-              }
-            }
-          }
-
-          // 评论内容
-          .comment-content {
-            margin-top: 8px;
-            margin-bottom: 8px;
-            padding: 8px 12px;
-            background: var(--el-fill-color-lighter);
-            border-radius: 4px;
-            border-left: 3px solid var(--el-color-primary);
-
-            .comment-text {
-              font-size: 13px;
-              color: var(--el-text-color-regular);
-              line-height: 1.6;
-              display: -webkit-box;
-              -webkit-line-clamp: 3;
-              line-clamp: 3;
-              -webkit-box-orient: vertical;
-              overflow: hidden;
-              word-break: break-word;
-            }
-          }
-
-          .notification-time {
-            font-size: 12px;
-            color: var(--el-text-color-secondary);
-          }
-        }
-
-        // 通知操作
-        .notification-actions {
-          flex-shrink: 0;
-          display: flex;
-          gap: 8px;
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
-
-        &:hover .notification-actions {
-          opacity: 1;
+        .header-copy__description {
+          margin: 0;
+          max-width: 620px;
+          font-size: 15px;
+          line-height: 1.7;
+          color: var(--text-secondary);
         }
       }
 
-      // 加载更多提示
-      .loading-more {
+      .header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-content: flex-start;
+
+        :deep(.el-button) {
+          height: 40px;
+          padding: 0 16px;
+          border-radius: 999px;
+          border-color: var(--border-strong);
+          color: var(--text-primary);
+          background: var(--bg-soft);
+        }
+      }
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+
+      .summary-card {
+        padding: 18px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+
+        .summary-card__label {
+          font-size: 13px;
+          color: var(--text-secondary);
+        }
+
+        .summary-card__value {
+          margin-top: 10px;
+          font-size: 30px;
+          line-height: 1;
+          color: var(--text-title);
+        }
+
+        .summary-card__hint {
+          margin-top: 8px;
+          font-size: 12px;
+          color: var(--text-muted);
+        }
+      }
+    }
+
+    .notification-tabs {
+      margin-top: 18px;
+      padding: 0 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 24px 24px 0 0;
+      box-shadow: var(--shadow);
+
+      :deep(.el-tabs__header) {
+        margin: 0;
+      }
+
+      :deep(.el-tabs__nav-wrap::after) {
+        display: none;
+      }
+
+      :deep(.el-tabs__active-bar) {
+        height: 3px;
+        border-radius: 999px;
+        background: var(--accent);
+      }
+
+      :deep(.el-tabs__item) {
+        height: 64px;
+        color: var(--text-secondary);
+      }
+
+      :deep(.el-tabs__item.is-active) {
+        color: var(--text-title);
+      }
+
+      .tab-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 600;
+
+        .tab-label__badge {
+          display: inline-flex;
+        }
+      }
+    }
+
+    .notification-list {
+      min-height: 420px;
+      padding: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 24px 24px;
+      box-shadow: var(--shadow);
+
+      .list-toolbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+
+        .list-toolbar__meta {
+          font-size: 13px;
+          color: var(--text-muted);
+        }
+      }
+
+      .empty-state {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 30px;
-        color: var(--el-text-color-regular);
-
-        .loading-spinner {
-          width: 20px;
-          height: 20px;
-          border: 2px solid #f3f3f3;
-          border-top: 2px solid #409eff;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-right: 10px;
-        }
+        min-height: 320px;
       }
 
-      // 没有更多提示
-      .no-more {
-        text-align: center;
-        padding: 20px;
-        color: var(--el-text-color-secondary);
-        font-size: 14px;
+      .notification-items {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        .notification-item {
+          display: grid;
+          grid-template-columns: 56px minmax(0, 1fr) auto;
+          gap: 16px;
+          padding: 18px;
+          border: 1px solid var(--border);
+          border-radius: 18px;
+          background: var(--bg-card);
+          box-shadow: var(--shadow);
+          transition: box-shadow 0.2s ease, border-color 0.2s ease;
+
+          &:hover {
+            border-color: var(--border-strong);
+            box-shadow: var(--shadow-hover);
+          }
+
+          &.unread {
+            background: var(--bg-accent);
+          }
+
+          .notification-item__avatar {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            cursor: pointer;
+
+            .user-avatar {
+              border: 1px solid var(--border);
+              background: var(--bg-soft);
+              color: var(--accent);
+            }
+          }
+
+          .notification-item__content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 0;
+            cursor: pointer;
+
+            .notification-item__top {
+              display: flex;
+              justify-content: space-between;
+              gap: 12px;
+
+              .type-pill {
+                display: inline-flex;
+                align-items: center;
+                min-height: 26px;
+                padding: 0 10px;
+                border-radius: 999px;
+                background: var(--bg-soft);
+                color: var(--accent-strong);
+                font-size: 12px;
+                font-weight: 700;
+              }
+
+              .notification-time {
+                font-size: 12px;
+                color: var(--text-muted);
+              }
+            }
+
+            .notification-item__text {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 6px;
+              font-size: 15px;
+              line-height: 1.8;
+
+              .user-nickname {
+                color: var(--text-title);
+                font-weight: 700;
+              }
+
+              .message-text {
+                color: var(--text-primary);
+              }
+
+              .article-title {
+                max-width: 320px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                color: var(--accent-strong);
+                font-weight: 600;
+              }
+            }
+
+            .comment-content {
+              padding: 12px 14px;
+              background: var(--bg-soft);
+              border: 1px solid var(--border);
+              border-radius: 14px;
+
+              .comment-content__text {
+                display: -webkit-box;
+                overflow: hidden;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 3;
+                line-clamp: 3;
+                font-size: 13px;
+                line-height: 1.7;
+                color: var(--text-secondary);
+                word-break: break-word;
+              }
+            }
+          }
+
+          .notification-item__actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+
+            :deep(.el-button) {
+              min-width: 84px;
+              height: 36px;
+              padding: 0 14px;
+              border-radius: 999px;
+              border-color: var(--border-strong);
+              color: var(--text-primary);
+              background: var(--bg-soft);
+            }
+          }
+        }
+
+        .loading-more {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 10px;
+          padding: 24px 0 12px;
+          color: var(--text-secondary);
+
+          .loading-more__spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+          }
+        }
+
+        .no-more {
+          padding-top: 8px;
+          text-align: center;
+          color: var(--text-muted);
+          font-size: 13px;
+        }
       }
     }
   }
 }
 
-// 加载动画
+html.dark {
+  .notification-center {
+    --bg-page: #0b1220;
+    --bg-card: #111a2d;
+    --bg-soft: #152238;
+    --bg-accent: #132a4e;
+    --text-title: #f3f6fc;
+    --text-primary: #d7deea;
+    --text-secondary: #a7b3c7;
+    --text-muted: #8292ac;
+    --border: #25344d;
+    --border-strong: #355070;
+    --accent: #7fb0ff;
+    --accent-strong: #a7c7ff;
+    --shadow: 0 1px 3px rgba(2, 6, 23, 0.35);
+    --shadow-hover: 0 12px 28px rgba(2, 6, 23, 0.34);
+  }
+}
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
 }
 
-// 响应式设计
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .notification-center {
-    background-attachment: scroll;
-
-    .page-header {
-      padding: 18px 20px;
-
-      .page-title {
-        font-size: 24px;
+    .container {
+      .page-header {
+        flex-direction: column;
       }
-    }
 
-    .notification-tabs {
-      padding: 15px;
-
-      .tab-actions {
-        position: static;
-        margin-top: 10px;
+      .summary-grid {
+        grid-template-columns: 1fr;
       }
-    }
 
-    .notification-list {
-      .notification-items {
-        .notification-item {
-          gap: 12px;
+      .notification-list {
+        .notification-items {
+          .notification-item {
+            grid-template-columns: 48px minmax(0, 1fr);
 
-          .notification-avatar {
-            .user-avatar {
-              width: 40px;
-              height: 40px;
+            .notification-item__actions {
+              grid-column: 1 / -1;
+              flex-direction: row;
             }
           }
+        }
+      }
+    }
+  }
+}
 
-          .notification-content {
-            .notification-text {
-              font-size: 13px;
+@media (max-width: 640px) {
+  .notification-center {
+    padding: 64px 0 36px;
 
-              .article-title {
-                max-width: 200px;
+    .container {
+      padding: 0 14px;
+
+      .page-header {
+        padding: 20px;
+
+        .header-copy {
+          .header-copy__title {
+            font-size: 28px;
+          }
+        }
+      }
+
+      .notification-tabs {
+        padding: 0 16px;
+      }
+
+      .notification-list {
+        padding: 18px;
+
+        .notification-items {
+          .notification-item {
+            padding: 14px;
+
+            .notification-item__content {
+              .notification-item__top {
+                flex-direction: column;
+                align-items: flex-start;
+              }
+
+              .notification-item__text {
+                font-size: 14px;
+
+                .article-title {
+                  max-width: 100%;
+                }
               }
             }
-          }
 
-          .notification-actions {
-            opacity: 1;
+            .notification-item__actions {
+              width: 100%;
+
+              :deep(.el-button) {
+                flex: 1;
+                min-width: 0;
+              }
+            }
           }
         }
       }

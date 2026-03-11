@@ -542,23 +542,24 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
-    public List<AdminCommentVo> adminGetCommentList() {
+    public PageVo<List<AdminCommentVo>> adminGetCommentList(Integer pageNum, Integer pageSize) {
+        Page<Comment> page = new Page<>(pageNum, pageSize);
         // 构建查询条件 - 获取所有未删除的评论
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<Comment>()
                 .orderByDesc(Comment::getCreateTime);
 
-        List<Comment> comments = list(queryWrapper);
+        List<Comment> comments = page(page, queryWrapper).getRecords();
 
         if (comments.isEmpty()) {
-            return new ArrayList<>();
+            return new PageVo<>(new ArrayList<>(), page.getTotal());
         }
 
         // 批量构建AdminCommentVo
-        return batchBuildAdminCommentVos(comments);
+        return new PageVo<>(batchBuildAdminCommentVos(comments), page.getTotal());
     }
 
     @Override
-    public List<AdminCommentVo> adminGetCommentsByUserId(Integer userId) {
+    public PageVo<List<AdminCommentVo>> adminGetCommentsByUserId(Integer userId, Integer pageNum, Integer pageSize) {
         if (userId == null || userId <= 0) {
             throw new BlogException(BlogConstants.UserIdRequired);
         }
@@ -569,24 +570,26 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             throw new BlogException(BlogConstants.NotFoundUser);
         }
 
+        Page<Comment> page = new Page<>(pageNum, pageSize);
         // 查询该用户的所有评论（包括已删除的）
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<Comment>()
                 .eq(Comment::getUserId, userId)
                 .eq(Comment::getIsDeleted, 0)
                 .orderByDesc(Comment::getCreateTime);
 
-        List<Comment> comments = list(queryWrapper);
+        List<Comment> comments = page(page, queryWrapper).getRecords();
 
         if (comments.isEmpty()) {
-            return new ArrayList<>();
+            return new PageVo<>(new ArrayList<>(), page.getTotal());
         }
 
         // 批量构建AdminCommentVo
-        return batchBuildAdminCommentVos(comments);
+        return new PageVo<>(batchBuildAdminCommentVos(comments), page.getTotal());
     }
 
     @Override
-    public List<AdminCommentVo> adminSearchComment(CommentSearchDto commentSearchDto) {
+    public PageVo<List<AdminCommentVo>> adminSearchComment(CommentSearchDto commentSearchDto) {
+        Page<Comment> page = new Page<>(commentSearchDto.getPageNum(), commentSearchDto.getPageSize());
         // 构建查询条件
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<Comment>()
                 .eq(Comment::getIsDeleted, 0)
@@ -612,14 +615,14 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                 .le(commentSearchDto.getCreateTimeEnd() != null, Comment::getCreateTime,
                         commentSearchDto.getCreateTimeEnd());
 
-        List<Comment> comments = list(queryWrapper);
+        List<Comment> comments = page(page, queryWrapper).getRecords();
 
         if (comments.isEmpty()) {
-            return new ArrayList<>();
+            return new PageVo<>(new ArrayList<>(), page.getTotal());
         }
 
         // 批量构建AdminCommentVo
-        return batchBuildAdminCommentVos(comments);
+        return new PageVo<>(batchBuildAdminCommentVos(comments), page.getTotal());
     }
 
     /**

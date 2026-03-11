@@ -61,7 +61,7 @@ public interface CommentService extends IService<Comment> {
      *
      * @return 评论列表
      */
-    List<AdminCommentVo> adminGetCommentList();
+    PageVo<List<AdminCommentVo>> adminGetCommentList(Integer pageNum, Integer pageSize);
 
     /**
      * 管理员根据用户ID获取评论列表
@@ -69,7 +69,7 @@ public interface CommentService extends IService<Comment> {
      * @param userId 用户ID
      * @return 用户评论列表
      */
-    List<AdminCommentVo> adminGetCommentsByUserId(Integer userId);
+    PageVo<List<AdminCommentVo>> adminGetCommentsByUserId(Integer userId, Integer pageNum, Integer pageSize);
 
     /**
      * 管理员搜索评论
@@ -77,7 +77,7 @@ public interface CommentService extends IService<Comment> {
      * @param commentSearchDto 搜索条件
      * @return 搜索结果
      */
-    List<AdminCommentVo> adminSearchComment(CommentSearchDto commentSearchDto);
+    PageVo<List<AdminCommentVo>> adminSearchComment(CommentSearchDto commentSearchDto);
 
     /**
      * 管理员审核评论

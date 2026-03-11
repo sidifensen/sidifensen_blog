@@ -7,6 +7,7 @@ import com.sidifensen.domain.dto.AlbumDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.AlbumVo;
 import com.sidifensen.domain.enums.OperationTypeEnum;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.service.AlbumService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -133,8 +134,10 @@ public class AlbumController {
     @OperationLog(module = "相册管理", type = OperationTypeEnum.SELECT, description = "管理员获取相册列表")
     @PreAuthorize("hasAuthority('album:list')")
     @GetMapping("/admin/list")
-    public Result<Object> adminList() {
-        List<AlbumVo> albumVos = albumService.adminList();
+    public Result<PageVo<List<AlbumVo>>> adminList(
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<AlbumVo>> albumVos = albumService.adminList(pageNum, pageSize);
         return Result.success(albumVos);
     }
 
@@ -172,8 +175,8 @@ public class AlbumController {
     @OperationLog(module = "相册管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索相册")
     @PreAuthorize("hasAuthority('album:search')")
     @PostMapping("/admin/search")
-    public Result<Object> searchAlbum(@RequestBody @Valid AlbumDto albumDto) {
-        List<AlbumVo> albumVos = albumService.searchAlbum(albumDto);
+    public Result<PageVo<List<AlbumVo>>> searchAlbum(@RequestBody @Valid AlbumDto albumDto) {
+        PageVo<List<AlbumVo>> albumVos = albumService.searchAlbum(albumDto);
         return Result.success(albumVos);
     }
 

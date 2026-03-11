@@ -1,5 +1,7 @@
 package com.sidifensen.domain.dto;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -22,6 +24,11 @@ public class SysOperationlogQueryDto implements Serializable {
      * 操作人员 ID
      */
     private Integer operatorId;
+
+    /**
+     * 操作人员角色
+     */
+    private String operatorRole;
 
     /**
      * 功能模块
@@ -51,10 +58,13 @@ public class SysOperationlogQueryDto implements Serializable {
     /**
      * 页码
      */
+    @Min(value = 1, message = "页码不能小于 1")
     private Integer pageNum = 1;
 
     /**
      * 每页大小
      */
+    @Min(value = 1, message = "每页大小不能小于 1")
+    @Max(value = 100, message = "每页大小不能超过 100")
     private Integer pageSize = 10;
 }

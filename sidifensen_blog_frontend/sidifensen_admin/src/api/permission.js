@@ -8,6 +8,15 @@ export function getPermissionList() {
   });
 }
 
+// 分页获取权限列表
+export function getPermissionPage(params) {
+  return request({
+    url: "/permission/page",
+    method: "get",
+    params,
+  });
+}
+
 // 新增权限
 export function addPermission(data) {
   return request({
@@ -38,6 +47,15 @@ export function deletePermission(permissionId) {
 export function queryPermission(data) {
   return request({
     url: "/permission/search",
+    method: "post",
+    data,
+  });
+}
+
+// 分页查询权限
+export function queryPermissionPage(data) {
+  return request({
+    url: "/permission/page/search",
     method: "post",
     data,
   });

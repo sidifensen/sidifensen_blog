@@ -102,7 +102,7 @@
                   <el-input v-model="article.description" :autosize="{ minRows: 2, maxRows: 4 }" class="description-input" maxlength="256" placeholder="输入文章摘要" resize="none" type="textarea"></el-input>
                   <div class="ai-summary-actions">
                     <el-button icon="EditPen" plain round size="small" type="danger" @click="extractSummary">AI提取摘要</el-button>
-                    <span v-if="aiQuota !== null" class="ai-quota-text">今日剩余: {{ aiQuota }}/10 次</span>
+                    <span v-if="aiQuotaRemaining !== null && aiQuotaDailyLimit !== null" class="ai-quota-text">今日剩余: {{ aiQuotaRemaining }}/{{ aiQuotaDailyLimit }} 次</span>
                   </div>
                 </div>
               </div>
@@ -794,14 +794,16 @@ const handleCoverUpload = async (options) => {
   }
 };
 
-// AI配额（剩余调用次数）
-const aiQuota = ref(null);
+// AI配额
+const aiQuotaRemaining = ref(null);
+const aiQuotaDailyLimit = ref(null);
 
 // 获取AI配额
 const fetchAiQuota = async () => {
   try {
     const response = await getAiQuota();
-    aiQuota.value = response.data.data;
+    aiQuotaRemaining.value = response.data.data.remaining;
+    aiQuotaDailyLimit.value = response.data.data.dailyLimit;
   } catch (error) {
     console.error("获取AI配额失败:", error);
   }

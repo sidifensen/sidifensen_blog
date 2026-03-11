@@ -463,7 +463,8 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
 
 
     @Override
-    public List<UserColumnManageVo> adminGetColumnList(ColumnFilterDto columnFilterDto) {
+    public PageVo<List<UserColumnManageVo>> adminGetColumnList(ColumnFilterDto columnFilterDto) {
+        Page<Column> page = new Page<>(columnFilterDto.getPageNum(), columnFilterDto.getPageSize());
         LambdaQueryWrapper<Column> qw = new LambdaQueryWrapper<Column>()
                 .orderByDesc(Column::getCreateTime); // 按创建时间倒序排列
 
@@ -505,7 +506,7 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
             }
         }
 
-        List<Column> columns = columnMapper.selectList(qw);
+        List<Column> columns = columnMapper.selectPage(page, qw).getRecords();
 
         // 转换为 UserColumnManageVo
         List<UserColumnManageVo> userColumnManageVos = BeanUtil.copyToList(columns, UserColumnManageVo.class);
@@ -513,16 +514,17 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
         // 设置作者昵称
         setAuthorNicknames(userColumnManageVos, columns);
 
-        return userColumnManageVos;
+        return new PageVo<>(userColumnManageVos, page.getTotal());
     }
 
     @Override
-    public List<UserColumnManageVo> adminGetColumnsByUserId(Integer userId) {
+    public PageVo<List<UserColumnManageVo>> adminGetColumnsByUserId(Integer userId, Integer pageNum, Integer pageSize) {
+        Page<Column> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Column> qw = new LambdaQueryWrapper<Column>()
                 .eq(Column::getUserId, userId)
                 .orderByDesc(Column::getCreateTime); // 按创建时间倒序排列
 
-        List<Column> columns = columnMapper.selectList(qw);
+        List<Column> columns = columnMapper.selectPage(page, qw).getRecords();
 
         // 转换为 UserColumnManageVo
         List<UserColumnManageVo> userColumnManageVos = BeanUtil.copyToList(columns, UserColumnManageVo.class);
@@ -530,11 +532,12 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
         // 设置作者昵称
         setAuthorNicknames(userColumnManageVos, columns);
 
-        return userColumnManageVos;
+        return new PageVo<>(userColumnManageVos, page.getTotal());
     }
 
     @Override
-    public List<UserColumnManageVo> adminSearchColumn(ColumnSearchDto columnSearchDto) {
+    public PageVo<List<UserColumnManageVo>> adminSearchColumn(ColumnSearchDto columnSearchDto) {
+        Page<Column> page = new Page<>(columnSearchDto.getPageNum(), columnSearchDto.getPageSize());
         LambdaQueryWrapper<Column> qw = new LambdaQueryWrapper<Column>()
                 .orderByDesc(Column::getCreateTime); // 按创建时间倒序排列
 
@@ -569,7 +572,7 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
             qw.le(Column::getCreateTime, columnSearchDto.getCreateTimeEnd());
         }
 
-        List<Column> columns = columnMapper.selectList(qw);
+        List<Column> columns = columnMapper.selectPage(page, qw).getRecords();
 
         // 转换为 UserColumnManageVo
         List<UserColumnManageVo> userColumnManageVos = BeanUtil.copyToList(columns, UserColumnManageVo.class);
@@ -577,7 +580,7 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
         // 设置作者昵称
         setAuthorNicknames(userColumnManageVos, columns);
 
-        return userColumnManageVos;
+        return new PageVo<>(userColumnManageVos, page.getTotal());
     }
 
     @Override

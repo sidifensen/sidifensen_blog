@@ -149,7 +149,7 @@
 import { ref, onMounted, onUnmounted, watch, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { Search, Plus, Edit, Delete, User } from "@element-plus/icons-vue";
-import { getRoleList, addRole, updateRole, deleteRole, queryRole } from "@/api/role";
+import { getRoleList, getRolePage, addRole, updateRole, deleteRole, queryRolePage } from "@/api/role";
 import { addUser, getUsersByRole } from "@/api/user-role";
 import { getUserList } from "@/api/user";
 import Pagination from "@/components/Pagination.vue";
@@ -188,20 +188,8 @@ const rules = {
 
 // 获取角色列表
 const getRoles = async () => {
-  loading.value = true;
-  try {
-    const res = await getRoleList();
-    roleList.value = res.data.data;
-    total.value = roleList.value.length;
-    // 对角色列表进行排序
-    roleList.value.sort((a, b) => a.id - b.id);
-    // 更新分页数据
-    updatePaginatedRoleList();
-  } catch (error) {
-    ElMessage.error("获取角色列表失败");
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchRoles();
 };
 
 // 初始化
@@ -221,44 +209,62 @@ const currentPage = ref(1);
 // 每页条数
 const pageSize = ref(10);
 
+const hasSearchConditions = () => !!searchQuery.value.trim();
+
+const applyPageData = (pageData) => {
+  roleList.value = pageData?.data || [];
+  paginatedRoleList.value = roleList.value;
+  total.value = Number(pageData?.total || 0);
+};
+
+const fetchRoles = async () => {
+  loading.value = true;
+  try {
+    let pageData = null;
+    if (hasSearchConditions()) {
+      const res = await queryRolePage({
+        name: searchQuery.value,
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    } else {
+      const res = await getRolePage({
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    }
+    applyPageData(pageData);
+  } catch (error) {
+    ElMessage.error(hasSearchConditions() ? "搜索角色失败" : "获取角色列表失败");
+  } finally {
+    loading.value = false;
+  }
+};
+
 // 更新分页数据
 const updatePaginatedRoleList = () => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  paginatedRoleList.value = roleList.value.slice(startIndex, endIndex);
+  paginatedRoleList.value = roleList.value;
 };
 
 // 处理分页大小变化
-const handleSizeChange = (size) => {
+const handleSizeChange = async (size) => {
   pageSize.value = size;
-  updatePaginatedRoleList();
+  currentPage.value = 1;
+  await fetchRoles();
 };
 
 // 处理当前页码变化
-const handleCurrentChange = (current) => {
+const handleCurrentChange = async (current) => {
   currentPage.value = current;
-  updatePaginatedRoleList();
+  await fetchRoles();
 };
 
 // 处理搜索
 const handleSearch = async () => {
-  if (searchQuery.value.trim() === "") {
-    getRoles();
-    return;
-  }
-
-  loading.value = true;
-  try {
-    const res = await queryRole(searchQuery.value);
-    roleList.value = res.data.data;
-    total.value = roleList.value.length;
-    // 更新分页数据
-    updatePaginatedRoleList();
-  } catch (error) {
-    ElMessage.error("搜索角色失败");
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchRoles();
 };
 
 // 监听搜索输入变化

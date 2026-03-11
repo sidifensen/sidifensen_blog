@@ -784,10 +784,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public List<ArticleVo> adminGetArticleList() {
+    public PageVo<List<ArticleVo>> adminGetArticleList(Integer pageNum, Integer pageSize) {
+        Page<Article> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
                 .orderByDesc(Article::getCreateTime);
-        List<Article> articleList = articleMapper.selectList(qw);
+        List<Article> articleList = articleMapper.selectPage(page, qw).getRecords();
         List<ArticleVo> articleVoList = BeanUtil.copyToList(articleList, ArticleVo.class);
 
         // 批量查询用户名并设置到文章中
@@ -821,17 +822,18 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             }
         }
 
-        return articleVoList;
+        return new PageVo<>(articleVoList, page.getTotal());
     }
 
     @Override
-    public List<ArticleVo> adminGetArticlesByUserId(Integer userId) {
+    public PageVo<List<ArticleVo>> adminGetArticlesByUserId(Integer userId, Integer pageNum, Integer pageSize) {
+        Page<Article> page = new Page<>(pageNum, pageSize);
         // 构建查询条件：根据用户ID查询该用户的所有文章
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Article::getUserId, userId)
                 .orderByDesc(Article::getId);
 
-        List<Article> articles = this.list(queryWrapper);
+        List<Article> articles = articleMapper.selectPage(page, queryWrapper).getRecords();
         List<ArticleVo> articleVos = BeanUtil.copyToList(articles, ArticleVo.class);
 
         if (!articleVos.isEmpty()) {
@@ -902,7 +904,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             }
         }
 
-        return articleVos;
+        return new PageVo<>(articleVos, page.getTotal());
     }
 
     @Override
@@ -943,7 +945,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     // 管理员搜索文章
     @Override
-    public List<ArticleVo> adminSearchArticle(ArticleDto articleDto) {
+    public PageVo<List<ArticleVo>> adminSearchArticle(ArticleDto articleDto) {
+        Page<Article> page = new Page<>(articleDto.getPageNum(), articleDto.getPageSize());
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ObjectUtil.isNotEmpty(articleDto.getUserId()), Article::getUserId, articleDto.getUserId())
                 .like(ObjectUtil.isNotEmpty(articleDto.getTitle()), Article::getTitle, articleDto.getTitle())
@@ -964,7 +967,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                         articleDto.getCreateTimeEnd())
                 .orderByDesc(Article::getCreateTime);
 
-        List<Article> articles = this.list(queryWrapper);
+        List<Article> articles = articleMapper.selectPage(page, queryWrapper).getRecords();
         List<ArticleVo> articleVos = BeanUtil.copyToList(articles, ArticleVo.class);
 
         // 用userId把nickname查询出来
@@ -979,7 +982,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             articleVo.setNickname(userMap.get(articleVo.getUserId()));
         }
 
-        return articleVos;
+        return new PageVo<>(articleVos, page.getTotal());
     }
 
     @Override

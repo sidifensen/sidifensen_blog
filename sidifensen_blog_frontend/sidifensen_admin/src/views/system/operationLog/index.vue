@@ -35,7 +35,7 @@
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table v-loading="loading" :data="paginatedLogList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }" max-height="calc(100vh - 300px)">
+        <el-table v-loading="loading" :data="logList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }" max-height="calc(100vh - 300px)">
           <el-table-column type="selection" width="30" />
           <el-table-column prop="id" label="ID" width="55" />
           <el-table-column prop="operatorName" label="操作人员" width="120">
@@ -114,7 +114,7 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="log-cards">
-          <el-card v-for="log in paginatedLogList" :key="log.id" class="log-card" :class="{ 'is-selected': isLogSelected(log.id) }">
+          <el-card v-for="log in logList" :key="log.id" class="log-card" :class="{ 'is-selected': isLogSelected(log.id) }">
             <div class="log-card-content">
               <div class="log-header-section">
                 <div class="log-info">
@@ -253,7 +253,6 @@ import Pagination from "@/components/Pagination.vue";
 
 // 操作日志列表数据
 const logList = ref([]);
-const paginatedLogList = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
 const pageSize = ref(10);
@@ -345,7 +344,7 @@ const getTimeClass = (time) => {
 // 格式化 JSON
 const formatJson = (json) => {
   try {
-    if (typeof json === 'string') {
+    if (typeof json === "string") {
       return JSON.stringify(JSON.parse(json), null, 2);
     }
     return JSON.stringify(json, null, 2);
@@ -354,88 +353,105 @@ const formatJson = (json) => {
   }
 };
 
+// 判断是否存在搜索条件
+const hasSearchConditions = () => {
+  return !!(
+    searchForm.operatorId ||
+    searchForm.operatorRole ||
+    searchForm.status !== "" ||
+    searchForm.createTimeStart ||
+    searchForm.createTimeEnd
+  );
+};
+
+// 构建搜索参数
+const buildSearchPayload = () => {
+  const searchData = {
+    pageNum: currentPage.value,
+    pageSize: pageSize.value,
+  };
+
+  if (searchForm.operatorId) {
+    searchData.operatorId = Number(searchForm.operatorId);
+  }
+  if (searchForm.operatorRole) {
+    searchData.operatorRole = searchForm.operatorRole;
+  }
+  if (searchForm.status !== "" && searchForm.status !== null && searchForm.status !== undefined) {
+    searchData.status = searchForm.status;
+  }
+  if (searchForm.createTimeStart) {
+    searchData.createTimeStart = searchForm.createTimeStart;
+  }
+  if (searchForm.createTimeEnd) {
+    searchData.createTimeEnd = searchForm.createTimeEnd;
+  }
+
+  return searchData;
+};
+
+// 应用分页响应
+const applyPageData = (pageData) => {
+  logList.value = pageData?.data || [];
+  total.value = Number(pageData?.total || 0);
+  selectedLogs.value = [];
+};
+
 // 获取操作日志列表
-const getOperationLogs = async () => {
+const fetchOperationLogs = async () => {
   loading.value = true;
   try {
-    const res = await getOperationLogList();
-    logList.value = res.data.data;
-    total.value = logList.value.length;
-    currentPage.value = 1;
-    updatePaginatedLogList();
+    let pageData = null;
+    if (hasSearchConditions()) {
+      const res = await searchOperationLog(buildSearchPayload());
+      pageData = res.data.data;
+    } else {
+      const res = await getOperationLogList({
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    }
+    applyPageData(pageData);
   } catch (error) {
-    ElMessage.error("获取操作日志列表失败");
-    console.error("获取操作日志列表失败:", error);
+    ElMessage.error(hasSearchConditions() ? "搜索失败" : "获取操作日志列表失败");
+    console.error(hasSearchConditions() ? "搜索失败:" : "获取操作日志列表失败:", error);
   } finally {
     loading.value = false;
   }
 };
 
-// 更新分页数据
-const updatePaginatedLogList = () => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  paginatedLogList.value = logList.value.slice(startIndex, endIndex);
+// 获取操作日志列表并重置分页
+const getOperationLogs = async () => {
+  currentPage.value = 1;
+  await fetchOperationLogs();
 };
 
 // 处理分页大小变化
-const handleSizeChange = (size) => {
+const handleSizeChange = async (size) => {
   pageSize.value = size;
   currentPage.value = 1;
-  updatePaginatedLogList();
+  await fetchOperationLogs();
 };
 
 // 处理当前页码变化
-const handleCurrentChange = (current) => {
+const handleCurrentChange = async (current) => {
   currentPage.value = current;
-  updatePaginatedLogList();
+  await fetchOperationLogs();
 };
 
 // 处理搜索
 const handleSearch = async () => {
-  loading.value = true;
-  try {
-    // 构建搜索参数
-    const searchData = {};
-    if (searchForm.operatorId) {
-      searchData.operatorId = parseInt(searchForm.operatorId);
-    }
-    if (searchForm.operatorRole) {
-      searchData.operatorRole = searchForm.operatorRole;
-    }
-    if (searchForm.status !== "" && searchForm.status !== null && searchForm.status !== undefined) {
-      searchData.status = searchForm.status;
-    }
-    if (searchForm.createTimeStart) {
-      searchData.createTimeStart = searchForm.createTimeStart;
-    }
-    if (searchForm.createTimeEnd) {
-      searchData.createTimeEnd = searchForm.createTimeEnd;
-    }
-
-    const res = await searchOperationLog(searchData);
-    logList.value = res.data.data;
-    total.value = logList.value.length;
-    currentPage.value = 1;
-    updatePaginatedLogList();
-  } catch (error) {
-    ElMessage.error("搜索失败");
-    console.error("搜索失败:", error);
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchOperationLogs();
 };
 
 // 智能刷新列表
-const refreshLogList = async () => {
-  // 检查是否有任何搜索条件
-  const hasSearchConditions = searchForm.operatorId || searchForm.operatorRole || searchForm.status !== "" || searchForm.createTimeStart || searchForm.createTimeEnd;
-
-  if (hasSearchConditions) {
-    await handleSearch();
-  } else {
-    await getOperationLogs();
+const refreshLogList = async (deletedCount = 0) => {
+  if (deletedCount > 0 && currentPage.value > 1 && logList.value.length <= deletedCount) {
+    currentPage.value -= 1;
   }
+  await fetchOperationLogs();
 };
 
 // 表格多选
@@ -483,7 +499,7 @@ const handleDelete = (id) => {
       try {
         await deleteOperationLogs([id]);
         ElMessage.success("删除成功");
-        await refreshLogList();
+        await refreshLogList(1);
       } catch (error) {
         ElMessage.error("删除失败");
         console.error("删除失败:", error);
@@ -507,7 +523,7 @@ const handleBatchDelete = () => {
         const logIds = selectedLogs.value.map((log) => log.id);
         await deleteOperationLogs(logIds);
         ElMessage.success("批量删除成功");
-        await refreshLogList();
+        await refreshLogList(logIds.length);
       } catch (error) {
         ElMessage.error("批量删除失败");
         console.error("批量删除失败:", error);

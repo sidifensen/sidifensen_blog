@@ -3,6 +3,7 @@ package com.sidifensen.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.SysVisitorLogQueryDto;
 import com.sidifensen.domain.entity.SysVisitorLog;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.SysVisitorLogVo;
 import com.sidifensen.domain.vo.VisitorStatisticsVo;
 import com.sidifensen.domain.vo.VisitorTrendVo;
@@ -29,7 +30,7 @@ public interface SysVisitorLogService extends IService<SysVisitorLog> {
      *
      * @return 访客日志列表
      */
-    List<SysVisitorLogVo> getVisitorLogList();
+    PageVo<List<SysVisitorLogVo>> getVisitorLogList(Integer pageNum, Integer pageSize);
 
     /**
      * 搜索访客日志
@@ -37,7 +38,7 @@ public interface SysVisitorLogService extends IService<SysVisitorLog> {
      * @param queryDto 查询条件
      * @return 访客日志列表
      */
-    List<SysVisitorLogVo> searchVisitorLog(SysVisitorLogQueryDto queryDto);
+    PageVo<List<SysVisitorLogVo>> searchVisitorLog(SysVisitorLogQueryDto queryDto);
 
     /**
      * 批量删除访客日志

@@ -16,6 +16,15 @@ export function getAllMenuList() {
   });
 }
 
+// 分页获取菜单
+export function getMenuPage(params) {
+  return request({
+    url: "/menu/page",
+    method: "get",
+    params,
+  });
+}
+
 // 新增菜单
 export function addMenu(data) {
   return request({
@@ -49,5 +58,14 @@ export function queryMenu(name) {
     params: {
       name,
     },
+  });
+}
+
+// 分页查询菜单
+export function queryMenuPage(params) {
+  return request({
+    url: "/menu/page/search",
+    method: "get",
+    params,
   });
 }

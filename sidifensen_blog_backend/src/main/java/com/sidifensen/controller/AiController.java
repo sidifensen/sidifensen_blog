@@ -4,6 +4,7 @@ import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.AiSummaryDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.service.AiService;
+import com.sidifensen.service.AiUsageService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,9 @@ public class AiController {
 
     @Resource
     private AiService aiService;
+
+    @Resource
+    private AiUsageService aiUsageService;
 
     /**
      * 提取文章摘要
@@ -35,14 +39,17 @@ public class AiController {
 
     /**
      * 查询AI调用配额
-     * 返回用户今日剩余的AI调用次数
+     * 返回用户今日剩余调用次数和日限额
      *
-     * @return 剩余调用次数
+     * @return 配额信息
      */
     @GetMapping("/quota")
-    public Result<Integer> getAiQuota() {
+    public Result<Map<String, Integer>> getAiQuota() {
         Integer remaining = aiService.getRemainingQuota();
-        return Result.success(remaining);
+        return Result.success(Map.of(
+                "remaining", remaining,
+                "dailyLimit", aiUsageService.getDailyLimit()
+        ));
     }
 
     /**

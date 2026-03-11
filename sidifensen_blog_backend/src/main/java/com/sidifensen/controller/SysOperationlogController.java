@@ -3,13 +3,16 @@ package com.sidifensen.controller;
 import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.SysOperationlogQueryDto;
+import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.domain.result.Result;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.SysOperationlogListVo;
 import com.sidifensen.domain.vo.SysOperationlogVo;
-import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.SysOperationlogService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,8 +45,11 @@ public class SysOperationlogController {
     @OperationLog(module = "操作日志管理", type = OperationTypeEnum.SELECT, description = "管理员获取操作日志列表")
     @PreAuthorize("hasAuthority('system:operationlog:list')")
     @GetMapping("/admin/list")
-    public Result<List<SysOperationlogListVo>> getOperationlogList() {
-        List<SysOperationlogListVo> result = sysOperationlogService.getOperationlogList();
+    public Result<PageVo<List<SysOperationlogListVo>>> getOperationlogList(
+            @RequestParam(defaultValue = "1") @Min(value = 1, message = "页码不能小于 1") Integer pageNum,
+            @RequestParam(defaultValue = "10") @Min(value = 1, message = "每页大小不能小于 1")
+            @Max(value = 100, message = "每页大小不能超过 100") Integer pageSize) {
+        PageVo<List<SysOperationlogListVo>> result = sysOperationlogService.getOperationlogList(pageNum, pageSize);
         return Result.success(result);
     }
 
@@ -56,8 +62,8 @@ public class SysOperationlogController {
     @OperationLog(module = "操作日志管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索操作日志")
     @PreAuthorize("hasAuthority('system:operationlog:search')")
     @PostMapping("/admin/search")
-    public Result<List<SysOperationlogListVo>> searchOperationlog(@RequestBody @Valid SysOperationlogQueryDto queryDto) {
-        List<SysOperationlogListVo> result = sysOperationlogService.searchOperationlog(queryDto);
+    public Result<PageVo<List<SysOperationlogListVo>>> searchOperationlog(@RequestBody @Valid SysOperationlogQueryDto queryDto) {
+        PageVo<List<SysOperationlogListVo>> result = sysOperationlogService.searchOperationlog(queryDto);
         return Result.success(result);
     }
 

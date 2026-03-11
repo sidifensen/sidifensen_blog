@@ -248,8 +248,10 @@ public class ArticleController {
     @OperationLog(module = "文章管理", type = OperationTypeEnum.SELECT, description = "管理员获取文章列表")
     @PreAuthorize("hasAuthority('article:list')")
     @GetMapping("/admin/list")
-    public Result adminGetArticleList() {
-        List<ArticleVo> articleVoList = articleService.adminGetArticleList();
+    public Result<PageVo<List<ArticleVo>>> adminGetArticleList(
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<ArticleVo>> articleVoList = articleService.adminGetArticleList(pageNum, pageSize);
         return Result.success(articleVoList);
     }
 
@@ -261,8 +263,11 @@ public class ArticleController {
     @OperationLog(module = "文章管理", type = OperationTypeEnum.SELECT, description = "管理员根据用户 ID 获取文章列表")
     @PreAuthorize("hasAuthority('article:user:list')")
     @GetMapping("/admin/user/{userId}")
-    public Result adminGetArticlesByUserId(@PathVariable @NotNull(message = "用户ID不能为空") Integer userId) {
-        List<ArticleVo> articleVoList = articleService.adminGetArticlesByUserId(userId);
+    public Result<PageVo<List<ArticleVo>>> adminGetArticlesByUserId(
+            @PathVariable @NotNull(message = "用户ID不能为空") Integer userId,
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<ArticleVo>> articleVoList = articleService.adminGetArticlesByUserId(userId, pageNum, pageSize);
         return Result.success(articleVoList);
     }
 
@@ -300,8 +305,8 @@ public class ArticleController {
     @OperationLog(module = "文章管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索文章")
     @PreAuthorize("hasAuthority('article:search')")
     @PostMapping("/admin/search")
-    public Result adminSearchArticle(@RequestBody @Valid ArticleDto articleDto) {
-        List<ArticleVo> articleVoList = articleService.adminSearchArticle(articleDto);
+    public Result<PageVo<List<ArticleVo>>> adminSearchArticle(@RequestBody @Valid ArticleDto articleDto) {
+        PageVo<List<ArticleVo>> articleVoList = articleService.adminSearchArticle(articleDto);
         return Result.success(articleVoList);
     }
 

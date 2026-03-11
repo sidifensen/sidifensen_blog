@@ -33,7 +33,6 @@ public class MessageController {
      * @param
      * @return
      */
-    @OperationLog(module = "消息管理", type = OperationTypeEnum.GET, description = "管理员获取未读消息数量")
     @PreAuthorize("hasAuthority('message:count')")
     @GetMapping("/admin/count")
     public Result getAdminMessagesCount() {
@@ -61,7 +60,7 @@ public class MessageController {
      * @param messageIds
      * @return
      */
-    @OperationLog(module = "消息管理", type = OperationTypeEnum.OTHER, description = "管理员读取消息")
+    @OperationLog(module = "消息管理", operation = "读取", type = OperationTypeEnum.OTHER, description = "管理员读取消息")
     @PreAuthorize("hasAuthority('message:read')")
     @PutMapping("/admin/read")
     public Result readAdminMessage(@RequestBody @NotNull(message = "消息ID列表不能为空") List<Integer> messageIds) {

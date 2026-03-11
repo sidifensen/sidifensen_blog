@@ -3,12 +3,40 @@
     <!-- 内容区域 -->
     <div class="content-section">
       <div class="container">
+        <!-- 页面头部 -->
+        <div class="page-hero">
+          <div class="hero-copy">
+            <span class="hero-kicker">Article Square</span>
+            <h1>文章广场</h1>
+            <p>按发布时间浏览社区内容，持续发现值得读的技术文章。</p>
+          </div>
+
+          <div class="hero-metrics">
+            <div class="metric-card">
+              <span class="metric-label">已加载</span>
+              <span class="metric-value">{{ articleList.length }}</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">全部文章</span>
+              <span class="metric-value">{{ total || "—" }}</span>
+            </div>
+          </div>
+        </div>
+
         <div class="content-layout">
           <!-- 左侧主要内容 -->
           <div class="main-content">
             <!-- 文章列表 -->
             <div class="article-list-wrapper">
-              <div class="article-list-section" ref="listContainer">
+              <div class="article-list-section">
+                <div class="section-head">
+                  <div class="section-title-group">
+                    <h2>最新发布</h2>
+                    <p>优先展示社区最近更新的文章内容</p>
+                  </div>
+                  <span class="section-meta">共 {{ total }} 篇</span>
+                </div>
+
                 <div v-if="articleLoading" class="loading-container">
                   <el-skeleton animated :count="8">
                     <template #template>
@@ -57,13 +85,13 @@
 
                       <!-- 文章元信息 -->
                       <div class="article-meta">
-                        <span class="article-date">{{ article.createTime }}</span>
+                        <span class="article-date">{{ formatDate(article.createTime) }}</span>
                         <span class="article-readCount">
                           <el-icon> <View /> </el-icon>
                           {{ article.readCount }} 阅读</span
                         >
                         <span class="article-likes">
-                          <svg-icon name="like" width="13px" height="13px" color="#909399" />
+                          <svg-icon name="like" width="13px" height="13px" color="currentColor" />
                           {{ article.likeCount || 0 }} 点赞</span
                         >
                         <span class="article-collections">
@@ -96,9 +124,10 @@
             <!-- 热门文章 -->
             <div class="sidebar-card">
               <h4 class="card-title">
-                <el-icon style="margin-right: 4px"><View /></el-icon>
+                <el-icon><View /></el-icon>
                 热门文章
               </h4>
+              <p class="card-description">按阅读热度排序，适合快速补看社区焦点内容。</p>
 
               <!-- 加载中骨架屏 -->
               <div v-if="hotArticleLoading" class="hot-articles-loading">
@@ -143,15 +172,12 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { Plus, Message, Star, Edit, ArrowUp, Picture, View } from "@element-plus/icons-vue";
+import { useRouter } from "vue-router";
+import { Star, ArrowUp, Picture, View } from "@element-plus/icons-vue";
 import { getAllArticleList, getHotArticleList } from "@/api/article";
-import { useUserStore } from "@/stores/userStore";
 
-// 路由和状态管理
-const route = useRoute();
+// 路由
 const router = useRouter();
-const userStore = useUserStore();
 
 // 响应式数据
 const articleLoading = ref(false); // 文章列表加载状态
@@ -168,9 +194,6 @@ const hotArticleList = ref([]); // 热门文章列表数据
 
 // 每页数据量
 const pageSize = ref(10);
-
-// 文章列表容器引用
-const listContainer = ref(null);
 
 // 获取文章列表
 const fetchArticleList = async (reset = false) => {
@@ -245,6 +268,24 @@ const goToUserPage = (userId) => {
   router.push(`/user/${userId}`);
 };
 
+// 格式化日期
+const formatDate = (dateString) => {
+  if (!dateString) {
+    return "";
+  }
+
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) {
+    return dateString;
+  }
+
+  return date.toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+};
+
 // 获取热门文章列表
 const fetchHotArticleList = async () => {
   try {
@@ -274,28 +315,47 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
-// ===== 文章列表页面 - 精致极简风格 =====
-// 设计参考：掘金、知乎、Medium
-
 // 文章页面容器
 .article-page {
-  --bg-page: #f8f9fa;
+  --bg-page: #f8fafc;
+  --bg-hero: #eef4ff;
   --bg-card: #ffffff;
-  --text-primary: #1f2d3d;
-  --text-regular: #606266;
-  --text-secondary: #909399;
-  --border-color: #ebeef5;
-  --shadow-color: rgba(0, 0, 0, 0.04);
+  --bg-soft: #f8fafc;
+  --bg-hover: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-regular: #334155;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --shadow-soft: 0 1px 3px rgba(15, 23, 42, 0.08);
+  --shadow-medium: 0 12px 30px rgba(15, 23, 42, 0.08);
+  --rank-top-bg: rgba(249, 115, 22, 0.12);
+  --rank-top-color: #c2410c;
+  --rank-second-bg: rgba(14, 165, 233, 0.12);
+  --rank-second-color: #0369a1;
+  --rank-third-bg: rgba(16, 185, 129, 0.12);
+  --rank-third-color: #047857;
 
   // 黑夜模式适配
   html.dark & {
-    --bg-page: #0a0a0a;
-    --bg-card: #1a1a1a;
-    --text-primary: #e5e5e5;
-    --text-regular: #a3a3a3;
-    --text-secondary: #737373;
-    --border-color: #262626;
-    --shadow-color: rgba(0, 0, 0, 0.3);
+    --bg-page: #0f172a;
+    --bg-hero: #162033;
+    --bg-card: #1e293b;
+    --bg-soft: #22314b;
+    --bg-hover: rgba(255, 255, 255, 0.04);
+    --text-primary: #f1f5f9;
+    --text-regular: #cbd5e1;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+    --border-strong: #475569;
+    --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-medium: 0 18px 36px rgba(0, 0, 0, 0.28);
+    --rank-top-bg: rgba(251, 146, 60, 0.18);
+    --rank-top-color: #fdba74;
+    --rank-second-bg: rgba(56, 189, 248, 0.18);
+    --rank-second-color: #7dd3fc;
+    --rank-third-bg: rgba(52, 211, 153, 0.18);
+    --rank-third-color: #86efac;
   }
 
   min-height: 100vh;
@@ -310,6 +370,80 @@ onUnmounted(() => {
       max-width: 1200px;
       margin: 0 auto;
       padding: 0 24px;
+
+      // 页面头部
+      .page-hero {
+        display: flex;
+        justify-content: space-between;
+        align-items: stretch;
+        gap: 24px;
+        margin-bottom: 24px;
+        padding: 28px 32px;
+        background: var(--bg-hero);
+        border: 1px solid var(--border-color);
+        border-radius: 24px;
+        box-shadow: var(--shadow-soft);
+
+        .hero-copy {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          max-width: 620px;
+
+          .hero-kicker {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--el-color-primary);
+          }
+
+          h1 {
+            margin: 0;
+            font-size: 34px;
+            line-height: 1.2;
+            color: var(--text-primary);
+          }
+
+          p {
+            margin: 0;
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+          }
+        }
+
+        .hero-metrics {
+          display: flex;
+          gap: 12px;
+          flex-shrink: 0;
+
+          .metric-card {
+            min-width: 128px;
+            padding: 18px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 8px;
+
+            .metric-label {
+              font-size: 12px;
+              color: var(--text-secondary);
+            }
+
+            .metric-value {
+              font-size: 28px;
+              font-weight: 700;
+              line-height: 1;
+              color: var(--text-primary);
+            }
+          }
+        }
+      }
 
       // 内容布局
       .content-layout {
@@ -331,15 +465,55 @@ onUnmounted(() => {
 
             // 文章列表区域
             .article-list-section {
-              // 添加白色背景，确保内容不透明
               background: var(--bg-card);
-              border-radius: 12px;
+              border: 1px solid var(--border-color);
+              border-radius: 24px;
               padding: 24px;
-              box-shadow: 0 2px 12px var(--shadow-color);
+              box-shadow: var(--shadow-soft);
+
+              // 列表头部
+              .section-head {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+                gap: 16px;
+                padding-bottom: 20px;
+                margin-bottom: 4px;
+                border-bottom: 1px solid var(--border-color);
+
+                .section-title-group {
+                  display: flex;
+                  flex-direction: column;
+                  gap: 6px;
+
+                  h2 {
+                    margin: 0;
+                    font-size: 22px;
+                    line-height: 1.3;
+                    color: var(--text-primary);
+                  }
+
+                  p {
+                    margin: 0;
+                    font-size: 13px;
+                    color: var(--text-secondary);
+                  }
+                }
+
+                .section-meta {
+                  font-size: 13px;
+                  color: var(--text-secondary);
+                  padding: 6px 10px;
+                  background: var(--bg-soft);
+                  border: 1px solid var(--border-color);
+                  border-radius: 999px;
+                  white-space: nowrap;
+                }
+              }
 
               // 加载容器样式
               .loading-container {
-                padding: 24px 0;
+                padding: 12px 0 0;
               }
 
               // 骨架屏样式
@@ -361,6 +535,10 @@ onUnmounted(() => {
               .empty-state {
                 padding: 80px 0;
                 text-align: center;
+
+                :deep(.el-empty__description) {
+                  color: var(--text-secondary);
+                }
               }
 
               // 文章列表
@@ -368,22 +546,21 @@ onUnmounted(() => {
                 .article-item {
                   display: flex;
                   gap: 24px;
-                  padding: 24px 0;
-                  border-bottom: 1px solid var(--border-color);
+                  padding: 20px;
+                  margin-top: 16px;
+                  background: var(--bg-card);
+                  border: 1px solid var(--border-color);
+                  border-radius: 20px;
                   cursor: pointer;
-                  transition: all 0.25s ease;
-
-                  &:last-child {
-                    border-bottom: none;
-                  }
+                  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 
                   &:hover {
+                    background: var(--bg-hover);
+                    border-color: var(--border-strong);
+                    box-shadow: var(--shadow-medium);
+
                     .article-title {
                       color: var(--el-color-primary);
-                    }
-
-                    .article-cover {
-                      transform: scale(1.02);
                     }
                   }
 
@@ -391,15 +568,11 @@ onUnmounted(() => {
                   .article-cover {
                     width: 240px;
                     height: 150px;
-                    border-radius: 8px;
+                    border-radius: 16px;
                     flex-shrink: 0;
                     overflow: hidden;
-                    background: var(--el-fill-color-light);
-                    transition: transform 0.3s ease;
-
-                    &:hover {
-                      transform: scale(1.02);
-                    }
+                    border: 1px solid var(--border-color);
+                    background: var(--bg-soft);
 
                     .loading-text {
                       display: flex;
@@ -409,7 +582,7 @@ onUnmounted(() => {
                       height: 100%;
                       font-size: 13px;
                       color: var(--text-secondary);
-                      background-color: var(--el-fill-color-light);
+                      background-color: var(--bg-soft);
                     }
 
                     .error {
@@ -418,11 +591,11 @@ onUnmounted(() => {
                       align-items: center;
                       width: 100%;
                       height: 100%;
-                      background-color: var(--el-fill-color-light);
+                      background-color: var(--bg-soft);
 
                       .el-icon {
                         font-size: 28px;
-                        color: var(--el-text-color-placeholder);
+                        color: var(--text-secondary);
                       }
                     }
                   }
@@ -450,21 +623,21 @@ onUnmounted(() => {
                       }
 
                       .author-avatar {
-                        border: 2px solid var(--bg-card);
-                        box-shadow: 0 2px 8px var(--shadow-color);
+                        border: 1px solid var(--border-color);
+                        box-shadow: none;
                       }
 
                       .author-name {
                         font-size: 14px;
-                        font-weight: 500;
+                        font-weight: 600;
                         color: var(--text-regular);
                         transition: color 0.2s ease;
                       }
                     }
 
                     .article-title {
-                      font-size: 18px;
-                      font-weight: 600;
+                      font-size: 20px;
+                      font-weight: 700;
                       color: var(--text-primary);
                       margin: 0 0 12px 0;
                       line-height: 1.5;
@@ -480,7 +653,7 @@ onUnmounted(() => {
                       font-size: 14px;
                       color: var(--text-secondary);
                       margin: 0 0 16px 0;
-                      line-height: 1.7;
+                      line-height: 1.75;
                       display: -webkit-box;
                       -webkit-line-clamp: 2;
                       line-clamp: 2;
@@ -494,6 +667,7 @@ onUnmounted(() => {
                       color: var(--text-secondary);
                       display: flex;
                       align-items: center;
+                      flex-wrap: wrap;
                       gap: 16px;
 
                       .article-date {
@@ -503,18 +677,14 @@ onUnmounted(() => {
                       .article-readCount,
                       .article-likes,
                       .article-collections {
-                        color: var(--text-secondary);
                         display: flex;
                         align-items: center;
                         gap: 5px;
+                        color: var(--text-secondary);
 
                         .el-icon {
                           font-size: 15px;
                         }
-                      }
-
-                      &:hover {
-                        color: var(--text-regular);
                       }
                     }
                   }
@@ -553,20 +723,19 @@ onUnmounted(() => {
                 height: 44px;
                 background: var(--bg-card);
                 border: 1px solid var(--border-color);
-                box-shadow: 0 4px 16px var(--shadow-color);
+                box-shadow: var(--shadow-medium);
                 border-radius: 50%;
                 cursor: pointer;
-                transition: all 0.25s ease;
+                transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 z-index: 100;
 
                 &:hover {
-                  background: var(--el-color-primary);
-                  color: #fff;
-                  transform: translateY(-4px);
-                  box-shadow: 0 8px 24px rgba(64, 158, 255, 0.25);
+                  background: var(--bg-hover);
+                  color: var(--el-color-primary);
+                  border-color: var(--border-strong);
                 }
 
                 .el-icon {
@@ -586,10 +755,10 @@ onUnmounted(() => {
           // 侧边栏卡片
           .sidebar-card {
             background: var(--bg-card);
-            border-radius: 12px;
-            padding: 20px;
+            border-radius: 24px;
+            padding: 22px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 12px var(--shadow-color);
+            box-shadow: var(--shadow-soft);
             border: 1px solid var(--border-color);
 
             // 卡片标题
@@ -597,23 +766,29 @@ onUnmounted(() => {
               font-size: 16px;
               font-weight: 600;
               color: var(--text-primary);
-              margin: 0 0 18px 0;
-              padding-bottom: 14px;
-              border-bottom: 2px solid var(--border-color);
+              margin: 0 0 10px 0;
               display: flex;
               align-items: center;
+              gap: 6px;
 
               .el-icon {
                 color: var(--el-color-primary);
               }
             }
 
+            .card-description {
+              margin: 0 0 18px 0;
+              font-size: 13px;
+              line-height: 1.6;
+              color: var(--text-secondary);
+            }
+
             // 热门文章加载状态
             .hot-articles-loading {
               .hot-skeleton-item {
                 padding: 14px;
-                border-radius: 8px;
-                background: var(--el-fill-color-light);
+                border-radius: 14px;
+                background: var(--bg-soft);
                 margin-bottom: 10px;
               }
             }
@@ -628,20 +803,22 @@ onUnmounted(() => {
             .hot-articles {
               display: flex;
               flex-direction: column;
-              gap: 10px;
+              gap: 12px;
 
               .hot-article-item {
                 display: flex;
                 align-items: flex-start;
                 gap: 12px;
                 padding: 14px;
-                background: var(--el-fill-color-light);
-                border-radius: 8px;
+                background: var(--bg-soft);
+                border: 1px solid var(--border-color);
+                border-radius: 16px;
                 cursor: pointer;
-                transition: all 0.2s ease;
+                transition: background-color 0.2s ease, border-color 0.2s ease;
 
                 &:hover {
-                  background: var(--el-color-primary-light-9);
+                  background: var(--bg-hover);
+                  border-color: var(--border-strong);
 
                   .hot-article-title {
                     color: var(--el-color-primary);
@@ -659,26 +836,30 @@ onUnmounted(() => {
                   font-size: 14px;
                   font-weight: 700;
                   color: var(--text-regular);
-                  background: var(--el-fill-color);
-                  border-radius: 4px;
+                  background: var(--bg-card);
+                  border: 1px solid var(--border-color);
+                  border-radius: 8px;
                 }
 
                 // 第一名金色
                 &:nth-child(1) .hot-article-rank {
-                  background: linear-gradient(135deg, #ffd700, #ffec8b);
-                  color: #8b6914;
+                  background: var(--rank-top-bg);
+                  color: var(--rank-top-color);
+                  border-color: transparent;
                 }
 
                 // 第二名银色
                 &:nth-child(2) .hot-article-rank {
-                  background: linear-gradient(135deg, #e0e0e0, #f5f5f5);
-                  color: #5a5a5a;
+                  background: var(--rank-second-bg);
+                  color: var(--rank-second-color);
+                  border-color: transparent;
                 }
 
                 // 第三名铜色
                 &:nth-child(3) .hot-article-rank {
-                  background: linear-gradient(135deg, #d4a574, #e9c499);
-                  color: #7a4f2a;
+                  background: var(--rank-third-bg);
+                  color: var(--rank-third-color);
+                  border-color: transparent;
                 }
 
                 // 文章内容区域
@@ -726,9 +907,7 @@ onUnmounted(() => {
                       gap: 3px;
                       font-weight: 600;
                       color: var(--el-color-danger);
-                      background: var(--el-color-danger-light-9);
-                      padding: 2px 6px;
-                      border-radius: 4px;
+                      background: transparent;
                     }
                   }
                 }
@@ -759,13 +938,40 @@ onUnmounted(() => {
 // 响应式设计
 @media (max-width: 768px) {
   .article-page {
-    background: var(--bg-page);
-
     .content-section {
-      padding: 0;
+      padding: 16px 0 40px;
 
       .container {
         padding: 0 16px;
+
+        .page-hero {
+          flex-direction: column;
+          padding: 20px;
+          border-radius: 20px;
+          margin-bottom: 16px;
+
+          .hero-copy {
+            h1 {
+              font-size: 28px;
+            }
+
+            p {
+              font-size: 14px;
+            }
+          }
+
+          .hero-metrics {
+            .metric-card {
+              flex: 1;
+              min-width: 0;
+              padding: 16px;
+
+              .metric-value {
+                font-size: 24px;
+              }
+            }
+          }
+        }
 
         .content-layout {
           gap: 16px;
@@ -777,23 +983,28 @@ onUnmounted(() => {
                 bottom: 80px;
                 width: 40px;
                 height: 40px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-
-                &:hover {
-                  transform: translateY(-2px);
-                }
               }
 
               .article-list-section {
+                padding: 18px;
+                border-radius: 20px;
+
+                .section-head {
+                  flex-direction: column;
+                  align-items: flex-start;
+                  padding-bottom: 16px;
+                }
+
                 .article-list {
                   .article-item {
-                    gap: 16px;
-                    padding: 16px 0;
+                    gap: 14px;
+                    padding: 16px;
+                    border-radius: 16px;
 
                     .article-cover {
                       width: 120px;
                       height: 80px;
-                      border-radius: 6px;
+                      border-radius: 10px;
                     }
 
                     .article-content {

@@ -3,6 +3,7 @@ package com.sidifensen.service.impl;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.RabbitMQConstants;
@@ -12,6 +13,7 @@ import com.sidifensen.domain.dto.BlacklistUpdateDto;
 import com.sidifensen.domain.dto.MessageDto;
 import com.sidifensen.domain.entity.SysBlacklist;
 import com.sidifensen.domain.enums.BlacklistTypeEnum;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysBlacklistMapper;
 import com.sidifensen.redis.RedisComponent;
@@ -217,14 +219,16 @@ public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, Sys
     }
 
     @Override
-    public List<SysBlacklist> adminGetBlacklistList() {
+    public PageVo<List<SysBlacklist>> adminGetBlacklistList(Integer pageNum, Integer pageSize) {
         try {
+            Page<SysBlacklist> page = new Page<>(pageNum, pageSize);
             // 获取所有黑名单记录，按封禁时间倒序
             LambdaQueryWrapper<SysBlacklist> queryWrapper = new LambdaQueryWrapper<SysBlacklist>()
                     .eq(SysBlacklist::getIsDeleted, 0)
                     .orderByDesc(SysBlacklist::getBanTime);
 
-            return list(queryWrapper);
+            List<SysBlacklist> blacklistList = page(page, queryWrapper).getRecords();
+            return new PageVo<>(blacklistList, page.getTotal());
         } catch (Exception e) {
             log.error("管理员获取黑名单列表失败", e);
             throw new BlogException(BlogConstants.IllegalRequest);
@@ -271,8 +275,9 @@ public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, Sys
     }
 
     @Override
-    public List<SysBlacklist> adminSearchBlacklist(BlacklistSearchDto blacklistSearchDto) {
+    public PageVo<List<SysBlacklist>> adminSearchBlacklist(BlacklistSearchDto blacklistSearchDto) {
         try {
+            Page<SysBlacklist> page = new Page<>(blacklistSearchDto.getPageNum(), blacklistSearchDto.getPageSize());
             // 构建查询条件
             LambdaQueryWrapper<SysBlacklist> queryWrapper = new LambdaQueryWrapper<SysBlacklist>()
                     .eq(SysBlacklist::getIsDeleted, 0)
@@ -302,8 +307,8 @@ public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, Sys
                     .le(blacklistSearchDto.getExpireTimeEnd() != null, SysBlacklist::getExpireTime,
                             blacklistSearchDto.getExpireTimeEnd());
 
-            List<SysBlacklist> blacklistList = list(queryWrapper);
-            return blacklistList;
+            List<SysBlacklist> blacklistList = page(page, queryWrapper).getRecords();
+            return new PageVo<>(blacklistList, page.getTotal());
         } catch (Exception e) {
             log.error("管理员搜索黑名单失败", e);
             throw new BlogException(BlogConstants.IllegalRequest);

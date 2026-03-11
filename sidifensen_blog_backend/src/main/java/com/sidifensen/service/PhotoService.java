@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.PhotoAuditDto;
 import com.sidifensen.domain.dto.PhotoDto;
 import com.sidifensen.domain.entity.Photo;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.PhotoVo;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -53,9 +54,9 @@ public interface PhotoService extends IService<Photo> {
     void adminAuditBatch(List<PhotoAuditDto> photoAuditDto);
 
     // 获取图片列表
-    List<PhotoVo> listPhotos();
+    PageVo<List<PhotoVo>> listPhotos(Integer pageNum, Integer pageSize);
 
     // 搜索图片
-    List<PhotoVo> adminSearch(PhotoDto photoDto);
+    PageVo<List<PhotoVo>> adminSearch(PhotoDto photoDto);
 
 }

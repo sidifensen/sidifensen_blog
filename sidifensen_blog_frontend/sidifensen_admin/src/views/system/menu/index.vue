@@ -216,7 +216,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, computed } from "vue";
 import { Search, Plus, Edit, Delete, Avatar, Document, ArrowRight } from "@element-plus/icons-vue";
-import { getAllMenuList, addMenu, updateMenu, deleteMenu, queryMenu } from "@/api/menu";
+import { getAllMenuList, getMenuPage, addMenu, updateMenu, deleteMenu, queryMenuPage } from "@/api/menu";
 import { addRoleMenu, getRolesByMenu } from "@/api/role-menu";
 import { getRoleList } from "@/api/role";
 import { icons } from "@/utils/Icon";
@@ -306,24 +306,8 @@ onUnmounted(() => {
 
 // 获取菜单列表
 const getMenuList = async () => {
-  loading.value = true;
-  try {
-    const res = await getAllMenuList();
-
-    // 按照sort排序并树形化
-    menuList.value = formatMenu(res.data.data);
-
-    // 树形化后的菜单列表长度为总数
-    total.value = menuList.value.length;
-
-    // 更新分页数据
-    updatePaginatedMenuList();
-  } catch (error) {
-    ElMessage.error("获取菜单列表失败");
-    console.error("获取菜单列表失败:", error);
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchMenus();
 };
 
 // 当前页码
@@ -331,45 +315,62 @@ const currentPage = ref(1);
 // 每页条数
 const pageSize = ref(10);
 
+const hasSearchConditions = () => !!searchQuery.value.trim();
+
+const applyPageData = (pageData) => {
+  menuList.value = formatMenu(pageData?.data || []);
+  paginatedMenuList.value = menuList.value;
+  total.value = Number(pageData?.total || 0);
+};
+
+const fetchMenus = async () => {
+  loading.value = true;
+  try {
+    let pageData = null;
+    if (hasSearchConditions()) {
+      const res = await queryMenuPage({
+        name: searchQuery.value,
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    } else {
+      const res = await getMenuPage({
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    }
+    applyPageData(pageData);
+  } catch (error) {
+    ElMessage.error(hasSearchConditions() ? "搜索菜单失败" : "获取菜单列表失败");
+  } finally {
+    loading.value = false;
+  }
+};
+
 // 更新分页数据
 const updatePaginatedMenuList = () => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  paginatedMenuList.value = menuList.value.slice(startIndex, endIndex);
+  paginatedMenuList.value = menuList.value;
 };
 
 // 处理分页大小变化
-const handleSizeChange = (size) => {
+const handleSizeChange = async (size) => {
   pageSize.value = size;
-  updatePaginatedMenuList();
+  currentPage.value = 1;
+  await fetchMenus();
 };
 
 // 处理当前页码变化
-const handleCurrentChange = (current) => {
+const handleCurrentChange = async (current) => {
   currentPage.value = current;
-  updatePaginatedMenuList();
+  await fetchMenus();
 };
 
 // 处理搜索
 const handleSearch = async () => {
-  if (searchQuery.value.trim() === "") {
-    getMenuList();
-    return;
-  }
-
-  loading.value = true;
-  try {
-    const res = await queryMenu(searchQuery.value);
-    menuList.value = res.data.data;
-    total.value = menuList.value.length;
-    // 更新分页数据
-    updatePaginatedMenuList();
-  } catch (error) {
-    ElMessage.error("搜索菜单失败");
-    console.error("搜索菜单失败:", error);
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchMenus();
 };
 
 // 监听搜索输入变化

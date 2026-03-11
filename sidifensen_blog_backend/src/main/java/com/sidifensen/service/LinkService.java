@@ -59,7 +59,7 @@ public interface LinkService extends IService<Link> {
      *
      * @return 友链列表
      */
-    List<AdminLinkVo> adminGetLinkList();
+    PageVo<List<AdminLinkVo>> adminGetLinkList(Integer pageNum, Integer pageSize);
 
     /**
      * 管理员搜索友链
@@ -67,7 +67,7 @@ public interface LinkService extends IService<Link> {
      * @param linkSearchDto 搜索条件
      * @return 搜索结果
      */
-    List<AdminLinkVo> adminSearchLink(LinkSearchDto linkSearchDto);
+    PageVo<List<AdminLinkVo>> adminSearchLink(LinkSearchDto linkSearchDto);
 
     /**
      * 管理员审核友链

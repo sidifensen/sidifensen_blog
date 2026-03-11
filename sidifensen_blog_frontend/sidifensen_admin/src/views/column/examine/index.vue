@@ -431,16 +431,46 @@ const getUsers = async () => {
 
 // 获取专栏列表
 const getColumns = async () => {
+  currentPage.value = 1;
+  await fetchColumns();
+};
+
+const hasSearchConditions = () => !!(searchExamineStatus.value || searchKeyword.value || searchStartTime.value || searchEndTime.value || searchUserId.value);
+
+const buildSearchPayload = () => ({
+  pageNum: currentPage.value,
+  pageSize: pageSize.value,
+  userId: searchUserId.value || undefined,
+  examineStatus: searchExamineStatus.value ? parseInt(searchExamineStatus.value, 10) : undefined,
+  keyword: searchKeyword.value || undefined,
+  createTimeStart: searchStartTime.value || undefined,
+  createTimeEnd: searchEndTime.value || undefined,
+});
+
+const applyPageData = (pageData) => {
+  columnList.value = pageData?.data || [];
+  paginatedColumnList.value = columnList.value;
+  total.value = Number(pageData?.total || 0);
+  selectedColumns.value = [];
+};
+
+const fetchColumns = async () => {
   loading.value = true;
   try {
-    // 传递空的筛选条件对象
-    const res = await adminGetColumnList({});
-    columnList.value = res.data.data.sort((a, b) => b.id - a.id);
-    total.value = columnList.value.length;
-    currentPage.value = 1;
-    updatePaginatedColumnList();
+    let pageData = null;
+    if (hasSearchConditions()) {
+      const res = await adminSearchColumn(buildSearchPayload());
+      pageData = res.data.data;
+    } else {
+      const res = await adminGetColumnList({
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    }
+    applyPageData(pageData);
   } catch (error) {
-    ElMessage.error("获取专栏列表失败");
+    ElMessage.error(hasSearchConditions() ? "搜索专栏失败" : "获取专栏列表失败");
   } finally {
     loading.value = false;
   }
@@ -448,59 +478,34 @@ const getColumns = async () => {
 
 // 更新分页数据
 const updatePaginatedColumnList = () => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  paginatedColumnList.value = columnList.value.slice(startIndex, endIndex);
+  paginatedColumnList.value = columnList.value;
 };
 
 // 处理分页大小变化
-const handleSizeChange = (size) => {
+const handleSizeChange = async (size) => {
   pageSize.value = size;
   currentPage.value = 1;
-  updatePaginatedColumnList();
+  await fetchColumns();
 };
 
 // 处理当前页码变化
-const handleCurrentChange = (current) => {
+const handleCurrentChange = async (current) => {
   currentPage.value = current;
-  updatePaginatedColumnList();
+  await fetchColumns();
 };
 
 // 处理搜索
 const handleSearch = async () => {
-  loading.value = true;
-  try {
-    // 构建搜索参数
-    const searchData = {
-      userId: searchUserId.value,
-      examineStatus: searchExamineStatus.value ? parseInt(searchExamineStatus.value) : undefined,
-      keyword: searchKeyword.value,
-      createTimeStart: searchStartTime.value,
-      createTimeEnd: searchEndTime.value,
-    };
-
-    const res = await adminSearchColumn(searchData);
-    columnList.value = res.data.data;
-    total.value = columnList.value.length;
-    currentPage.value = 1;
-    updatePaginatedColumnList();
-  } catch (error) {
-    ElMessage.error("搜索专栏失败");
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchColumns();
 };
 
 // 智能刷新列表
-const refreshColumnList = async () => {
-  // 检查是否有任何搜索条件
-  const hasSearchConditions = searchExamineStatus.value || searchKeyword.value || searchStartTime.value || searchEndTime.value || searchUserId.value;
-
-  if (hasSearchConditions) {
-    await handleSearch();
-  } else {
-    await getColumns();
+const refreshColumnList = async (deletedCount = 0) => {
+  if (deletedCount > 0 && currentPage.value > 1 && columnList.value.length <= deletedCount) {
+    currentPage.value -= 1;
   }
+  await fetchColumns();
 };
 
 // 表格多选

@@ -323,7 +323,7 @@
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import { Search, InfoFilled, Edit, Delete, Avatar, Calendar } from "@element-plus/icons-vue";
 import { getRoleList } from "@/api/role";
-import { getUserList, updateUser, deleteUser, queryUser, getUserDetail } from "@/api/user";
+import { getUserList, getUserPage, updateUser, deleteUser, queryUserPage, getUserDetail } from "@/api/user";
 import { getRolesByUser, addRole } from "@/api/user-role";
 import { formatMenu } from "@/utils/Menu";
 import Pagination from "@/components/Pagination.vue";
@@ -368,20 +368,8 @@ const rules = {
 
 // 获取用户列表
 const getUsers = async () => {
-  loading.value = true;
-  try {
-    const res = await getUserList();
-    userList.value = res.data.data;
-    total.value = userList.value.length;
-    // 对角色列表进行排序
-    userList.value.sort((a, b) => a.id - b.id);
-    // 更新分页数据
-    updatePaginatedUserList();
-  } catch (error) {
-    ElMessage.error("获取用户列表失败");
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchUsers();
 };
 
 // 初始化
@@ -395,25 +383,6 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
 });
-
-// 更新分页数据
-const updatePaginatedUserList = () => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  paginatedUserList.value = userList.value.slice(startIndex, endIndex);
-};
-
-// 处理分页大小变化
-const handleSizeChange = (size) => {
-  pageSize.value = size;
-  updatePaginatedUserList();
-};
-
-// 处理当前页码变化
-const handleCurrentChange = (current) => {
-  currentPage.value = current;
-  updatePaginatedUserList();
-};
 
 const switchLoading = ref(false);
 // 处理状态变更
@@ -451,26 +420,68 @@ const searchCreateTimeStart = ref(null);
 // 搜索创建时间结束
 const searchCreateTimeEnd = ref(null);
 
-// 处理搜索
-const handleSearch = async () => {
+const hasSearchConditions = () => !!(searchUsername.value || searchEmail.value || searchStatus.value !== "" || searchCreateTimeStart.value || searchCreateTimeEnd.value);
+
+const buildSearchPayload = () => ({
+  pageNum: currentPage.value,
+  pageSize: pageSize.value,
+  username: searchUsername.value || undefined,
+  email: searchEmail.value || undefined,
+  status: searchStatus.value !== "" ? searchStatus.value : undefined,
+  createTimeStart: searchCreateTimeStart.value || undefined,
+  createTimeEnd: searchCreateTimeEnd.value || undefined,
+});
+
+const applyPageData = (pageData) => {
+  userList.value = pageData?.data || [];
+  paginatedUserList.value = userList.value;
+  total.value = Number(pageData?.total || 0);
+};
+
+const fetchUsers = async () => {
   loading.value = true;
   try {
-    const res = await queryUser({
-      username: searchUsername.value,
-      email: searchEmail.value,
-      status: searchStatus.value,
-      createTimeStart: searchCreateTimeStart.value,
-      createTimeEnd: searchCreateTimeEnd.value,
-    });
-    userList.value = res.data.data;
-    total.value = userList.value.length;
-    // 更新分页数据
-    updatePaginatedUserList();
+    let pageData = null;
+    if (hasSearchConditions()) {
+      const res = await queryUserPage(buildSearchPayload());
+      pageData = res.data.data;
+    } else {
+      const res = await getUserPage({
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    }
+    applyPageData(pageData);
   } catch (error) {
-    ElMessage.error("搜索用户失败");
+    ElMessage.error(hasSearchConditions() ? "搜索用户失败" : "获取用户列表失败");
   } finally {
     loading.value = false;
   }
+};
+
+// 更新分页数据
+const updatePaginatedUserList = () => {
+  paginatedUserList.value = userList.value;
+};
+
+// 处理分页大小变化
+const handleSizeChange = async (size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  await fetchUsers();
+};
+
+// 处理当前页码变化
+const handleCurrentChange = async (current) => {
+  currentPage.value = current;
+  await fetchUsers();
+};
+
+// 处理搜索
+const handleSearch = async () => {
+  currentPage.value = 1;
+  await fetchUsers();
 };
 
 // 监听搜索输入变化

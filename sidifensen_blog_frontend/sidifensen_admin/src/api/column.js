@@ -10,10 +10,11 @@ export function adminGetColumnList(data) {
 }
 
 // 管理员根据用户ID获取专栏列表
-export function adminGetColumnsByUserId(userId) {
+export function adminGetColumnsByUserId(userId, params) {
   return request({
     url: `/column/admin/user/${userId}`,
     method: "get",
+    params,
   });
 }
 

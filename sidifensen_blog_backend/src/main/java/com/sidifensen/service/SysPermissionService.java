@@ -3,6 +3,7 @@ package com.sidifensen.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.SysPermissionDto;
 import com.sidifensen.domain.entity.SysPermission;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.SysPermissionVo;
 
 import java.util.List;
@@ -20,6 +21,9 @@ public interface SysPermissionService extends IService<SysPermission> {
     // 查询权限列表
     List<SysPermissionVo> listPermission();
 
+    // 分页查询权限列表
+    PageVo<List<SysPermissionVo>> pagePermission(Integer pageNum, Integer pageSize);
+
     // 新增权限
     void add(SysPermissionDto sysPermissionDto);
 
@@ -31,4 +35,7 @@ public interface SysPermissionService extends IService<SysPermission> {
 
     // 查找权限
     List<SysPermissionVo> search(SysPermissionDto sysPermissionDto);
+
+    // 分页查找权限
+    PageVo<List<SysPermissionVo>> searchPage(SysPermissionDto sysPermissionDto);
 }

@@ -3,6 +3,7 @@ package com.sidifensen.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.SysLoginLogQueryDto;
 import com.sidifensen.domain.entity.SysLoginLog;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.SysLoginLogVo;
 
 import java.util.List;
@@ -33,7 +34,7 @@ public interface SysLoginLogService extends IService<SysLoginLog> {
      *
      * @return 登录日志列表
      */
-    List<SysLoginLogVo> getLoginLogList();
+    PageVo<List<SysLoginLogVo>> getLoginLogList(Integer pageNum, Integer pageSize);
 
     /**
      * 搜索登录日志
@@ -41,7 +42,7 @@ public interface SysLoginLogService extends IService<SysLoginLog> {
      * @param queryDto 查询条件
      * @return 登录日志列表
      */
-    List<SysLoginLogVo> searchLoginLog(SysLoginLogQueryDto queryDto);
+    PageVo<List<SysLoginLogVo>> searchLoginLog(SysLoginLogQueryDto queryDto);
 
     /**
      * 批量删除登录日志

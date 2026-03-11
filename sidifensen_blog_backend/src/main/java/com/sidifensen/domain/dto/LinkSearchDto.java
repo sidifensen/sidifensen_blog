@@ -30,6 +30,19 @@ public class LinkSearchDto implements Serializable {
     private Integer examineStatus;
 
     /**
+     * 页码
+     */
+    @Min(value = 1, message = "页码不能小于1")
+    private Integer pageNum = 1;
+
+    /**
+     * 每页大小
+     */
+    @Min(value = 1, message = "每页大小不能小于1")
+    @Max(value = 100, message = "每页大小不能超过100")
+    private Integer pageSize = 10;
+
+    /**
      * 用户id（可选）
      */
     @Min(value = 1, message = "用户id必须大于0")

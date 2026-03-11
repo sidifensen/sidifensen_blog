@@ -36,10 +36,11 @@ export function adminAuditBatchPhoto(data){
 }
 
 // 管理端获取图片列表
-export function adminGetPhotoList(){
+export function adminGetPhotoList(params){
   return request({
     url: `/photo/admin/list`,
     method: "get",
+    params,
   });
 }
 

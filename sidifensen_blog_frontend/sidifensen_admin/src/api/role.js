@@ -8,6 +8,15 @@ export function getRoleList() {
   });
 }
 
+// 分页获取角色
+export function getRolePage(params) {
+  return request({
+    url: "/role/page",
+    method: "get",
+    params,
+  });
+}
+
 // 新增角色
 export function addRole(data) {
   return request({
@@ -41,5 +50,14 @@ export function queryRole(name) {
     params: {
       name,
     },
+  });
+}
+
+// 分页查询角色
+export function queryRolePage(params) {
+  return request({
+    url: "/role/page/search",
+    method: "get",
+    params,
   });
 }

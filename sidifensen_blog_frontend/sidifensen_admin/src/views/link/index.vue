@@ -224,15 +224,46 @@ const getUsers = async () => {
 
 // 获取友链列表
 const getLinks = async () => {
+  currentPage.value = 1;
+  await fetchLinks();
+};
+
+const hasSearchConditions = () => !!(searchExamineStatus.value || searchKeyword.value || searchStartTime.value || searchEndTime.value || searchUserId.value);
+
+const buildSearchPayload = () => ({
+  pageNum: currentPage.value,
+  pageSize: pageSize.value,
+  userId: searchUserId.value || undefined,
+  examineStatus: searchExamineStatus.value ? parseInt(searchExamineStatus.value, 10) : undefined,
+  keyword: searchKeyword.value || undefined,
+  createTimeStart: searchStartTime.value || undefined,
+  createTimeEnd: searchEndTime.value || undefined,
+});
+
+const applyPageData = (pageData) => {
+  linkList.value = pageData?.data || [];
+  paginatedLinkList.value = linkList.value;
+  total.value = Number(pageData?.total || 0);
+  selectedLinks.value = [];
+};
+
+const fetchLinks = async () => {
   loading.value = true;
   try {
-    const res = await adminGetLinkList();
-    linkList.value = res.data.data.sort((a, b) => b.id - a.id);
-    total.value = linkList.value.length;
-    currentPage.value = 1;
-    updatePaginatedLinkList();
+    let pageData = null;
+    if (hasSearchConditions()) {
+      const res = await adminSearchLink(buildSearchPayload());
+      pageData = res.data.data;
+    } else {
+      const res = await adminGetLinkList({
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    }
+    applyPageData(pageData);
   } catch (error) {
-    ElMessage.error("获取友链列表失败");
+    ElMessage.error(hasSearchConditions() ? "搜索友链失败" : "获取友链列表失败");
   } finally {
     loading.value = false;
   }
@@ -240,59 +271,34 @@ const getLinks = async () => {
 
 // 更新分页数据
 const updatePaginatedLinkList = () => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  paginatedLinkList.value = linkList.value.slice(startIndex, endIndex);
+  paginatedLinkList.value = linkList.value;
 };
 
 // 处理分页大小变化
-const handleSizeChange = (size) => {
+const handleSizeChange = async (size) => {
   pageSize.value = size;
   currentPage.value = 1;
-  updatePaginatedLinkList();
+  await fetchLinks();
 };
 
 // 处理当前页码变化
-const handleCurrentChange = (current) => {
+const handleCurrentChange = async (current) => {
   currentPage.value = current;
-  updatePaginatedLinkList();
+  await fetchLinks();
 };
 
 // 处理搜索
 const handleSearch = async () => {
-  loading.value = true;
-  try {
-    // 构建搜索参数
-    const searchData = {
-      userId: searchUserId.value,
-      examineStatus: searchExamineStatus.value ? parseInt(searchExamineStatus.value) : undefined,
-      keyword: searchKeyword.value,
-      createTimeStart: searchStartTime.value ? new Date(searchStartTime.value) : undefined,
-      createTimeEnd: searchEndTime.value ? new Date(searchEndTime.value) : undefined,
-    };
-
-    const res = await adminSearchLink(searchData);
-    linkList.value = res.data.data;
-    total.value = linkList.value.length;
-    currentPage.value = 1;
-    updatePaginatedLinkList();
-  } catch (error) {
-    ElMessage.error("搜索友链失败");
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchLinks();
 };
 
 // 智能刷新列表
-const refreshLinkList = async () => {
-  // 检查是否有任何搜索条件
-  const hasSearchConditions = searchExamineStatus.value || searchKeyword.value || searchStartTime.value || searchEndTime.value || searchUserId.value;
-
-  if (hasSearchConditions) {
-    await handleSearch();
-  } else {
-    await getLinks();
+const refreshLinkList = async (deletedCount = 0) => {
+  if (deletedCount > 0 && currentPage.value > 1 && linkList.value.length <= deletedCount) {
+    currentPage.value -= 1;
   }
+  await fetchLinks();
 };
 
 // 表格多选

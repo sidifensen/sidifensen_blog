@@ -237,11 +237,28 @@ defineExpose({
 <style lang="scss" scoped>
 // 历史记录列表区域
 .history-list-section {
-  background: var(--el-bg-color-page);
+  --bg-card: #f5f7fa;
+  --text-primary: #303133;
+  --text-regular: #606266;
+  --text-secondary: #909399;
+  --border-color: #e4e7ed;
+  --shadow-color: rgba(0, 0, 0, 0.06);
+
+  background: var(--bg-card);
   border-radius: 8px;
-  border: 1px solid var(--el-border-color);
-  box-shadow: 0 2px 12px var(--el-border-color-light);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 12px var(--shadow-color);
   overflow: hidden;
+
+  // 黑夜模式适配 - 深蓝色背景 (与个人主页卡片背景一致)
+  html.dark & {
+    --bg-card: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-regular: #cbd5e1;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+  }
 
   // 操作栏
   .history-controls {

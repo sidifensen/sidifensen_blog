@@ -8,6 +8,7 @@ import com.sidifensen.domain.dto.BlacklistUpdateDto;
 import com.sidifensen.domain.entity.SysBlacklist;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.enums.OperationTypeEnum;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.service.SysBlacklistService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -39,8 +40,10 @@ public class SysBlacklistController {
     @OperationLog(module = "黑名单管理", type = OperationTypeEnum.SELECT, description = "管理员获取黑名单列表")
     @PreAuthorize("hasAuthority('system:blacklist:list')")
     @GetMapping("/admin/list")
-    public Result<List<SysBlacklist>> adminGetBlacklistList() {
-        List<SysBlacklist> blacklistList = sysBlacklistService.adminGetBlacklistList();
+    public Result<PageVo<List<SysBlacklist>>> adminGetBlacklistList(
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<SysBlacklist>> blacklistList = sysBlacklistService.adminGetBlacklistList(pageNum, pageSize);
         return Result.success(blacklistList);
     }
 
@@ -67,8 +70,8 @@ public class SysBlacklistController {
     @OperationLog(module = "黑名单管理", type = OperationTypeEnum.SEARCH, description = "管理员搜索黑名单")
     @PreAuthorize("hasAuthority('system:blacklist:search')")
     @PostMapping("/admin/search")
-    public Result<List<SysBlacklist>> adminSearchBlacklist(@RequestBody @Valid BlacklistSearchDto blacklistSearchDto) {
-        List<SysBlacklist> blacklistList = sysBlacklistService.adminSearchBlacklist(blacklistSearchDto);
+    public Result<PageVo<List<SysBlacklist>>> adminSearchBlacklist(@RequestBody @Valid BlacklistSearchDto blacklistSearchDto) {
+        PageVo<List<SysBlacklist>> blacklistList = sysBlacklistService.adminSearchBlacklist(blacklistSearchDto);
         return Result.success(blacklistList);
     }
 

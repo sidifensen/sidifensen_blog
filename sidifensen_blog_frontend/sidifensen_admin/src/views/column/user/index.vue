@@ -505,6 +505,8 @@ const handleBackToUsers = () => {
   currentUser.value = null;
   columnList.value = [];
   paginatedColumnList.value = [];
+  currentPage.value = 1;
+  total.value = 0;
   // 重置搜索条件
   searchExamineStatus.value = "";
   searchKeyword.value = "";
@@ -515,15 +517,47 @@ const handleBackToUsers = () => {
 
 // 获取用户专栏列表
 const getUserColumns = async (userId) => {
+  currentPage.value = 1;
+  await fetchUserColumns(userId);
+};
+
+const hasSearchConditions = () => !!(searchExamineStatus.value || searchKeyword.value || searchStartTime.value || searchEndTime.value);
+
+const buildSearchPayload = () => ({
+  pageNum: currentPage.value,
+  pageSize: pageSize.value,
+  userId: currentUser.value?.id,
+  examineStatus: searchExamineStatus.value ? parseInt(searchExamineStatus.value, 10) : undefined,
+  keyword: searchKeyword.value || undefined,
+  createTimeStart: searchStartTime.value || undefined,
+  createTimeEnd: searchEndTime.value || undefined,
+});
+
+const applyPageData = (pageData) => {
+  columnList.value = pageData?.data || [];
+  paginatedColumnList.value = columnList.value;
+  total.value = Number(pageData?.total || 0);
+  selectedColumns.value = [];
+};
+
+const fetchUserColumns = async (userId = currentUser.value?.id) => {
+  if (!userId) return;
   loading.value = true;
   try {
-    const res = await adminGetColumnsByUserId(userId);
-    columnList.value = res.data.data.sort((a, b) => a.id - b.id);
-    total.value = columnList.value.length;
-    currentPage.value = 1;
-    updatePaginatedColumnList();
+    let pageData = null;
+    if (hasSearchConditions()) {
+      const res = await adminSearchColumn(buildSearchPayload());
+      pageData = res.data.data;
+    } else {
+      const res = await adminGetColumnsByUserId(userId, {
+        pageNum: currentPage.value,
+        pageSize: pageSize.value,
+      });
+      pageData = res.data.data;
+    }
+    applyPageData(pageData);
   } catch (error) {
-    ElMessage.error("获取用户专栏列表失败");
+    ElMessage.error(hasSearchConditions() ? "搜索专栏失败" : "获取用户专栏列表失败");
   } finally {
     loading.value = false;
   }
@@ -531,63 +565,36 @@ const getUserColumns = async (userId) => {
 
 // 更新分页数据
 const updatePaginatedColumnList = () => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  paginatedColumnList.value = columnList.value.slice(startIndex, endIndex);
+  paginatedColumnList.value = columnList.value;
 };
 
 // 处理分页大小变化
-const handleSizeChange = (size) => {
+const handleSizeChange = async (size) => {
   pageSize.value = size;
   currentPage.value = 1;
-  updatePaginatedColumnList();
+  await fetchUserColumns();
 };
 
 // 处理当前页码变化
-const handleCurrentChange = (current) => {
+const handleCurrentChange = async (current) => {
   currentPage.value = current;
-  updatePaginatedColumnList();
+  await fetchUserColumns();
 };
 
 // 处理搜索
 const handleSearch = async () => {
   if (!currentUser.value) return;
-
-  loading.value = true;
-  try {
-    // 构建搜索参数
-    const searchData = {
-      userId: currentUser.value.id,
-      examineStatus: searchExamineStatus.value ? parseInt(searchExamineStatus.value) : undefined,
-      keyword: searchKeyword.value,
-      createTimeStart: searchStartTime.value,
-      createTimeEnd: searchEndTime.value,
-    };
-
-    const res = await adminSearchColumn(searchData);
-    columnList.value = res.data.data;
-    total.value = columnList.value.length;
-    currentPage.value = 1;
-    updatePaginatedColumnList();
-  } catch (error) {
-    ElMessage.error("搜索专栏失败");
-  } finally {
-    loading.value = false;
-  }
+  currentPage.value = 1;
+  await fetchUserColumns();
 };
 
 // 智能刷新列表
-const refreshColumnList = async () => {
+const refreshColumnList = async (deletedCount = 0) => {
   if (!currentUser.value) return;
-
-  // 检查是否有任何搜索条件
-  const hasSearchConditions = searchExamineStatus.value || searchKeyword.value || searchStartTime.value || searchEndTime.value;
-
-  if (hasSearchConditions) {
-    await handleSearch();
-  } else {
-    await getUserColumns(currentUser.value.id);
+  if (deletedCount > 0 && currentPage.value > 1 && columnList.value.length <= deletedCount) {
+    currentPage.value -= 1;
   }
+  await fetchUserColumns();
 };
 
 // 表格多选

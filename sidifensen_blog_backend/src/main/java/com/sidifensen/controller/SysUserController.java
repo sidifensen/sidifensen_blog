@@ -213,6 +213,21 @@ public class SysUserController {
     }
 
     /**
+     * 管理端分页获取用户列表
+     *
+     * @return 用户分页列表
+     */
+    @OperationLog(module = "用户管理", type = OperationTypeEnum.SELECT, description = "管理员分页获取用户列表")
+    @PreAuthorize("hasAuthority('system:user:list')")
+    @GetMapping("/admin/page")
+    public Result<PageVo<List<SysUserVo>>> pageUser(
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<SysUserVo>> sysUserVos = sysUserService.pageUser(pageNum, pageSize);
+        return Result.success(sysUserVos);
+    }
+
+    /**
      * 管理端获取用户列表（包含文章数量）
      *
      * @return
@@ -287,6 +302,19 @@ public class SysUserController {
     @PostMapping("/admin/search")
     public Result searchUser(@RequestBody @Valid SysUserSearchDTO sysUserSearchDTO) {
         List<SysUserVo> sysUserVos = sysUserService.searchUser(sysUserSearchDTO);
+        return Result.success(sysUserVos);
+    }
+
+    /**
+     * 管理端分页搜索用户
+     *
+     * @return 用户分页列表
+     */
+    @OperationLog(module = "用户管理", type = OperationTypeEnum.SEARCH, description = "管理员分页搜索用户")
+    @PreAuthorize("hasAuthority('system:user:search')")
+    @PostMapping("/admin/page/search")
+    public Result<PageVo<List<SysUserVo>>> searchUserPage(@RequestBody @Valid SysUserSearchDTO sysUserSearchDTO) {
+        PageVo<List<SysUserVo>> sysUserVos = sysUserService.searchUserPage(sysUserSearchDTO);
         return Result.success(sysUserVos);
     }
 
