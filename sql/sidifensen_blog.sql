@@ -1704,12 +1704,91 @@ INSERT INTO `tag` VALUES (1001, 'AIGC', 'mcp', 16);
 -- ----------------------------
 DROP TABLE IF EXISTS `user_message`;
 CREATE TABLE `user_message`  (
-  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键id',
-  `user_id` int NOT NULL COMMENT '用户id',
-  `message_id` int NOT NULL COMMENT '消息id',
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_user_id`(`user_id` ASC) USING BTREE
+                                 `id` int NOT NULL AUTO_INCREMENT COMMENT '主键id',
+                                 `user_id` int NOT NULL COMMENT '用户id',
+                                 `message_id` int NOT NULL COMMENT '消息id',
+                                 PRIMARY KEY (`id`) USING BTREE,
+                                 INDEX `idx_user_id`(`user_id` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+
+-- ----------------------------
+-- Table structure for pay_order
+-- ----------------------------
+DROP TABLE IF EXISTS `pay_order`;
+CREATE TABLE `pay_order`  (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `order_no` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '平台订单号',
+  `user_id` int NOT NULL COMMENT '用户id',
+  `biz_type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '业务类型',
+  `plan_code` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '套餐编码',
+  `plan_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '套餐名称',
+  `plan_days` int NOT NULL DEFAULT 0 COMMENT '套餐时长(天)',
+  `amount_fen` int NOT NULL COMMENT '订单金额(分)',
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '订单状态 CREATED/PAYING/PAID/CLOSED/FAILED',
+  `channel` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '支付渠道',
+  `client_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '客户端类型 PC/H5',
+  `subject` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '订单标题',
+  `alipay_trade_no` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '支付宝交易号',
+  `buyer_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '支付宝买家id',
+  `paid_time` datetime NULL DEFAULT NULL COMMENT '支付时间',
+  `expired_time` datetime NULL DEFAULT NULL COMMENT '订单过期时间',
+  `notify_content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '异步回调原始内容',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
+  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_order_no`(`order_no` ASC) USING BTREE,
+  INDEX `idx_user_id_create_time`(`user_id` ASC, `create_time` ASC) USING BTREE,
+  INDEX `idx_status_expired_time`(`status` ASC, `expired_time` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Table structure for vip_member
+-- ----------------------------
+DROP TABLE IF EXISTS `vip_member`;
+CREATE TABLE `vip_member`  (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `user_id` int NOT NULL COMMENT '用户id',
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'NONE' COMMENT '会员状态 NONE/ACTIVE/EXPIRED',
+  `start_time` datetime NULL DEFAULT NULL COMMENT '会员开始时间',
+  `expire_time` datetime NULL DEFAULT NULL COMMENT '会员到期时间',
+  `last_order_no` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '最后一次支付订单号',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
+  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_user_id`(`user_id` ASC) USING BTREE,
+  INDEX `idx_status_expire_time`(`status` ASC, `expire_time` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Table structure for vip_plan
+-- ----------------------------
+DROP TABLE IF EXISTS `vip_plan`;
+CREATE TABLE `vip_plan`  (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `code` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '套餐编码',
+  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '套餐名称',
+  `days` int NOT NULL COMMENT '会员时长(天)',
+  `price_fen` int NOT NULL COMMENT '套餐金额(分)',
+  `enabled` tinyint NOT NULL DEFAULT 1 COMMENT '是否启用 0-禁用 1-启用',
+  `description` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '套餐描述',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
+  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_code`(`code` ASC) USING BTREE,
+  INDEX `idx_enabled_days`(`enabled` ASC, `days` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of vip_plan
+-- ----------------------------
+INSERT INTO `vip_plan` VALUES (1, 'VIP_MONTH', '月卡会员', 30, 990, 1, '30天 VIP 内容与 AI 提额', '2025-10-14 09:49:45', '2025-10-14 09:49:45', 0);
+INSERT INTO `vip_plan` VALUES (2, 'VIP_QUARTER', '季卡会员', 90, 2590, 1, '90天 VIP 内容与 AI 提额', '2025-10-14 09:49:45', '2025-10-14 09:49:45', 0);
+INSERT INTO `vip_plan` VALUES (3, 'VIP_YEAR', '年卡会员', 365, 8800, 1, '365天 VIP 内容与 AI 提额', '2025-10-14 09:49:45', '2025-10-14 09:49:45', 0);
+

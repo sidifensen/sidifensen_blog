@@ -19,6 +19,7 @@ import com.sidifensen.security.SysUserDetailsService;
 import com.sidifensen.service.IpService;
 import com.sidifensen.service.SysUserRoleService;
 import com.sidifensen.service.SysUserService;
+import com.sidifensen.service.VipService;
 import com.sidifensen.utils.IpUtils;
 import com.sidifensen.utils.JwtUtils;
 import com.sidifensen.utils.SecurityUtils;
@@ -96,6 +97,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Resource
     private com.sidifensen.service.SysLoginLogService sysLoginLogService;
+
+    @Resource
+    private VipService vipService;
 
     @Override
     public String login(LoginDto loginDto) {
@@ -329,6 +333,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         sysUserVo.setSex(sysUser.getSex());
         sysUserVo.setFansCount(sysUser.getFansCount());
         sysUserVo.setFollowCount(sysUser.getFollowCount());
+        fillVipInfo(sysUserVo, sysUser.getId());
         return sysUserVo;
     }
 
@@ -358,6 +363,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                 .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode()); // 审核通过
         Integer articleCount = Math.toIntExact(articleMapper.selectCount(articleQuery));
         sysUserVo.setArticleCount(articleCount);
+        fillVipInfo(sysUserVo, sysUser.getId());
 
         return sysUserVo;
     }
@@ -416,6 +422,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
         // 否则返回第一段（国家）
         return addressParts[0];
+    }
+
+    /**
+     * 用户态统一补齐 VIP 信息，避免多个接口重复拼装。
+     */
+    private void fillVipInfo(SysUserVo sysUserVo, Integer userId) {
+        sysUserVo.setIsVip(vipService.hasVipAccess(userId));
+        sysUserVo.setVipStatus(vipService.getVipStatus(userId));
+        sysUserVo.setVipExpireTime(vipService.getVipExpireTime(userId));
     }
 
     // 管理员登录

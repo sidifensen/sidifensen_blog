@@ -41,6 +41,14 @@ public interface AiUsageService {
     int getDailyLimit();
 
     /**
+     * 获取指定用户每日AI调用总额度
+     *
+     * @param userId 用户ID
+     * @return 每日总额度
+     */
+    int getDailyLimit(Integer userId);
+
+    /**
      * 检查是否为重复内容（基于内容hash）
      * 防止短时间内重复提交相同内容消耗token
      *

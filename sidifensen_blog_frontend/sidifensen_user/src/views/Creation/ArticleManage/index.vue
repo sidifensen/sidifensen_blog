@@ -3,11 +3,11 @@
     <div class="main-content">
       <!-- 顶部筛选按钮区域 -->
       <div class="filter-buttons">
-        <el-button :type="activeFilterType === 'all' ? 'primary' : 'default'" @click="handleFilterClick('all')" class="filter-btn"> 全部({{ totalCount }}) </el-button>
-        <el-button :type="activeFilterType === 'published' ? 'primary' : 'default'" @click="handleFilterClick('published')" class="filter-btn"> 已发布({{ publishedCount }}) </el-button>
-        <el-button :type="activeFilterType === 'reviewing' ? 'primary' : 'default'" @click="handleFilterClick('reviewing')" class="filter-btn"> 审核中({{ reviewingCount }}) </el-button>
-        <el-button :type="activeFilterType === 'draft' ? 'primary' : 'default'" @click="handleFilterClick('draft')" class="filter-btn"> 草稿箱({{ draftCount }}) </el-button>
-        <el-button :type="activeFilterType === 'garbage' ? 'primary' : 'default'" @click="handleFilterClick('garbage')" class="filter-btn"> 回收站({{ garbageCount }}) </el-button>
+        <el-button :type="activeFilterType === 'all' ? 'primary' : 'default'" @click="handleFilterClick('all')" class="filter-btn"> 全部({{ formatDisplayNumber(totalCount) }}) </el-button>
+        <el-button :type="activeFilterType === 'published' ? 'primary' : 'default'" @click="handleFilterClick('published')" class="filter-btn"> 已发布({{ formatDisplayNumber(publishedCount) }}) </el-button>
+        <el-button :type="activeFilterType === 'reviewing' ? 'primary' : 'default'" @click="handleFilterClick('reviewing')" class="filter-btn"> 审核中({{ formatDisplayNumber(reviewingCount) }}) </el-button>
+        <el-button :type="activeFilterType === 'draft' ? 'primary' : 'default'" @click="handleFilterClick('draft')" class="filter-btn"> 草稿箱({{ formatDisplayNumber(draftCount) }}) </el-button>
+        <el-button :type="activeFilterType === 'garbage' ? 'primary' : 'default'" @click="handleFilterClick('garbage')" class="filter-btn"> 回收站({{ formatDisplayNumber(garbageCount) }}) </el-button>
       </div>
 
       <!-- 高级筛选区域 -->
@@ -120,23 +120,23 @@
                     <el-icon>
                       <View />
                     </el-icon>
-                    <span>{{ article.readCount || 0 }}</span>
+                    <span>{{ formatDisplayNumber(article.readCount) }}</span>
                   </div>
                   <div class="stat-item">
                     <svg-icon name="like" width="16px" height="16px" color="#909399" />
-                    <span>{{ article.likeCount || 0 }}</span>
+                    <span>{{ formatDisplayNumber(article.likeCount) }}</span>
                   </div>
                   <div class="stat-item">
                     <el-icon>
                       <Star />
                     </el-icon>
-                    <span>{{ article.collectCount || 0 }}</span>
+                    <span>{{ formatDisplayNumber(article.collectCount) }}</span>
                   </div>
                   <div class="stat-item">
                     <el-icon>
                       <ChatLineRound />
                     </el-icon>
-                    <span>{{ article.commentCount || 0 }}</span>
+                    <span>{{ formatDisplayNumber(article.commentCount) }}</span>
                   </div>
                 </div>
                 <div class="article-actions">
@@ -171,6 +171,7 @@ import { useRouter } from "vue-router";
 import { deleteArticle, getArticleManageList, getUserArticleStatistics, updateArticle } from "@/api/article";
 import { Search, View, Message, Pointer, Edit, Delete, Star, ChatLineRound } from "@element-plus/icons-vue";
 import { useUserStore } from "@/stores/userStore";
+import { formatCompactNumber } from "@/utils/formatNumber";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -254,6 +255,10 @@ const publishedCount = ref(0);
 const reviewingCount = ref(0);
 const draftCount = ref(0);
 const garbageCount = ref(0);
+
+const formatDisplayNumber = (value) => {
+  return formatCompactNumber(value);
+};
 
 // 处理筛选按钮点击
 const handleFilterClick = (filterType) => {

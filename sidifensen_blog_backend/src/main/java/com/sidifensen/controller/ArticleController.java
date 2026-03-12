@@ -47,6 +47,38 @@ public class ArticleController {
     }
 
     /**
+     * 获取会员专区文章列表
+     *
+     * @param pageNum 页码
+     * @param pageSize 页大小
+     * @return 会员专区文章列表
+     */
+    @RateLimit
+    @GetMapping("/listVip")
+    public Result getVipArticleList(
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<ArticleVo>> articleVoList = articleService.getVipArticleList(pageNum, pageSize);
+        return Result.success(articleVoList);
+    }
+
+    /**
+     * 获取会员精选预览列表
+     *
+     * @param pageNum 页码
+     * @param pageSize 页大小
+     * @return 会员精选预览列表
+     */
+    @RateLimit
+    @GetMapping("/listVipPreview")
+    public Result getVipPreviewArticleList(
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "4") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<ArticleVo>> articleVoList = articleService.getVipPreviewArticleList(pageNum, pageSize);
+        return Result.success(articleVoList);
+    }
+
+    /**
      * 获取用户文章列表
      *
      * @return 用户文章列表

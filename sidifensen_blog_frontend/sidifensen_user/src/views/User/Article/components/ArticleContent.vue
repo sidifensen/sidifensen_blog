@@ -20,8 +20,14 @@
       <!-- 实际内容 -->
       <template #default>
         <div class="article-main" v-if="article">
-          <!-- 文章标题 -->
-          <h1 class="article-title">{{ article.title }}</h1>
+          <!-- 文章标题区 -->
+          <div class="article-header">
+            <div class="title-row">
+              <h1 class="article-title">{{ article.title }}</h1>
+              <span v-if="isVipArticle" class="vip-article-badge">VIP文章</span>
+            </div>
+            <p v-if="isVipArticle" class="title-tip">当前文章属于 VIP 可见内容，只有有效会员和作者本人可以查看。</p>
+          </div>
 
           <!-- 移动端作者信息 -->
           <MobileAuthorInfo v-if="userInfo" :user-info="userInfo" :loading="userLoading" />
@@ -114,17 +120,17 @@
       <div class="action-item">
         <el-button :type="article.isLiked ? 'primary' : 'default'" :loading="likeLoading" @click="handleLike">
           <svg-icon name="like" width="16px" height="16px" margin-right="6px" :color="article.isLiked ? '#ffffff' : '#909399'" />
-          {{ article.likeCount || 0 }}
+          {{ formatCount(article.likeCount) }}
         </el-button>
       </div>
       <div class="action-item">
         <el-button :type="article.isCollected ? 'primary' : 'default'" :icon="article.isCollected ? StarFilled : Star" @click="handleCollect">
-          {{ article.collectCount || 0 }}
+          {{ formatCount(article.collectCount) }}
         </el-button>
       </div>
       <div class="action-item">
         <el-button :icon="ChatLineRound" @click="handleComment">
-          {{ commentTotal || article.commentCount || 0 }}
+          {{ formatCount(commentTotal || article.commentCount) }}
         </el-button>
       </div>
     </div>
@@ -201,6 +207,26 @@ const tagList = computed(() => {
   if (!props.article?.tag) return [];
   return props.article.tag.split(",").filter((tag) => tag.trim() !== "");
 });
+
+// 把悬浮操作栏里的大数字收敛成更短的展示格式。
+const formatCount = (value) => {
+  const count = Number(value) || 0;
+
+  if (count < 1000) {
+    return `${count}`;
+  }
+
+  if (count < 1000000) {
+    const formatted = (count / 1000).toFixed(count >= 100000 ? 0 : 1);
+    return `${formatted.replace(/\.0$/, "")}k`;
+  }
+
+  const formatted = (count / 1000000).toFixed(count >= 10000000 ? 0 : 1);
+  return `${formatted.replace(/\.0$/, "")}m`;
+};
+
+// 标记当前文章是否为 VIP 可见文章
+const isVipArticle = computed(() => props.article?.visibleRange === 3);
 
 // 判断当前用户是否为文章作者
 const isCurrentUser = computed(() => {
@@ -385,13 +411,45 @@ const handleEditArticle = () => {
 
   // 文章主体
   .article-main {
-    // 文章标题
-    .article-title {
-      margin: 0 0 20px;
-      font-size: 28px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
-      line-height: 1.4;
+    // 文章标题区
+    .article-header {
+      margin-bottom: 20px;
+
+      .title-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+
+        .article-title {
+          margin: 0;
+          font-size: 28px;
+          font-weight: 600;
+          color: var(--el-text-color-primary);
+          line-height: 1.4;
+        }
+
+        .vip-article-badge {
+          display: inline-flex;
+          align-items: center;
+          height: 30px;
+          padding: 0 12px;
+          border-radius: 999px;
+          background: color-mix(in srgb, var(--el-color-warning) 14%, transparent);
+          border: 1px solid color-mix(in srgb, var(--el-color-warning) 28%, transparent);
+          color: var(--el-color-warning-dark-2);
+          font-size: 13px;
+          font-weight: 700;
+          flex-shrink: 0;
+        }
+      }
+
+      .title-tip {
+        margin: 10px 0 0;
+        font-size: 14px;
+        line-height: 1.7;
+        color: var(--el-text-color-secondary);
+      }
     }
 
     // 文章元信息
@@ -783,8 +841,24 @@ const handleEditArticle = () => {
     padding: 20px 15px;
 
     .article-main {
-      .article-title {
-        font-size: 24px;
+      .article-header {
+        .title-row {
+          align-items: flex-start;
+
+          .article-title {
+            font-size: 24px;
+          }
+
+          .vip-article-badge {
+            height: 28px;
+            padding: 0 10px;
+            font-size: 12px;
+          }
+        }
+
+        .title-tip {
+          font-size: 13px;
+        }
       }
 
       .article-meta {

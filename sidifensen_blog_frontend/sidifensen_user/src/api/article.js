@@ -85,6 +85,22 @@ export function getAllArticleList(pageNum, pageSize) {
   });
 }
 
+// 获取会员专区文章列表
+export function getVipArticleList(pageNum, pageSize) {
+  return request({
+    url: `/article/listVip?pageNum=${pageNum}&pageSize=${pageSize}`,
+    method: "get",
+  });
+}
+
+// 获取会员精选预览列表
+export function getVipPreviewArticleList(pageNum, pageSize) {
+  return request({
+    url: `/article/listVipPreview?pageNum=${pageNum}&pageSize=${pageSize}`,
+    method: "get",
+  });
+}
+
 // 增加文章阅读量
 export function increaseReadCount(articleId) {
   return request({

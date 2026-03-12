@@ -25,6 +25,7 @@
             <h3 class="nickname clickable-nickname" @click="goToUserHomepage">
               {{ userInfo.nickname }}
             </h3>
+            <span v-if="userInfo.isVip" class="vip-badge">VIP</span>
           </div>
 
           <!-- 用户统计信息 -->
@@ -259,19 +260,32 @@ onMounted(() => {
   // 用户卡片内容
   .user-card-content {
     // 基本信息区域
-    .user-basic-info {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
+      .user-basic-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
       margin-bottom: 20px;
 
-      .nickname {
-        margin: 12px 0 8px;
-        font-size: 18px;
-        font-weight: 600;
-        color: var(--el-text-color-primary);
-      }
+        .nickname {
+          margin: 12px 0 8px;
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--el-text-color-primary);
+        }
+
+        .vip-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          height: 22px;
+          padding: 0 8px;
+          border-radius: 999px;
+          background: rgba(var(--el-color-warning-rgb, 230, 162, 60), 0.14);
+          color: var(--el-color-warning);
+          font-size: 12px;
+          font-weight: 700;
+        }
 
       // 头像容器 - 3D效果区域
       .avatar-container {

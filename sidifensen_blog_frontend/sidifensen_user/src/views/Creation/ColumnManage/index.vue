@@ -109,13 +109,13 @@
                   <el-icon>
                     <Document />
                   </el-icon>
-                  <span>{{ column.articleCount || 0 }} 文章</span>
+                  <span>{{ formatDisplayNumber(column.articleCount) }} 文章</span>
                 </div>
                 <div class="stat-item">
                   <el-icon>
                     <Star />
                   </el-icon>
-                  <span>{{ column.focusCount || 0 }} 关注</span>
+                  <span>{{ formatDisplayNumber(column.focusCount) }} 关注</span>
                 </div>
                 <div class="stat-item">
                   <span class="status-badge" :class="column.showStatus === 0 ? 'public' : 'private'">
@@ -429,7 +429,7 @@
                   <p class="article-description">{{ article.description || "暂无描述" }}</p>
                   <div class="article-meta">
                     <span class="article-date">{{ formatTime(article.createTime) }}</span>
-                    <span class="article-stats">{{ article.readCount || 0 }} 阅读</span>
+                          <span class="article-stats">{{ formatDisplayNumber(article.readCount) }} 阅读</span>
                     <span class="examine-badge" :class="getExamineStatusClass(article.examineStatus)">
                       {{ getExamineStatusText(article.examineStatus) }}
                     </span>
@@ -470,6 +470,11 @@ import { getUserColumnManageList, updateColumn, deleteColumn, getColumnDetail, u
 import { uploadColumnPhoto } from "@/api/photo";
 import { useUserStore } from "@/stores/userStore";
 import { formatTime } from "@/utils/formatTime";
+import { formatCompactNumber } from "@/utils/formatNumber";
+
+const formatDisplayNumber = (value) => {
+  return formatCompactNumber(value);
+};
 
 const router = useRouter();
 const userStore = useUserStore();

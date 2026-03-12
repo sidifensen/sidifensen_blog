@@ -102,13 +102,13 @@
                 <div class="comment-stats">
                   <div class="stat-item">
                     <svg-icon name="like" width="16px" height="16px" color="#909399" />
-                    <span>{{ comment.likeCount || 0 }}</span>
+                    <span>{{ formatDisplayNumber(comment.likeCount) }}</span>
                   </div>
                   <div class="stat-item">
                     <el-icon>
                       <ChatLineRound />
                     </el-icon>
-                    <span>{{ comment.replyCount || 0 }}</span>
+                    <span>{{ formatDisplayNumber(comment.replyCount) }}</span>
                   </div>
                 </div>
 
@@ -139,6 +139,7 @@ import { Search, Picture, ChatLineRound } from "@element-plus/icons-vue";
 import { getUserCommentManageList, deleteComment } from "@/api/comment";
 import { useUserStore } from "@/stores/userStore";
 import { formatTime } from "@/utils/formatTime";
+import { formatCompactNumber } from "@/utils/formatNumber";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -163,6 +164,10 @@ const listContainer = ref(null);
 const selectedYear = ref(null);
 const selectedMonth = ref(null);
 const availableYears = ref([]);
+
+const formatDisplayNumber = (value) => {
+  return formatCompactNumber(value);
+};
 
 // 加载评论列表
 const loadComments = async (reset = false) => {

@@ -174,6 +174,22 @@ public class BlogConstants {
     public static final String AiDuplicateRequest = "请勿重复提交相同内容";
     public static final String AiExtractSummaryError = "AI提取摘要失败";
 
+    // VIP / 支付相关错误信息
+    public static final String ArticleVipOnly = "该文章仅VIP可见";
+    public static final String ArticleFansOnly = "该文章仅粉丝可见";
+    public static final String ArticlePrivateOnly = "该文章仅作者本人可见";
+    public static final String VipRequired = "请先开通VIP";
+    public static final String VipPlanNotFound = "VIP套餐不存在";
+    public static final String VipOrderCreateError = "创建VIP订单失败";
+    public static final String VipOrderNotifyVerifyError = "支付宝回调验签失败";
+    public static final String VipOrderNotFound = "VIP订单不存在";
+    public static final String VipOrderAccessDenied = "无权限查看该VIP订单";
+    public static final String VipOrderAmountMismatch = "VIP订单金额校验失败";
+    public static final String VipOrderStatusError = "VIP订单状态异常";
+    public static final String VipConfigMissing = "支付宝配置缺失，请联系管理员";
+    public static final String VipAdjustActionInvalid = "VIP调整类型不支持";
+    public static final String VipAdjustDaysInvalid = "VIP调整天数必须大于0";
+
     // 私信相关错误信息
     public static final String NotFoundPrivateMessage = "私信不存在";
     public static final String CannotRevokeOthersMessage = "不能撤回别人的消息";

@@ -91,6 +91,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Resource
     private RedisComponent redisComponent;
 
+    @Resource
+    private ArticleAccessService articleAccessService;
+
+    @Resource
+    private VipService vipService;
+
     @Override
     public PageVo<List<ArticleVo>> getAllArticleList(Integer pageNum, Integer pageSize) {
         Page<Article> page = new Page<>(pageNum, pageSize);
@@ -151,20 +157,64 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
+    public PageVo<List<ArticleVo>> getVipArticleList(Integer pageNum, Integer pageSize) {
+        Integer currentUserId = SecurityUtils.getUserId();
+        if (!vipService.hasVipAccess(currentUserId)) {
+            throw new BlogException(BlogConstants.VipRequired);
+        }
+
+        // 会员专区只收敛展示真正可供 VIP 查看的文章，不混入草稿和待审内容。
+        Page<Article> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
+                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
+                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                .eq(Article::getVisibleRange, VisibleRangeEnum.VIP.getCode())
+                .orderByDesc(Article::getUpdateTime);
+
+        List<Article> articleList = articleMapper.selectPage(page, qw).getRecords();
+        List<ArticleVo> articleVoList = articleList.stream()
+                .map(article -> BeanUtil.copyProperties(article, ArticleVo.class))
+                .collect(Collectors.toList());
+        // 会员专区额外补齐作者信息和专栏信息，避免前端逐条补查。
+        fillArticleUserInfo(articleVoList);
+        fillArticleColumns(articleVoList);
+        return new PageVo<>(articleVoList, page.getTotal());
+    }
+
+    @Override
+    public PageVo<List<ArticleVo>> getVipPreviewArticleList(Integer pageNum, Integer pageSize) {
+        // 文章广场里的会员精选只做预览曝光，不返回正文内容。
+        Page<Article> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
+                .select(Article::getId, Article::getUserId, Article::getTitle, Article::getCoverUrl,
+                        Article::getReadCount, Article::getLikeCount, Article::getUpdateTime)
+                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
+                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                .eq(Article::getVisibleRange, VisibleRangeEnum.VIP.getCode())
+                .orderByDesc(Article::getUpdateTime);
+
+        List<Article> articleList = articleMapper.selectPage(page, qw).getRecords();
+        List<ArticleVo> articleVoList = articleList.stream()
+                .map(article -> BeanUtil.copyProperties(article, ArticleVo.class))
+                .collect(Collectors.toList());
+        return new PageVo<>(articleVoList, page.getTotal());
+    }
+
+    @Override
     public PageVo<List<ArticleVo>> getUserArticleList(Integer pageNum, Integer pageSize,
             ArticleStatusDto articleStatusDto) {
         Integer currentUserId = SecurityUtils.getUserId(); // 当前登录用户ID
+        Integer targetUserId = articleStatusDto.getUserId();
 
         Page<Article> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
-                .eq(Article::getUserId, articleStatusDto.getUserId());
+                .eq(Article::getUserId, targetUserId);
 
         // 权限控制：只有查看自己的文章时才能看到私有内容和审核状态
-        if (!currentUserId.equals(articleStatusDto.getUserId())) {
-            // 如果当前的用户id不等于要查看他人文章时的限制条件
-            qw.eq(Article::getVisibleRange, 0) // 只能查看全部可见的文章
-                    .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode()) // 只能查看审核通过的文章
-                    .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode()); // 只能查看已发布的文章
+        if (!currentUserId.equals(targetUserId)) {
+            qw.eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
+                    .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode());
+            applyAccessibleVisibleRange(qw, articleStatusDto.getVisibleRange(), targetUserId, currentUserId);
         } else {
             // 查看自己文章时，应用用户指定的筛选条件
             qw.eq(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatus()), Article::getExamineStatus,
@@ -239,10 +289,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         // 权限控制：只有查看自己的文章时才能看到私有内容和审核状态
         if (!currentUserId.equals(targetUserId)) {
-            // 如果当前的用户id不等于要查看他人文章时的限制条件
-            qw.eq(Article::getVisibleRange, 0) // 只能查看全部可见的文章
-                    .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode()) // 只能查看审核通过的文章
-                    .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode()); // 只能查看已发布的文章
+            qw.eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
+                    .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode());
+            applyAccessibleVisibleRange(qw, articleStatusDto.getVisibleRange(), targetUserId, currentUserId);
         } else {
             // 查看自己文章时，应用用户指定的筛选条件
             qw.eq(ObjectUtil.isNotEmpty(articleStatusDto.getExamineStatus()), Article::getExamineStatus,
@@ -371,6 +420,20 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (ObjectUtil.isEmpty(article)) {
             throw new BlogException(BlogConstants.NotFoundArticle);
         }
+        Integer currentUserId = SecurityUtils.getUserId();
+        boolean isOwner = currentUserId != null && currentUserId != 0 && Objects.equals(article.getUserId(), currentUserId);
+        if (!isOwner) {
+            // 非作者访问时，先兜底发布态，再按可见范围做统一权限校验。
+            boolean isPublished = Objects.equals(article.getEditStatus(), EditStatusEnum.PUBLISHED.getCode());
+            boolean isPass = Objects.equals(article.getExamineStatus(), ExamineStatusEnum.PASS.getCode());
+            if (!isPublished || !isPass) {
+                throw new BlogException(BlogConstants.NotFoundArticle);
+            }
+            if (!articleAccessService.canAccessArticle(article, currentUserId)) {
+                throw buildArticleAccessException(article.getVisibleRange());
+            }
+        }
+
         ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
 
         // 查询文章所属的专栏（所有状态的文章都应该能查询到专栏信息）
@@ -389,14 +452,125 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Boolean isCollected = favoriteService.isCollected(articleId);
         articleVo.setIsCollected(isCollected);
 
-        // 获取当前用户ID
-        Integer userId = SecurityUtils.getUserId() == 0 ? null : SecurityUtils.getUserId();
-        // 获取客户端IP地址
-        String ipAddress = ipUtils.getIp();
-        // 异步增加阅读量
-        this.incrReadCount(articleId, userId, ipAddress);
+        // 只有真正对外可见的文章才累计阅读量，避免草稿和受限文章被刷读数。
+        if (Objects.equals(article.getEditStatus(), EditStatusEnum.PUBLISHED.getCode())
+                && Objects.equals(article.getExamineStatus(), ExamineStatusEnum.PASS.getCode())) {
+            Integer userId = currentUserId == 0 ? null : currentUserId;
+            String ipAddress = ipUtils.getIp();
+            this.incrReadCount(articleId, userId, ipAddress);
+        }
 
         return articleVo;
+    }
+
+    /**
+     * 查看他人文章列表时，只允许拼出当前用户真实可访问的可见范围条件。
+     */
+    private void applyAccessibleVisibleRange(LambdaQueryWrapper<Article> qw, Integer requestedVisibleRange,
+            Integer authorId, Integer currentUserId) {
+        boolean canAccessFans = articleAccessService.canAccessFansContent(authorId, currentUserId);
+        boolean canAccessVip = articleAccessService.canAccessVipContent(authorId, currentUserId);
+
+        if (ObjectUtil.isNotEmpty(requestedVisibleRange)) {
+            if (Objects.equals(requestedVisibleRange, VisibleRangeEnum.ALL.getCode())) {
+                qw.eq(Article::getVisibleRange, VisibleRangeEnum.ALL.getCode());
+                return;
+            }
+            if (Objects.equals(requestedVisibleRange, VisibleRangeEnum.FANS.getCode()) && canAccessFans) {
+                qw.eq(Article::getVisibleRange, VisibleRangeEnum.FANS.getCode());
+                return;
+            }
+            if (Objects.equals(requestedVisibleRange, VisibleRangeEnum.VIP.getCode()) && canAccessVip) {
+                qw.eq(Article::getVisibleRange, VisibleRangeEnum.VIP.getCode());
+                return;
+            }
+            qw.eq(Article::getId, -1);
+            return;
+        }
+
+        qw.and(wrapper -> {
+            wrapper.eq(Article::getVisibleRange, VisibleRangeEnum.ALL.getCode());
+            if (canAccessFans) {
+                wrapper.or().eq(Article::getVisibleRange, VisibleRangeEnum.FANS.getCode());
+            }
+            if (canAccessVip) {
+                wrapper.or().eq(Article::getVisibleRange, VisibleRangeEnum.VIP.getCode());
+            }
+        });
+    }
+
+    /**
+     * 按可见范围返回更准确的业务异常，方便前端渲染会员墙或粉丝引导。
+     */
+    private BlogException buildArticleAccessException(Integer visibleRange) {
+        if (Objects.equals(visibleRange, VisibleRangeEnum.ME.getCode())) {
+            return new BlogException(BlogConstants.ArticlePrivateOnly);
+        }
+        if (Objects.equals(visibleRange, VisibleRangeEnum.FANS.getCode())) {
+            return new BlogException(BlogConstants.ArticleFansOnly);
+        }
+        if (Objects.equals(visibleRange, VisibleRangeEnum.VIP.getCode())) {
+            return new BlogException(BlogConstants.ArticleVipOnly);
+        }
+        return new BlogException(BlogConstants.NotFoundArticle);
+    }
+
+    /**
+     * 会员专区列表补齐作者昵称和头像，避免列表页出现空作者信息。
+     */
+    private void fillArticleUserInfo(List<ArticleVo> articleVoList) {
+        if (ObjectUtil.isEmpty(articleVoList)) {
+            return;
+        }
+        List<Integer> userIds = articleVoList.stream()
+                .map(ArticleVo::getUserId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (userIds.isEmpty()) {
+            return;
+        }
+        List<SysUser> users = sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIds));
+        Map<Integer, String> userIdToNicknameMap = users.stream()
+                .collect(Collectors.toMap(
+                        SysUser::getId,
+                        user -> ObjectUtil.defaultIfNull(user.getNickname(), ""),
+                        (v1, v2) -> v1));
+        Map<Integer, String> userIdToAvatarMap = users.stream()
+                .collect(Collectors.toMap(
+                        SysUser::getId,
+                        user -> ObjectUtil.defaultIfNull(user.getAvatar(), ""),
+                        (v1, v2) -> v1));
+        articleVoList.forEach(articleVo -> articleVo.setNickname(userIdToNicknameMap.get(articleVo.getUserId())));
+        articleVoList.forEach(articleVo -> articleVo.setAvatar(userIdToAvatarMap.get(articleVo.getUserId())));
+    }
+
+    /**
+     * 将文章和专栏关系一次性批量映射到返回结果里。
+     */
+    private void fillArticleColumns(List<ArticleVo> articleVoList) {
+        if (ObjectUtil.isEmpty(articleVoList)) {
+            return;
+        }
+        List<Integer> articleIds = articleVoList.stream().map(ArticleVo::getId).collect(Collectors.toList());
+        List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
+                new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, articleIds));
+        if (ObjectUtil.isEmpty(articleColumns)) {
+            return;
+        }
+        List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId)
+                .distinct().collect(Collectors.toList());
+        List<Column> columns = columnMapper.selectBatchIds(columnIds);
+        Map<Integer, ColumnVo> columnIdToColumnMap = columns.stream()
+                .collect(Collectors.toMap(Column::getId,
+                        column -> BeanUtil.copyProperties(column, ColumnVo.class)));
+        Map<Integer, List<ColumnVo>> articleIdToColumnsMap = articleColumns.stream()
+                .collect(Collectors.groupingBy(
+                        ArticleColumn::getArticleId,
+                        Collectors.mapping(ac -> columnIdToColumnMap.get(ac.getColumnId()),
+                                Collectors.toList())));
+        articleVoList.forEach(articleVo -> articleVo
+                .setColumns(articleIdToColumnsMap.getOrDefault(articleVo.getId(), new ArrayList<>())));
     }
 
     // 异步增加阅读量

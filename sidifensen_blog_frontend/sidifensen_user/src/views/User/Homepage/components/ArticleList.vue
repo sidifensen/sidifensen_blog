@@ -76,7 +76,8 @@
             <div class="article-meta">
               <!-- 第一行：文章类型、审核状态、发布时间 -->
               <div class="article-meta-primary">
-                <span class="article-type">{{ getArticleType(article.type) }}</span>
+                <span class="article-type">{{ getArticleType(article.reprintType) }}</span>
+                <span v-if="getVisibilityLabel(article.visibleRange)" class="article-visibility">{{ getVisibilityLabel(article.visibleRange) }}</span>
                 <span
                   v-if="isCurrentUser && article.examineStatus !== 1"
                   class="article-examine-status"
@@ -93,19 +94,19 @@
               <div class="article-meta-stats">
                 <span class="article-stat">
                   <el-icon><View /></el-icon>
-                  {{ article.readCount }}
+                  {{ formatStatNumber(article.readCount) }}
                 </span>
                 <span class="article-stat">
                   <el-icon><Star /></el-icon>
-                  {{ article.likeCount || 0 }}
+                  {{ formatStatNumber(article.likeCount) }}
                 </span>
                 <span class="article-stat">
                   <el-icon><Collection /></el-icon>
-                  {{ article.collectCount || 0 }}
+                  {{ formatStatNumber(article.collectCount) }}
                 </span>
                 <span class="article-stat">
                   <el-icon><ChatDotRound /></el-icon>
-                  {{ article.commentCount }}
+                  {{ formatStatNumber(article.commentCount) }}
                 </span>
               </div>
             </div>
@@ -125,6 +126,7 @@
 <script setup>
 import { ref, watch } from "vue";
 import { Picture, Clock, View, Star, Collection, ChatDotRound } from "@element-plus/icons-vue";
+import { formatCompactNumber } from "@/utils/formatNumber";
 
 // 定义 props
 const props = defineProps({
@@ -202,6 +204,15 @@ const getArticleType = (type) => {
   return typeMap[type] || "原创";
 };
 
+const getVisibilityLabel = (visibleRange) => {
+  const visibilityMap = {
+    1: "仅自己",
+    2: "粉丝",
+    3: "VIP",
+  };
+  return visibilityMap[visibleRange] || "";
+};
+
 // 获取审核状态
 const getExamineStatus = (status) => {
   const statusMap = {
@@ -210,6 +221,10 @@ const getExamineStatus = (status) => {
     2: "审核未通过",
   };
   return statusMap[status] || "审核通过";
+};
+
+const formatStatNumber = (value) => {
+  return formatCompactNumber(value);
 };
 </script>
 
@@ -531,6 +546,18 @@ const getExamineStatus = (status) => {
               --type-bg-end: rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.08);
               --type-border: rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.3);
             }
+          }
+
+          .article-visibility {
+            display: inline-flex;
+            align-items: center;
+            height: 26px;
+            padding: 0 10px;
+            border-radius: 12px;
+            background: rgba(var(--el-color-warning-rgb, 230, 162, 60), 0.12);
+            color: var(--el-color-warning);
+            font-size: 12px;
+            font-weight: 600;
           }
 
           .article-examine-status {

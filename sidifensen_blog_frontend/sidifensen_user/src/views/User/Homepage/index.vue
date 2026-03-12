@@ -229,13 +229,15 @@ const fetchArticleList = async (reset = false) => {
     const articleStatusDto = { userId: parseInt(userId) };
     articleStatusDto.orderBy = sortType.value === "time" ? 0 : 1;
 
-    if (visibilityType.value === "all") {
-      articleStatusDto.visibleRange = 0;
-      articleStatusDto.examineStatus = 1;
-    } else if (visibilityType.value === "private") {
-      articleStatusDto.visibleRange = 1;
-    } else if (visibilityType.value === "pending") {
-      articleStatusDto.examineStatusList = [0, 2];
+    if (isCurrentUser.value) {
+      if (visibilityType.value === "all") {
+        articleStatusDto.visibleRange = 0;
+        articleStatusDto.examineStatus = 1;
+      } else if (visibilityType.value === "private") {
+        articleStatusDto.visibleRange = 1;
+      } else if (visibilityType.value === "pending") {
+        articleStatusDto.examineStatusList = [0, 2];
+      }
     }
 
     const res = await getUserArticleList(currentPage.value, pageSize.value, articleStatusDto);

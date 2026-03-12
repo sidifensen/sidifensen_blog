@@ -14,11 +14,11 @@
           <div class="hero-metrics">
             <div class="metric-card">
               <span class="metric-label">已加载</span>
-              <span class="metric-value">{{ articleList.length }}</span>
+              <span class="metric-value">{{ formatCount(articleList.length) }}</span>
             </div>
             <div class="metric-card">
               <span class="metric-label">全部文章</span>
-              <span class="metric-value">{{ total || "—" }}</span>
+              <span class="metric-value">{{ total ? formatCount(total) : "—" }}</span>
             </div>
           </div>
         </div>
@@ -34,7 +34,7 @@
                     <h2>最新发布</h2>
                     <p>优先展示社区最近更新的文章内容</p>
                   </div>
-                  <span class="section-meta">共 {{ total }} 篇</span>
+                  <span class="section-meta">共 {{ formatCount(total) }} 篇</span>
                 </div>
 
                 <div v-if="articleLoading" class="loading-container">
@@ -88,17 +88,17 @@
                         <span class="article-date">{{ formatDate(article.createTime) }}</span>
                         <span class="article-readCount">
                           <el-icon> <View /> </el-icon>
-                          {{ article.readCount }} 阅读</span
+                          {{ formatCount(article.readCount) }} 阅读</span
                         >
                         <span class="article-likes">
                           <svg-icon name="like" width="13px" height="13px" color="currentColor" />
-                          {{ article.likeCount || 0 }} 点赞</span
+                          {{ formatCount(article.likeCount) }} 点赞</span
                         >
                         <span class="article-collections">
                           <el-icon>
                             <Star />
                           </el-icon>
-                          {{ article.collectCount || 0 }} 收藏</span
+                          {{ formatCount(article.collectCount) }} 收藏</span
                         >
                       </div>
                     </div>
@@ -155,12 +155,75 @@
                     <div class="hot-article-meta">
                       <span class="hot-article-readCount">
                         <el-icon><View /></el-icon>
-                        {{ article.readCount }}
+                        {{ formatCount(article.readCount) }}
                       </span>
-                      <span class="hot-article-score">🔥 {{ article.hotScore }}</span>
+                      <span class="hot-article-score">🔥 {{ formatCount(article.hotScore) }}</span>
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <!-- 会员精选 -->
+            <div class="sidebar-card">
+              <h4 class="card-title">
+                <el-icon><Star /></el-icon>
+                会员精选
+              </h4>
+              <p class="card-description">公开展示部分 VIP 文章，点进详情后仍按会员权限控制内容访问。</p>
+
+              <div v-if="featuredArticleLoading" class="featured-articles-loading">
+                <div v-for="index in 4" :key="index" class="featured-skeleton-item">
+                  <el-skeleton-item variant="image" class="featured-skeleton-cover" />
+                  <div class="featured-skeleton-content">
+                    <el-skeleton-item variant="text" style="width: 100%; height: 16px" />
+                    <el-skeleton-item variant="text" style="width: 72%; height: 14px" />
+                  </div>
+                </div>
+              </div>
+
+              <div v-else-if="featuredArticleList.length === 0" class="featured-articles-empty">
+                <el-empty description="暂无会员精选" :image-size="60" />
+              </div>
+
+              <div v-else class="featured-articles">
+                <div
+                  v-for="article in featuredArticleList"
+                  :key="article.id"
+                  class="featured-article-item"
+                  @click="goToArticle(article.id, article.userId)"
+                >
+                  <el-image :src="article.coverUrl" class="featured-article-cover">
+                    <template #placeholder>
+                      <div class="loading-text">加载中...</div>
+                    </template>
+                    <template #error>
+                      <div class="error">
+                        <el-icon>
+                          <Picture />
+                        </el-icon>
+                      </div>
+                    </template>
+                  </el-image>
+
+                  <div class="featured-article-content">
+                    <span class="featured-article-title">{{ article.title }}</span>
+                    <div class="featured-article-meta">
+                      <span class="featured-article-readCount">
+                        <el-icon><View /></el-icon>
+                        {{ formatCount(article.readCount) }}
+                      </span>
+                      <span class="featured-article-likes">
+                        <svg-icon name="like" width="13px" height="13px" color="currentColor" />
+                        {{ formatCount(article.likeCount) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="featured-articles-footer">
+                <button class="featured-articles-link" @click="goToVipArticles">进入会员专区</button>
               </div>
             </div>
           </div>
@@ -174,7 +237,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { Star, ArrowUp, Picture, View } from "@element-plus/icons-vue";
-import { getAllArticleList, getHotArticleList } from "@/api/article";
+import { getAllArticleList, getHotArticleList, getVipPreviewArticleList } from "@/api/article";
 
 // 路由
 const router = useRouter();
@@ -191,6 +254,10 @@ const showBackToTop = ref(false); // 是否显示返回顶部按钮
 // 热门文章相关数据
 const hotArticleLoading = ref(false); // 热门文章加载状态
 const hotArticleList = ref([]); // 热门文章列表数据
+
+// 会员精选相关数据
+const featuredArticleLoading = ref(false); // 会员精选加载状态
+const featuredArticleList = ref([]); // 会员精选列表数据
 
 // 每页数据量
 const pageSize = ref(10);
@@ -263,6 +330,11 @@ const goToArticle = (articleId, userId) => {
   router.push(`/user/${userId}/article/${articleId}`);
 };
 
+// 跳转到会员专区
+const goToVipArticles = () => {
+  router.push("/vip/articles");
+};
+
 // 跳转到用户主页
 const goToUserPage = (userId) => {
   router.push(`/user/${userId}`);
@@ -286,6 +358,23 @@ const formatDate = (dateString) => {
   });
 };
 
+// 把过长的计数收敛成更适合列表展示的短格式。
+const formatCount = (value) => {
+  const count = Number(value) || 0;
+
+  if (count < 1000) {
+    return `${count}`;
+  }
+
+  if (count < 1000000) {
+    const formatted = (count / 1000).toFixed(count >= 100000 ? 0 : 1);
+    return `${formatted.replace(/\.0$/, "")}K`;
+  }
+
+  const formatted = (count / 1000000).toFixed(count >= 10000000 ? 0 : 1);
+  return `${formatted.replace(/\.0$/, "")}M`;
+};
+
 // 获取热门文章列表
 const fetchHotArticleList = async () => {
   try {
@@ -299,10 +388,24 @@ const fetchHotArticleList = async () => {
   }
 };
 
+// 获取会员精选列表
+const fetchFeaturedArticleList = async () => {
+  try {
+    featuredArticleLoading.value = true;
+    const res = await getVipPreviewArticleList(1, 4);
+    featuredArticleList.value = res.data.data.data || [];
+  } catch (error) {
+    console.error("获取会员精选失败:", error);
+  } finally {
+    featuredArticleLoading.value = false;
+  }
+};
+
 // 组件挂载
 onMounted(() => {
   fetchArticleList(true);
   fetchHotArticleList(); // 获取热门文章
+  fetchFeaturedArticleList(); // 获取会员精选
   // 绑定页面滚动事件
   window.addEventListener("scroll", handleScroll);
 });
@@ -335,6 +438,9 @@ onUnmounted(() => {
   --rank-second-color: #0369a1;
   --rank-third-bg: rgba(16, 185, 129, 0.12);
   --rank-third-color: #047857;
+  --vip-accent: #b7791f;
+  --vip-accent-soft: #fff7e6;
+  --vip-accent-border: #f6d28b;
 
   // 黑夜模式适配
   html.dark & {
@@ -356,6 +462,9 @@ onUnmounted(() => {
     --rank-second-color: #7dd3fc;
     --rank-third-bg: rgba(52, 211, 153, 0.18);
     --rank-third-color: #86efac;
+    --vip-accent: #f6d28b;
+    --vip-accent-soft: rgba(246, 210, 139, 0.12);
+    --vip-accent-border: rgba(246, 210, 139, 0.26);
   }
 
   min-height: 100vh;
@@ -910,6 +1019,172 @@ onUnmounted(() => {
                       background: transparent;
                     }
                   }
+                }
+              }
+            }
+
+            // 会员精选加载状态
+            .featured-articles-loading {
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+
+              .featured-skeleton-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px;
+                border-radius: 16px;
+                background: var(--bg-soft);
+                border: 1px solid var(--border-color);
+
+                .featured-skeleton-cover {
+                  width: 88px;
+                  height: 58px;
+                  border-radius: 12px;
+                  flex-shrink: 0;
+                }
+
+                .featured-skeleton-content {
+                  flex: 1;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 10px;
+                }
+              }
+            }
+
+            // 会员精选空状态
+            .featured-articles-empty {
+              padding: 30px 0;
+              text-align: center;
+            }
+
+            // 会员精选列表
+            .featured-articles {
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+
+              .featured-article-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px;
+                background: var(--vip-accent-soft);
+                border: 1px solid var(--vip-accent-border);
+                border-radius: 18px;
+                cursor: pointer;
+                transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
+                &:hover {
+                  background: var(--bg-hover);
+                  border-color: var(--vip-accent);
+                  box-shadow: var(--shadow-soft);
+
+                  .featured-article-title {
+                    color: var(--vip-accent);
+                  }
+                }
+
+                .featured-article-cover {
+                  width: 88px;
+                  height: 58px;
+                  border-radius: 12px;
+                  flex-shrink: 0;
+                  overflow: hidden;
+                  border: 1px solid var(--border-color);
+                  background: var(--bg-soft);
+
+                  .loading-text {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 100%;
+                    height: 100%;
+                    font-size: 12px;
+                    color: var(--text-secondary);
+                    background: var(--bg-soft);
+                  }
+
+                  .error {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 100%;
+                    height: 100%;
+                    background: var(--bg-soft);
+
+                    .el-icon {
+                      font-size: 20px;
+                      color: var(--text-secondary);
+                    }
+                  }
+                }
+
+                .featured-article-content {
+                  flex: 1;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 8px;
+                  min-width: 0;
+
+                  .featured-article-title {
+                    font-size: 14px;
+                    font-weight: 600;
+                    line-height: 1.5;
+                    color: var(--text-primary);
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                    transition: color 0.2s ease;
+                  }
+
+                  .featured-article-meta {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    font-size: 12px;
+                    color: var(--text-secondary);
+
+                    .featured-article-readCount,
+                    .featured-article-likes {
+                      display: flex;
+                      align-items: center;
+                      gap: 4px;
+                    }
+
+                    .featured-article-readCount {
+                      .el-icon {
+                        font-size: 14px;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            // 会员精选底部入口
+            .featured-articles-footer {
+              padding-top: 16px;
+
+              .featured-articles-link {
+                width: 100%;
+                height: 40px;
+                border: 1px solid var(--vip-accent-border);
+                border-radius: 999px;
+                background: var(--vip-accent-soft);
+                color: var(--vip-accent);
+                font-size: 13px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+                &:hover {
+                  background: var(--bg-hover);
+                  border-color: var(--vip-accent);
                 }
               }
             }

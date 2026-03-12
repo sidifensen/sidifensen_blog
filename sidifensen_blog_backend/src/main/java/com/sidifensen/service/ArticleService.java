@@ -26,6 +26,12 @@ public interface ArticleService extends IService<Article> {
     // 获取全部已发布审核通过全部人可见的文章列表（按更新时间倒序）
     PageVo<List<ArticleVo>> getAllArticleList(Integer pageNum, Integer pageSize);
 
+    // 获取会员专区文章列表（仅返回已发布、已过审、VIP 可见的内容）
+    PageVo<List<ArticleVo>> getVipArticleList(Integer pageNum, Integer pageSize);
+
+    // 获取会员精选预览列表（公开预览，仅用于文章广场模块曝光）
+    PageVo<List<ArticleVo>> getVipPreviewArticleList(Integer pageNum, Integer pageSize);
+
     // 获取用户文章列表
     PageVo<List<ArticleVo>> getUserArticleList(Integer pageNum, Integer pageSize, ArticleStatusDto articleStatusDto);
 

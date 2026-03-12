@@ -4,6 +4,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from "vue";
+import { formatCompactNumber } from "@/utils/formatNumber";
 
 // 定义 props
 const props = defineProps({
@@ -35,6 +36,10 @@ const props = defineProps({
     type: String,
     default: ",",
   },
+  compact: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // 当前显示的值
@@ -42,6 +47,10 @@ const currentValue = ref(props.start);
 
 // 格式化显示值
 const displayValue = computed(() => {
+  if (props.compact) {
+    return props.prefix + formatCompactNumber(currentValue.value) + props.suffix;
+  }
+
   const formatted = currentValue.value.toFixed(props.decimals);
   const parts = formatted.split(".");
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, props.separator);

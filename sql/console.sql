@@ -402,3 +402,64 @@ create table sys_operationlog (
     -- 按时间倒序分页操作日志
     index idx_create_time (create_time desc)
 );
+
+-- 会员套餐表
+create table vip_plan
+(
+    id          int primary key auto_increment comment '主键id',
+    code        varchar(32)  not null comment '套餐编码',
+    name        varchar(50)  not null comment '套餐名称',
+    days        int          not null comment '会员时长(天)',
+    price_fen   int          not null comment '套餐金额(分)',
+    enabled     tinyint      not null default 1 comment '是否启用 0-禁用 1-启用',
+    description varchar(100)          default null comment '套餐描述',
+    create_time datetime     not null comment '创建时间',
+    update_time datetime     not null comment '更新时间',
+    is_deleted  tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
+    unique index uk_code (code),
+    index idx_enabled_days (enabled, days)
+);
+
+-- 会员表
+create table vip_member
+(
+    id            int primary key auto_increment comment '主键id',
+    user_id       int         not null comment '用户id',
+    status        varchar(20) not null default 'NONE' comment '会员状态 NONE/ACTIVE/EXPIRED',
+    start_time    datetime             default null comment '会员开始时间',
+    expire_time   datetime             default null comment '会员到期时间',
+    last_order_no varchar(64)          default null comment '最后一次支付订单号',
+    create_time   datetime    not null comment '创建时间',
+    update_time   datetime    not null comment '更新时间',
+    is_deleted    tinyint     not null default 0 comment '是否删除 0-未删除 1-已删除',
+    unique index uk_user_id (user_id),
+    index idx_status_expire_time (status, expire_time)
+);
+
+-- 支付订单表
+create table pay_order
+(
+    id              int primary key auto_increment comment '主键id',
+    order_no        varchar(64)  not null comment '平台订单号',
+    user_id         int          not null comment '用户id',
+    biz_type        varchar(32)  not null comment '业务类型',
+    plan_code       varchar(32)  not null comment '套餐编码',
+    plan_name       varchar(50)  not null comment '套餐名称',
+    plan_days       int          not null default 0 comment '套餐时长(天)',
+    amount_fen      int          not null comment '订单金额(分)',
+    status          varchar(20)  not null comment '订单状态 CREATED/PAYING/PAID/CLOSED/FAILED',
+    channel         varchar(20)  not null comment '支付渠道',
+    client_type     varchar(20)  not null comment '客户端类型 PC/H5',
+    subject         varchar(100) not null comment '订单标题',
+    alipay_trade_no varchar(64)           default null comment '支付宝交易号',
+    buyer_id        varchar(64)           default null comment '支付宝买家id',
+    paid_time       datetime              default null comment '支付时间',
+    expired_time    datetime              default null comment '订单过期时间',
+    notify_content  longtext comment '异步回调原始内容',
+    create_time     datetime     not null comment '创建时间',
+    update_time     datetime     not null comment '更新时间',
+    is_deleted      tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
+    unique index uk_order_no (order_no),
+    index idx_user_id_create_time (user_id, create_time),
+    index idx_status_expired_time (status, expired_time)
+);

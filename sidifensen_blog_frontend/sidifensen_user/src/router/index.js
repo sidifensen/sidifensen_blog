@@ -104,6 +104,24 @@ const router = createRouter({
           meta: { title: "消息中心" },
         },
         {
+          path: "vip",
+          name: "VipCenter",
+          component: () => import("@/views/Vip/Center.vue"),
+          meta: { title: "会员中心" },
+        },
+        {
+          path: "vip/result",
+          name: "VipResult",
+          component: () => import("@/views/Vip/Result.vue"),
+          meta: { title: "支付结果" },
+        },
+        {
+          path: "vip/articles",
+          name: "VipArticles",
+          component: () => import("@/views/Vip/ArticleList.vue"),
+          meta: { title: "会员专区" },
+        },
+        {
           path: "account",
           name: "Account",
           component: () => import("@/views/Account/index.vue"),

@@ -41,7 +41,10 @@
       </div>
       <Dark />
       <div v-if="user" class="user-info">
-        <el-text size="large" class="nickname" @click="goToUserHomepage">{{ user.nickname }}</el-text>
+        <div class="user-name-group" @click="goToUserHomepage">
+          <el-text size="large" class="nickname">{{ user.nickname }}</el-text>
+          <span v-if="user.isVip" class="vip-badge">VIP</span>
+        </div>
         <el-dropdown placement="bottom-end">
           <el-avatar v-if="user.avatar" style="cursor: pointer" :size="40" :src="user.avatar" />
           <el-avatar v-else style="cursor: pointer" :size="40" :icon="UserFilled" />
@@ -51,7 +54,10 @@
               <div class="user-info-section">
                 <!-- 用户名 -->
                 <div class="user-name">
-                  <span class="nickname">{{ user.nickname }}</span>
+                  <div class="name-row">
+                    <span class="nickname">{{ user.nickname }}</span>
+                    <span v-if="user.isVip" class="vip-badge">VIP</span>
+                  </div>
                 </div>
 
                 <!-- 统计数据 -->
@@ -78,6 +84,14 @@
               <el-dropdown-item @click="goToSetting" class="action-item">
                 <el-icon><Setting /></el-icon>
                 <span>个人设置</span>
+              </el-dropdown-item>
+              <el-dropdown-item @click="goToVipCenter" class="action-item">
+                <el-icon><Star /></el-icon>
+                <span>会员中心</span>
+              </el-dropdown-item>
+              <el-dropdown-item @click="goToVipArticles" class="action-item">
+                <el-icon><Collection /></el-icon>
+                <span>会员专区</span>
               </el-dropdown-item>
               <el-dropdown-item @click="logout" class="action-item">
                 <el-icon><SwitchButton /></el-icon>
@@ -130,7 +144,7 @@ import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { info, oauthLogin } from "@/api/user";
 import { SetJwt } from "@/utils/Auth";
-import { UserFilled, User, Setting, SwitchButton, ChatDotRound, Bell } from "@element-plus/icons-vue";
+import { UserFilled, User, Setting, SwitchButton, ChatDotRound, Bell, Star, Collection } from "@element-plus/icons-vue";
 import { useMessageStore } from "@/stores/messageStore";
 import { getUnreadCount } from "@/api/privateMessage";
 import { getUnreadNotificationCount } from "@/api/notification";
@@ -327,6 +341,14 @@ const goToUserHomepage = () => {
 // 跳转到个人设置
 const goToSetting = () => {
   router.push("/setting");
+};
+
+const goToVipCenter = () => {
+  router.push("/vip");
+};
+
+const goToVipArticles = () => {
+  router.push("/vip/articles");
 };
 
 // 头部是否可见
@@ -532,18 +554,37 @@ onBeforeUnmount(() => {
     .user-info {
       display: flex;
       align-items: center;
-      .nickname {
-        font-size: 18px !important;
-        font-weight: 600;
-        color: var(--el-text-color-primary);
+      .user-name-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
         margin-left: 10px;
         margin-right: 10px;
-        transition: all 0.3s ease;
         cursor: pointer;
 
-        &:hover {
-          color: var(--el-text-color-regular);
-          transform: translateY(-2px);
+        .nickname {
+          font-size: 18px !important;
+          font-weight: 600;
+          color: var(--el-text-color-primary);
+          transition: color 0.3s ease, transform 0.3s ease;
+
+          &:hover {
+            color: var(--el-text-color-regular);
+            transform: translateY(-2px);
+          }
+        }
+
+        .vip-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          height: 22px;
+          padding: 0 8px;
+          border-radius: 999px;
+          background: rgba(var(--el-color-warning-rgb, 230, 162, 60), 0.14);
+          color: var(--el-color-warning);
+          font-size: 12px;
+          font-weight: 700;
         }
 
         @media (max-width: 1314px) {
@@ -586,12 +627,32 @@ onBeforeUnmount(() => {
       text-align: center;
       max-width: 250px;
 
-      .nickname {
-        font-size: 18px;
-        font-weight: 600;
-        color: var(--el-text-color-primary);
-        word-wrap: break-word;
-        word-break: break-all;
+      .name-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+
+        .nickname {
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--el-text-color-primary);
+          word-wrap: break-word;
+          word-break: break-all;
+        }
+
+        .vip-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          height: 22px;
+          padding: 0 8px;
+          border-radius: 999px;
+          background: rgba(var(--el-color-warning-rgb, 230, 162, 60), 0.14);
+          color: var(--el-color-warning);
+          font-size: 12px;
+          font-weight: 700;
+        }
       }
     }
 

@@ -3,6 +3,7 @@ package com.sidifensen.service.impl;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.sidifensen.domain.constants.RedisConstants;
 import com.sidifensen.service.AiUsageService;
+import com.sidifensen.service.VipMemberService;
 import com.sidifensen.utils.RedisUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -22,13 +23,15 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class AiUsageServiceImpl implements AiUsageService {
 
+    private static final int NORMAL_DAILY_LIMIT = 50;
+
+    private static final int VIP_DAILY_LIMIT = 100;
+
     @Resource
     private RedisUtils redisUtils;
 
-    /**
-     * 每个用户每天最多调用AI接口的次数
-     */
-    private static final int DAILY_LIMIT = 50;
+    @Resource
+    private VipMemberService vipMemberService;
 
     /**
      * 检查用户今日AI调用次数是否已达上限
@@ -40,15 +43,16 @@ public class AiUsageServiceImpl implements AiUsageService {
     public boolean checkDailyLimit(Integer userId) {
         String key = RedisConstants.AiUsage + userId;
         Object countObj = redisUtils.get(key);
+        int dailyLimit = getDailyLimit(userId);
 
         if (countObj == null) {
             return true;
         }
 
         Long count = Long.valueOf(countObj.toString());
-        boolean allowed = count < DAILY_LIMIT;
+        boolean allowed = count < dailyLimit;
         if (!allowed) {
-            log.warn("用户 [ID: {}] 今日AI调用次数已达上限 ({}/{})", userId, count, DAILY_LIMIT);
+            log.warn("用户 [ID: {}] 今日AI调用次数已达上限 ({}/{})", userId, count, dailyLimit);
         }
 
         return allowed;
@@ -82,18 +86,28 @@ public class AiUsageServiceImpl implements AiUsageService {
     public int getRemainingQuota(Integer userId) {
         String key = RedisConstants.AiUsage + userId;
         Object countObj = redisUtils.get(key);
+        int dailyLimit = getDailyLimit(userId);
 
         if (countObj == null) {
-            return DAILY_LIMIT;
+            return dailyLimit;
         }
 
         Long count = Long.valueOf(countObj.toString());
-        return Math.max(0, DAILY_LIMIT - count.intValue());
+        return Math.max(0, dailyLimit - count.intValue());
     }
 
     @Override
     public int getDailyLimit() {
-        return DAILY_LIMIT;
+        return NORMAL_DAILY_LIMIT;
+    }
+
+    @Override
+    public int getDailyLimit(Integer userId) {
+        if (userId == null || userId <= 0) {
+            return NORMAL_DAILY_LIMIT;
+        }
+        // AI 配额与当前会员有效期绑定，过期后会自动回落到普通额度。
+        return vipMemberService.hasVipAccess(userId) ? VIP_DAILY_LIMIT : NORMAL_DAILY_LIMIT;
     }
 
     /**

@@ -508,7 +508,7 @@ cd sidifensen_blog
 # Windows:
 copy script\env.example .env
 # Linux/Mac:
-# cp script/env.example .env
+# cp script/.env.example .env
 
 # 根据需要修改 .env 文件中的配置
 # vim .env
@@ -589,7 +589,7 @@ npm run dev
 
    ```bash
    cd script/deploy
-   cp env.example .env
+   cp ..env.example .env
    # 编辑 .env 文件，配置服务器 IP 等信息
    docker-compose -f docker-compose-gitea.yml --env-file .env up -d
    ```
@@ -679,9 +679,9 @@ cd sidifensen_blog
 
 # 复制环境配置文件
 # Linux/Mac:
-cp script/env.example .env
+cp script/..env.example .env
 # Windows:
-# copy script\env.example .env
+# copy script\.env.example .env
 
 # 根据生产环境修改 .env 文件中的配置
 vim .env
@@ -702,7 +702,7 @@ cd script && start.bat
 cd script/ssl
 
 # 复制 SSL 环境配置
-cp env.example .env
+cp ..env.example .env
 
 # 配置 SSL 证书信息
 vim .env

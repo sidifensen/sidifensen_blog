@@ -24,6 +24,7 @@
           <div class="author-name" @click="goToUserHomepage">
             {{ userInfo.nickname }}
           </div>
+          <span v-if="userInfo.isVip" class="vip-badge">VIP</span>
 
           <!-- 关注按钮 -->
           <div class="follow-button" v-if="!isCurrentUser">
@@ -215,6 +216,20 @@ onMounted(() => {
       &:hover {
         color: var(--el-color-primary);
       }
+    }
+
+    .vip-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: rgba(var(--el-color-warning-rgb, 230, 162, 60), 0.14);
+      color: var(--el-color-warning);
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
     }
 
     // 关注按钮

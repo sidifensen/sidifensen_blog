@@ -120,11 +120,11 @@ cd sidifensen_blog
 
 ```bash
 # Linux/macOS
-cp script/env.example .env
+cp script/.env.example .env
 vim .env
 
 # Windows
-copy script/env.example .env
+copy script/.env.example .env
 notepad .env
 ```
 
@@ -325,7 +325,7 @@ git clone https://github.com/sidifensen/sidifensen_blog.git
 cd sidifensen_blog
 
 # 2. 配置环境变量
-cp script/env.example .env
+cp script/.env.example .env
 # 编辑 .env 文件，修改必要的配置
 
 # 3. 启动完整服务
@@ -345,7 +345,7 @@ git clone https://github.com/sidifensen/sidifensen_blog.git
 cd sidifensen_blog
 
 # 2. 配置环境变量
-cp script/env.example .env
+cp script/.env.example .env
 # 编辑 .env 文件，修改必要的配置
 
 # 3. 启动基础服务
@@ -405,7 +405,7 @@ git clone https://github.com/sidifensen/sidifensen_blog.git
 cd sidifensen_blog
 
 # 2. 配置环境变量
-cp script/env.example .env
+cp script/.env.example .env
 # 编辑 .env 文件，修改生产环境配置
 
 # 3. 启动服务（会自动构建）
@@ -422,7 +422,7 @@ git clone https://github.com/sidifensen/sidifensen_blog.git
 cd sidifensen_blog
 
 # 2. 配置环境变量
-cp script/env.example .env
+cp script/.env.example .env
 # 编辑 .env 文件，修改生产环境配置
 
 # 3. 先启动基础服务
@@ -474,10 +474,10 @@ curl http://localhost:7000                  # 用户端前端
 
 ```bash
 # Linux/macOS
-cp script/env.example .env
+cp script/.env.example .env
 
 # Windows
-copy script/env.example .env
+copy script/.env.example .env
 ```
 
 ### 2. 配置环境变量

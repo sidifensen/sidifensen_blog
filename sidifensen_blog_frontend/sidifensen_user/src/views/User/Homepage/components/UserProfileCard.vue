@@ -28,6 +28,7 @@
                     <div class="user-details">
                       <h2 class="username">
                         <span class="name-text">{{ userInfo.nickname }}</span>
+                        <span v-if="userInfo.isVip" class="vip-badge">VIP</span>
                       </h2>
                       <div class="user-intro-container">
                         <p class="user-intro" :class="{ expanded: isIntroExpanded }">{{ userInfo.introduction || "这个人很懒，什么都没写~" }}</p>
@@ -75,7 +76,7 @@
                   <div class="user-stats">
                     <div class="stat-item" v-for="stat in stats" :key="stat.label">
                       <span class="stat-number">
-                        <CountTo :start="0" :end="stat.value" :duration="2000" />
+                        <CountTo :start="0" :end="stat.value" :duration="2000" :compact="true" />
                       </span>
                       <span class="stat-label">{{ stat.label }}</span>
                     </div>
@@ -276,6 +277,10 @@ watch(
 
               .username {
                 margin: 0 0 8px 0;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
                 font-size: 30px;
                 line-height: 1.2;
                 font-weight: 700;
@@ -287,6 +292,19 @@ watch(
                   overflow: hidden;
                   text-overflow: ellipsis;
                   white-space: nowrap;
+                }
+
+                .vip-badge {
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  height: 28px;
+                  padding: 0 10px;
+                  border-radius: 999px;
+                  background: rgba(var(--el-color-warning-rgb, 230, 162, 60), 0.14);
+                  color: var(--el-color-warning);
+                  font-size: 12px;
+                  font-weight: 700;
                 }
               }
 

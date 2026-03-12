@@ -66,7 +66,7 @@ check_env_file() {
     if [ ! -f ".env" ]; then
         if [ -f "env.example" ]; then
             print_warning "未找到 .env 文件，正在创建..."
-            cp env.example .env
+            cp .env.example .env
             print_message "已创建 .env 文件，请根据需要修改配置"
         else
             print_warning "未找到 .env 和 env.example，跳过环境文件创建"

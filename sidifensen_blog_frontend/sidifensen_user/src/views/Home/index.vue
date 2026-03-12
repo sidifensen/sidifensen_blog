@@ -569,6 +569,9 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   --border-color: var(--el-border-color);
   --border-color-light: var(--el-border-color-lighter);
   --fill-color: var(--el-fill-color-light);
+  --quick-nav-arrow-active-start: #2253a6;
+  --quick-nav-arrow-active-end: #17356d;
+  --quick-nav-arrow-active-shadow: rgba(23, 53, 109, 0.4);
 
   position: relative;
   z-index: 1;
@@ -1080,8 +1083,12 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             .nav-arrow {
               transform: translateX(8px);
               opacity: 1;
-              background: linear-gradient(135deg, $coral-orange 0%, $sunrise-orange 100%);
-              box-shadow: 0 4px 20px rgba(255, 107, 53, 0.5);
+              background: linear-gradient(
+                135deg,
+                var(--quick-nav-arrow-active-start) 0%,
+                var(--quick-nav-arrow-active-end) 100%
+              );
+              box-shadow: 0 4px 20px var(--quick-nav-arrow-active-shadow);
               color: $white;
             }
 
@@ -1152,7 +1159,19 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
 
             &:hover {
-              background: linear-gradient(135deg, $coral-orange 0%, $sunrise-orange 100%);
+              background: linear-gradient(
+                135deg,
+                var(--quick-nav-arrow-active-start) 0%,
+                var(--quick-nav-arrow-active-end) 100%
+              );
+            }
+
+            &:active {
+              background: linear-gradient(
+                135deg,
+                var(--quick-nav-arrow-active-start) 0%,
+                var(--quick-nav-arrow-active-end) 100%
+              );
             }
           }
         }
@@ -2080,6 +2099,14 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
       }
     }
+  }
+}
+
+html.dark {
+  .home-container {
+    --quick-nav-arrow-active-start: #3a6bc2;
+    --quick-nav-arrow-active-end: #244887;
+    --quick-nav-arrow-active-shadow: rgba(36, 72, 135, 0.45);
   }
 }
 

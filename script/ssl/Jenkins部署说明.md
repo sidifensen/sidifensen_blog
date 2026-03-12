@@ -37,7 +37,7 @@ script/ssl/
 cd /opt/sidifensen_blog/script/ssl
 
 # 复制示例文件
-cp env.example .env
+cp .env.example .env
 
 # 编辑配置文件（使用 vim 或其他编辑器）
 vim .env
@@ -164,7 +164,7 @@ cp -r script/ssl/* ${DEPLOY_PATH}/script/ssl/
 # 5. 进入 SSL 配置目录
 cd ${DEPLOY_PATH}/script/ssl
 
-# 6. 检查 .env 文件（如果不存在会从 env.example 复制）
+# 6. 检查 .env 文件（如果不存在会从 .env.example 复制）
 # 7. 设置 PROJECT_ROOT 环境变量
 export PROJECT_ROOT=${DEPLOY_PATH}
 
@@ -274,7 +274,7 @@ docker-compose -f docker-compose-ssl.yml --env-file .env logs -f
 
 ```bash
 cd /opt/sidifensen_blog/script/ssl
-cp env.example .env
+cp .env.example .env
 vim .env  # 编辑配置
 ```
 

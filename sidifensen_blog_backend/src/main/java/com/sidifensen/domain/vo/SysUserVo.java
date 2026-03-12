@@ -111,5 +111,19 @@ public class SysUserVo {
      */
     private Date updateTime;
 
+    /**
+     * 是否为有效VIP
+     */
+    private Boolean isVip;
+
+    /**
+     * VIP状态
+     */
+    private String vipStatus;
+
+    /**
+     * VIP到期时间
+     */
+    private Date vipExpireTime;
 
 }

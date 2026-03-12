@@ -48,7 +48,7 @@
 
 ```bash
 cd script/deploy
-cp env.example .env
+cp .env.example .env
 # 编辑 .env 文件，修改服务器 IP
 # GITEA_DOMAIN=your-server-ip
 # GITEA_PORT=3000

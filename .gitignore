@@ -15,7 +15,6 @@ job
 **/src/test/
 
 .env
-.env.prod
 
 # 文档文件夹
 docs/

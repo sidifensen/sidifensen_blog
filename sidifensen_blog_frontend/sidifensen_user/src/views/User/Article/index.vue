@@ -9,12 +9,26 @@
 
       <!-- 中间文章内容 -->
       <div class="main-content">
-        <ArticleContent :article="articleInfo" :loading="articleLoading" :user-info="userInfo" :user-loading="userLoading" @updateArticle="handleUpdateArticle" />
+        <div v-if="accessState === 'vip'" class="access-panel vip-panel">
+          <span class="panel-kicker">会员文章</span>
+          <h2 class="panel-title">这篇文章仅对 VIP 开放</h2>
+          <p class="panel-description">支付成功后，账号会自动获得 VIP 身份，可以直接查看当前文章和会员专区内容。</p>
+          <div class="panel-actions">
+            <button class="primary-button" @click="goToVipCenter">去开通 VIP</button>
+            <button class="secondary-button" @click="goToVipArticles">会员专区</button>
+          </div>
+        </div>
+        <div v-else-if="accessState" class="access-panel denied-panel">
+          <span class="panel-kicker">访问受限</span>
+          <h2 class="panel-title">{{ accessMessage }}</h2>
+          <p class="panel-description">当前账号没有这篇文章的查看权限。</p>
+        </div>
+        <ArticleContent v-else :article="articleInfo" :loading="articleLoading" :user-info="userInfo" :user-loading="userLoading" @updateArticle="handleUpdateArticle" />
       </div>
 
       <!-- 右侧文章目录 -->
       <div class="right-sidebar">
-        <ArticleCatalog v-if="articleInfo && articleInfo.content" :content="articleInfo.content" />
+        <ArticleCatalog v-if="!accessState && articleInfo && articleInfo.content" :content="articleInfo.content" />
       </div>
     </div>
   </div>
@@ -22,8 +36,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
-import { ElMessage } from "element-plus";
+import { useRoute, useRouter } from "vue-router";
 import { getArticleDetail } from "@/api/article";
 import { getUserInfoById } from "@/api/user";
 import UserInfoCard from "./components/UserInfoCard.vue";
@@ -32,6 +45,7 @@ import ArticleCatalog from "./components/ArticleCatalog.vue";
 
 // 路由参数
 const route = useRoute();
+const router = useRouter();
 const { userId, articleId } = route.params;
 
 // 响应式数据
@@ -39,6 +53,8 @@ const userInfo = ref(null);
 const articleInfo = ref(null);
 const userLoading = ref(false);
 const articleLoading = ref(false);
+const accessState = ref("");
+const accessMessage = ref("");
 
 // 获取用户信息
 const fetchUserInfo = async () => {
@@ -57,12 +73,25 @@ const fetchUserInfo = async () => {
 const fetchArticleDetail = async () => {
   try {
     articleLoading.value = true;
+    accessState.value = "";
+    accessMessage.value = "";
     const response = await getArticleDetail(articleId);
     articleInfo.value = response.data.data;
 
     // 注意：阅读量统计已集成到后端获取文章详情接口中，会自动异步统计，无需前端单独调用
   } catch (error) {
-    ElMessage.error("获取文章详情失败");
+    articleInfo.value = null;
+    const message = error?.msg || "获取文章详情失败";
+    accessMessage.value = message;
+    if (message === "该文章仅VIP可见") {
+      accessState.value = "vip";
+      return;
+    }
+    if (["该文章仅粉丝可见", "该文章仅作者本人可见"].includes(message)) {
+      accessState.value = "denied";
+      return;
+    }
+    ElMessage.error(message);
   } finally {
     articleLoading.value = false;
   }
@@ -71,6 +100,14 @@ const fetchArticleDetail = async () => {
 // 处理文章信息更新
 const handleUpdateArticle = (updatedArticle) => {
   articleInfo.value = updatedArticle;
+};
+
+const goToVipCenter = () => {
+  router.push("/vip");
+};
+
+const goToVipArticles = () => {
+  router.push("/vip/articles");
 };
 
 // 页面初始化
@@ -112,6 +149,69 @@ onMounted(async () => {
       background-color: var(--el-bg-color);
       border-radius: 8px;
       box-shadow: var(--el-box-shadow-light);
+
+      .access-panel {
+        --panel-bg: var(--el-bg-color);
+        --panel-border: var(--el-border-color);
+        --panel-text: var(--el-text-color-primary);
+        --panel-muted: var(--el-text-color-secondary);
+        display: grid;
+        gap: 14px;
+        padding: 40px;
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+
+        .panel-kicker {
+          font-size: 13px;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: var(--panel-muted);
+        }
+
+        .panel-title {
+          margin: 0;
+          font-size: 30px;
+          color: var(--panel-text);
+        }
+
+        .panel-description {
+          margin: 0;
+          max-width: 520px;
+          line-height: 1.8;
+          color: var(--panel-muted);
+        }
+
+        .panel-actions {
+          display: flex;
+          gap: 12px;
+
+          .primary-button,
+          .secondary-button {
+            min-width: 132px;
+            height: 42px;
+            border-radius: 999px;
+            cursor: pointer;
+          }
+
+          .primary-button {
+            border: 0;
+            background: var(--el-color-warning);
+            color: var(--el-color-white);
+          }
+
+          .secondary-button {
+            border: 1px solid var(--panel-border);
+            background: transparent;
+            color: var(--panel-text);
+          }
+        }
+
+        &.vip-panel {
+          --panel-bg: rgba(var(--el-color-warning-rgb, 230, 162, 60), 0.06);
+          --panel-border: rgba(var(--el-color-warning-rgb, 230, 162, 60), 0.2);
+        }
+      }
     }
 
     // 右侧文章目录栏
@@ -150,6 +250,18 @@ onMounted(async () => {
       .main-content {
         margin-top: 50px;
         border-radius: 0;
+
+        .access-panel {
+          padding: 28px 20px;
+
+          .panel-title {
+            font-size: 24px;
+          }
+
+          .panel-actions {
+            flex-direction: column;
+          }
+        }
       }
     }
   }

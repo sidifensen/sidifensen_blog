@@ -76,7 +76,7 @@ npm run build
 cd script
 
 # 复制环境配置
-cp env.example .env
+cp ..env.example .env
 
 # 启动所有服务
 docker-compose up -d
@@ -134,6 +134,7 @@ sidifensen_blog/
 - **异常处理**: 抛出 `BlogException`，错误信息必须来自 `BlogConstants`，禁止硬编码字符串
 - **Service 模式**: 继承 `ServiceImpl<Mapper, Entity>` 并实现 service 接口
 - **日志**: 使用 `@Slf4j`，记录所有业务操作和异常
+- **代码注释**: 后端新增或修改代码时必须补充必要的中文注释，说明核心业务逻辑、关键分支、复杂查询、重要字段或方法用途，禁止添加无意义注释
 
 ### 命名规范
 
@@ -178,6 +179,7 @@ throw new BlogException("该用户不存在");
 1. **编译检查**: 运行 `mvn clean compile -DskipTests` 确保代码能通过编译
 2. **导入检查**: 确认所有新增的类都已正确导入，没有缺失或冗余的 import
 3. **语法检查**: 检查是否有拼写错误、注解使用是否正确
+4. **注释检查**: 确认新增或修改的后端代码已经补充必要中文注释，且注释内容准确描述业务含义
 
 ```bash
 # 快速编译检查

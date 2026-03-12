@@ -29,6 +29,7 @@ public class SecurityConstants {
             "/article/get/{articleId:\\d+}",
             "/article/incrReadCount/{articleId:\\d+}",
             "/article/hot",
+            "/article/listVipPreview",
 
             // 评论相关
             "/comment/list",
@@ -57,6 +58,10 @@ public class SecurityConstants {
             "/oauth/github/callback",
             "/oauth/qq/login",
             "/oauth/qq/callback",
+
+            // VIP相关
+            "/vip/plans",
+            "/vip/pay/alipay/notify",
 
             // 友链相关
             "/link/list",

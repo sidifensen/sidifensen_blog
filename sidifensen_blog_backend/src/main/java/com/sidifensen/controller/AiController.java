@@ -5,6 +5,7 @@ import com.sidifensen.domain.dto.AiSummaryDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.service.AiService;
 import com.sidifensen.service.AiUsageService;
+import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -45,10 +46,11 @@ public class AiController {
      */
     @GetMapping("/quota")
     public Result<Map<String, Integer>> getAiQuota() {
+        Integer userId = SecurityUtils.getUserId();
         Integer remaining = aiService.getRemainingQuota();
         return Result.success(Map.of(
                 "remaining", remaining,
-                "dailyLimit", aiUsageService.getDailyLimit()
+                "dailyLimit", aiUsageService.getDailyLimit(userId)
         ));
     }
 

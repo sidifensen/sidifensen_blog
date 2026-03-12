@@ -34,23 +34,23 @@
           </div>
           <div class="stat-main">
             <span class="stat-label">文章</span>
-            <span class="stat-value">{{ statistics?.articleStatistics?.totalCount || 0 }}</span>
+            <span class="stat-value">{{ formatDisplayNumber(statistics?.articleStatistics?.totalCount) }}</span>
           </div>
           <div class="stat-breakdown">
             <span class="breakdown-item">
               <span class="dot dot-published"></span>
               <span class="label">已发布</span>
-              <span class="value">{{ statistics?.articleStatistics?.publishedCount || 0 }}</span>
+              <span class="value">{{ formatDisplayNumber(statistics?.articleStatistics?.publishedCount) }}</span>
             </span>
             <span class="breakdown-item">
               <span class="dot dot-draft"></span>
               <span class="label">草稿</span>
-              <span class="value">{{ statistics?.articleStatistics?.draftCount || 0 }}</span>
+              <span class="value">{{ formatDisplayNumber(statistics?.articleStatistics?.draftCount) }}</span>
             </span>
             <span class="breakdown-item">
               <span class="dot dot-reviewing"></span>
               <span class="label">审核中</span>
-              <span class="value">{{ statistics?.articleStatistics?.reviewingCount || 0 }}</span>
+              <span class="value">{{ formatDisplayNumber(statistics?.articleStatistics?.reviewingCount) }}</span>
             </span>
           </div>
         </div>
@@ -62,7 +62,7 @@
           </div>
           <div class="stat-main">
             <span class="stat-label">专栏</span>
-            <span class="stat-value">{{ statistics?.columnCount || 0 }}</span>
+            <span class="stat-value">{{ formatDisplayNumber(statistics?.columnCount) }}</span>
           </div>
           <div class="stat-action">
             <span>管理</span>
@@ -77,7 +77,7 @@
           </div>
           <div class="stat-main">
             <span class="stat-label">评论</span>
-            <span class="stat-value">{{ statistics?.commentCount || 0 }}</span>
+            <span class="stat-value">{{ formatDisplayNumber(statistics?.commentCount) }}</span>
           </div>
           <div class="stat-action">
             <span>管理</span>
@@ -92,7 +92,7 @@
           </div>
           <div class="stat-main">
             <span class="stat-label">总阅读</span>
-            <span class="stat-value">{{ formatNumber(statistics?.totalReadCount || 0) }}</span>
+            <span class="stat-value">{{ formatDisplayNumber(statistics?.totalReadCount) }}</span>
           </div>
           <div class="stat-trend trend-positive">
             <el-icon><Top /></el-icon>
@@ -107,7 +107,7 @@
           </div>
           <div class="stat-main">
             <span class="stat-label">获赞</span>
-            <span class="stat-value">{{ statistics?.totalLikeCount || 0 }}</span>
+            <span class="stat-value">{{ formatDisplayNumber(statistics?.totalLikeCount) }}</span>
           </div>
           <div class="stat-trend">
             <span>感谢支持</span>
@@ -121,7 +121,7 @@
           </div>
           <div class="stat-main">
             <span class="stat-label">粉丝</span>
-            <span class="stat-value">{{ statistics?.fansCount || 0 }}</span>
+            <span class="stat-value">{{ formatDisplayNumber(statistics?.fansCount) }}</span>
           </div>
           <div class="stat-trend">
             <span>影响力</span>
@@ -202,17 +202,15 @@ import {
   Star,
 } from "@element-plus/icons-vue";
 import { getCreationStatistics } from "@/api/article";
+import { formatCompactNumber } from "@/utils/formatNumber";
 
 const router = useRouter();
 
 const statisticsLoading = ref(false);
 const statistics = ref(null);
 
-const formatNumber = (num) => {
-  if (num >= 10000) {
-    return (num / 10000).toFixed(1) + "万";
-  }
-  return num.toString();
+const formatDisplayNumber = (num) => {
+  return formatCompactNumber(num);
 };
 
 const fetchStatistics = async () => {

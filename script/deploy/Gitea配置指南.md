@@ -41,7 +41,7 @@
 
 ```bash
 cd script/deploy
-cp env.example .env
+cp .env.example .env
 # 编辑 .env 文件，修改服务器 IP 等配置
 ```
 
