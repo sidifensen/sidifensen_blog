@@ -86,7 +86,7 @@
               <el-button :icon="ChatDotSquare" @click="toggleEmojiPicker">表情</el-button>
               <el-button :icon="Picture" @click="openImagePicker" :loading="imageUploadLoading">图片</el-button>
             </div>
-            <el-button type="primary" @click="sendMessage">发送 (Ctrl+Enter)</el-button>
+            <el-button type="primary" class="send-btn" @click="sendMessage">发送 (Ctrl+Enter)</el-button>
           </div>
 
           <!-- Emoji 表情选择器 -->
@@ -1118,23 +1118,25 @@ onUnmounted(() => {
           }
         }
 
-        :deep(.el-button[type="primary"]) {
-          border-radius: 10px;
-          padding: 10px 24px;
-          font-size: 14px;
-          font-weight: 600;
-          background: linear-gradient(135deg, var(--accent-color) 0%, #2563eb 100%);
-          border: none;
-          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-          transition: all 0.2s ease;
+        .send-btn {
+          border-radius: 12px !important;
+          padding: 12px 28px !important;
+          font-size: 14px !important;
+          font-weight: 600 !important;
+          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+          border: none !important;
+          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35) !important;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 
           &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45) !important;
+            background: linear-gradient(135deg, #4f8ef7 0%, #3b73e8 100%) !important;
           }
 
           &:active {
-            transform: translateY(0);
+            transform: translateY(0) scale(0.98) !important;
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3) !important;
           }
         }
       }

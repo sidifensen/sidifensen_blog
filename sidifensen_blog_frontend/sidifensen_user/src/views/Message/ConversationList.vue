@@ -29,7 +29,9 @@
               </div>
               <div class="conversation-content">
                 <span class="last-message">{{ conv.lastMessageContent }}</span>
-                <el-badge v-if="conv.unreadCount > 0" :value="conv.unreadCount" :max="99" class="unread-badge" />
+                <span v-if="conv.unreadCount > 0" class="unread-badge">
+                  {{ conv.unreadCount > 99 ? '99+' : conv.unreadCount }}
+                </span>
               </div>
             </div>
 
@@ -366,7 +368,7 @@ onUnmounted(() => {
               min-width: 20px;
               height: 20px;
               padding: 0 6px;
-              background: var(--accent-color);
+              background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
               color: white;
               border-radius: 10px;
               font-size: 11px;
@@ -374,7 +376,7 @@ onUnmounted(() => {
               display: flex;
               align-items: center;
               justify-content: center;
-              box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+              box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
             }
           }
         }
