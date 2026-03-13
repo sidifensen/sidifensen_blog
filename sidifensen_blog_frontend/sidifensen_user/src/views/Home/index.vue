@@ -473,6 +473,8 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+@use "sass:color";
+
 // ===== 全局样式变量 - 2026 现代化 Glassmorphism 设计系统 =====
 // 主色调：深邃夜空蓝 + 活力珊瑚橙 + 极光紫点缀
 $deep-navy: #0f172a;
@@ -935,7 +937,11 @@ $transition-elastic: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
               box-shadow:
                 0 12px 40px rgba(59, 130, 246, 0.45),
                 inset 0 1px 0 rgba(255, 255, 255, 0.3);
-              background: linear-gradient(135deg, lighten($azure-blue, 5%) 0%, lighten($ocean-blue, 3%) 100%);
+              background: linear-gradient(
+                135deg,
+                color.adjust($azure-blue, $lightness: 5%) 0%,
+                color.adjust($ocean-blue, $lightness: 3%) 100%
+              );
             }
 
             &:active {

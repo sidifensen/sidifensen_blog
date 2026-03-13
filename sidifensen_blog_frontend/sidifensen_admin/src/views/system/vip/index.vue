@@ -720,6 +720,9 @@ onUnmounted(() => {
   --bg-page: #f5f7fb;
   --bg-panel: #ffffff;
   --bg-panel-soft: #f8fafc;
+  --bg-card: rgba(255, 255, 255, 0.88);
+  --bg-card-strong: rgba(255, 255, 255, 0.94);
+  --bg-plan-card: linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 0.96));
   --bg-hero: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.9));
   --text-primary: #0f172a;
   --text-regular: #334155;
@@ -730,30 +733,53 @@ onUnmounted(() => {
   --accent-soft: rgba(192, 132, 26, 0.12);
   --shadow-soft: 0 12px 28px rgba(15, 23, 42, 0.08);
   --shadow-card: 0 8px 20px rgba(15, 23, 42, 0.06);
+  --hero-border: rgba(255, 255, 255, 0.2);
+  --hero-eyebrow: rgba(248, 250, 252, 0.68);
+  --hero-subtitle: rgba(248, 250, 252, 0.78);
+  --page-glow: rgba(192, 132, 26, 0.12);
+  --page-overlay-top: rgba(255, 255, 255, 0.4);
+  --page-overlay-bottom: rgba(245, 247, 251, 0.9);
   --button-primary-bg: #2563eb;
   --button-primary-hover: #1d4ed8;
   --button-primary-text: #eff6ff;
   --button-secondary-bg: rgba(255, 255, 255, 0.88);
   --button-secondary-border: #cbd5e1;
   --button-secondary-text: #334155;
+  --button-secondary-hover-bg: #f3f7fd;
+  --button-secondary-hover-border: #93b4e4;
   --button-info-bg: #edf4ff;
   --button-info-border: #bfdbfe;
   --button-info-text: #2563eb;
+  --button-info-hover-bg: #ddeafe;
+  --button-info-hover-border: #93c5fd;
   --button-accent-bg: #fff5dc;
   --button-accent-border: #f3cf85;
   --button-accent-text: #a16207;
+  --button-accent-hover-bg: #ffedbf;
+  --button-accent-hover-border: #f0ba54;
   --button-danger-bg: #fff1f0;
   --button-danger-border: #f2b1ab;
   --button-danger-text: #dc2626;
+  --button-danger-hover-bg: #ffe0dd;
+  --button-danger-hover-border: #f38b82;
   --avatar-bg: #e8eef7;
   --avatar-border: #d3deeb;
   --avatar-text: #28435e;
+  --input-bg: #ffffff;
+  --input-border: #dbe3ee;
+  --input-focus: #2563eb;
+  --table-header-bg: #f3f7fd;
+  --table-row-hover: #eef4ff;
+  --table-fixed-bg: #ffffff;
+  --dialog-bg: #ffffff;
+  --dialog-header-border: #e2e8f0;
+  --mask-bg: rgba(15, 23, 42, 0.48);
 
   min-height: 100%;
   padding: 24px;
   background:
-    radial-gradient(circle at top right, rgba(192, 132, 26, 0.12), transparent 28%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(245, 247, 251, 0.9)),
+    radial-gradient(circle at top right, var(--page-glow), transparent 28%),
+    linear-gradient(180deg, var(--page-overlay-top), var(--page-overlay-bottom)),
     var(--bg-page);
 
   .hero-section {
@@ -762,7 +788,7 @@ onUnmounted(() => {
     gap: 24px;
     align-items: flex-end;
     padding: 28px 32px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--hero-border);
     border-radius: 24px;
     background: var(--bg-hero);
     box-shadow: var(--shadow-soft);
@@ -774,7 +800,7 @@ onUnmounted(() => {
         margin: 0 0 10px;
         font-size: 12px;
         letter-spacing: 0.24em;
-        color: rgba(248, 250, 252, 0.68);
+        color: var(--hero-eyebrow);
       }
 
       .hero-section__title {
@@ -787,7 +813,7 @@ onUnmounted(() => {
       .hero-section__subtitle {
         margin: 12px 0 0;
         line-height: 1.75;
-        color: rgba(248, 250, 252, 0.78);
+        color: var(--hero-subtitle);
       }
     }
 
@@ -811,7 +837,7 @@ onUnmounted(() => {
       padding: 22px 20px;
       border: 1px solid var(--border-color);
       border-radius: 20px;
-      background: rgba(255, 255, 255, 0.88);
+      background: var(--bg-card);
       box-shadow: var(--shadow-card);
 
       .stats-section__card-top {
@@ -857,7 +883,7 @@ onUnmounted(() => {
     padding: 20px 22px 24px;
     border: 1px solid var(--border-color);
     border-radius: 24px;
-    background: rgba(255, 255, 255, 0.92);
+    background: var(--bg-card-strong);
     box-shadow: var(--shadow-card);
 
     .workspace-section__tabs {
@@ -1038,7 +1064,7 @@ onUnmounted(() => {
         padding: 22px;
         border: 1px solid var(--border-color);
         border-radius: 20px;
-        background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 0.96));
+        background: var(--bg-plan-card);
         box-shadow: var(--shadow-card);
 
         .plan-card__header {
@@ -1265,14 +1291,48 @@ onUnmounted(() => {
 
   :deep(.el-input__wrapper),
   :deep(.el-textarea__inner),
-  :deep(.el-select__wrapper) {
+  :deep(.el-select__wrapper),
+  :deep(.el-date-editor.el-input__wrapper),
+  :deep(.el-input-number__decrease),
+  :deep(.el-input-number__increase) {
     box-shadow: none;
-    border: 1px solid var(--border-color);
-    background: var(--bg-panel);
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    color: var(--text-primary);
+  }
+
+  :deep(.el-input__inner),
+  :deep(.el-textarea__inner),
+  :deep(.el-select__selected-item),
+  :deep(.el-range-input) {
+    color: var(--text-primary);
+  }
+
+  :deep(.el-input__wrapper.is-focus),
+  :deep(.el-select__wrapper.is-focused),
+  :deep(.el-textarea__inner:focus),
+  :deep(.el-date-editor.is-active) {
+    border-color: var(--input-focus);
+  }
+
+  :deep(.el-input__inner::placeholder),
+  :deep(.el-textarea__inner::placeholder),
+  :deep(.el-range-input::placeholder) {
+    color: var(--text-muted);
+  }
+
+  :deep(.el-date-editor .el-range-separator),
+  :deep(.el-date-editor .el-range__icon),
+  :deep(.el-select__placeholder),
+  :deep(.el-input__prefix-inner),
+  :deep(.el-input__suffix-inner) {
+    color: var(--text-muted);
   }
 
   :deep(.el-input-number) {
     width: 100%;
+    background: var(--input-bg);
+    border-radius: 12px;
   }
 
   /* 页面按钮皮肤 */
@@ -1297,9 +1357,9 @@ onUnmounted(() => {
   :deep(.el-button.vip-button:hover),
   :deep(.el-button.vip-button:focus-visible) {
     transform: translateY(-1px);
-    border-color: color-mix(in srgb, var(--button-secondary-border) 78%, var(--accent));
+    border-color: var(--button-secondary-hover-border);
     color: var(--text-primary);
-    background: color-mix(in srgb, var(--button-secondary-bg) 92%, var(--accent-soft));
+    background: var(--button-secondary-hover-bg);
   }
 
   :deep(.el-button.vip-button.el-button--small) {
@@ -1351,8 +1411,8 @@ onUnmounted(() => {
 
   :deep(.el-button.vip-button.vip-button--soft-info:hover),
   :deep(.el-button.vip-button.vip-button--soft-info:focus-visible) {
-    border-color: color-mix(in srgb, var(--button-info-border) 72%, var(--button-info-text));
-    background: color-mix(in srgb, var(--button-info-bg) 84%, white);
+    border-color: var(--button-info-hover-border);
+    background: var(--button-info-hover-bg);
     color: var(--button-info-text);
   }
 
@@ -1364,8 +1424,8 @@ onUnmounted(() => {
 
   :deep(.el-button.vip-button.vip-button--soft-accent:hover),
   :deep(.el-button.vip-button.vip-button--soft-accent:focus-visible) {
-    border-color: color-mix(in srgb, var(--button-accent-border) 72%, var(--button-accent-text));
-    background: color-mix(in srgb, var(--button-accent-bg) 88%, white);
+    border-color: var(--button-accent-hover-border);
+    background: var(--button-accent-hover-bg);
     color: var(--button-accent-text);
   }
 
@@ -1377,14 +1437,95 @@ onUnmounted(() => {
 
   :deep(.el-button.vip-button.vip-button--soft-danger:hover),
   :deep(.el-button.vip-button.vip-button--soft-danger:focus-visible) {
-    border-color: color-mix(in srgb, var(--button-danger-border) 76%, var(--button-danger-text));
-    background: color-mix(in srgb, var(--button-danger-bg) 90%, white);
+    border-color: var(--button-danger-hover-border);
+    background: var(--button-danger-hover-bg);
     color: var(--button-danger-text);
   }
 
-  :deep(.el-dialog),
-  :deep(.el-drawer__body) {
+  :deep(.el-table) {
+    --el-table-bg-color: var(--bg-panel);
+    --el-table-tr-bg-color: var(--bg-panel);
+    --el-table-border-color: var(--border-color);
+    --el-table-header-bg-color: var(--table-header-bg);
+    --el-table-header-text-color: var(--text-regular);
+    --el-table-row-hover-bg-color: var(--table-row-hover);
+    --el-table-text-color: var(--text-regular);
+    --el-fill-color-lighter: var(--table-row-hover);
     background: var(--bg-panel);
+    color: var(--text-regular);
+  }
+
+  :deep(.el-table__header-wrapper th),
+  :deep(.el-table__body-wrapper td) {
+    border-bottom-color: var(--border-color);
+  }
+
+  :deep(.el-table__body tr:hover > td.el-table__cell) {
+    background: var(--table-row-hover);
+  }
+
+  :deep(.el-table__inner-wrapper::before),
+  :deep(.el-table__fixed::before),
+  :deep(.el-table__fixed-right::before) {
+    background: var(--border-color);
+  }
+
+  :deep(.el-table__fixed-right-patch),
+  :deep(.el-table__fixed .el-table__cell),
+  :deep(.el-table__fixed-right .el-table__cell) {
+    background: var(--table-fixed-bg);
+  }
+
+  :deep(.el-pagination) {
+    --el-pagination-bg-color: var(--bg-panel);
+    --el-pagination-button-bg-color: var(--bg-panel);
+    --el-pagination-button-color: var(--text-regular);
+    --el-pagination-hover-color: var(--accent);
+    color: var(--text-regular);
+  }
+
+  :deep(.el-pagination .btn-prev),
+  :deep(.el-pagination .btn-next),
+  :deep(.el-pagination .el-pager li),
+  :deep(.el-pagination .el-pagination__sizes .el-select__wrapper),
+  :deep(.el-pagination .el-pagination__jump .el-input__wrapper) {
+    background: var(--bg-panel);
+    border-color: var(--border-color);
+    color: var(--text-regular);
+  }
+
+  :deep(.el-form-item__label) {
+    color: var(--text-regular);
+  }
+
+  :deep(.el-radio-button__inner) {
+    background: var(--button-secondary-bg);
+    border-color: var(--button-secondary-border);
+    color: var(--button-secondary-text);
+    box-shadow: none;
+  }
+
+  :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+    background: var(--button-primary-bg);
+    border-color: var(--button-primary-bg);
+    color: var(--button-primary-text);
+    box-shadow: none;
+  }
+
+  :deep(.el-dialog),
+  :deep(.el-drawer),
+  :deep(.el-drawer__body) {
+    background: var(--dialog-bg);
+    color: var(--text-regular);
+  }
+
+  :deep(.el-dialog__header),
+  :deep(.el-drawer__header) {
+    border-bottom: 1px solid var(--dialog-header-border);
+  }
+
+  :deep(.el-overlay) {
+    background: var(--mask-bg);
   }
 
   :deep(.el-dialog__header),
@@ -1401,6 +1542,9 @@ html.dark {
     --bg-page: #0b1220;
     --bg-panel: #111c2e;
     --bg-panel-soft: #162235;
+    --bg-card: rgba(17, 28, 46, 0.92);
+    --bg-card-strong: rgba(17, 28, 46, 0.96);
+    --bg-plan-card: linear-gradient(180deg, rgba(17, 28, 46, 0.96), rgba(22, 34, 53, 0.98));
     --bg-hero: linear-gradient(135deg, rgba(9, 14, 24, 0.96), rgba(21, 33, 53, 0.96));
     --text-primary: #e2e8f0;
     --text-regular: #cbd5e1;
@@ -1411,28 +1555,51 @@ html.dark {
     --accent-soft: rgba(212, 162, 58, 0.14);
     --shadow-soft: 0 14px 36px rgba(2, 6, 23, 0.32);
     --shadow-card: 0 10px 24px rgba(2, 6, 23, 0.26);
+    --hero-border: rgba(148, 163, 184, 0.14);
+    --hero-eyebrow: rgba(248, 250, 252, 0.68);
+    --hero-subtitle: rgba(226, 232, 240, 0.74);
+    --page-glow: rgba(212, 162, 58, 0.12);
+    --page-overlay-top: rgba(11, 18, 32, 0.3);
+    --page-overlay-bottom: rgba(11, 18, 32, 0.96);
     --button-primary-bg: #3b82f6;
     --button-primary-hover: #2563eb;
     --button-primary-text: #eff6ff;
     --button-secondary-bg: rgba(22, 34, 53, 0.92);
     --button-secondary-border: #32455f;
     --button-secondary-text: #d5deea;
+    --button-secondary-hover-bg: #1c2b42;
+    --button-secondary-hover-border: #4c6588;
     --button-info-bg: rgba(37, 99, 235, 0.14);
     --button-info-border: rgba(96, 165, 250, 0.34);
     --button-info-text: #93c5fd;
+    --button-info-hover-bg: rgba(37, 99, 235, 0.22);
+    --button-info-hover-border: rgba(96, 165, 250, 0.52);
     --button-accent-bg: rgba(212, 162, 58, 0.14);
     --button-accent-border: rgba(245, 200, 108, 0.34);
     --button-accent-text: #f5d58a;
+    --button-accent-hover-bg: rgba(212, 162, 58, 0.22);
+    --button-accent-hover-border: rgba(245, 200, 108, 0.5);
     --button-danger-bg: rgba(220, 38, 38, 0.14);
     --button-danger-border: rgba(248, 113, 113, 0.32);
     --button-danger-text: #fca5a5;
+    --button-danger-hover-bg: rgba(220, 38, 38, 0.22);
+    --button-danger-hover-border: rgba(248, 113, 113, 0.5);
     --avatar-bg: #18243a;
     --avatar-border: #32455f;
     --avatar-text: #e2e8f0;
+    --input-bg: #111c2e;
+    --input-border: #22314a;
+    --input-focus: #3b82f6;
+    --table-header-bg: #162235;
+    --table-row-hover: #162235;
+    --table-fixed-bg: #111c2e;
+    --dialog-bg: #111c2e;
+    --dialog-header-border: #22314a;
+    --mask-bg: rgba(2, 6, 23, 0.7);
 
     background:
-      radial-gradient(circle at top right, rgba(212, 162, 58, 0.12), transparent 30%),
-      linear-gradient(180deg, rgba(11, 18, 32, 0.92), rgba(11, 18, 32, 0.96)),
+      radial-gradient(circle at top right, var(--page-glow), transparent 30%),
+      linear-gradient(180deg, var(--page-overlay-top), var(--page-overlay-bottom)),
       var(--bg-page);
   }
 }

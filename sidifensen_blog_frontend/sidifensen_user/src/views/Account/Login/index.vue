@@ -29,7 +29,16 @@
       <el-checkbox v-model="formData.rememberMe">记住密码</el-checkbox>
       <el-button class="forgetPassword" type="primary" link @click="router.push('/reset')">忘记密码</el-button>
     </div>
-    <el-button style="margin-bottom: 20px" type="primary" plain @click="loginBtn">登录</el-button>
+    <el-button
+      style="margin-bottom: 20px"
+      type="primary"
+      plain
+      :loading="loginLoading"
+      :disabled="loginLoading"
+      @click="loginBtn"
+    >
+      {{ loginLoading ? "登录中" : "登录" }}
+    </el-button>
     <!-- 分割线 -->
     <el-divider>没有账号</el-divider>
     <el-button type="success" plain @click="router.push('/register')">注册</el-button>
@@ -56,7 +65,6 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { login, checkCode, info } from "@/api/user";
 import { SetJwt } from "@/utils/Auth";
-import { ElMessage } from "element-plus";
 import { useUserStore } from "@/stores/userStore.js";
 
 const userStore = useUserStore();
@@ -70,6 +78,7 @@ const formData = ref({
   checkCodeKey: "",
   checkCode: "",
 });
+const loginLoading = ref(false);
 
 // 验证用户名
 const validateUsername = (rule, value, callback) => {
@@ -113,28 +122,36 @@ const rules = ref({
 });
 
 // 登录按钮
-const loginBtn = () => {
-  formDataRef.value.validate((valid) => {
-    if (!valid) {
-      ElMessage.error("请填写完整信息");
-      return;
-    } else {
-      login(formData.value)
-        .then((res) => {
-          ElMessage.success("登录成功");
-          //将jwt存储到localStorage
-          SetJwt(res.data.data);
-          info().then((res) => {
-            userStore.user = res.data.data;
-          });
-          router.push({ name: "Home" });
-        })
-        .catch(() => {
-          //刷新验证码
-          changeCheckCode();
-        });
-    }
-  });
+const loginBtn = async () => {
+  if (loginLoading.value) {
+    return;
+  }
+
+  loginLoading.value = true;
+
+  try {
+    await formDataRef.value.validate();
+  } catch {
+    ElMessage.error("请填写完整信息");
+    loginLoading.value = false;
+    return;
+  }
+
+  try {
+    const res = await login(formData.value);
+    ElMessage.success("登录成功");
+    // 将 jwt 存储到 localStorage
+    SetJwt(res.data.data);
+    info().then((userInfoRes) => {
+      userStore.user = userInfoRes.data.data;
+    });
+    router.push({ name: "Home" });
+  } catch {
+    // 登录失败后刷新验证码，避免继续使用旧验证码
+    await changeCheckCode();
+  } finally {
+    loginLoading.value = false;
+  }
 };
 
 const checkCodeInfo = ref({});

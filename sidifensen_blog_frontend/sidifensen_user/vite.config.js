@@ -2,14 +2,61 @@ import { defineConfig } from "vite";
 import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
+import JavaScriptObfuscator from "javascript-obfuscator";
 
 import vue from "@vitejs/plugin-vue";
 
-import { createSvgIconsPlugin } from "vite-plugin-svg-icons";
 import path from "path";
+import { createSvgSpritePlugin } from "./build/svgSpritePlugin";
 
-// 代码混淆
-import { viteObfuscateFile } from "vite-plugin-obfuscator";
+const normalizePath = (filePath) => filePath.replaceAll("\\", "/");
+
+const matchesExcludePattern = (filePath, pattern) => {
+  const normalizedPath = normalizePath(filePath);
+  const normalizedPattern = normalizePath(pattern);
+
+  if (normalizedPattern.startsWith("**/")) {
+    return normalizedPath.endsWith(normalizedPattern.slice(3));
+  }
+
+  if (normalizedPattern.includes("*")) {
+    const plainPattern = normalizedPattern.replaceAll("*", "");
+    return plainPattern ? normalizedPath.includes(plainPattern) : false;
+  }
+
+  return normalizedPath.endsWith(normalizedPattern);
+};
+
+// 生产构建阶段对 JS chunk 做混淆，避免继续依赖已过时的 Vite 插件实现
+const createObfuscatorPlugin = (options = {}) => {
+  const { exclude = [], ...obfuscatorOptions } = options;
+
+  return {
+    name: "vite:obfuscatefiles",
+    apply: "build",
+    generateBundle(_, bundle) {
+      for (const [fileName, chunk] of Object.entries(bundle)) {
+        if (chunk.type !== "chunk" || !chunk.code) {
+          continue;
+        }
+
+        const sourceIds = [chunk.facadeModuleId, ...(chunk.moduleIds || [])].filter(Boolean);
+        const shouldExclude = exclude.some((pattern) => {
+          return sourceIds.some((sourceId) => matchesExcludePattern(sourceId, pattern));
+        });
+
+        if (shouldExclude) {
+          continue;
+        }
+
+        chunk.code = JavaScriptObfuscator.obfuscate(chunk.code, {
+          ...obfuscatorOptions,
+          inputFileName: fileName,
+        }).getObfuscatedCode();
+      }
+    },
+  };
+};
 
 export default defineConfig({
   server: {
@@ -29,16 +76,16 @@ export default defineConfig({
       resolvers: [ElementPlusResolver({ importStyle: "css" })],
     }),
     // 配置自定义icon
-    createSvgIconsPlugin({
-      //这行代码的作用是将项目根目录下的 src/assets/svg 目录作为图标文件的查找目录
-      //path.resolve() 用于解析为绝对路径，process.cwd() 表示当前工作目录，即项目的根目录
+    createSvgSpritePlugin({
+      // 这里将 src/assets/svg 目录注册为 svg 精灵图的来源目录
       iconDirs: [path.resolve(process.cwd(), "src/assets/svg")],
-      symbolId: "[name]", //'[name]' 是一个占位符，表示使用 SVG 文件的名称作为符号 ID
+      // [name] 表示直接使用 SVG 文件名作为 symbol id
+      symbolId: "[name]",
     }),
-    // 如果是生产环境, 启用代码混淆
+    // 如果是生产环境，启用代码混淆
     ...(process.env.NODE_ENV === "production"
       ? [
-          viteObfuscateFile({
+          createObfuscatorPlugin({
             // 混淆选项 - 调整为更温和的设置以避免样式问题
             compact: false, // 压缩代码
             controlFlowFlattening: false, // 禁用控制流扁平化，避免破坏样式逻辑

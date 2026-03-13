@@ -46,7 +46,9 @@ java -jar target/sidifensen_blog_backend-1.0-SNAPSHOT.jar
    - 控制台是否存在报错或警告
    - 必要时截图留存
 5. **如果任务包含黑夜模式或响应式适配，必须额外检查对应状态**
-6. **如果本地前端未启动，先提示用户提供地址或启动项目后再检查**
+6. **使用 Playwright 测试时，默认访问端口为：用户端 `http://localhost:7000`，管理端 `http://localhost:8000`**
+7. **启动前必须先检查前端服务是否已开启；如果已开启，则不要重复启动服务，直接打开对应地址检查**
+8. **如果本地前端未启动，再提示用户提供地址或启动项目后继续检查**
 
 ### 前端任务默认执行策略
 
@@ -60,13 +62,13 @@ java -jar target/sidifensen_blog_backend-1.0-SNAPSHOT.jar
 # 用户端
 cd sidifensen_blog_frontend/sidifensen_user
 npm install
-npm run dev       # http://localhost:5173
+npm run dev       # http://localhost:7000
 npm run build
 
 # 管理端
 cd sidifensen_blog_frontend/sidifensen_admin
 npm install
-npm run dev       # http://localhost:5174
+npm run dev       # http://localhost:8000
 npm run build
 ```
 

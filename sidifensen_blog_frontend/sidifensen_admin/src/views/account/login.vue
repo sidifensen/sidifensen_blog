@@ -25,7 +25,7 @@
           <el-checkbox v-model="loginForm.rememberMe" class="remember-me">记住密码</el-checkbox>
         </div>
         <el-form-item>
-          <el-button type="primary" size="large" class="login-button" @click="handleLogin" :loading="loading">
+          <el-button type="primary" size="large" class="login-button" @click="handleLogin" :loading="loading" :disabled="loading">
             <span v-if="!loading">登录</span>
             <span v-else>登录中...</span>
           </el-button>
@@ -60,32 +60,33 @@ const rules = {
 
 // 登录
 const loginFormRef = ref(null);
-const handleLogin = () => {
-  loginFormRef.value.validate((valid) => {
-    if (!valid) {
-      ElMessage.error("请填写完整信息");
-      return;
-    } else {
-      loading.value = true;
-      login(loginForm.value)
-        .then((res) => {
-          loading.value = false;
-          ElMessage.success("登录成功");
-          //将jwt存储到localStorage
-          SetJwt(res.data.data);
-          info().then((res) => {
-            userStore.setUser(res.data.data);
-            // 加载菜单和动态路由
-            userStore.loadMenusAndRoutes().then(() => {
-              router.push("/home");
-            });
-          });
-        })
-        .catch(() => {
-          loading.value = false;
-        });
-    }
-  });
+const handleLogin = async () => {
+  if (loading.value) {
+    return;
+  }
+
+  try {
+    await loginFormRef.value.validate();
+  } catch {
+    ElMessage.error("请填写完整信息");
+    return;
+  }
+
+  loading.value = true;
+
+  try {
+    const res = await login(loginForm.value);
+    // 登录成功后先持久化 token，再并行加载用户信息和菜单数据
+    SetJwt(res.data.data);
+
+    const [userInfoRes] = await Promise.all([info(), userStore.loadMenusAndRoutes()]);
+    userStore.setUser(userInfoRes.data.data);
+
+    await router.push("/home");
+    ElMessage.success("登录成功");
+  } finally {
+    loading.value = false;
+  }
 };
 </script>
 
