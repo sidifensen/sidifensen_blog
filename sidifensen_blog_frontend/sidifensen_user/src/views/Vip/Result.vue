@@ -1,6 +1,12 @@
 <template>
   <div class="vip-result">
     <div class="result-shell">
+      <!-- 未登录提示 -->
+      <div v-if="!isLoggedIn" class="login-reminder">
+        <p class="reminder-text">检测到您未登录，请先登录后再查看订单状态</p>
+        <button class="primary-button" @click="goToLogin">去登录</button>
+      </div>
+
       <!-- 支付结果卡片 -->
       <div class="result-card">
         <p class="result-kicker">支付结果</p>
@@ -47,6 +53,14 @@ const titleText = computed(() => {
   }
   return "正在确认支付状态";
 });
+
+// 检查是否已登录
+const isLoggedIn = computed(() => !!userStore.user?.id);
+
+// 跳转到登录页
+const goToLogin = () => {
+  router.push("/login");
+};
 
 // 根据订单状态切换说明文案
 const descriptionText = computed(() => {
@@ -116,14 +130,20 @@ const goToVipCenter = () => {
 };
 
 onMounted(async () => {
-  if (!userStore.user?.id) {
-    router.push("/login");
-    return;
-  }
+  // 1. 先检查是否有订单号参数
   if (!orderNo.value) {
     ElMessage.error("缺少订单号");
     return;
   }
+
+  // 2. 检查登录状态 - 未登录时不强制跳转，而是提示用户
+  if (!userStore.user?.id) {
+    ElMessage.warning("请先登录后再查看订单状态");
+    // 不强制跳转，让用户看到页面，可以手动刷新或登录后回来
+    return;
+  }
+
+  // 3. 已登录则开始轮询订单状态
   await pollOrder();
 });
 
@@ -151,6 +171,34 @@ onBeforeUnmount(() => {
     width: 100%;
     max-width: 720px;
     padding: 24px;
+
+    // 未登录提示卡片
+    .login-reminder {
+      display: grid;
+      gap: 16px;
+      padding: 24px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      text-align: center;
+      margin-bottom: 24px;
+
+      .reminder-text {
+        margin: 0;
+        font-size: 15px;
+        color: var(--text-regular);
+      }
+
+      .primary-button {
+        min-width: 120px;
+        height: 44px;
+        border-radius: 999px;
+        border: 0;
+        background: var(--accent);
+        color: #f8fbf8;
+        cursor: pointer;
+      }
+    }
 
     // 结果展示卡片
     .result-card {
