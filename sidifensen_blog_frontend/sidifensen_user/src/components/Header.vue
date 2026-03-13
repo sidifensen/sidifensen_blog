@@ -141,9 +141,8 @@ import Dark from "./Dark.vue";
 import { useUserStore } from "@/stores/userStore.js";
 import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { storeToRefs } from "pinia";
-import { useRoute, useRouter } from "vue-router";
-import { info, oauthLogin } from "@/api/user";
-import { SetJwt } from "@/utils/Auth";
+import { useRouter } from "vue-router";
+import { info } from "@/api/user";
 import { UserFilled, User, Setting, SwitchButton, ChatDotRound, Bell, Star, Collection } from "@element-plus/icons-vue";
 import { useMessageStore } from "@/stores/messageStore";
 import { getUnreadCount } from "@/api/privateMessage";
@@ -154,7 +153,6 @@ const userStore = useUserStore();
 const messageStore = useMessageStore();
 const { user } = storeToRefs(userStore);
 const router = useRouter();
-const route = useRoute();
 
 // 当前激活的菜单索引
 const activeIndex = ref("/");
@@ -300,27 +298,6 @@ const handleWebSocketOpen = () => {
   WebSocketClient.on("MESSAGE_REVOKED", handleMessageRevoked);
   WebSocketClient.on("NEW_NOTIFICATION", handleNewNotification);
 };
-
-const oauth = () => {
-  const user_name = route.query.user_name;
-  const access_token = route.query.access_token;
-  const login_type = route.query.login_type;
-  // 如果地址中有参数，则进行登录
-  if (user_name && access_token) {
-    oauthLogin({ type: login_type, username: user_name, password: access_token }).then(async (res) => {
-      // 去除url上面的参数
-      await router.replace({ query: {} });
-      ElMessage.success("登录成功");
-      // 将jwt存储到localStorage
-      SetJwt(res.data.data);
-      info().then((res) => {
-        userStore.user = res.data.data;
-      });
-    });
-  }
-};
-
-oauth();
 
 const getUserInfo = async () => {
   const res = await info();

@@ -9,12 +9,9 @@ export function login(data) {
   });
 }
 
-export function oauthLogin(data) {
+export function exchangeOauthTicket(data) {
   return request({
-    url: "/user/oauthLogin",
-    headers: {
-      "Login-Type": data.type,
-    },
+    url: "/user/oauth/exchange",
     method: "post",
     data: data,
   });

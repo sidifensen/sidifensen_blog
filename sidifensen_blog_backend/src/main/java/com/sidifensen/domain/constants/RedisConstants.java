@@ -13,6 +13,11 @@ public class RedisConstants {
     public static final String EmailCheckCode = RedisKeyPrefix + "EmailCheckCode:";
 
     /**
+     * OAuth 一次性登录票据缓存键
+     */
+    public static final String OauthTicket = RedisKeyPrefix + "OauthTicket:";
+
+    /**
      * 登录验证码过期时间（5分钟，单位：秒）
      */
     public static final long CHECK_CODE_EXPIRE_TIME = 5 * 60;
@@ -21,6 +26,11 @@ public class RedisConstants {
      * 邮箱验证码过期时间（5分钟，单位：秒）
      */
     public static final long EMAIL_CHECK_CODE_EXPIRE_TIME = 5 * 60;
+
+    /**
+     * OAuth 一次性票据过期时间（60秒，单位：秒）
+     */
+    public static final long OAUTH_TICKET_EXPIRE_TIME = 60;
 
     /**
      * 浏览历史缓存键

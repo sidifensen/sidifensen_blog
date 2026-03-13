@@ -135,24 +135,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     }
 
     @Override
-    public String oauthLogin(OauthLoginDto oauthLoginDto) {
-        try {
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    oauthLoginDto.getUsername(), oauthLoginDto.getPassword());
-            // 调用loadUserByUsername方法
-            Authentication authenticate = authenticationManager.authenticate(authentication);
-            // 获取用户信息，返回的就是UserDetails
-            LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
-            // 创建token,此处的token时由UUID编码而成JWT字符串
-            String token = jwtUtils.createToken(loginUser.getSysUser().getId(), true);
-            return token;
-        } catch (Exception e) {
-            log.error("OAuth登录JWT token生成失败：用户名={}, 错误={}", oauthLoginDto.getUsername(), e.getMessage());
-            throw e; // 重新抛出异常，让全局异常处理器处理
-        }
-    }
-
-    @Override
     public void register(RegisterDto registerDto) {
         // 必须校验验证码，不能为空
         if (ObjectUtil.isEmpty(registerDto.getEmailCheckCode())) {

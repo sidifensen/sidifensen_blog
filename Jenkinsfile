@@ -9,13 +9,15 @@ pipeline {
         JAVA_HOME = tool 'JDK-21'
         NODEJS_HOME = tool 'NodeJS-20'
         MAVEN_HOME = tool 'Maven-3'
+        // 显式指定 Maven 本地仓库，确保依赖缓存复用到 Jenkins 持久化目录
+        MAVEN_OPTS = '-Dmaven.repo.local=/var/jenkins_home/.m2/repository'
     }
     
     options {
         // 保留最近 10 次构建
         buildDiscarder(logRotator(numToKeepStr: '10'))
-        // 超时时间 30 分钟
-        timeout(time: 30, unit: 'MINUTES')
+        // 首次构建需要下载依赖，整体超时时间放宽
+        timeout(time: 90, unit: 'MINUTES')
     }
     
     stages {
@@ -109,12 +111,16 @@ pipeline {
         }
         
         stage('Build Backend') {
+            options {
+                // 后端首次下载 Maven 依赖可能较慢，单独放宽该阶段超时
+                timeout(time: 45, unit: 'MINUTES')
+            }
             steps {
                 echo '📦 构建后端...'
                 dir('sidifensen_blog_backend') {
                     sh '''
                         echo "使用 Maven 构建后端..."
-                        mvn clean package -DskipTests
+                        mvn -s ../script/deploy/maven-settings.xml -B -ntp clean package -DskipTests
                         
                         # 检查构建产物
                         if [ ! -f target/*.jar ]; then

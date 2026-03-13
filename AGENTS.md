@@ -189,33 +189,70 @@ mvn clean compile -DskipTests
 
 **注意**: 调试代码时不要自动重启后端服务，用户会自行重启。
 
-## 前端规范（来自 .cursor/rules/frontend.mdc）
+## 前端规范
 
-### 最高优先级规则（强制）
+### 🔴 最高优先级规则（违反即错误）
 
-#### 规则 1：SCSS 层次结构必须严格对应 template DOM 结构
+#### 规则 1：所有页面必须适配黑夜模式（第一强制）
 
-**这是代码质量第一标准！**
+**⚠️ 这是不可协商的强制性要求，生成代码前必须遵守！**
+
+**三条铁律（违反任何一条都是错误代码）：**
+
+| ❌ 禁止 | ✅ 必须 |
+|--------|--------|
+| 硬编码颜色值 `#fff`、`#1e293b` | 使用 CSS 变量 `var(--bg-card)` |
+| 只写浅色模式样式 | 同时提供 `html.dark` 覆盖 |
+| 生成完不测试 | 切换黑夜模式验证无异常 |
+
+**标准模板（每次生成时直接套用）：**
+
+```scss
+.your-component {
+  // 1. 先定义 CSS 变量（浅色模式默认值）
+  --bg-page: #f8fafc;
+  --bg-card: #ffffff;
+  --text-primary: #1e293b;
+  --text-regular: #475569;
+  --border: #e2e8f0;
+
+  // 2. 使用变量（禁止出现任何颜色值）
+  background: var(--bg-page);
+  color: var(--text-primary);
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+  }
+}
+
+// 3. 黑夜模式覆盖（必须添加，位置固定在文件末尾）
+html.dark {
+  .your-component {
+    --bg-page: #0f172a;
+    --bg-card: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-regular: #cbd5e1;
+    --border: #334155;
+  }
+}
+```
+
+**快速检查清单（生成代码后逐项核对）：**
+- [ ] 搜索 `#` 确认无硬编码颜色（除注释外）
+- [ ] 所有颜色都通过 `var(--xxx)` 引用
+- [ ] 存在 `html.dark` 块且覆盖所有变量
+- [ ] 已在黑夜模式下测试页面无异常
+
+---
+
+#### 规则 2：SCSS 层次结构必须严格对应 template DOM 结构
+
+**代码质量第二标准！**
 
 1. SCSS 嵌套层次必须 100% 匹配 template 的 DOM 结构
 2. 不允许跳过中间层级或打乱顺序
 3. 每个样式模块必须有中文注释说明对应哪个部分
-
-#### 规则 2：所有页面必须适配黑夜模式
-
-**这是强制性要求，没有例外！**
-
-1. 禁止在样式中硬编码颜色值（如 `#fff`、`#1e293b`）
-2. 必须使用 CSS 变量定义所有颜色相关的样式
-3. 必须为 `html.dark` 提供对应的 CSS 变量覆盖
-4. 新增页面或修改页面时，必须在两种模式下都测试
-
-**每次修改前端样式后必须检查：**
-
-```bash
-# 切换黑夜模式，检查页面是否正常显示
-# 如果有任何颜色显示异常，必须立即修复
-```
 
 ### Vue 组件规范
 
@@ -322,69 +359,30 @@ onMounted(() => {
 ### 参考案例
 
 ```scss
-// ✅ 好的卡片样式
+// ✅ 好的卡片样式 - 使用 CSS 变量（注意不是硬编码）
 .article-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  --bg-card: #ffffff;
+  --border: #e5e7eb;
+
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   border-radius: 8px;
 
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); // 只变阴影
   }
 }
-```
 
-## 黑夜模式适配规范（强制要求）
-
-**⚠️ 重要：所有前端页面必须适配黑夜模式，这是强制性要求，没有例外！**
-
-### 核心原则
-
-1. **禁止硬编码颜色** - 任何时候都不能直接写 `#fff`、`#1e293b` 等颜色值
-2. **必须使用 CSS 变量** - 所有颜色相关的样式必须通过 CSS 变量定义
-3. **必须提供暗色覆盖** - 必须为 `html.dark` 提供对应的 CSS 变量覆盖
-4. **必须测试两种模式** - 新增或修改页面时，必须在浅色和深色模式下都测试
-
-### 实现方式
-
-项目通过 `darkStore.js` 管理黑夜模式，使用 `isDark` ref 状态，存储在 localStorage 持久化。
-通过切换 `html` 标签的 `dark`/`light` 类名来控制主题。
-
-### CSS 变量使用规范（必须遵守）
-
-```scss
-// ✅ 正确方式 - 使用 CSS 变量
-.home-container {
-  --bg-page: #f8fafc;
-  --bg-card: #ffffff;
-  --text-primary: #1e293b;
-  --text-regular: #475569;
-  --text-muted: #64748b;
-  --border: #e2e8f0;
-
-  background: var(--bg-page);
-
-  .card {
-    background: var(--bg-card);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-  }
-}
-
-// 黑夜模式覆盖（必须添加）
+// ✅ 黑夜模式覆盖
 html.dark {
-  .home-container {
-    --bg-page: #0f172a;
+  .article-card {
     --bg-card: #1e293b;
-    --text-primary: #f1f5f9;
-    --text-regular: #cbd5e1;
-    --text-muted: #94a3b8;
     --border: #334155;
   }
 }
 ```
 
-### 标准色板（推荐使用）
+### 标准色板参考
 
 | 变量名 | 浅色模式 | 深色模式 | 用途 |
 |--------|---------|---------|------|
@@ -394,45 +392,10 @@ html.dark {
 | `--text-regular` | `#475569` | `#cbd5e1` | 常规文字 |
 | `--text-muted` | `#64748b` | `#94a3b8` | 次要文字 |
 | `--border` | `#e2e8f0` | `#334155` | 边框颜色 |
-| `--border-light` | `#f1f5f9` | `#1e293b` | 浅色边框 |
 
-### 注意事项
-
-- **阴影要更轻** - 深色模式下使用更低透明度的阴影
-- **对比度检查** - 确保深色模式下文字清晰可读
-- **图标颜色** - 使用 `currentColor` 或 CSS 变量
-- **Element Plus** - 使用 `var(--el-color-primary)` 等内置变量
-
-### 检查清单（每次修改前端后）
-
-- [ ] 检查是否有硬编码的颜色值
-- [ ] 检查是否所有颜色都使用 CSS 变量
-- [ ] 检查是否有 `html.dark` 对应的变量覆盖
-- [ ] 在黑夜模式下测试页面，确保没有颜色异常
-
-### 代码示例
+### ❌ AI 味反例（不要这样写）
 
 ```scss
-// ✅ 好的按钮样式 - 覆盖 Element Plus 默认
-.search-btn {
-  border-radius: 6px;
-  padding: 10px 24px;
-
-  :deep(.el-button) {
-    border-radius: 6px;
-    padding: 10px 24px;
-  }
-}
-
-// ✅ 好的对话框样式 - 覆盖 Element Plus 默认
-.custom-dialog {
-  :deep(.el-dialog) {
-    border-radius: 12px;
-    overflow: hidden;
-  }
-}
-
-// ❌ AI 味卡片（不要这样写）
 .article-card {
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(20px);
@@ -446,7 +409,7 @@ html.dark {
 }
 ```
 
-## 环境配置
+## 线上部署环境配置(本地不需要)
 
 必需服务（通过 Docker Compose）：
 
@@ -507,7 +470,7 @@ git remote -v
 # 推送到所有平台（分别执行，不要合并命令）
 git push origin main    # Gitee
 git push github main    # GitHub
-git push gitea main     # Gitea (自建)
+git push gitea      # Gitea (自建)
 ```
 
 **远程仓库地址：**

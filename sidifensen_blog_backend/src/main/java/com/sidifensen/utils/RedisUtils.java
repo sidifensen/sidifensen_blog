@@ -113,6 +113,16 @@ public class RedisUtils {
     }
 
     /**
+     * 读取并删除缓存值，适用于一次性票据场景
+     *
+     * @param key 键
+     * @return 缓存值
+     */
+    public Object getAndDelete(String key) {
+        return key == null ? null : redisTemplate.opsForValue().getAndDelete(key);
+    }
+
+    /**
      * 批量获取多个key的值
      *
      * @param keys 键列表

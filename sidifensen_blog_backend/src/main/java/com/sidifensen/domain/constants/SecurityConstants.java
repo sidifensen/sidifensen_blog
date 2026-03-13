@@ -20,7 +20,7 @@ public class SecurityConstants {
             "/user/resetPassword",
             "/user/admin/login",
             "/user/info/{userId:\\d+}",
-            "/user/oauthLogin",
+            "/user/oauth/exchange",
 
             // 文章相关
             "/article/listAll",

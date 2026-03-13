@@ -30,14 +30,6 @@ public interface SysUserService extends IService<SysUser> {
     String login(LoginDto loginDto);
 
     /**
-     * oauth登录
-     *
-     * @param oauthLoginDto
-     * @return
-     */
-    String oauthLogin(OauthLoginDto oauthLoginDto);
-
-    /**
      * 注册
      *
      * @param registerDto 注册信息

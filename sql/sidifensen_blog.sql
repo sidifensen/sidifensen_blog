@@ -330,7 +330,7 @@ CREATE TABLE `sys_menu`  (
   `update_time` datetime NOT NULL COMMENT '更新时间',
   `is_deleted` tinyint NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 24 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 26 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_menu
@@ -358,7 +358,8 @@ INSERT INTO `sys_menu` VALUES (20, 2, '黑名单管理', 4, '/system/backlist', 
 INSERT INTO `sys_menu` VALUES (21, 0, '标签管理', 8, '/tag', '/tag', 'CollectionTag', 0, '2025-10-05 13:20:54', '2025-10-05 13:20:54', 0);
 INSERT INTO `sys_menu` VALUES (22, 2, '登录日志', 5, '/system/loginLog', '/system/loginLog', 'Calendar', 0, '2025-10-06 19:31:12', '2025-10-08 18:09:05', 0);
 INSERT INTO `sys_menu` VALUES (23, 2, '访客日志', 6, '/system/visitorLog', '/system/visitorLog', 'DataAnalysis', 0, '2025-10-07 11:15:51', '2025-10-08 18:09:08', 0);
-INSERT INTO `sys_menu` VALUES (24, 2, '操作日志', 7, '/system/operationLog', '/system/operationLog', 'Timer', 0, '2026-03-09 00:00:00', '2026-03-09 00:00:00', 0);
+INSERT INTO `sys_menu` VALUES (24, 2, '操作日志', 7, '/system/operationLog', '/system/operationLog', 'Operation', 0, '2026-03-09 14:54:05', '2026-03-09 14:54:29', 0);
+INSERT INTO `sys_menu` VALUES (25, 2, '会员管理', 8, '/system/vip', '/system/vip', 'Medal', 0, '2026-03-13 00:02:52', '2026-03-13 00:02:52', 0);
 
 -- ----------------------------
 -- Table structure for sys_operationlog
@@ -405,7 +406,7 @@ CREATE TABLE `sys_permission`  (
   `update_time` datetime NOT NULL COMMENT '更新时间',
   `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 84 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 93 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_permission
@@ -493,9 +494,15 @@ INSERT INTO `sys_permission` VALUES (80, '删除登录日志', 'system:loginLog:
 INSERT INTO `sys_permission` VALUES (81, '获取访客列表', 'system:visitorLog:list', 23, '2025-10-07 11:14:35', '2025-10-07 11:16:07', 0);
 INSERT INTO `sys_permission` VALUES (82, '搜索访客日志', 'system:visitorLog:search', 23, '2025-10-07 15:46:53', '2025-10-07 15:47:16', 0);
 INSERT INTO `sys_permission` VALUES (83, '删除访客日志', 'system:visitorLog:delete', 23, '2025-10-07 15:47:11', '2025-10-07 15:47:11', 0);
-INSERT INTO `sys_permission` VALUES (84, '获取操作日志', 'system:operationlog:list', 24, '2026-03-09 00:00:00', '2026-03-09 00:00:00', 0);
-INSERT INTO `sys_permission` VALUES (85, '搜索操作日志', 'system:operationlog:search', 24, '2026-03-09 00:00:00', '2026-03-09 00:00:00', 0);
-INSERT INTO `sys_permission` VALUES (86, '删除操作日志', 'system:operationlog:delete', 24, '2026-03-09 00:00:00', '2026-03-09 00:00:00', 0);
+INSERT INTO `sys_permission` VALUES (84, '获取操作日志', 'system:operationlog:list', 24, '2026-03-09 15:59:15', '2026-03-09 15:59:15', 0);
+INSERT INTO `sys_permission` VALUES (85, '搜索操作日志', 'system:operationlog:search', 24, '2026-03-09 15:59:38', '2026-03-09 15:59:38', 0);
+INSERT INTO `sys_permission` VALUES (86, '删除操作日志', 'system:operationlog:delete', 24, '2026-03-09 15:59:52', '2026-03-09 15:59:52', 0);
+INSERT INTO `sys_permission` VALUES (87, '会员总览', 'system:vip:dashboard', 25, '2026-03-13 00:03:19', '2026-03-13 00:03:19', 0);
+INSERT INTO `sys_permission` VALUES (88, '会员列表', 'system:vip:member:list', 25, '2026-03-13 00:03:21', '2026-03-13 00:03:21', 0);
+INSERT INTO `sys_permission` VALUES (89, '调整会员', 'system:vip:member:update', 25, '2026-03-13 00:03:23', '2026-03-13 00:03:23', 0);
+INSERT INTO `sys_permission` VALUES (90, '会员订单', 'system:vip:order:list', 25, '2026-03-13 00:03:25', '2026-03-13 00:03:25', 0);
+INSERT INTO `sys_permission` VALUES (91, '套餐列表', 'system:vip:plan:list', 25, '2026-03-13 00:03:27', '2026-03-13 00:03:27', 0);
+INSERT INTO `sys_permission` VALUES (92, '修改套餐', 'system:vip:plan:update', 25, '2026-03-13 00:03:29', '2026-03-13 00:03:29', 0);
 
 -- ----------------------------
 -- Table structure for sys_role
@@ -518,8 +525,8 @@ CREATE TABLE `sys_role`  (
 -- ----------------------------
 INSERT INTO `sys_role` VALUES (1, 'admin', '超级管理员', '拥有最高管理权限', 0, '2025-06-28 22:31:00', '2025-08-10 00:21:12', 0);
 INSERT INTO `sys_role` VALUES (2, 'viewer', '管理后台查看者', '可以查看部分后台信息,但是不能进行操作', 0, '2025-08-08 15:51:55', '2025-08-10 03:06:55', 0);
-INSERT INTO `sys_role` VALUES (3, 'user', '网站普通用户', '社区网站普通用户', 0, '2025-08-08 15:52:58', '2025-08-09 22:22:07', 0);
-INSERT INTO `sys_role` VALUES (4, 'vip', 'vip用户', 'vip用户', 0, '2025-08-09 13:18:12', '2025-08-09 22:22:10', 0);
+INSERT INTO `sys_role` VALUES (3, 'user', '网站普通用户', '博客网站普通用户', 0, '2025-08-08 15:52:58', '2025-08-09 22:22:07', 0);
+INSERT INTO `sys_role` VALUES (4, 'vip', 'vip用户', '可以查看仅vip可见的文章', 0, '2025-08-09 13:18:12', '2025-08-09 22:22:10', 0);
 
 -- ----------------------------
 -- Table structure for sys_role_menu
@@ -531,7 +538,7 @@ CREATE TABLE `sys_role_menu`  (
   `menu_id` int NOT NULL COMMENT '菜单id',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_role_id`(`role_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 63 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 67 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_role_menu
@@ -584,6 +591,8 @@ INSERT INTO `sys_role_menu` VALUES (61, 2, 22);
 INSERT INTO `sys_role_menu` VALUES (62, 2, 23);
 INSERT INTO `sys_role_menu` VALUES (63, 1, 24);
 INSERT INTO `sys_role_menu` VALUES (64, 2, 24);
+INSERT INTO `sys_role_menu` VALUES (65, 1, 25);
+INSERT INTO `sys_role_menu` VALUES (66, 2, 25);
 
 -- ----------------------------
 -- Table structure for sys_role_permission
@@ -595,7 +604,7 @@ CREATE TABLE `sys_role_permission`  (
   `permission_id` int NOT NULL COMMENT '权限id',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_role_id`(`role_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 142 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 159 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_role_permission
@@ -724,9 +733,21 @@ INSERT INTO `sys_role_permission` VALUES (139, 2, 82);
 INSERT INTO `sys_role_permission` VALUES (140, 2, 43);
 INSERT INTO `sys_role_permission` VALUES (141, 2, 44);
 INSERT INTO `sys_role_permission` VALUES (142, 1, 84);
-INSERT INTO `sys_role_permission` VALUES (143, 1, 85);
-INSERT INTO `sys_role_permission` VALUES (144, 1, 86);
-INSERT INTO `sys_role_permission` VALUES (145, 2, 84);
+INSERT INTO `sys_role_permission` VALUES (143, 2, 84);
+INSERT INTO `sys_role_permission` VALUES (144, 1, 85);
+INSERT INTO `sys_role_permission` VALUES (145, 2, 85);
+INSERT INTO `sys_role_permission` VALUES (146, 1, 86);
+INSERT INTO `sys_role_permission` VALUES (148, 2, 86);
+INSERT INTO `sys_role_permission` VALUES (149, 1, 87);
+INSERT INTO `sys_role_permission` VALUES (150, 1, 88);
+INSERT INTO `sys_role_permission` VALUES (151, 1, 89);
+INSERT INTO `sys_role_permission` VALUES (152, 1, 90);
+INSERT INTO `sys_role_permission` VALUES (153, 1, 91);
+INSERT INTO `sys_role_permission` VALUES (154, 1, 92);
+INSERT INTO `sys_role_permission` VALUES (155, 2, 87);
+INSERT INTO `sys_role_permission` VALUES (156, 2, 88);
+INSERT INTO `sys_role_permission` VALUES (157, 2, 90);
+INSERT INTO `sys_role_permission` VALUES (158, 2, 91);
 
 -- ----------------------------
 -- Table structure for sys_user
@@ -773,7 +794,7 @@ CREATE TABLE `sys_user_role`  (
   `role_id` int NOT NULL COMMENT '角色id',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_user_id`(`user_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 54 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 56 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_user_role
@@ -786,6 +807,8 @@ INSERT INTO `sys_user_role` VALUES (50, 3, 3);
 INSERT INTO `sys_user_role` VALUES (51, 15, 3);
 INSERT INTO `sys_user_role` VALUES (52, 16, 3);
 INSERT INTO `sys_user_role` VALUES (53, 17, 3);
+INSERT INTO `sys_user_role` VALUES (54, 5, 3);
+INSERT INTO `sys_user_role` VALUES (55, 1, 4);
 
 -- ----------------------------
 -- Table structure for sys_visitorlog

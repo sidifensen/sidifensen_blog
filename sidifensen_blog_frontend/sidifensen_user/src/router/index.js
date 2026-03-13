@@ -145,6 +145,12 @@ const router = createRouter({
               name: "reset",
               meta: { title: "重置密码" },
             },
+            {
+              path: "/oauth/callback",
+              component: () => import("@/views/Account/OauthCallback/index.vue"),
+              name: "oauthCallback",
+              meta: { title: "OAuth 登录中" },
+            },
           ],
         },
       ],

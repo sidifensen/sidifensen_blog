@@ -7,6 +7,7 @@ import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.*;
 import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.redis.RedisComponent;
+import com.sidifensen.service.OauthService;
 import com.sidifensen.service.SysUserService;
 import com.wf.captcha.ArithmeticCaptcha;
 import jakarta.annotation.Resource;
@@ -35,6 +36,9 @@ public class SysUserController {
 
     @Resource
     private RedisComponent redisComponent;
+
+    @Resource
+    private OauthService oauthService;
 
     /**
      * 登录时的图片验证码
@@ -69,11 +73,14 @@ public class SysUserController {
     }
 
     /**
-     * oauth登录
+     * OAuth 票据兑换
+     *
+     * @param oauthExchangeDto 一次性票据信息
+     * @return JWT
      */
-    @PostMapping("/oauthLogin")
-    public Result oauthLogin(@RequestBody @Valid OauthLoginDto oauthLoginDto) {
-        String jwt = sysUserService.oauthLogin(oauthLoginDto);
+    @PostMapping("/oauth/exchange")
+    public Result oauthExchange(@RequestBody @Valid OauthExchangeDto oauthExchangeDto) {
+        String jwt = oauthService.exchangeOauthTicket(oauthExchangeDto);
         return Result.success(jwt);
     }
 

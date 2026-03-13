@@ -8,7 +8,6 @@ import com.sidifensen.domain.oauth.QQ;
 import com.sidifensen.service.OauthService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
@@ -18,6 +17,7 @@ import me.zhyd.oauth.request.AuthQqRequest;
 import me.zhyd.oauth.request.AuthRequest;
 import me.zhyd.oauth.utils.AuthStateUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -59,8 +59,8 @@ public class OauthController {
     public void giteeCallback(AuthCallback callback, HttpServletResponse request) throws IOException {
         AuthRequest authRequest = getGiteeAuthRequest();
         AuthResponse authResponse = authRequest.login(callback);
-        String url = oauthService.login(authResponse, request, RegisterOrLoginTypeEnum.GITEE.getCode());
-        request.sendRedirect(frontendUserHost + url);
+        String ticket = oauthService.login(authResponse, RegisterOrLoginTypeEnum.GITEE.getCode());
+        request.sendRedirect(buildFrontendCallbackUrl(ticket));
     }
 
     @GetMapping("/github/login")
@@ -74,8 +74,8 @@ public class OauthController {
     public void githubCallback(AuthCallback callback, HttpServletResponse request) throws IOException {
         AuthRequest authRequest = getGithubAuthRequest();
         AuthResponse authResponse = authRequest.login(callback);
-        String url = oauthService.login(authResponse, request, RegisterOrLoginTypeEnum.GITHUB.getCode());
-        request.sendRedirect(frontendUserHost + url);
+        String ticket = oauthService.login(authResponse, RegisterOrLoginTypeEnum.GITHUB.getCode());
+        request.sendRedirect(buildFrontendCallbackUrl(ticket));
     }
 
     @GetMapping("/qq/login")
@@ -89,8 +89,8 @@ public class OauthController {
     public void qqCallback(AuthCallback callback, HttpServletResponse request) throws IOException {
         AuthRequest authRequest = getQqAuthRequest();
         AuthResponse authResponse = authRequest.login(callback);
-        String url = oauthService.login(authResponse, request, RegisterOrLoginTypeEnum.QQ.getCode());
-        request.sendRedirect(frontendUserHost + url);
+        String ticket = oauthService.login(authResponse, RegisterOrLoginTypeEnum.QQ.getCode());
+        request.sendRedirect(buildFrontendCallbackUrl(ticket));
     }
 
 
@@ -116,5 +116,22 @@ public class OauthController {
                 .clientSecret(qq.getClientSecret())
                 .redirectUri(qq.getRedirectUri())
                 .build());
+    }
+
+    /**
+     * 构建前端 OAuth 回调地址，仅传递一次性票据
+     *
+     * @param ticket 一次性票据
+     * @return 前端回调地址
+     */
+    private String buildFrontendCallbackUrl(String ticket) {
+        String normalizedHost = frontendUserHost.endsWith("/")
+                ? frontendUserHost.substring(0, frontendUserHost.length() - 1)
+                : frontendUserHost;
+        return UriComponentsBuilder.fromUriString(normalizedHost)
+                .path("/oauth/callback")
+                .queryParam("ticket", ticket)
+                .build()
+                .toUriString();
     }
 }

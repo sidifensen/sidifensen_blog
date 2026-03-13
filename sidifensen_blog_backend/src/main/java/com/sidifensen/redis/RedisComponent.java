@@ -62,6 +62,70 @@ public class RedisComponent {
         redisUtils.del(RedisConstants.EmailCheckCode + type + ":" + email);
     }
 
+    /**
+     * 保存 OAuth 一次性票据，仅保存本地用户标识和登录方式
+     *
+     * @param userId    本地用户ID
+     * @param loginType 登录方式
+     * @return 一次性票据
+     */
+    public String saveOauthTicket(Integer userId, Integer loginType) {
+        String ticket = UUID.randomUUID().toString().replace("-", "");
+        String value = userId + ":" + loginType;
+        redisUtils.set(RedisConstants.OauthTicket + ticket, value,
+                RedisConstants.OAUTH_TICKET_EXPIRE_TIME, TimeUnit.SECONDS);
+        return ticket;
+    }
+
+    /**
+     * 获取 OAuth 一次性票据内容，不会删除原票据
+     *
+     * @param ticket 一次性票据
+     * @return 票据内容
+     */
+    public Map<String, Integer> getOauthTicket(String ticket) {
+        Object value = redisUtils.get(RedisConstants.OauthTicket + ticket);
+        return parseOauthTicketValue(value);
+    }
+
+    /**
+     * 消费 OAuth 一次性票据，消费后立即删除，避免重复使用
+     *
+     * @param ticket 一次性票据
+     * @return 票据内容
+     */
+    public Map<String, Integer> consumeOauthTicket(String ticket) {
+        Object value = redisUtils.getAndDelete(RedisConstants.OauthTicket + ticket);
+        return parseOauthTicketValue(value);
+    }
+
+    /**
+     * 解析 OAuth 票据内容
+     *
+     * @param value Redis 中保存的票据值
+     * @return 用户ID和登录方式
+     */
+    private Map<String, Integer> parseOauthTicketValue(Object value) {
+        if (!(value instanceof String ticketValue) || ticketValue.isBlank()) {
+            return null;
+        }
+
+        String[] parts = ticketValue.split(":");
+        if (parts.length != 2) {
+            return null;
+        }
+
+        try {
+            Map<String, Integer> ticketInfo = new HashMap<>();
+            ticketInfo.put("userId", Integer.parseInt(parts[0]));
+            ticketInfo.put("loginType", Integer.parseInt(parts[1]));
+            return ticketInfo;
+        } catch (NumberFormatException e) {
+            log.warn("OAuth票据内容解析失败: {}", ticketValue);
+            return null;
+        }
+    }
+
     // ==================== 浏览历史相关方法 ====================
 
     /**

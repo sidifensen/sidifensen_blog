@@ -166,6 +166,7 @@ public class BlogConstants {
 
     // OAuth相关错误信息
     public static final String OauthLoginError = "OAuth登录失败";
+    public static final String OauthTicketInvalid = "OAuth登录已失效，请重新发起登录";
 
     // AI相关错误信息
     public static final String AiDailyLimitExceeded = "今日AI调用次数已达上限，请明天再试";
