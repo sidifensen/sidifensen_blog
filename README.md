@@ -1,7 +1,7 @@
 <div align="center">
   <h1>🚀 Sidifensen Blog</h1>
   <p>现代化社区系统 | 前后端分离架构</p>
-  
+
   ![Java](https://img.shields.io/badge/Java-21-orange.svg)
   ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.0-brightgreen.svg)
   ![Vue.js](https://img.shields.io/badge/Vue.js-3.5.13-4FC08D.svg)
@@ -20,10 +20,10 @@
 
 <div align="center">
 
-**🌐 官网地址**: [https://www.sidifensen.com](https://www.sidifensen.com)  
+**🌐 官网地址**: [https://www.sidifensen.com](https://www.sidifensen.com)
 **🔧 后台管理**: [https://admin.sidifensen.com](https://admin.sidifensen.com)
 
-**📦 Gitee 仓库**: [https://gitee.com/sidifensen/sidifensen_blog](https://gitee.com/sidifensen/sidifensen_blog)  
+**📦 Gitee 仓库**: [https://gitee.com/sidifensen/sidifensen_blog](https://gitee.com/sidifensen/sidifensen_blog)
 **💻 GitHub 仓库**: [https://github.com/sidifensen/sidifensen_blog](https://github.com/sidifensen/sidifensen_blog)
 
 </div>
@@ -152,212 +152,58 @@
 
 ```
 sidifensen_blog/
+├── script/                                         # 部署脚本和配置
+│   ├── prod/                                       #   生产环境配置
+│   │   ├── jenkins/                                #     Jenkins CI/CD 配置
+│   │   ├── ssl/                                    #     HTTPS SSL 证书配置
+│   │   └── dev/                                    #     Docker Compose 配置
+│   └── dev/                                        #   开发环境配置
 │
-├── README.md                         # 📖 项目说明文档
+├── sidifensen_blog_backend/                        # 后端服务 (Spring Boot + Java 21)
+│   └── src/main/java/com/sidifensen/
+│       ├── aspect/                                 #   AOP 切面
+│       ├── config/                                 #   配置类
+│       ├── controller/                             #   REST API 控制器
+│       ├── domain/                                 #   数据模型 (entity/dto/vo/enums)
+│       ├── exception/                              #   全局异常处理
+│       ├── handler/                                #   处理器
+│       ├── mapper/                                 #   MyBatis-Plus 数据访问
+│       ├── minio/                                  #   MinIO 对象存储
+│       ├── rabbitmq/                               #   RabbitMQ 消息队列
+│       ├── redis/                                  #   Redis 缓存
+│       ├── security/                               #   Spring Security + JWT
+│       ├── service/impl/                           #   业务逻辑服务
+│       ├── task/                                   #   定时任务
+│       ├── utils/                                  #   通用工具类
+│       └── websocket/                              #   WebSocket 实时通信
 │
-├── script/                           # 📜 部署脚本和配置
-│   ├── deploy/                       # 自动化部署脚本和配置 (已废弃，迁移至 prod/jenkins/)
-│   │   ├── Jenkinsfile               # Jenkins Pipeline 配置
-│   │   ├── jenkins-setup.sh          # Jenkins 安装和配置脚本
-│   │   ├── jenkins-deploy.sh         # 服务器端部署脚本
-│   │   ├── gitea-setup.sh            # Gitea 初始化脚本
-│   │   ├── docker-compose-gitea.yml  # Gitea Docker 配置
-│   │   ├── create-gitea-user.sql    # Gitea MySQL 用户创建脚本
-│   │   ├── env.example               # 环境变量配置示例
-│   │   ├── README.md                 # 自动化部署快速指南
-│   │   ├── Jenkins部署指南.md        # Jenkins 详细配置指南
-│   │   └── Gitea配置指南.md          # Gitea 详细配置指南
-│   ├── ssl/                          # HTTPS SSL 证书配置
-│   │   ├── docker-compose-apps.yml   # SSL 应用编排
-│   │   ├── docker-compose-backend.yml    # 后端 SSL 配置
-│   │   ├── docker-compose-frontend.yml   # 前端 SSL 配置
-│   │   ├── docker-compose-services.yml   # 服务 SSL 配置
-│   │   ├── docker-compose-ssl.yml    # SSL 版本主编排文件
-│   │   ├── env.example               # SSL 环境变量示例
-│   │   ├── nginx-ssl.conf            # Nginx SSL 配置
-│   │   ├── README-ssl.md             # SSL 部署说明
-│   │   ├── ssl.sh                    # SSL 证书申请脚本
-│   │   └── start.sh                  # SSL 版本启动脚本
-│   ├── dev/                          # Docker Compose 配置和启动脚本
-│   │   ├── docker-compose-apps.yml       # 应用编排 (前后端)
-│   │   ├── docker-compose-service.yml    # 基础服务编排 (MySQL/Redis/RabbitMQ/MinIO)
-│   │   ├── docker-compose.yml            # Docker Compose 主编排文件
-│   │   ├── .env.example                  # 环境变量配置模板
-│   │   ├── README-Docker.md              # Docker 部署详细说明
-│   │   ├── start.bat                     # Windows 启动脚本
-│   │   └── start.sh                      # Linux/Mac 启动脚本
-│
-├── sidifensen_blog_backend/          # 🔧 后端服务 (Spring Boot 3.4.0 + Java 21)
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/com/sidifensen/
-│   │   │   │   ├── aspect/           # AOP 切面 (日志、权限等)
-│   │   │   │   ├── config/           # 配置类
-│   │   │   │   ├── controller/       # REST API 控制器层
-│   │   │   │   ├── domain/           # 数据模型层
-│   │   │   │   │   ├── constants/    # 常量类
-│   │   │   │   │   ├── dto/          # 数据传输对象 (请求参数)
-│   │   │   │   │   ├── entity/       # 实体类 (对应数据库表)
-│   │   │   │   │   ├── enums/        # 枚举类
-│   │   │   │   │   ├── result/       # 统一响应结果封装
-│   │   │   │   │   └── vo/           # 视图对象 (响应数据)
-│   │   │   │   ├── exception/        # 全局异常处理
-│   │   │   │   ├── handler/          # 处理器
-│   │   │   │   ├── mapper/           # MyBatis-Plus 数据访问层
-│   │   │   │   ├── minio/            # MinIO 对象存储配置
-│   │   │   │   ├── rabbitmq/         # RabbitMQ 消息队列配置
-│   │   │   │   ├── redis/            # Redis 缓存配置
-│   │   │   │   ├── security/         # Spring Security + JWT 配置
-│   │   │   │   ├── service/          # 业务逻辑服务层
-│   │   │   │   │   └── impl/         # 服务实现类
-│   │   │   │   ├── task/             # 定时任务
-│   │   │   │   ├── utils/            # 通用工具类
-│   │   │   │   └── websocket/        # WebSocket 私信系统
-│   │   │   └── resources/
-│   │   │       ├── mapper/           # MyBatis XML 映射文件
-│   │   │       ├── templates/        # Thymeleaf 邮件模板
-│   │   │       ├── application.yaml  # 应用主配置文件
-│   │   │       └── logback-spring.xml    # 日志配置
-│   │   └── test/                     # 测试代码
-│   ├── target/                       # Maven 编译输出目录
-│   ├── Dockerfile                    # Docker 镜像构建文件
-│   └── pom.xml                       # Maven 项目配置文件
-│
-├── sidifensen_blog_frontend/         # 🎨 前端应用 (Vue 3 + Vite)
+├── sidifensen_blog_frontend/                       # 前端应用 (Vue 3 + Vite)
+│   ├── sidifensen_admin/                           #   管理端后台
+│   │   └── src/
+│   │       ├── api/                                #     API 接口
+│   │       ├── assets/                             #     静态资源
+│   │       ├── components/                         #     可复用组件
+│   │       ├── router/                             #     路由配置
+│   │       ├── stores/                             #     Pinia 状态管理
+│   │       ├── utils/                              #     工具函数
+│   │       └── views/                              #     页面组件
 │   │
-│   ├── sidifensen_admin/             # 🔧 管理端后台
-│   │   ├── dist/                     # 构建产物
-│   │   ├── node_modules/             # 依赖包
-│   │   ├── public/                   # 公共资源
-│   │   │   └── favicon.ico           # 网站图标
-│   │   ├── src/
-│   │   │   ├── api/                  # API 接口定义
-│   │   │   ├── assets/               # 静态资源
-│   │   │   │   ├── font/             # 字体文件
-│   │   │   │   ├── scss/             # 全局样式
-│   │   │   │   └── svg/              # SVG 图标
-│   │   │   ├── components/           # 可复用组件
-│   │   │   │   ├── 404.vue           # 404 页面
-│   │   │   │   ├── Dark.vue          # 暗黑模式切换
-│   │   │   │   ├── Layout.vue        # 后台布局
-│   │   │   │   ├── ProjectLinks.vue  # 项目链接
-│   │   │   │   └── SvgIcon.vue       # SVG 图标
-│   │   │   ├── router/               # Vue Router 路由配置
-│   │   │   ├── stores/               # Pinia 状态管理
-│   │   │   │   ├── darkStore.js      # 暗黑模式状态
-│   │   │   │   └── userStore.js      # 用户状态
-│   │   │   ├── utils/                # 工具函数
-│   │   │   ├── views/                # 页面组件
-│   │   │   │   ├── account/          # 账户设置
-│   │   │   │   ├── article/          # 文章管理
-│   │   │   │   ├── column/           # 专栏管理
-│   │   │   │   ├── comment/          # 评论管理
-│   │   │   │   ├── home/             # 仪表盘
-│   │   │   │   ├── link/             # 友链管理
-│   │   │   │   ├── photo/            # 图片管理
-│   │   │   │   ├── system/           # 系统管理
-│   │   │   │   │   ├── blacklist/    # 黑名单管理
-│   │   │   │   │   ├── menu/         # 菜单管理
-│   │   │   │   │   ├── permission/   # 权限管理
-│   │   │   │   │   ├── role/         # 角色管理
-│   │   │   │   │   └── user/         # 用户管理
-│   │   │   │   └── tag/              # 标签管理
-│   │   │   ├── App.vue               # 根组件
-│   │   │   └── main.js               # 应用入口
-│   │   ├── Dockerfile                # Docker 镜像构建
-│   │   ├── index.html                # HTML 入口文件
-│   │   ├── jsconfig.json             # JS 配置
-│   │   ├── package-lock.json         # 依赖锁定文件
-│   │   ├── package.json              # 依赖管理
-│   │   ├── README.md                 # 管理端说明
-│   │   └── vite.config.js            # Vite 配置
-│   │
-│   └── sidifensen_user/              # 📱 用户端前台
-│       ├── dist/                     # 构建产物
-│       ├── node_modules/             # 依赖包
-│       ├── public/                   # 公共资源
-│       │   └── favicon.ico           # 网站图标
-│       ├── src/
-│       │   ├── api/                  # API 接口定义
-│       │   ├── assets/               # 静态资源
-│       │   │   ├── font/             # 字体文件
-│       │   │   ├── img/              # 图片资源
-│       │   │   ├── scss/             # 全局样式
-│       │   │   └── svg/              # SVG 图标
-│       │   ├── components/           # 可复用组件
-│       │   │   ├── Comment/          # 评论组件
-│       │   │   ├── Footer.vue        # 全局底部
-│       │   │   ├── Header.vue        # 全局头部
-│       │   │   ├── LoadingAnimation.vue  # 加载动画
-│       │   │   └── SvgIcon.vue       # SVG 图标组件
-│       │   ├── router/               # Vue Router 路由配置
-│       │   ├── stores/               # Pinia 状态管理
-│       │   │   ├── darkStore.js      # 暗黑模式状态
-│       │   │   └── userStore.js      # 用户状态
-│       │   ├── utils/                # 工具函数
-│       │   ├── views/                # 页面组件
-│       │   │   ├── Account/          # 账户设置
-│       │   │   ├── Article/          # 文章详情
-│       │   │   ├── Column/           # 专栏
-│       │   │   ├── Creation/         # 创作中心
-│       │   │   ├── Home/             # 首页
-│       │   │   ├── Layout/           # 布局组件
-│       │   │   ├── Login/            # 登录页
-│       │   │   ├── Message/          # 私信聊天
-│       │   │   ├── Notification/     # 通知中心
-│       │   │   ├── Photo/            # 相册
-│       │   │   ├── Search/           # 搜索页
-│       │   │   └── User/             # 用户主页
-│       │   ├── App.vue               # 根组件
-│       │   └── main.js               # 应用入口
-│       ├── Dockerfile                # Docker 镜像构建
-│       ├── index.html                # HTML 入口文件
-│       ├── jsconfig.json             # JS 配置
-│       ├── package-lock.json         # 依赖锁定文件
-│       ├── package.json              # 依赖管理
-│       ├── README.md                 # 用户端说明
-│       └── vite.config.js            # Vite 配置
+│   └── sidifensen_user/                            #   用户端前台
+│       └── src/
+│           ├── api/                                #     API 接口
+│           ├── assets/                             #     静态资源
+│           ├── components/                         #     可复用组件
+│           ├── router/                             #     路由配置
+│           ├── stores/                             #     Pinia 状态管理
+│           ├── utils/                              #     工具函数
+│           └── views/                              #     页面组件
 │
-├── sql/                              # 🗄️ 数据库脚本
-│   ├── console.sql                   # 控制台相关 SQL
-│   └── sidifensen_blog.sql           # 完整数据库结构和初始数据
+├── sql/                                            # 数据库初始化脚本
+│   ├── console.sql                                 #   控制台 SQL
+│   └── sidifensen_blog.sql                         #   完整数据库结构
 │
-└── .gitignore                        # Git 忽略配置
+└── img/                                            # 项目截图
 ```
-
-### 📂 核心目录说明
-
-#### 后端 (`sidifensen_blog_backend/`)
-
-采用经典的 **MVC 三层架构** + **领域驱动设计 (DDD)**：
-
-- **Controller 层**: 处理 HTTP 请求，参数校验，调用 Service
-- **Service 层**: 核心业务逻辑，事务控制
-- **Mapper 层**: 数据库操作，使用 MyBatis-Plus
-- **Domain 层**: 领域模型，包含实体、DTO、VO、枚举等
-- **Security 层**: 认证授权，JWT Token 管理
-- **Utils 层**: 工具类，如时间处理、加密解密、文件上传等
-
-#### 前端 (`sidifensen_blog_frontend/`)
-
-基于 **Vue 3 Composition API** 的模块化架构：
-
-- **User 端**: 面向普通用户的社区前台，注重用户体验和内容展示
-- **Admin 端**: 面向管理员的后台系统，注重功能管理和数据操作
-- **API 层**: 封装所有后端接口调用，统一请求响应处理
-- **Stores 层**: Pinia 状态管理，支持持久化
-- **Router 层**: 路由配置，权限控制
-- **Utils 层**: 工具函数，如时间格式化、权限判断等
-
-#### 部署 (`script/`)
-
-提供 **多种部署方式**，灵活适配不同场景：
-
-- **自动化部署**: Jenkins + Gitea CI/CD 方案，代码推送自动部署（推荐生产环境）
-- **Docker Compose**: 一键启动所有服务，适合快速部署
-- **传统部署**: 手动部署前后端和依赖服务
-- **SSL 支持**: HTTPS 证书配置和自动续期
-- **跨平台**: Windows、Linux、macOS 全平台支持
 
 ## ⭐ 功能特性
 
@@ -608,8 +454,8 @@ npm run dev
 
    详细配置步骤请参考：
    - [自动化部署快速指南](./script/prod/jenkins/README.md)
-   - [Jenkins 部署详细指南](./script/prod/jenkins/Jenkins部署指南.md)
-   - [Gitea 配置详细指南](./script/prod/jenkins/Gitea配置指南.md)
+   - [Jenkins 部署详细指南](./script/prod/jenkins/Jenkins 部署指南.md)
+   - [Gitea 配置详细指南](./script/prod/jenkins/Gitea 配置指南.md)
 
 4. **创建 Jenkins 任务并配置 Webhook**
 
@@ -646,15 +492,15 @@ Docker 容器重启 → 服务更新完成
 **最低配置**：
 
 - CPU: 2 核
-- 内存: 4GB
-- 存储: 20GB（建议 SSD）
+- 内存：4GB
+- 存储：20GB（建议 SSD）
 
 **推荐配置**（本项目实际运行环境）：
 
 - CPU: 4 核
-- 内存: 8GB
-- 带宽: 5Mbps
-- 存储: 40GB SSD
+- 内存：8GB
+- 带宽：5Mbps
+- 存储：40GB SSD
 
 > 💡 **提示**:
 >
@@ -776,7 +622,7 @@ docker-compose up -d --build
 - OAuth 第三方登录配置
 - DeepSeek AI 配置（文章摘要功能）
 
-> 💡 **提示**: 所有配置项都可以在 `.env` 文件中修改，详细说明请参考：
+> 💡 **提示**: 所有配置项也可以在 `.env` 文件中修改，详细说明请参考：
 > - 开发环境：`script/dev/.env.example`
 > - 生产环境：`script/prod/.env.example`
 
@@ -832,19 +678,19 @@ docker-compose up -d --build
 
 **创作中心 - 首页**
 
-<img src="img/Snipaste_2025-10-14_13-39-30.png" alt="创作中心-文章列表" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-39-30.png" alt="创作中心 - 文章列表" width="800"/>
 
 **创作中心 - 文章管理**
 
-<img src="img/Snipaste_2025-10-14_13-39-33.png" alt="创作中心-文章编辑" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-39-33.png" alt="创作中心 - 文章编辑" width="800"/>
 
 **创作中心 - 专栏管理**
 
-<img src="img/Snipaste_2025-10-14_13-39-36.png" alt="创作中心-AI摘要" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-39-36.png" alt="创作中心-AI 摘要" width="800"/>
 
 **创作中心 - 评论管理**
 
-<img src="img/Snipaste_2025-10-14_13-39-38.png" alt="创作中心-专栏管理" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-39-38.png" alt="创作中心 - 专栏管理" width="800"/>
 
 </div>
 
@@ -854,23 +700,23 @@ docker-compose up -d --build
 
 **个人主页 - 文章展示**
 
-<img src="img/Snipaste_2025-10-14_13-40-13.png" alt="个人主页-用户信息" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-40-13.png" alt="个人主页 - 用户信息" width="800"/>
 
 **个人主页 - 专栏展示**
 
-<img src="img/Snipaste_2025-10-14_13-40-17.png" alt="个人主页-文章展示" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-40-17.png" alt="个人主页 - 文章展示" width="800"/>
 
 **个人主页 - 收藏内容**
 
-<img src="img/Snipaste_2025-10-14_13-40-19.png" alt="个人主页-专栏展示" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-40-19.png" alt="个人主页 - 专栏展示" width="800"/>
 
 **个人主页 - 关注/粉丝**
 
-<img src="img/Snipaste_2025-10-14_13-40-22.png" alt="个人主页-收藏内容" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-40-22.png" alt="个人主页 - 收藏内容" width="800"/>
 
 **个人主页 - 历史记录**
 
-<img src="img/Snipaste_2025-10-14_13-40-31.png" alt="个人主页-历史记录" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-40-31.png" alt="个人主页 - 历史记录" width="800"/>
 
 </div>
 
@@ -921,6 +767,24 @@ docker-compose up -d --build
 
 ### ✅ 已完成功能
 
+- [x] **📊 操作日志系统**
+  - ✅ 用户操作记录与追踪
+  - ✅ 管理员操作日志查看
+  - ✅ 日志检索与导出功能
+  - ✅ 关键操作审计追踪
+
+- [x] **📈 Dashboard 仪表盘重构**
+  - ✅ 数据统计可视化（ECharts）
+  - ✅ 实时数据更新
+  - ✅ 核心指标卡片展示
+  - ✅ 系统状态监控
+
+- [x] **🔐 OAuth 登录流程重构**
+  - ✅ Gitee/GitHub/QQ 第三方登录支持
+  - ✅ OAuth 回调处理优化
+  - ✅ 用户信息绑定与自动注册
+  - ✅ 登录状态持久化
+
 - [x] **💬 私信功能**
   - ✅ 用户之间一对一私信交流
   - ✅ 消息已读/未读状态
@@ -945,11 +809,6 @@ docker-compose up -d --build
   - ✅ 支付结果页状态轮询
   - ✅ 沙箱环境支持
 
-- [x] **🔐 OAuth 登录流程重构**
-  - ✅ Gitee/GitHub/QQ 第三方登录支持
-  - ✅ OAuth 回调处理优化
-  - ✅ 用户信息绑定与自动注册
-
 - [x] **🎨 前端开发规范更新**
   - ✅ 去 AI 味设计指南
   - ✅ 黑夜模式适配规范
@@ -957,7 +816,25 @@ docker-compose up -d --build
 
 ### 🚧 计划中的功能
 
-暂无
+- [ ] **📊 数据统计增强**
+  - [ ] 用户行为分析（PV/UV、停留时长）
+  - [ ] 文章阅读趋势图表
+  - [ ] 热门搜索词统计
+
+- [ ] **🎯 推荐系统**
+  - [ ] 基于用户兴趣的文章推荐
+  - [ ] 相关内容智能推荐
+  - [ ] 热门内容排行优化
+
+- [ ] **📱 移动端优化**
+  - [ ] PWA 支持
+  - [ ] 移动端手势优化
+  - [ ] 离线缓存
+
+- [ ] **🔍 搜索增强**
+  - [ ] 全文搜索引擎（Elasticsearch）
+  - [ ] 搜索联想与纠错
+  - [ ] 搜索结果高亮优化
 
 > 💡 **提示**: 如果你对这些功能有建议或想法，欢迎在 [Gitee Issues](https://gitee.com/sidifensen/sidifensen_blog/issues) 或 [GitHub Issues](https://github.com/sidifensen/sidifensen_blog/issues) 中讨论！
 
@@ -980,7 +857,7 @@ docker-compose up -d --build
 
 **欢迎加入 QQ 交流群，一起学习讨论！**
 
-<img src="img/qq交流群.jpg" alt="QQ交流群" width="400"/>
+<img src="img/qq 交流群.jpg" alt="QQ 交流群" width="400"/>
 
 </div>
 
