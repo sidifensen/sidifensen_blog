@@ -294,9 +294,7 @@ import { useRouter } from "vue-router";
 import { useDarkStore } from "@/stores/darkStore";
 import { storeToRefs } from "pinia";
 import { User, Document, ChatLineRound, View, PieChart, Monitor, Operation, Picture, TrendCharts, Refresh, Top, Right, ArrowRight } from "@element-plus/icons-vue";
-import { getUserTotalCount } from "@/api/user";
-import { getArticleStatistics } from "@/api/article";
-import { getTodayVisitorCount, getTotalVisitorCount, getVisitorTrend } from "@/api/visitorLog";
+import { getDashboardStatistics } from "@/api/dashboard";
 import * as echarts from "echarts";
 
 // 路由和状态管理
@@ -318,41 +316,22 @@ const chartInstance = ref(null); // ECharts 图表实例
 const chartRef = ref(null); // 图表 DOM 引用
 
 // 方法定义
-// 获取所有统计数据
+// 获取所有统计数据（使用聚合接口）
 const fetchAllStatistics = async () => {
   try {
     statisticsLoading.value = true;
 
-    // 并行获取所有统计数据
-    const [userResult, articleResult, totalVisitorResult, todayVisitorResult] = await Promise.allSettled([getUserTotalCount(), getArticleStatistics(), getTotalVisitorCount(), getTodayVisitorCount()]);
+    // 使用聚合接口一次性获取所有统计数据
+    const res = await getDashboardStatistics(trendDays.value);
+    const data = res.data.data;
 
-    // 处理用户总数
-    if (userResult.status === "fulfilled") {
-      userCount.value = userResult.value.data.data || 0;
-    } else {
-      console.error("获取用户统计失败:", userResult.reason);
-    }
+    // 解析统计数据
+    userCount.value = data.userTotalCount || 0;
+    articleStatistics.value = data.articleStatistics || null;
+    totalVisits.value = data.totalVisits || 0;
+    todayVisits.value = data.todayVisits || 0;
+    visitorTrend.value = data.visitorTrend || [];
 
-    // 处理文章统计
-    if (articleResult.status === "fulfilled") {
-      articleStatistics.value = articleResult.value.data.data;
-    } else {
-      console.error("获取文章统计失败:", articleResult.reason);
-    }
-
-    // 处理总访问量
-    if (totalVisitorResult.status === "fulfilled") {
-      totalVisits.value = totalVisitorResult.value.data.data || 0;
-    } else {
-      console.error("获取总访问量失败:", totalVisitorResult.reason);
-    }
-
-    // 处理今日访问量
-    if (todayVisitorResult.status === "fulfilled") {
-      todayVisits.value = todayVisitorResult.value.data.data || 0;
-    } else {
-      console.error("获取今日访问量失败:", todayVisitorResult.reason);
-    }
   } catch (error) {
     ElMessage.error("获取统计数据失败");
     console.error("获取统计数据失败:", error);
@@ -367,12 +346,12 @@ const getPercentage = (value, total) => {
   return Math.round((value / total) * 100);
 };
 
-// 获取访客趋势数据
+// 获取访客趋势数据（切换天数时调用聚合接口）
 const fetchVisitorTrend = async () => {
   try {
     trendLoading.value = true;
-    const res = await getVisitorTrend(trendDays.value);
-    visitorTrend.value = res.data.data || [];
+    // 切换天数时重新调用聚合接口获取数据
+    await fetchAllStatistics();
   } catch (error) {
     ElMessage.error("获取访客趋势失败");
     console.error("获取访客趋势失败:", error);
@@ -537,7 +516,7 @@ const navigateTo = (path) => {
 // 刷新数据
 const refreshData = () => {
   loading.value = true;
-  Promise.all([fetchAllStatistics(), fetchVisitorTrend()]).finally(() => {
+  fetchAllStatistics().finally(() => {
     loading.value = false;
     ElMessage.success("数据已刷新");
   });
@@ -549,9 +528,10 @@ const handleResize = () => {
 };
 
 // 生命周期
-onMounted(() => {
-  fetchAllStatistics();
-  fetchVisitorTrend();
+onMounted(async () => {
+  await fetchAllStatistics();
+  await nextTick();
+  renderChart();
 
   // 监听窗口大小变化
   window.addEventListener("resize", handleResize);

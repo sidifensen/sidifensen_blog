@@ -8,12 +8,15 @@ import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.SysMenuDto;
 import com.sidifensen.domain.entity.SysMenu;
 import com.sidifensen.domain.entity.SysRoleMenu;
-import com.sidifensen.domain.entity.SysUser;
+import com.sidifensen.domain.entity.SysUserRole;
+import com.sidifensen.domain.enums.StatusEnum;
 import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.vo.SysMenuVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysMenuMapper;
+import com.sidifensen.mapper.SysRoleMapper;
 import com.sidifensen.mapper.SysRoleMenuMapper;
+import com.sidifensen.mapper.SysUserRoleMapper;
 import com.sidifensen.service.SysMenuService;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
@@ -25,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -40,13 +44,58 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
     @Resource
     private SysRoleMenuMapper sysRoleMenuMapper;
 
-    // 查询登录用户的菜单
+    @Resource
+    private SysUserRoleMapper sysUserRoleMapper;
+
+    /**
+     * 查询登录用户的菜单
+     * 直接通过数据库查询当前用户角色对应的菜单，避免每次请求都加载完整用户信息
+     *
+     * @return 用户菜单列表
+     */
     @Override
     public List<SysMenuVo> listMenu() {
-        SysUser user = SecurityUtils.getUser();
-        List<SysMenu> sysMenus = user.getSysMenus();
-        List<SysMenuVo> sysMenuVos = BeanUtil.copyToList(sysMenus, SysMenuVo.class);
-        return sysMenuVos;
+        // 获取当前登录用户 ID
+        Integer userId = SecurityUtils.getUserId();
+        if (userId == null || userId == 0) {
+            throw new BlogException(BlogConstants.NotFoundUser);
+        }
+
+        // 1. 查询用户的所有角色 ID
+        List<Integer> roleIds = sysUserRoleMapper.selectList(
+                        new LambdaQueryWrapper<SysUserRole>()
+                                .eq(SysUserRole::getUserId, userId))
+                .stream()
+                .map(SysUserRole::getRoleId)
+                .collect(Collectors.toList());
+
+        if (roleIds.isEmpty()) {
+            throw new BlogException(BlogConstants.NotFoundRole);
+        }
+
+        // 2. 查询角色对应的菜单 ID（通过 sys_role_menu 表）
+        List<Integer> menuIds = sysRoleMenuMapper.selectList(
+                        new LambdaQueryWrapper<SysRoleMenu>()
+                                .in(SysRoleMenu::getRoleId, roleIds))
+                .stream()
+                .map(SysRoleMenu::getMenuId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (menuIds.isEmpty()) {
+            throw new BlogException(BlogConstants.NotFoundMenu);
+        }
+
+        // 3. 查询菜单详情（只查询正常状态的菜单）
+        List<SysMenu> sysMenus = this.lambdaQuery()
+                .in(SysMenu::getId, menuIds)
+                .eq(SysMenu::getStatus, StatusEnum.NORMAL.getStatus())
+                .orderByAsc(SysMenu::getSort)
+                .orderByAsc(SysMenu::getId)
+                .list();
+
+        // 4. 转换为 VO 返回
+        return BeanUtil.copyToList(sysMenus, SysMenuVo.class);
     }
 
     // 查询所有用户的菜单列表

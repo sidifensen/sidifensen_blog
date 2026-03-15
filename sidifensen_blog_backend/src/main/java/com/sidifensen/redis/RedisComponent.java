@@ -2,6 +2,7 @@ package com.sidifensen.redis;
 
 import com.sidifensen.domain.constants.RedisConstants;
 import com.sidifensen.domain.entity.SysBlacklist;
+import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.enums.BlacklistTypeEnum;
 import com.sidifensen.utils.MyThreadFactory;
 import com.sidifensen.utils.RedisUtils;
@@ -528,6 +529,69 @@ public class RedisComponent {
         }
 
         return onlineStatusMap;
+    }
+
+    // ==================== 管理端首页 Dashboard 统计相关方法 ====================
+
+    /**
+     * 获取 Dashboard 统计数据（从 Redis 缓存）
+     *
+     * @return Dashboard 统计数据，不存在则返回 null
+     */
+    public Object getDashboardStatistics() {
+        return redisUtils.get(RedisConstants.DashboardStatistics);
+    }
+
+    /**
+     * 设置 Dashboard 统计数据到 Redis 缓存
+     * 默认过期时间 5 分钟
+     *
+     * @param statistics Dashboard 统计数据
+     */
+    public void setDashboardStatistics(Object statistics) {
+        redisUtils.set(RedisConstants.DashboardStatistics, statistics,
+                RedisConstants.DASHBOARD_STATISTICS_EXPIRE_TIME, TimeUnit.SECONDS);
+    }
+
+    /**
+     * 删除 Dashboard 统计数据缓存
+     * 当数据发生变化时（如新增用户、文章等）调用此方法
+     */
+    public void removeDashboardStatistics() {
+        redisUtils.del(RedisConstants.DashboardStatistics);
+    }
+
+    // ==================== 用户详情缓存相关方法 ====================
+
+    /**
+     * 获取用户详情缓存（包含角色、菜单、权限信息）
+     *
+     * @param userId 用户 ID
+     * @return 用户详情对象，不存在则返回 null
+     */
+    public SysUser getUserDetailFromCache(Integer userId) {
+        return (SysUser) redisUtils.get(RedisConstants.UserDetail + userId);
+    }
+
+    /**
+     * 设置用户详情缓存（包含角色、菜单、权限信息）
+     * 默认过期时间 30 分钟
+     *
+     * @param user 用户详情对象
+     */
+    public void setUserDetailToCache(SysUser user) {
+        redisUtils.set(RedisConstants.UserDetail + user.getId(), user,
+                RedisConstants.USER_DETAIL_EXPIRE_TIME, TimeUnit.SECONDS);
+    }
+
+    /**
+     * 删除用户详情缓存
+     * 当用户信息发生变化时（如角色变更、菜单调整等）调用此方法
+     *
+     * @param userId 用户 ID
+     */
+    public void removeUserDetail(Integer userId) {
+        redisUtils.del(RedisConstants.UserDetail + userId);
     }
 
 }

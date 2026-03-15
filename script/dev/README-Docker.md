@@ -120,11 +120,11 @@ cd sidifensen_blog
 
 ```bash
 # Linux/macOS
-cp script/.env.example .env
+cp script/dev/.env.example .env
 vim .env
 
 # Windows
-copy script/.env.example .env
+copy script/dev/.env.example .env
 notepad .env
 ```
 
@@ -178,10 +178,10 @@ docker-compose logs -f
 cd script
 
 # 启动四个基础服务：MySQL、Redis、MinIO、RabbitMQ
-docker-compose -f docker-compose-service.yml up -d
+docker-compose -f dev/docker-compose-service.yml up -d
 
 # 查看基础服务状态
-docker-compose -f docker-compose-service.yml ps
+docker-compose -f dev/docker-compose-service.yml ps
 
 # 此时可以在 IDE 中启动后端和前端应用进行开发
 ```
@@ -193,13 +193,13 @@ docker-compose -f docker-compose-service.yml ps
 cd script
 
 # 只启动应用服务（后端+前端，需要基础服务已运行）
-docker-compose -f docker-compose-apps.yml up -d --build
+docker-compose -f dev/docker-compose-apps.yml up -d --build
 
 # 查看应用服务状态
-docker-compose -f docker-compose-apps.yml ps
+docker-compose -f dev/docker-compose-apps.yml ps
 
 # 查看应用服务日志
-docker-compose -f docker-compose-apps.yml logs -f
+docker-compose -f dev/docker-compose-apps.yml logs -f
 ```
 
 #### 方式三：服务器部署
@@ -208,7 +208,7 @@ docker-compose -f docker-compose-apps.yml logs -f
 
 ```bash
 # 在服务器上运行
-cd script/deploy
+cd script/jenkins
 sudo ./deploy.sh
 ```
 
@@ -216,7 +216,7 @@ sudo ./deploy.sh
 
 ```bash
 # 设置 Git Hook（在服务器上）
-cp script/deploy/post-receive-hook.sh /path/to/repo.git/hooks/post-receive
+cp script/jenkins/post-receive-hook.sh /path/to/repo.git/hooks/post-receive
 chmod +x /path/to/repo.git/hooks/post-receive
 
 # 之后每次推送代码到 main 分支时会自动部署
@@ -325,7 +325,7 @@ git clone https://github.com/sidifensen/sidifensen_blog.git
 cd sidifensen_blog
 
 # 2. 配置环境变量
-cp script/.env.example .env
+cp script/dev/.env.example .env
 # 编辑 .env 文件，修改必要的配置
 
 # 3. 启动完整服务
@@ -345,7 +345,7 @@ git clone https://github.com/sidifensen/sidifensen_blog.git
 cd sidifensen_blog
 
 # 2. 配置环境变量
-cp script/.env.example .env
+cp script/dev/.env.example .env
 # 编辑 .env 文件，修改必要的配置
 
 # 3. 启动基础服务
@@ -405,7 +405,7 @@ git clone https://github.com/sidifensen/sidifensen_blog.git
 cd sidifensen_blog
 
 # 2. 配置环境变量
-cp script/.env.example .env
+cp script/dev/.env.example .env
 # 编辑 .env 文件，修改生产环境配置
 
 # 3. 启动服务（会自动构建）
@@ -422,21 +422,21 @@ git clone https://github.com/sidifensen/sidifensen_blog.git
 cd sidifensen_blog
 
 # 2. 配置环境变量
-cp script/.env.example .env
+cp script/dev/.env.example .env
 # 编辑 .env 文件，修改生产环境配置
 
 # 3. 先启动基础服务
 cd script
-docker-compose -f docker-compose-service.yml up -d
+docker-compose -f dev/docker-compose-service.yml up -d
 
 # 4. 等待基础服务启动完成（约 2-3 分钟）
-docker-compose -f docker-compose-service.yml ps
+docker-compose -f dev/docker-compose-service.yml ps
 
 # 5. 启动应用服务
-docker-compose -f docker-compose-apps.yml up -d --build
+docker-compose -f dev/docker-compose-apps.yml up -d --build
 
 # 6. 检查所有服务状态
-docker-compose -f docker-compose.yml ps
+docker-compose -f dev/docker-compose.yml ps
 ```
 
 ### 3. 部署验证
@@ -474,10 +474,10 @@ curl http://localhost:7000                  # 用户端前端
 
 ```bash
 # Linux/macOS
-cp script/.env.example .env
+cp script/dev/.env.example .env
 
 # Windows
-copy script/.env.example .env
+copy script/dev/.env.example .env
 ```
 
 ### 2. 配置环境变量
@@ -585,16 +585,16 @@ docker-compose exec -T mysql mysql -u root -p sidifensen_blog < backup.sql
 
 ```bash
 # 启动四个基础服务
-docker-compose -f docker-compose-service.yml up -d
+docker-compose -f dev/docker-compose-service.yml up -d
 
 # 查看基础服务状态
-docker-compose -f docker-compose-service.yml ps
+docker-compose -f dev/docker-compose-service.yml ps
 
 # 查看基础服务日志
-docker-compose -f docker-compose-service.yml logs -f
+docker-compose -f dev/docker-compose-service.yml logs -f
 
 # 停止基础服务
-docker-compose -f docker-compose-service.yml down
+docker-compose -f dev/docker-compose-service.yml down
 ```
 
 > 💡 **开发环境说明**：
@@ -608,21 +608,21 @@ docker-compose -f docker-compose-service.yml down
 
 ```bash
 # 启动应用服务（需要基础服务已运行）
-docker-compose -f docker-compose-apps.yml up -d --build
+docker-compose -f dev/docker-compose-apps.yml up -d --build
 
 # 停止应用服务
-docker-compose -f docker-compose-apps.yml down
+docker-compose -f dev/docker-compose-apps.yml down
 
 # 重启应用服务
-docker-compose -f docker-compose-apps.yml restart
+docker-compose -f dev/docker-compose-apps.yml restart
 
 # 查看应用服务日志
-docker-compose -f docker-compose-apps.yml logs -f
+docker-compose -f dev/docker-compose-apps.yml logs -f
 
 # 单独重启某个应用服务
-docker-compose -f docker-compose-apps.yml restart backend
-docker-compose -f docker-compose-apps.yml restart frontend-admin
-docker-compose -f docker-compose-apps.yml restart frontend-user
+docker-compose -f dev/docker-compose-apps.yml restart backend
+docker-compose -f dev/docker-compose-apps.yml restart frontend-admin
+docker-compose -f dev/docker-compose-apps.yml restart frontend-user
 ```
 
 ### 组合使用示例
@@ -630,21 +630,21 @@ docker-compose -f docker-compose-apps.yml restart frontend-user
 ```bash
 # 场景1：本地开发环境（推荐）
 # 1. 启动基础服务
-docker-compose -f docker-compose-service.yml up -d
+docker-compose -f dev/docker-compose-service.yml up -d
 # 2. 在 IDE 中启动后端应用（Spring Boot）
 # 3. 在终端中启动前端应用（npm run dev）
 
 # 场景2：完整 Docker 开发环境
 # 1. 启动基础服务
-docker-compose -f docker-compose-service.yml up -d
+docker-compose -f dev/docker-compose-service.yml up -d
 # 2. 启动应用服务
-docker-compose -f docker-compose-apps.yml up -d --build
+docker-compose -f dev/docker-compose-apps.yml up -d --build
 
 # 场景3：只更新应用服务
 # 停止应用服务
-docker-compose -f docker-compose-apps.yml down
+docker-compose -f dev/docker-compose-apps.yml down
 # 重新构建并启动
-docker-compose -f docker-compose-apps.yml up -d --build
+docker-compose -f dev/docker-compose-apps.yml up -d --build
 
 # 场景4：生产环境一键部署
 docker-compose up -d --build

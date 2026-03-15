@@ -57,7 +57,7 @@ check_env_file() {
     
     if [ ! -f "../.env" ]; then
         print_warning "未找到 .env 文件，正在创建..."
-        cp env.example ../.env
+        cp dev/.env.example ../.env
         print_message "已创建 .env 文件，请根据需要修改配置"
         print_warning "建议修改 .env 文件中的敏感信息（如密码、密钥等）"
     else
@@ -116,13 +116,13 @@ start_production() {
     check_build_files
     
     print_message "正在构建并启动服务..."
-    docker-compose -f docker-compose.yml up -d --build
+    docker-compose -f dev/docker-compose.yml up -d --build
     
     print_message "等待服务启动..."
     sleep 10
     
     print_message "检查服务状态..."
-    docker-compose -f docker-compose.yml ps
+    docker-compose -f dev/docker-compose.yml ps
     
     show_access_info
 }
@@ -132,13 +132,13 @@ start_development() {
     print_title "启动开发环境"
     
     print_message "正在构建并启动服务..."
-    docker-compose -f docker-compose-service.yml up -d --build
+    docker-compose -f dev/docker-compose-service.yml up -d --build
     
     print_message "等待服务启动..."
     sleep 10
     
     print_message "检查服务状态..."
-    docker-compose -f docker-compose-service.yml ps
+    docker-compose -f dev/docker-compose-service.yml ps
     
     print_message "开发环境基础服务已启动"
     print_message "四个基础服务：MySQL、Redis、MinIO、RabbitMQ"
@@ -152,13 +152,13 @@ start_apps_only() {
     check_build_files
     
     print_message "正在启动后端和前端服务..."
-    docker-compose -f docker-compose-apps.yml up -d --build
+    docker-compose -f dev/docker-compose-apps.yml up -d --build
     
     print_message "等待服务启动..."
     sleep 10
     
     print_message "检查服务状态..."
-    docker-compose -f docker-compose.apps.yml ps
+    docker-compose -f dev/docker-compose-apps.yml ps
     
     show_access_info
 }
@@ -167,14 +167,14 @@ start_apps_only() {
 stop_services() {
     print_title "停止服务"
     
-    if [ -f "docker-compose.yml" ]; then
+    if [ -f "dev/docker-compose.yml" ]; then
         print_message "停止生产环境服务..."
         docker-compose down
     fi
     
-    if [ -f "docker-compose-service.yml" ]; then
+    if [ -f "dev/docker-compose-service.yml" ]; then
         print_message "停止开发环境服务..."
-        docker-compose -f docker-compose-service.yml down
+        docker-compose -f dev/docker-compose-service.yml down
     fi
     
     print_message "所有服务已停止"
@@ -309,7 +309,7 @@ exit_script() {
 # 主程序
 main() {
     # 检查是否在 script 目录中
-    if [ ! -f "docker-compose.yml" ]; then
+    if [ ! -f "dev/docker-compose.yml" ]; then
         print_error "请在 script 目录中运行此脚本"
         exit 1
     fi

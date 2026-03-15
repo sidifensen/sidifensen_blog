@@ -10,6 +10,7 @@ import com.sidifensen.domain.enums.RoleEnum;
 import com.sidifensen.domain.enums.StatusEnum;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.*;
+import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.IpService;
 import com.sidifensen.utils.IpUtils;
 import com.sidifensen.utils.WebUtils;
@@ -58,6 +59,9 @@ public class SysUserDetailsService implements UserDetailsService {
 
     @Resource
     private com.sidifensen.service.SysLoginLogService sysLoginLogService;
+
+    @Resource
+    private RedisComponent redisComponent;
 
     /**
      * 根据用户名查询用户信息
@@ -148,6 +152,14 @@ public class SysUserDetailsService implements UserDetailsService {
 
     // 设置管理端登录用户的角色,菜单,权限信息
     public SysUser setUserDetail(SysUser sysUser) {
+        // 1. 先尝试从 Redis 缓存获取
+        SysUser cachedUser = redisComponent.getUserDetailFromCache(sysUser.getId());
+        if (cachedUser != null && cachedUser.getSysRoles() != null
+                && cachedUser.getSysMenus() != null && cachedUser.getSysPermissions() != null) {
+            return cachedUser;
+        }
+
+        // 2. 缓存未命中，从数据库查询
         // 查询用户对应的角色
         LambdaQueryWrapper<SysUserRole> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysUserRole::getUserId, sysUser.getId());
@@ -209,6 +221,9 @@ public class SysUserDetailsService implements UserDetailsService {
         sysUser.setSysMenus(sysMenus);
         // 将权限信息加入到用户信息中
         sysUser.setSysPermissions(sysPermissions);
+
+        // 3. 将组装好的用户信息存入 Redis 缓存
+        redisComponent.setUserDetailToCache(sysUser);
 
         return sysUser;
     }

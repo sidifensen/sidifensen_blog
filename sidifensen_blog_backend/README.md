@@ -1,4 +1,4 @@
-# Sidifensen Community 后端项目
+# Sidifensen Blog 后端项目
 
 > 基于 Spring Boot 3.4.0 + Java 21 的现代化社区系统后端
 
@@ -78,7 +78,7 @@
 # 数据库配置
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
-MYSQL_DATABASE=sidifensen_community
+MYSQL_DATABASE=sidifensen_blog
 MYSQL_USERNAME=root
 MYSQL_PASSWORD=root
 
@@ -853,31 +853,6 @@ Docker 镜像构建配置文件，用于创建后端应用的 Docker 镜像。
 - 工作目录：`/app`
 - 应用端口：`5000`
 - JAR 文件：`target/sidifensen_blog_backend-1.0-SNAPSHOT.jar`
-
-### 🔧 docker.sh
-
-一键部署脚本，自动完成镜像构建和容器启动。
-
-**主要功能：**
-
-1. 检查 JAR 文件是否存在
-2. 停止并删除旧容器
-3. 删除旧镜像
-4. 构建新镜像
-5. 启动新容器并映射日志目录到宿主机 `./logs`
-
-**使用方法：**
-
-```bash
-# 1. 先编译项目
-mvn clean package -DskipTests
-
-# 2. 运行部署脚本
-chmod +x docker.sh
-./docker.sh
-```
-
-> 💡 **提示**：使用 `docker.sh` 脚本时，日志会自动映射到项目根目录的 `logs/` 文件夹，方便查看和管理。
 
 ### 使用 docker-compose（推荐）
 

@@ -26,7 +26,7 @@
 1. **进入部署脚本目录**：
 
    ```bash
-   cd script/deploy
+   cd script/prod/jenkins
    ```
 
 2. **执行安装脚本**：

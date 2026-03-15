@@ -9,7 +9,7 @@ echo 当前目录: %CD%
 echo.
 
 :: 检查是否在 script 目录中
-if not exist "docker-compose.yml" (
+if not exist "dev/docker-compose.yml" (
     echo [ERROR] 请在 script 目录中运行此脚本
     echo 当前目录: %CD%
     echo 请切换到 script 目录后重新运行
@@ -17,7 +17,7 @@ if not exist "docker-compose.yml" (
     exit /b 1
 )
 
-echo 找到 docker-compose.yml 文件，继续执行...
+echo 找到 dev/docker-compose.yml 文件，继续执行...
 echo.
 
 :: 检查 Docker
@@ -54,7 +54,7 @@ echo ========================================
 
 if not exist "..\.env" (
     echo [WARNING] 未找到 .env 文件，正在创建...
-    copy env.example ..\.env >nul
+    copy dev\.env.example ..\.env >nul
     echo [INFO] 已创建 .env 文件，请根据需要修改配置
     echo [WARNING] 建议修改 .env 文件中的敏感信息（如密码、密钥等）
 ) else (
@@ -156,11 +156,11 @@ echo ========================================
 call :check_build_files
 if errorlevel 1 goto menu_continue
 echo [INFO] 正在构建并启动服务...
-docker-compose -f docker-compose.yml up -d --build
+docker-compose -f dev/docker-compose.yml up -d --build
 echo [INFO] 等待服务启动...
 timeout /t 10 /nobreak >nul
 echo [INFO] 检查服务状态...
-docker-compose -f docker-compose.yml ps
+docker-compose -f dev/docker-compose.yml ps
 call :show_access_info
 goto menu_continue
 
@@ -170,11 +170,11 @@ echo ========================================
 echo 启动开发环境
 echo ========================================
 echo [INFO] 正在构建并启动服务...
-docker-compose -f docker-compose-service.yml up -d --build
+docker-compose -f dev/docker-compose-service.yml up -d --build
 echo [INFO] 等待服务启动...
 timeout /t 10 /nobreak >nul
 echo [INFO] 检查服务状态...
-docker-compose -f docker-compose-service.yml ps
+docker-compose -f dev/docker-compose-service.yml ps
 echo [INFO] 开发环境基础服务已启动，可以手动启动后端和前端服务进行开发
 goto menu_continue
 
@@ -186,11 +186,11 @@ echo ========================================
 call :check_build_files
 if errorlevel 1 goto menu_continue
 echo [INFO] 正在启动后端和前端服务...
-docker-compose -f docker-compose-apps.yml up -d --build
+docker-compose -f dev/docker-compose-apps.yml up -d --build
 echo [INFO] 等待服务启动...
 timeout /t 10 /nobreak >nul
 echo [INFO] 检查服务状态...
-docker-compose -f docker-compose-apps.yml ps
+docker-compose -f dev/docker-compose-apps.yml ps
 call :show_access_info
 goto menu_continue
 
@@ -199,13 +199,13 @@ echo.
 echo ========================================
 echo 停止服务
 echo ========================================
-if exist "docker-compose.yml" (
+if exist "dev/docker-compose.yml" (
     echo [INFO] 停止生产环境服务...
     docker-compose down
 )
-if exist "docker-compose-service.yml" (
+if exist "dev/docker-compose-service.yml" (
     echo [INFO] 停止开发环境服务...
-    docker-compose -f docker-compose-service.yml down
+    docker-compose -f dev/docker-compose-service.yml down
 )
 echo [INFO] 所有服务已停止
 goto menu_continue

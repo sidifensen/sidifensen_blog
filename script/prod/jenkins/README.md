@@ -47,8 +47,8 @@
 #### 1.1 配置环境变量
 
 ```bash
-cd script/deploy
-cp .env.example .env
+cd script/prod/jenkins
+cp dev/.env.example .env
 # 编辑 .env 文件，修改服务器 IP
 # GITEA_DOMAIN=your-server-ip
 # GITEA_PORT=3000
@@ -95,7 +95,7 @@ git push gitea main
 **方式一：使用脚本快速安装（推荐）**
 
 ```bash
-cd script/deploy
+cd script/prod/jenkins
 chmod +x jenkins-setup.sh
 sudo ./jenkins-setup.sh
 ```
@@ -323,7 +323,7 @@ Jenkins 自动构建和部署
 ### Gitea 管理
 
 ```bash
-cd script/deploy
+cd script/prod/jenkins
 
 # 启动
 docker-compose -f docker-compose-gitea.yml --env-file .env up -d
@@ -519,7 +519,7 @@ docker exec -u root jenkins apt-get install -y libatomic1
 - **Jenkinsfile** 位于项目根目录，包含完整的构建和部署流程
 - Pipeline 会自动处理所有部署步骤，无需手动执行 `jenkins-deploy.sh`
 - 部署目录必须在 Jenkins 容器启动时挂载，路径为 `/opt/sidifensen_blog`
-- Pipeline 使用 `docker-compose-ssl.yml` 进行部署，确保 `script/ssl/.env` 文件已正确配置
+- Pipeline 使用 `docker-compose-ssl.yml` 进行部署，确保 `script/prod/.env` 文件已正确配置
 
 ### 首次部署前检查清单
 
@@ -529,7 +529,7 @@ docker exec -u root jenkins apt-get install -y libatomic1
 - [ ] Jenkins 容器已安装 `libatomic1` 库
 - [ ] Jenkins 已配置 Gitea 服务器和凭据
 - [ ] Gitea Webhook 已配置
-- [ ] 服务器上已配置 `script/ssl/.env` 文件
+- [ ] 服务器上已配置 `script/prod/.env` 文件
 - [ ] 服务器上已准备好 `docker-compose-ssl.yml` 文件
 
 如有问题，请查看详细文档或联系项目维护者。

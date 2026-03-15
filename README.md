@@ -156,7 +156,7 @@ sidifensen_blog/
 ├── README.md                         # 📖 项目说明文档
 │
 ├── script/                           # 📜 部署脚本和配置
-│   ├── deploy/                       # 自动化部署脚本和配置
+│   ├── deploy/                       # 自动化部署脚本和配置 (已废弃，迁移至 prod/jenkins/)
 │   │   ├── Jenkinsfile               # Jenkins Pipeline 配置
 │   │   ├── jenkins-setup.sh          # Jenkins 安装和配置脚本
 │   │   ├── jenkins-deploy.sh         # 服务器端部署脚本
@@ -178,14 +178,14 @@ sidifensen_blog/
 │   │   ├── README-ssl.md             # SSL 部署说明
 │   │   ├── ssl.sh                    # SSL 证书申请脚本
 │   │   └── start.sh                  # SSL 版本启动脚本
-│   ├── docker-compose-apps.yml       # 应用编排 (前后端)
-│   ├── docker-compose-service.yml    # 基础服务编排 (MySQL/Redis/RabbitMQ/MinIO)
-│   ├── docker-compose.yml            # Docker Compose 主编排文件
-│   ├── env.example                   # 环境变量配置模板
-│   ├── nginx.conf                    # Nginx 反向代理配置
-│   ├── README-Docker.md              # Docker 部署详细说明
-│   ├── start.bat                     # Windows 启动脚本
-│   └── start.sh                      # Linux/Mac 启动脚本
+│   ├── dev/                          # Docker Compose 配置和启动脚本
+│   │   ├── docker-compose-apps.yml       # 应用编排 (前后端)
+│   │   ├── docker-compose-service.yml    # 基础服务编排 (MySQL/Redis/RabbitMQ/MinIO)
+│   │   ├── docker-compose.yml            # Docker Compose 主编排文件
+│   │   ├── .env.example                  # 环境变量配置模板
+│   │   ├── README-Docker.md              # Docker 部署详细说明
+│   │   ├── start.bat                     # Windows 启动脚本
+│   │   └── start.sh                      # Linux/Mac 启动脚本
 │
 ├── sidifensen_blog_backend/          # 🔧 后端服务 (Spring Boot 3.4.0 + Java 21)
 │   ├── src/
@@ -220,7 +220,6 @@ sidifensen_blog/
 │   │   │       └── logback-spring.xml    # 日志配置
 │   │   └── test/                     # 测试代码
 │   ├── target/                       # Maven 编译输出目录
-│   ├── docker.sh                     # Docker 部署脚本
 │   ├── Dockerfile                    # Docker 镜像构建文件
 │   └── pom.xml                       # Maven 项目配置文件
 │
@@ -265,8 +264,6 @@ sidifensen_blog/
 │   │   │   │   └── tag/              # 标签管理
 │   │   │   ├── App.vue               # 根组件
 │   │   │   └── main.js               # 应用入口
-│   │   ├── default.conf              # Nginx 配置
-│   │   ├── docker.sh                 # Docker 部署脚本
 │   │   ├── Dockerfile                # Docker 镜像构建
 │   │   ├── index.html                # HTML 入口文件
 │   │   ├── jsconfig.json             # JS 配置
@@ -313,8 +310,6 @@ sidifensen_blog/
 │       │   │   └── User/             # 用户主页
 │       │   ├── App.vue               # 根组件
 │       │   └── main.js               # 应用入口
-│       ├── default.conf              # Nginx 配置
-│       ├── docker.sh                 # Docker 部署脚本
 │       ├── Dockerfile                # Docker 镜像构建
 │       ├── index.html                # HTML 入口文件
 │       ├── jsconfig.json             # JS 配置
@@ -482,12 +477,15 @@ mysql -u root -p sidifensen_blog < sql/sidifensen_blog.sql
 
 ```bash
 # 克隆项目
-git clone https://github.com/your-username/sidifensen_blog.git
+git clone https://github.com/sidifensen/sidifensen_blog.git
 cd sidifensen_blog/sidifensen_blog_backend
 
+# 复制环境配置文件
+cp .env.example .env
+
 # 配置数据库连接
-# 编辑 src/main/resources/application.yaml 文件
-# 修改数据库、Redis、RabbitMQ 连接信息
+# 编辑 .env 文件
+# 修改数据库、Redis、RabbitMQ、MinIO 等连接信息
 
 # 方式一：使用 dotenv 加载 .env 文件启动（推荐）
 # 需要先安装 dotenv-cli: npm install -g dotenv-cli
@@ -505,31 +503,31 @@ mvn spring-boot:run
 
 ```bash
 # 克隆项目
-git clone https://github.com/your-username/sidifensen_blog.git
+git clone https://github.com/sidifensen/sidifensen_blog.git
 cd sidifensen_blog
 
 # 复制环境配置文件
 # Windows:
-copy script\env.example .env
+copy script\dev\.env.example .env
 # Linux/Mac:
-# cp script/.env.example .env
+# cp script/dev/.env.example .env
 
 # 根据需要修改 .env 文件中的配置
 # vim .env
 
 # 启动所有服务
 # Windows:
-cd script && start.bat
+cd script && dev\start.bat
 # Linux/Mac:
-# cd script && ./start.sh
+# cd script && dev/start.sh
 ```
 
 #### 一键启动脚本
 
 项目提供了便捷的启动脚本：
 
-- **Windows**: `script/start.bat` - Windows 批处理脚本，支持环境检查、服务启动、日志查看等功能
-- **Linux/Mac**: `script/start.sh` - Shell 脚本，提供相同的功能
+- **Windows**: `script/dev/start.bat` - Windows 批处理脚本，支持环境检查、服务启动、日志查看等功能
+- **Linux/Mac**: `script/dev/start.sh` - Shell 脚本，提供相同的功能
 
 ### 🎨 前端启动
 
@@ -592,8 +590,8 @@ npm run dev
 1. **部署 Gitea 私有仓库**
 
    ```bash
-   cd script/deploy
-   cp ..env.example .env
+   cd script/prod/jenkins
+   cp .env.example .env
    # 编辑 .env 文件，配置服务器 IP 等信息
    docker-compose -f docker-compose-gitea.yml --env-file .env up -d
    ```
@@ -601,7 +599,7 @@ npm run dev
 2. **安装 Jenkins**
 
    ```bash
-   cd script/deploy
+   cd script/prod/jenkins
    chmod +x jenkins-setup.sh
    sudo ./jenkins-setup.sh
    ```
@@ -609,9 +607,9 @@ npm run dev
 3. **配置 Jenkins 和 Gitea**
 
    详细配置步骤请参考：
-   - [自动化部署快速指南](./script/deploy/README.md)
-   - [Jenkins 部署详细指南](./script/deploy/Jenkins部署指南.md)
-   - [Gitea 配置详细指南](./script/deploy/Gitea配置指南.md)
+   - [自动化部署快速指南](./script/prod/jenkins/README.md)
+   - [Jenkins 部署详细指南](./script/prod/jenkins/Jenkins部署指南.md)
+   - [Gitea 配置详细指南](./script/prod/jenkins/Gitea配置指南.md)
 
 4. **创建 Jenkins 任务并配置 Webhook**
 
@@ -637,7 +635,7 @@ npm run dev
 Docker 容器重启 → 服务更新完成
 ```
 
-> 💡 **提示**: 自动化部署方案适合生产环境，可以显著提升部署效率和代码安全性。详细配置请查看 `script/deploy/` 目录下的文档。
+> 💡 **提示**: 自动化部署方案适合生产环境，可以显著提升部署效率和代码安全性。详细配置请查看 `script/prod/jenkins/` 目录下的文档。
 
 ---
 
@@ -678,23 +676,21 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 ```bash
 # 克隆项目
-git clone https://github.com/your-username/sidifensen_blog.git
+git clone https://github.com/sidifensen/sidifensen_blog.git
 cd sidifensen_blog
 
-# 复制环境配置文件
+# 复制环境配置文件（生产环境）
 # Linux/Mac:
-cp script/..env.example .env
+cp script/prod/.env.example .env
 # Windows:
-# copy script\.env.example .env
+# copy script\prod\.env.example .env
 
 # 根据生产环境修改 .env 文件中的配置
 vim .env
 
 # 一键启动所有服务
-# Windows:
-cd script && start.bat
 # Linux/Mac:
-# cd script && ./start.sh
+cd script/prod && ./start.sh
 ```
 
 #### 3️⃣ SSL 证书配置（可选）
@@ -702,11 +698,11 @@ cd script && start.bat
 项目支持 HTTPS 部署，提供了 SSL 证书配置：
 
 ```bash
-# 进入 SSL 配置目录
-cd script/ssl
+# 进入生产环境配置目录
+cd script/prod
 
 # 复制 SSL 环境配置
-cp ..env.example .env
+cp .env.example .env
 
 # 配置 SSL 证书信息
 vim .env
@@ -722,35 +718,37 @@ vim .env
 ```bash
 cd sidifensen_blog_backend
 
-# 1. 修改生产环境配置
-vim src/main/resources/application-prod.yaml
+# 1. 复制并修改环境配置文件
+cp .env.example .env
+vim .env
 
 # 2. 构建 JAR 包
 mvn clean package -DskipTests
 
-# 3. 构建 Docker 镜像并启动
-chmod +x docker.sh
-./docker.sh
+# 3. 运行 JAR 包
+java -jar target/sidifensen_blog_backend-1.0-SNAPSHOT.jar
 
-# 或者手动执行
-docker build -t sidifensen-blog-backend .
-docker run -d -p 8080:8080 --name sidifensen-blog-backend sidifensen-blog-backend
+# 或使用 Docker Compose 部署（推荐）
+cd ../script/prod
+docker-compose up -d --build
 ```
 
 ##### 前端部署
 
 ```bash
-# 用户端部署
+# 用户端
 cd sidifensen_blog_frontend/sidifensen_user
+npm install
 npm run build
-chmod +x docker.sh
-./docker.sh
 
-# 管理端部署
-cd ../sidifensen_admin
+# 管理端
+cd sidifensen_blog_frontend/sidifensen_admin
+npm install
 npm run build
-chmod +x docker.sh
-./docker.sh
+
+# 或使用 Docker Compose 统一部署（推荐）
+cd script/prod
+docker-compose up -d --build
 ```
 
 ### 🌐 访问地址
@@ -778,7 +776,9 @@ chmod +x docker.sh
 - OAuth 第三方登录配置
 - DeepSeek AI 配置（文章摘要功能）
 
-> 💡 **提示**: 所有配置项都可以在 `.env` 文件中修改，详细说明请参考 `script/env.example` 文件。
+> 💡 **提示**: 所有配置项都可以在 `.env` 文件中修改，详细说明请参考：
+> - 开发环境：`script/dev/.env.example`
+> - 生产环境：`script/prod/.env.example`
 
 ## 📸 项目截图展示
 
@@ -906,7 +906,7 @@ chmod +x docker.sh
 
 ### 🐛 问题报告
 
-发现 Bug 或有新功能建议？请通过 [GitHub Issues](https://github.com/your-username/sidifensen_blog/issues) 提交。
+发现 Bug 或有新功能建议？请通过 [Gitee Issues](https://gitee.com/sidifensen/sidifensen_blog/issues) 或 [GitHub Issues](https://github.com/sidifensen/sidifensen_blog/issues) 提交。
 
 **Bug 报告请包含：**
 
@@ -945,11 +945,21 @@ chmod +x docker.sh
   - ✅ 支付结果页状态轮询
   - ✅ 沙箱环境支持
 
+- [x] **🔐 OAuth 登录流程重构**
+  - ✅ Gitee/GitHub/QQ 第三方登录支持
+  - ✅ OAuth 回调处理优化
+  - ✅ 用户信息绑定与自动注册
+
+- [x] **🎨 前端开发规范更新**
+  - ✅ 去 AI 味设计指南
+  - ✅ 黑夜模式适配规范
+  - ✅ Docker 配置优化
+
 ### 🚧 计划中的功能
 
 暂无
 
-> 💡 **提示**: 如果你对这些功能有建议或想法，欢迎在 [Issues](https://github.com/your-username/sidifensen_blog/issues) 中讨论！
+> 💡 **提示**: 如果你对这些功能有建议或想法，欢迎在 [Gitee Issues](https://gitee.com/sidifensen/sidifensen_blog/issues) 或 [GitHub Issues](https://github.com/sidifensen/sidifensen_blog/issues) 中讨论！
 
 ## 📄 许可证
 

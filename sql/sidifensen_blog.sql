@@ -503,6 +503,8 @@ INSERT INTO `sys_permission` VALUES (89, '调整会员', 'system:vip:member:upda
 INSERT INTO `sys_permission` VALUES (90, '会员订单', 'system:vip:order:list', 25, '2026-03-13 00:03:25', '2026-03-13 00:03:25', 0);
 INSERT INTO `sys_permission` VALUES (91, '套餐列表', 'system:vip:plan:list', 25, '2026-03-13 00:03:27', '2026-03-13 00:03:27', 0);
 INSERT INTO `sys_permission` VALUES (92, '修改套餐', 'system:vip:plan:update', 25, '2026-03-13 00:03:29', '2026-03-13 00:03:29', 0);
+INSERT INTO `sys_permission` VALUES (93, '获取 Dashboard 统计数据', 'system:dashboard:list', 1, '2026-03-15 00:00:00', '2026-03-15 00:00:00', 0);
+INSERT INTO `sys_permission` VALUES (94, '刷新 Dashboard 缓存', 'system:dashboard:refresh', 1, '2026-03-15 00:00:00', '2026-03-15 00:00:00', 0);
 
 -- ----------------------------
 -- Table structure for sys_role
@@ -748,6 +750,8 @@ INSERT INTO `sys_role_permission` VALUES (155, 2, 87);
 INSERT INTO `sys_role_permission` VALUES (156, 2, 88);
 INSERT INTO `sys_role_permission` VALUES (157, 2, 90);
 INSERT INTO `sys_role_permission` VALUES (158, 2, 91);
+INSERT INTO `sys_role_permission` VALUES (159, 1, 93);
+INSERT INTO `sys_role_permission` VALUES (160, 1, 94);
 
 -- ----------------------------
 -- Table structure for sys_user

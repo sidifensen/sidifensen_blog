@@ -40,7 +40,7 @@
 #### 1. 配置环境变量
 
 ```bash
-cd script/deploy
+cd script/prod/jenkins
 cp .env.example .env
 # 编辑 .env 文件，修改服务器 IP 等配置
 ```

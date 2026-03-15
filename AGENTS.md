@@ -78,14 +78,14 @@ npm run build
 cd script
 
 # 复制环境配置
-cp ..env.example .env
+cp dev/.env.example .env
 
 # 启动所有服务
 docker-compose up -d
 
 # 或使用启动脚本
-./start.sh        # Linux/Mac
-start.bat         # Windows
+dev/start.sh        # Linux/Mac
+dev/start.bat         # Windows
 ```
 
 ## 架构
@@ -108,8 +108,8 @@ start.bat         # Windows
 ```
 sidifensen_blog/
 ├── script/                          # 部署脚本、Docker 配置
-│   ├── docker-compose.yml           # 主编排文件
-│   ├── env.example                  # 环境变量模板
+│   ├── dev/docker-compose.yml           # 主编排文件
+│   ├── dev/.env.example                  # 环境变量模板
 │   └── deploy/                      # Jenkins/Gitea CI/CD
 ├── sidifensen_blog_backend/
 │   └── src/main/java/com/sidifensen/
@@ -448,7 +448,7 @@ Jenkins + Gitea 自动化：
 3. 自动构建后端 (Maven) 和前端 (Node.js)
 4. 通过 Docker Compose 部署
 
-详细配置请查看 `script/deploy/README.md`。
+详细配置请查看 `script/jenkins/README.md`。
 
 ## 测试
 

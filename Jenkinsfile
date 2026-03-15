@@ -120,7 +120,7 @@ pipeline {
                 dir('sidifensen_blog_backend') {
                     sh '''
                         echo "使用 Maven 构建后端..."
-                        mvn -s ../script/deploy/maven-settings.xml -B -ntp clean package -DskipTests
+                        mvn -s ../script/jenkins/maven-settings.xml -B -ntp clean package -DskipTests
                         
                         # 检查构建产物
                         if [ ! -f target/*.jar ]; then
@@ -232,7 +232,7 @@ pipeline {
                         # 确保其他子目录存在
                         mkdir -p \${DEPLOY_PATH}/sidifensen_blog_frontend/sidifensen_admin
                         mkdir -p \${DEPLOY_PATH}/sidifensen_blog_frontend/sidifensen_user
-                        mkdir -p \${DEPLOY_PATH}/script/ssl
+                        mkdir -p \${DEPLOY_PATH}/script/prod
                         
                         echo "✅ 部署目录可访问: \${DEPLOY_PATH}"
                         
@@ -270,14 +270,14 @@ pipeline {
                         fi
                         
                         echo "复制部署脚本和配置文件..."
-                        # 复制 script/ssl 目录下的文件（如果存在）
-                        if [ -d script/ssl ]; then
-                            cp -r script/ssl/* \${DEPLOY_PATH}/script/ssl/ 2>/dev/null || true
+                        # 复制 script/prod 目录下的文件（如果存在）
+                        if [ -d script/prod ]; then
+                            cp -r script/prod/* \${DEPLOY_PATH}/script/prod/ 2>/dev/null || true
                             echo "✅ 部署脚本复制成功"
                         fi
-                        
+
                         echo "检查 .env 文件..."
-                        cd \${DEPLOY_PATH}/script/ssl
+                        cd \${DEPLOY_PATH}/script/prod
                         if [ ! -f .env ]; then
                             echo "⚠️  警告: .env 文件不存在，将从 env.example 复制..."
                             if [ -f env.example ]; then

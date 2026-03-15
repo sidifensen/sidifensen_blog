@@ -47,7 +47,7 @@ check_requirements() {
 
 check_compose_file() {
     if [ ! -f "docker-compose-ssl.yml" ]; then
-        print_error "未找到 docker-compose-ssl.yml，请在 script/ssl 目录下运行"
+        print_error "未找到 docker-compose-ssl.yml，请在 script/prod 目录下运行"
         exit 1
     fi
 }

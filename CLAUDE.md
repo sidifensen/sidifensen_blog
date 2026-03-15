@@ -55,14 +55,14 @@ npm run build
 cd script
 
 # 复制环境配置
-cp .env.example .env
+cp dev/.env.example .env
 
 # 启动所有服务
 docker-compose up -d
 
 # 或使用启动脚本
-./start.sh        # Linux/Mac
-start.bat         # Windows
+dev/start.sh        # Linux/Mac
+dev/start.bat         # Windows
 ```
 
 ## 架构
@@ -85,8 +85,8 @@ start.bat         # Windows
 ```
 sidifensen_blog/
 ├── script/                          # 部署脚本、Docker 配置
-│   ├── docker-compose.yml           # 主编排文件
-│   ├── .env.example                  # 环境变量模板
+│   ├── dev/docker-compose.yml           # 主编排文件
+│   ├── dev/.env.example                  # 环境变量模板
 │   └── deploy/                      # Jenkins/Gitea CI/CD
 ├── sidifensen_blog_backend/
 │   └── src/main/java/com/sidifensen/
@@ -397,7 +397,7 @@ html.dark {
 - RabbitMQ 3 (端口 5672, 管理界面 15672)
 - MinIO (端口 9000/9001)
 
-运行前从 `script/.env.example` 复制并配置 `.env` 文件。
+运行前从 `script/dev/.env.example` 复制并配置 `.env` 文件。
 
 ## 数据库操作工具（本地开发）
 
@@ -425,7 +425,7 @@ Jenkins + Gitea 自动化：
 3. 自动构建后端 (Maven) 和前端 (Node.js)
 4. 通过 Docker Compose 部署
 
-详细配置请查看 `script/deploy/README.md`。
+详细配置请查看 `script/jenkins/README.md`。
 
 ## 测试
 

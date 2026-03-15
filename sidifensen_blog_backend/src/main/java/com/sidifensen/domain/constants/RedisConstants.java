@@ -169,4 +169,30 @@ public class RedisConstants {
      */
     public static final String TagCooccurrence = RedisKeyPrefix + "TagCooccurrence:";
 
+    /**
+     * 管理端首页控制台统计数据缓存键
+     * 格式：sidifensen_blog:Dashboard:Statistics
+     * 用于缓存首页统计数据，避免频繁查询数据库
+     */
+    public static final String DashboardStatistics = RedisKeyPrefix + "Dashboard:Statistics";
+
+    /**
+     * 管理端首页控制台统计数据缓存过期时间（5 分钟，单位：秒）
+     * 统计数据不需要实时，5 分钟过期足够
+     */
+    public static final long DASHBOARD_STATISTICS_EXPIRE_TIME = 5 * 60;
+
+    /**
+     * 用户详细信息缓存键前缀（包含角色、菜单、权限信息）
+     * 格式：sidifensen_blog:UserDetail: 用户 ID
+     * 用于缓存用户的角色、菜单、权限信息，避免每次请求都查询数据库
+     */
+    public static final String UserDetail = RedisKeyPrefix + "UserDetail:";
+
+    /**
+     * 用户详细信息缓存过期时间（30 分钟，单位：秒）
+     * 用户信息不需要实时刷新，30 分钟过期足够
+     */
+    public static final long USER_DETAIL_EXPIRE_TIME = 30 * 60;
+
 }
