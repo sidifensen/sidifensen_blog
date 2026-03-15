@@ -120,7 +120,7 @@ pipeline {
                 dir('sidifensen_blog_backend') {
                     sh '''
                         echo "使用 Maven 构建后端..."
-                        mvn -s ../script/jenkins/maven-settings.xml -B -ntp clean package -DskipTests
+                        mvn -s ../script/prod/jenkins/maven-settings.xml -B -ntp clean package -DskipTests
                         
                         # 检查构建产物
                         if [ ! -f target/*.jar ]; then
