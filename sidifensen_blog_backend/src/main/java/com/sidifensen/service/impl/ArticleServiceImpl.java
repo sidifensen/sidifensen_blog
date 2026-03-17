@@ -659,6 +659,55 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
+    public PageVo<List<ArticleVo>> searchArticleByAuthor(String author, Integer pageNum, Integer pageSize) {
+        // 1. 先根据作者昵称或用户名查询用户 ID
+        LambdaQueryWrapper<SysUser> userQuery = new LambdaQueryWrapper<SysUser>()
+                .select(SysUser::getId)
+                .and(q -> q.like(SysUser::getNickname, author).or().like(SysUser::getUsername, author))
+                .eq(SysUser::getIsDeleted, 0);
+        List<SysUser> users = sysUserMapper.selectList(userQuery);
+
+        if (users.isEmpty()) {
+            // 没有找到该用户，返回空结果
+            return new PageVo<>(new ArrayList<>(), 0L);
+        }
+
+        // 2. 获取用户 ID 列表
+        List<Integer> userIds = users.stream().map(SysUser::getId).collect(Collectors.toList());
+
+        // 3. 查询这些用户发布的文章
+        Page<Article> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Article> articleQuery = new LambdaQueryWrapper<Article>()
+                .select(Article.class, info -> !info.getColumn().equals("content")) // 排除 content 字段
+                .in(Article::getUserId, userIds)
+                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
+                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                .eq(Article::getVisibleRange, VisibleRangeEnum.ALL.getCode())
+                .orderByDesc(Article::getUpdateTime);
+
+        List<Article> articles = articleMapper.selectPage(page, articleQuery).getRecords();
+
+        // 4. 转换为 ArticleVo 并填充用户信息
+        List<ArticleVo> articleVos = articles.stream()
+                .map(article -> {
+                    ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
+                    // 查询作者信息
+                    SysUser sysUser = users.stream()
+                            .filter(u -> u.getId().equals(article.getUserId()))
+                            .findFirst()
+                            .orElse(null);
+                    if (ObjectUtil.isNotEmpty(sysUser)) {
+                        articleVo.setNickname(sysUser.getNickname());
+                        articleVo.setAvatar(sysUser.getAvatar());
+                    }
+                    return articleVo;
+                })
+                .collect(Collectors.toList());
+
+        return new PageVo<>(articleVos, page.getTotal());
+    }
+
+    @Override
     public List<String> getTitleSuggestions(String keyword) {
         // 查询标题包含关键字的文章，只返回标题，最多10条
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()

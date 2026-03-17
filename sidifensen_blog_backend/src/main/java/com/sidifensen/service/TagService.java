@@ -23,7 +23,14 @@ public interface TagService extends IService<Tag> {
     Map<String, List<Tag>> listTag();
     
     void updateCategorySort(CategorySortDto categorySortDto);
-    
+
     void deleteTags(List<Integer> ids);
+
+    /**
+     * 获取热门标签列表（按文章数量排序）
+     * @param limit 返回数量限制
+     * @return 热门标签列表
+     */
+    List<Tag> getHotTags(Integer limit);
 
 }

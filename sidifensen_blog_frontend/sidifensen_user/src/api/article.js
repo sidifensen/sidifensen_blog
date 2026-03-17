@@ -35,7 +35,7 @@ export function getUserArticleList(pageNum, pageSize, articleStatusDto) {
   });
 }
 
-// 获取用户文章列表(文章管理)
+// 获取用户文章列表 (文章管理)
 export function getArticleManageList(pageNum, pageSize, articleStatusDto) {
   return request({
     url: `/article/manage/list?pageNum=${pageNum}&pageSize=${pageSize}`,
@@ -133,6 +133,14 @@ export function searchArticleByTag(tag, pageNum, pageSize) {
   });
 }
 
+// 根据作者搜索文章
+export function searchArticleByAuthor(author, pageNum, pageSize) {
+  return request({
+    url: `/article/search/author?author=${encodeURIComponent(author)}&pageNum=${pageNum}&pageSize=${pageSize}`,
+    method: "get",
+  });
+}
+
 // 获取标题搜索建议（自动补全）
 export function getTitleSuggestions(keyword) {
   return request({
@@ -149,10 +157,18 @@ export function getTagSuggestions(keyword) {
   });
 }
 
-// 获取热门文章列表（近7天访问量排序）
+// 获取热门文章列表（近 7 天访问量排序）
 export function getHotArticleList(pageNum, pageSize) {
   return request({
     url: `/article/hot?pageNum=${pageNum}&pageSize=${pageSize}`,
+    method: "get",
+  });
+}
+
+// 获取热门标签列表
+export function getHotTags(limit) {
+  return request({
+    url: `/tag/hot?limit=${limit || 10}`,
     method: "get",
   });
 }

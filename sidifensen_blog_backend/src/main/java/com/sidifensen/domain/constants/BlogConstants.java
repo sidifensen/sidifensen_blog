@@ -17,6 +17,7 @@ public class BlogConstants {
     public static final String LoginRequired = "请先登录";
     public static final String LoginExpired = "登录已过期，请重新登录";
     public static final String NewPasswordSameAsOld = "新密码不能与原密码相同";
+    public static final String PasswordTooWeak = "密码强度不足，必须包含大小写字母和数字，且长度不少于 8 位";
     public static final String UserIdRequired = "用户ID不能为空";
     public static final String UpdateUserInfoError = "更新用户信息失败";
 

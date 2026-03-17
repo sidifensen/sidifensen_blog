@@ -181,6 +181,44 @@ public class SysUserController {
         return Result.success();
     }
 
+    /**
+     * 获取推荐作者列表（按文章数量排序的活跃作者）
+     *
+     * @param limit 返回数量限制，默认 10
+     * @return 推荐作者列表
+     */
+    @RateLimit
+    @GetMapping("/authors/recommended")
+    public Result getRecommendedAuthors(@RequestParam(defaultValue = "10") Integer limit) {
+        List<SysUserVo> authors = sysUserService.getRecommendedAuthors(limit);
+        return Result.success(authors);
+    }
+
+    /**
+     * 获取社区统计数据（文章总数、用户总数、总阅读量、活跃作者数）
+     *
+     * @return 社区统计数据
+     */
+    @RateLimit
+    @GetMapping("/community/stats")
+    public Result getCommunityStats() {
+        Map<String, Object> stats = sysUserService.getCommunityStats();
+        return Result.success(stats);
+    }
+
+    /**
+     * 获取热门搜索列表（基于搜索频率统计）
+     *
+     * @param limit 返回数量限制，默认 10
+     * @return 热门搜索列表
+     */
+    @RateLimit
+    @GetMapping("/search/hot")
+    public Result getHotSearches(@RequestParam(defaultValue = "10") Integer limit) {
+        List<Map<String, Object>> hotSearches = sysUserService.getHotSearches(limit);
+        return Result.success(hotSearches);
+    }
+
     // 管理端
 
     /**

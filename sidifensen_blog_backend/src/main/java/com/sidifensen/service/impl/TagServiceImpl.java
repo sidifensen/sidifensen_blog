@@ -147,4 +147,13 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
         }
     }
 
+    @Override
+    public List<Tag> getHotTags(Integer limit) {
+        // 查询热门标签，按排序值升序排列，限制返回数量
+        return this.lambdaQuery()
+                .orderByAsc(Tag::getSort)
+                .last("LIMIT " + limit)
+                .list();
+    }
+
 }

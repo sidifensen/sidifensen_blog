@@ -21,3 +21,6 @@ docs/
 
 # Claude Code 配置
 .claude/
+
+# Superpowers 视觉伴侣临时文件
+.superpowers/

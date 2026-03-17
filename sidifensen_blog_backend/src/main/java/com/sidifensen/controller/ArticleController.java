@@ -188,6 +188,7 @@ public class ArticleController {
         PageVo<List<ArticleVo>> articleVoList = articleService.searchArticleByTag(tag, pageNum, pageSize);
         return Result.success(articleVoList);
     }
+/**     * 根据作者搜索文章（按作者昵称/用户名搜索）     *     * @param author   作者昵称或用户名     * @param pageNum  页码     * @param pageSize 页大小     * @return 搜索结果列表     */    @RateLimit(20)    @GetMapping("/search/author")    public Result searchArticleByAuthor(@RequestParam @NotNull(message = "作者不能为空") String author,            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {        PageVo<List<ArticleVo>> articleVoList = articleService.searchArticleByAuthor(author, pageNum, pageSize);        return Result.success(articleVoList);    }
 
     /**
      * 获取热门文章列表（近7天访问量排序）

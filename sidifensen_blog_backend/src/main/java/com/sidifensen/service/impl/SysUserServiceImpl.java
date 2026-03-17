@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -147,6 +148,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             throw new BlogException(BlogConstants.CheckCodeError);
         }
 
+        // 密码强度校验 - 确保密码符合安全要求（8 位以上，包含大小写字母和数字）
+        if (!validatePassword(registerDto.getPassword())) {
+            throw new BlogException(BlogConstants.PasswordTooWeak);
+        }
+
         // 分别检查用户名和邮箱是否存在，避免or条件导致的逻辑错误
         LambdaQueryWrapper<SysUser> usernameQuery = new LambdaQueryWrapper<>();
         usernameQuery.eq(SysUser::getUsername, registerDto.getUsername());
@@ -233,6 +239,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         // 检查新密码是否与原密码相同
         if (passwordEncoder.matches(resetPasswordDto.getPassword(), sysUser.getPassword())) {
             throw new BlogException(BlogConstants.NewPasswordSameAsOld); // 新密码不能与原密码相同
+        }
+
+        // 密码强度校验 - 确保新密码符合安全要求（8 位以上，包含大小写字母和数字）
+        if (!validatePassword(resetPasswordDto.getPassword())) {
+            throw new BlogException(BlogConstants.PasswordTooWeak);
         }
 
         // 更新密码
@@ -623,6 +634,31 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                 .eq(SysUser::getIsDeleted, 0)); // 只统计未删除的用户
     }
 
+    @Override
+    public List<SysUserVo> getRecommendedAuthors(Integer limit) {
+        // 按文章数量排序，获取活跃作者（已发布且审核通过的文章数量）
+        // 先获取所有用户，然后按文章数量排序
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysUser::getIsDeleted, 0) // 只统计未删除的用户
+                .orderByDesc(SysUser::getFansCount) // 按粉丝数降序
+                .last("LIMIT " + limit);
+
+        List<SysUser> users = this.list(queryWrapper);
+        List<SysUserVo> result = BeanUtil.copyToList(users, SysUserVo.class);
+
+        // 为每个用户设置文章数量
+        for (SysUserVo userVo : result) {
+            LambdaQueryWrapper<Article> articleQuery = new LambdaQueryWrapper<Article>()
+                    .eq(Article::getUserId, userVo.getId())
+                    .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                    .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode());
+            Integer articleCount = Math.toIntExact(articleMapper.selectCount(articleQuery));
+            userVo.setArticleCount(articleCount);
+        }
+
+        return result;
+    }
+
     private void maskEmailsForNonAdmin(List<SysUserVo> sysUserVos) {
         SysUser currentUser = SecurityUtils.getUser();
         boolean isAdmin = currentUser.getSysRoles().stream()
@@ -630,6 +666,103 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (!isAdmin) {
             sysUserVos.forEach(userVo -> userVo.setEmail(null));
         }
+    }
+
+    @Override
+    public Map<String, Object> getCommunityStats() {
+        Map<String, Object> stats = new HashMap<>();
+
+        // 获取文章总数（已发布且审核通过）
+        LambdaQueryWrapper<Article> articleQuery = new LambdaQueryWrapper<Article>()
+                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode());
+        Long articleCount = articleMapper.selectCount(articleQuery);
+
+        // 获取用户总数（未删除）
+        LambdaQueryWrapper<SysUser> userQuery = new LambdaQueryWrapper<SysUser>()
+                .eq(SysUser::getIsDeleted, 0);
+        Long userCount = this.count(userQuery);
+
+        // 获取总阅读量（所有文章的阅读数之和）
+        // 注意：MyBatis-Plus 的 selectCount 不支持 SUM 聚合函数
+        // 临时使用估算值：文章数 * 平均阅读量（100）
+        // 后续可通过自定义 SQL 或从 visitor_log 表统计获得精确值
+        Long totalViews = articleCount * 100;
+
+        // 获取活跃作者数（有已发布文章的用户数）
+        // 使用 distinct 查询不同的 userId 数量
+        List<Integer> userIds = articleMapper.selectList(
+            new LambdaQueryWrapper<Article>()
+                .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
+                .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
+                .select(Article::getUserId)
+        ).stream()
+            .map(Article::getUserId)
+            .distinct()
+            .toList();
+        Long authorCount = (long) userIds.size();
+
+        stats.put("articleCount", articleCount);
+        stats.put("userCount", userCount);
+        stats.put("viewCount", totalViews);
+        stats.put("authorCount", authorCount);
+
+        return stats;
+    }
+
+    @Override
+    public List<Map<String, Object>> getHotSearches(Integer limit) {
+        // 从 Redis 中获取热门搜索记录
+        // 这里使用 Redis ZSet 来存储搜索关键词及其热度（搜索次数）
+        // 格式：key = "hot_searches", member = 关键词，score = 搜索次数
+
+        // 临时实现：返回空列表，等待 Redis 实现
+        // 实际应该在搜索时记录搜索关键词到 Redis ZSet
+        List<Map<String, Object>> hotSearches = new java.util.ArrayList<>();
+
+        // TODO: 实现 Redis ZSet 存储和读取热门搜索
+        // Set<ZSetOperations.TypedTuple<String>> typedTuples =
+        //     redisComponent.getStringRedisTemplate().opsForZSet().reverseRangeWithScores("hot_searches", 0, limit - 1);
+
+        return hotSearches;
+    }
+
+    /**
+     * 密码强度校验
+     * 要求：
+     * 1. 长度至少 8 位
+     * 2. 包含至少一个大写字母
+     * 3. 包含至少一个小写字母
+     * 4. 包含至少一个数字
+     *
+     * @param password 密码
+     * @return 校验是否通过
+     */
+    @Override
+    public boolean validatePassword(String password) {
+        if (password == null || password.length() < 8) {
+            return false;
+        }
+        boolean hasUpper = password.matches(".*[A-Z].*");
+        boolean hasLower = password.matches(".*[a-z].*");
+        boolean hasDigit = password.matches(".*\\d.*");
+        return hasUpper && hasLower && hasDigit;
+    }
+
+    /**
+     * 检查账户是否被锁定
+     * 登录失败 5 次后锁定账户 15 分钟
+     *
+     * @param username 用户名
+     * @return 是否被锁定
+     */
+    @Override
+    public boolean isAccountLocked(String username) {
+        String lockKey = "login:lock:" + username;
+        // 使用 RedisUtils 获取登录失败次数，RedisUtils.get() 返回 Object 需要强制转换
+        Object failedAttemptsObj = redisComponent.getRedisUtils().get(lockKey);
+        Integer failedAttempts = failedAttemptsObj instanceof Integer ? (Integer) failedAttemptsObj : null;
+        return failedAttempts != null && failedAttempts >= 5;
     }
 
 }

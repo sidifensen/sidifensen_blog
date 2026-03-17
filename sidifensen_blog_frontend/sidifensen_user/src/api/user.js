@@ -103,3 +103,27 @@ export function updateEmail(data) {
     data: data,
   });
 }
+
+// 获取推荐作者列表（活跃作者）
+export function getRecommendedAuthors(limit) {
+  return request({
+    url: `/user/authors/recommended?limit=${limit || 10}`,
+    method: "get",
+  });
+}
+
+// 获取社区统计数据
+export function getCommunityStats() {
+  return request({
+    url: "/user/community/stats",
+    method: "get",
+  });
+}
+
+// 获取热门搜索列表
+export function getHotSearches(limit) {
+  return request({
+    url: `/user/search/hot?limit=${limit || 10}`,
+    method: "get",
+  });
+}

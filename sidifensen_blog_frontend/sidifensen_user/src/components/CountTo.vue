@@ -47,11 +47,14 @@ const currentValue = ref(props.start);
 
 // 格式化显示值
 const displayValue = computed(() => {
+  // 对当前值进行四舍五入取整，确保显示整数
+  const roundedValue = Math.round(currentValue.value);
+
   if (props.compact) {
-    return props.prefix + formatCompactNumber(currentValue.value) + props.suffix;
+    return props.prefix + formatCompactNumber(roundedValue) + props.suffix;
   }
 
-  const formatted = currentValue.value.toFixed(props.decimals);
+  const formatted = roundedValue.toFixed(props.decimals);
   const parts = formatted.split(".");
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, props.separator);
   return props.prefix + parts.join(".") + props.suffix;

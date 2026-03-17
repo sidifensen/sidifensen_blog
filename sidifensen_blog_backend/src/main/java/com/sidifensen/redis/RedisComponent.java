@@ -24,6 +24,15 @@ public class RedisComponent {
     @Resource
     private RedisUtils redisUtils;
 
+    /**
+     * 获取 RedisUtils 工具类实例
+     *
+     * @return RedisUtils 实例
+     */
+    public RedisUtils getRedisUtils() {
+        return redisUtils;
+    }
+
     ExecutorService executorService = new ThreadPoolExecutor(
             2, 4, 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(500),

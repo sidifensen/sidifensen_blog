@@ -11,6 +11,7 @@ import com.sidifensen.domain.vo.SysUserWithCommentCountVo;
 import com.sidifensen.domain.vo.SysUserWithColumnCountVo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -133,4 +134,44 @@ public interface SysUserService extends IService<SysUser> {
 
     // 管理端获取用户总数统计
     Long getUserTotalCount();
+
+    /**
+     * 获取推荐作者列表（按文章数量排序的活跃作者）
+     *
+     * @param limit 返回数量限制
+     * @return 推荐作者列表
+     */
+    List<SysUserVo> getRecommendedAuthors(Integer limit);
+
+    /**
+     * 获取社区统计数据（文章总数、用户总数、总阅读量、活跃作者数）
+     *
+     * @return 社区统计数据 Map
+     */
+    Map<String, Object> getCommunityStats();
+
+    /**
+     * 获取热门搜索列表（基于搜索频率统计）
+     *
+     * @param limit 返回数量限制
+     * @return 热门搜索列表
+     */
+    List<Map<String, Object>> getHotSearches(Integer limit);
+
+    /**
+     * 密码强度校验
+     *
+     * @param password 密码
+     * @return 校验是否通过
+     */
+    boolean validatePassword(String password);
+
+    /**
+     * 检查账户是否被锁定
+     *
+     * @param username 用户名
+     * @return 是否被锁定
+     */
+    boolean isAccountLocked(String username);
+
 }

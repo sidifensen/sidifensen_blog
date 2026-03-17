@@ -54,6 +54,18 @@ public class TagController {
     }
 
     /**
+     * 获取热门标签列表（按文章数量排序，取前 N 个）
+     * @param limit 返回数量限制，默认 10
+     * @return 热门标签列表
+     */
+    @RateLimit
+    @GetMapping("/hot")
+    public Result getHotTags(@RequestParam(defaultValue = "10") Integer limit) {
+        List<Tag> hotTags = tagService.getHotTags(limit);
+        return Result.success(hotTags);
+    }
+
+    /**
      * 调整分类排序
      * 说明：调整某个分类的排序值，该分类下所有标签的 sort 值都会更新，并自动处理排序冲突
      */

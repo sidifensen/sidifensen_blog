@@ -240,6 +240,33 @@ html.dark {
 - **模板**: 使用 kebab-case 属性名，组件标签使用 PascalCase
 - **⚠️ 禁止导入 Element Plus 消息组件**: `ElMessage` 已全局注册，直接可用
 - **el-table-column 宽度**: 前端页面调试时，`el-table-column` 的宽度要自动调整，尽量避免列名占两行（可使用 `min-width` 或 `show-overflow-tooltip`）
+- **SVG 图标使用规范**:
+  - 使用全局注册的 `<svg-icon>` 组件，不要导入 `@element-plus/icons-vue` 中的图标（除非必要）
+  - 用法：`<svg-icon name="github" width="20px" height="20px" color="#999" />`
+  - 常用图标名：`github`、`gitee`、`qq`、`weixin`、`weibo` 等
+  - 属性：`name`（图标名）、`width`、`height`、`color`（图标颜色）
+
+### 代码修改后检查规则
+
+**每次修改前端代码后必须执行以下检查：**
+
+1. **编译检查**: 运行 `npm run build` 确保代码能通过编译，无 TypeScript 错误和语法错误
+2. **页面访问测试**: 在浏览器中访问修改的页面，确认页面能正常加载，无白屏、无控制台报错
+3. **功能测试**: 实际操作页面功能（如表单提交、按钮点击、数据加载、路由跳转等），确认功能正常工作
+4. **黑夜模式测试**: 切换黑夜模式，检查页面在两种模式下都显示正常，无样式错乱、颜色异常
+5. **响应式测试**: 调整浏览器窗口大小，检查页面在不同屏幕尺寸下显示正常
+
+```bash
+# 快速编译检查（用户端）
+cd sidifensen_blog_frontend/sidifensen_user
+npm run build
+
+# 快速编译检查（管理端）
+cd sidifensen_blog_frontend/sidifensen_admin
+npm run build
+```
+
+**注意**: 编译通过后必须在浏览器中实际测试页面访问和功能，确保修改没有引入任何问题。
 
 ### 代码结构规范
 
