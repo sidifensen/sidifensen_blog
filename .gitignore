@@ -12,8 +12,10 @@ target
 logs
 job
 
-**/src/test/
+# 测试相关
+**/src/test
 
+# 环境变量
 .env
 
 # 文档文件夹
