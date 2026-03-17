@@ -33,8 +33,12 @@ public class FileUploadUtils {
     @Value("${minio.publicPoint}")
     private String publicPoint;
 
+    // 标记 MinIO 是否可用，用于上传时的延迟初始化检查
+    private volatile boolean minioAvailable = false;
+
     /**
      * 初始化方法，确保存储桶存在并设置为公开访问
+     * 注意：该方法设计为容忍失败，MinIO 不可用时不会阻止应用启动
      */
     @PostConstruct
     public void init() {
@@ -49,18 +53,32 @@ public class FileUploadUtils {
                 client.makeBucket(MakeBucketArgs.builder()
                         .bucket(bucketName)
                         .build());
-                log.info("成功创建 MinIO 存储桶: {}", bucketName);
+                log.info("成功创建 MinIO 存储桶：{}", bucketName);
             } else {
-                log.info("MinIO 存储桶已存在: {}", bucketName);
+                log.info("MinIO 存储桶已存在：{}", bucketName);
             }
 
             // 设置桶的访问策略为公开读取
             setBucketPublicReadPolicy();
 
+            // 标记 MinIO 可用
+            minioAvailable = true;
+            log.info("MinIO 初始化完成，服务可用");
+
         } catch (Exception e) {
-            log.error("初始化 MinIO 存储桶失败: {}", e.getMessage(), e);
-            throw new FileUploadException("初始化存储桶失败");
+            // 容忍初始化失败，不阻止应用启动
+            // MinIO 不可用时，文件上传功能将不可用，但不影响其他功能
+            log.warn("MinIO 未可用，文件上传功能暂时禁用：{}", e.getMessage());
+            log.debug("MinIO 初始化失败详情", e);
         }
+    }
+
+    /**
+     * 检查 MinIO 服务是否可用
+     * @return MinIO 是否可用
+     */
+    public boolean isMinioAvailable() {
+        return minioAvailable;
     }
 
     /**
@@ -94,7 +112,7 @@ public class FileUploadUtils {
                     .build());
 
         } catch (Exception e) {
-            log.error("设置 MinIO 存储桶公开访问策略失败: {}", e.getMessage(), e);
+            log.error("设置 MinIO 存储桶公开访问策略失败：{}", e.getMessage(), e);
             // 这里不抛出异常，因为桶策略设置失败不应该影响应用启动
             // 但会记录错误日志，管理员可以手动设置
         }
@@ -109,6 +127,12 @@ public class FileUploadUtils {
      * @throws Exception 异常
      */
     public String upload(UploadEnum uploadEnum, MultipartFile file) {
+        // 检查 MinIO 是否可用
+        if (!minioAvailable) {
+            log.error("MinIO 服务不可用，无法上传文件");
+            throw new FileUploadException("文件上传服务暂时不可用");
+        }
+
         try {
             // 验证文件大小
             if (verifyTheFileSize(file.getSize(), uploadEnum.getLimitSize()))
@@ -136,10 +160,10 @@ public class FileUploadUtils {
             throw e; // 直接重新抛出特定的文件上传异常
         } catch (Exception e) {
             log.error("--------------------上传文件失败--------------------");
-            log.error("上传文件失败: {}", e.getMessage(), e);
+            log.error("上传文件失败：{}", e.getMessage(), e);
             // 检查是否是存储桶不存在的错误
             if (e.getMessage() != null && e.getMessage().contains("bucket does not exist")) {
-                log.error("存储桶不存在，请检查 MinIO 配置和存储桶: {}", bucketName);
+                log.error("存储桶不存在，请检查 MinIO 配置和存储桶：{}", bucketName);
                 throw new FileUploadException("存储桶不存在，请联系管理员");
             }
             throw new FileUploadException("上传文件失败");
@@ -156,6 +180,12 @@ public class FileUploadUtils {
      * @throws Exception 异常
      */
     public String upload(UploadEnum uploadEnum, MultipartFile file, String dirName) {
+        // 检查 MinIO 是否可用
+        if (!minioAvailable) {
+            log.error("MinIO 服务不可用，无法上传文件");
+            throw new FileUploadException("文件上传服务暂时不可用");
+        }
+
         try {
             // 验证文件大小
             if (verifyTheFileSize(file.getSize(), uploadEnum.getLimitSize()))
@@ -190,10 +220,10 @@ public class FileUploadUtils {
             throw e; // 直接重新抛出特定的文件上传异常
         } catch (Exception e) {
             log.error("--------------------上传文件失败--------------------");
-            log.error("上传文件失败: {}", e.getMessage(), e);
+            log.error("上传文件失败：{}", e.getMessage(), e);
             // 检查是否是存储桶不存在的错误
             if (e.getMessage() != null && e.getMessage().contains("bucket does not exist")) {
-                log.error("存储桶不存在，请检查 MinIO 配置和存储桶: {}", bucketName);
+                log.error("存储桶不存在，请检查 MinIO 配置和存储桶：{}", bucketName);
                 throw new FileUploadException("存储桶不存在，请联系管理员");
             }
             throw new FileUploadException("上传文件失败");
@@ -218,7 +248,7 @@ public class FileUploadUtils {
     public double convertFileSizeToMB(long sizeInBytes) {
         double sizeInMB = (double) sizeInBytes / (1024 * 1024);
         String formatted = String.format("%.2f", sizeInMB);
-        // String转为Long
+        // String 转为 Long
         return Double.parseDouble(formatted);
     }
 
@@ -271,7 +301,7 @@ public class FileUploadUtils {
             Iterable<Result<DeleteError>> results = client.removeObjects(removeObjectsArgs);
             for (Result<DeleteError> result : results) {
                 DeleteError error = result.get();
-                log.error("文件: " + error.objectName() + "删除错误; ", error.message());
+                log.error("文件：" + error.objectName() + "删除错误; ", error.message());
                 return false;
             }
             return true;
@@ -286,7 +316,7 @@ public class FileUploadUtils {
      *
      * @param fileName 文件名称
      * @param dir      文件目录
-     * @return 是否成功, 成功：true, 失败：false
+     * @return 是否成功，成功：true, 失败：false
      */
     public boolean deleteFile(String dir, String fileName) {
         try {
@@ -347,7 +377,7 @@ public class FileUploadUtils {
             } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException
                     | InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException
                     | XmlParserException e) {
-                log.error("判断文件是否存在出现错误,{}, 文件名：{}, 目录：{}", e.getMessage(), fileName, dir);
+                log.error("判断文件是否存在出现错误，{}, 文件名：{}, 目录：{}", e.getMessage(), fileName, dir);
                 throw new FileUploadException("文件不存在");
             }
             if (item != null && item.objectName().equals(dir + fileName)) {
