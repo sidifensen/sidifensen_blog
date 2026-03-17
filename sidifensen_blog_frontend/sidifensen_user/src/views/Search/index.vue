@@ -141,15 +141,15 @@
                 <div class="article-stats">
                   <span class="stat-item">
                     <el-icon><View /></el-icon>
-                    {{ article.readCount || 0 }}
+                    {{ formatCompactNumber(article.readCount || 0) }}
                   </span>
                   <span class="stat-item">
                     <svg-icon name="like" width="14px" height="14px" margin-right="4px" color="var(--text-muted)" />
-                    {{ article.likeCount || 0 }}
+                    {{ formatCompactNumber(article.likeCount || 0) }}
                   </span>
                   <span class="stat-item">
                     <el-icon><ChatDotRound /></el-icon>
-                    {{ article.commentCount || 0 }}
+                    {{ formatCompactNumber(article.commentCount || 0) }}
                   </span>
                 </div>
 
@@ -187,6 +187,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { Search, PriceTag, View, ChatDotRound, Loading, Picture, DocumentDelete, Document } from "@element-plus/icons-vue";
 import { searchArticleByTitle, searchArticleByTag, getTitleSuggestions, getTagSuggestions } from "@/api/article";
+import { formatCompactNumber } from "@/utils/formatNumber";
 
 // 路由
 const router = useRouter();

@@ -34,8 +34,8 @@
               <h2 class="article-title">{{ article.title }}</h2>
               <p class="article-description">{{ article.description }}</p>
               <div class="content-meta">
-                <span>{{ article.readCount || 0 }} 阅读</span>
-                <span>{{ article.commentCount || 0 }} 评论</span>
+                <span>{{ formatCompactNumber(article.readCount || 0) }} 阅读</span>
+                <span>{{ formatCompactNumber(article.commentCount || 0) }} 评论</span>
                 <span>{{ article.createTime || "--" }}</span>
               </div>
             </div>
@@ -51,6 +51,7 @@
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { getVipArticleList } from "@/api/article";
+import { formatCompactNumber } from "@/utils/formatNumber";
 
 const router = useRouter();
 

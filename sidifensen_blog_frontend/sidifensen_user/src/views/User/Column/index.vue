@@ -274,6 +274,7 @@ import { getColumnDetail, getUserColumnList } from "@/api/column";
 import { getUserInfoById } from "@/api/user";
 import { toggleFollow, isFollowing } from "@/api/follow";
 import { useUserStore } from "@/stores/userStore";
+import { formatCompactNumber } from "@/utils/formatNumber";
 
 // 路由和状态管理
 const route = useRoute();
@@ -311,12 +312,9 @@ const followButtonText = computed(() => {
   return isHoveringFollowButton.value ? "取消关注" : "已关注";
 });
 
-// 格式化数字显示
+// 使用统一的数字格式化工具函数
 const formatNumber = (num) => {
-  if (num >= 10000) {
-    return (num / 10000).toFixed(1) + "w";
-  }
-  return num.toString();
+  return formatCompactNumber(num);
 };
 
 // 切换专栏描述展开/收起

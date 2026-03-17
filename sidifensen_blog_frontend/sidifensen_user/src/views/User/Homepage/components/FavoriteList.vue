@@ -110,9 +110,9 @@
                           <span class="article-date">{{ article.createTime }}</span>
                         </div>
                         <div class="article-meta-stats">
-                          <span class="article-readCount">{{ article.readCount }} 阅读</span>
-                          <span class="article-likes">{{ article.likeCount || 0 }} 点赞</span>
-                          <span class="article-comments">{{ article.commentCount || 0 }} 评论</span>
+                          <span class="article-readCount">{{ formatCompactNumber(article.readCount) }} 阅读</span>
+                          <span class="article-likes">{{ formatCompactNumber(article.likeCount || 0) }} 点赞</span>
+                          <span class="article-comments">{{ formatCompactNumber(article.commentCount || 0) }} 评论</span>
                         </div>
                       </div>
                     </div>
@@ -161,6 +161,7 @@
 <script setup>
 import { Star, Collection, ArrowDown, Picture, Setting } from "@element-plus/icons-vue";
 import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
+import { formatCompactNumber } from "@/utils/formatNumber";
 
 // 定义 props
 const props = defineProps({

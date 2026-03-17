@@ -60,17 +60,17 @@
                   <el-icon>
                     <View />
                   </el-icon>
-                  {{ article.readCount || 0 }} 阅读
+                  {{ formatCompactNumber(article.readCount || 0) }} 阅读
                 </span>
                 <span class="like-count">
                   <svg-icon name="like" width="14px" height="14px" color="#909399" />
-                  {{ article.likeCount || 0 }} 点赞
+                  {{ formatCompactNumber(article.likeCount || 0) }} 点赞
                 </span>
                 <span class="collect-count">
                   <el-icon>
                     <Star />
                   </el-icon>
-                  {{ article.collectCount || 0 }} 收藏
+                  {{ formatCompactNumber(article.collectCount || 0) }} 收藏
                 </span>
               </div>
               <!-- 编辑按钮 - 只有当前用户是文章作者时才显示（桌面端） -->
@@ -157,6 +157,7 @@ import { ElMessage } from "element-plus";
 import { Clock, View, Star, StarFilled, ChatLineRound, ArrowUp, Edit } from "@element-plus/icons-vue";
 import { toggleLike, isLiked } from "@/api/like";
 import { useUserStore } from "@/stores/userStore";
+import { formatCompactNumber } from "@/utils/formatNumber";
 import CommentDrawer from "@/views/User/Article/components/CommentDrawer.vue";
 import FavoriteDialog from "./FavoriteDialog.vue";
 import MobileAuthorInfo from "./MobileAuthorInfo.vue";
@@ -208,21 +209,9 @@ const tagList = computed(() => {
   return props.article.tag.split(",").filter((tag) => tag.trim() !== "");
 });
 
-// 把悬浮操作栏里的大数字收敛成更短的展示格式。
+// 使用统一的数字格式化工具函数
 const formatCount = (value) => {
-  const count = Number(value) || 0;
-
-  if (count < 1000) {
-    return `${count}`;
-  }
-
-  if (count < 1000000) {
-    const formatted = (count / 1000).toFixed(count >= 100000 ? 0 : 1);
-    return `${formatted.replace(/\.0$/, "")}k`;
-  }
-
-  const formatted = (count / 1000000).toFixed(count >= 10000000 ? 0 : 1);
-  return `${formatted.replace(/\.0$/, "")}m`;
+  return formatCompactNumber(value);
 };
 
 // 标记当前文章是否为 VIP 可见文章

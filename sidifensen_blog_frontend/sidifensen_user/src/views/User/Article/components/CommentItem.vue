@@ -29,7 +29,7 @@
           <div class="action-item like-action">
             <el-button text size="small" :class="{ 'is-liked': comment.isLiked }" @click="handleLike">
               <svg-icon name="like" width="13px" height="13px" margin-right="7px" :color="comment.isLiked ? '#409EFF' : '#909399'" />
-              <span>{{ comment.likeCount || 0 }}</span>
+              <span>{{ formatCompactNumber(comment.likeCount || 0) }}</span>
             </el-button>
           </div>
 
@@ -106,6 +106,7 @@ import { getReplyList, deleteComment } from "@/api/comment";
 import { toggleLike } from "@/api/like";
 import { useUserStore } from "@/stores/userStore";
 import { formatTime } from "@/utils/formatTime";
+import { formatCompactNumber } from "@/utils/formatNumber";
 import CommentForm from "./CommentForm.vue";
 import SvgIcon from "@/components/SvgIcon.vue";
 
