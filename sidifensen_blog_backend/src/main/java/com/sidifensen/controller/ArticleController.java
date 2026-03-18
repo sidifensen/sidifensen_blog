@@ -8,6 +8,7 @@ import com.sidifensen.domain.dto.ArticleStatusDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.*;
 import com.sidifensen.domain.enums.OperationTypeEnum;
+import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.ArticleService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -30,6 +31,9 @@ public class ArticleController {
 
     @Resource
     private ArticleService articleService;
+
+    @Resource
+    private RedisComponent redisComponent;
 
     /**
      * 获取全部已发布审核通过全部人可见的文章列表（按更新时间倒序）
@@ -169,6 +173,8 @@ public class ArticleController {
             @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
             @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<ArticleVo>> articleVoList = articleService.searchArticleByTitle(title, pageNum, pageSize);
+        // 记录搜索关键词到 Redis
+        redisComponent.recordSearchKeyword(title);
         return Result.success(articleVoList);
     }
 
@@ -186,9 +192,29 @@ public class ArticleController {
             @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
             @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
         PageVo<List<ArticleVo>> articleVoList = articleService.searchArticleByTag(tag, pageNum, pageSize);
+        // 记录搜索关键词到 Redis
+        redisComponent.recordSearchKeyword(tag);
         return Result.success(articleVoList);
     }
-/**     * 根据作者搜索文章（按作者昵称/用户名搜索）     *     * @param author   作者昵称或用户名     * @param pageNum  页码     * @param pageSize 页大小     * @return 搜索结果列表     */    @RateLimit(20)    @GetMapping("/search/author")    public Result searchArticleByAuthor(@RequestParam @NotNull(message = "作者不能为空") String author,            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {        PageVo<List<ArticleVo>> articleVoList = articleService.searchArticleByAuthor(author, pageNum, pageSize);        return Result.success(articleVoList);    }
+
+    /**
+     * 根据作者搜索文章（按作者昵称/用户名搜索）
+     *
+     * @param author   作者昵称或用户名
+     * @param pageNum  页码
+     * @param pageSize 页大小
+     * @return 搜索结果列表
+     */
+    @RateLimit(20)
+    @GetMapping("/search/author")
+    public Result searchArticleByAuthor(@RequestParam @NotNull(message = "作者不能为空") String author,
+            @RequestParam(defaultValue = "1") @NotNull(message = "页码不能为空") Integer pageNum,
+            @RequestParam(defaultValue = "10") @NotNull(message = "每页大小不能为空") Integer pageSize) {
+        PageVo<List<ArticleVo>> articleVoList = articleService.searchArticleByAuthor(author, pageNum, pageSize);
+        // 记录搜索关键词到 Redis
+        redisComponent.recordSearchKeyword(author);
+        return Result.success(articleVoList);
+    }
 
     /**
      * 获取热门文章列表（近7天访问量排序）
