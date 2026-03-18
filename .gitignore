@@ -26,3 +26,9 @@ docs/
 
 # Superpowers 视觉伴侣临时文件
 .superpowers/
+
+# Git Worktrees 工作区
+.worktrees/
+
+# 风格 Demo 临时文件
+docs/
