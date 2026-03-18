@@ -607,10 +607,12 @@ const loadRecommendedAuthors = async () => {
 const loadHotSearches = async () => {
   try {
     const res = await getHotSearches(10);
-    hotSearches.value = res.data.data || [];
+    // 后端返回格式：[{keyword: "xxx", count: 123}, ...]
+    hotSearches.value = res.data?.data || [];
   } catch (error) {
     console.error("加载热门搜索失败:", error);
-    // 临时使用空数组，等待后端实现 Redis 存储
+    // 失败时使用默认空数组，不影响页面其他功能
+    hotSearches.value = [];
   }
 };
 
