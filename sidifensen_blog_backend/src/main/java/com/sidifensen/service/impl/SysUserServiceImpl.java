@@ -713,18 +713,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     public List<Map<String, Object>> getHotSearches(Integer limit) {
         // 从 Redis 中获取热门搜索记录
-        // 这里使用 Redis ZSet 来存储搜索关键词及其热度（搜索次数）
-        // 格式：key = "hot_searches", member = 关键词，score = 搜索次数
-
-        // 临时实现：返回空列表，等待 Redis 实现
-        // 实际应该在搜索时记录搜索关键词到 Redis ZSet
-        List<Map<String, Object>> hotSearches = new java.util.ArrayList<>();
-
-        // TODO: 实现 Redis ZSet 存储和读取热门搜索
-        // Set<ZSetOperations.TypedTuple<String>> typedTuples =
-        //     redisComponent.getStringRedisTemplate().opsForZSet().reverseRangeWithScores("hot_searches", 0, limit - 1);
-
-        return hotSearches;
+        // Redis ZSet 格式：key = "hot_searches", member = 关键词，score = 搜索次数
+        return redisComponent.getHotSearches(limit);
     }
 
     /**
