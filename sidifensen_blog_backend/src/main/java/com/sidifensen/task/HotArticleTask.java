@@ -76,7 +76,6 @@ public class HotArticleTask {
             List<Map<String, Object>> articleStats = historyMapper.getArticleMultiDimStatsLast7Days();
 
             if (articleStats == null || articleStats.isEmpty()) {
-                log.info("近7天暂无文章访问数据");
                 return;
             }
 

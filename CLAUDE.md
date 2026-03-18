@@ -264,14 +264,20 @@ cd sidifensen_blog_frontend/sidifensen_admin && npm run build
 
 **日常开发提示词（放在任何任务指令后面）：**
 
+## Superpowers 标准流程
+
+**何时使用**：执行复杂功能开发、新增模块、重构等任务时，在指令末尾附加此流程。
+
+**使用方法**：在任务描述后添加 `【superpowers 标准流程：...】`
+
 ```
 【superpowers 标准流程：
-  1. Skill 检查（先查技能再行动，1% 可能也要查）
+  1. Skill 检查（先查技能再行动，不要跳过）
   2. brainstorming（需求澄清）
   3. using-git-worktrees（隔离工作区）
   4. writing-plans（任务分解）
   5. executing-plans（计划执行）
-  6. subagent-driven-development（子代理开发）或 dispatching-parallel-agents（并行任务）
+  6. subagent-driven-development（子代理开发）
   7. test-driven-development（测试驱动）
   8. verification-before-completion（验证完成）
   9. requesting-code-review（代码评审）

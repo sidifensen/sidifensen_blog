@@ -634,7 +634,6 @@ public class RedisComponent {
             String redisKey = "hot_searches";
             // 使用 ZSet 的 incrementScore 方法，如果 member 不存在会自动创建并设置 score 为 1
             stringRedisTemplate.opsForZSet().incrementScore(redisKey, keyword.trim(), 1.0);
-            log.info("记录搜索关键词：{}", keyword);
         });
     }
 

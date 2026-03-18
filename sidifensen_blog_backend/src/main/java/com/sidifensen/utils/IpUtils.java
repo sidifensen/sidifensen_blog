@@ -173,8 +173,7 @@ public class IpUtils {
                 address = country + "-" + prov + "-" + city + "-" + area;
             }
         } catch (Exception e) {
-            log.error("获取IP地址失败，IP: {}，使用默认值", ip, e);
-            address = "未知地址";
+            address = "未知地址"; // 获取IP地址失败 使用默认值
         }
         return address;
     }

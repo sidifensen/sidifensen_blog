@@ -316,7 +316,6 @@ public class AiServiceImpl implements AiService {
             // 调用LinkService提交友链申请（直接传入userId，避免SecurityContext问题）
             try {
                 linkService.applyLink(linkData, userId);
-                log.info("用户 [ID: {}] 通过AI智能客服成功申请友链: {}", userId, linkData.getName());
 
                 // 从响应中移除JSON
                 String textWithoutJson = response.replace(jsonStr, "").trim();

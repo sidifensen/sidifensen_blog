@@ -19,7 +19,8 @@ job
 .env
 
 # 文档文件夹
-docs/
+docs
+/docs/
 
 # Claude Code 配置
 .claude/
@@ -32,6 +33,3 @@ docs/
 
 # Git Worktrees 工作区
 .worktrees/
-
-# 风格 Demo 临时文件
-docs/

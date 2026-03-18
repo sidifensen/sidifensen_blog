@@ -9,16 +9,6 @@
           <h1>文章广场</h1>
           <p>按发布时间浏览社区内容，持续发现值得读的技术文章。</p>
         </div>
-        <div class="hero-metrics">
-          <div class="metric-card">
-            <div class="metric-label">已加载</div>
-            <div class="metric-value">{{ formatCount(articleList.length) }}</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">全部文章</div>
-            <div class="metric-value">{{ formatCount(total) }}</div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -352,6 +342,16 @@ onMounted(() => {
 // 文章广场页面 - 现代极简主义科技风
 // 完全匹配参考文件：白天模式 article-square-style-modern-tech-light.html，黑夜模式 article-square-style-modern-tech.html
 
+.article-page-body {
+  width: 100%;
+  min-height: 100vh;
+  background: #f8fafc;
+
+  html.dark & {
+    background: #000000;
+  }
+}
+
 .container {
   // ===== CSS 变量定义 - 白天模式（默认，匹配 article-square-style-modern-tech-light.html）=====
   --bg-page: #ffffff;
@@ -474,35 +474,6 @@ onMounted(() => {
           line-height: 1.7;
         }
       }
-
-      .hero-metrics {
-        display: flex;
-        gap: 10px;
-
-        .metric-card {
-          min-width: 90px;
-          padding: 14px 18px;
-          background: var(--bg-metric);
-          border: 1px solid var(--border-regular);
-          border-radius: 8px;
-          text-align: center;
-
-          .metric-label {
-            font-size: 10px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 6px;
-          }
-
-          .metric-value {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--text-primary);
-            font-feature-settings: "tnum";
-          }
-        }
-      }
     }
   }
 
@@ -597,6 +568,7 @@ onMounted(() => {
 
             &:hover {
               background: rgba(255, 255, 255, 0.02);
+              border-color: rgba(255, 255, 255, 0.15);
             }
           }
 
@@ -656,8 +628,9 @@ onMounted(() => {
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: center;
             min-width: 0;
+            height: 120px;
 
             .article-author {
               display: flex;
@@ -666,7 +639,7 @@ onMounted(() => {
               font-size: 12px;
               font-weight: 500;
               color: var(--text-secondary);
-              margin-bottom: 12px;
+              margin-bottom: 8px;
               cursor: pointer;
 
               .author-avatar {
@@ -674,7 +647,8 @@ onMounted(() => {
                 height: 22px;
                 border-radius: 50%;
                 overflow: hidden;
-                background: transparent;
+                background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+                border: 1px solid rgba(0, 0, 0, 0.1);
 
                 .avatar-loading,
                 .avatar-error {
@@ -702,7 +676,7 @@ onMounted(() => {
               font-weight: 600;
               line-height: 1.45;
               color: var(--text-primary);
-              margin: 0 0 10px 0;
+              margin: 0 0 6px 0;
               display: -webkit-box;
               -webkit-line-clamp: 2;
               -webkit-box-orient: vertical;
@@ -718,8 +692,8 @@ onMounted(() => {
             .article-description {
               font-size: 13px;
               color: var(--text-secondary);
-              line-height: 1.6;
-              margin: 0 0 14px 0;
+              line-height: 1.5;
+              margin: 0 0 8px 0;
               display: -webkit-box;
               -webkit-line-clamp: 2;
               -webkit-box-orient: vertical;
@@ -734,6 +708,7 @@ onMounted(() => {
               font-size: 11px;
               color: var(--text-muted);
               font-feature-settings: "tnum";
+              font-weight: 300;
 
               span {
                 display: flex;
@@ -743,7 +718,7 @@ onMounted(() => {
               }
 
               &:hover span {
-                color: var(--text-secondary);
+                color: var(--text-regular);
               }
 
               .el-icon {
@@ -898,7 +873,7 @@ onMounted(() => {
 
             &:hover {
               background: rgba(0, 0, 0, 0.03);
-              border-color: var(--border-hover);
+              border-color: rgba(0, 0, 0, 0.1);
 
               .hot-article-title {
                 color: #0a0a0a;

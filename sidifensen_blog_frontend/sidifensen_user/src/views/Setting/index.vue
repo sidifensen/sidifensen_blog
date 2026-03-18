@@ -245,9 +245,6 @@
                           v-model="isReceivePrivateMessageEmail"
                           :active-value="1"
                           :inactive-value="0"
-                          inline-prompt
-                          active-text="开启"
-                          inactive-text="关闭"
                           @change="handlePrivateMessageEmailChange"
                         />
                       </div>
@@ -1649,6 +1646,75 @@ html.dark {
 :deep(.dialog-footer) {
   .el-button {
     margin-left: 0 !important;
+  }
+}
+
+/* 开关按钮样式 - 简洁现代设计 */
+:deep(.el-switch) {
+  --switch-bg-off: var(--setting-border, #e2e8f0);
+  --switch-bg-on: #0ea5e9;
+
+  .el-switch__core {
+    width: 44px;
+    height: 24px;
+    background-color: var(--switch-bg-off);
+    border-radius: 12px;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+    border: 1px solid transparent;
+    padding: 2px;
+    box-sizing: border-box;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      background-color: #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      transition: transform 0.25s ease;
+    }
+  }
+
+  &.is-checked {
+    .el-switch__core {
+      background-color: var(--switch-bg-on);
+      border-color: var(--switch-bg-on);
+
+      &::before {
+        transform: translateX(20px);
+      }
+    }
+  }
+
+  /* 悬停状态 */
+  &:hover:not(.is-disabled) {
+    .el-switch__core {
+      opacity: 0.85;
+    }
+  }
+
+  /* 禁用状态 */
+  &.is-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+/* 黑夜模式适配 */
+html.dark {
+  :deep(.el-switch) {
+    --switch-bg-off: #334155;
+    --switch-bg-on: #0ea5e9;
+
+    .el-switch__core {
+      &::before {
+        background-color: #f1f5f9;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      }
+    }
   }
 }
 </style>

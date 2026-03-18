@@ -296,7 +296,7 @@ public class PrivateMessageWebSocketHandler extends TextWebSocketHandler {
     }
 
     /**
-     * 发送私信邮件通知（仅在接收者不在线且收到第一条未读消息时发送）
+     * 发送私信邮件通知（不管接收者是否在线，只要满足条件就发送）
      */
     private void sendPrivateMessageEmailNotification(Integer toUserId, SysUser fromUser, String content, Date createTime) {
         try {
@@ -313,7 +313,11 @@ public class PrivateMessageWebSocketHandler extends TextWebSocketHandler {
             }
 
             // 3. 检查是否是第一条未读消息（未读数从 0 变成 1）
-            Integer unreadCount = conversationService.getUnreadCount(toUserId, fromUser.getId());
+            Integer fromUserId = fromUser != null ? fromUser.getId() : null;
+            if (fromUserId == null) {
+                return;
+            }
+            Integer unreadCount = conversationService.getUnreadCount(toUserId, fromUserId);
             if (unreadCount > 1) {
                 return; // 不是第一条未读消息，避免重复发送
             }
@@ -328,7 +332,7 @@ public class PrivateMessageWebSocketHandler extends TextWebSocketHandler {
             data.put("senderNickname", fromUser != null ? fromUser.getNickname() : "陌生人");
             data.put("messagePreview", contentPreview);
             data.put("receiveTime", createTime);
-            data.put("conversationUrl", "https://www.sidifensen.com/message"); // 直达对话的链接
+            data.put("conversationUrl", "https://www.sidifensen.com/message");
 
             // 6. 发送邮件
             emailUtils.sendHtmlMail(
@@ -338,7 +342,6 @@ public class PrivateMessageWebSocketHandler extends TextWebSocketHandler {
                     data
             );
 
-            log.info("私信邮件通知已发送：toUserId={}, fromUserId={}", toUserId, fromUser != null ? fromUser.getId() : "unknown");
         } catch (Exception e) {
             log.error("发送私信邮件通知失败：toUserId={}", toUserId, e);
         }
