@@ -56,6 +56,31 @@ class ArticleControllerSearchTest {
         stringRedisTemplate.delete(HOT_SEARCH_KEY);
     }
 
+    /**
+     * 等待异步操作完成并验证结果
+     * @param maxWaitMs 最大等待时间（毫秒）
+     * @param assertion 断言逻辑
+     */
+    private void waitForAsyncOperationAndAssert(long maxWaitMs, Runnable assertion) {
+        long startTime = System.currentTimeMillis();
+        while (System.currentTimeMillis() - startTime < maxWaitMs) {
+            try {
+                assertion.run();
+                return; // 断言成功，返回
+            } catch (AssertionError e) {
+                // 断言失败，继续等待
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+        // 最后一次尝试，让异常抛出
+        assertion.run();
+    }
+
     @AfterEach
     void tearDown() {
         // 清理测试数据
@@ -75,11 +100,12 @@ class ArticleControllerSearchTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0));
 
-        // Then: Redis 中应该记录了搜索关键词
-        Thread.sleep(100); // 等待异步线程执行完成
-        Double score = stringRedisTemplate.opsForZSet().score(HOT_SEARCH_KEY, "Spring Boot 教程");
-        assertNotNull(score, "搜索关键词应该被记录");
-        assertEquals(1.0, score, "分数应该是 1");
+        // Then: Redis 中应该记录了搜索关键词（等待异步执行）
+        waitForAsyncOperationAndAssert(2000, () -> {
+            Double score = stringRedisTemplate.opsForZSet().score(HOT_SEARCH_KEY, "Spring Boot 教程");
+            assertNotNull(score, "搜索关键词应该被记录");
+            assertEquals(1.0, score, "分数应该是 1");
+        });
     }
 
     @Test
@@ -97,11 +123,12 @@ class ArticleControllerSearchTest {
                     .andExpect(jsonPath("$.code").value(0));
         }
 
-        // Then: 分数应该累加到 3
-        Thread.sleep(200); // 等待异步线程执行完成
-        Double score = stringRedisTemplate.opsForZSet().score(HOT_SEARCH_KEY, "Java 教程");
-        assertNotNull(score, "搜索关键词应该被记录");
-        assertEquals(3.0, score, "分数应该是 3");
+        // Then: 分数应该累加到 3（等待异步执行）
+        waitForAsyncOperationAndAssert(2000, () -> {
+            Double score = stringRedisTemplate.opsForZSet().score(HOT_SEARCH_KEY, "Java 教程");
+            assertNotNull(score, "搜索关键词应该被记录");
+            assertEquals(3.0, score, "分数应该是 3");
+        });
     }
 
     @Test
@@ -117,11 +144,12 @@ class ArticleControllerSearchTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0));
 
-        // Then: Redis 中应该记录了搜索关键词
-        Thread.sleep(100); // 等待异步线程执行完成
-        Double score = stringRedisTemplate.opsForZSet().score(HOT_SEARCH_KEY, "后端开发");
-        assertNotNull(score, "搜索关键词应该被记录");
-        assertEquals(1.0, score, "分数应该是 1");
+        // Then: Redis 中应该记录了搜索关键词（等待异步执行）
+        waitForAsyncOperationAndAssert(2000, () -> {
+            Double score = stringRedisTemplate.opsForZSet().score(HOT_SEARCH_KEY, "后端开发");
+            assertNotNull(score, "搜索关键词应该被记录");
+            assertEquals(1.0, score, "分数应该是 1");
+        });
     }
 
     @Test
@@ -139,11 +167,12 @@ class ArticleControllerSearchTest {
                     .andExpect(jsonPath("$.code").value(0));
         }
 
-        // Then: 分数应该累加到 2
-        Thread.sleep(200); // 等待异步线程执行完成
-        Double score = stringRedisTemplate.opsForZSet().score(HOT_SEARCH_KEY, "前端开发");
-        assertNotNull(score, "搜索关键词应该被记录");
-        assertEquals(2.0, score, "分数应该是 2");
+        // Then: 分数应该累加到 2（等待异步执行）
+        waitForAsyncOperationAndAssert(2000, () -> {
+            Double score = stringRedisTemplate.opsForZSet().score(HOT_SEARCH_KEY, "前端开发");
+            assertNotNull(score, "搜索关键词应该被记录");
+            assertEquals(2.0, score, "分数应该是 2");
+        });
     }
 
     @Test
@@ -159,11 +188,12 @@ class ArticleControllerSearchTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0));
 
-        // Then: Redis 中应该记录了搜索关键词
-        Thread.sleep(100); // 等待异步线程执行完成
-        Double score = stringRedisTemplate.opsForZSet().score(HOT_SEARCH_KEY, "sidifensen");
-        assertNotNull(score, "搜索关键词应该被记录");
-        assertEquals(1.0, score, "分数应该是 1");
+        // Then: Redis 中应该记录了搜索关键词（等待异步执行）
+        waitForAsyncOperationAndAssert(2000, () -> {
+            Double score = stringRedisTemplate.opsForZSet().score(HOT_SEARCH_KEY, "sidifensen");
+            assertNotNull(score, "搜索关键词应该被记录");
+            assertEquals(1.0, score, "分数应该是 1");
+        });
     }
 
     @Test
@@ -181,11 +211,12 @@ class ArticleControllerSearchTest {
                     .andExpect(jsonPath("$.code").value(0));
         }
 
-        // Then: 分数应该累加到 5
-        Thread.sleep(300); // 等待异步线程执行完成
-        Double score = stringRedisTemplate.opsForZSet().score(HOT_SEARCH_KEY, "张三");
-        assertNotNull(score, "搜索关键词应该被记录");
-        assertEquals(5.0, score, "分数应该是 5");
+        // Then: 分数应该累加到 5（等待异步执行）
+        waitForAsyncOperationAndAssert(2000, () -> {
+            Double score = stringRedisTemplate.opsForZSet().score(HOT_SEARCH_KEY, "张三");
+            assertNotNull(score, "搜索关键词应该被记录");
+            assertEquals(5.0, score, "分数应该是 5");
+        });
     }
 
     @Test
@@ -212,10 +243,11 @@ class ArticleControllerSearchTest {
                 .param("pageSize", "10"))
                 .andExpect(status().isOk());
 
-        // Then: Redis 中应该有 3 条独立的记录
-        Thread.sleep(200); // 等待异步线程执行完成
-        Long size = stringRedisTemplate.opsForZSet().size(HOT_SEARCH_KEY);
-        assertEquals(3, size, "应该有 3 条独立的记录");
+        // Then: Redis 中应该有 3 条独立的记录（等待异步执行）
+        waitForAsyncOperationAndAssert(2000, () -> {
+            Long size = stringRedisTemplate.opsForZSet().size(HOT_SEARCH_KEY);
+            assertEquals(3, size, "应该有 3 条独立的记录");
+        });
     }
 
     @Test

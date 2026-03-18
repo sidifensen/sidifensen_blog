@@ -3,6 +3,8 @@ package com.sidifensen.redis;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 
@@ -20,15 +22,18 @@ import static org.mockito.Mockito.*;
  */
 class RedisComponentHotSearchMockTest {
 
+    @Mock
     private StringRedisTemplate stringRedisTemplate;
+
+    @Mock
     private ZSetOperations<String, String> zSetOperations;
+
     private RedisComponent redisComponent;
 
     @BeforeEach
     void setUp() {
-        // 创建 Mock 对象
-        stringRedisTemplate = mock(StringRedisTemplate.class);
-        zSetOperations = mock(ZSetOperations.class);
+        // 初始化 Mock 对象
+        MockitoAnnotations.openMocks(this);
 
         when(stringRedisTemplate.opsForZSet()).thenReturn(zSetOperations);
 
@@ -60,7 +65,7 @@ class RedisComponentHotSearchMockTest {
 
     @Test
     @DisplayName("记录搜索关键词 - 正常关键词应该记录")
-    void recordSearchKeyword_validKeyword_shouldRecord() throws InterruptedException {
+    void recordSearchKeyword_validKeyword_shouldRecord() {
         // Given: 一个有效的搜索关键词
         when(zSetOperations.incrementScore(eq("hot_searches"), eq("Spring Boot"), eq(1.0)))
                 .thenReturn(1.0);
@@ -68,16 +73,13 @@ class RedisComponentHotSearchMockTest {
         // When: 记录搜索关键词
         redisComponent.recordSearchKeyword("Spring Boot");
 
-        // 等待异步线程执行
-        Thread.sleep(100);
-
-        // Then: 应该调用 Redis 的 incrementScore 方法
+        // Then: 应该调用 Redis 的 incrementScore 方法（使用 timeout 等待异步执行）
         verify(zSetOperations, timeout(1000)).incrementScore(eq("hot_searches"), eq("Spring Boot"), eq(1.0));
     }
 
     @Test
     @DisplayName("记录搜索关键词 - 应该去除首尾空格")
-    void recordSearchKeyword_keywordWithSpaces_shouldTrim() throws InterruptedException {
+    void recordSearchKeyword_keywordWithSpaces_shouldTrim() {
         // Given: 带首尾空格的关键词
         when(zSetOperations.incrementScore(eq("hot_searches"), eq("Java"), anyDouble()))
                 .thenReturn(1.0);
@@ -85,10 +87,7 @@ class RedisComponentHotSearchMockTest {
         // When: 记录带空格的关键词
         redisComponent.recordSearchKeyword("  Java  ");
 
-        // 等待异步线程执行
-        Thread.sleep(100);
-
-        // Then: 应该使用去除空格后的关键词
+        // Then: 应该使用去除空格后的关键词（使用 timeout 等待异步执行）
         verify(zSetOperations, timeout(1000)).incrementScore(eq("hot_searches"), eq("Java"), anyDouble());
     }
 
@@ -194,22 +193,11 @@ class RedisComponentHotSearchMockTest {
      * 创建模拟的 TypedTuple 对象
      */
     private ZSetOperations.TypedTuple<String> createTypedTuple(String value, double score) {
-        return new ZSetOperations.TypedTuple<String>() {
-            @Override
-            public String getValue() {
-                return value;
-            }
-
-            @Override
-            public Double getScore() {
-                return score;
-            }
-
-            @Override
-            public int compareTo(ZSetOperations.TypedTuple<String> other) {
-                return Double.compare(this.getScore(), other.getScore());
-            }
-        };
+        @SuppressWarnings("unchecked")
+        ZSetOperations.TypedTuple<String> tuple = mock(ZSetOperations.TypedTuple.class);
+        when(tuple.getValue()).thenReturn(value);
+        when(tuple.getScore()).thenReturn(score);
+        return tuple;
     }
 
 }

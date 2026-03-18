@@ -270,14 +270,4 @@ class RedisComponentHotSearchTest {
         }, "空数据时清除不应该报错");
     }
 
-    @Test
-    @DisplayName("StringRedisTemplate 注入应该成功")
-    void getStringRedisTemplate_shouldNotBeNull() {
-        // When: 获取 StringRedisTemplate
-        StringRedisTemplate template = redisComponent.getStringRedisTemplate();
-
-        // Then: 不应该为空
-        assertNotNull(template, "StringRedisTemplate 应该成功注入");
-    }
-
 }

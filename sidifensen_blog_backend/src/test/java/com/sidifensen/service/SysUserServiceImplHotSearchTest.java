@@ -145,7 +145,7 @@ class SysUserServiceImplHotSearchTest {
         List<Map<String, Object>> hotSearches = sysUserService.getHotSearches(-1);
 
         // Then: 应该返回空列表（ZSet reverseRange 对于负数 end 会返回空）
-        assertTrue(hotSearches.isEmpty() || hotSearches.size() >= 0, "负数 limit 应该正常处理");
+        assertTrue(hotSearches.isEmpty(), "负数 limit 应该返回空列表");
     }
 
 }
