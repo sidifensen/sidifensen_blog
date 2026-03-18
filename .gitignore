@@ -27,6 +27,9 @@ docs/
 # Superpowers 视觉伴侣临时文件
 .superpowers/
 
+# Superpowers 计划文档（允许提交）
+!docs/superpowers/plans/
+
 # Git Worktrees 工作区
 .worktrees/
 
