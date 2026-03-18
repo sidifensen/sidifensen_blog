@@ -12,8 +12,8 @@ target
 logs
 job
 
-# 测试相关
-**/src/test
+# 测试相关（排除测试资源文件，但保留测试代码）
+**/src/test/resources/**
 
 # 环境变量
 .env
