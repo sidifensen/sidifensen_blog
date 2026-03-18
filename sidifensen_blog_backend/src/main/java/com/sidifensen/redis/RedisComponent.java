@@ -38,6 +38,15 @@ public class RedisComponent {
         return redisUtils;
     }
 
+    /**
+     * 获取 StringRedisTemplate 实例
+     *
+     * @return StringRedisTemplate 实例
+     */
+    public StringRedisTemplate getStringRedisTemplate() {
+        return stringRedisTemplate;
+    }
+
     ExecutorService executorService = new ThreadPoolExecutor(
             2, 4, 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(500),
