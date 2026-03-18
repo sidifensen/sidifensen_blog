@@ -126,4 +126,9 @@ public class SysUserVo {
      */
     private Date vipExpireTime;
 
+    /**
+     * 是否接收私信邮件通知 0-关闭 1-开启
+     */
+    private Integer isReceivePrivateMessageEmail;
+
 }

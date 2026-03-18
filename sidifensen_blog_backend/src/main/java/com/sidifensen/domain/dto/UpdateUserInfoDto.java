@@ -42,5 +42,10 @@ public class UpdateUserInfoDto implements Serializable {
      * 头像
      */
     private String avatar;
+
+    /**
+     * 是否接收私信邮件通知 0-关闭 1-开启
+     */
+    private Integer isReceivePrivateMessageEmail;
 }
 

@@ -19,6 +19,7 @@ import com.sidifensen.security.SysUserDetailsService;
 import com.sidifensen.service.IpService;
 import com.sidifensen.service.SysUserRoleService;
 import com.sidifensen.service.SysUserService;
+import com.sidifensen.service.UserSettingsService;
 import com.sidifensen.service.VipService;
 import com.sidifensen.utils.IpUtils;
 import com.sidifensen.utils.JwtUtils;
@@ -102,6 +103,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Resource
     private VipService vipService;
 
+    @Resource
+    private UserSettingsService userSettingsService;
+
     @Override
     public String login(LoginDto loginDto) {
         try {
@@ -146,11 +150,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (!registerDto.getEmailCheckCode()
             .equals(redisComponent.getEmailCheckCode(registerDto.getEmail(), MailEnum.REGISTER.getType()))) {
             throw new BlogException(BlogConstants.CheckCodeError);
-        }
-
-        // 密码强度校验 - 确保密码符合安全要求（8 位以上，包含大小写字母和数字）
-        if (!validatePassword(registerDto.getPassword())) {
-            throw new BlogException(BlogConstants.PasswordTooWeak);
         }
 
         // 分别检查用户名和邮箱是否存在，避免or条件导致的逻辑错误
@@ -241,11 +240,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             throw new BlogException(BlogConstants.NewPasswordSameAsOld); // 新密码不能与原密码相同
         }
 
-        // 密码强度校验 - 确保新密码符合安全要求（8 位以上，包含大小写字母和数字）
-        if (!validatePassword(resetPasswordDto.getPassword())) {
-            throw new BlogException(BlogConstants.PasswordTooWeak);
-        }
-
         // 更新密码
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<SysUser>().eq(SysUser::getEmail,
                 resetPasswordDto.getEmail());
@@ -326,6 +320,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         sysUserVo.setSex(sysUser.getSex());
         sysUserVo.setFansCount(sysUser.getFansCount());
         sysUserVo.setFollowCount(sysUser.getFollowCount());
+        // 从 user_settings 表读取私信邮件通知设置
+        sysUserVo.setIsReceivePrivateMessageEmail(userSettingsService.getReceivePrivateMessageEmail(userId));
         fillVipInfo(sysUserVo, sysUser.getId());
         return sysUserVo;
     }
@@ -384,6 +380,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         int result = sysUserMapper.update(null, updateWrapper);
         if (result != 1) {
             throw new BlogException(BlogConstants.UpdateUserInfoError);
+        }
+
+        // 更新私信邮件通知设置到 user_settings 表
+        if (ObjectUtil.isNotNull(updateUserInfoDto.getIsReceivePrivateMessageEmail())) {
+            userSettingsService.setReceivePrivateMessageEmail(userId, updateUserInfoDto.getIsReceivePrivateMessageEmail());
         }
 
     }
@@ -715,44 +716,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         // 从 Redis 中获取热门搜索记录
         // Redis ZSet 格式：key = "hot_searches", member = 关键词，score = 搜索次数
         return redisComponent.getHotSearches(limit);
-    }
-
-    /**
-     * 密码强度校验
-     * 要求：
-     * 1. 长度至少 8 位
-     * 2. 包含至少一个大写字母
-     * 3. 包含至少一个小写字母
-     * 4. 包含至少一个数字
-     *
-     * @param password 密码
-     * @return 校验是否通过
-     */
-    @Override
-    public boolean validatePassword(String password) {
-        if (password == null || password.length() < 8) {
-            return false;
-        }
-        boolean hasUpper = password.matches(".*[A-Z].*");
-        boolean hasLower = password.matches(".*[a-z].*");
-        boolean hasDigit = password.matches(".*\\d.*");
-        return hasUpper && hasLower && hasDigit;
-    }
-
-    /**
-     * 检查账户是否被锁定
-     * 登录失败 5 次后锁定账户 15 分钟
-     *
-     * @param username 用户名
-     * @return 是否被锁定
-     */
-    @Override
-    public boolean isAccountLocked(String username) {
-        String lockKey = "login:lock:" + username;
-        // 使用 RedisUtils 获取登录失败次数，RedisUtils.get() 返回 Object 需要强制转换
-        Object failedAttemptsObj = redisComponent.getRedisUtils().get(lockKey);
-        Integer failedAttempts = failedAttemptsObj instanceof Integer ? (Integer) failedAttemptsObj : null;
-        return failedAttempts != null && failedAttempts >= 5;
     }
 
 }

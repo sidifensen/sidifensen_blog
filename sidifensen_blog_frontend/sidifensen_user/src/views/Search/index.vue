@@ -111,6 +111,10 @@
                 <span v-if="searchKeyword">"</span>
                 <span class="keyword-tag" v-if="searchKeyword">{{ searchKeyword }}</span>
                 <span v-if="searchKeyword">"</span>
+                <span class="search-type-hint" v-if="searchType === 'all'">（综合搜索：标题 + 标签）</span>
+                <span class="search-type-hint" v-if="searchType === 'title'">（标题搜索）</span>
+                <span class="search-type-hint" v-if="searchType === 'tag'">（标签搜索）</span>
+                <span class="search-type-hint" v-if="searchType === 'author'">（作者搜索）</span>
               </span>
             </div>
             <el-dropdown trigger="click" class="sort-dropdown">
@@ -349,8 +353,14 @@ const clearKeyword = () => {
 const changeSearchType = (type) => {
   searchType.value = type;
   // 如果已经有搜索关键词，立即执行搜索
-  if (searchKeyword.value.trim() && hasSearched.value) {
-    handleSearch();
+  if (searchKeyword.value.trim()) {
+    if (hasSearched.value) {
+      // 已经搜索过，重新搜索
+      handleSearch();
+    } else {
+      // 未搜索过，直接执行搜索
+      performSearch(true);
+    }
   }
 };
 
@@ -437,37 +447,70 @@ const performSearch = async (reset = false) => {
 
     hasSearched.value = true;
 
-    let res;
+    let allArticles = [];
+    let totalTitle = 0;
+    let totalTag = 0;
+
     // 根据搜索类型调用不同接口
-    if (searchType.value === "title" || searchType.value === "all") {
-      // 综合搜索和标题搜索都使用标题搜索接口
-      res = await searchArticleByTitle(searchKeyword.value, currentPage.value, pageSize.value);
+    if (searchType.value === "all") {
+      // 综合搜索：同时搜索标题和标签，合并结果
+      const [titleRes, tagRes] = await Promise.all([
+        searchArticleByTitle(searchKeyword.value, currentPage.value, pageSize.value),
+        searchArticleByTag(searchKeyword.value, currentPage.value, pageSize.value)
+      ]);
+
+      // 解析标题搜索结果
+      const titleData = titleRes?.data?.data || titleRes?.data || {};
+      const titleArticles = titleData.data || titleData.records || [];
+      totalTitle = titleData.total || titleArticles.length;
+
+      // 解析标签搜索结果
+      const tagData = tagRes?.data?.data || tagRes?.data || {};
+      const tagArticles = tagData.data || tagData.records || [];
+      totalTag = tagData.total || tagArticles.length;
+
+      // 合并结果（按文章 ID 去重）
+      const articleMap = new Map();
+      titleArticles.forEach(article => {
+        articleMap.set(article.id, article);
+      });
+      tagArticles.forEach(article => {
+        if (!articleMap.has(article.id)) {
+          articleMap.set(article.id, article);
+        }
+      });
+      allArticles = Array.from(articleMap.values());
+      total.value = totalTitle + totalTag;
+
+    } else if (searchType.value === "title") {
+      // 标题搜索
+      const res = await searchArticleByTitle(searchKeyword.value, currentPage.value, pageSize.value);
+      const responseData = res?.data?.data || res?.data || {};
+      allArticles = responseData.data || responseData.records || [];
+      total.value = responseData.total || allArticles.length;
+
     } else if (searchType.value === "tag") {
       // 标签搜索
-      res = await searchArticleByTag(searchKeyword.value, currentPage.value, pageSize.value);
+      const res = await searchArticleByTag(searchKeyword.value, currentPage.value, pageSize.value);
+      const responseData = res?.data?.data || res?.data || {};
+      allArticles = responseData.data || responseData.records || [];
+      total.value = responseData.total || allArticles.length;
+
     } else if (searchType.value === "author") {
       // 作者搜索
-      res = await searchArticleByAuthor(searchKeyword.value, currentPage.value, pageSize.value);
+      const res = await searchArticleByAuthor(searchKeyword.value, currentPage.value, pageSize.value);
+      const responseData = res?.data?.data || res?.data || {};
+      allArticles = responseData.data || responseData.records || [];
+      total.value = responseData.total || allArticles.length;
     }
-
-    console.log('搜索返回结果:', res);
-
-    // 安全地解析返回数据
-    const responseData = res?.data?.data || res?.data || {};
-    console.log('responseData:', responseData);
-
-    const newArticles = responseData.data || responseData.records || [];
-    console.log('newArticles:', newArticles);
-
-    total.value = responseData.total || newArticles.length;
 
     if (reset) {
-      articles.value = newArticles;
+      articles.value = allArticles;
     } else {
-      articles.value = [...articles.value, ...newArticles];
+      articles.value = [...articles.value, ...allArticles];
     }
 
-    if (hasMore.value && newArticles.length > 0) {
+    if (hasMore.value && allArticles.length > 0) {
       currentPage.value++;
     }
 
@@ -975,6 +1018,13 @@ onUnmounted(() => {
             border-radius: 4px;
             font-size: 13px;
             font-weight: 500;
+          }
+
+          .search-type-hint {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-left: 8px;
+            font-weight: 400;
           }
         }
       }

@@ -40,6 +40,16 @@ const openCustomerService = () => {
 </script>
 
 <style lang="scss">
+// 文章广场页面专属背景覆盖 - 黑夜模式下覆盖全局背景色
+.article-page-body {
+  min-height: 100vh;
+}
+
+html.dark .article-page-body {
+  --el-bg-color-page: #000000 !important;
+  background-color: #000000 !important;
+}
+
 // 智能客服悬浮按钮
 .customer-service-float-btn {
   position: fixed;

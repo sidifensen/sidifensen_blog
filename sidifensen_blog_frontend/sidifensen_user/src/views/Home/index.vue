@@ -188,11 +188,6 @@
         <div class="footer-brand">
           <h3>sidifensen 社区</h3>
           <p>分享技术、经验和见解，用代码改变世界</p>
-          <div class="social-links">
-            <a href="https://github.com/sidifensen" target="_blank" class="social-link" title="GitHub">GH</a>
-            <a href="https://gitee.com/sidifensen" target="_blank" class="social-link" title="Gitee">GT</a>
-            <a href="#" class="social-link" title="Twitter">TW</a>
-          </div>
         </div>
 
         <div class="footer-column">
@@ -208,10 +203,10 @@
         <div class="footer-column">
           <h4>关于我们</h4>
           <ul>
-            <li><router-link to="/about">关于</router-link></li>
-            <li><router-link to="/contact">联系方式</router-link></li>
-            <li><a href="#">隐私政策</a></li>
-            <li><a href="#">服务条款</a></li>
+            <li><a href="javascript:void(0)" class="footer-link">关于</a></li>
+            <li><a href="javascript:void(0)" class="footer-link">联系方式</a></li>
+            <li><a href="javascript:void(0)" class="footer-link">隐私政策</a></li>
+            <li><a href="javascript:void(0)" class="footer-link">服务条款</a></li>
           </ul>
         </div>
       </div>
@@ -1153,31 +1148,6 @@ html.dark {
       font-size: 0.875rem;
       color: var(--text-secondary);
       line-height: 1.7;
-      margin-bottom: 20px;
-    }
-
-    .social-links {
-      display: flex;
-      gap: 12px;
-    }
-
-    .social-link {
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--bg-page);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text-secondary);
-      text-decoration: none;
-      transition: all 0.2s ease;
-
-      &:hover {
-        border-color: var(--accent);
-        color: var(--accent);
-      }
     }
   }
 
@@ -1204,6 +1174,7 @@ html.dark {
           text-decoration: none;
           font-size: 0.875rem;
           transition: color 0.2s ease;
+          cursor: pointer;
 
           &:hover {
             color: var(--accent);

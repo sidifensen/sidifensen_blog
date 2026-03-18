@@ -1,6 +1,6 @@
 # AGENTS.md
 
-本文件为 Codex (Codex.ai/code) 在此仓库中工作时提供指导。
+本文件为 AI 助手在此仓库中工作时提供指导。
 
 ## 项目概述
 
@@ -23,38 +23,6 @@ java -jar target/sidifensen_blog_backend-1.0-SNAPSHOT.jar
 
 # 或者在 IDE 中直接运行 Main.java
 ```
-
-### 前端设计优化指令
-
-当需要优化页面设计时，直接说：
-
-- "优化 xxx 页面，按照去 AI 味规范"
-- "重新设计 xxx 页面，参考知乎/掘金/Vercel 风格"
-
-或使用 skill：`/frontend-design`（已安装的官方 skill）
-
-### 前端页面检查规则（强制）
-
-当任务涉及前端页面设计、页面优化、UI 修复、样式调整、交互检查、黑夜模式适配、响应式适配时：
-
-1. **必须优先使用 Playwright 查看实际页面**
-2. **修改前必须先检查页面当前状态**
-3. **修改后必须再次用 Playwright 复查结果**
-4. **至少执行以下检查项：**
-   - 页面访问是否正常
-   - 页面结构快照是否符合预期
-   - 控制台是否存在报错或警告
-   - 必要时截图留存
-5. **如果任务包含黑夜模式或响应式适配，必须额外检查对应状态**
-6. **使用 Playwright 测试时，默认访问端口为：用户端 `http://localhost:7000`，管理端 `http://localhost:8000`**
-7. **启动前必须先检查前端服务是否已开启；如果已开启，则不要重复启动服务，直接打开对应地址检查**
-8. **如果本地前端未启动，再提示用户提供地址或启动项目后继续检查**
-
-### 前端任务默认执行策略
-
-- 只要用户说“设计”、“优化”、“美化”、“修复样式”、“调整布局”、“检查页面”、“看下前端效果”，默认先使用 Playwright
-- 除非用户明确说明“不要打开浏览器”或“只改代码不看页面”，否则不跳过 Playwright 检查
-- 前端问题排查时，优先基于 Playwright 的页面表现、控制台输出、网络请求结果判断问题
 
 ### 前端 (Vue 3)
 
@@ -85,7 +53,7 @@ docker-compose up -d
 
 # 或使用启动脚本
 dev/start.sh        # Linux/Mac
-dev/start.bat         # Windows
+dev/start.bat       # Windows
 ```
 
 ## 架构
@@ -108,8 +76,8 @@ dev/start.bat         # Windows
 ```
 sidifensen_blog/
 ├── script/                          # 部署脚本、Docker 配置
-│   ├── dev/docker-compose.yml           # 主编排文件
-│   ├── dev/.env.example                  # 环境变量模板
+│   ├── dev/docker-compose.yml       # 主编排文件
+│   ├── dev/.env.example             # 环境变量模板
 │   └── deploy/                      # Jenkins/Gitea CI/CD
 ├── sidifensen_blog_backend/
 │   └── src/main/java/com/sidifensen/
@@ -126,101 +94,84 @@ sidifensen_blog/
 └── sql/                             # 数据库初始化脚本
 ```
 
-## 后端规范（来自 .cursor/rules/java.mdc）
+## 后端规范
 
-### 核心强制规则
+### 核心规则（必须遵守）
 
-- **依赖注入**: 使用 `@Resource` 而非 `@Autowired`
-- **实体类**: 使用 `@Data`, `@EqualsAndHashCode(callSuper = false)`, `@Accessors(chain = true)`
-- **MyBatis-Plus**: 使用 `LambdaQueryWrapper` 进行类型安全查询，不使用 XML
-- **异常处理**: 抛出 `BlogException`，错误信息必须来自 `BlogConstants`，禁止硬编码字符串
-- **Service 模式**: 继承 `ServiceImpl<Mapper, Entity>` 并实现 service 接口
-- **日志**: 使用 `@Slf4j`，记录所有业务操作和异常
-- **代码注释**: 后端新增或修改代码时必须补充必要的中文注释，说明核心业务逻辑、关键分支、复杂查询、重要字段或方法用途，禁止添加无意义注释
+| 规范 | 要求 |
+|------|------|
+| 依赖注入 | `@Resource` (禁用 `@Autowired`) |
+| 实体注解 | `@Data`, `@EqualsAndHashCode(callSuper = false)`, `@Accessors(chain = true)` |
+| 查询方式 | `LambdaQueryWrapper` (禁用 XML) |
+| 异常处理 | `BlogException` + `BlogConstants` (禁止硬编码) |
+| Service 模式 | 继承 `ServiceImpl<Mapper, Entity>` |
+| 日志 | `@Slf4j` + `log.error` (只记录错误) |
+| 注释 | 新增/修改代码必须补充中文注释 |
 
-### 命名规范
+### 代码示例
 
-- Controller: `XxxController`
-- Service 接口：`XxxService`
-- Service 实现：`XxxServiceImpl`
-- Entity: 使用业务名称，如 `Article`, `User`
-- DTO: `XxxDto`
-- VO: `XxxVo`
-- Mapper: `XxxMapper`
-
-### Controller 层规范
-
-- 使用 `@RestController` 和 `@RequestMapping`
-- HTTP 方法：`@GetMapping`, `@PostMapping`, `@PutMapping`, `@DeleteMapping`
-- 参数校验：`@NotNull`, `@Valid`
-- 权限控制：`@PreAuthorize`
-- 统一返回 `Result` 对象
-
-### Entity 规范
-
-- 使用 `@TableName` 指定表名
-- 主键：`@TableId(type = IdType.AUTO)`
-- 自动填充：`@TableField(fill = FieldFill.INSERT/INSERT_UPDATE)`
-- 逻辑删除：`@TableLogic`
-- 字段校验：`@Min`, `@Max`
-
-### 异常信息管理
-
+**异常处理：**
 ```java
-// ✅ 正确方式
+// ✅ 正确
 throw new BlogException(BlogConstants.NotFoundUser);
 
-// ❌ 错误方式 - 禁止硬编码
+// ❌ 禁止
 throw new BlogException("该用户不存在");
 ```
 
-### 代码修改后检查规则
-
-**每次修改后端代码后必须执行以下检查：**
-
-1. **编译检查**: 运行 `mvn clean compile -DskipTests` 确保代码能通过编译
-2. **导入检查**: 确认所有新增的类都已正确导入，没有缺失或冗余的 import
-3. **语法检查**: 检查是否有拼写错误、注解使用是否正确
-4. **注释检查**: 确认新增或修改的后端代码已经补充必要中文注释，且注释内容准确描述业务含义
-
-```bash
-# 快速编译检查
-cd sidifensen_blog_backend
-mvn clean compile -DskipTests
+**日志规范：**
+```java
+try {
+    userService.updateUser(user);
+} catch (Exception e) {
+    log.error("更新用户失败，userId={}, error={}", user.getId(), e.getMessage(), e);
+    throw new BlogException(BlogConstants.UpdateUserFailed);
+}
+// ❌ 禁止：不要打印正常流程日志
 ```
 
-**注意**: 调试代码时不要自动重启后端服务，用户会自行重启。
+### 命名规范
+
+- `XxxController` / `XxxService` / `XxxServiceImpl`
+- `XxxDto` / `XxxVo`
+- Entity 用业务名：`Article`, `User`
+- `XxxMapper`
+
+### 修改后检查
+
+```bash
+cd sidifensen_blog_backend && mvn clean compile -DskipTests
+```
+
+检查清单：
+- [ ] 编译通过
+- [ ] 导入完整无冗余
+- [ ] 无拼写错误/注解错误
+- [ ] 已补充必要中文注释
+
+> **注意**: 调试代码时不要自动重启后端服务
+
+---
 
 ## 前端规范
 
-### 🔴 最高优先级规则（违反即错误）
+### 🔴 三大铁律（违反即错误）
 
-#### 规则 1：所有页面必须适配黑夜模式（第一强制）
+#### 规则 1：所有页面必须适配黑夜模式
 
-**⚠️ 这是不可协商的强制性要求，生成代码前必须遵守！**
+**禁止：** 硬编码颜色值、只写浅色模式、生成完不测试
 
-**三条铁律（违反任何一条都是错误代码）：**
+**必须：** 使用 CSS 变量、提供 `html.dark` 覆盖、切换验证
 
-| ❌ 禁止 | ✅ 必须 |
-|--------|--------|
-| 硬编码颜色值 `#fff`、`#1e293b` | 使用 CSS 变量 `var(--bg-card)` |
-| 只写浅色模式样式 | 同时提供 `html.dark` 覆盖 |
-| 生成完不测试 | 切换黑夜模式验证无异常 |
-
-**标准模板（每次生成时直接套用）：**
-
+**标准模板：**
 ```scss
 .your-component {
-  // 1. 先定义 CSS 变量（浅色模式默认值）
+  // 浅色模式默认值
   --bg-page: #f8fafc;
   --bg-card: #ffffff;
   --text-primary: #1e293b;
   --text-regular: #475569;
   --border: #e2e8f0;
-
-  // 2. 使用变量（禁止出现任何颜色值）
-  background: var(--bg-page);
-  color: var(--text-primary);
 
   .card {
     background: var(--bg-card);
@@ -228,7 +179,6 @@ mvn clean compile -DskipTests
   }
 }
 
-// 3. 黑夜模式覆盖（必须添加，位置固定在文件末尾）
 html.dark {
   .your-component {
     --bg-page: #0f172a;
@@ -240,101 +190,91 @@ html.dark {
 }
 ```
 
-**快速检查清单（生成代码后逐项核对）：**
-- [ ] 搜索 `#` 确认无硬编码颜色（除注释外）
-- [ ] 所有颜色都通过 `var(--xxx)` 引用
-- [ ] 存在 `html.dark` 块且覆盖所有变量
-- [ ] 已在黑夜模式下测试页面无异常
+#### 规则 2：SCSS 层次必须匹配 DOM 结构
 
----
+1. SCSS 嵌套层次 100% 匹配 template DOM 结构
+2. 不允许跳过中间层级
+3. 每个样式模块必须有中文注释
 
-#### 规则 2：SCSS 层次结构必须严格对应 template DOM 结构
+#### 规则 3：禁止假数据，所有功能必须真实实现
 
-**代码质量第二标准！**
+| ❌ 禁止 | ✅ 必须 |
+|--------|--------|
+| 硬编码文章列表/用户数据 | API 调用获取真实数据 |
+| 按钮点击 `console.log` 应付 | 实现真实业务功能 |
+| 表单提交不连接后端 | 调用真实 API 持久化 |
 
-1. SCSS 嵌套层次必须 100% 匹配 template 的 DOM 结构
-2. 不允许跳过中间层级或打乱顺序
-3. 每个样式模块必须有中文注释说明对应哪个部分
+**特殊情况（后端 API 未完成）：**
+```javascript
+// TODO: 后端 API 待开发，暂时使用模拟数据
+```
 
 ### Vue 组件规范
 
-- **语法**: 统一使用 `<script setup>` 和 Composition API
-- **命名**: 页面/组件使用 PascalCase，如 `Home.vue`, `ArticleDetail.vue`
-- **模板**: 使用 kebab-case 属性名，组件标签使用 PascalCase
-- **⚠️ 禁止导入 Element Plus 消息组件**: `ElMessage` 已全局注册，直接可用
-- **el-table-column 宽度**: 前端页面调试时，`el-table-column` 的宽度要自动调整，尽量避免列名占两行（可使用 `min-width` 或 `show-overflow-tooltip`）
+- **语法**: `<script setup>` + Composition API
+- **命名**: PascalCase - `Home.vue`, `ArticleDetail.vue`
+- **消息组件**: `ElMessage` 已全局注册，**禁止导入**
+- **表格**: `el-table-column` 使用 `min-width` / `show-overflow-tooltip`
+- **SVG 图标**: `<svg-icon name="github" width="20px" height="20px" color="#999" />`
+  - 常用图标：`github`, `gitee`, `qq`, `weixin`, `weibo`
 
-### 代码结构规范
+### 代码结构
 
 ```vue
 <script setup>
-// 1. 导入依赖 - 按功能分组
-import { ref, reactive, computed, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { Plus, Message } from "@element-plus/icons-vue";
-import { getUserInfo } from "@/api/user";
-import { useUserStore } from "@/stores/userStore";
+// 1. 导入依赖
+import { ref, computed, onMounted } from "vue"
+import { useRoute, useRouter } from "vue-router"
+import { getUserInfo } from "@/api/user"
+import { useUserStore } from "@/stores/userStore"
 
 // 2. 路由和状态管理
-const route = useRoute();
-const router = useRouter();
-const userStore = useUserStore();
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 
-// 3. 响应式数据 - 按功能分组并注释
-const loading = ref(false); // 加载状态
-const data = ref(null); // 数据
+// 3. 响应式数据（带注释）
+const loading = ref(false)
+const data = ref(null)
 
 // 4. 计算属性
-const isEmpty = computed(() => !data.value);
+const isEmpty = computed(() => !data.value)
 
-// 5. 方法定义 - 按功能分组
+// 5. 方法定义
 const fetchData = async () => {
   try {
-    loading.value = true;
-    // ...
+    loading.value = true
   } catch (error) {
-    ElMessage.error("获取失败");
+    ElMessage.error("获取失败")
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 6. 生命周期
 onMounted(() => {
-  fetchData();
-});
+  fetchData()
+})
 </script>
 ```
 
-### 样式规范
+### 修改后检查
 
-```scss
-// ✅ 正确：SCSS 层次严格对应 template
-.search-container {
-  .search-section {
-    .container {
-      // 每个模块有中文注释
-    }
-  }
-}
-
-// ❌ 错误：跳过层级
-.search-container {
-  .container {
-    // 缺少 .search-section
-  }
-}
-
-// ✅ 正确：使用 :deep() 覆盖 Element Plus
-.custom-tabs {
-  :deep(.el-tabs__item) {
-    padding: 10px 20px;
-    border-radius: 8px;
-  }
-}
+```bash
+cd sidifensen_blog_frontend/sidifensen_user && npm run build
+cd sidifensen_blog_frontend/sidifensen_admin && npm run build
 ```
 
-## 前端设计规范（去 AI 味指南）
+检查清单：
+- [ ] 编译通过，无 TypeScript/语法错误
+- [ ] 页面正常加载，无白屏/报错
+- [ ] 功能正常（表单/按钮/跳转）
+- [ ] 黑夜模式显示正常
+- [ ] 响应式布局正常
+
+---
+
+## 设计规范（去 AI 味）
 
 **核心原则：少即是多，克制比表达更重要**
 
@@ -342,76 +282,58 @@ onMounted(() => {
 
 | 问题 | 反面教材 | 正确做法 |
 |------|---------|---------|
-| **渐变滥用** | `linear-gradient(135deg, #0891b2 0%, #0e7490 100%)` | 纯色 `#0891b2` |
-| **多层阴影** | 3-4 层 `box-shadow` 叠加 | 单层阴影 `0 1px 3px rgba(0,0,0,0.1)` |
-| **光泽动画** | `::after` 光带扫过效果 | 不需要 |
+| **渐变滥用** | `linear-gradient(135deg, #0891b2, #0e7490)` | 纯色 `#0891b2` |
+| **多层阴影** | 3-4 层 `box-shadow` | 单层 `0 1px 3px rgba(0,0,0,0.1)` |
+| **光泽动画** | `::after` 光带扫过 | 不需要 |
 | **毛玻璃滥用** | 到处 `backdrop-filter: blur()` | 仅模态框使用 |
-| **夸张悬停** | 同时位移 + 缩放 + 变色 + 阴影 | 只变阴影或颜色 |
-| **装饰性标题** | "探索文章，开启知识之旅" | 直接上核心内容 |
-| **胶囊数据** | 每个数字都包底色胶囊 | 纯文本或简单图标 |
+| **夸张悬停** | 位移 + 缩放 + 变色 + 阴影 | 只变阴影或颜色 |
 
-### ✅ 人味设计准则
+### ✅ 设计准则
 
-1. **必须自定义 Element Plus 组件** - 禁止直接使用默认样式
-2. **纯色优先** - 渐变只在品牌强调处使用
-3. **单层阴影** - `0 1px 3px rgba(0,0,0,0.1)` 足够
-4. **悬停只变一个属性** - 阴影或颜色，不要同时变 3 个
-5. **内容即装饰** - 让内容本身上台，不要加框
+1. 必须自定义 Element Plus 组件
+2. 纯色优先，渐变仅用于品牌强调
+3. 单层阴影足够
+4. 悬停只变一个属性
+5. 内容即装饰
 
-### 参考案例
+### 标准色板
 
-```scss
-// ✅ 好的卡片样式 - 使用 CSS 变量（注意不是硬编码）
-.article-card {
-  --bg-card: #ffffff;
-  --border: #e5e7eb;
-
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-
-  &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); // 只变阴影
-  }
-}
-
-// ✅ 黑夜模式覆盖
-html.dark {
-  .article-card {
-    --bg-card: #1e293b;
-    --border: #334155;
-  }
-}
-```
-
-### 标准色板参考
-
-| 变量名 | 浅色模式 | 深色模式 | 用途 |
-|--------|---------|---------|------|
+| 变量 | 浅色模式 | 深色模式 | 用途 |
+|------|---------|---------|------|
 | `--bg-page` | `#f8fafc` | `#0f172a` | 页面背景 |
 | `--bg-card` | `#ffffff` | `#1e293b` | 卡片背景 |
 | `--text-primary` | `#1e293b` | `#f1f5f9` | 主文字 |
 | `--text-regular` | `#475569` | `#cbd5e1` | 常规文字 |
 | `--text-muted` | `#64748b` | `#94a3b8` | 次要文字 |
-| `--border` | `#e2e8f0` | `#334155` | 边框颜色 |
+| `--border` | `#e2e8f0` | `#334155` | 边框 |
 
-### ❌ AI 味反例（不要这样写）
+### 设计优化指令
 
-```scss
-.article-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(20px);
-  box-shadow:
-    0 4px 24px rgba(8, 145, 178, 0.12),
-    0 1px 3px rgba(8, 145, 178, 0.08);
+- "优化 xxx 页面，按照去 AI 味规范"
+- "重新设计 xxx 页面，参考知乎/掘金/Vercel 风格"
+- 使用 skill: `/frontend-design`
 
-  &:hover {
-    transform: translateX(12px) translateY(-2px) scale(1.02);
-  }
-}
-```
+---
 
-## 线上部署环境配置(本地不需要)
+## 新功能/新页面开发规范
+
+**核心原则：优先沿用项目现有设计和规范**
+
+添加新功能或新页面时，必须先参考现有类似页面（如 `Home.vue`、`Article/index.vue`）的代码结构、样式风格、API 调用模式，保持项目一致性。
+
+**禁止：** 不看现有代码直接生成全新结构、引入项目外 UI 库、忽略黑夜模式适配
+
+---
+
+## 数据库工具
+
+项目已配置 MySQL MCP 工具，可用于：
+- 新增表/字段
+- 调试数据验证业务逻辑
+
+---
+
+## 线上部署环境配置 (本地不需要)
 
 必需服务（通过 Docker Compose）：
 
@@ -421,14 +343,6 @@ html.dark {
 - MinIO (端口 9000/9001)
 
 运行前从 `script/env.example` 复制并配置 `.env` 文件。
-
-## 数据库操作工具（本地开发）
-
-项目已配置 MySQL MCP 工具，在本地开发时可以使用该工具进行数据库操作：
-
-- **新增表/字段**：开发新功能时创建数据库表结构
-- **调试数据**：查看表中数据验证业务逻辑
-- **数据验证**：检查数据是否正确写入或更新
 
 ## 核心功能
 

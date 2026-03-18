@@ -9,6 +9,8 @@ import com.sidifensen.domain.enums.WebSocketMessageTypeEnum;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.ConversationService;
 import com.sidifensen.service.PrivateMessageService;
+import com.sidifensen.service.UserSettingsService;
+import com.sidifensen.utils.EmailUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,6 +20,9 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * WebSocket 消息处理器
@@ -38,6 +43,12 @@ public class PrivateMessageWebSocketHandler extends TextWebSocketHandler {
 
     @Resource
     private SysUserMapper sysUserMapper;
+
+    @Resource
+    private UserSettingsService userSettingsService;
+
+    @Resource
+    private EmailUtils emailUtils;
 
     /**
      * WebSocket 连接建立后的处理
@@ -173,9 +184,12 @@ public class PrivateMessageWebSocketHandler extends TextWebSocketHandler {
 
             sendMessage(toSession, pushMessage);
         }
-        // 如果接收者不在线，消息已保存到数据库，上线后会通过 HTTP API 获取
 
-        // 5. 发送成功回执给发送者
+        // 5. 不管接收者是否在线，都检查是否发送邮件通知
+        // 判断条件：1. 接收者开启了邮件通知 2. 接收者绑定了邮箱 3. 这是第一条未读消息
+        sendPrivateMessageEmailNotification(toUserId, fromUser, content, privateMessage.getCreateTime());
+
+        // 6. 发送成功回执给发送者
         WebSocketSession fromSession = sessionManager.getSession(fromUserId);
         if (fromSession != null && fromSession.isOpen()) {
             WebSocketMessage ackMessage = WebSocketMessage.builder()
@@ -278,6 +292,55 @@ public class PrivateMessageWebSocketHandler extends TextWebSocketHandler {
             session.sendMessage(new TextMessage(json));
         } catch (IOException e) {
             log.error("发送 WebSocket 消息失败", e);
+        }
+    }
+
+    /**
+     * 发送私信邮件通知（仅在接收者不在线且收到第一条未读消息时发送）
+     */
+    private void sendPrivateMessageEmailNotification(Integer toUserId, SysUser fromUser, String content, Date createTime) {
+        try {
+            // 1. 检查接收者是否开启了邮件通知（从 user_settings 表读取）
+            Integer isReceiveEmail = userSettingsService.getReceivePrivateMessageEmail(toUserId);
+            if (isReceiveEmail == null || isReceiveEmail != 1) {
+                return; // 用户未开启邮件通知
+            }
+
+            // 2. 检查接收者是否绑定了邮箱
+            SysUser toUser = sysUserMapper.selectById(toUserId);
+            if (toUser == null || toUser.getEmail() == null || toUser.getEmail().trim().isEmpty()) {
+                return; // 未绑定邮箱
+            }
+
+            // 3. 检查是否是第一条未读消息（未读数从 0 变成 1）
+            Integer unreadCount = conversationService.getUnreadCount(toUserId, fromUser.getId());
+            if (unreadCount > 1) {
+                return; // 不是第一条未读消息，避免重复发送
+            }
+
+            // 4. 截取私信内容预览（前 50 个字）
+            String contentPreview = content != null && content.length() > 50
+                    ? content.substring(0, 50) + "..."
+                    : (content != null ? content : "");
+
+            // 5. 准备邮件模板数据
+            Map<String, Object> data = new HashMap<>();
+            data.put("senderNickname", fromUser != null ? fromUser.getNickname() : "陌生人");
+            data.put("messagePreview", contentPreview);
+            data.put("receiveTime", createTime);
+            data.put("conversationUrl", "https://www.sidifensen.com/message"); // 直达对话的链接
+
+            // 6. 发送邮件
+            emailUtils.sendHtmlMail(
+                    toUser.getEmail(),
+                    "来自 " + data.get("senderNickname") + " 的新私信",
+                    "private-message-notification",
+                    data
+            );
+
+            log.info("私信邮件通知已发送：toUserId={}, fromUserId={}", toUserId, fromUser != null ? fromUser.getId() : "unknown");
+        } catch (Exception e) {
+            log.error("发送私信邮件通知失败：toUserId={}", toUserId, e);
         }
     }
 }

@@ -80,13 +80,13 @@
 
         <!-- 消息输入框 -->
         <div class="message-input-area">
-          <el-input ref="messageInput" v-model="messageContent" type="textarea" :rows="3" placeholder="请输入消息..." @keydown.enter.ctrl="sendMessage" resize="none" />
+          <el-input ref="messageInput" v-model="messageContent" type="textarea" :rows="3" placeholder="请输入消息... (Shift+Enter 换行)" @keydown.enter="handleEnterKey" resize="none" />
           <div class="input-actions">
             <div class="input-actions-left">
               <el-button :icon="ChatDotSquare" @click="toggleEmojiPicker">表情</el-button>
               <el-button :icon="Picture" @click="openImagePicker" :loading="imageUploadLoading">图片</el-button>
             </div>
-            <el-button type="primary" class="send-btn" @click="sendMessage">发送 (Ctrl+Enter)</el-button>
+            <el-button type="primary" class="send-btn" @click="sendMessage">发送 (Enter)</el-button>
           </div>
 
           <!-- Emoji 表情选择器 -->
@@ -215,6 +215,17 @@ const sendMessage = () => {
 
   WebSocketClient.sendTextMessage(targetUserId.value, content);
   messageContent.value = "";
+};
+
+// 处理 Enter 键按下 - Enter 发送，Shift+Enter 换行
+const handleEnterKey = (event) => {
+  // Shift+Enter：允许换行，不阻止默认行为
+  if (event.shiftKey) {
+    return;
+  }
+  // 单独按 Enter：发送消息，阻止默认换行行为
+  event.preventDefault();
+  sendMessage();
 };
 
 // 打开图片选择器

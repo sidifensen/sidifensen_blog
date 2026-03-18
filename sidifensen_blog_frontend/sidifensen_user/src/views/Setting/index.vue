@@ -224,6 +224,37 @@
                   </div>
                 </div>
               </div>
+
+              <div class="setting-main__section section-card">
+                <div class="section-card__header">
+                  <div class="section-card__title">
+                    <h3>账号设置</h3>
+                    <p>管理你的账号通知偏好设置。</p>
+                  </div>
+                </div>
+
+                <div class="section-card__body">
+                  <div class="section-card__row">
+                    <div class="section-card__row-label">
+                      <span>私信邮件通知</span>
+                      <p>收到新私信时（第一条未读消息），通过邮件通知你。</p>
+                    </div>
+                    <div class="section-card__row-content">
+                      <div class="display-mode">
+                        <el-switch
+                          v-model="isReceivePrivateMessageEmail"
+                          :active-value="1"
+                          :inactive-value="0"
+                          inline-prompt
+                          active-text="开启"
+                          inactive-text="关闭"
+                          @change="handlePrivateMessageEmailChange"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </template>
@@ -394,6 +425,9 @@ const userStore = useUserStore();
 const userLoading = ref(false);
 const userInfo = ref(null);
 
+// 私信邮件通知开关
+const isReceivePrivateMessageEmail = ref(0);
+
 const editingField = reactive({
   nickname: false,
   sex: false,
@@ -457,6 +491,8 @@ const fetchUserInfo = async () => {
     userLoading.value = true;
     const res = await info();
     userInfo.value = res.data.data;
+    // 初始化私信邮件通知开关状态
+    isReceivePrivateMessageEmail.value = res.data.data.isReceivePrivateMessageEmail || 0;
   } catch (error) {
     ElMessage.error("获取用户信息失败");
     console.error("获取用户信息失败:", error);
@@ -848,6 +884,21 @@ const updateEmailSubmit = async () => {
     }
   } finally {
     emailUpdateLoading.value = false;
+  }
+};
+
+// 处理私信邮件通知开关变化
+const handlePrivateMessageEmailChange = async (value) => {
+  try {
+    await updateUserInfo({
+      isReceivePrivateMessageEmail: value,
+    });
+    ElMessage.success(value === 1 ? "已开启私信邮件通知" : "已关闭私信邮件通知");
+  } catch (error) {
+    ElMessage.error("设置失败");
+    console.error("设置私信邮件通知失败:", error);
+    // 恢复状态
+    isReceivePrivateMessageEmail.value = value === 1 ? 0 : 1;
   }
 };
 

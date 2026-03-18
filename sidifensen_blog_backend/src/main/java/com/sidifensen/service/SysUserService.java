@@ -158,20 +158,4 @@ public interface SysUserService extends IService<SysUser> {
      */
     List<Map<String, Object>> getHotSearches(Integer limit);
 
-    /**
-     * 密码强度校验
-     *
-     * @param password 密码
-     * @return 校验是否通过
-     */
-    boolean validatePassword(String password);
-
-    /**
-     * 检查账户是否被锁定
-     *
-     * @param username 用户名
-     * @return 是否被锁定
-     */
-    boolean isAccountLocked(String username);
-
 }
