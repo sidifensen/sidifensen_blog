@@ -8,6 +8,8 @@ import com.sidifensen.utils.MyThreadFactory;
 import com.sidifensen.utils.RedisUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -23,6 +25,9 @@ public class RedisComponent {
 
     @Resource
     private RedisUtils redisUtils;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 获取 RedisUtils 工具类实例
@@ -601,6 +606,71 @@ public class RedisComponent {
      */
     public void removeUserDetail(Integer userId) {
         redisUtils.del(RedisConstants.UserDetail + userId);
+    }
+
+    // ==================== 热门搜索相关方法 ====================
+
+    /**
+     * 记录搜索关键词到 Redis ZSet
+     * 格式：key = "hot_searches", member = 关键词，score = 搜索次数
+     * 使用异步线程执行，避免阻塞主线程
+     *
+     * @param keyword 搜索关键词
+     */
+    public void recordSearchKeyword(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return;
+        }
+        executorService.execute(() -> {
+            String redisKey = "hot_searches";
+            // 使用 ZSet 的 incrementScore 方法，如果 member 不存在会自动创建并设置 score 为 1
+            stringRedisTemplate.opsForZSet().incrementScore(redisKey, keyword.trim(), 1.0);
+            log.info("记录搜索关键词：{}", keyword);
+        });
+    }
+
+    /**
+     * 从 Redis ZSet 获取热门搜索列表（按搜索次数降序）
+     *
+     * @param limit 返回数量限制
+     * @return 热门搜索列表，每个元素包含 keyword 和 count
+     */
+    public List<Map<String, Object>> getHotSearches(int limit) {
+        String redisKey = "hot_searches";
+        Set<ZSetOperations.TypedTuple<String>> typedTuples =
+                stringRedisTemplate.opsForZSet().reverseRangeWithScores(redisKey, 0, limit - 1);
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        if (typedTuples != null) {
+            for (ZSetOperations.TypedTuple<String> tuple : typedTuples) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("keyword", tuple.getValue());
+                item.put("count", tuple.getScore().longValue());
+                result.add(item);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 清除指定搜索关键词的热度记录
+     *
+     * @param keyword 搜索关键词
+     */
+    public void clearSearchKeyword(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return;
+        }
+        String redisKey = "hot_searches";
+        stringRedisTemplate.opsForZSet().remove(redisKey, keyword.trim());
+    }
+
+    /**
+     * 清除所有热门搜索记录
+     */
+    public void clearAllHotSearches() {
+        String redisKey = "hot_searches";
+        stringRedisTemplate.delete(redisKey);
     }
 
 }
