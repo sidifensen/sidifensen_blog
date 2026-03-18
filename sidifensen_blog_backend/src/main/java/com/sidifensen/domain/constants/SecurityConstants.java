@@ -7,7 +7,7 @@ package com.sidifensen.domain.constants;
 public class SecurityConstants {
 
     /**
-     * 可选认证接口（有token就认证，没有token就跳过，认证失败也放行）
+     * 可选认证接口（有 token 就认证，没有 token 就跳过，认证失败也放行）
      * 包括：不需要登录的公开接口 + 可选登录的接口
      */
     public static final String[] Optional_Auth_Urls = {
@@ -19,8 +19,12 @@ public class SecurityConstants {
             "/user/verifyResetPassword",
             "/user/resetPassword",
             "/user/admin/login",
+            "/user/info",
             "/user/info/{userId:\\d+}",
             "/user/oauth/exchange",
+            "/user/community/stats",
+            "/user/search/hot",
+            "/user/authors/recommended",
 
             // 文章相关
             "/article/listAll",
@@ -30,6 +34,7 @@ public class SecurityConstants {
             "/article/incrReadCount/{articleId:\\d+}",
             "/article/hot",
             "/article/listVipPreview",
+            "/article/creation/statistics",
 
             // 评论相关
             "/comment/list",
@@ -51,7 +56,7 @@ public class SecurityConstants {
             "/follow/followList/{userId:\\d+}",
             "/follow/fansList/{userId:\\d+}",
 
-            // OAuth相关
+            // OAuth 相关
             "/oauth/gitee/login",
             "/oauth/gitee/callback",
             "/oauth/github/login",
@@ -59,15 +64,19 @@ public class SecurityConstants {
             "/oauth/qq/login",
             "/oauth/qq/callback",
 
-            // VIP相关
+            // VIP 相关
             "/vip/plans",
             "/vip/pay/alipay/notify",
 
             // 友链相关
             "/link/list",
 
-            // AI相关
+            // AI 相关
             "/ai/customer-service",
+
+            // 标签相关
+            "/tag/hot",
+            "/tag/list",
 
             // 其他
             "/favicon.ico",
