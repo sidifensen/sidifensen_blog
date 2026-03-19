@@ -191,7 +191,7 @@
                   <span class="meta-item">👁 {{ formatCompactNumber(article.readCount || 0) }}</span>
                   <span class="meta-item">❤️ {{ formatCompactNumber(article.likeCount || 0) }}</span>
                   <span class="meta-item author-link" @click.stop="goToAuthor(article.userId)">
-                    👤 {{ article.nickname || "匿名用户" }}
+                    👤 <span class="author-name">{{ article.nickname || "匿名用户" }}</span>
                   </span>
                   <div class="article-tags">
                     <el-tag
@@ -1218,23 +1218,34 @@ onUnmounted(() => {
           .article-meta {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
             margin-top: auto;
             font-size: 12px;
             color: var(--text-muted);
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 4px;
 
             .meta-item {
               display: flex;
               align-items: center;
               gap: 4px;
+              flex-shrink: 0;
 
               &.author-link {
                 cursor: pointer;
                 transition: color 0.2s;
+                max-width: 120px;
 
                 &:hover {
                   color: var(--primary);
+                }
+
+                .author-name {
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
                 }
               }
             }
@@ -1243,6 +1254,7 @@ onUnmounted(() => {
               display: flex;
               gap: 6px;
               margin-left: auto;
+              flex-shrink: 0;
 
               .article-tag {
                 background: var(--bg-page);
@@ -1546,12 +1558,15 @@ onUnmounted(() => {
 
           .article-content {
             .article-meta {
-              flex-direction: column;
-              align-items: flex-start;
+              // 保持一行显示，支持横向滚动
+              flex-direction: row;
+              align-items: center;
+              flex-wrap: nowrap;
+              overflow-x: auto;
+              padding-bottom: 4px;
 
               .article-tags {
-                margin-left: 0;
-                margin-top: 8px;
+                flex-shrink: 0;
               }
             }
           }
