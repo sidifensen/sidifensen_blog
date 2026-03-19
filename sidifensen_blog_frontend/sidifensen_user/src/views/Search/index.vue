@@ -426,7 +426,8 @@ const changeSortType = (value) => {
 const handleSearch = async () => {
   const keyword = searchKeyword.value.trim();
   if (!keyword) {
-    ElMessage.warning("请输入搜索关键字");
+    // 搜索栏为空时，清空搜索恢复到初始状态
+    clearSearch();
     return;
   }
 
@@ -1571,6 +1572,11 @@ onUnmounted(() => {
   .search-container > .mobile-sidebar {
     display: none;
   }
+
+  // 隐藏移动端专属热门标签
+  .mobile-hot-tags {
+    display: none;
+  }
 }
 
 // 768px 移动端其他样式优化
@@ -1623,8 +1629,37 @@ onUnmounted(() => {
             gap: 8px;
 
             .cloud-tag {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
               padding: 6px 12px;
               font-size: 13px;
+              background: var(--bg-page);
+              border-radius: 16px;
+              color: var(--text-regular);
+              cursor: pointer;
+              transition: all 0.2s;
+              line-height: 1;
+              min-height: 32px;
+
+              &:hover {
+                background: var(--primary);
+                color: white;
+              }
+
+              &.large {
+                font-size: 15px;
+                padding: 6px 14px;
+                font-weight: 500;
+              }
+
+              &.medium {
+                font-size: 14px;
+              }
+
+              &.small {
+                font-size: 12px;
+              }
             }
           }
         }
