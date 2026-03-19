@@ -1048,11 +1048,20 @@ onUnmounted(() => {
       padding: 16px 20px;
       border-bottom: 1px solid var(--border);
       background: var(--bg-page);
+      flex-wrap: nowrap;
 
       .results-info {
+        flex: 1;
+        min-width: 0;
+
         .result-count {
           font-size: 14px;
           color: var(--text-regular);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: inline-block;
+          max-width: 100%;
 
           strong {
             color: var(--text-primary);
@@ -1061,17 +1070,18 @@ onUnmounted(() => {
           .keyword-tag {
             background: var(--primary-light);
             color: var(--primary);
-            padding: 4px 10px;
+            padding: 2px 8px;
             border-radius: 4px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
           }
 
           .search-type-hint {
             color: var(--text-muted);
-            font-size: 12px;
-            margin-left: 8px;
+            font-size: 11px;
+            margin-left: 4px;
             font-weight: 400;
+            white-space: nowrap;
           }
         }
       }
@@ -1079,22 +1089,24 @@ onUnmounted(() => {
       .sort-dropdown {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 6px 12px;
+        gap: 4px;
+        padding: 4px 8px;
         background: var(--bg-card);
         border: 1px solid var(--border);
-        border-radius: 6px;
-        font-size: 13px;
+        border-radius: 4px;
+        font-size: 12px;
         color: var(--text-regular);
         cursor: pointer;
         position: relative;
+        flex-shrink: 0;
+        white-space: nowrap;
 
         &:hover {
           border-color: var(--primary);
         }
 
         .sort-dropdown-text {
-          margin-right: 4px;
+          margin-right: 2px;
         }
       }
     }
@@ -1508,19 +1520,44 @@ onUnmounted(() => {
       gap: 12px;
 
       .author-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
         padding: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+
+        &:hover {
+          background: var(--bg-page);
+        }
 
         .author-avatar {
+          flex-shrink: 0;
           width: 40px;
           height: 40px;
+          border-radius: 50%;
+          background: var(--bg-page);
         }
 
-        .author-name {
-          font-size: 14px;
-        }
+        .author-info {
+          flex: 1;
+          min-width: 0;
 
-        .author-desc {
-          font-size: 12px;
+          .author-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .author-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+          }
         }
       }
     }
@@ -1575,6 +1612,286 @@ onUnmounted(() => {
           }
         }
       }
+    }
+  }
+}
+
+// 480px 小屏手机优化
+@media (max-width: 480px) {
+  .search-container {
+    // 基础布局
+    .search-main-container {
+      padding: 12px;
+    }
+
+    .search-section {
+      padding: 12px;
+
+      .search-title {
+        font-size: 18px;
+      }
+
+      // 搜索输入区域
+      .search-box-wrapper {
+        .search-input-group {
+          gap: 8px;
+
+          .search-input {
+            height: 44px;
+            font-size: 15px;
+          }
+
+          .search-btn {
+            height: 44px;
+            min-height: 44px;
+          }
+        }
+
+        // 搜索类型按钮 2×2 网格
+        .search-types {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
+
+          .search-type-pill {
+            min-height: 44px;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+          }
+        }
+
+        // 搜索历史 - 多行显示
+        .search-history {
+          .history-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+
+            .history-tag {
+              padding: 6px 10px;
+              font-size: 13px;
+            }
+          }
+        }
+
+        // 热门搜索单列
+        .hot-search {
+          .hot-list {
+            grid-template-columns: 1fr;
+            gap: 8px;
+
+            .hot-item {
+              padding: 8px 10px;
+
+              .hot-rank {
+                width: 18px;
+                height: 18px;
+                font-size: 11px;
+              }
+
+              .hot-text {
+                font-size: 13px;
+              }
+
+              .hot-count {
+                font-size: 11px;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // 搜索结果区域
+    .results-section {
+      .results-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+        padding: 12px 16px;
+
+        .results-info {
+          .result-count {
+            font-size: 13px;
+            flex-wrap: wrap;
+
+            .keyword-tag {
+              padding: 2px 8px;
+            }
+
+            .search-type-hint {
+              font-size: 10px;
+            }
+          }
+        }
+
+        .sort-dropdown {
+          width: 100%;
+          justify-content: center;
+          padding: 10px 12px;
+          min-height: 44px;
+          -webkit-tap-highlight-color: transparent;
+        }
+      }
+
+      // 文章卡片优化
+      .article-list {
+        .article-card {
+          padding: 12px;
+          gap: 12px;
+
+          .article-cover {
+            height: 120px;
+          }
+
+          .article-title {
+            font-size: 15px;
+          }
+
+          .article-description {
+            font-size: 13px;
+            line-height: 1.7;
+          }
+
+          .article-meta {
+            font-size: 12px;
+            gap: 12px;
+
+            .article-tags {
+              margin-left: 0;
+              margin-top: 8px;
+              flex-wrap: wrap;
+            }
+          }
+        }
+      }
+
+      // 空状态优化
+      .empty-state {
+        padding: 60px 16px;
+
+        .empty-icon {
+          font-size: 48px;
+        }
+
+        h3 {
+          font-size: 16px;
+        }
+
+        p {
+          font-size: 13px;
+        }
+      }
+
+      // 骨架屏优化
+      .loading-container {
+        .article-skeleton {
+          flex-direction: column;
+          gap: 12px;
+
+          .skeleton-content {
+            gap: 6px;
+          }
+        }
+      }
+    }
+
+    // 初始提示区域
+    .initial-hint {
+      padding: 40px 16px;
+
+      .hint-icon {
+        font-size: 36px;
+      }
+
+      h3 {
+        font-size: 16px;
+      }
+
+      p {
+        font-size: 13px;
+      }
+    }
+
+    // 移动端侧边栏
+    .mobile-sidebar {
+      padding: 12px;
+      gap: 12px;
+
+      .sidebar-card {
+        padding: 12px;
+
+        .sidebar-title {
+          font-size: 15px;
+        }
+      }
+
+      .tag-cloud {
+        gap: 6px;
+
+        .cloud-tag {
+          padding: 6px 10px;
+          font-size: 12px;
+        }
+      }
+
+      .author-list {
+        gap: 8px;
+
+        .author-item {
+          padding: 8px;
+
+          .author-avatar {
+            width: 36px;
+            height: 36px;
+          }
+
+          .author-name {
+            font-size: 13px;
+          }
+
+          .author-desc {
+            font-size: 11px;
+          }
+        }
+      }
+    }
+  }
+
+  // 触摸优化 - 所有可点击元素
+  .search-container {
+    -webkit-tap-highlight-color: transparent;
+
+    button,
+    .search-type-pill,
+    .history-tag,
+    .hot-item,
+    .article-card,
+    .cloud-tag,
+    .author-item,
+    .sort-dropdown,
+    .clear-btn,
+    .close-icon,
+    .article-tag,
+    .author-link {
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      min-height: 44px;
+    }
+  }
+}
+
+// 尊重用户动画偏好
+@media (prefers-reduced-motion: reduce) {
+  .search-container {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
     }
   }
 }
