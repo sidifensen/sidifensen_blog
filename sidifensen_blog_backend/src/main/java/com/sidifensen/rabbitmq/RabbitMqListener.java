@@ -12,6 +12,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,7 @@ import java.util.Map;
  */
 @Component
 @Slf4j
+@ConditionalOnProperty(name = "rabbitmq.listener.enabled", havingValue = "true", matchIfMissing = true)
 public class RabbitMqListener {
 
     @Resource
@@ -74,6 +76,12 @@ public class RabbitMqListener {
             } else if (type.equals(MailEnum.RESET_EMAIL.getType())) {
                 emailUtils.sendHtmlMail(email, MailEnum.RESET_EMAIL.getSubject(), MailEnum.RESET_EMAIL.getTemplateName(),
                         Map.of("checkCode", checkCode, "frontendUserHost", frontendUserHost));
+            } else if (type.equals(MailEnum.COMMENT_NOTIFICATION.getType())) {
+                // 评论通知邮件
+                handleCommentNotificationEmail(message);
+            } else if (type.equals(MailEnum.SYSTEM_NOTIFICATION.getType())) {
+                // 系统通知邮件
+                handleSystemNotificationEmail(message);
             } else {
                 log.warn("未知的邮件类型: {}, 跳过处理", type);
             }
@@ -83,6 +91,68 @@ public class RabbitMqListener {
             // 抛出异常触发重试机制
             throw new RuntimeException("邮件发送失败: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * 处理评论通知邮件
+     *
+     * @param message 邮件消息
+     */
+    private void handleCommentNotificationEmail(Map<String, Object> message) {
+        String recipientNickname = (String) message.get("recipientNickname");
+        String commenterNickname = (String) message.get("commenterNickname");
+        String articleTitle = (String) message.get("articleTitle");
+        Integer articleId = (Integer) message.get("articleId");
+        String commentContent = (String) message.get("commentContent");
+        Boolean isReply = (Boolean) message.get("isReply");
+        String parentCommentContent = (String) message.get("parentCommentContent");
+
+        emailUtils.sendHtmlMail(
+                (String) message.get("email"),
+                MailEnum.COMMENT_NOTIFICATION.getSubject(),
+                MailEnum.COMMENT_NOTIFICATION.getTemplateName(),
+                Map.of(
+                        "recipientNickname", recipientNickname,
+                        "commenterNickname", commenterNickname,
+                        "articleTitle", articleTitle,
+                        "articleId", articleId,
+                        "commentContent", commentContent,
+                        "isReply", isReply != null && isReply,
+                        "parentCommentContent", parentCommentContent != null ? parentCommentContent : "",
+                        "frontendUserHost", frontendUserHost
+                )
+        );
+    }
+
+    /**
+     * 处理系统通知邮件
+     *
+     * @param message 邮件消息
+     */
+    private void handleSystemNotificationEmail(Map<String, Object> message) {
+        String recipientNickname = (String) message.get("recipientNickname");
+        String notificationTitle = (String) message.get("notificationTitle");
+        String notificationContent = (String) message.get("notificationContent");
+        String extraInfo = (String) message.get("extraInfo");
+        String sendTime = (String) message.get("sendTime");
+        String linkUrl = (String) message.get("linkUrl");
+        String linkText = (String) message.get("linkText");
+
+        emailUtils.sendHtmlMail(
+                (String) message.get("email"),
+                MailEnum.SYSTEM_NOTIFICATION.getSubject(),
+                MailEnum.SYSTEM_NOTIFICATION.getTemplateName(),
+                Map.of(
+                        "recipientNickname", recipientNickname,
+                        "notificationTitle", notificationTitle,
+                        "notificationContent", notificationContent,
+                        "extraInfo", extraInfo != null ? extraInfo : "",
+                        "sendTime", sendTime != null ? sendTime : "",
+                        "linkUrl", linkUrl != null ? linkUrl : "",
+                        "linkText", linkText != null ? linkText : "",
+                        "frontendUserHost", frontendUserHost
+                )
+        );
     }
 
     /**

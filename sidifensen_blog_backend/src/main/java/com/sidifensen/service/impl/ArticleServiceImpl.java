@@ -97,6 +97,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Resource
     private VipService vipService;
 
+    @Resource
+    private UserSettingsService userSettingsService;
+
     @Override
     public PageVo<List<ArticleVo>> getAllArticleList(Integer pageNum, Integer pageSize) {
         Page<Article> page = new Page<>(pageNum, pageSize);
@@ -1244,6 +1247,17 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
 
         messageService.sendToUser(messageDto);
+
+        // 发送系统邮件通知
+        sendSystemEmailNotification(
+                article.getUserId(),
+                examineStatus.equals(ExamineStatusEnum.PASS.getCode()) ? "文章审核通过" : "文章审核未通过",
+                examineStatus.equals(ExamineStatusEnum.PASS.getCode())
+                        ? "您的文章《" + article.getTitle() + "》已通过审核，现在可以被其他用户查看了。"
+                        : "您的文章《" + article.getTitle() + "》未通过审核，原因：" + examineReason,
+                null,
+                null,
+                null);
     }
 
     @Override
@@ -1538,6 +1552,57 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         } catch (Exception e) {
             log.error("获取热门文章列表失败: {}", e.getMessage(), e);
             throw new BlogException(BlogConstants.GetHotArticleListError);
+        }
+    }
+
+    /**
+     * 发送系统邮件通知
+     *
+     * @param userId 用户 ID
+     * @param notificationTitle 通知标题
+     * @param notificationContent 通知内容
+     * @param extraInfo 附加信息
+     * @param linkUrl 链接地址
+     * @param linkText 链接文字
+     */
+    private void sendSystemEmailNotification(Integer userId, String notificationTitle, String notificationContent,
+            String extraInfo, String linkUrl, String linkText) {
+        try {
+            // 检查用户是否开启了系统邮件通知
+            Integer receiveSystemEmail = userSettingsService.getReceiveSystemEmail(userId);
+            if (receiveSystemEmail == 0) {
+                log.debug("用户 {} 关闭了系统邮件通知，跳过发送", userId);
+                return;
+            }
+
+            // 查询用户邮箱
+            SysUser user = sysUserMapper.selectById(userId);
+            if (user == null || user.getEmail() == null) {
+                log.warn("发送系统邮件通知失败：用户 {} 不存在或邮箱为空", userId);
+                return;
+            }
+
+            // 构建邮件消息
+            HashMap<String, Object> emailMessage = new HashMap<>();
+            emailMessage.put("email", user.getEmail());
+            emailMessage.put("recipientNickname", user.getNickname());
+            emailMessage.put("notificationTitle", notificationTitle);
+            emailMessage.put("notificationContent", notificationContent);
+            emailMessage.put("extraInfo", extraInfo != null ? extraInfo : "");
+            emailMessage.put("sendTime", java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            emailMessage.put("linkUrl", linkUrl != null ? linkUrl : "");
+            emailMessage.put("linkText", linkText != null ? linkText : "");
+            emailMessage.put("type", "systemNotification");
+
+            // 发送邮件到队列
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConstants.Email_Exchange,
+                    RabbitMQConstants.System_Email_Routing_Key,
+                    emailMessage);
+
+            log.info("系统邮件通知已发送到队列：to={}, title={}", user.getEmail(), notificationTitle);
+        } catch (Exception e) {
+            log.error("发送系统邮件通知失败：userId={}", userId, e);
         }
     }
 

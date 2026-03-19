@@ -10,12 +10,18 @@ package com.sidifensen.domain.constants;
 public class RabbitMQConstants {
 
     // ==================== 邮件相关 ====================
-    
+
     public static final String Email_Exchange = "email_exchange";
 
     public static final String Email_Queue = "email_queue";
 
     public static final String Email_Routing_Key = "email_routing_key";
+
+    // 评论邮件通知路由键
+    public static final String Comment_Email_Routing_Key = "comment_email_routing_key";
+
+    // 系统邮件通知路由键
+    public static final String System_Email_Routing_Key = "system_email_routing_key";
 
     // ==================== 审核相关 ====================
     

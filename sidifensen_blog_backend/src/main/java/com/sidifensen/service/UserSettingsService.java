@@ -61,4 +61,12 @@ public interface UserSettingsService extends IService<UserSettings> {
      */
     Integer getReceiveSystemEmail(Integer userId);
 
+    /**
+     * 更新用户的系统邮件通知设置
+     *
+     * @param userId 用户 ID
+     * @param isReceive 是否接收（0-关闭，1-开启）
+     */
+    void setReceiveSystemEmail(Integer userId, Integer isReceive);
+
 }

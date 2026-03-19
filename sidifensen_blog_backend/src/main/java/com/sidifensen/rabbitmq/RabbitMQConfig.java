@@ -88,6 +88,30 @@ public class RabbitMQConfig {
                 .with(RabbitMQConstants.Email_Routing_Key);
     }
 
+    /**
+     * 评论邮件通知路由绑定
+     * 复用同一个邮件队列，使用不同的路由键区分
+     */
+    @Bean
+    public Binding bindingCommentEmailQueueToExchange() {
+        return BindingBuilder
+                .bind(emailQueue())
+                .to(emailExchange())
+                .with(RabbitMQConstants.Comment_Email_Routing_Key);
+    }
+
+    /**
+     * 系统邮件通知路由绑定
+     * 复用同一个邮件队列，使用不同的路由键区分
+     */
+    @Bean
+    public Binding bindingSystemEmailQueueToExchange() {
+        return BindingBuilder
+                .bind(emailQueue())
+                .to(emailExchange())
+                .with(RabbitMQConstants.System_Email_Routing_Key);
+    }
+
     // ==================== 审核队列配置 ====================
 
     @Bean

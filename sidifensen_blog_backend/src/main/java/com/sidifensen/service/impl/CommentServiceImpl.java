@@ -29,6 +29,7 @@ import com.sidifensen.mapper.LikeMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.CommentService;
 import com.sidifensen.service.MessageService;
+import com.sidifensen.service.UserSettingsService;
 import com.sidifensen.utils.SecurityUtils;
 import com.sidifensen.utils.TextAuditUtils;
 import jakarta.annotation.Resource;
@@ -80,6 +81,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     @Resource
     private RabbitTemplate rabbitTemplate;
+
+    @Resource
+    private UserSettingsService userSettingsService;
 
     // 通知发送专用线程池
     private final ExecutorService notificationExecutor = new ThreadPoolExecutor(
@@ -798,6 +802,16 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                             article.getId(),
                             article.getUserId(), // 文章作者ID
                             comment.getContent()); // 回复内容
+
+                    // 发送邮件通知给被回复者
+                    sendCommentEmailNotification(
+                            comment.getReplyUserId(),
+                            commenter.getNickname(),
+                            article.getTitle(),
+                            article.getId(),
+                            comment.getContent(),
+                            true,
+                            null);
                 } else {
                     // 否则通知文章作者
                     messageService.sendCommentNotification(
@@ -807,11 +821,73 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                             article.getTitle(),
                             article.getId(),
                             comment.getContent()); // 评论内容
+
+                    // 发送邮件通知给文章作者
+                    sendCommentEmailNotification(
+                            article.getUserId(),
+                            commenter.getNickname(),
+                            article.getTitle(),
+                            article.getId(),
+                            comment.getContent(),
+                            false,
+                            null);
                 }
             } catch (Exception e) {
                 log.error("发送评论通知失败：commentId={}", comment.getId(), e);
             }
         });
+    }
+
+    /**
+     * 发送评论邮件通知
+     *
+     * @param notifiedUserId 被通知的用户 ID
+     * @param commenterNickname 评论者昵称
+     * @param articleTitle 文章标题
+     * @param articleId 文章 ID
+     * @param commentContent 评论内容
+     * @param isReply 是否是回复评论
+     * @param parentCommentContent 父评论内容（如果是回复）
+     */
+    private void sendCommentEmailNotification(Integer notifiedUserId, String commenterNickname,
+            String articleTitle, Integer articleId, String commentContent,
+            Boolean isReply, String parentCommentContent) {
+        try {
+            // 检查用户是否开启了评论邮件通知
+            Integer receiveCommentEmail = userSettingsService.getReceiveCommentEmail(notifiedUserId);
+            if (receiveCommentEmail == 0) {
+                log.debug("用户 {} 关闭了评论邮件通知，跳过发送", notifiedUserId);
+                return;
+            }
+
+            // 查询用户邮箱
+            SysUser notifiedUser = sysUserMapper.selectById(notifiedUserId);
+            if (notifiedUser == null || notifiedUser.getEmail() == null) {
+                log.warn("发送邮件通知失败：用户 {} 不存在或邮箱为空", notifiedUserId);
+                return;
+            }
+
+            // 发送邮件到队列
+            HashMap<String, Object> emailMessage = new HashMap<>();
+            emailMessage.put("email", notifiedUser.getEmail());
+            emailMessage.put("recipientNickname", notifiedUser.getNickname());
+            emailMessage.put("commenterNickname", commenterNickname);
+            emailMessage.put("articleTitle", articleTitle);
+            emailMessage.put("articleId", articleId);
+            emailMessage.put("commentContent", commentContent);
+            emailMessage.put("isReply", isReply);
+            emailMessage.put("parentCommentContent", parentCommentContent);
+            emailMessage.put("type", "commentNotification");
+
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConstants.Email_Exchange,
+                    RabbitMQConstants.Comment_Email_Routing_Key,
+                    emailMessage);
+
+            log.info("评论邮件通知已发送到队列：to={}, articleId={}", notifiedUser.getEmail(), articleId);
+        } catch (Exception e) {
+            log.error("发送评论邮件通知失败：notifiedUserId={}", notifiedUserId, e);
+        }
     }
 
     @Override
