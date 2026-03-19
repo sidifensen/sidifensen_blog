@@ -50,4 +50,32 @@ public class UserSettingsController {
         return Result.success();
     }
 
+    /**
+     * 更新评论邮件通知设置
+     *
+     * @param isReceive 是否接收（0-关闭，1-开启）
+     * @return 操作结果
+     */
+    @PutMapping("/comment_email")
+    public Result updateCommentEmailSetting(@RequestParam Integer isReceive) {
+        Integer userId = SecurityUtils.getUserId();
+        userSettingsService.setReceiveCommentEmail(userId, isReceive);
+        log.info("更新评论邮件通知设置：userId={}, isReceive={}", userId, isReceive);
+        return Result.success();
+    }
+
+    /**
+     * 更新系统邮件通知设置
+     *
+     * @param isReceive 是否接收（0-关闭，1-开启）
+     * @return 操作结果
+     */
+    @PutMapping("/system_email")
+    public Result updateSystemEmailSetting(@RequestParam Integer isReceive) {
+        Integer userId = SecurityUtils.getUserId();
+        userSettingsService.setReceiveSystemEmail(userId, isReceive);
+        log.info("更新系统邮件通知设置：userId={}, isReceive={}", userId, isReceive);
+        return Result.success();
+    }
+
 }

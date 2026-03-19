@@ -50,4 +50,28 @@ public class UserSettings implements Serializable {
      */
     private Integer receiveSystemEmail;
 
+    /**
+     * 是否接收私信邮件通知（别名，用于 JSON 序列化）
+     * @return 是否接收私信邮件通知
+     */
+    public Integer getIsReceivePrivateMessageEmail() {
+        return this.receivePrivateMessageEmail;
+    }
+
+    /**
+     * 是否接收评论邮件通知（别名，用于 JSON 序列化）
+     * @return 是否接收评论邮件通知
+     */
+    public Integer getIsReceiveCommentEmail() {
+        return this.receiveCommentEmail;
+    }
+
+    /**
+     * 是否接收系统邮件通知（别名，用于 JSON 序列化）
+     * @return 是否接收系统邮件通知
+     */
+    public Integer getIsReceiveSystemEmail() {
+        return this.receiveSystemEmail;
+    }
+
 }
