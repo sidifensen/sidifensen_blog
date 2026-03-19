@@ -264,6 +264,44 @@
         </div>
       </aside>
     </div>
+
+    <!-- 移动端侧边栏 - 在主内容下方垂直排列 -->
+    <aside class="mobile-sidebar">
+      <!-- 热门标签 -->
+      <div class="sidebar-card">
+        <h3 class="sidebar-title">🏷️ 热门标签</h3>
+        <div class="tag-cloud">
+          <span
+            v-for="(tag, index) in hotTags"
+            :key="index"
+            class="cloud-tag"
+            :class="getTagSizeClass(index)"
+            @click="searchByTag(tag.name)"
+          >
+            {{ tag.name }}
+          </span>
+        </div>
+      </div>
+
+      <!-- 推荐作者 -->
+      <div class="sidebar-card">
+        <h3 class="sidebar-title">👨‍ 推荐作者</h3>
+        <div class="author-list">
+          <div
+            v-for="(author, index) in recommendedAuthors"
+            :key="index"
+            class="author-item"
+            @click="goToAuthor(author.id)"
+          >
+            <el-avatar :size="40" :src="author.avatar || ''" class="author-avatar" />
+            <div class="author-info">
+              <div class="author-name">{{ author.nickname || author.username }}</div>
+              <div class="author-desc">{{ author.articleCount || 0 }} 篇文章</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
   </div>
 </template>
 
@@ -1375,7 +1413,8 @@ onUnmounted(() => {
 }
 
 // 响应式设计
-@media (max-width: 900px) {
+// 900px-1199px: 小屏桌面，隐藏侧边栏
+@media (max-width: 1199px) and (min-width: 900px) {
   .search-main-container {
     grid-template-columns: 1fr;
   }
@@ -1385,6 +1424,87 @@ onUnmounted(() => {
   }
 }
 
+// <768px: 移动端，侧边栏移动到主内容下方垂直排列
+@media (max-width: 768px) {
+  .search-container {
+    .search-main-container {
+      grid-template-columns: 1fr;
+      padding: 16px;
+
+      // 隐藏原始位置的侧边栏
+      .sidebar {
+        display: none;
+      }
+    }
+  }
+
+  // 移动端侧边栏 - 显示在主内容下方
+  .search-container > .mobile-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+
+    .sidebar-card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+
+      .sidebar-title {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: var(--text-primary);
+      }
+    }
+
+    // 标签云
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      .cloud-tag {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+    }
+
+    // 作者列表
+    .author-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      .author-item {
+        padding: 8px;
+
+        .author-avatar {
+          width: 40px;
+          height: 40px;
+        }
+
+        .author-name {
+          font-size: 14px;
+        }
+
+        .author-desc {
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}
+
+// ≥769px: 桌面端，隐藏移动端侧边栏，显示原始侧边栏
+@media (min-width: 769px) {
+  .search-container > .mobile-sidebar {
+    display: none;
+  }
+}
+
+// 768px 移动端其他样式优化
 @media (max-width: 768px) {
   .search-container {
     .search-main-container {
