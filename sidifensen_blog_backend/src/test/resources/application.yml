@@ -1,0 +1,139 @@
+# Spring 配置
+spring:
+  # 数据库配置（测试环境必须连接真实数据库）
+  datasource:
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 1
+      connection-timeout: 30000
+      idle-timeout: 240000
+      max-lifetime: 300000
+      connection-test-query: SELECT 1
+      validation-timeout: 3000
+      leak-detection-threshold: 60000
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/sidifensen_blog?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false&connectTimeout=30000&socketTimeout=30000
+    username: root
+    password: root
+
+  # Redis 配置（测试环境禁用）
+  data:
+    redis:
+      host: none
+      port: 12345
+
+  # 邮件配置（测试环境使用模拟配置）
+  mail:
+    host: localhost
+    port: 1025
+    username: test
+    password: test
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: false
+          ssl:
+            enable: false
+
+  # RabbitMQ 配置（测试环境禁用）
+  rabbitmq:
+    host: none
+    port: 12345
+    username: test
+    password: test
+    virtual-host: /
+    connection-timeout: 60000
+    requested-heartbeat: 60
+    publisher-confirm-type: none
+    publisher-returns: false
+    listener:
+      simple:
+        acknowledge-mode: none
+        prefetch: 1
+        concurrency: 1
+        max-concurrency: 1
+
+  # AI 配置（测试环境使用模拟配置）
+  ai:
+    openai:
+      api-key: sk-test
+      base-url: http://localhost:1234
+      chat:
+        options:
+          model: test-model
+          temperature: 0.7
+          max-tokens: 200
+
+# 禁用 RabbitMQ 监听器（测试环境不需要）
+rabbitmq:
+  listener:
+    enabled: false
+
+# MinIO 配置（测试环境使用模拟配置）
+minio:
+  endpoint: http://localhost:9000
+  publicPoint: http://localhost:9000
+  accessKey: test
+  secretKey: test
+  bucketName: test
+
+# OAuth 配置（测试环境使用模拟配置）
+oauth:
+  gitee:
+    client-id: test
+    client-secret: test
+    redirect-uri: http://localhost:5000/oauth/gitee/callback
+  github:
+    client-id: test
+    client-secret: test
+    redirect-uri: http://localhost:5000/oauth/github/callback
+  qq:
+    client-id: test
+    client-secret: test
+    redirect-uri: http://localhost:5000/oauth/qq/callback
+
+# 前端地址配置
+frontend:
+  userHost: http://localhost:7000/
+  adminHost: http://localhost:8000/
+
+# VIP 配置（测试环境使用模拟配置）
+vip:
+  alipay:
+    appId: test
+    privateKey: test
+    alipayPublicKey: test
+    gatewayUrl: https://openapi-sandbox.dl.alipaydev.com/gateway.do
+    notifyUrl: http://localhost:5000/vip/pay/alipay/notify
+    returnUrlPc: http://localhost:7000/vip/result
+    returnUrlH5: http://localhost:7000/vip/result
+    sandbox: true
+
+# 阿里云配置（测试环境使用模拟配置）
+aliyun:
+  accessKeyId: test
+  accessKeySecret: test
+  imageaudit:
+    endpoint: imageaudit.cn-shanghai.aliyuncs.com
+
+# JWT 配置（测试环境）
+sidifensen:
+  jwt: sidifensen-test-jwt-secret
+  PhotoAutoAudit: false
+  ArticleAutoAudit: false
+  CommentAutoAudit: false
+  AllowOrigins:
+    - http://localhost:7000
+    - http://localhost:8000
+
+# 日志配置
+logging:
+  level:
+    org.springframework.boot.autoconfigure: INFO
+    org.springframework.boot.autoconfigure.logging: INFO
+    org.springframework: INFO
+    org.springframework.boot.context.properties: INFO
+    org.springframework.core.env: INFO
+    org.springframework.boot.env: INFO
