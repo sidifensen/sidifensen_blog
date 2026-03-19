@@ -187,21 +187,30 @@
                 <h3 class="article-title">{{ article.title }}</h3>
                 <p class="article-description">{{ article.description || "暂无描述" }}</p>
                 <div class="article-meta">
-                  <span class="meta-item">📅 {{ formatDate(article.createTime) }}</span>
-                  <span class="meta-item">👁 {{ formatCompactNumber(article.readCount || 0) }}</span>
-                  <span class="meta-item">❤️ {{ formatCompactNumber(article.likeCount || 0) }}</span>
-                  <span class="meta-item author-link" @click.stop="goToAuthor(article.userId)">
-                    👤 <span class="author-name">{{ article.nickname || "匿名用户" }}</span>
-                  </span>
-                  <div class="article-tags">
-                    <el-tag
-                      v-for="(tag, index) in parseTag(article.tag)"
-                      :key="index"
-                      size="small"
-                      class="article-tag"
-                    >
-                      {{ tag }}
-                    </el-tag>
+                  <!-- 第一行：时间、浏览量、点赞量 -->
+                  <div class="meta-row stats-row">
+                    <span class="meta-item">📅 {{ formatDate(article.createTime) }}</span>
+                    <span class="meta-item">👁 {{ formatCompactNumber(article.readCount || 0) }}</span>
+                    <span class="meta-item">❤️ {{ formatCompactNumber(article.likeCount || 0) }}</span>
+                  </div>
+                  <!-- 第二行：作者 -->
+                  <div class="meta-row author-row">
+                    <span class="meta-item author-link" @click.stop="goToAuthor(article.userId)">
+                      👤 {{ article.nickname || "匿名用户" }}
+                    </span>
+                  </div>
+                  <!-- 第三行：标签 -->
+                  <div class="meta-row tags-row">
+                    <div class="article-tags">
+                      <el-tag
+                        v-for="(tag, index) in parseTag(article.tag)"
+                        :key="index"
+                        size="small"
+                        class="article-tag"
+                      >
+                        {{ tag }}
+                      </el-tag>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1217,49 +1226,58 @@ onUnmounted(() => {
 
           .article-meta {
             display: flex;
-            align-items: center;
-            gap: 12px;
+            flex-direction: column;
+            gap: 8px;
             margin-top: auto;
             font-size: 12px;
             color: var(--text-muted);
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: 4px;
 
-            .meta-item {
+            // 第一行：统计数据（时间、浏览量、点赞量）
+            .stats-row {
               display: flex;
               align-items: center;
-              gap: 4px;
-              flex-shrink: 0;
+              gap: 12px;
+              flex-wrap: nowrap;
+              overflow-x: auto;
+              -webkit-overflow-scrolling: touch;
 
-              &.author-link {
+              .meta-item {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                flex-shrink: 0;
+                white-space: nowrap;
+              }
+            }
+
+            // 第二行：作者
+            .author-row {
+              .author-link {
+                display: flex;
+                align-items: center;
+                gap: 4px;
                 cursor: pointer;
                 transition: color 0.2s;
-                max-width: 120px;
+                color: var(--text-muted);
 
                 &:hover {
                   color: var(--primary);
                 }
-
-                .author-name {
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  white-space: nowrap;
-                }
               }
             }
 
-            .article-tags {
-              display: flex;
-              gap: 6px;
-              margin-left: auto;
-              flex-shrink: 0;
+            // 第三行：标签
+            .tags-row {
+              .article-tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
 
-              .article-tag {
-                background: var(--bg-page);
-                color: var(--text-regular);
-                border: none;
+                .article-tag {
+                  background: var(--bg-page);
+                  color: var(--text-regular);
+                  border: none;
+                }
               }
             }
           }
@@ -1554,21 +1572,6 @@ onUnmounted(() => {
           .article-cover {
             width: 100%;
             height: 160px;
-          }
-
-          .article-content {
-            .article-meta {
-              // 保持一行显示，支持横向滚动
-              flex-direction: row;
-              align-items: center;
-              flex-wrap: nowrap;
-              overflow-x: auto;
-              padding-bottom: 4px;
-
-              .article-tags {
-                flex-shrink: 0;
-              }
-            }
           }
         }
       }
