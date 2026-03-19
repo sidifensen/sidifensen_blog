@@ -46,7 +46,6 @@ public class UserSettingsServiceImpl extends ServiceImpl<UserSettingsMapper, Use
         settings.setReceiveCommentEmail(0);
         settings.setReceiveSystemEmail(0);
         userSettingsMapper.insert(settings);
-        log.info("创建默认用户设置：userId={}", userId);
     }
 
     @Override
@@ -71,12 +70,10 @@ public class UserSettingsServiceImpl extends ServiceImpl<UserSettingsMapper, Use
             settings.setReceiveCommentEmail(0);
             settings.setReceiveSystemEmail(0);
             userSettingsMapper.insert(settings);
-            log.info("创建用户设置记录：userId={}, receivePrivateMessageEmail={}", userId, isReceive);
         } else {
             // 更新现有记录
             settings.setReceivePrivateMessageEmail(isReceive);
             userSettingsMapper.updateById(settings);
-            log.info("更新用户设置：userId={}, receivePrivateMessageEmail={}", userId, isReceive);
         }
     }
 
@@ -84,20 +81,39 @@ public class UserSettingsServiceImpl extends ServiceImpl<UserSettingsMapper, Use
     public Integer getReceiveCommentEmail(Integer userId) {
         UserSettings settings = getSettings(userId);
         if (settings == null) {
-            // 如果没有设置记录，返回默认值 1（开启）
-            return 1;
+            // 如果没有设置记录，返回默认值 0（关闭）
+            return 0;
         }
-        return settings.getReceiveCommentEmail() != null ? settings.getReceiveCommentEmail() : 1;
+        return settings.getReceiveCommentEmail() != null ? settings.getReceiveCommentEmail() : 0;
+    }
+
+    @Override
+    public void setReceiveCommentEmail(Integer userId, Integer isReceive) {
+        UserSettings settings = getSettings(userId);
+
+        if (settings == null) {
+            // 创建新记录
+            settings = new UserSettings();
+            settings.setUserId(userId);
+            settings.setReceiveCommentEmail(isReceive);
+            settings.setReceivePrivateMessageEmail(0);
+            settings.setReceiveSystemEmail(0);
+            userSettingsMapper.insert(settings);
+        } else {
+            // 更新现有记录
+            settings.setReceiveCommentEmail(isReceive);
+            userSettingsMapper.updateById(settings);
+        }
     }
 
     @Override
     public Integer getReceiveSystemEmail(Integer userId) {
         UserSettings settings = getSettings(userId);
         if (settings == null) {
-            // 如果没有设置记录，返回默认值 1（开启）
-            return 1;
+            // 如果没有设置记录，返回默认值 0（关闭）
+            return 0;
         }
-        return settings.getReceiveSystemEmail() != null ? settings.getReceiveSystemEmail() : 1;
+        return settings.getReceiveSystemEmail() != null ? settings.getReceiveSystemEmail() : 0;
     }
 
     @Override
@@ -112,12 +128,10 @@ public class UserSettingsServiceImpl extends ServiceImpl<UserSettingsMapper, Use
             settings.setReceivePrivateMessageEmail(0);
             settings.setReceiveCommentEmail(0);
             userSettingsMapper.insert(settings);
-            log.info("创建用户设置记录：userId={}, receiveSystemEmail={}", userId, isReceive);
         } else {
             // 更新现有记录
             settings.setReceiveSystemEmail(isReceive);
             userSettingsMapper.updateById(settings);
-            log.info("更新用户设置：userId={}, receiveSystemEmail={}", userId, isReceive);
         }
     }
 

@@ -99,6 +99,24 @@
                 </div>
               </div>
             </div>
+
+            <!-- 移动端专属：热门标签（在热门搜索下方） -->
+            <div v-if="!hasSearched" class="mobile-hot-tags">
+              <div class="section-header">
+                <span class="section-title">🏷️ 热门标签</span>
+              </div>
+              <div class="tag-cloud">
+                <span
+                  v-for="(tag, index) in hotTags"
+                  :key="index"
+                  class="cloud-tag"
+                  :class="getTagSizeClass(index)"
+                  @click="searchByTag(tag.name)"
+                >
+                  {{ tag.name }}
+                </span>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -276,22 +294,6 @@
 
     <!-- 移动端侧边栏 - 在主内容下方垂直排列 -->
     <aside class="mobile-sidebar">
-      <!-- 热门标签 -->
-      <div class="sidebar-card">
-        <h3 class="sidebar-title">🏷️ 热门标签</h3>
-        <div class="tag-cloud">
-          <span
-            v-for="(tag, index) in hotTags"
-            :key="index"
-            class="cloud-tag"
-            :class="getTagSizeClass(index)"
-            @click="searchByTag(tag.name)"
-          >
-            {{ tag.name }}
-          </span>
-        </div>
-      </div>
-
       <!-- 推荐作者 -->
       <div class="sidebar-card">
         <h3 class="sidebar-title">👨‍ 推荐作者</h3>
@@ -1598,10 +1600,69 @@ onUnmounted(() => {
         .hot-list {
           grid-template-columns: 1fr;
         }
+
+        // 移动端专属：热门标签（在热门搜索下方）
+        .mobile-hot-tags {
+          margin-top: 20px;
+          padding-top: 20px;
+          border-top: 1px solid var(--border);
+
+          .section-header {
+            margin-bottom: 12px;
+
+            .section-title {
+              font-size: 14px;
+              font-weight: 500;
+              color: var(--text-muted);
+            }
+          }
+
+          .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+
+            .cloud-tag {
+              padding: 6px 12px;
+              font-size: 13px;
+            }
+          }
+        }
       }
     }
 
     .results-section {
+      .results-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+
+        .results-info {
+          flex: 1;
+          min-width: 0;
+
+          .result-count {
+            font-size: 13px;
+
+            .keyword-tag {
+              padding: 2px 6px;
+            }
+
+            .search-type-hint {
+              font-size: 10px;
+            }
+          }
+        }
+
+        .sort-dropdown {
+          flex-shrink: 0;
+          padding: 4px 10px;
+          min-height: 32px;
+          font-size: 12px;
+        }
+      }
+
       .article-list {
         .article-card {
           flex-direction: column;
@@ -1661,16 +1722,25 @@ onUnmounted(() => {
           }
         }
 
-        // 搜索历史 - 多行显示
+        // 搜索历史 - 标签变小
         .search-history {
+          .section-header {
+            margin-bottom: 8px;
+          }
+
           .history-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 4px;
 
             .history-tag {
-              padding: 6px 10px;
-              font-size: 13px;
+              padding: 4px 8px;
+              font-size: 12px;
+              height: 26px;
+
+              .close-icon {
+                font-size: 11px;
+              }
             }
           }
         }
@@ -1700,24 +1770,40 @@ onUnmounted(() => {
             }
           }
         }
+
+        // 移动端专属热门标签
+        .mobile-hot-tags {
+          .tag-cloud {
+            gap: 6px;
+
+            .cloud-tag {
+              padding: 5px 10px;
+              font-size: 12px;
+            }
+          }
+        }
       }
     }
 
     // 搜索结果区域
     .results-section {
       .results-header {
-        flex-direction: column;
-        gap: 12px;
-        align-items: stretch;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
         padding: 12px 16px;
 
         .results-info {
+          flex: 1;
+          min-width: 0;
+
           .result-count {
             font-size: 13px;
             flex-wrap: wrap;
 
             .keyword-tag {
-              padding: 2px 8px;
+              padding: 2px 6px;
             }
 
             .search-type-hint {
@@ -1727,10 +1813,11 @@ onUnmounted(() => {
         }
 
         .sort-dropdown {
-          width: 100%;
+          flex-shrink: 0;
           justify-content: center;
-          padding: 10px 12px;
-          min-height: 44px;
+          padding: 6px 12px;
+          min-height: 36px;
+          font-size: 12px;
           -webkit-tap-highlight-color: transparent;
         }
       }
@@ -1739,7 +1826,7 @@ onUnmounted(() => {
       .article-list {
         .article-card {
           padding: 12px;
-          gap: 12px;
+          gap: 0px;
 
           .article-cover {
             height: 120px;
@@ -1756,11 +1843,10 @@ onUnmounted(() => {
 
           .article-meta {
             font-size: 12px;
-            gap: 12px;
+            gap: 0px;
 
             .article-tags {
               margin-left: 0;
-              margin-top: 8px;
               flex-wrap: wrap;
             }
           }

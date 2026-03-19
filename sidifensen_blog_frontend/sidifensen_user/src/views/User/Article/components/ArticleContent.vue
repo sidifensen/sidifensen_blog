@@ -24,7 +24,7 @@
           <div class="article-header">
             <div class="title-row">
               <h1 class="article-title">{{ article.title }}</h1>
-              <span v-if="isVipArticle" class="vip-article-badge">VIP文章</span>
+              <span v-if="isVipArticle" class="vip-article-badge">VIP 文章</span>
             </div>
             <p v-if="isVipArticle" class="title-tip">当前文章属于 VIP 可见内容，只有有效会员和作者本人可以查看。</p>
           </div>
@@ -114,55 +114,19 @@
         </div>
       </template>
     </el-skeleton>
-
-    <!-- 文章底部操作栏 -->
-    <div class="article-actions" v-if="article">
-      <div class="action-item">
-        <el-button :type="article.isLiked ? 'primary' : 'default'" :loading="likeLoading" @click="handleLike">
-          <svg-icon name="like" width="16px" height="16px" margin-right="6px" :color="article.isLiked ? '#ffffff' : '#909399'" />
-          {{ formatCount(article.likeCount) }}
-        </el-button>
-      </div>
-      <div class="action-item">
-        <el-button :type="article.isCollected ? 'primary' : 'default'" :icon="article.isCollected ? StarFilled : Star" @click="handleCollect">
-          {{ formatCount(article.collectCount) }}
-        </el-button>
-      </div>
-      <div class="action-item">
-        <el-button :icon="ChatLineRound" @click="handleComment">
-          {{ formatCount(commentTotal || article.commentCount) }}
-        </el-button>
-      </div>
-    </div>
-
-    <!-- 返回顶部按钮 -->
-    <div class="back-to-top" @click="scrollToTop">
-      <el-icon>
-        <ArrowUp />
-      </el-icon>
-    </div>
-
-    <!-- 评论抽屉 -->
-    <CommentDrawer v-if="article?.id" v-model="commentDrawerVisible" :article-id="article.id" :article-title="article.title" ref="commentDrawerRef" />
-
-    <!-- 收藏对话框 -->
-    <FavoriteDialog v-if="article?.id" v-model="favoriteDialogVisible" :article-id="article.id" @success="handleFavoriteSuccess" />
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
-import { Clock, View, Star, StarFilled, ChatLineRound, ArrowUp, Edit } from "@element-plus/icons-vue";
-import { toggleLike, isLiked } from "@/api/like";
+import { Clock, View, Star, Edit } from "@element-plus/icons-vue";
 import { useUserStore } from "@/stores/userStore";
 import { formatCompactNumber } from "@/utils/formatNumber";
-import CommentDrawer from "@/views/User/Article/components/CommentDrawer.vue";
-import FavoriteDialog from "./FavoriteDialog.vue";
 import MobileAuthorInfo from "./MobileAuthorInfo.vue";
 
-// 路由和状态管理
+// 路由
 const router = useRouter();
 const userStore = useUserStore();
 
@@ -186,17 +150,6 @@ const props = defineProps({
   },
 });
 
-// Emits 定义
-const emit = defineEmits(["updateArticle"]);
-
-// 响应式数据
-const likeLoading = ref(false); // 点赞加载状态
-const commentDrawerVisible = ref(false); // 评论抽屉显示状态
-const commentTotal = ref(0); // 评论总数
-const commentDrawerRef = ref(null); // 评论抽屉引用
-const favoriteDialogVisible = ref(false); // 收藏对话框显示状态
-const copySuccess = ref(false); // 复制成功状态
-
 // 渲染富文本内容
 const renderContent = computed(() => {
   if (!props.article?.content) return "";
@@ -209,11 +162,6 @@ const tagList = computed(() => {
   return props.article.tag.split(",").filter((tag) => tag.trim() !== "");
 });
 
-// 使用统一的数字格式化工具函数
-const formatCount = (value) => {
-  return formatCompactNumber(value);
-};
-
 // 标记当前文章是否为 VIP 可见文章
 const isVipArticle = computed(() => props.article?.visibleRange === 3);
 
@@ -222,92 +170,6 @@ const isCurrentUser = computed(() => {
   if (!userStore.user?.id || !props.article?.userId) return false;
   return userStore.user.id === props.article.userId;
 });
-
-// 点赞文章
-const handleLike = async () => {
-  if (!props.article?.id) {
-    ElMessage.warning("文章信息异常");
-    return;
-  }
-
-  if (likeLoading.value) {
-    return; // 防止重复点击
-  }
-
-  try {
-    likeLoading.value = true;
-
-    // 调用后端接口切换点赞状态
-    await toggleLike(0, props.article.id); // 0表示文章类型
-
-    // 更新本地文章数据
-    const updatedArticle = { ...props.article };
-    if (updatedArticle.isLiked) {
-      // 取消点赞
-      updatedArticle.isLiked = false;
-      updatedArticle.likeCount = Math.max(0, (updatedArticle.likeCount || 0) - 1);
-      ElMessage.success("取消点赞成功");
-    } else {
-      // 点赞
-      updatedArticle.isLiked = true;
-      updatedArticle.likeCount = (updatedArticle.likeCount || 0) + 1;
-      ElMessage.success("点赞成功");
-    }
-
-    // 通知父组件更新文章数据
-    emit("updateArticle", updatedArticle);
-  } catch (error) {
-    console.error("点赞操作失败:", error);
-    ElMessage.error("点赞操作失败，请重试");
-  } finally {
-    likeLoading.value = false;
-  }
-};
-
-// 收藏文章
-const handleCollect = () => {
-  if (!props.article?.id) {
-    ElMessage.warning("文章信息异常");
-    return;
-  }
-  favoriteDialogVisible.value = true;
-};
-
-// 处理收藏成功
-const handleFavoriteSuccess = (result) => {
-  // 更新文章的收藏状态和收藏数
-  const updatedArticle = { ...props.article };
-
-  if (result.action === "add") {
-    // 添加收藏：如果之前没有收藏过任何收藏夹，现在收藏了
-    if (!updatedArticle.isCollected) {
-      updatedArticle.isCollected = true;
-      updatedArticle.collectCount = (updatedArticle.collectCount || 0) + 1;
-    }
-    // 如果之前已经收藏过（在其他收藏夹中），只更新状态，不增加数量
-  } else if (result.action === "remove") {
-    // 取消收藏：只有当没有其他收藏夹收藏了这篇文章时，才更新状态和数量
-    if (!result.hasOtherCollected) {
-      updatedArticle.isCollected = false;
-      updatedArticle.collectCount = Math.max(0, (updatedArticle.collectCount || 0) - 1);
-    }
-    // 如果还有其他收藏夹收藏了这篇文章，保持 isCollected=true 和 collectCount 不变
-  }
-
-  // 通知父组件更新文章数据
-  emit("updateArticle", updatedArticle);
-};
-
-// 评论文章
-const handleComment = () => {
-  commentDrawerVisible.value = true;
-};
-
-// 返回顶部
-const scrollToTop = () => {
-  // 滚动到页面顶部
-  window.scrollTo({ top: 0, behavior: "smooth" });
-};
 
 // 点击标签跳转到搜索页面
 const handleTagClick = (tag) => {
@@ -346,13 +208,7 @@ const copyCodeBlock = async (codeElement) => {
     await navigator.clipboard.writeText(codeText);
 
     // 显示成功提示
-    copySuccess.value = true;
     ElMessage.success("代码已复制到剪贴板");
-
-    // 2秒后重置状态
-    setTimeout(() => {
-      copySuccess.value = false;
-    }, 2000);
   } catch (error) {
     console.error("复制失败:", error);
     ElMessage.error("复制失败，请手动复制");
@@ -386,8 +242,7 @@ const handleEditArticle = () => {
 <style lang="scss" scoped>
 // 文章内容容器
 .article-content {
-  padding: 30px 30px; // 底部留出空间给固定操作栏
-  position: relative;
+  padding: 30px 30px;
 
   // 骨架屏样式
   .skeleton-content {
@@ -556,11 +411,6 @@ const handleEditArticle = () => {
             align-items: center;
             gap: 8px;
 
-            .label {
-              flex-shrink: 0;
-              font-weight: 500;
-            }
-
             .columns-container {
               display: flex;
               gap: 6px;
@@ -589,7 +439,7 @@ const handleEditArticle = () => {
 
     // 文章内容
     .article-body {
-      margin-bottom: 100px; // 增加底部边距，避免被固定操作栏遮挡
+      margin-bottom: 50px;
       line-height: 1.8;
       font-size: 16px;
       color: var(--el-text-color-primary);
@@ -623,11 +473,6 @@ const handleEditArticle = () => {
 
         &:hover {
           background-color: var(--el-fill-color) !important;
-
-          .copy-button {
-            opacity: 1;
-            visibility: visible;
-          }
         }
 
         // 复制按钮样式
@@ -668,7 +513,7 @@ const handleEditArticle = () => {
       :deep(a) {
         color: #409eff;
         text-decoration: none;
-        
+
         &:hover {
           text-decoration: underline;
         }
@@ -686,7 +531,7 @@ const handleEditArticle = () => {
         }
       }
 
-      // 表格样式 - 简单有效的滚动解决方案
+      // 表格样式
       :deep(table) {
         min-width: 100% !important;
         max-width: 100% !important;
@@ -699,7 +544,6 @@ const handleEditArticle = () => {
           text-align: center;
         }
 
-        // 自定义滚动条样式，确保可见
         &::-webkit-scrollbar {
           height: 10px;
         }
@@ -719,11 +563,11 @@ const handleEditArticle = () => {
       // 任务列表样式
       :deep(li[data-type="taskItem"]) {
         display: flex;
-        align-items: center; // 改为center实现垂直居中
+        align-items: center;
         gap: 8px;
         margin-bottom: 8px;
         list-style: none;
-        pointer-events: none; // 在最外层禁用所有点击事件
+        pointer-events: none;
 
         label {
           display: flex;
@@ -740,11 +584,11 @@ const handleEditArticle = () => {
           flex: 1;
           margin: 0;
           display: flex;
-          align-items: center; // 确保内容区域也垂直居中
+          align-items: center;
 
           p {
             margin: 0;
-            line-height: 1.4; // 稍微调整行高
+            line-height: 1.4;
           }
         }
       }
@@ -761,66 +605,6 @@ const handleEditArticle = () => {
         padding-left: 15px;
       }
     }
-  }
-}
-
-// 文章底部操作栏 - 固定在视窗底部，使用稳定的居中定位
-.article-actions {
-  position: fixed;
-  bottom: 20px;
-  left: calc(50vw - 200px); // 使用vw单位避免滚动条影响，200px是操作栏最大宽度的一半
-  z-index: 999;
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  padding: 16px 24px;
-  background: var(--el-bg-color);
-  backdrop-filter: blur(2px);
-  background-color: color-mix(in srgb, var(--el-bg-color) 50%, transparent);
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 24px;
-  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.15);
-  max-width: 400px;
-  width: auto;
-
-  .action-item {
-    .el-button {
-      min-width: 100px;
-      border-radius: 20px;
-    }
-  }
-}
-
-// 返回顶部按钮样式 - 极简设计
-.back-to-top {
-  position: fixed;
-  z-index: 9999;
-  right: 24px;
-  bottom: 120px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  backdrop-filter: blur(8px);
-  background-color: var(--el-bg-color);
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 8px;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--el-text-color-secondary);
-
-  &:hover {
-    background-color: var(--el-color-primary);
-    color: var(--el-color-white);
-    border-color: var(--el-color-primary);
-    box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
-    transform: translateY(-2px);
-  }
-
-  .el-icon {
-    font-size: 16px;
   }
 }
 
@@ -862,7 +646,7 @@ const handleEditArticle = () => {
               gap: 15px;
               flex-wrap: wrap;
               width: 100%;
-              justify-content: space-between; // 让内容分布在两端
+              justify-content: space-between;
 
               .basic-info-content {
                 display: flex;
@@ -929,12 +713,11 @@ const handleEditArticle = () => {
 
         // 移动端表格样式优化
         :deep(table) {
-          min-width: 100%; // 移动端不设置固定最小宽度
-          font-size: 14px; // 适当缩小字体
+          min-width: 100%;
+          font-size: 14px;
 
-          // 移动端滚动条样式优化
           &::-webkit-scrollbar {
-            height: 6px; // 移动端滚动条更细
+            height: 6px;
           }
 
           &::-webkit-scrollbar-track {
@@ -953,11 +736,11 @@ const handleEditArticle = () => {
         }
 
         :deep(td, th) {
-          min-width: 80px; // 移动端减小最小宽度
-          padding: 6px 8px; // 减小内边距
-          font-size: 14px; // 稍微缩小字体
-          white-space: normal; // 允许文本换行
-          word-break: break-word; // 长单词可以断开
+          min-width: 80px;
+          padding: 6px 8px;
+          font-size: 14px;
+          white-space: normal;
+          word-break: break-word;
         }
 
         :deep(th) {
@@ -965,37 +748,6 @@ const handleEditArticle = () => {
           font-weight: 600;
         }
       }
-    }
-  }
-
-  // 移动端操作栏调整
-  .article-actions {
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 30px;
-    padding: 12px 20px;
-    gap: 16px;
-    max-width: 320px;
-
-    .action-item {
-      .el-button {
-        min-width: 80px;
-        font-size: 14px;
-        padding: 8px 16px;
-      }
-    }
-  }
-
-  // 移动端返回顶部按钮调整
-  .back-to-top {
-    right: 16px;
-    bottom: 100px;
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-
-    .el-icon {
-      font-size: 16px;
     }
   }
 }

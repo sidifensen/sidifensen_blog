@@ -131,4 +131,14 @@ public class SysUserVo {
      */
     private Integer isReceivePrivateMessageEmail;
 
+    /**
+     * 是否接收评论邮件通知 0-关闭 1-开启
+     */
+    private Integer isReceiveCommentEmail;
+
+    /**
+     * 是否接收系统邮件通知 0-关闭 1-开启
+     */
+    private Integer isReceiveSystemEmail;
+
 }

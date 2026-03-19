@@ -1,6 +1,6 @@
 <template>
   <Header></Header>
-  <router-view class="router-view"></router-view>
+  <router-view class="router-view page-fade-in"></router-view>
 </template>
 
 <script setup>

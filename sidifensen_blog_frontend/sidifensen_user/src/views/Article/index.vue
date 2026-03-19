@@ -342,10 +342,18 @@ onMounted(() => {
 // 文章广场页面 - 现代极简主义科技风
 // 完全匹配参考文件：白天模式 article-square-style-modern-tech-light.html，黑夜模式 article-square-style-modern-tech.html
 
+// 全局盒模型
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 .article-page-body {
   width: 100%;
   min-height: 100vh;
   background: #f8fafc;
+  overflow-x: hidden;
 
   html.dark & {
     background: #000000;
@@ -427,16 +435,47 @@ onMounted(() => {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   line-height: 1.6;
 
+  // 手机端适配 - 防止页面溢出
+  @media (max-width: 768px) {
+    padding: 0 20px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100vw;
+  }
+
   // ===== 页面头部 - 极致简约 =====
   .page-hero {
     padding: 60px 0 40px;
     border-bottom: 1px solid var(--bg-hero-divider);
+
+    // 手机端适配
+    @media (max-width: 768px) {
+      padding: 40px 0 25px;
+
+      .hero-kicker {
+        font-size: 10px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      p {
+        font-size: 13px;
+      }
+    }
 
     .hero-content {
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
       gap: 24px;
+
+      // 手机端适配
+      @media (max-width: 768px) {
+        justify-content: flex-start;
+        gap: 8px;
+      }
 
       .hero-copy {
         max-width: 500px;
@@ -488,13 +527,33 @@ onMounted(() => {
       grid-template-columns: 1fr;
     }
 
+    // 手机端适配 - 防止页面水平滚动
+    @media (max-width: 768px) {
+      padding: 30px 0 50px;
+      gap: 24px;
+    }
+
     // ===== 主内容区 =====
     .main-content {
+      width: 100%;
+      max-width: 100%;
+
+      // 手机端适配
+      @media (max-width: 768px) {
+        width: 100%;
+      }
       // ===== 文章列表 - 极致简约 =====
       .article-list {
         display: flex;
         flex-direction: column;
         gap: 12px;
+        width: 100%;
+        max-width: 100%;
+
+        // 手机端适配
+        @media (max-width: 768px) {
+          gap: 24px;
+        }
 
         // 骨架屏加载
         .article-list-loading {
@@ -503,6 +562,22 @@ onMounted(() => {
             gap: 20px;
             padding: 20px 0;
             border-bottom: 1px solid var(--border-light);
+
+            // 手机端适配
+            @media (max-width: 768px) {
+              flex-direction: column;
+              gap: 0;
+              padding: 0;
+              border: none;
+
+              :deep(.el-skeleton-item) {
+                &[variant="image"] {
+                  width: 100% !important;
+                  height: 200px !important;
+                  border-radius: 0;
+                }
+              }
+            }
 
             .skeleton-content {
               flex: 1;
@@ -517,6 +592,11 @@ onMounted(() => {
         .empty-state {
           padding: 80px 0;
           text-align: center;
+
+          // 手机端适配
+          @media (max-width: 768px) {
+            padding: 60px 0;
+          }
 
           :deep(.el-empty__description) {
             color: var(--text-secondary);
@@ -535,6 +615,38 @@ onMounted(() => {
           transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
           overflow: hidden;
+
+          // 手机端适配 - 纵向布局
+          @media (max-width: 768px) {
+            flex-direction: column;
+            gap: 0;
+            padding: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            width: 100%;
+
+            .article-cover {
+              width: 100%;
+              height: 200px;
+              border-radius: 0;
+              flex-shrink: 0;
+              overflow: hidden;
+
+              .cover-image {
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+                object-fit: cover;
+              }
+            }
+
+            .article-content {
+              height: auto;
+              min-height: auto;
+              padding: 20px;
+              width: 100%;
+            }
+          }
 
           &::before {
             content: '';
@@ -581,6 +693,14 @@ onMounted(() => {
             flex-shrink: 0;
             overflow: hidden;
             border: 1px solid var(--border-light);
+
+            // 手机端适配
+            @media (max-width: 768px) {
+              width: 100%;
+              height: 200px;
+              border-radius: 0;
+              border: none;
+            }
 
             .loading-text {
               display: flex;
@@ -684,6 +804,12 @@ onMounted(() => {
               letter-spacing: -0.01em;
               transition: color 0.2s ease;
 
+              // 手机端适配
+              @media (max-width: 768px) {
+                font-size: 16px;
+                line-height: 1.4;
+              }
+
               &:hover {
                 color: var(--accent-color);
               }
@@ -698,6 +824,11 @@ onMounted(() => {
               -webkit-line-clamp: 2;
               -webkit-box-orient: vertical;
               overflow: hidden;
+
+              // 手机端适配
+              @media (max-width: 768px) {
+                font-size: 14px;
+              }
             }
 
             // 文章元信息
@@ -709,6 +840,13 @@ onMounted(() => {
               color: var(--text-muted);
               font-feature-settings: "tnum";
               font-weight: 300;
+
+              // 手机端适配 - 元信息换行
+              @media (max-width: 768px) {
+                flex-wrap: wrap;
+                gap: 8px;
+                font-size: 10px;
+              }
 
               span {
                 display: flex;
@@ -759,12 +897,22 @@ onMounted(() => {
       flex-direction: column;
       gap: 20px;
 
+      // 手机端适配
+      @media (max-width: 768px) {
+        gap: 16px;
+      }
+
       // 侧边栏卡片
       .sidebar-card {
         background: var(--bg-card);
         border: 1px solid var(--border-light);
         border-radius: 8px;
         padding: 20px;
+
+        // 手机端适配
+        @media (max-width: 768px) {
+          padding: 20px;
+        }
 
         .card-title {
           font-size: 13px;

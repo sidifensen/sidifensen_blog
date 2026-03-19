@@ -735,10 +735,7 @@ onBeforeUnmount(() => {
       display: block; // 显示移动端菜单按钮
     }
     .logo {
-      margin-right: 0;
-      .logo-text {
-        font-size: 20px !important;
-      }
+      display: none; // 手机端隐藏 logo
     }
   }
 }

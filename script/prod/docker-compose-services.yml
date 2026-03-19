@@ -98,23 +98,23 @@ services:
       interval: 10s
       start_period: 60s
 
-# 数据卷
+# 数据卷（使用已存在的外部卷）
 volumes:
   mysql_data:
-    driver: local
+    external: true
     name: sidifensen-mysql-data
   redis_data:
-    driver: local
+    external: true
     name: sidifensen-redis-data
   minio_data:
-    driver: local
+    external: true
     name: sidifensen-minio-data
   rabbitmq_data:
-    driver: local
+    external: true
     name: sidifensen-rabbitmq-data
 
-# 网络
+# 网络（使用已存在的外部网络）
 networks:
   sidifensen-network:
-    driver: bridge
+    external: true
     name: sidifensen-blog-network

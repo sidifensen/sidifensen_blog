@@ -266,35 +266,88 @@ cd sidifensen_blog_frontend/sidifensen_admin && npm run build
 
 ## Superpowers 标准流程
 
-**何时使用**：执行复杂功能开发、新增模块、重构等任务时，在指令末尾附加此流程。
+**何时使用**：执行复杂功能开发、新增模块、重构等多步骤任务时。
 
-**使用方法**：在任务描述后添加 `【superpowers 标准流程：...】`
+**核心机制**：每个阶段显式触发对应技能，不依赖 AI 记忆长流程。
 
+---
+
+### 阶段 1：启动任务
 ```
-【superpowers 标准流程：
-  1. Skill 检查（先查技能再行动，不要跳过）
-  2. brainstorming（需求澄清）
-  3. using-git-worktrees（隔离工作区）
-  4. writing-plans（任务分解）
-  5. executing-plans（计划执行）
-  6. subagent-driven-development（子代理开发）
-  7. test-driven-development（测试驱动）
-  8. verification-before-completion（验证完成）
-  9. requesting-code-review（代码评审）
-  10. finishing-a-development-branch（分支完成）
+【1. Skill 检查 → 2. brainstorming → 3. using-git-worktrees】
+```
+- 先查技能再行动，不要跳过
+- 需求澄清，明确要做什么
+- 创建隔离工作区
 
-  分支场景：
-  - 遇到问题 → systematic-debugging（系统调试）
-  - 接收评审反馈 → receiving-code-review（接收代码评审）
+### 阶段 2：规划
+```
+【4. writing-plans → 5. executing-plans】
+```
+- 任务分解，输出详细实现计划
+- 激活计划，准备执行
 
-  核心原则：
-  - Write tests first, always（始终先写测试）
-  - Process over guessing（流程优于猜测）
-  - Simplicity as primary goal（简单性为首要目标）
-  - Evidence before assertions - no empty claims, no skipping steps（先验证再断言 - 禁止空口断言，禁止跳过步骤）】
+### 阶段 3：执行
+```
+【6. subagent-driven-development + 7. test-driven-development】
+```
+- 子代理开发，每个任务独立实现
+- 测试驱动，先写测试再写代码
+
+### 阶段 4：完成
+```
+【8. verification-before-completion → 9. requesting-code-review → 10. finishing-a-development-branch】
+```
+- 验证完成，运行测试证明功能正常
+- 代码评审，检查代码质量
+- 分支完成，合并或创建 PR
+
+---
+
+### 分支场景
+- 遇到问题 → `systematic-debugging`（系统调试）
+- 接收评审反馈 → `receiving-code-review`（接收代码评审）
+
+### 核心原则
+- Write tests first, always（始终先写测试）
+- Process over guessing（流程优于猜测）
+- Simplicity as primary goal（简单性为首要目标）
+- Evidence before assertions - no empty claims, no skipping steps（先验证再断言 - 禁止空口断言，禁止跳过步骤）
+
+---
+
+### 使用方式
+
+**方式 A：完整流程（推荐）**
+```
+帮我添加用户积分系统，按照 superpowers 标准流程执行
 ```
 
-**使用示例：**
+**方式 B：分阶段触发（更可靠）**
 ```
-帮我添加用户积分系统【superpowers 标准流程：1. Skill 检查 → 2. brainstorming → 3. using-git-worktrees → 4. writing-plans → 5. executing-plans → 6. subagent-driven-development → 7. test-driven-development → 8. verification-before-completion → 9. requesting-code-review → 10. finishing-a-development-branch，分支：遇到问题→systematic-debugging（系统调试），接收反馈→receiving-code-review（接收代码评审），核心原则：Write tests first, always（始终先写测试）; Process over guessing（流程优于猜测）; Simplicity as primary goal（简单性为首要目标）; Evidence before assertions - no empty claims, no skipping steps（先验证再断言 - 禁止空口断言，禁止跳过步骤）】
+/ skill superpowers:using-superpowers   # 启动流程
+/ skill superpowers:brainstorming       # 需求澄清
+/ skill superpowers:using-git-worktrees # 隔离工作区
+/ skill superpowers:writing-plans       # 任务分解
+/ skill superpowers:executing-plans     # 激活计划
+/ skill superpowers:subagent-driven-development # 执行开发
+/ skill superpowers:test-driven-development     # 测试驱动
+/ skill superpowers:verification-before-completion # 验证
+/ skill superpowers:requesting-code-review      # 评审
+/ skill superpowers:finishing-a-development-branch # 完成
 ```
+
+**方式 C：简化指令（简单任务）**
+```
+帮我修复登录 bug【superpowers 流程：先 brainstorming，再 writing-plans，执行时 TDD，完成前 verification】
+```
+
+---
+
+### 流程偏离纠正
+
+如果发现 AI 跳过某个步骤，立即提醒：
+- "请先执行 brainstorming，不要直接写代码"
+- "还没有写 plan，请先调用 writing-plans 技能"
+- "还没有验证，请运行测试命令证明功能正常"
+- "请先调用 verification-before-completion 技能"

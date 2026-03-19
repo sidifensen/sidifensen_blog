@@ -336,8 +336,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         sysUserVo.setSex(sysUser.getSex());
         sysUserVo.setFansCount(sysUser.getFansCount());
         sysUserVo.setFollowCount(sysUser.getFollowCount());
-        // 从 user_settings 表读取私信邮件通知设置
+        // 从 user_settings 表读取邮件通知设置
         sysUserVo.setIsReceivePrivateMessageEmail(userSettingsService.getReceivePrivateMessageEmail(userId));
+        sysUserVo.setIsReceiveCommentEmail(userSettingsService.getReceiveCommentEmail(userId));
+        sysUserVo.setIsReceiveSystemEmail(userSettingsService.getReceiveSystemEmail(userId));
         fillVipInfo(sysUserVo, sysUser.getId());
         return sysUserVo;
     }

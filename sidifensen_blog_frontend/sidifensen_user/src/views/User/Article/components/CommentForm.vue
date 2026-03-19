@@ -8,12 +8,12 @@
     <!-- 表单内容 -->
     <div class="form-content">
       <!-- 文本输入框 -->
-      <el-input v-model="commentContent" :placeholder="placeholder" type="textarea" :rows="3" :maxlength="255" show-word-limit resize="none" @keydown.ctrl.enter="handleSubmit" @keydown.meta.enter="handleSubmit" />
+      <el-input v-model="commentContent" :placeholder="placeholder" type="textarea" :rows="3" :maxlength="255" show-word-limit resize="none" @keydown.enter="handleKeydown" />
 
       <!-- 表单操作栏 -->
       <div class="form-actions">
         <div class="form-tips">
-          <span class="tips-text">支持 Ctrl + Enter 快捷发送</span>
+          <span class="tips-text">支持 Enter 发送，Shift + Enter 换行</span>
         </div>
 
         <div class="form-buttons">
@@ -202,6 +202,16 @@ const handleCancel = () => {
   commentContent.value = "";
   aiPopoverVisible.value = false;
   emit("cancel");
+};
+
+// 键盘事件处理 - Enter 发送，Shift+Enter 换行
+const handleKeydown = (event) => {
+  // Enter 键发送评论
+  if (!event.shiftKey) {
+    event.preventDefault(); // 阻止默认换行行为
+    handleSubmit();
+  }
+  // Shift + Enter 允许换行（不阻止默认行为）
 };
 
 // 切换 AI 弹层

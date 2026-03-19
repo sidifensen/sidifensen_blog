@@ -463,3 +463,25 @@ create table pay_order
     index idx_user_id_create_time (user_id, create_time),
     index idx_status_expired_time (status, expired_time)
 );
+
+-- 用户个人设置表
+create table user_settings
+(
+    id                            int primary key auto_increment comment '主键 id',
+    user_id                       int          not null comment '用户 id',
+    receive_private_message_email tinyint      not null default 0 comment '是否接收私信邮件通知：0-关闭，1-开启',
+    receive_comment_email         tinyint      not null default 0 comment '是否接收评论邮件通知：0-关闭，1-开启',
+    receive_system_email          tinyint      not null default 0 comment '是否接收系统邮件通知：0-关闭，1-开启',
+    primary key (`id`) using btree,
+    unique key `uk_user_id` (`user_id`) using btree
+) engine=innodb default charset=utf8mb4 collate=utf8mb4_0900_ai_ci comment='用户个人设置表';
+
+-- 初始化数据 - 为所有现有用户添加默认设置
+insert into user_settings (user_id, receive_private_message_email, receive_comment_email, receive_system_email)
+select
+    id as user_id,
+    0 as receive_private_message_email,
+    0 as receive_comment_email,
+    0 as receive_system_email
+from sys_user
+where is_deleted = 0;

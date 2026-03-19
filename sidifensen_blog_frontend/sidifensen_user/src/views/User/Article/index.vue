@@ -31,6 +31,9 @@
         <ArticleCatalog v-if="!accessState && articleInfo && articleInfo.content" :content="articleInfo.content" />
       </div>
     </div>
+
+    <!-- 文章底部操作栏 - 移到这里避免受 overflow 影响 -->
+    <ArticleActions v-if="articleInfo" :article="articleInfo" @updateArticle="handleUpdateArticle" />
   </div>
 </template>
 
@@ -42,6 +45,7 @@ import { getUserInfoById } from "@/api/user";
 import UserInfoCard from "./components/UserInfoCard.vue";
 import ArticleContent from "./components/ArticleContent.vue";
 import ArticleCatalog from "./components/ArticleCatalog.vue";
+import ArticleActions from "./components/ArticleActions.vue";
 
 // 路由参数
 const route = useRoute();
