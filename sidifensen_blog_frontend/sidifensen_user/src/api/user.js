@@ -104,6 +104,22 @@ export function updateEmail(data) {
   });
 }
 
+// 更新用户设置 - 评论邮件通知
+export function updateCommentEmailSetting(isReceive) {
+  return request({
+    url: `/user/settings/comment_email?isReceive=${isReceive}`,
+    method: "put",
+  });
+}
+
+// 更新用户设置 - 系统邮件通知
+export function updateSystemEmailSetting(isReceive) {
+  return request({
+    url: `/user/settings/system_email?isReceive=${isReceive}`,
+    method: "put",
+  });
+}
+
 // 获取推荐作者列表（活跃作者）
 export function getRecommendedAuthors(limit) {
   return request({

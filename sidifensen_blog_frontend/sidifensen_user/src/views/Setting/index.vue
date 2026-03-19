@@ -250,6 +250,40 @@
                       </div>
                     </div>
                   </div>
+
+                  <div class="section-card__row">
+                    <div class="section-card__row-label">
+                      <span>评论邮件通知</span>
+                      <p>收到新评论时，通过邮件通知你。</p>
+                    </div>
+                    <div class="section-card__row-content">
+                      <div class="display-mode">
+                        <el-switch
+                          v-model="isReceiveCommentEmail"
+                          :active-value="1"
+                          :inactive-value="0"
+                          @change="handleCommentEmailChange"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="section-card__row">
+                    <div class="section-card__row-label">
+                      <span>系统邮件通知</span>
+                      <p>收到系统通知时（审核结果、系统公告等），通过邮件通知你。</p>
+                    </div>
+                    <div class="section-card__row-content">
+                      <div class="display-mode">
+                        <el-switch
+                          v-model="isReceiveSystemEmail"
+                          :active-value="1"
+                          :inactive-value="0"
+                          @change="handleSystemEmailChange"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -412,7 +446,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { Edit, EditPen, Lock, Message, Plus, User } from "@element-plus/icons-vue";
-import { info, resetPassword, sendEmail, updateEmail, updateUserInfo, verifyResetEmail, verifyResetPassword } from "@/api/user";
+import { info, resetPassword, sendEmail, updateEmail, updateUserInfo, verifyResetEmail, verifyResetPassword, updateCommentEmailSetting, updateSystemEmailSetting } from "@/api/user";
 import { uploadAvatar } from "@/api/photo";
 import { compressImage, validateAvatarImageFile } from "@/utils/PhotoUtils";
 import { useUserStore } from "@/stores/userStore";
@@ -424,6 +458,12 @@ const userInfo = ref(null);
 
 // 私信邮件通知开关
 const isReceivePrivateMessageEmail = ref(0);
+
+// 评论邮件通知开关
+const isReceiveCommentEmail = ref(0);
+
+// 系统邮件通知开关
+const isReceiveSystemEmail = ref(0);
 
 const editingField = reactive({
   nickname: false,
@@ -490,6 +530,10 @@ const fetchUserInfo = async () => {
     userInfo.value = res.data.data;
     // 初始化私信邮件通知开关状态
     isReceivePrivateMessageEmail.value = res.data.data.isReceivePrivateMessageEmail || 0;
+    // 初始化评论邮件通知开关状态
+    isReceiveCommentEmail.value = res.data.data.isReceiveCommentEmail || 0;
+    // 初始化系统邮件通知开关状态
+    isReceiveSystemEmail.value = res.data.data.isReceiveSystemEmail || 0;
   } catch (error) {
     ElMessage.error("获取用户信息失败");
     console.error("获取用户信息失败:", error);
@@ -896,6 +940,32 @@ const handlePrivateMessageEmailChange = async (value) => {
     console.error("设置私信邮件通知失败:", error);
     // 恢复状态
     isReceivePrivateMessageEmail.value = value === 1 ? 0 : 1;
+  }
+};
+
+// 处理评论邮件通知开关变化
+const handleCommentEmailChange = async (value) => {
+  try {
+    await updateCommentEmailSetting(value);
+    ElMessage.success(value === 1 ? "已开启评论邮件通知" : "已关闭评论邮件通知");
+  } catch (error) {
+    ElMessage.error("设置失败");
+    console.error("设置评论邮件通知失败:", error);
+    // 恢复状态
+    isReceiveCommentEmail.value = value === 1 ? 0 : 1;
+  }
+};
+
+// 处理系统邮件通知开关变化
+const handleSystemEmailChange = async (value) => {
+  try {
+    await updateSystemEmailSetting(value);
+    ElMessage.success(value === 1 ? "已开启系统邮件通知" : "已关闭系统邮件通知");
+  } catch (error) {
+    ElMessage.error("设置失败");
+    console.error("设置系统邮件通知失败:", error);
+    // 恢复状态
+    isReceiveSystemEmail.value = value === 1 ? 0 : 1;
   }
 };
 
