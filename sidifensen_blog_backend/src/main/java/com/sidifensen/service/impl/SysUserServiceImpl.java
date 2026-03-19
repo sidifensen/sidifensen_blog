@@ -180,6 +180,22 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
         int insert = sysUserMapper.insert(user);
         if (insert == 1) {
+            Integer userId = user.getId();
+
+            // 异步创建用户设置
+            ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+            try {
+                executor.submit(() -> {
+                    try {
+                        userSettingsService.createDefaultSettings(userId);
+                    } catch (Exception e) {
+                        log.error("异步创建用户设置失败，userId={}", userId, e);
+                    }
+                });
+            } finally {
+                executor.shutdown();
+            }
+
             ipService.setRegisterIp(user.getId(), ip);
             sysUserRoleService.setRegisterRole(user.getId());
             redisComponent.cleanEmailCheckCode(registerDto.getEmail(), MailEnum.REGISTER.getType());
