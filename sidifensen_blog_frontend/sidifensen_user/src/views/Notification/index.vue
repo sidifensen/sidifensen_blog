@@ -408,7 +408,8 @@ onUnmounted(() => {
   --shadow-hover: 0 10px 24px rgba(17, 24, 39, 0.08);
 
   min-height: 100vh;
-  padding: 72px 0 48px;
+  padding-top: 100px !important;
+  padding-bottom: 48px;
   background:
     radial-gradient(circle at top left, var(--bg-accent), transparent 34%),
     linear-gradient(180deg, var(--bg-page) 0%, var(--bg-soft) 100%);
@@ -799,7 +800,8 @@ html.dark {
 
 @media (max-width: 640px) {
   .notification-center {
-    padding: 64px 0 36px;
+    padding-top: 80px !important;
+    padding-bottom: 36px;
 
     .container {
       padding: 0 14px;
