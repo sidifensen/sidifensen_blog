@@ -4,7 +4,22 @@
     <div class="login-brand">
       <div class="brand-content">
         <div class="brand-logo">
-          <svg-icon name="logo" width="48px" height="48px" color="#42b983" />
+          <svg viewBox="0 0 80 80" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- 翻开的书本 -->
+            <path d="M10 22 Q40 12 40 12 Q40 12 70 22 L70 58 Q40 48 40 48 Q40 48 10 58 Z" fill="#334155" stroke="#42b983" stroke-width="2"/>
+            <!-- 书脊 -->
+            <path d="M40 12 L40 48" stroke="#42b983" stroke-width="2"/>
+            <!-- 左侧书页线条 -->
+            <line x1="18" y1="30" x2="36" y2="26" stroke="#475569" stroke-width="1.5"/>
+            <line x1="18" y1="38" x2="36" y2="34" stroke="#475569" stroke-width="1.5"/>
+            <line x1="18" y1="46" x2="36" y2="42" stroke="#475569" stroke-width="1.5"/>
+            <!-- 右侧书页线条 -->
+            <line x1="44" y1="26" x2="62" y2="30" stroke="#475569" stroke-width="1.5"/>
+            <line x1="44" y1="34" x2="62" y2="38" stroke="#475569" stroke-width="1.5"/>
+            <line x1="44" y1="42" x2="62" y2="46" stroke="#475569" stroke-width="1.5"/>
+            <!-- 书签 -->
+            <polygon points="52,18 56,18 56,28 54,24 52,28" fill="#42b983"/>
+          </svg>
         </div>
         <h1 class="brand-title">Sidifensen Blog</h1>
         <p class="brand-subtitle">管理后台系统</p>
@@ -144,6 +159,13 @@ const handleLogin = async () => {
 
   .brand-logo {
     margin-bottom: 24px;
+    display: flex;
+    justify-content: center;
+
+    svg {
+      width: 64px;
+      height: 64px;
+    }
   }
 
   .brand-title {
