@@ -338,7 +338,7 @@
         <el-form-item label="套餐名称" prop="name"><el-input v-model="planForm.name" maxlength="50" show-word-limit /></el-form-item>
         <el-form-item label="时长(天)" prop="days"><el-input-number v-model="planForm.days" :min="1" :max="3650" controls-position="right" /></el-form-item>
         <el-form-item label="售价(元)" prop="priceYuan"><el-input v-model="planForm.priceYuan" placeholder="例如 29.90" /></el-form-item>
-        <el-form-item label="启用状态" prop="enabled"><el-switch v-model="planForm.enabled" inline-prompt active-text="启用" inactive-text="停用" /></el-form-item>
+        <el-form-item label="启用状态" prop="enabled"><el-switch v-model="planForm.enabled" /></el-form-item>
         <el-form-item label="套餐说明" prop="description"><el-input v-model="planForm.description" type="textarea" :rows="4" maxlength="100" show-word-limit /></el-form-item>
       </el-form>
       <template #footer>
@@ -1265,8 +1265,7 @@ onUnmounted(() => {
     }
   }
 
-  .adjust-dialog,
-  .plan-dialog {
+  .adjust-dialog {
     .dialog-user-card {
       display: flex;
       flex-direction: column;
@@ -1289,7 +1288,6 @@ onUnmounted(() => {
     }
   }
 
-  :deep(.el-input__wrapper),
   :deep(.el-textarea__inner),
   :deep(.el-select__wrapper),
   :deep(.el-date-editor.el-input__wrapper),
@@ -1691,6 +1689,19 @@ html.dark {
         }
       }
     }
+  }
+}
+</style>
+
+<!-- 全局样式：dialog teleport 到 body 后 scoped 无法穿透 -->
+<style lang="scss">
+.plan-dialog.el-dialog {
+  .el-dialog__header {
+    padding-bottom: 24px !important;
+  }
+
+  .el-dialog__body {
+    padding-top: 20px !important;
   }
 }
 </style>

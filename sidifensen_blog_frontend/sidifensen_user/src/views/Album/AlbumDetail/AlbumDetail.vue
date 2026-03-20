@@ -150,31 +150,32 @@
     </div>
 
     <!-- 上传图片对话框 -->
-    <el-dialog v-model="uploadDialogVisible" title="上传图片" class="upload-dialog">
-      <el-upload
-        action="#"
-        :auto-upload="false"
-        v-model:file-list="fileList"
-        :on-change="handleFileChange"
-        accept=".jpg,.gif,.png,.jpeg,.webp"
-        multiple
-      >
-        <button class="btn-select-files">选择图片</button>
+    <el-dialog v-model="uploadDialogVisible" title="上传图片" class="upload-dialog" :close-on-click-modal="false" @close="handleUploadDialogClose">
+      <div class="upload-area">
+        <input
+          type="file"
+          ref="fileInputRef"
+          accept=".jpg,.gif,.png,.jpeg,.webp"
+          multiple
+          class="file-input"
+          @change="handleFileSelect"
+        />
+        <button class="btn-select-files" @click="triggerFileInput">
+          <el-icon><UploadFilled /></el-icon>
+          选择图片
+        </button>
         <div class="upload-tip">jpg/gif/png/jpeg/webp 格式，单个文件不超过 5MB</div>
-      </el-upload>
+      </div>
       <div class="preview-container">
         <div v-for="(file, index) in fileList" :key="index" class="preview-item">
           <el-image
-            :src="file.url || (file.raw ? URL.createObjectURL(file.raw) : '')"
+            :src="file.url"
             class="preview-image"
             fit="cover"
-          >
-            <template #error>
-              <div class="error">
-                <el-icon><Picture /></el-icon>
-              </div>
-            </template>
-          </el-image>
+          />
+          <button class="btn-remove" @click="removeFile(index)">
+            <el-icon><Close /></el-icon>
+          </button>
         </div>
       </div>
       <template #footer>
@@ -233,7 +234,7 @@ import { storeToRefs } from "pinia"
 import { ElMessage, ElMessageBox } from "element-plus"
 import {
   ArrowLeftBold, User, UploadFilled, Edit, Delete, MoreFilled, Calendar,
-  Back, Right, ZoomOut, ZoomIn, Download, Picture, Loading, Check
+  Back, Right, ZoomOut, ZoomIn, Download, Picture, Loading, Check, Close
 } from "@element-plus/icons-vue"
 import { getAlbum, updateAlbum, deleteAlbum, changeShowStatus, changeCover } from "@/api/album"
 import { uploadAlbumPhoto, batchDeletePhoto } from "@/api/photo"
@@ -405,14 +406,56 @@ const handleBatchDelete = () => {
 const uploadDialogVisible = ref(false)
 const fileList = ref([])
 const uploadLoading = ref(false)
+const fileInputRef = ref(null)
+
+// 触发文件选择
+const triggerFileInput = () => {
+  fileInputRef.value?.click()
+}
+
+// 文件选择处理
+const handleFileSelect = (event) => {
+  const files = event.target.files
+  if (!files || files.length === 0) return
+
+  // 读取每个文件为 data URL 用于预览
+  const newFiles = Array.from(files).map((file) => ({
+    raw: file,
+    url: "",
+  }))
+
+  // 使用 FileReader 读取文件为 data URL
+  let loadedCount = 0
+  newFiles.forEach((fileItem, index) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      fileItem.url = e.target.result
+      loadedCount++
+      if (loadedCount === newFiles.length) {
+        // 所有文件读取完成
+        fileList.value = [...fileList.value, ...newFiles]
+      }
+    }
+    reader.readAsDataURL(fileItem.raw)
+  })
+
+  // 清空 input 以便可以再次选择相同文件
+  event.target.value = ""
+}
+
+// 关闭上传对话框时清理状态
+const handleUploadDialogClose = () => {
+  fileList.value = []
+}
+
+// 移除已选择的图片
+const removeFile = (index) => {
+  fileList.value.splice(index, 1)
+}
 
 const handleUploadPhoto = () => {
   fileList.value = []
   uploadDialogVisible.value = true
-}
-
-const handleFileChange = (file, fileListData) => {
-  fileList.value = fileListData
 }
 
 const submitUpload = async () => {
@@ -1060,6 +1103,22 @@ html.dark {
     gap: 12px;
   }
 
+  // 隐藏原生文件输入
+  .file-input {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    overflow: hidden;
+    z-index: -1;
+  }
+
+  .upload-area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .btn-select-files {
     padding: 10px 20px;
     background: var(--el-color-primary);
@@ -1073,6 +1132,37 @@ html.dark {
     &:hover {
       opacity: 0.9;
       transform: translateY(-2px);
+    }
+  }
+
+  .btn-cancel,
+  .btn-confirm {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-cancel {
+    background: var(--hover-bg);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    margin-right: 10px;
+
+    &:hover {
+      background: var(--border-color);
+    }
+  }
+
+  .btn-confirm {
+    background: var(--el-color-primary);
+    color: #fff;
+    border: none;
+
+    &:hover {
+      opacity: 0.9;
     }
   }
 
@@ -1095,10 +1185,33 @@ html.dark {
       height: 100px;
       border-radius: 8px;
       overflow: hidden;
+      position: relative;
 
       .preview-image {
         width: 100%;
         height: 100%;
+      }
+
+      .btn-remove {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.5);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        transition: background 0.3s;
+
+        &:hover {
+          background: rgba(239, 68, 68, 0.8);
+        }
       }
 
       .error {
@@ -1171,38 +1284,6 @@ html.dark {
         width: 100%;
         height: 100%;
       }
-    }
-  }
-
-  .btn-cancel,
-  .btn-confirm {
-    padding: 10px 24px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .btn-cancel {
-    background: var(--hover-bg);
-    color: var(--text-main);
-    border: 1px solid var(--border-color);
-
-    &:hover {
-      background: var(--border-color);
-    }
-  }
-
-  .btn-confirm {
-    background: var(--el-color-primary);
-    color: #fff;
-    border: none;
-
-    &:hover {
-      opacity: 0.9;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
     }
   }
 
