@@ -350,9 +350,15 @@ const open = () => {
   dialogVisible.value = true;
 };
 
+// 切换对话框状态
+const toggle = () => {
+  dialogVisible.value = !dialogVisible.value;
+};
+
 // 暴露方法给父组件
 defineExpose({
   open,
+  toggle,
 });
 
 // 监听对话框关闭

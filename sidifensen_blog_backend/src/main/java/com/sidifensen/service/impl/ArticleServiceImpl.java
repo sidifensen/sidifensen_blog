@@ -692,20 +692,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         // 4. 转换为 ArticleVo 并填充用户信息
         List<ArticleVo> articleVos = articles.stream()
-                .map(article -> {
-                    ArticleVo articleVo = BeanUtil.copyProperties(article, ArticleVo.class);
-                    // 查询作者信息
-                    SysUser sysUser = users.stream()
-                            .filter(u -> u.getId().equals(article.getUserId()))
-                            .findFirst()
-                            .orElse(null);
-                    if (ObjectUtil.isNotEmpty(sysUser)) {
-                        articleVo.setNickname(sysUser.getNickname());
-                        articleVo.setAvatar(sysUser.getAvatar());
-                    }
-                    return articleVo;
-                })
+                .map(article -> BeanUtil.copyProperties(article, ArticleVo.class))
                 .collect(Collectors.toList());
+
+        // 填充作者昵称和头像信息
+        fillArticleUserInfo(articleVos);
 
         return new PageVo<>(articleVos, page.getTotal());
     }

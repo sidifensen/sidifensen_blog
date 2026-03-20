@@ -10,6 +10,7 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -264,6 +265,44 @@ public class RabbitMQConfig {
                 .bind(operationlogQueue())
                 .to(operationlogExchange())
                 .with(RabbitMQConstants.Operationlog_Routing_Key);
+    }
+
+    // ==================== 订单超时延迟队列配置（TTL + 死信队列方式） ====================
+
+    /**
+     * 订单超时延迟队列
+     * 消息在队列中存活 15 分钟后自动转发到死信队列
+     */
+    @Bean
+    public Queue orderExpireQueue() {
+        Map<String, Object> args = new HashMap<>();
+        // 消息过期后转发到死信交换机
+        args.put("x-dead-letter-exchange", RabbitMQConstants.Dead_Letter_Exchange);
+        args.put("x-dead-letter-routing-key", RabbitMQConstants.Dead_Letter_Routing_Key);
+        // TTL：15 分钟 = 900000 毫秒
+        args.put("x-message-ttl", 15 * 60 * 1000);
+        return QueueBuilder.durable(RabbitMQConstants.Order_Expire_Queue)
+                .withArguments(args)
+                .build();
+    }
+
+    /**
+     * 订单超时延迟交换机（普通 DirectExchange）
+     */
+    @Bean
+    public DirectExchange orderExpireExchange() {
+        return new DirectExchange(RabbitMQConstants.Order_Expire_Exchange, true, false);
+    }
+
+    /**
+     * 绑定订单超时队列到交换机
+     */
+    @Bean
+    public Binding bindingOrderExpireQueueToExchange() {
+        return BindingBuilder
+                .bind(orderExpireQueue())
+                .to(orderExpireExchange())
+                .with(RabbitMQConstants.Order_Expire_Routing_Key);
     }
 
     // ==================== RabbitTemplate 配置 ====================

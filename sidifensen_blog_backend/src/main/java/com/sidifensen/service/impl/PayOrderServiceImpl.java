@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.CreateVipOrderDto;
+import com.sidifensen.domain.dto.PayOrderExpireMessage;
 import com.sidifensen.domain.entity.PayOrder;
 import com.sidifensen.domain.entity.VipPlan;
 import com.sidifensen.domain.enums.PayBizTypeEnum;
@@ -22,6 +23,7 @@ import com.sidifensen.service.AlipayPaymentService;
 import com.sidifensen.service.PayOrderService;
 import com.sidifensen.service.VipMemberService;
 import com.sidifensen.service.VipPlanService;
+import com.sidifensen.rabbitmq.PayOrderExpireProducer;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -55,6 +57,9 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
 
     @Resource
     private VipPlanService vipPlanService;
+
+    @Resource
+    private PayOrderExpireProducer payOrderExpireProducer;
 
     /**
      * 套餐展示数据统一从数据库读取，避免发布后还要改配置文件。
@@ -111,6 +116,10 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
         if (payOrderMapper.insert(payOrder) != 1) {
             throw new BlogException(BlogConstants.VipOrderCreateError);
         }
+
+        // 发送订单超时延迟消息，15分钟后自动关闭
+        PayOrderExpireMessage expireMessage = new PayOrderExpireMessage(payOrder.getOrderNo(), userId);
+        payOrderExpireProducer.sendExpireMessage(expireMessage);
 
         VipOrderCreateVo vipOrderCreateVo = new VipOrderCreateVo();
         vipOrderCreateVo.setOrderNo(payOrder.getOrderNo());
@@ -182,8 +191,9 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
         if (payOrder == null) {
             throw new BlogException(BlogConstants.VipOrderNotFound);
         }
-        // 已支付订单直接返回成功，防止支付宝重复通知导致重复续期。
-        if (PayOrderStatusEnum.PAID.getCode().equals(payOrder.getStatus())) {
+        // 防重放校验：已支付订单（有 paidTime）直接返回成功，防止支付宝重复通知导致重复续期。
+        if (payOrder.getPaidTime() != null) {
+            log.info("订单重复回调，跳过处理，orderNo={}", orderNo);
             return true;
         }
 

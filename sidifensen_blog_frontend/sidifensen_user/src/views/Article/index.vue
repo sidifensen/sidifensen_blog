@@ -206,7 +206,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, computed, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { Star, Picture, View, User } from "@element-plus/icons-vue";
 import { getAllArticleList, getHotArticleList, getVipPreviewArticleList } from "@/api/article";
@@ -232,6 +232,64 @@ const featuredArticleList = ref([]);
 
 // 每页数据量
 const pageSize = ref(10);
+
+// 计算属性 - 是否还有更多数据
+const hasMoreData = computed(() => {
+  return articleList.value.length < total.value && !articleLoading.value && !loadingMore.value;
+});
+
+// 节流函数
+const throttle = (func, delay) => {
+  let lastCall = 0;
+  return function (...args) {
+    const now = Date.now();
+    if (now - lastCall >= delay) {
+      lastCall = now;
+      func.apply(this, args);
+    }
+  };
+};
+
+// 检查是否需要自动加载（处理内容不足一屏或最后一篇文章下方有大片空白的情况）
+const checkAndAutoLoad = (forceThreshold = false) => {
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const windowHeight = window.innerHeight;
+  const documentHeight = document.documentElement.scrollHeight;
+  // 用户可见区域的底部位置
+  const viewportBottom = scrollTop + windowHeight;
+  // 距离底部的距离
+  const remaining = documentHeight - viewportBottom;
+
+  console.log('checkAndAutoLoad:', {
+    scrollTop,
+    windowHeight,
+    viewportBottom,
+    documentHeight,
+    remaining,
+    hasMoreData: hasMoreData.value,
+    loadingMore: loadingMore.value
+  });
+
+  if (!hasMoreData.value || loadingMore.value) {
+    return;
+  }
+
+  // forceThreshold 用于首次加载后的检查，使用更宽松的阈值
+  const threshold = forceThreshold ? windowHeight : 300;
+
+  // 两种情况触发加载:
+  // 1. 用户可见区域底部已经接近或超过内容底部
+  // 2. 距离底部 threshold 以内
+  if (remaining <= threshold) {
+    console.log('触发滚动加载，currentPage:', currentPage.value, 'threshold:', threshold);
+    fetchArticleList(false);
+  }
+};
+
+// 滚动加载更多
+const handleScroll = throttle(() => {
+  checkAndAutoLoad();
+}, 300);
 
 // 获取文章列表
 const fetchArticleList = async (reset = false) => {
@@ -261,6 +319,12 @@ const fetchArticleList = async (reset = false) => {
     if (hasMore.value && newArticles.length > 0) {
       currentPage.value++;
     }
+
+    // 加载完成后立即检查，如果内容仍不足则自动加载下一页
+    // reset=true 时使用更宽松的阈值（一个视口高度），确保首屏内容充足
+    nextTick(() => {
+      checkAndAutoLoad(reset);
+    });
   } catch (error) {
     ElMessage.error("获取文章列表失败");
     console.error("获取文章列表失败:", error);
@@ -335,6 +399,12 @@ onMounted(() => {
   fetchArticleList(true);
   fetchHotArticleList();
   fetchFeaturedArticleList();
+  window.addEventListener("scroll", handleScroll, { passive: true });
+});
+
+// 组件卸载
+onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll);
 });
 </script>
 

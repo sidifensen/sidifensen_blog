@@ -710,9 +710,6 @@ onUnmounted(() => {
     --achievement-bg: linear-gradient(135deg, rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.06) 0%, rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.02) 100%);
     --achievement-bg-hover: linear-gradient(135deg, rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.12) 0%, rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.04) 100%);
     --achievement-border: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.1);
-    position: sticky;
-    top: 80px;
-    height: fit-content;
 
     // 黑夜模式适配
     html.dark & {

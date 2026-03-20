@@ -127,4 +127,21 @@ public class RabbitMQConstants {
      */
     public static final String Operationlog_Routing_Key = "operationlog_routing_key";
 
+    // ==================== 订单超时相关 ====================
+
+    /**
+     * 订单超时延迟交换机（需要 rabbitmq_delayed_message_exchange 插件）
+     */
+    public static final String Order_Expire_Exchange = "order_expire_exchange";
+
+    /**
+     * 订单超时延迟队列
+     */
+    public static final String Order_Expire_Queue = "order_expire_queue";
+
+    /**
+     * 订单超时路由键
+     */
+    public static final String Order_Expire_Routing_Key = "order_expire_routing_key";
+
 }

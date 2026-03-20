@@ -135,9 +135,11 @@
                 <span class="search-type-hint" v-if="searchType === 'author'">（作者搜索）</span>
               </span>
             </div>
-            <el-dropdown trigger="click" class="sort-dropdown">
-              <span class="sort-dropdown-text">{{ sortOptions.find(o => o.value === sortBy)?.label }}</span>
-              <el-icon><ArrowDown /></el-icon>
+            <el-dropdown trigger="click" class="sort-dropdown-wrapper" @visible-change="handleSortDropdownVisible">
+              <div class="sort-dropdown-trigger">
+                <span class="sort-dropdown-text">{{ sortOptions.find(o => o.value === sortBy)?.label }}</span>
+                <el-icon class="sort-arrow-icon" :class="{ 'is-up': isSortDropdownOpen }"><ArrowDown /></el-icon>
+              </div>
               <template #dropdown>
                 <el-dropdown-menu class="sort-menu">
                   <el-dropdown-item
@@ -354,6 +356,9 @@ const pageSize = ref(10);
 const total = ref(0);
 const hasSearched = ref(false);
 const sortBy = ref("default");
+const isSortDropdownOpen = ref(false);
+// 标记是否还有更多数据（当页加载数量小于 pageSize 说明没有更多了）
+const hasMoreData = ref(true);
 
 // 搜索历史（从 localStorage 读取）
 const searchHistory = ref([]);
@@ -375,8 +380,11 @@ const sortOptions = ref([
   { value: "discussed", label: "最多讨论" }
 ]);
 
-// 计算属性
-const hasMore = computed(() => articles.value.length < total.value);
+// 计算属性 - 基于 hasMoreData 标记判断是否还有更多
+const hasMore = computed(() => {
+  // 只要有更多数据标记为 true，就继续加载
+  return hasMoreData.value;
+});
 
 // 获取标签大小样式
 const getTagSizeClass = (index) => {
@@ -411,6 +419,11 @@ const changeSearchType = (type) => {
       performSearch(true);
     }
   }
+};
+
+// 处理排序下拉菜单显示状态变化
+const handleSortDropdownVisible = (visible) => {
+  isSortDropdownOpen.value = visible;
 };
 
 // 切换排序类型
@@ -486,11 +499,13 @@ const clearHistory = () => {
 
 // 执行搜索请求
 const performSearch = async (reset = false) => {
+  console.log('performSearch 被调用，reset:', reset, 'currentPage:', currentPage.value, 'hasMoreData:', hasMoreData.value);
   try {
     if (reset) {
       searchLoading.value = true;
       currentPage.value = 1;
       articles.value = [];
+      hasMoreData.value = true; // 重置时重置标记
     } else {
       loadingMore.value = true;
     }
@@ -530,6 +545,7 @@ const performSearch = async (reset = false) => {
         }
       });
       allArticles = Array.from(articleMap.values());
+      // 综合搜索时，total 设置为两者之和（可能包含重复，但用于 hasMore 判断是保守安全的）
       total.value = totalTitle + totalTag;
 
     } else if (searchType.value === "title") {
@@ -556,13 +572,23 @@ const performSearch = async (reset = false) => {
 
     if (reset) {
       articles.value = allArticles;
+      hasMoreData.value = true; // 重置时重置标记
     } else {
       articles.value = [...articles.value, ...allArticles];
     }
 
-    if (hasMore.value && allArticles.length > 0) {
+    // 判断是否还有更多数据：已加载的文章数量是否已经达到总数
+    // 当已加载数量 >= 总数时，说明没有更多数据了
+    if (articles.value.length >= total.value) {
+      hasMoreData.value = false;
+    }
+
+    // 只有当页有数据时才递增页码，没有数据说明已经加载完毕
+    if (allArticles.length > 0) {
       currentPage.value++;
     }
+
+    console.log('performSearch 完成，articles.length:', articles.value.length, 'total:', total.value, 'hasMoreData:', hasMoreData.value, 'allArticles.length:', allArticles.length);
 
     if (total.value === 0) {
       ElMessage.info(`未找到相关内容`);
@@ -583,6 +609,7 @@ const clearSearch = () => {
   hasSearched.value = false;
   currentPage.value = 1;
   total.value = 0;
+  hasMoreData.value = true; // 重置 hasMoreData 标记
   router.replace({ path: "/search", query: {} });
 };
 
@@ -613,39 +640,53 @@ const goToAuthor = (userId) => {
   router.push(`/user/${userId}`);
 };
 
-// 节流函数
+// 节流函数 - 简化版本
 const throttle = (func, delay) => {
-  let timeoutId;
-  let lastExecTime = 0;
+  let lastCall = 0;
   return function (...args) {
-    const currentTime = Date.now();
-    if (currentTime - lastExecTime > delay) {
+    const now = Date.now();
+    if (now - lastCall >= delay) {
+      lastCall = now;
       func.apply(this, args);
-      lastExecTime = currentTime;
-    } else {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        func.apply(this, args);
-        lastExecTime = Date.now();
-      }, delay - (currentTime - lastExecTime));
     }
   };
 };
 
 // 滚动加载更多
 const handleScroll = throttle(() => {
-  if (loadingMore.value || !hasMore.value || searchLoading.value || !hasSearched.value) {
-    return;
-  }
-
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
   const windowHeight = window.innerHeight;
   const documentHeight = document.documentElement.scrollHeight;
+  const remaining = documentHeight - scrollTop - windowHeight;
 
-  if (scrollTop + windowHeight >= documentHeight - 300) {
+  console.log('handleScroll 触发:', {
+    scrollTop,
+    windowHeight,
+    documentHeight,
+    remaining,
+    loadingMore: loadingMore.value,
+    searchLoading: searchLoading.value,
+    hasSearched: hasSearched.value,
+    hasMoreData: hasMoreData.value
+  });
+
+  if (loadingMore.value || searchLoading.value || !hasSearched.value) {
+    console.log('阻止加载：loadingMore || searchLoading || !hasSearched');
+    return;
+  }
+
+  // 检查是否还有更多数据
+  if (!hasMore.value) {
+    console.log('阻止加载：!hasMore');
+    return;
+  }
+
+  // 距离底部 300px 时触发加载
+  if (remaining <= 300) {
+    console.log('触发滚动加载，currentPage:', currentPage.value, 'articles.length:', articles.value.length, 'total:', total.value);
     performSearch(false);
   }
-}, 200);
+}, 300);
 
 // 生命周期
 onMounted(async () => {
@@ -674,6 +715,7 @@ onMounted(async () => {
 
   await nextTick();
   window.addEventListener("scroll", handleScroll, { passive: true });
+  console.log('滚动事件监听器已绑定');
 });
 
 // 加载热门标签
@@ -1089,27 +1131,38 @@ onUnmounted(() => {
         }
       }
 
-      .sort-dropdown {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 8px;
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        font-size: 12px;
-        color: var(--text-regular);
-        cursor: pointer;
-        position: relative;
-        flex-shrink: 0;
-        white-space: nowrap;
+      .sort-dropdown-wrapper {
+        .sort-dropdown-trigger {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 8px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          font-size: 12px;
+          color: var(--text-regular);
+          cursor: pointer;
+          flex-shrink: 0;
+          white-space: nowrap;
+          transition: border-color 0.2s;
 
-        &:hover {
-          border-color: var(--primary);
-        }
+          &:hover {
+            border-color: var(--primary);
+          }
 
-        .sort-dropdown-text {
-          margin-right: 2px;
+          .sort-dropdown-text {
+            margin-right: 2px;
+          }
+
+          .sort-arrow-icon {
+            transition: transform 0.3s;
+            font-size: 14px;
+
+            &.is-up {
+              transform: rotate(-180deg);
+            }
+          }
         }
       }
     }
@@ -1690,11 +1743,14 @@ onUnmounted(() => {
           }
         }
 
-        .sort-dropdown {
+        .sort-dropdown-wrapper {
           flex-shrink: 0;
-          padding: 4px 10px;
           min-height: 32px;
-          font-size: 12px;
+
+          .sort-dropdown-trigger {
+            padding: 4px 10px;
+            font-size: 12px;
+          }
         }
       }
 
@@ -1847,13 +1903,16 @@ onUnmounted(() => {
           }
         }
 
-        .sort-dropdown {
+        .sort-dropdown-wrapper {
           flex-shrink: 0;
-          justify-content: center;
-          padding: 6px 12px;
           min-height: 36px;
-          font-size: 12px;
-          -webkit-tap-highlight-color: transparent;
+
+          .sort-dropdown-trigger {
+            justify-content: center;
+            padding: 6px 12px;
+            font-size: 12px;
+            -webkit-tap-highlight-color: transparent;
+          }
         }
       }
 
@@ -1991,7 +2050,7 @@ onUnmounted(() => {
     .article-card,
     .cloud-tag,
     .author-item,
-    .sort-dropdown,
+    .sort-dropdown-trigger,
     .clear-btn,
     .close-icon,
     .article-tag,

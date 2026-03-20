@@ -86,7 +86,7 @@
                   </div>
                   <div class="order-side">
                     <span class="order-price">¥{{ order.priceYuan }}</span>
-                    <span class="order-status" :class="`status-${(order.status || '').toLowerCase()}`">{{ order.status }}</span>
+                    <span class="order-status" :class="`status-${(order.status || '').toLowerCase()}`">{{ orderStatusText(order.status) }}</span>
                   </div>
                 </article>
               </div>
@@ -273,6 +273,12 @@ const formatDate = (value) => {
     return value;
   }
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+};
+
+// 订单状态中文映射
+const orderStatusText = (status) => {
+  const map = { PAID: "已支付", PAYING: "待支付", CLOSED: "已关闭", FAILED: "失败" };
+  return map[status] || status || "未知";
 };
 </script>
 
