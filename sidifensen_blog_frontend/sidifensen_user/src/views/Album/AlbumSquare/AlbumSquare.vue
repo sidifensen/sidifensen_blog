@@ -174,9 +174,21 @@ onMounted(() => {
         gap: 16px;
         text-transform: uppercase;
 
+        // 手机端：图标放在上面
+        @media (max-width: 600px) {
+          flex-direction: column;
+          gap: 8px;
+          font-size: 28px;
+          letter-spacing: 4px;
+        }
+
         .title-icon {
           font-size: 48px;
           opacity: 0.9;
+
+          @media (max-width: 600px) {
+            font-size: 36px;
+          }
         }
       }
 

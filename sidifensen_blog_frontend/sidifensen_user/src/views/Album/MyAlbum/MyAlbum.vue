@@ -7,6 +7,10 @@
           <button class="btn-back" @click="goToAlbumSquare" title="返回相册广场">
             <el-icon><ArrowLeft /></el-icon>
           </button>
+          <!-- 手机端：返回按钮在左上角 -->
+          <button class="btn-back-mobile" @click="goToAlbumSquare" title="返回相册广场">
+            <el-icon><ArrowLeft /></el-icon>
+          </button>
           <h1 class="hero-title">
             <span class="title-icon">📁</span>
             MY ALBUMS
@@ -278,6 +282,7 @@ onMounted(() => {
         justify-content: center;
         gap: 16px;
         margin-bottom: 16px;
+        position: relative;
 
         .btn-back {
           display: flex;
@@ -293,6 +298,11 @@ onMounted(() => {
           transition: all 0.2s ease;
           backdrop-filter: blur(10px);
 
+          // 手机端：隐藏返回按钮，使用绝对定位的版本
+          @media (max-width: 600px) {
+            display: none;
+          }
+
           &:hover {
             background: rgba(255, 255, 255, 0.2);
             transform: translateX(-4px);
@@ -304,6 +314,37 @@ onMounted(() => {
 
           .el-icon {
             font-size: 18px;
+          }
+        }
+
+        // 手机端：返回按钮绝对定位在左上角
+        .btn-back-mobile {
+          display: none;
+          position: absolute;
+          left: 0;
+          top: 0;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 50%;
+          color: #fff;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          backdrop-filter: blur(10px);
+
+          @media (max-width: 600px) {
+            display: flex;
+          }
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.2);
+          }
+
+          .el-icon {
+            font-size: 16px;
           }
         }
       }
@@ -319,9 +360,21 @@ onMounted(() => {
         gap: 16px;
         text-transform: uppercase;
 
+        // 手机端：图标放在上面
+        @media (max-width: 600px) {
+          flex-direction: column;
+          gap: 8px;
+          font-size: 28px;
+          letter-spacing: 4px;
+        }
+
         .title-icon {
           font-size: 48px;
           opacity: 0.9;
+
+          @media (max-width: 600px) {
+            font-size: 36px;
+          }
         }
       }
 
@@ -393,31 +446,6 @@ onMounted(() => {
       column-count: 2;
       column-gap: 12px;
       padding: 24px 16px;
-    }
-
-    @media (max-width: 768px) {
-      .album-hero {
-        .hero-content {
-          .hero-header {
-            .btn-back {
-              width: 36px;
-              height: 36px;
-
-              .el-icon {
-                font-size: 16px;
-              }
-            }
-          }
-
-          .hero-title {
-            font-size: 28px;
-
-            .title-icon {
-              font-size: 32px;
-            }
-          }
-        }
-      }
     }
 
     .masonry-item {

@@ -23,57 +23,53 @@
 
         <!-- 操作按钮区 -->
         <div v-if="isAlbumOwner" class="hero-actions">
-          <div class="action-left">
-            <button class="btn-upload" @click="handleUploadPhoto">
-              <el-icon><UploadFilled /></el-icon>
-              <span>上传图片</span>
+          <button class="btn-upload" @click="handleUploadPhoto">
+            <el-icon><UploadFilled /></el-icon>
+            <span>上传图片</span>
+          </button>
+          <button class="btn-edit" @click="handleEditAlbum">
+            <el-icon><Edit /></el-icon>
+            <span>编辑相册</span>
+          </button>
+          <button v-if="!isSelectMode" class="btn-select" @click="toggleSelectMode">
+            选择图片
+          </button>
+          <template v-else>
+            <button class="btn-select-all" @click="toggleAllSelection">
+              {{ isAllSelected ? "取消全选" : "全选" }}
             </button>
-            <button class="btn-edit" @click="handleEditAlbum">
-              <el-icon><Edit /></el-icon>
-              <span>编辑相册</span>
+            <button class="btn-select-active" @click="toggleSelectMode">
+              完成
             </button>
-            <button v-if="!isSelectMode" class="btn-select" @click="toggleSelectMode">
-              选择图片
+          </template>
+          <button
+            v-show="selectedPhotos.length > 0"
+            class="btn-delete"
+            @click="handleBatchDelete"
+          >
+            <el-icon><Delete /></el-icon>
+            <span>删除 ({{ selectedPhotos.length }})</span>
+          </button>
+          <el-dropdown trigger="hover">
+            <button class="btn-more">
+              <el-icon><MoreFilled /></el-icon>
             </button>
-            <template v-else>
-              <button class="btn-select-all" @click="toggleAllSelection">
-                {{ isAllSelected ? "取消全选" : "全选" }}
-              </button>
-              <button class="btn-select-active" @click="toggleSelectMode">
-                完成
-              </button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item @click="handleDeleteAlbum" class="danger-item">
+                  <el-icon><Delete /></el-icon> 删除相册
+                </el-dropdown-item>
+              </el-dropdown-menu>
             </template>
-          </div>
-          <div class="action-right">
-            <button
-              v-show="selectedPhotos.length > 0"
-              class="btn-delete"
-              @click="handleBatchDelete"
-            >
-              <el-icon><Delete /></el-icon>
-              <span>删除 ({{ selectedPhotos.length }})</span>
-            </button>
-            <el-dropdown trigger="hover">
-              <button class="btn-more">
-                <el-icon><MoreFilled /></el-icon>
-              </button>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item @click="handleDeleteAlbum" class="danger-item">
-                    <el-icon><Delete /></el-icon> 删除相册
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-            <el-switch
-              v-model="switchShowStatus"
-              @click="handleChangeAlbumShowStatus"
-              active-text="公开"
-              inactive-text="私密"
-              inline-prompt
-              class="show-status-switch"
-            />
-          </div>
+          </el-dropdown>
+          <el-switch
+            v-model="switchShowStatus"
+            @click="handleChangeAlbumShowStatus"
+            active-text="公开"
+            inactive-text="私密"
+            inline-prompt
+            class="show-status-switch"
+          />
         </div>
       </div>
     </div>
@@ -705,146 +701,136 @@ onMounted(() => {
       /* 操作按钮区 */
       .hero-actions {
         display: flex;
-        justify-content: space-between;
+        gap: 12px;
         align-items: center;
+        flex-wrap: wrap;
         padding: 16px 20px;
         background: rgba(255, 255, 255, 0.05);
         border-radius: 12px;
         border: 1px solid rgba(255, 255, 255, 0.1);
 
-        .action-left {
+        .btn-upload,
+        .btn-edit,
+        .btn-select,
+        .btn-select-all,
+        .btn-select-active {
           display: flex;
-          gap: 12px;
           align-items: center;
-          flex-wrap: wrap;
+          gap: 6px;
+          padding: 8px 14px;
+          border-radius: 6px;
+          font-size: 13px;
+          font-weight: 500;
+          border: none;
+          cursor: pointer;
+          transition: all 0.2s ease;
 
-          .btn-upload,
-          .btn-edit,
-          .btn-select,
-          .btn-select-all,
-          .btn-select-active {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-
-            .el-icon {
-              font-size: 16px;
-            }
-          }
-
-          .btn-upload {
-            background: #fff;
-            color: #000;
-
-            &:hover {
-              background: #f0f0f0;
-              transform: translateY(-2px);
-              box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
-            }
-          }
-
-          .btn-edit,
-          .btn-select {
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-
-            &:hover {
-              background: rgba(255, 255, 255, 0.3);
-            }
-          }
-
-          .btn-select-all,
-          .btn-select-active {
-            background: transparent;
-            color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-
-            &:hover {
-              background: rgba(255, 255, 255, 0.1);
-              border-color: rgba(255, 255, 255, 0.5);
-            }
+          .el-icon {
+            font-size: 16px;
           }
         }
 
-        .action-right {
-          display: flex;
-          gap: 12px;
-          align-items: center;
+        .btn-upload {
+          background: #fff;
+          color: #000;
 
-          .btn-delete {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            background: transparent;
-            color: #f56c6c;
-            border: 1px solid rgba(245, 108, 108, 0.5);
-            cursor: pointer;
-            transition: all 0.2s ease;
-
-            &:hover {
-              background: rgba(245, 108, 108, 0.1);
-              border-color: #f56c6c;
-            }
+          &:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
           }
+        }
 
-          .btn-more {
+        .btn-edit,
+        .btn-select {
+          background: rgba(255, 255, 255, 0.2);
+          color: #fff;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.3);
+          }
+        }
+
+        .btn-select-all,
+        .btn-select-active {
+          background: transparent;
+          color: #fff;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+
+          &:hover {
             background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            width: 32px;
-            height: 32px;
-            justify-content: center;
-            padding: 0;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            border-color: rgba(255, 255, 255, 0.5);
+          }
+        }
 
-            &:hover {
-              background: rgba(255, 255, 255, 0.2);
-            }
+        .btn-delete {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 14px;
+          border-radius: 6px;
+          font-size: 13px;
+          font-weight: 500;
+          background: transparent;
+          color: #f56c6c;
+          border: 1px solid rgba(245, 108, 108, 0.5);
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: rgba(245, 108, 108, 0.1);
+            border-color: #f56c6c;
+          }
+        }
+
+        .btn-more {
+          background: rgba(255, 255, 255, 0.1);
+          color: #fff;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 0;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.2);
+          }
+        }
+
+        .show-status-switch {
+          margin-left: 8px;
+
+          :deep(.el-switch__core) {
+            width: 60px;
+            height: 24px;
+            border-radius: 12px;
+            background-color: #909399;
+            border: none;
+            transition: background-color 0.2s ease;
           }
 
-          .show-status-switch {
-            margin-left: 8px;
+          :deep(.is-checked .el-switch__core) {
+            background-color: #409eff;
+            border: none;
+          }
 
-            :deep(.el-switch__core) {
-              width: 60px;
-              height: 24px;
-              border-radius: 12px;
-              background-color: #909399;
-              border: none;
-              transition: background-color 0.2s ease;
-            }
+          :deep(.el-switch__action) {
+            width: 20px;
+            height: 20px;
+            background-color: #fff;
+            border: none;
+            transition: transform 0.2s ease;
+          }
 
-            :deep(.is-checked .el-switch__core) {
-              background-color: #409eff;
-              border: none;
-            }
-
-            :deep(.el-switch__action) {
-              width: 20px;
-              height: 20px;
-              background-color: #fff;
-              border: none;
-              transition: transform 0.2s ease;
-            }
-
-            :deep(.el-switch__label) {
-              font-size: 12px;
-              font-weight: 500;
-              color: #fff;
-            }
+          :deep(.el-switch__label) {
+            font-size: 12px;
+            font-weight: 500;
+            color: #fff;
           }
         }
       }
@@ -1250,17 +1236,8 @@ html.dark {
     }
 
     .hero-actions {
-      flex-direction: column;
-      gap: 16px;
-
-      .action-left {
-        width: 100%;
-        flex-wrap: wrap;
-      }
-
-      .action-right {
-        width: 100%;
-      }
+      flex-wrap: wrap;
+      justify-content: flex-start;
     }
 
     .select-toolbar {

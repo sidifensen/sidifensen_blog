@@ -1,5 +1,9 @@
 {
   "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@executeautomation/playwright-mcp-server"]
+    },
     "mysql": {
       "command": "cmd",
       "args": ["/c", "npx", "-y", "mysql-mcp-server"],

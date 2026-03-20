@@ -362,7 +362,7 @@ onMounted(() => {
 
 .container {
   // ===== CSS 变量定义 - 白天模式（默认，匹配 article-square-style-modern-tech-light.html）=====
-  --bg-page: #ffffff;
+  --bg-page: #f8fafc;
   --bg-hero-divider: rgba(0, 0, 0, 0.08);
   --bg-metric: rgba(0, 0, 0, 0.02);
   --bg-card: rgba(0, 0, 0, 0.015);
