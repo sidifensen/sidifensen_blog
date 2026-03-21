@@ -120,6 +120,14 @@
         </div>
       </section>
     </div>
+
+    <!-- 支付结果弹窗 -->
+    <VipPaymentResultModal
+      v-model:visible="paymentResultVisible"
+      :order-no="currentOrderNo"
+      @refresh="handlePaymentSuccess"
+      @close="closePaymentResultModal"
+    />
   </div>
 </template>
 
@@ -129,6 +137,8 @@ import { useRoute, useRouter } from "vue-router";
 import { info } from "@/api/user";
 import { createVipOrder, getVipMe, getVipOrderList, getVipPlans } from "@/api/vip";
 import { useUserStore } from "@/stores/userStore";
+import VipPaymentResultModal from "@/components/VipPaymentResultModal.vue";
+import { formatVipExpireDate, formatDate } from "@/utils/formatTime";
 
 // 路由与全局状态
 const router = useRouter();
@@ -141,6 +151,10 @@ const orders = ref([]);
 const vipInfo = ref({});
 const submitting = ref(false);
 const selectedPlanCode = ref("");
+
+// 支付结果弹窗控制
+const paymentResultVisible = ref(false);
+const currentOrderNo = ref("");
 
 // 会员状态展示文案
 const statusText = computed(() => {
@@ -158,7 +172,7 @@ const expireText = computed(() => {
   if (!vipInfo.value?.vipExpireTime) {
     return "开通后立即生效";
   }
-  return `到期时间 ${formatDate(vipInfo.value.vipExpireTime)}`;
+  return `到期时间 ${formatVipExpireDate(vipInfo.value.vipExpireTime)}`;
 });
 
 // 根据 UA 粗略区分 PC 和 H5 支付入口
@@ -166,38 +180,58 @@ const detectClientType = () => {
   return /Android|iPhone|iPad|Mobile/i.test(window.navigator.userAgent) ? "H5" : "PC";
 };
 
-// PC 支付先打开空白页，避免异步接口返回后被浏览器拦截弹窗
-const openPaymentWindow = () => {
-  const paymentWindow = window.open("", `vip-alipay-${Date.now()}`);
-  if (!paymentWindow) {
-    ElMessage.error("浏览器拦截了支付窗口，请允许弹窗后重试");
-    return null;
-  }
-  return paymentWindow;
-};
-
 // 支付宝 PC 场景返回表单时，前端需要主动插入并提交
-const submitPaymentForm = (formHtml, paymentWindow) => {
+const submitPaymentForm = (formHtml, targetName) => {
+  // 1. 创建隐藏的容器元素，用于承载支付表单
   const wrapper = document.createElement("div");
   wrapper.style.display = "none";
+  // 2. 将后端返回的表单 HTML 插入容器
   wrapper.innerHTML = formHtml;
+  // 3. 将容器添加到页面 DOM 中
   document.body.appendChild(wrapper);
+  // 4. 从容器中查找 form 元素
   const form = wrapper.querySelector("form");
+  // 5. 表单不存在则提示错误
   if (!form) {
     ElMessage.error("支付跳转失败，请稍后重试");
     return;
   }
-  if (paymentWindow) {
-    form.setAttribute("target", paymentWindow.name);
-    paymentWindow.focus();
-  }
+  // 6. 设置表单提交目标为新标签页
+  form.setAttribute("target", targetName);
+  // 7. 自动提交表单，跳转到支付宝支付页面
   form.submit();
+
+  // 8. 清理临时 DOM
+  setTimeout(() => {
+    document.body.removeChild(wrapper);
+  }, 1000);
 };
 
 // 支付成功后刷新站点用户态，保证 VIP 标识和额度即时生效
 const refreshUserInfo = async () => {
   const response = await info();
   userStore.user = response.data.data;
+};
+
+// 刷新订单列表
+const refreshOrderList = async () => {
+  const response = await getVipOrderList(1, 10);
+  orders.value = response.data.data?.data || [];
+};
+
+// 关闭支付结果弹窗
+const closePaymentResultModal = () => {
+  paymentResultVisible.value = false;
+  // 使用 String() 确保类型正确
+  currentOrderNo.value = "";
+  // 关闭后刷新订单列表
+  refreshOrderList();
+};
+
+// 支付成功后的回调
+const handlePaymentSuccess = async () => {
+  await refreshUserInfo();
+  await refreshOrderList();
 };
 
 // 会员中心初始化时并行拉取套餐、会员信息和订单记录
@@ -213,34 +247,51 @@ const fetchVipData = async () => {
 
 // 创建订单后按后端返回的 formHtml / payUrl 决定跳转方式
 const handleCreateOrder = async (plan) => {
+  // 1. 检测客户端类型（PC/移动端）
   const clientType = detectClientType();
-  const paymentWindow = clientType === "PC" ? openPaymentWindow() : null;
-  if (clientType === "PC" && !paymentWindow) {
-    return;
-  }
   try {
+    // 2. 设置提交状态，防止重复点击
     submitting.value = true;
+    // 3. 记录当前选择的套餐编码
     selectedPlanCode.value = plan.code;
+    // 4. 调用后端 API 创建订单
     const response = await createVipOrder({
       planCode: plan.code,
       clientType,
     });
     const payload = response.data.data;
+    // 5. 创建订单成功后，先打开结果弹窗（无论 PC 还是 H5）
+    currentOrderNo.value = payload.orderNo;
+    paymentResultVisible.value = true;
+
+    // 6. 情况 1: 返回表单 HTML，自动提交支付（PC 端支付宝）
     if (payload.formHtml) {
-      submitPaymentForm(payload.formHtml, paymentWindow);
+      // 生成唯一的窗口名称
+      const targetName = `alipay_${Date.now()}`;
+      // 先打开一个空白标签页（用于接收表单提交）
+      const paymentWindow = window.open("about:blank", targetName);
+      if (!paymentWindow) {
+        ElMessage.error("浏览器拦截了支付窗口，请允许弹窗后重试");
+        return;
+      }
+      // 将表单提交到新打开的标签页
+      submitPaymentForm(payload.formHtml, targetName);
       return;
     }
+    // 7. 情况 2: 返回支付链接，直接跳转（微信支付/移动端）
     if (payload.payUrl) {
-      window.location.href = payload.payUrl;
+      // 移动端在新标签页打开支付
+      window.open(payload.payUrl, "_blank");
       return;
     }
+    // 8. 异常情况：既无表单也无支付链接
     ElMessage.error("支付参数异常，请稍后重试");
   } catch (error) {
-    if (paymentWindow && !paymentWindow.closed) {
-      paymentWindow.close();
-    }
+    // 9. 异常处理：关闭弹窗，提示错误信息
+    closePaymentResultModal();
     ElMessage.error(error?.msg || "创建订单失败");
   } finally {
+    // 10. 无论成功失败，都重置提交状态
     submitting.value = false;
   }
 };
@@ -258,22 +309,18 @@ onMounted(async () => {
   try {
     await fetchVipData();
     await refreshUserInfo();
+
+    // 检查是否有支付宝回调的订单号参数，有则自动打开弹窗
+    const orderNoFromQuery = route.query.orderNo || route.query.out_trade_no;
+    if (orderNoFromQuery) {
+      // 使用 String() 确保类型正确
+      currentOrderNo.value = String(orderNoFromQuery);
+      paymentResultVisible.value = true;
+    }
   } catch (error) {
     ElMessage.error(error?.msg || "加载会员中心失败");
   }
 });
-
-// 统一格式化会员到期时间
-const formatDate = (value) => {
-  if (!value) {
-    return "--";
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
-};
 
 // 订单状态中文映射
 const orderStatusText = (status) => {

@@ -111,7 +111,7 @@ export const getFriendlyTime = (date) => {
 /**
  * 格式化会话列表的时间显示（短格式）
  * @param {Date|string} time 时间
- * @returns {string} 格式化后的时间（刚刚、X分钟前、X小时前、日期）
+ * @returns {string} 格式化后的时间（刚刚、X 分钟前、X 小时前、日期）
  */
 export const formatConversationTime = (time) => {
   if (!time) return "";
@@ -123,4 +123,18 @@ export const formatConversationTime = (time) => {
   if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`;
   if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`;
   return date.toLocaleDateString();
+};
+
+/**
+ * 格式化会员到期日期
+ * @param {Date|string} value 日期值
+ * @returns {string} 格式化后的日期 (YYYY-MM-DD HH:mm)，无效日期返回 "--"
+ */
+export const formatVipExpireDate = (value) => {
+  if (!value) return "--";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 };

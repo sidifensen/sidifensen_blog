@@ -80,7 +80,13 @@ public class AlipayPaymentServiceImpl implements AlipayPaymentService {
     public boolean verifyNotify(Map<String, String> params) {
         try {
             VipProperties.Alipay alipay = getRequiredAlipay();
-            return AlipaySignature.rsaCheckV1(params, alipay.getAlipayPublicKey(), "UTF-8", SIGN_TYPE);
+            // 使用支付宝公钥验证签名
+            return AlipaySignature.rsaCheckV1(
+                    params,                    // 回调参数
+                    alipay.getAlipayPublicKey(), // 支付宝公钥
+                    "UTF-8",                   // 编码格式
+                    SIGN_TYPE                  // 签名类型：RSA2
+            );
         } catch (Exception e) {
             log.error("支付宝回调验签异常", e);
             return false;
@@ -88,16 +94,25 @@ public class AlipayPaymentServiceImpl implements AlipayPaymentService {
     }
 
     /**
-     * 异步通知丢失时，结果页可以主动查单完成订单补偿。
+     * 异步通知丢失时，结果页可以主动向支付宝查单完成订单补偿。
+     * 用于订单状态同步场景（如页面轮询、主动补查）。
+     *
+     * @param orderNo 商户订单号
+     * @return 订单状态信息（tradeStatus、tradeNo、buyerId、sendPayDate），失败返回空 Map
      */
     @Override
     public Map<String, String> queryTrade(String orderNo) {
         try {
+            // 构建支付宝交易查询请求
             AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
             Map<String, Object> bizContent = new HashMap<>();
             bizContent.put("out_trade_no", orderNo);
             request.setBizContent(JSON.toJSONString(bizContent));
+
+            // 执行查询请求
             AlipayTradeQueryResponse response = createClient().execute(request);
+
+            // 判断响应是否成功，失败时记录警告日志并返回空结果
             if (response == null || !response.isSuccess()) {
                 log.warn("支付宝主动查单失败，orderNo={}, subCode={}, subMsg={}",
                         orderNo,
@@ -105,13 +120,16 @@ public class AlipayPaymentServiceImpl implements AlipayPaymentService {
                         response == null ? null : response.getSubMsg());
                 return Map.of();
             }
+
+            // 提取查询结果中的关键字段
             Map<String, String> result = new HashMap<>();
-            result.put("tradeStatus", response.getTradeStatus());
-            result.put("tradeNo", response.getTradeNo());
-            result.put("buyerId", response.getBuyerUserId());
-            result.put("sendPayDate", response.getSendPayDate() == null ? null : response.getSendPayDate().toString());
+            result.put("tradeStatus", response.getTradeStatus());         // 交易状态：TRADE_SUCCESS/TRADE_FINISHED/TRADE_CLOSED 等
+            result.put("tradeNo", response.getTradeNo());                 // 支付宝交易号
+            result.put("buyerId", response.getBuyerUserId());             // 买家支付宝用户 ID
+            result.put("sendPayDate", response.getSendPayDate() == null ? null : response.getSendPayDate().toString()); // 支付时间
             return result;
         } catch (Exception e) {
+            // 捕获所有异常，避免查单失败影响主流程
             log.error("支付宝主动查单异常，orderNo={}", orderNo, e);
             return Map.of();
         }

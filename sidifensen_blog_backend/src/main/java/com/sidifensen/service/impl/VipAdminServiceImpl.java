@@ -79,7 +79,7 @@ public class VipAdminServiceImpl implements VipAdminService {
         Date sevenDaysLater = new Date(now.toInstant().plus(7, ChronoUnit.DAYS).toEpochMilli());
         Date thirtyDaysAgo = new Date(now.toInstant().minus(30, ChronoUnit.DAYS).toEpochMilli());
 
-        // 会员数统计统一直接读会员真相源，并按当前时间重新归一化状态。
+        // 会员数统计统一直接读会员数据表，并按当前时间重新归一化状态。
         Long activeMemberCount = vipMemberMapper.selectCount(new LambdaQueryWrapper<VipMember>()
                 .eq(VipMember::getStatus, VipMemberStatusEnum.ACTIVE.getCode())
                 .gt(VipMember::getExpireTime, now));
@@ -117,7 +117,7 @@ public class VipAdminServiceImpl implements VipAdminService {
     }
 
     /**
-     * 会员页以 sys_user 为主表分页，再批量补齐会员真相源和订单快照信息。
+     * 会员页以 sys_user 为主表分页，再批量补齐会员数据和订单快照信息。
      */
     @Override
     public PageVo<List<VipAdminMemberPageVo>> pageMembers(VipAdminMemberPageDto vipAdminMemberPageDto) {
@@ -158,13 +158,13 @@ public class VipAdminServiceImpl implements VipAdminService {
      */
     @Override
     public VipAdminMemberDetailVo getMemberDetail(Integer userId) {
-        // 详情入口先确认用户真实存在，避免后续多个真相源都做空判。
+        // 详情入口先确认用户真实存在，避免后续多个数据表都做空判。
         SysUser sysUser = sysUserMapper.selectById(userId);
         if (sysUser == null) {
             throw new BlogException(BlogConstants.NotFoundUser);
         }
 
-        // 会员详情需要同时加载会员真相源和最近支付订单摘要。
+        // 会员详情需要同时加载会员数据和最近支付订单摘要。
         VipMember vipMember = vipMemberService.getVipMemberByUserId(userId);
         List<PayOrder> recentOrders = payOrderMapper.selectList(new LambdaQueryWrapper<PayOrder>()
                 .eq(PayOrder::getUserId, userId)
@@ -192,12 +192,12 @@ public class VipAdminServiceImpl implements VipAdminService {
     }
 
     /**
-     * 手动调整只改会员真相源，不生成新的支付订单。
+     * 手动调整只改会员数据，不生成新的支付订单。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void adjustMember(VipAdminMemberAdjustDto vipAdminMemberAdjustDto) {
-        // 先确认操作目标存在，避免对不存在用户写入会员真相源。
+        // 先确认操作目标存在，避免对不存在用户写入会员数据。
         SysUser sysUser = sysUserMapper.selectById(vipAdminMemberAdjustDto.getUserId());
         if (sysUser == null) {
             throw new BlogException(BlogConstants.NotFoundUser);
@@ -217,7 +217,7 @@ public class VipAdminServiceImpl implements VipAdminService {
 
         VipMember currentVipMember = vipMemberService.getVipMemberByUserId(vipAdminMemberAdjustDto.getUserId());
         String lastOrderNo = currentVipMember == null ? null : currentVipMember.getLastOrderNo();
-        // 手动调整只改会员真相源，不伪造支付订单；续期时沿用最后订单号便于后续追溯。
+        // 手动调整只改会员数据，不伪造支付订单；续期时沿用最后订单号便于后续追溯。
         switch (actionEnum) {
             case ACTIVATE -> vipMemberService.overwriteVip(vipAdminMemberAdjustDto.getUserId(), vipAdminMemberAdjustDto.getDays());
             case EXTEND -> vipMemberService.activateVip(vipAdminMemberAdjustDto.getUserId(), lastOrderNo, vipAdminMemberAdjustDto.getDays());
@@ -227,13 +227,13 @@ public class VipAdminServiceImpl implements VipAdminService {
     }
 
     /**
-     * 订单列表按支付订单真相源分页，再补齐用户展示信息。
+     * 订单列表按支付订单数据表分页，再补齐用户展示信息。
      */
     @Override
     public PageVo<List<VipAdminOrderPageVo>> pageOrders(VipAdminOrderPageDto vipAdminOrderPageDto) {
         Page<PayOrder> page = new Page<>(vipAdminOrderPageDto.getPageNum(), vipAdminOrderPageDto.getPageSize());
         LambdaQueryWrapper<PayOrder> queryWrapper = new LambdaQueryWrapper<>();
-        // 订单筛选全部直接落在支付订单真相源，保持列表结果与真实支付记录一致。
+        // 订单筛选全部直接落在支付订单数据表，保持列表结果与真实支付记录一致。
         if (vipAdminOrderPageDto.getOrderNo() != null && !vipAdminOrderPageDto.getOrderNo().isBlank()) {
             queryWrapper.like(PayOrder::getOrderNo, vipAdminOrderPageDto.getOrderNo().trim());
         }

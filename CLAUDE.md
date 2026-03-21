@@ -131,10 +131,6 @@ html.dark {
 | 按钮点击 `console.log` 应付 | 实现真实业务功能 |
 | 表单提交不连接后端 | 调用真实 API 持久化 |
 
-**特殊情况（后端 API 未完成）：**
-```javascript
-// TODO: 后端 API 待开发，暂时使用模拟数据
-```
 
 ### Vue 组件规范
 
@@ -193,7 +189,7 @@ cd sidifensen_blog_frontend/sidifensen_admin && npm run build
 ```
 
 检查清单：
-- [ ] 编译通过，无 TypeScript/语法错误
+- [ ] 编译通过，无 JavaScript/语法错误
 - [ ] 页面正常加载，无白屏/报错
 - [ ] 功能正常（表单/按钮/跳转）
 - [ ] 黑夜模式显示正常
@@ -260,94 +256,10 @@ cd sidifensen_blog_frontend/sidifensen_admin && npm run build
 
 ---
 
-## Superpowers 标准流程
+## Superpowers 流程
 
-**日常开发提示词（放在任何任务指令后面）：**
+复杂任务执行流程：`brainstorming → using-git-worktrees → writing-plans → executing-plans → subagent-driven-development → test-driven-development → verification-before-completion`
 
-## Superpowers 标准流程
+核心原则：先测试后实现、流程优于猜测、验证先于断言
 
-**何时使用**：执行复杂功能开发、新增模块、重构等多步骤任务时。
-
-**核心机制**：每个阶段显式触发对应技能，不依赖 AI 记忆长流程。
-
----
-
-### 阶段 1：启动任务
-```
-【1. Skill 检查 → 2. brainstorming → 3. using-git-worktrees】
-```
-- 先查技能再行动，不要跳过
-- 需求澄清，明确要做什么
-- 创建隔离工作区
-
-### 阶段 2：规划
-```
-【4. writing-plans → 5. executing-plans】
-```
-- 任务分解，输出详细实现计划
-- 激活计划，准备执行
-
-### 阶段 3：执行
-```
-【6. subagent-driven-development + 7. test-driven-development】
-```
-- 子代理开发，每个任务独立实现
-- 测试驱动，先写测试再写代码
-
-### 阶段 4：完成
-```
-【8. verification-before-completion → 9. requesting-code-review → 10. finishing-a-development-branch】
-```
-- 验证完成，运行测试证明功能正常
-- 代码评审，检查代码质量
-- 分支完成，合并或创建 PR
-
----
-
-### 分支场景
-- 遇到问题 → `systematic-debugging`（系统调试）
-- 接收评审反馈 → `receiving-code-review`（接收代码评审）
-
-### 核心原则
-- Write tests first, always（始终先写测试）
-- Process over guessing（流程优于猜测）
-- Simplicity as primary goal（简单性为首要目标）
-- Evidence before assertions - no empty claims, no skipping steps（先验证再断言 - 禁止空口断言，禁止跳过步骤）
-
----
-
-### 使用方式
-
-**方式 A：完整流程（推荐）**
-```
-帮我添加用户积分系统，按照 superpowers 标准流程执行
-```
-
-**方式 B：分阶段触发（更可靠）**
-```
-/ skill superpowers:using-superpowers   # 启动流程
-/ skill superpowers:brainstorming       # 需求澄清
-/ skill superpowers:using-git-worktrees # 隔离工作区
-/ skill superpowers:writing-plans       # 任务分解
-/ skill superpowers:executing-plans     # 激活计划
-/ skill superpowers:subagent-driven-development # 执行开发
-/ skill superpowers:test-driven-development     # 测试驱动
-/ skill superpowers:verification-before-completion # 验证
-/ skill superpowers:requesting-code-review      # 评审
-/ skill superpowers:finishing-a-development-branch # 完成
-```
-
-**方式 C：简化指令（简单任务）**
-```
-帮我修复登录 bug【superpowers 流程：先 brainstorming，再 writing-plans，执行时 TDD，完成前 verification】
-```
-
----
-
-### 流程偏离纠正
-
-如果发现 AI 跳过某个步骤，立即提醒：
-- "请先执行 brainstorming，不要直接写代码"
-- "还没有写 plan，请先调用 writing-plans 技能"
-- "还没有验证，请运行测试命令证明功能正常"
-- "请先调用 verification-before-completion 技能"
+详细流程见 skill: `superpowers:using-superpowers`

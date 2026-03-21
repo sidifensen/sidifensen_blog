@@ -208,6 +208,8 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
         payOrder.setAlipayTradeNo(params.get("trade_no"));
         payOrder.setBuyerId(params.get("buyer_id"));
 
+        // 第四步校验订单状态，避免回调状态不一致时误发会员。
+        // 订单状态为成功或完成时，才更新本地订单状态为支付成功，并触发会员发放。
         String tradeStatus = params.get("trade_status");
         if ("TRADE_SUCCESS".equals(tradeStatus) || "TRADE_FINISHED".equals(tradeStatus)) {
             // 支付成功后统一走收口方法，保持“更新订单 + 发放会员”一处维护。
@@ -215,6 +217,7 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
             return true;
         }
 
+        // 订单关闭时只更新本地状态，不触发会员发放。
         if ("TRADE_CLOSED".equals(tradeStatus)) {
             // 关闭订单只更新本地状态，不触发会员发放。
             payOrder.setStatus(PayOrderStatusEnum.CLOSED.getCode());
@@ -229,6 +232,7 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
      * 结果页轮询订单明细时，如果本地仍是待支付，则主动向支付宝补查一次。
      */
     private PayOrder refreshOrderStatusIfNecessary(PayOrder payOrder) {
+        // 如果本地状态不是待支付，则直接返回订单。
         if (!PayOrderStatusEnum.PAYING.getCode().equals(payOrder.getStatus())) {
             return payOrder;
         }
@@ -237,6 +241,8 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
         if (tradeInfo.isEmpty()) {
             return payOrder;
         }
+
+        // 订单支付成功时，更新本地状态并触发会员发放。
         String tradeStatus = tradeInfo.getOrDefault("tradeStatus", "");
         if ("TRADE_SUCCESS".equals(tradeStatus) || "TRADE_FINISHED".equals(tradeStatus)) {
             payOrder.setAlipayTradeNo(tradeInfo.get("tradeNo"));
@@ -245,6 +251,7 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
             markOrderPaid(payOrder, new Date());
             return payOrderMapper.selectById(payOrder.getId());
         }
+        // 订单关闭时，更新本地状态。
         if ("TRADE_CLOSED".equals(tradeStatus)) {
             payOrder.setStatus(PayOrderStatusEnum.CLOSED.getCode());
             payOrder.setAlipayTradeNo(tradeInfo.get("tradeNo"));

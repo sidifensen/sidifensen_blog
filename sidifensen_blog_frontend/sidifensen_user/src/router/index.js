@@ -110,12 +110,6 @@ const router = createRouter({
           meta: { title: "会员中心" },
         },
         {
-          path: "vip/result",
-          name: "VipResult",
-          component: () => import("@/views/Vip/Result.vue"),
-          meta: { title: "支付结果" },
-        },
-        {
           path: "vip/articles",
           name: "VipArticles",
           component: () => import("@/views/Vip/ArticleList.vue"),

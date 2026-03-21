@@ -1,9 +1,13 @@
 package com.sidifensen.rabbitmq;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.sidifensen.domain.constants.RabbitMQConstants;
+import com.sidifensen.domain.dto.OperationlogMessage;
 import com.sidifensen.domain.dto.WebSocketMessageDto;
+import com.sidifensen.domain.entity.SysOperationlog;
 import com.sidifensen.domain.entity.SysVisitorLog;
 import com.sidifensen.domain.enums.MailEnum;
+import com.sidifensen.service.SysOperationlogService;
 import com.sidifensen.service.SysVisitorLogService;
 import com.sidifensen.utils.EmailUtils;
 import com.sidifensen.utils.IpUtils;
@@ -21,6 +25,9 @@ import java.util.Date;
 import java.util.Map;
 
 /**
+ * RabbitMQ 统一监听器
+ * 集中管理所有 MQ 消息消费逻辑
+ *
  * @author sidifensen
  * @since 2025-07-09
  */
@@ -34,6 +41,9 @@ public class RabbitMqListener {
 
     @Resource
     private SysVisitorLogService sysVisitorLogService;
+
+    @Resource
+    private SysOperationlogService sysOperationlogService;
 
     @Resource
     private IpUtils ipUtils;
@@ -55,7 +65,7 @@ public class RabbitMqListener {
      * 处理注册、重置密码、重置邮箱验证码
      * <p>
      * 重试机制：
-     * - 最大重试次数：5次（包括首次消费）
+     * - 最大重试次数：5 次（包括首次消费）
      * - 重试间隔：5s, 10s, 20s, 30s（指数退避）
      * - 重试失败后：消息进入死信队列
      */
@@ -83,13 +93,13 @@ public class RabbitMqListener {
                 // 系统通知邮件
                 handleSystemNotificationEmail(message);
             } else {
-                log.warn("未知的邮件类型: {}, 跳过处理", type);
+                log.warn("未知的邮件类型：{}, 跳过处理", type);
             }
 
         } catch (Exception e) {
-            log.error("处理邮件发送请求时出现异常, email={}, message={}", email, message, e);
+            log.error("处理邮件发送请求时出现异常，email={}, message={}", email, message, e);
             // 抛出异常触发重试机制
-            throw new RuntimeException("邮件发送失败: " + e.getMessage(), e);
+            throw new RuntimeException("邮件发送失败：" + e.getMessage(), e);
         }
     }
 
@@ -160,7 +170,7 @@ public class RabbitMqListener {
      * 发送审核通知邮件给管理员
      * <p>
      * 重试机制：
-     * - 最大重试次数：5次（包括首次消费）
+     * - 最大重试次数：5 次（包括首次消费）
      * - 重试间隔：5s, 10s, 20s, 30s（指数退避）
      * - 重试失败后：消息进入死信队列
      */
@@ -173,9 +183,9 @@ public class RabbitMqListener {
                     Map.of("text", text, "frontendAdminHost", frontendAdminHost));
 
         } catch (Exception e) {
-            log.error("处理审核通知邮件发送请求时出现异常, message={}", message, e);
+            log.error("处理审核通知邮件发送请求时出现异常，message={}", message, e);
             // 抛出异常触发重试机制
-            throw new RuntimeException("审核通知邮件发送失败: " + e.getMessage(), e);
+            throw new RuntimeException("审核通知邮件发送失败：" + e.getMessage(), e);
         }
     }
 
@@ -184,7 +194,7 @@ public class RabbitMqListener {
      * 发送友链审核通过邮件给用户
      * <p>
      * 重试机制：
-     * - 最大重试次数：5次（包括首次消费）
+     * - 最大重试次数：5 次（包括首次消费）
      * - 重试间隔：5s, 10s, 20s, 30s（指数退避）
      * - 重试失败后：消息进入死信队列
      */
@@ -199,9 +209,9 @@ public class RabbitMqListener {
                     Map.of("text", text, "frontendUserHost", frontendUserHost));
 
         } catch (Exception e) {
-            log.error("处理友链审核通过邮件发送请求时出现异常, email={}, message={}", email, message, e);
+            log.error("处理友链审核通过邮件发送请求时出现异常，email={}, message={}", email, message, e);
             // 抛出异常触发重试机制
-            throw new RuntimeException("友链审核通过邮件发送失败: " + e.getMessage(), e);
+            throw new RuntimeException("友链审核通过邮件发送失败：" + e.getMessage(), e);
         }
     }
 
@@ -227,7 +237,7 @@ public class RabbitMqListener {
             sysVisitorLogService.insertVisitorRecord(sysVisitorLog);
 
         } catch (Exception e) {
-            log.error("处理访客记录时出现异常, message={}", message, e);
+            log.error("处理访客记录时出现异常，message={}", message, e);
             // 不抛出异常，避免重试（访客记录丢失影响不大）
         }
     }
@@ -237,7 +247,7 @@ public class RabbitMqListener {
      * 处理黑名单通知邮件发送
      * <p>
      * 重试机制：
-     * - 最大重试次数：5次（包括首次消费）
+     * - 最大重试次数：5 次（包括首次消费）
      * - 重试间隔：5s, 10s, 20s, 30s（指数退避）
      * - 重试失败后：消息进入死信队列
      */
@@ -267,30 +277,30 @@ public class RabbitMqListener {
             );
 
         } catch (Exception e) {
-            log.error("处理黑名单通知邮件发送请求时出现异常, message={}", message, e);
+            log.error("处理黑名单通知邮件发送请求时出现异常，message={}", message, e);
             // 抛出异常触发重试机制
-            throw new RuntimeException("黑名单通知邮件发送失败: " + e.getMessage(), e);
+            throw new RuntimeException("黑名单通知邮件发送失败：" + e.getMessage(), e);
         }
     }
 
     /**
      * 监听 WebSocket 消息队列
      * 从 RabbitMQ 消费消息并发送到 WebSocket
-     * 
+     *
      * 说明：
      * - 用户在线时，消息会直接发送（不经过 RabbitMQ）
      * - 用户不在线或发送失败时，消息会进入 RabbitMQ
      * - 消费者从 RabbitMQ 消费消息，尝试发送给用户
-     * 
+     *
      * 重试机制：
      * - 如果用户不在线，不抛出异常（避免无意义重试）
      * - 如果发送失败，抛出异常触发重试
-     * - 最大重试次数：3次
+     * - 最大重试次数：3 次
      * - 重试失败后：消息进入死信队列
      */
     @RabbitListener(
             queues = RabbitMQConstants.WebSocket_Queue,
-            concurrency = "1-3"  // 动态并发：最少1个，最多3个消费者线程（根据消息负载自动调整）
+            concurrency = "1-3"  // 动态并发：最少 1 个，最多 3 个消费者线程（根据消息负载自动调整）
     )
     public void consumeWebSocketMessage(@Payload WebSocketMessageDto messageDto) {
         Integer userId = messageDto.getUserId();
@@ -304,11 +314,41 @@ public class RabbitMqListener {
         } catch (RuntimeException e) {
             // 网络错误等异常，抛出异常触发重试
             log.error("发送 WebSocket 消息失败，userId: {}, 将重试", userId, e);
-            throw new RuntimeException("发送 WebSocket 消息失败: " + e.getMessage(), e);
+            throw new RuntimeException("发送 WebSocket 消息失败：" + e.getMessage(), e);
         } catch (Exception e) {
             // 未知错误，抛出异常触发重试
             log.error("处理 WebSocket 消息时出现未知错误，userId: {}, 将重试", userId, e);
-            throw new RuntimeException("处理 WebSocket 消息失败: " + e.getMessage(), e);
+            throw new RuntimeException("处理 WebSocket 消息失败：" + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 监听操作日志队列
+     * 处理操作日志记录插入
+     *
+     * 重试机制：
+     * - 最大重试次数：3 次（包括首次消费）
+     * - 重试间隔：5s, 10s, 20s（指数退避）
+     * - 重试失败后：消息进入死信队列
+     */
+    @RabbitListener(queues = RabbitMQConstants.Operationlog_Queue)
+    public void receiveOperationlogMessage(Map<String, Object> message) {
+        try {
+            // 从 Map 中提取消息数据
+            OperationlogMessage operationlogMessage = BeanUtil.fillBeanWithMap(message, new OperationlogMessage(), false, false);
+
+            // 转换为实体对象
+            SysOperationlog operationlog = BeanUtil.copyProperties(operationlogMessage, SysOperationlog.class);
+            operationlog.setCreateTime(new Date());
+            operationlog.setIsDeleted(0);
+
+            // 插入数据库
+            sysOperationlogService.insertOperationlogRecord(operationlog);
+
+        } catch (Exception e) {
+            log.error("处理操作日志时出现异常，message={}", message, e);
+            // 抛出异常触发重试机制
+            throw new RuntimeException("操作日志写入失败：" + e.getMessage(), e);
         }
     }
 

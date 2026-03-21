@@ -130,7 +130,7 @@ public class RabbitMQConstants {
     // ==================== 订单超时相关 ====================
 
     /**
-     * 订单超时延迟交换机（需要 rabbitmq_delayed_message_exchange 插件）
+     * 订单超时延迟交换机
      */
     public static final String Order_Expire_Exchange = "order_expire_exchange";
 

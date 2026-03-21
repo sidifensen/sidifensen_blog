@@ -16,7 +16,7 @@
     <div class="content-layout">
       <!-- 主内容区 -->
       <div class="main-content">
-        <div class="article-list">
+        <div class="article-list" ref="articleListRef">
           <!-- 加载中骨架屏 -->
           <div v-if="articleLoading" class="article-list-loading">
             <el-skeleton animated :count="4">
@@ -40,10 +40,11 @@
           </div>
 
           <!-- 文章列表 -->
+          <template v-else>
           <div
-            v-else
-            v-for="article in articleList"
+            v-for="(article, index) in articleList"
             :key="article.id"
+            ref="articleRefs"
             class="article-item"
             @click="goToArticle(article.id, article.userId)"
           >
@@ -89,6 +90,7 @@
               </div>
             </div>
           </div>
+          </template>
 
           <!-- 加载更多指示器 -->
           <div v-if="loadingMore" class="loading-more">
@@ -221,6 +223,10 @@ const articleList = ref([]);
 const total = ref(0);
 const hasMore = ref(true);
 const currentPage = ref(1);
+// 文章列表容器引用
+const articleListRef = ref(null);
+// 文章元素引用数组
+const articleRefs = ref([]);
 
 // 热门文章相关数据
 const hotArticleLoading = ref(false);
@@ -251,38 +257,49 @@ const throttle = (func, delay) => {
 };
 
 // 检查是否需要自动加载（处理内容不足一屏或最后一篇文章下方有大片空白的情况）
-const checkAndAutoLoad = (forceThreshold = false) => {
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  const windowHeight = window.innerHeight;
-  const documentHeight = document.documentElement.scrollHeight;
-  // 用户可见区域的底部位置
-  const viewportBottom = scrollTop + windowHeight;
-  // 距离底部的距离
-  const remaining = documentHeight - viewportBottom;
+const checkAndAutoLoad = (forceThreshold = false, useNextTick = false) => {
+  const check = () => {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const windowHeight = window.innerHeight;
 
-  console.log('checkAndAutoLoad:', {
-    scrollTop,
-    windowHeight,
-    viewportBottom,
-    documentHeight,
-    remaining,
-    hasMoreData: hasMoreData.value,
-    loadingMore: loadingMore.value
-  });
+    // 使用最后一篇文章的实际位置来判断
+    let lastArticleTop = 0;
+    if (articleRefs.value.length > 0) {
+      const lastArticle = articleRefs.value[articleRefs.value.length - 1];
+      if (lastArticle) {
+        const rect = lastArticle.getBoundingClientRect();
+        lastArticleTop = rect.top + scrollTop;
+      } else {
+        lastArticleTop = document.documentElement.scrollHeight;
+      }
+    } else {
+      lastArticleTop = document.documentElement.scrollHeight;
+    }
 
-  if (!hasMoreData.value || loadingMore.value) {
-    return;
-  }
+    // 用户可见区域的底部位置
+    const viewportBottom = scrollTop + windowHeight;
+    // 最后一篇文章距离视口底部的距离（负值表示已经滚过）
+    const distanceToLastArticle = lastArticleTop - viewportBottom;
 
-  // forceThreshold 用于首次加载后的检查，使用更宽松的阈值
-  const threshold = forceThreshold ? windowHeight : 300;
+    if (!hasMoreData.value || loadingMore.value) {
+      return;
+    }
 
-  // 两种情况触发加载:
-  // 1. 用户可见区域底部已经接近或超过内容底部
-  // 2. 距离底部 threshold 以内
-  if (remaining <= threshold) {
-    console.log('触发滚动加载，currentPage:', currentPage.value, 'threshold:', threshold);
-    fetchArticleList(false);
+    // forceThreshold 用于首次加载后的检查，使用更宽松的阈值
+    const threshold = forceThreshold ? windowHeight : 100;
+
+    // 两种情况触发加载:
+    // 1. 用户可见区域底部已经接近或超过最后一篇文章顶部（distanceToLastArticle <= threshold）
+    // 2. 最后一篇文章已经在视口内或上方
+    if (distanceToLastArticle <= threshold) {
+      fetchArticleList(false);
+    }
+  };
+
+  if (useNextTick) {
+    nextTick(() => check());
+  } else {
+    check();
   }
 };
 
@@ -319,18 +336,17 @@ const fetchArticleList = async (reset = false) => {
     if (hasMore.value && newArticles.length > 0) {
       currentPage.value++;
     }
-
-    // 加载完成后立即检查，如果内容仍不足则自动加载下一页
-    // reset=true 时使用更宽松的阈值（一个视口高度），确保首屏内容充足
-    nextTick(() => {
-      checkAndAutoLoad(reset);
-    });
   } catch (error) {
     ElMessage.error("获取文章列表失败");
     console.error("获取文章列表失败:", error);
   } finally {
     articleLoading.value = false;
     loadingMore.value = false;
+
+    // 加载完成后立即检查，如果内容仍不足则自动加载下一页
+    // reset=true 时使用更宽松的阈值（一个视口高度），确保首屏内容充足
+    // useNextTick=true 确保 DOM 完全渲染后再检查
+    checkAndAutoLoad(reset, true);
   }
 };
 

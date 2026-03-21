@@ -36,7 +36,7 @@ public class VipServiceImpl implements VipService {
      */
     @Override
     public String getVipStatus(Integer userId) {
-        // 先读取会员真相源，没有记录时前端直接按“未开通”展示。
+        // 先查询会员数据，没有记录时前端直接按”未开通”展示。
         VipMember vipMember = vipMemberService.getVipMemberByUserId(userId);
         if (vipMember == null) {
             return VipMemberStatusEnum.NONE.getCode();
@@ -53,7 +53,7 @@ public class VipServiceImpl implements VipService {
      */
     @Override
     public Date getVipExpireTime(Integer userId) {
-        // 会员到期时间直接复用真相源字段，不在聚合层二次推导。
+        // 会员到期时间直接取用数据库字段，不在聚合层二次推导。
         VipMember vipMember = vipMemberService.getVipMemberByUserId(userId);
         return vipMember == null ? null : vipMember.getExpireTime();
     }

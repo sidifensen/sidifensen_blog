@@ -1,8 +1,15 @@
 package com.sidifensen.rabbitmq;
 
+import com.alibaba.fastjson2.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sidifensen.domain.constants.RabbitMQConstants;
 import com.sidifensen.domain.dto.MessageDto;
+import com.sidifensen.domain.dto.PayOrderExpireMessage;
+import com.sidifensen.domain.entity.PayOrder;
+import com.sidifensen.domain.enums.IsReadStatusEnum;
 import com.sidifensen.domain.enums.MessageTypeEnum;
+import com.sidifensen.domain.enums.PayOrderStatusEnum;
+import com.sidifensen.mapper.PayOrderMapper;
 import com.sidifensen.service.MessageService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +43,9 @@ public class DeadLetterQueueListener {
      */
     @Resource
     private MessageService messageService;
+
+    @Resource
+    private PayOrderMapper payOrderMapper;
 
     /**
      * 监听死信队列
@@ -88,6 +98,9 @@ public class DeadLetterQueueListener {
                 handleOperationlogDeadLetter(messageBody, sourceQueue, sourceExchange, sourceRoutingKey, retryCount);
             } else if (RabbitMQConstants.Visitor_Queue.equals(sourceQueue)) {
                 handleVisitorDeadLetter(messageBody, sourceQueue, sourceExchange, sourceRoutingKey, retryCount);
+            } else if (RabbitMQConstants.Order_Expire_Queue.equals(sourceQueue)) {
+                // 订单超时消息，需要实际关闭订单
+                handleOrderExpireDeadLetter(messageBody);
             } else {
                 handleUnknownDeadLetter(messageBody, sourceQueue, sourceExchange, sourceRoutingKey, retryCount);
             }
@@ -171,6 +184,50 @@ public class DeadLetterQueueListener {
     }
 
     /**
+     * 处理订单超时死信（TTL + 死信队列方式）
+     * 订单超时后自动关闭
+     * 注意：此方法是正常业务流程（TTL 到期自动处理），不是失败处理，所以不记录告警日志
+     */
+    private void handleOrderExpireDeadLetter(String messageBody) {
+        try {
+            PayOrderExpireMessage message = JSON.parseObject(messageBody, PayOrderExpireMessage.class);
+            String orderNo = message.getOrderNo();
+
+            // 检查订单状态，只有待支付订单才关闭
+            PayOrder payOrder = payOrderMapper.selectOne(
+                new LambdaQueryWrapper<PayOrder>()
+                    .eq(PayOrder::getOrderNo, orderNo)
+                    .last("limit 1")
+            );
+
+            if (payOrder == null) {
+                log.warn("订单不存在，orderNo={}", orderNo);
+                return;
+            }
+
+            if (!PayOrderStatusEnum.PAYING.getCode().equals(payOrder.getStatus())) {
+                log.info("订单状态非待支付，无需关闭，orderNo={}, status={}", orderNo, payOrder.getStatus());
+                return;
+            }
+
+            // 关闭超时订单
+            payOrder.setStatus(PayOrderStatusEnum.CLOSED.getCode());
+            payOrder.setNotifyContent("系统自动关闭：订单超时未支付");
+            payOrderMapper.updateById(payOrder);
+
+            log.info("订单已关闭，orderNo={}", orderNo);
+        } catch (Exception e) {
+            // 订单关闭失败属于异常，需要记录告警并保存站内消息通知管理员
+            log.error("处理订单超时死信失败，messageBody={}", messageBody, e);
+            saveDeadLetterNotice("订单超时关闭", messageBody,
+                RabbitMQConstants.Order_Expire_Queue,
+                RabbitMQConstants.Order_Expire_Exchange,
+                RabbitMQConstants.Order_Expire_Routing_Key,
+                null);
+        }
+    }
+
+    /**
      * 将死信信息保存为管理员站内消息，便于后续人工排查和补偿处理。
      */
     private void saveDeadLetterNotice(String scene, String messageBody, String sourceQueue, String sourceExchange,
@@ -178,7 +235,7 @@ public class DeadLetterQueueListener {
         try {
             MessageDto messageDto = new MessageDto();
             messageDto.setType(MessageTypeEnum.SYSTEM.getCode());
-            messageDto.setIsRead(0);
+            messageDto.setIsRead(IsReadStatusEnum.UNREAD.getCode());
             messageDto.setContent(String.format(
                     "死信告警：%s处理失败，来源队列=%s，来源交换机=%s，来源路由键=%s，重试次数=%s，消息内容=%s",
                     scene,

@@ -79,7 +79,7 @@ public class VipAdminController {
     @PreAuthorize("hasAuthority('system:vip:member:update')")
     @PostMapping("/member/adjust")
     public Result<?> adjustMember(@Valid @RequestBody VipAdminMemberAdjustDto vipAdminMemberAdjustDto) {
-        // 手动调整涉及参数校验、事务和会员真相源更新，统一在 service 中处理。
+        // 手动调整涉及参数校验、事务和会员数据更新，统一在 service 中处理。
         vipAdminService.adjustMember(vipAdminMemberAdjustDto);
         return Result.success();
     }

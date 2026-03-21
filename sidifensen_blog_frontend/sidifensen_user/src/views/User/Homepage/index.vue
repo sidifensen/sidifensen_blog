@@ -546,7 +546,7 @@ onUnmounted(() => {
   --bg-card: #ffffff;
   min-height: 100vh;
   position: relative;
-  overflow-x: hidden;
+  overflow: visible;
   background: var(--bg-page);
 
   // 黑夜模式适配

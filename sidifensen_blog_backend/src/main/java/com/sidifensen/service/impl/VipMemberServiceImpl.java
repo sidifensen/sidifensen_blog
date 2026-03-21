@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * VIP 会员实现，以 vip_member 作为会员真相源，并同步 vip 角色投影。
+ * VIP 会员实现，以 vip_member 作为会员数据来源，并同步 vip 角色投影。
  */
 @Service
 @Slf4j
@@ -47,7 +47,7 @@ public class VipMemberServiceImpl extends ServiceImpl<VipMemberMapper, VipMember
         if (userId == null || userId <= 0) {
             return false;
         }
-        // 权益判断统一以会员真相源为准，不依赖角色投影反推。
+        // 权益判断统一以会员数据为准，不依赖角色投影反推。
         VipMember vipMember = getVipMemberByUserId(userId);
         if (vipMember == null || vipMember.getExpireTime() == null) {
             return false;
@@ -97,7 +97,7 @@ public class VipMemberServiceImpl extends ServiceImpl<VipMemberMapper, VipMember
                     ? currentExpireTime.toInstant()
                     : now.toInstant();
             Date nextExpireTime = Date.from(baseInstant.plus(days, ChronoUnit.DAYS));
-            // 已有记录时只覆盖会员真相源的关键字段，保证续期和回溯都可追踪。
+            // 已有记录时只覆盖会员数据的关键字段，保证续期和回溯都可追踪。
             vipMember.setStartTime(startTime);
             vipMember.setExpireTime(nextExpireTime);
             vipMember.setStatus(VipMemberStatusEnum.ACTIVE.getCode());
@@ -119,7 +119,7 @@ public class VipMemberServiceImpl extends ServiceImpl<VipMemberMapper, VipMember
         Date expireTime = Date.from(now.toInstant().plus(days, ChronoUnit.DAYS));
         VipMember vipMember = getVipMemberByUserId(userId);
         if (vipMember == null) {
-            // 管理端首次手动开通时，直接创建真相源记录。
+            // 管理端首次手动开通时，直接创建会员数据记录。
             vipMember = new VipMember();
             vipMember.setUserId(userId);
             vipMember.setStatus(VipMemberStatusEnum.ACTIVE.getCode());
@@ -138,7 +138,7 @@ public class VipMemberServiceImpl extends ServiceImpl<VipMemberMapper, VipMember
     }
 
     /**
-     * 立即失效只修改会员真相源，并同步清理 vip 角色投影。
+     * 立即失效只修改会员数据，并同步清理 vip 角色投影。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -146,7 +146,7 @@ public class VipMemberServiceImpl extends ServiceImpl<VipMemberMapper, VipMember
         VipMember vipMember = getVipMemberByUserId(userId);
         Date now = new Date();
         if (vipMember != null) {
-            // 立即失效只把真相源状态和到期时间拉到当前时刻，不删除历史记录。
+            // 立即失效只把会员数据状态和到期时间拉到当前时刻，不删除历史记录。
             vipMember.setStatus(VipMemberStatusEnum.EXPIRED.getCode());
             vipMember.setExpireTime(now);
             if (vipMember.getStartTime() == null) {
@@ -154,7 +154,7 @@ public class VipMemberServiceImpl extends ServiceImpl<VipMemberMapper, VipMember
             }
             vipMemberMapper.updateById(vipMember);
         }
-        // 真相源失效后同步回收 vip 角色，避免权限滞留。
+        // 会员数据失效后同步回收 vip 角色，避免权限滞留。
         removeVipRole(userId);
     }
 
@@ -174,7 +174,7 @@ public class VipMemberServiceImpl extends ServiceImpl<VipMemberMapper, VipMember
         }
 
         List<Integer> userIds = expiredMembers.stream().map(VipMember::getUserId).toList();
-        // 先批量修正会员真相源状态，再批量回收 vip 角色投影。
+        // 先批量修正会员数据状态，再批量回收 vip 角色投影。
         this.update(new LambdaUpdateWrapper<VipMember>()
                 .in(VipMember::getUserId, userIds)
                 .set(VipMember::getStatus, VipMemberStatusEnum.EXPIRED.getCode()));

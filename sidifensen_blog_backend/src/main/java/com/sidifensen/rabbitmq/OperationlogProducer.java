@@ -33,8 +33,6 @@ public class OperationlogProducer {
                     RabbitMQConstants.Operationlog_Routing_Key,
                     message
             );
-            log.debug("发送操作日志到 MQ 成功，module: {}, operation: {}, operator: {}",
-                    message.getModule(), message.getOperation(), message.getOperatorName());
         } catch (Exception e) {
             log.error("发送操作日志到 MQ 失败，module: {}, operation: {}",
                     message.getModule(), message.getOperation(), e);

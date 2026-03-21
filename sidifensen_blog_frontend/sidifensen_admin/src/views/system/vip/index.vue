@@ -4,7 +4,7 @@
       <div class="hero-section__copy">
         <p class="hero-section__eyebrow">MEMBERSHIP OPERATIONS</p>
         <h2 class="hero-section__title">会员管理</h2>
-        <p class="hero-section__subtitle">统一查看会员状态、支付订单与套餐配置，人工调整只影响会员真相源，不伪造支付记录。</p>
+        <p class="hero-section__subtitle">统一查看会员状态、支付订单与套餐配置，人工调整只影响会员数据，不伪造支付记录。</p>
       </div>
       <div class="hero-section__actions">
         <el-button class="vip-button vip-button--hero vip-button--primary" type="primary" :icon="RefreshRight" :loading="refreshing" @click="refreshAll">
@@ -244,7 +244,7 @@
       <template #header>
         <div class="detail-drawer__header">
           <span class="detail-drawer__title">会员详情</span>
-          <span class="detail-drawer__subtitle">查看会员真相源与最近支付订单</span>
+          <span class="detail-drawer__subtitle">查看会员数据与最近支付订单</span>
         </div>
       </template>
 

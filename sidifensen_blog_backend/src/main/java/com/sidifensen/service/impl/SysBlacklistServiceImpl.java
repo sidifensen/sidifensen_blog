@@ -13,6 +13,8 @@ import com.sidifensen.domain.dto.BlacklistUpdateDto;
 import com.sidifensen.domain.dto.MessageDto;
 import com.sidifensen.domain.entity.SysBlacklist;
 import com.sidifensen.domain.enums.BlacklistTypeEnum;
+import com.sidifensen.domain.enums.IsReadStatusEnum;
+import com.sidifensen.domain.enums.MessageTypeEnum;
 import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysBlacklistMapper;
@@ -110,8 +112,8 @@ public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, Sys
             // 发送站内消息给管理员
             try {
                 MessageDto messageDto = new MessageDto();
-                messageDto.setType(0); // 系统消息
-                messageDto.setIsRead(0); // 未读
+                messageDto.setType(MessageTypeEnum.SYSTEM.getCode()); // 系统消息
+                messageDto.setIsRead(IsReadStatusEnum.UNREAD.getCode()); // 未读
                 messageDto.setContent(String.format(
                         "黑名单拉黑通知：用户ID为 %s，IP为 %s，地址为 %s 的用户因 %s 被拉入黑名单，封禁时长：%s",
                         userId, ip, address, reason, banDuration));

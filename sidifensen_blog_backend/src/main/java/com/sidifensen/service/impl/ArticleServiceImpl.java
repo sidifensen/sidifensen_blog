@@ -533,7 +533,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (userIds.isEmpty()) {
             return;
         }
-        List<SysUser> users = sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIds));
+        LambdaQueryWrapper<SysUser> userWrapper = new LambdaQueryWrapper<SysUser>()
+                        .in(SysUser::getId, userIds)
+                        .select(SysUser::getId, SysUser::getNickname, SysUser::getAvatar);
+                List<SysUser> users = sysUserMapper.selectList(userWrapper);
         Map<Integer, String> userIdToNicknameMap = users.stream()
                 .collect(Collectors.toMap(
                         SysUser::getId,
