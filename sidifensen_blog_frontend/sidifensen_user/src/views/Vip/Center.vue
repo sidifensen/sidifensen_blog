@@ -89,6 +89,10 @@
                   <div class="order-side">
                     <span class="order-price">¥{{ order.priceYuan }}</span>
                     <span class="order-status" :class="`status-${(order.status || '').toLowerCase()}`">{{ orderStatusText(order.status) }}</span>
+                    <div v-if="order.status === 'PAYING'" class="order-actions">
+                      <button class="order-cancel-btn" @click="handleCancelOrder(order)">取消订单</button>
+                      <button class="order-pay-btn" @click="handleRepayOrder(order)">去支付</button>
+                    </div>
                   </div>
                 </article>
               </div>
@@ -130,6 +134,13 @@
       @refresh="handlePaymentSuccess"
       @close="closePaymentResultModal"
     />
+
+    <!-- 取消订单弹窗 -->
+    <CancelOrderDialog
+      v-model:visible="cancelDialogVisible"
+      :order-no="cancelOrderNo"
+      @confirmed="handleCancelConfirmed"
+    />
   </div>
 </template>
 
@@ -137,9 +148,11 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { info } from "@/api/user";
-import { createVipOrder, getVipMe, getVipOrderList, getVipPlans } from "@/api/vip";
+import { createVipOrder, getVipMe, getVipOrderList, getVipPlans, repayVipOrder } from "@/api/vip";
 import { useUserStore } from "@/stores/userStore";
+import { GetJwt } from "@/utils/Auth";
 import VipPaymentResultModal from "@/components/VipPaymentResultModal.vue";
+import CancelOrderDialog from "@/components/CancelOrderDialog.vue";
 import { formatVipExpireDate, formatDate } from "@/utils/formatTime";
 
 // 路由与全局状态
@@ -157,6 +170,10 @@ const selectedPlanCode = ref("");
 // 支付结果弹窗控制
 const paymentResultVisible = ref(false);
 const currentOrderNo = ref("");
+
+// 取消订单弹窗控制
+const cancelDialogVisible = ref(false);
+const cancelOrderNo = ref("");
 
 // 会员状态展示文案
 const statusText = computed(() => {
@@ -304,9 +321,25 @@ const goToVipArticles = () => {
 
 // 未登录用户先跳登录，登录后再回到会员中心
 onMounted(async () => {
+  // 优先检查 localStorage 中是否有 jwt token
+  const jwt = GetJwt();
   if (!userStore.user?.id) {
-    router.push(`/login?redirect=${encodeURIComponent(route.fullPath)}`);
-    return;
+    // 如果有 jwt 但 userStore.user 为空（可能是新标签页 Pinia 尚未恢复数据）
+    // 先尝试获取用户信息，而不是直接跳转登录
+    if (jwt) {
+      try {
+        const response = await info();
+        userStore.user = response.data.data;
+      } catch (error) {
+        // 获取用户信息失败（401 等），说明 token 已过期或无效，跳转登录
+        router.push(`/login?redirect=${encodeURIComponent(route.fullPath)}`);
+        return;
+      }
+    } else {
+      // 没有 jwt token，直接跳转登录
+      router.push(`/login?redirect=${encodeURIComponent(route.fullPath)}`);
+      return;
+    }
   }
   try {
     await fetchVipData();
@@ -328,6 +361,51 @@ onMounted(async () => {
 const orderStatusText = (status) => {
   const map = { PAID: "已支付", PAYING: "待支付", CLOSED: "已关闭", FAILED: "失败" };
   return map[status] || status || "未知";
+};
+
+// 处理待支付订单的再次支付
+const handleRepayOrder = async (order) => {
+  try {
+    const response = await repayVipOrder(order.orderNo);
+    const payload = response.data.data;
+
+    // 打开支付结果弹窗
+    currentOrderNo.value = payload.orderNo;
+    paymentResultVisible.value = true;
+
+    // PC 端表单提交
+    if (payload.formHtml) {
+      const targetName = `alipay_${Date.now()}`;
+      const paymentWindow = window.open("about:blank", targetName);
+      if (!paymentWindow) {
+        ElMessage.error("浏览器拦截了支付窗口，请允许弹窗后重试");
+        return;
+      }
+      submitPaymentForm(payload.formHtml, targetName);
+      return;
+    }
+    // H5 端直接跳转
+    if (payload.payUrl) {
+      window.open(payload.payUrl, "_blank");
+      return;
+    }
+    ElMessage.error("支付参数异常，请稍后重试");
+  } catch (error) {
+    ElMessage.error(error?.msg || "支付失败");
+  }
+};
+
+// 处理待支付订单的取消
+const handleCancelOrder = (order) => {
+  cancelOrderNo.value = order.orderNo;
+  cancelDialogVisible.value = true;
+};
+
+// 取消订单确认后的回调
+const handleCancelConfirmed = async () => {
+  ElMessage.success('订单已取消');
+  // 刷新订单列表
+  await refreshOrderList();
 };
 </script>
 
@@ -656,6 +734,48 @@ const orderStatusText = (status) => {
                     color: #b74d4d;
                   }
                 }
+
+                .order-actions {
+                  display: flex;
+                  gap: 8px;
+
+                  .order-cancel-btn,
+                  .order-pay-btn {
+                    height: 28px;
+                    padding: 0 14px;
+                    border: 0;
+                    border-radius: 10px;
+                    font-size: 12px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                  }
+
+                  .order-cancel-btn {
+                    background: #ef4444;
+                    color: #ffffff;
+
+                    &:hover {
+                      background: #dc2626;
+                    }
+
+                    &:active {
+                      transform: scale(0.95);
+                    }
+                  }
+
+                  .order-pay-btn {
+                    background: var(--accent);
+                    color: var(--text-light);
+
+                    &:hover {
+                      opacity: 0.85;
+                    }
+
+                    &:active {
+                      opacity: 0.7;
+                    }
+                  }
+                }
               }
             }
           }
@@ -731,6 +851,42 @@ html.dark {
     --accent-soft: rgba(197, 154, 68, 0.12);
     --accent-soft-strong: rgba(197, 154, 68, 0.18);
     --shadow: rgba(0, 0, 0, 0.24);
+  }
+}
+
+html.dark {
+  .el-message-box.cancel-order-dialog {
+    background: #1e293b;
+    border-color: #334155;
+
+    .el-message-box__title {
+      color: #f1f5f9;
+    }
+
+    .el-message-box__message {
+      color: #cbd5e1;
+    }
+
+    .el-button--default {
+      background: #334155;
+      border-color: #334155;
+      color: #f1f5f9;
+
+      &:hover {
+        background: #475569;
+        border-color: #475569;
+      }
+    }
+
+    .el-button--primary {
+      background: #ef4444;
+      border-color: #ef4444;
+
+      &:hover {
+        background: #dc2626;
+        border-color: #dc2626;
+      }
+    }
   }
 }
 

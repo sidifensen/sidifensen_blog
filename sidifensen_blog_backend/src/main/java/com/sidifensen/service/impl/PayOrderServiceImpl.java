@@ -229,6 +229,78 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
     }
 
     /**
+     * 对待支付订单进行再次支付，返回支付参数。
+     */
+    @Override
+    public VipOrderCreateVo repayOrder(Integer userId, String orderNo) {
+        // 先按订单号读取订单，再做归属校验
+        PayOrder payOrder = payOrderMapper.selectOne(new LambdaQueryWrapper<PayOrder>()
+                .eq(PayOrder::getOrderNo, orderNo)
+                .last("limit 1"));
+        if (payOrder == null) {
+            throw new BlogException(BlogConstants.VipOrderNotFound);
+        }
+        // 校验订单归属，防止越权访问
+        if (!payOrder.getUserId().equals(userId)) {
+            throw new BlogException(BlogConstants.VipOrderAccessDenied);
+        }
+        // 只允许对待支付订单进行再次支付
+        if (!PayOrderStatusEnum.PAYING.getCode().equals(payOrder.getStatus())) {
+            throw new BlogException("订单状态不是待支付，无法继续支付");
+        }
+
+        // 检查订单是否已过期
+        if (payOrder.getExpiredTime() != null && payOrder.getExpiredTime().before(new Date())) {
+            throw new BlogException("订单已过期，请重新下单");
+        }
+
+        // 根据客户端类型生成支付参数
+        VipOrderCreateVo vo = new VipOrderCreateVo();
+        vo.setOrderNo(payOrder.getOrderNo());
+        vo.setClientType(payOrder.getClientType());
+
+        if (PayClientTypeEnum.PC.getCode().equals(payOrder.getClientType())) {
+            vo.setFormHtml(alipayPaymentService.createPagePayForm(payOrder));
+        } else {
+            String payContent = alipayPaymentService.createWapPayContent(payOrder);
+            if (payContent != null && payContent.startsWith("http")) {
+                vo.setPayUrl(payContent);
+            } else {
+                vo.setFormHtml(payContent);
+            }
+        }
+        return vo;
+    }
+
+    /**
+     * 取消待支付订单，将订单状态置为已关闭。
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cancelOrder(Integer userId, String orderNo) {
+        // 先按订单号读取订单，再做归属校验
+        PayOrder payOrder = payOrderMapper.selectOne(new LambdaQueryWrapper<PayOrder>()
+                .eq(PayOrder::getOrderNo, orderNo)
+                .last("limit 1"));
+        if (payOrder == null) {
+            throw new BlogException(BlogConstants.VipOrderNotFound);
+        }
+        // 校验订单归属，防止越权访问
+        if (!payOrder.getUserId().equals(userId)) {
+            throw new BlogException(BlogConstants.VipOrderAccessDenied);
+        }
+        // 只允许取消待支付订单
+        if (!PayOrderStatusEnum.PAYING.getCode().equals(payOrder.getStatus())) {
+            throw new BlogException("订单状态不是待支付，无法取消");
+        }
+
+        // 更新订单状态为已关闭
+        payOrder.setStatus(PayOrderStatusEnum.CLOSED.getCode());
+        payOrderMapper.updateById(payOrder);
+        log.info("用户取消订单，userId={}, orderNo={}", userId, orderNo);
+    }
+
+    /**
      * 结果页轮询订单明细时，如果本地仍是待支付，则主动向支付宝补查一次。
      */
     private PayOrder refreshOrderStatusIfNecessary(PayOrder payOrder) {

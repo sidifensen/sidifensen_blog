@@ -1,13 +1,6 @@
 <template>
-  <div v-if="visible" class="vip-payment-result-modal-mask" @click.self="handleClose">
+  <div v-if="visible" class="vip-payment-result-modal-mask">
     <div class="vip-payment-result-modal">
-      <!-- 关闭按钮 -->
-      <button class="modal-close" @click="handleClose">
-        <svg viewBox="0 0 24 24" width="20" height="20">
-          <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-        </svg>
-      </button>
-
       <!-- 支付结果卡片 -->
       <div class="result-card">
         <!-- 结果图标 -->
@@ -54,6 +47,9 @@
 
         <!-- 操作按钮 -->
         <div class="result-actions">
+          <button v-if="orderStatus === 'PAYING'" class="cancel-button" @click="handleCancelOrder">
+            取消订单
+          </button>
           <button v-if="orderStatus === 'PAYING'" class="primary-button" @click="handleRefresh">
             刷新状态
           </button>
@@ -64,11 +60,19 @@
       </div>
     </div>
   </div>
+
+  <!-- 取消订单弹窗 -->
+  <CancelOrderDialog
+    v-model:visible="cancelDialogVisible"
+    :order-no="orderNo"
+    @confirmed="handleCancelConfirmed"
+  />
 </template>
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { getVipOrder } from "@/api/vip";
+import CancelOrderDialog from "./CancelOrderDialog.vue";
 
 // Props
 const props = defineProps({
@@ -82,6 +86,9 @@ const props = defineProps({
   },
 });
 
+// 订单过期时间（从后端获取）
+const orderExpiredTime = ref(null);
+
 // Emits
 const emit = defineEmits(["update:visible", "refresh", "close"]);
 
@@ -94,10 +101,8 @@ const closeInterval = ref(null);
 // 关闭倒计时配置（3 秒）
 const CLOSE_COUNTDOWN_SECONDS = 3;
 const closeCountdownSeconds = ref(CLOSE_COUNTDOWN_SECONDS);
-
-// 倒计时配置（15 分钟 = 900 秒）
-const COUNTDOWN_SECONDS = 15 * 60;
-const countdownSeconds = ref(COUNTDOWN_SECONDS);
+// 订单剩余倒计时（秒）
+const countdownSeconds = ref(0);
 const countdownTimer = ref(null);
 
 // 倒计时文案
@@ -153,7 +158,10 @@ const pollOrder = async (attempt = 0) => {
 
   try {
     const response = await getVipOrder(props.orderNo);
-    orderStatus.value = response.data.data?.status || "PAYING";
+    const orderData = response.data.data;
+    orderStatus.value = orderData?.status || "PAYING";
+    // 同步订单过期时间
+    orderExpiredTime.value = orderData?.expiredTime;
 
     // 支付成功
     if (orderStatus.value === "PAID") {
@@ -177,7 +185,13 @@ const pollOrder = async (attempt = 0) => {
     // 订单关闭或失败
     if (["CLOSED", "FAILED"].includes(orderStatus.value)) {
       stopPolling();
+      stopCountdown();
       return;
+    }
+
+    // 第一次获取订单时，启动倒计时
+    if (attempt === 0 && orderExpiredTime.value) {
+      startCountdown();
     }
 
     // 轮询次数超限 (450 次 × 2 秒 = 900 秒 = 15 分钟，与订单超时时间一致)
@@ -210,10 +224,33 @@ const stopCloseInterval = () => {
   }
 };
 
-// 启动倒计时
+// 启动倒计时（基于订单实际过期时间）
 const startCountdown = () => {
   stopCountdown();
-  countdownSeconds.value = COUNTDOWN_SECONDS;
+
+  // 如果还没有获取到订单过期时间，等待轮询获取后再启动
+  if (!orderExpiredTime.value) {
+    return;
+  }
+
+  // 如果订单已过期，直接返回
+  if (new Date(orderExpiredTime.value) <= new Date()) {
+    orderStatus.value = 'CLOSED';
+    return;
+  }
+
+  // 计算剩余时间（毫秒）
+  const remainingMs = new Date(orderExpiredTime.value).getTime() - Date.now();
+
+  // 如果剩余时间小于等于 0，说明订单已过期
+  if (remainingMs <= 0) {
+    orderStatus.value = 'CLOSED';
+    return;
+  }
+
+  // 将剩余时间转换为秒数
+  countdownSeconds.value = Math.floor(remainingMs / 1000);
+
   countdownTimer.value = window.setInterval(() => {
     if (countdownSeconds.value > 0) {
       countdownSeconds.value--;
@@ -253,6 +290,23 @@ const copyOrderNo = async () => {
   }
 };
 
+// 取消订单弹窗控制
+const cancelDialogVisible = ref(false);
+
+// 打开取消订单弹窗
+const handleCancelOrder = () => {
+  cancelDialogVisible.value = true;
+};
+
+// 取消订单确认后的回调
+const handleCancelConfirmed = () => {
+  ElMessage.success('订单已取消');
+  orderStatus.value = 'CLOSED';
+  stopPolling();
+  stopCountdown();
+  emit('refresh');
+};
+
 // 关闭弹窗
 const handleClose = () => {
   stopPolling();
@@ -270,7 +324,6 @@ watch(
       // 延迟一下开始轮询，确保弹窗动画完成
       setTimeout(() => {
         pollOrder();
-        startCountdown();
       }, 300);
     }
   }
@@ -279,7 +332,6 @@ watch(
 onMounted(() => {
   if (props.visible && props.orderNo) {
     pollOrder();
-    startCountdown();
   }
 });
 
@@ -467,6 +519,7 @@ onBeforeUnmount(() => {
         justify-content: center;
         gap: 12px;
 
+        .cancel-button,
         .primary-button,
         .secondary-button {
           min-width: 120px;
@@ -475,6 +528,20 @@ onBeforeUnmount(() => {
           font-size: 15px;
           cursor: pointer;
           transition: all 0.2s;
+        }
+
+        .cancel-button {
+          background: #dc2626;
+          color: #ffffff;
+          border: none;
+
+          &:hover {
+            background: #ef4444;
+          }
+
+          &:active {
+            transform: scale(0.98);
+          }
         }
 
         .primary-button {
@@ -512,13 +579,6 @@ onBeforeUnmount(() => {
 html.dark {
   .vip-payment-result-modal-mask {
     .vip-payment-result-modal {
-      .modal-close {
-        &:hover {
-          background: #334155;
-          color: #f1f5f9;
-        }
-      }
-
       .result-card {
         background: #1e293b;
         border-color: #334155;
@@ -563,6 +623,22 @@ html.dark {
               background: rgba(46, 138, 100, 0.2);
               color: #2e8a64;
             }
+          }
+        }
+
+        .cancel-button {
+          background: #dc2626;
+
+          &:hover {
+            background: #ef4444;
+          }
+        }
+
+        .primary-button {
+          background: #1f6d4c;
+
+          &:hover {
+            background: #2e8a64;
           }
         }
 

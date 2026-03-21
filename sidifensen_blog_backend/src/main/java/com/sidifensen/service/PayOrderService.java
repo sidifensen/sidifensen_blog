@@ -40,4 +40,14 @@ public interface PayOrderService extends IService<PayOrder> {
      * 处理支付宝异步回调，并在成功后发放会员资格。
      */
     boolean handleAlipayNotify(Map<String, String> params);
+
+    /**
+     * 对待支付订单进行再次支付，返回支付参数。
+     */
+    VipOrderCreateVo repayOrder(Integer userId, String orderNo);
+
+    /**
+     * 取消待支付订单，将订单状态置为已关闭。
+     */
+    void cancelOrder(Integer userId, String orderNo);
 }

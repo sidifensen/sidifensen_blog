@@ -40,3 +40,19 @@ export function getVipMe() {
     method: "get",
   });
 }
+
+// 对待支付订单进行再次支付
+export function repayVipOrder(orderNo) {
+  return request({
+    url: `/vip/orders/${orderNo}/pay`,
+    method: "post",
+  });
+}
+
+// 取消待支付订单
+export function cancelVipOrder(orderNo) {
+  return request({
+    url: `/vip/orders/${orderNo}/cancel`,
+    method: "post",
+  });
+}

@@ -84,6 +84,25 @@ public class VipController {
     }
 
     /**
+     * 对待支付订单进行再次支付，返回支付参数。
+     */
+    @PostMapping("/orders/{orderNo}/pay")
+    public Result<VipOrderCreateVo> repayOrder(@PathVariable @NotNull(message = "订单号不能为空") String orderNo) {
+        Integer userId = getRequiredUserId();
+        return Result.success(payOrderService.repayOrder(userId, orderNo));
+    }
+
+    /**
+     * 取消待支付订单。
+     */
+    @PostMapping("/orders/{orderNo}/cancel")
+    public Result<Void> cancelOrder(@PathVariable @NotNull(message = "订单号不能为空") String orderNo) {
+        Integer userId = getRequiredUserId();
+        payOrderService.cancelOrder(userId, orderNo);
+        return Result.success();
+    }
+
+    /**
      * 返回当前登录用户的会员状态和 AI 配额信息。
      */
     @GetMapping("/me")
