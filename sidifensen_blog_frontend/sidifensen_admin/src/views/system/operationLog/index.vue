@@ -16,6 +16,25 @@
             <el-option label="失败" :value="1" />
             <el-option label="异常" :value="2" />
           </el-select>
+          <el-select v-model="searchForm.operation" placeholder="操作类型" filterable clearable size="small" class="search-input" @change="handleSearch">
+            <el-option label="全部" value="" />
+            <el-option label="获取" value="获取" />
+            <el-option label="新增" value="新增" />
+            <el-option label="修改" value="修改" />
+            <el-option label="删除" value="删除" />
+            <el-option label="查询" value="查询" />
+            <el-option label="搜索" value="搜索" />
+            <el-option label="审核" value="审核" />
+            <el-option label="分配" value="分配" />
+            <el-option label="其他" value="其他" />
+          </el-select>
+          <el-select v-model="searchForm.requestMethod" placeholder="请求方式" filterable clearable size="small" class="search-input" @change="handleSearch">
+            <el-option label="全部" value="" />
+            <el-option label="GET" value="GET" />
+            <el-option label="POST" value="POST" />
+            <el-option label="PUT" value="PUT" />
+            <el-option label="DELETE" value="DELETE" />
+          </el-select>
           <el-input v-model.number="searchForm.operatorId" placeholder="操作人员 ID" :prefix-icon="Search" size="small" class="search-input" clearable @input="handleSearch" />
         </div>
       </div>
@@ -262,6 +281,8 @@ const total = ref(0);
 const searchForm = reactive({
   operatorId: null,
   operatorRole: "",
+  operation: "",
+  requestMethod: "",
   status: "",
   createTimeStart: null,
   createTimeEnd: null,
@@ -358,6 +379,8 @@ const hasSearchConditions = () => {
   return !!(
     searchForm.operatorId ||
     searchForm.operatorRole ||
+    searchForm.operation ||
+    searchForm.requestMethod ||
     searchForm.status !== "" ||
     searchForm.createTimeStart ||
     searchForm.createTimeEnd
@@ -376,6 +399,12 @@ const buildSearchPayload = () => {
   }
   if (searchForm.operatorRole) {
     searchData.operatorRole = searchForm.operatorRole;
+  }
+  if (searchForm.operation) {
+    searchData.operation = searchForm.operation;
+  }
+  if (searchForm.requestMethod) {
+    searchData.requestMethod = searchForm.requestMethod;
   }
   if (searchForm.status !== "" && searchForm.status !== null && searchForm.status !== undefined) {
     searchData.status = searchForm.status;
@@ -1272,6 +1301,19 @@ onUnmounted(() => {
       .card-title {
         font-size: 16px;
       }
+
+      .card-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        width: 100%;
+
+        .search-input {
+          flex: 1 1 calc(50% - 4px);
+          width: auto !important;
+          min-width: 120px;
+        }
+      }
     }
 
     .card-time-filters {
@@ -1279,13 +1321,14 @@ onUnmounted(() => {
 
       .time-filter-group {
         display: flex;
-        flex-direction: row;
+        flex-wrap: wrap;
         gap: 8px;
         width: 100%;
 
         .time-input {
-          flex: 1;
+          flex: 1 1 calc(50% - 4px);
           width: auto !important;
+          min-width: 140px;
         }
       }
     }

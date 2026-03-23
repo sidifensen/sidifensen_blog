@@ -110,7 +110,7 @@
                   <span class="article-date">{{ formatDate(article.createTime) }}</span>
                   <div class="article-stats">
                     <span class="stat">👁 {{ formatNumber(article.readCount || 0) }}</span>
-                    <span class="stat">❤️ {{ formatNumber(article.likeCount || 0) }}</span>
+                    <span class="stat"><span class="heart-icon">♡</span> {{ formatNumber(article.likeCount || 0) }}</span>
                   </div>
                 </div>
               </div>
@@ -967,6 +967,10 @@ html.dark {
       gap: 4px;
       font-size: 0.75rem;
       color: var(--text-muted);
+    }
+
+    .heart-icon {
+      font-size: 1rem;
     }
   }
 }

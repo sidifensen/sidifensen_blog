@@ -24,19 +24,40 @@ public class VipPlan implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 主键 ID，自增
+     */
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
+    /**
+     * 套餐编码，唯一标识，如 "monthly"、"yearly"
+     */
     private String code;
 
+    /**
+     * 套餐名称，如 "月度会员"、"年度会员"
+     */
     private String name;
 
+    /**
+     * 套餐天数，如 30、365
+     */
     private Integer days;
 
+    /**
+     * 套餐价格，单位为分
+     */
     private Integer priceFen;
 
+    /**
+     * 套餐是否启用
+     */
     private Boolean enabled;
 
+    /**
+     * 套餐描述
+     */
     private String description;
 
     @TableField(fill = FieldFill.INSERT)

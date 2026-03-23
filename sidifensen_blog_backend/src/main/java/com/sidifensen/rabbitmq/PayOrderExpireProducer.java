@@ -31,7 +31,6 @@ public class PayOrderExpireProducer {
                     RabbitMQConstants.Order_Expire_Routing_Key,
                     message
             );
-            log.info("发送订单超时消息成功，orderNo={}", message.getOrderNo());
         } catch (Exception e) {
             log.error("发送订单超时消息失败，orderNo={}, error={}", message.getOrderNo(), e.getMessage(), e);
             // MQ 发送失败不抛出异常，订单仍可正常创建

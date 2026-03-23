@@ -1,77 +1,65 @@
 <template>
   <div class="album-detail-page">
-    <!-- 顶部 Banner 区 -->
-    <div class="album-hero">
+    <!-- Hero Banner -->
+    <div class="page-hero">
       <div class="hero-content">
-        <div class="hero-top">
-          <button class="back-btn" @click="goBack">
-            <el-icon><ArrowLeftBold /></el-icon>
-          </button>
-          <div class="hero-title-wrapper">
-            <h1 class="hero-title">
-              <span class="title-icon">🖼️</span>
-              {{ albumForm.name }}
-            </h1>
-            <div v-if="albumForm.userName" class="user-info">
-              <el-avatar :size="24" class="user-avatar">
-                <el-icon><User /></el-icon>
-              </el-avatar>
-              <span class="user-name">@{{ albumForm.userName }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 操作按钮区 -->
-        <div v-if="isAlbumOwner" class="hero-actions">
-          <button class="btn-upload" @click="handleUploadPhoto">
-            <el-icon><UploadFilled /></el-icon>
-            <span>上传图片</span>
-          </button>
-          <button class="btn-edit" @click="handleEditAlbum">
-            <el-icon><Edit /></el-icon>
-            <span>编辑相册</span>
-          </button>
-          <button v-if="!isSelectMode" class="btn-select" @click="toggleSelectMode">
-            选择图片
-          </button>
-          <template v-else>
-            <button class="btn-select-all" @click="toggleAllSelection">
-              {{ isAllSelected ? "取消全选" : "全选" }}
-            </button>
-            <button class="btn-select-active" @click="toggleSelectMode">
-              完成
-            </button>
-          </template>
-          <button
-            v-show="selectedPhotos.length > 0"
-            class="btn-delete"
-            @click="handleBatchDelete"
-          >
-            <el-icon><Delete /></el-icon>
-            <span>删除 ({{ selectedPhotos.length }})</span>
-          </button>
-          <el-dropdown trigger="hover">
-            <button class="btn-more">
-              <el-icon><MoreFilled /></el-icon>
-            </button>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item @click="handleDeleteAlbum" class="danger-item">
-                  <el-icon><Delete /></el-icon> 删除相册
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-          <el-switch
-            v-model="switchShowStatus"
-            @click="handleChangeAlbumShowStatus"
-            active-text="公开"
-            inactive-text="私密"
-            inline-prompt
-            class="show-status-switch"
-          />
+        <div class="hero-copy">
+          <div class="hero-kicker">Album Detail</div>
+          <h1>{{ albumForm.name }}</h1>
+          <p>创建者：@{{ albumForm.userName }}</p>
         </div>
       </div>
+    </div>
+
+    <!-- 操作按钮区 -->
+    <div class="hero-actions" v-if="isAlbumOwner">
+      <button class="btn-upload" @click="handleUploadPhoto">
+        <el-icon><UploadFilled /></el-icon>
+        <span>上传图片</span>
+      </button>
+      <button class="btn-edit" @click="handleEditAlbum">
+        <el-icon><Edit /></el-icon>
+        <span>编辑相册</span>
+      </button>
+      <button v-if="!isSelectMode" class="btn-select" @click="toggleSelectMode">
+        选择图片
+      </button>
+      <template v-else>
+        <button class="btn-select" @click="toggleAllSelection">
+          {{ isAllSelected ? "取消全选" : "全选" }}
+        </button>
+        <button class="btn-select" @click="toggleSelectMode">
+          完成
+        </button>
+      </template>
+      <button
+        v-show="selectedPhotos.length > 0"
+        class="btn-delete"
+        @click="handleBatchDelete"
+      >
+        <el-icon><Delete /></el-icon>
+        <span>删除 ({{ selectedPhotos.length }})</span>
+      </button>
+      <el-dropdown trigger="hover">
+        <button class="btn-more">
+          <el-icon><MoreFilled /></el-icon>
+        </button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item @click="handleDeleteAlbum" class="danger-item">
+              <el-icon><Delete /></el-icon> 删除相册
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+      <el-switch
+        v-model="switchShowStatus"
+        @click="handleChangeAlbumShowStatus"
+        active-text="公开"
+        inactive-text="私密"
+        inline-prompt
+        class="show-status-switch"
+      />
     </div>
 
     <!-- 图片内容区 -->
@@ -633,249 +621,174 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+// 标准 CSS 变量规范（浅色模式）
 .album-detail-page {
-  --bg-primary: #fafafa;
+  --bg-page: #f8fafc;
   --bg-card: #ffffff;
-  --text-main: #1a1a1a;
-  --text-secondary: #666666;
-  --text-muted: #999999;
-  --border-color: #eeeeee;
-  --hover-bg: #f5f5f5;
+  --text-primary: #1e293b;
+  --text-regular: #475569;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+  --border-regular: #cbd5e1;
+  --accent-color: #3b82f6;
+  --accent-soft: #eff6ff;
+  --accent-border: #bfdbfe;
+  --accent-hover: #dbeafe;
   --danger-color: #ef4444;
+  --danger-soft: #fef2f2;
+  --danger-border: #fecaca;
+  --hover-bg: #f8fafc;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
 
   min-height: 100vh;
-  background: var(--bg-primary);
+  background: var(--bg-page);
   overflow-x: hidden;
 
   /* Hero Banner */
-  .album-hero {
+  .page-hero {
     position: relative;
-    min-height: 280px;
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-    padding: 24px 40px;
-    box-sizing: border-box;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -20%;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
-      border-radius: 50%;
-    }
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 0;
 
     .hero-content {
-      position: relative;
       max-width: 1400px;
       margin: 0 auto;
+      padding: 0 24px;
 
-      .hero-top {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        margin-bottom: 24px;
+      .hero-copy {
+        max-width: 600px;
 
-        .back-btn {
-          width: 40px;
-          height: 40px;
-          border-radius: 8px;
-          background: rgba(255, 255, 255, 0.1);
-          border: none;
-          color: #fff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-size: 20px;
-
-          &:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateX(-4px);
-          }
+        .hero-kicker {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--accent-color);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          margin-bottom: 8px;
         }
 
-        .hero-title-wrapper {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          gap: 16px;
+        h1 {
+          margin: 0 0 12px;
+          font-size: 32px;
+          font-weight: 700;
+          color: var(--text-primary);
+          line-height: 1.2;
+        }
 
-          .hero-title {
-            margin: 0;
-            font-size: 32px;
-            font-weight: 700;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            letter-spacing: 2px;
-
-            .title-icon {
-              font-size: 36px;
-            }
-          }
-
-          .user-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-
-            .user-avatar {
-              background: rgba(255, 255, 255, 0.2);
-              color: #fff;
-            }
-
-            .user-name {
-              color: rgba(255, 255, 255, 0.9);
-              font-size: 14px;
-              font-weight: 500;
-            }
-          }
+        p {
+          margin: 0;
+          font-size: 15px;
+          color: var(--text-regular);
         }
       }
+    }
+  }
 
-      /* 操作按钮区 */
-      .hero-actions {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        flex-wrap: wrap;
-        padding: 16px 20px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+  /* 操作按钮区 */
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    padding: 20px 0;
+    margin-top: 20px;
+    border-top: 1px solid var(--border-light);
 
-        .btn-upload,
-        .btn-edit,
-        .btn-select,
-        .btn-select-all,
-        .btn-select-active {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 8px 14px;
-          border-radius: 6px;
-          font-size: 13px;
-          font-weight: 500;
-          border: none;
-          cursor: pointer;
-          transition: all 0.2s ease;
+    .btn-upload,
+    .btn-edit,
+    .btn-select {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid var(--border-regular);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
 
-          .el-icon {
-            font-size: 16px;
-          }
+      &:hover {
+        border-color: var(--accent-color);
+        color: var(--accent-color);
+      }
+    }
+
+    .btn-upload {
+      background: var(--accent-soft);
+      border-color: var(--accent-border);
+      color: var(--accent-color);
+
+      &:hover {
+        background: var(--accent-hover);
+      }
+    }
+
+    .btn-delete {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 6px;
+      color: #ef4444;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: #ef4444;
+      }
+    }
+
+    html.dark & {
+      .btn-delete {
+        border-color: rgba(239, 68, 68, 0.5);
+        &:hover {
+          background: rgba(239, 68, 68, 0.15);
         }
+      }
+    }
 
-        .btn-upload {
-          background: #fff;
-          color: #000;
+    .btn-more {
+      padding: 8px;
+      background: transparent;
+      border: 1px solid var(--border-regular);
+      border-radius: 6px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s ease;
 
-          &:hover {
-            background: #f0f0f0;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
-          }
-        }
+      &:hover {
+        border-color: var(--accent-color);
+        color: var(--accent-color);
+      }
+    }
 
-        .btn-edit,
-        .btn-select {
-          background: rgba(255, 255, 255, 0.2);
-          color: #fff;
+    .show-status-switch {
+      :deep(.el-switch__core) {
+        width: 56px;
+        height: 28px;
+        border-radius: 14px;
+        background-color: var(--border-regular);
+        border: none;
+      }
 
-          &:hover {
-            background: rgba(255, 255, 255, 0.3);
-          }
-        }
+      :deep(.is-checked .el-switch__core) {
+        background-color: var(--accent-color);
+      }
 
-        .btn-select-all,
-        .btn-select-active {
-          background: transparent;
-          color: #fff;
-          border: 1px solid rgba(255, 255, 255, 0.3);
+      :deep(.el-switch__action) {
+        width: 24px;
+        height: 24px;
+        background-color: #fff;
+        border-radius: 50%;
+        box-shadow: var(--shadow-sm);
+      }
 
-          &:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.5);
-          }
-        }
-
-        .btn-delete {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 8px 14px;
-          border-radius: 6px;
-          font-size: 13px;
-          font-weight: 500;
-          background: transparent;
-          color: #f56c6c;
-          border: 1px solid rgba(245, 108, 108, 0.5);
-          cursor: pointer;
-          transition: all 0.2s ease;
-
-          &:hover {
-            background: rgba(245, 108, 108, 0.1);
-            border-color: #f56c6c;
-          }
-        }
-
-        .btn-more {
-          background: rgba(255, 255, 255, 0.1);
-          color: #fff;
-          width: 32px;
-          height: 32px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding: 0;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-
-          &:hover {
-            background: rgba(255, 255, 255, 0.2);
-          }
-        }
-
-        .show-status-switch {
-          margin-left: 8px;
-
-          :deep(.el-switch__core) {
-            width: 60px;
-            height: 24px;
-            border-radius: 12px;
-            background-color: #909399;
-            border: none;
-            transition: background-color 0.2s ease;
-          }
-
-          :deep(.is-checked .el-switch__core) {
-            background-color: #409eff;
-            border: none;
-          }
-
-          :deep(.el-switch__action) {
-            width: 20px;
-            height: 20px;
-            background-color: #fff;
-            border: none;
-            transition: transform 0.2s ease;
-          }
-
-          :deep(.el-switch__label) {
-            font-size: 12px;
-            font-weight: 500;
-            color: #fff;
-          }
-        }
+      :deep(.el-switch__label) {
+        font-size: 12px;
+        font-weight: 500;
       }
     }
   }
@@ -897,7 +810,7 @@ onMounted(() => {
         padding: 12px 16px;
         background: var(--bg-card);
         border-radius: 8px;
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border);
 
         .date-label {
           display: flex;
@@ -905,7 +818,7 @@ onMounted(() => {
           gap: 8px;
           font-size: 16px;
           font-weight: 600;
-          color: var(--text-main);
+          color: var(--text-primary);
 
           .el-icon {
             color: var(--text-muted);
@@ -918,6 +831,15 @@ onMounted(() => {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         gap: 16px;
 
+        @media (max-width: 1200px) {
+          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        }
+
+        @media (max-width: 768px) {
+          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+          gap: 12px;
+        }
+
         .photo-item {
           position: relative;
           aspect-ratio: 4/3;
@@ -925,32 +847,38 @@ onMounted(() => {
           overflow: hidden;
           background: var(--hover-bg);
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+          transition: all 0.2s ease;
+          border: 1px solid var(--border);
 
           &:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow);
 
             .photo {
-              transform: scale(1.08);
+              transform: scale(1.05);
             }
           }
 
           &.selected {
-            box-shadow: 0 0 0 3px #409eff;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px var(--accent-soft);
           }
 
           .photo {
             width: 100%;
             height: 100%;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.3s ease;
+
+            :deep(.el-image) {
+              width: 100%;
+              height: 100%;
+            }
 
             .placeholder,
             .error {
               width: 100%;
               height: 100%;
-              background: #e4e7ed;
+              background: var(--bg-page);
               display: flex;
               justify-content: center;
               align-items: center;
@@ -958,12 +886,12 @@ onMounted(() => {
               .spinner {
                 animation: rotate 1.5s linear infinite;
                 font-size: 28px;
-                color: #909399;
+                color: var(--text-muted);
               }
 
               .el-icon {
                 font-size: 40px;
-                color: #909399;
+                color: var(--text-muted);
               }
             }
           }
@@ -977,14 +905,18 @@ onMounted(() => {
             font-size: 12px;
             font-weight: 600;
             color: #fff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow);
 
             &.status-pending {
-              background: linear-gradient(135deg, #909399, #606266);
+              background: #64748b;
+            }
+
+            &.status-approved {
+              background: #22c55e;
             }
 
             &.status-rejected {
-              background: linear-gradient(135deg, #f56c6c, #dd3e3e);
+              background: #ef4444;
             }
           }
 
@@ -994,7 +926,7 @@ onMounted(() => {
             right: 8px;
             width: 28px;
             height: 28px;
-            background: #409eff;
+            background: var(--accent-color);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -1022,56 +954,32 @@ onMounted(() => {
 /* 黑夜模式 */
 html.dark {
   .album-detail-page {
-    --bg-primary: #0a0a0a;
-    --bg-card: #141414;
-    --text-main: #ffffff;
-    --text-secondary: #a0a0a0;
-    --text-muted: #666666;
-    --border-color: #222222;
-    --hover-bg: #1a1a1a;
+    --bg-page: #0f172a;
+    --bg-card: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-regular: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --border-light: #1e293b;
+    --border-regular: #475569;
+    --accent-soft: #1e3a5f;
+    --accent-border: #1e40af;
+    --accent-hover: #2563eb;
+    --danger-soft: #450a0a;
+    --danger-border: #991b1b;
+    --hover-bg: #1e293b;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
 
-    .album-hero {
-      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-
-      &::before {
-        background: radial-gradient(circle, rgba(255,255,255,0.02) 0%, transparent 70%);
-      }
-
-      .hero-actions {
-        background: rgba(255, 255, 255, 0.03);
-        border-color: rgba(255, 255, 255, 0.08);
-      }
-
-      .show-status-switch {
-        :deep(.el-switch__core) {
-          background-color: #909399;
-        }
-
-        :deep(.is-checked .el-switch__core) {
-          background-color: #409eff;
-        }
-      }
+    .page-hero {
+      background: var(--bg-card);
+      border-color: var(--border);
     }
 
-    .album-content {
-      .photo-grid {
-        .photo-item {
-          .photo {
-            .placeholder,
-            .error {
-              background: #3a3a3a;
-
-              .spinner {
-                color: #787878;
-              }
-
-              .el-icon {
-                color: #787878;
-              }
-            }
-          }
-        }
-      }
+    .photo-grid .photo-item .photo .placeholder,
+    .photo-grid .photo-item .photo .error {
+      background: var(--bg-page);
     }
   }
 }
@@ -1082,13 +990,13 @@ html.dark {
 .cover-dialog {
   :deep(.el-dialog__header) {
     padding: 20px 24px;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border);
   }
 
   :deep(.el-dialog__title) {
     font-size: 18px;
     font-weight: 600;
-    color: var(--text-main);
+    color: var(--text-primary);
   }
 
   :deep(.el-dialog__body) {
@@ -1097,7 +1005,7 @@ html.dark {
 
   :deep(.el-dialog__footer) {
     padding: 16px 24px;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--border);
     display: flex;
     justify-content: flex-end;
     gap: 12px;
@@ -1121,7 +1029,7 @@ html.dark {
 
   .btn-select-files {
     padding: 10px 20px;
-    background: var(--el-color-primary);
+    background: var(--accent-color);
     color: #fff;
     border: none;
     border-radius: 6px;
@@ -1147,17 +1055,17 @@ html.dark {
 
   .btn-cancel {
     background: var(--hover-bg);
-    color: var(--text-main);
-    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
     margin-right: 10px;
 
     &:hover {
-      background: var(--border-color);
+      background: var(--border);
     }
   }
 
   .btn-confirm {
-    background: var(--el-color-primary);
+    background: var(--accent-color);
     color: #fff;
     border: none;
 
@@ -1275,9 +1183,10 @@ html.dark {
       overflow: hidden;
       cursor: pointer;
       transition: all 0.2s ease;
+      border: 2px solid transparent;
 
       &.selected {
-        box-shadow: 0 0 0 3px #409eff;
+        border-color: var(--accent-color);
       }
 
       .cover-select-image {
@@ -1303,27 +1212,23 @@ html.dark {
 
 /* 响应式 */
 @media (max-width: 768px) {
-  .album-hero {
-    padding: 20px 16px !important;
+  .page-hero {
+    padding: 24px 16px !important;
 
-    .hero-top {
-      flex-direction: column;
-      align-items: flex-start;
+    .hero-content {
+      padding: 0 16px;
+    }
 
-      .hero-title-wrapper {
-        flex-direction: column;
-        align-items: flex-start;
+    .hero-copy {
+      h1 {
+        font-size: 24px;
       }
     }
+  }
 
-    .hero-actions {
-      flex-wrap: wrap;
-      justify-content: flex-start;
-    }
-
-    .select-toolbar {
-      flex-wrap: wrap;
-    }
+  .hero-actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
   }
 
   .album-content {

@@ -96,6 +96,7 @@ public class SysOperationlogServiceImpl extends ServiceImpl<SysOperationlogMappe
                 .eq(StrUtil.isNotBlank(queryDto.getOperatorRole()), SysOperationlog::getOperatorRole, queryDto.getOperatorRole())
                 .eq(StrUtil.isNotBlank(queryDto.getModule()), SysOperationlog::getModule, queryDto.getModule())
                 .eq(StrUtil.isNotBlank(queryDto.getOperation()), SysOperationlog::getOperation, queryDto.getOperation())
+                .eq(StrUtil.isNotBlank(queryDto.getRequestMethod()), SysOperationlog::getRequestMethod, queryDto.getRequestMethod())
                 .eq(queryDto.getStatus() != null, SysOperationlog::getStatus, queryDto.getStatus())
                 .ge(queryDto.getCreateTimeStart() != null, SysOperationlog::getCreateTime, queryDto.getCreateTimeStart())
                 .le(queryDto.getCreateTimeEnd() != null, SysOperationlog::getCreateTime, queryDto.getCreateTimeEnd())

@@ -1,29 +1,25 @@
-# CLAUDE.md
+# Sidifensen Blog 开发指南
 
-Sidifensen Blog 开发指南
+---
 
-## 快速命令
+## 复杂任务流程
 
-### 后端
-```bash
-cd sidifensen_blog_backend
-mvn clean package -DskipTests    # 构建
-java -jar target/sidifensen_blog_backend-1.0-SNAPSHOT.jar    # 运行
+> 遇到复杂任务时，必须遵循以下流程，确保质量和可维护性。
+
+```
+brainstorming → using-git-worktrees → writing-plans → executing-plans
+→ subagent-driven-development → test-driven-development → verification-before-completion
 ```
 
-### 前端
-```bash
-# 用户端
-cd sidifensen_blog_frontend/sidifensen_user && npm install && npm run dev
-# 管理端
-cd sidifensen_blog_frontend/sidifensen_admin && npm install && npm run dev
-```
+**核心原则**：先测试后实现、流程优于猜测、验证先于断言
+
+详细流程见 `skill: superpowers:using-superpowers`
 
 ---
 
 ## 后端规范
 
-### 核心规则（必须遵守）
+### 核心规则
 
 | 规范 | 要求 |
 |------|------|
@@ -32,37 +28,32 @@ cd sidifensen_blog_frontend/sidifensen_admin && npm install && npm run dev
 | 查询方式 | `LambdaQueryWrapper` (禁用 XML) |
 | 异常处理 | `BlogException` + `BlogConstants` (禁止硬编码) |
 | Service 模式 | 继承 `ServiceImpl<Mapper, Entity>` |
-| 日志 | `@Slf4j` + `log.error` (只记录错误) |
+| 日志 | `@Slf4j` + `log.error` (只记录错误，禁用 `log.info`) |
 | 注释 | 新增/修改代码必须补充中文注释 |
-
-### 代码示例
-
-**异常处理：**
-```java
-// ✅ 正确
-throw new BlogException(BlogConstants.NotFoundUser);
-
-// ❌ 禁止
-throw new BlogException("该用户不存在");
-```
-
-**日志规范：**
-```java
-try {
-    userService.updateUser(user);
-} catch (Exception e) {
-    log.error("更新用户失败，userId={}, error={}", user.getId(), e.getMessage(), e);
-    throw new BlogException(BlogConstants.UpdateUserFailed);
-}
-// ❌ 禁止：不要打印正常流程日志
-```
 
 ### 命名规范
 
-- `XxxController` / `XxxService` / `XxxServiceImpl`
-- `XxxDto` / `XxxVo`
-- Entity 用业务名：`Article`, `User`
-- `XxxMapper`
+```
+XxxController    # 控制器
+XxxService       # 服务接口
+XxxServiceImpl   # 服务实现
+XxxMapper        # 数据访问
+XxxDto           # 数据传输对象
+XxxVo            # 视图对象
+XxxEntity        # 实体类 (业务命名，如 Article, User)
+```
+
+### 异常处理规范
+
+```java
+// 正确：使用 BlogException + BlogConstants
+if (Objects.isNull(user)) {
+    throw new BlogException(BlogConstants.USER_NOT_EXIST);
+}
+
+// 错误：禁止硬编码
+throw new BlogException("用户不存在");
+```
 
 ### 修改后检查
 
@@ -82,18 +73,18 @@ cd sidifensen_blog_backend && mvn clean compile -DskipTests
 
 ## 前端规范
 
-### 🔴 三大铁律（违反即错误）
+### 三大铁律
 
 #### 规则 1：所有页面必须适配黑夜模式
 
-**禁止：** 硬编码颜色值、只写浅色模式、生成完不测试
+**禁止**：硬编码颜色值、只写浅色模式、生成完不测试
 
-**必须：** 使用 CSS 变量、提供 `html.dark` 覆盖、切换验证
+**必须**：使用 CSS 变量、提供 `html.dark` 覆盖、切换验证
 
 **标准模板：**
+
 ```scss
 .your-component {
-  // 浅色模式默认值
   --bg-page: #f8fafc;
   --bg-card: #ffffff;
   --text-primary: #1e293b;
@@ -125,61 +116,20 @@ html.dark {
 
 #### 规则 3：禁止假数据，所有功能必须真实实现
 
-| ❌ 禁止 | ✅ 必须 |
-|--------|--------|
+| 禁止 | 必须 |
+|------|------|
 | 硬编码文章列表/用户数据 | API 调用获取真实数据 |
 | 按钮点击 `console.log` 应付 | 实现真实业务功能 |
 | 表单提交不连接后端 | 调用真实 API 持久化 |
 
-
 ### Vue 组件规范
 
 - **语法**: `<script setup>` + Composition API
-- **命名**: PascalCase - `Home.vue`, `ArticleDetail.vue`
+- **命名**: PascalCase (`Home.vue`, `ArticleDetail.vue`)
 - **消息组件**: `ElMessage` 已全局注册，**禁止导入**
 - **表格**: `el-table-column` 使用 `min-width` / `show-overflow-tooltip`
 - **SVG 图标**: `<svg-icon name="github" width="20px" height="20px" color="#999" />`
   - 常用图标：`github`, `gitee`, `qq`, `weixin`, `weibo`
-
-### 代码结构
-
-```vue
-<script setup>
-// 1. 导入依赖
-import { ref, computed, onMounted } from "vue"
-import { useRoute, useRouter } from "vue-router"
-import { getUserInfo } from "@/api/user"
-import { useUserStore } from "@/stores/userStore"
-
-// 2. 路由和状态管理
-const route = useRoute()
-const router = useRouter()
-const userStore = useUserStore()
-
-// 3. 响应式数据（带注释）
-const loading = ref(false)
-const data = ref(null)
-
-// 4. 计算属性
-const isEmpty = computed(() => !data.value)
-
-// 5. 方法定义
-const fetchData = async () => {
-  try {
-    loading.value = true
-  } catch (error) {
-    ElMessage.error("获取失败")
-  } finally {
-    loading.value = false
-  }
-}
-
-// 6. 生命周期
-onMounted(() => {
-  fetchData()
-})
-</script>
-```
 
 ### 修改后检查
 
@@ -199,19 +149,19 @@ cd sidifensen_blog_frontend/sidifensen_admin && npm run build
 
 ## 设计规范（去 AI 味）
 
-**核心原则：少即是多，克制比表达更重要**
+**核心原则**：少即是多，克制比表达更重要
 
-### ❌ 避免 AI 味设计
+### 避免 AI 味设计
 
 | 问题 | 反面教材 | 正确做法 |
 |------|---------|---------|
-| **渐变滥用** | `linear-gradient(135deg, #0891b2, #0e7490)` | 纯色 `#0891b2` |
-| **多层阴影** | 3-4 层 `box-shadow` | 单层 `0 1px 3px rgba(0,0,0,0.1)` |
-| **光泽动画** | `::after` 光带扫过 | 不需要 |
-| **毛玻璃滥用** | 到处 `backdrop-filter: blur()` | 仅模态框使用 |
-| **夸张悬停** | 位移 + 缩放 + 变色 + 阴影 | 只变阴影或颜色 |
+| 渐变滥用 | `linear-gradient(135deg, #0891b2, #0e7490)` | 纯色 `#0891b2` |
+| 多层阴影 | 3-4 层 `box-shadow` | 单层 `0 1px 3px rgba(0,0,0,0.1)` |
+| 光泽动画 | `::after` 光带扫过 | 不需要 |
+| 毛玻璃滥用 | 到处 `backdrop-filter: blur()` | 仅模态框使用 |
+| 夸张悬停 | 位移 + 缩放 + 变色 + 阴影 | 只变阴影或颜色 |
 
-### ✅ 设计准则
+### 设计准则
 
 1. 必须自定义 Element Plus 组件
 2. 纯色优先，渐变仅用于品牌强调
@@ -238,13 +188,51 @@ cd sidifensen_blog_frontend/sidifensen_admin && npm run build
 
 ---
 
-## 新功能/新页面开发规范
+## 新功能开发规范
 
-**核心原则：优先沿用项目现有设计和规范**
+**核心原则**：优先沿用项目现有设计和规范
 
 添加新功能或新页面时，必须先参考现有类似页面（如 `Home.vue`、`Article/index.vue`）的代码结构、样式风格、API 调用模式，保持项目一致性。
 
-**禁止：** 不看现有代码直接生成全新结构、引入项目外 UI 库、忽略黑夜模式适配
+**禁止**：
+- 不看现有代码直接生成全新结构
+- 引入项目外 UI 库
+- 忽略黑夜模式适配
+
+---
+
+## Git 协作规范
+
+### 分支命名
+
+```
+feature/功能名        # 新功能
+fix/问题描述          # 修复
+hotfix/紧急修复       # 紧急修复
+refactor/重构内容     # 重构
+```
+
+### 提交信息
+
+```
+feat: 新功能描述
+fix: 修复问题描述
+docs: 文档更新
+style: 格式调整
+refactor: 重构
+test: 测试相关
+chore: 构建/工具相关
+```
+
+### Commit 流程
+
+使用 `skill: /commit` 或手动执行：
+
+```bash
+git add <files>
+git commit -m "type: 描述"
+git push
+```
 
 ---
 
@@ -256,10 +244,10 @@ cd sidifensen_blog_frontend/sidifensen_admin && npm run build
 
 ---
 
-## Superpowers 流程
+## 常用工具
 
-复杂任务执行流程：`brainstorming → using-git-worktrees → writing-plans → executing-plans → subagent-driven-development → test-driven-development → verification-before-completion`
-
-核心原则：先测试后实现、流程优于猜测、验证先于断言
-
-详细流程见 skill: `superpowers:using-superpowers`
+| 工具 | 命令 | 说明 |
+|------|------|------|
+| Claude Code | `/commit` | 提交当前更改 |
+| Claude Code | `/frontend-design` | 前端设计优化 |
+| Claude Code | `skill: superpowers:*` | 复杂任务流程 |

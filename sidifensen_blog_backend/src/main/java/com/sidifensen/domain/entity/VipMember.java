@@ -24,17 +24,35 @@ public class VipMember implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 主键 ID，自增
+     */
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
+    /**
+     * 用户 ID，关联用户表
+     */
     private Integer userId;
 
+    /**
+     * 会员状态，参考 VipMemberStatusEnum 枚举
+     */
     private String status;
 
+    /**
+     * 会员开始时间
+     */
     private Date startTime;
 
+    /**
+     * 会员过期时间
+     */
     private Date expireTime;
 
+    /**
+     * 最近一笔订单号，用于订单关联
+     */
     private String lastOrderNo;
 
     @TableField(fill = FieldFill.INSERT)

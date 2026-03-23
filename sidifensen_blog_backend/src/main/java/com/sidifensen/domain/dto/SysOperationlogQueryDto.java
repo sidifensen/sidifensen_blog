@@ -41,6 +41,11 @@ public class SysOperationlogQueryDto implements Serializable {
     private String operation;
 
     /**
+     * 请求方式
+     */
+    private String requestMethod;
+
+    /**
      * 操作状态 0-成功 1-失败 2-异常
      */
     private Integer status;

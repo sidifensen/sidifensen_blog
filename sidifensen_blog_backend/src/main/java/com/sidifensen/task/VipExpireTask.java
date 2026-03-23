@@ -17,10 +17,16 @@ public class VipExpireTask {
     private VipMemberService vipMemberService;
 
     /**
-     * 会员过期后，角色投影需要及时回收，避免权限残留。
+     * 每天凌晨3点10分执行，会员过期后及时回收角色权限。
      */
     @Scheduled(cron = "0 10 3 * * ?")
     public void syncExpiredVipRoles() {
-        vipMemberService.syncExpiredVipRoles();
+        long startTime = System.currentTimeMillis();
+        try {
+            vipMemberService.syncExpiredVipRoles();
+            log.info("VIP角色同步任务执行成功，耗时={}ms", System.currentTimeMillis() - startTime);
+        } catch (Exception e) {
+            log.error("VIP角色同步任务执行失败，耗时={}ms", System.currentTimeMillis() - startTime, e);
+        }
     }
 }

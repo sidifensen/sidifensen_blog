@@ -28,25 +28,22 @@ public class HotSearchCleanTask {
      */
     @Scheduled(cron = "0 0 2 * * ?")
     public void cleanExpiredHotSearches() {
-        log.info("开始清理过期热门搜索记录...");
-
+        long startTime = System.currentTimeMillis();
         try {
-            // 获取所有热门搜索记录中排名在 100 之后的关键词
             Set<String> keywordsToDelete = redisComponent.getStringRedisTemplate()
                     .opsForZSet().reverseRange("hot_searches", 100, -1);
 
             if (keywordsToDelete != null && !keywordsToDelete.isEmpty()) {
-                // 删除排名在 100 之后的记录
                 redisComponent.getStringRedisTemplate()
                         .opsForZSet().remove("hot_searches", keywordsToDelete.toArray());
-                log.info("清理完成，共删除 {} 条过期记录", keywordsToDelete.size());
+                log.info("清理热门搜索完成，删除={}条，耗时={}ms", keywordsToDelete.size(), System.currentTimeMillis() - startTime);
             } else {
                 long currentSize = redisComponent.getStringRedisTemplate()
                         .opsForZSet().size("hot_searches");
-                log.info("无需清理，当前热门记录数：{}", currentSize);
+                log.info("热门搜索无需清理，当前={}条，耗时={}ms", currentSize, System.currentTimeMillis() - startTime);
             }
         } catch (Exception e) {
-            log.error("清理过期热门搜索记录失败：{}", e.getMessage(), e);
+            log.error("清理热门搜索失败，耗时={}ms", System.currentTimeMillis() - startTime, e);
         }
     }
 
