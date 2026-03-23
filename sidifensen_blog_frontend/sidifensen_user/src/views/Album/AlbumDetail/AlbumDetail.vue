@@ -1,71 +1,74 @@
 <template>
   <div class="album-detail-page">
-    <!-- Hero Banner -->
-    <div class="page-hero">
-      <div class="hero-content">
+    <div class="container">
+      <!-- Hero Banner -->
+      <div class="page-hero">
+        <button class="btn-back" @click="goBack">
+          <el-icon><ArrowLeftBold /></el-icon>
+          <span>返回</span>
+        </button>
         <div class="hero-copy">
           <div class="hero-kicker">Album Detail</div>
           <h1>{{ albumForm.name }}</h1>
           <p>创建者：@{{ albumForm.userName }}</p>
         </div>
       </div>
-    </div>
 
-    <!-- 操作按钮区 -->
-    <div class="hero-actions" v-if="isAlbumOwner">
-      <button class="btn-upload" @click="handleUploadPhoto">
-        <el-icon><UploadFilled /></el-icon>
-        <span>上传图片</span>
-      </button>
-      <button class="btn-edit" @click="handleEditAlbum">
-        <el-icon><Edit /></el-icon>
-        <span>编辑相册</span>
-      </button>
-      <button v-if="!isSelectMode" class="btn-select" @click="toggleSelectMode">
-        选择图片
-      </button>
-      <template v-else>
-        <button class="btn-select" @click="toggleAllSelection">
-          {{ isAllSelected ? "取消全选" : "全选" }}
+      <!-- 操作按钮区 -->
+      <div class="hero-actions" v-if="isAlbumOwner">
+        <button class="btn-upload" @click="handleUploadPhoto">
+          <el-icon><UploadFilled /></el-icon>
+          <span>上传图片</span>
         </button>
-        <button class="btn-select" @click="toggleSelectMode">
-          完成
+        <button class="btn-edit" @click="handleEditAlbum">
+          <el-icon><Edit /></el-icon>
+          <span>编辑相册</span>
         </button>
-      </template>
-      <button
-        v-show="selectedPhotos.length > 0"
-        class="btn-delete"
-        @click="handleBatchDelete"
-      >
-        <el-icon><Delete /></el-icon>
-        <span>删除 ({{ selectedPhotos.length }})</span>
-      </button>
-      <el-dropdown trigger="hover">
-        <button class="btn-more">
-          <el-icon><MoreFilled /></el-icon>
+        <button v-if="!isSelectMode" class="btn-select" @click="toggleSelectMode">
+          选择图片
         </button>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item @click="handleDeleteAlbum" class="danger-item">
-              <el-icon><Delete /></el-icon> 删除相册
-            </el-dropdown-item>
-          </el-dropdown-menu>
+        <template v-else>
+          <button class="btn-select" @click="toggleAllSelection">
+            {{ isAllSelected ? "取消全选" : "全选" }}
+          </button>
+          <button class="btn-select" @click="toggleSelectMode">
+            完成
+          </button>
         </template>
-      </el-dropdown>
-      <el-switch
-        v-model="switchShowStatus"
-        @click="handleChangeAlbumShowStatus"
-        active-text="公开"
-        inactive-text="私密"
-        inline-prompt
-        class="show-status-switch"
-      />
-    </div>
+        <button
+          v-show="selectedPhotos.length > 0"
+          class="btn-delete"
+          @click="handleBatchDelete"
+        >
+          <el-icon><Delete /></el-icon>
+          <span>删除 ({{ selectedPhotos.length }})</span>
+        </button>
+        <el-dropdown trigger="hover">
+          <button class="btn-more">
+            <el-icon><MoreFilled /></el-icon>
+          </button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item @click="handleDeleteAlbum" class="danger-item">
+                <el-icon><Delete /></el-icon> 删除相册
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+        <el-switch
+          v-model="switchShowStatus"
+          @click="handleChangeAlbumShowStatus"
+          active-text="公开"
+          inactive-text="私密"
+          inline-prompt
+          class="show-status-switch"
+        />
+      </div>
 
-    <!-- 图片内容区 -->
-    <LoadingAnimation v-if="loading" />
+      <!-- 图片内容区 -->
+      <LoadingAnimation v-if="loading" />
 
-    <div v-else class="album-content">
+      <div v-else class="album-content">
       <template v-for="(group, date) in groupedPhotos" :key="date">
         <div class="date-section">
           <div class="date-header">
@@ -121,7 +124,7 @@
               </el-image>
 
               <!-- 审核状态 -->
-              <div class="examine-status" :class="getExamineStatusClass(photo.examineStatus)">
+              <div v-if="photo.examineStatus !== 1" class="examine-status" :class="getExamineStatusClass(photo.examineStatus)">
                 {{ getExamineStatusText(photo.examineStatus) }}
               </div>
 
@@ -211,6 +214,7 @@
         <button class="btn-confirm" @click="confirmCoverChange">确定</button>
       </template>
     </el-dialog>
+    </div>
   </div>
 </template>
 
@@ -592,7 +596,7 @@ const getExamineStatusText = (status) => {
 }
 
 const getExamineStatusClass = (status) => {
-  const classes = { 0: "status-pending", 1: "status-approved", 2: "status-rejected" }
+  const classes = { 0: "status-pending", 1: "", 2: "status-rejected" }
   return classes[status] || "status-unknown"
 }
 
@@ -621,69 +625,160 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-// 标准 CSS 变量规范（浅色模式）
-.album-detail-page {
-  --bg-page: #f8fafc;
-  --bg-card: #ffffff;
-  --text-primary: #1e293b;
-  --text-regular: #475569;
-  --text-muted: #64748b;
-  --border: #e2e8f0;
-  --border-light: #f1f5f9;
-  --border-regular: #cbd5e1;
-  --accent-color: #3b82f6;
-  --accent-soft: #eff6ff;
-  --accent-border: #bfdbfe;
-  --accent-hover: #dbeafe;
-  --danger-color: #ef4444;
-  --danger-soft: #fef2f2;
-  --danger-border: #fecaca;
-  --hover-bg: #f8fafc;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+// 相册详情页 - 现代极简主义科技风
+// 完全匹配参考文件：Article/index.vue 和 AlbumSquare.vue
 
+.album-detail-page {
+  width: 100%;
   min-height: 100vh;
   background: var(--bg-page);
   overflow-x: hidden;
 
-  /* Hero Banner */
+  html.dark & {
+    background: #000000;
+  }
+}
+
+.container {
+  // ===== CSS 变量定义 - 浅色模式 =====
+  --bg-page: #f8fafc;
+  --bg-hero-divider: rgba(0, 0, 0, 0.08);
+  --bg-metric: rgba(0, 0, 0, 0.02);
+  --bg-subtle: rgba(0, 0, 0, 0.02);
+  --bg-card: rgba(0, 0, 0, 0.015);
+  --bg-hover: rgba(0, 0, 0, 0.01);
+
+  --text-primary: #0a0a0a;
+  --text-secondary: #888888;
+  --text-regular: #666666;
+  --text-muted: #aaaaaa;
+
+  --border-light: rgba(0, 0, 0, 0.05);
+  --border-regular: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.15);
+
+  --accent-color: #0066ff;
+  --accent-soft: rgba(0, 102, 255, 0.04);
+  --accent-border: rgba(0, 102, 255, 0.15);
+  --accent-hover: rgba(0, 102, 255, 0.08);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  // ===== 黑夜模式覆盖 =====
+  html.dark & {
+    --bg-page: #000000;
+    --bg-hero-divider: rgba(255, 255, 255, 0.1);
+    --bg-metric: rgba(255, 255, 255, 0.03);
+    --bg-subtle: rgba(255, 255, 255, 0.02);
+    --bg-card: rgba(255, 255, 255, 0.02);
+    --bg-hover: rgba(255, 255, 255, 0.02);
+
+    --text-primary: #ffffff;
+    --text-secondary: #888888;
+    --text-regular: #dddddd;
+    --text-muted: #666666;
+
+    --border-light: rgba(255, 255, 255, 0.05);
+    --border-regular: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(255, 255, 255, 0.15);
+
+    --accent-color: #00d4ff;
+    --accent-soft: rgba(0, 212, 255, 0.05);
+    --accent-border: rgba(0, 212, 255, 0.15);
+    --accent-hover: rgba(0, 212, 255, 0.08);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  }
+
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  min-height: 100vh;
+  background: var(--bg-page) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
+
+  // 手机端适配
+  @media (max-width: 768px) {
+    padding: 0 20px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  // ===== 页面头部 =====
   .page-hero {
-    position: relative;
-    background: var(--bg-card);
-    border-bottom: 1px solid var(--border);
-    padding: 32px 0;
+    padding: 60px 0 30px;
+    border-bottom: 1px solid var(--bg-hero-divider);
 
-    .hero-content {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 24px;
+    @media (max-width: 768px) {
+      padding: 40px 0 20px;
+    }
 
-      .hero-copy {
-        max-width: 600px;
+    .btn-back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid var(--border-regular);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 16px;
 
-        .hero-kicker {
-          font-size: 13px;
-          font-weight: 600;
-          color: var(--accent-color);
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          margin-bottom: 8px;
+      &:hover {
+        border-color: var(--accent-color);
+        color: var(--accent-color);
+      }
+
+      .el-icon {
+        font-size: 16px;
+      }
+    }
+
+    .hero-copy {
+      max-width: 500px;
+
+      .hero-kicker {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--accent-color);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        &::before {
+          content: '';
+          width: 20px;
+          height: 1px;
+          background: linear-gradient(90deg, var(--accent-color), transparent);
         }
+      }
 
-        h1 {
-          margin: 0 0 12px;
-          font-size: 32px;
-          font-weight: 700;
-          color: var(--text-primary);
-          line-height: 1.2;
-        }
+      h1 {
+        font-size: 40px;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        margin-bottom: 12px;
+        color: var(--text-primary);
 
-        p {
-          margin: 0;
-          font-size: 15px;
-          color: var(--text-regular);
+        @media (max-width: 768px) {
+          font-size: 28px;
         }
+      }
+
+      p {
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.7;
       }
     }
   }
@@ -691,10 +786,11 @@ onMounted(() => {
   /* 操作按钮区 */
   .hero-actions {
     display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
     gap: 12px;
-    padding: 20px 0;
-    margin-top: 20px;
-    border-top: 1px solid var(--border-light);
+    padding: 10px 0;
+    margin-top: 0;
 
     .btn-upload,
     .btn-edit,
@@ -766,41 +862,44 @@ onMounted(() => {
     }
 
     .show-status-switch {
+      &.is-checked {
+        :deep(.el-switch__core) {
+          background-color: var(--accent-color) !important;
+        }
+      }
+
       :deep(.el-switch__core) {
-        width: 56px;
+        width: 72px !important;
         height: 28px;
         border-radius: 14px;
         background-color: var(--border-regular);
         border: none;
-      }
-
-      :deep(.is-checked .el-switch__core) {
-        background-color: var(--accent-color);
+        overflow: hidden;
       }
 
       :deep(.el-switch__action) {
-        width: 24px;
-        height: 24px;
+        width: 20px;
+        height: 20px;
         background-color: #fff;
         border-radius: 50%;
         box-shadow: var(--shadow-sm);
+        box-sizing: border-box;
       }
 
       :deep(.el-switch__label) {
         font-size: 12px;
         font-weight: 500;
+        line-height: 28px;
       }
     }
   }
 
   /* 内容区 */
   .album-content {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 40px 24px;
+    padding: 12px 0;
 
     .date-section {
-      margin-bottom: 40px;
+      margin-bottom: 24px;
 
       .date-header {
         display: flex;
@@ -809,8 +908,8 @@ onMounted(() => {
         margin-bottom: 20px;
         padding: 12px 16px;
         background: var(--bg-card);
-        border-radius: 8px;
-        border: 1px solid var(--border);
+        border-radius: 6px;
+        border: 1px solid var(--border-regular);
 
         .date-label {
           display: flex;
@@ -843,16 +942,16 @@ onMounted(() => {
         .photo-item {
           position: relative;
           aspect-ratio: 4/3;
-          border-radius: 8px;
+          border-radius: 6px;
           overflow: hidden;
-          background: var(--hover-bg);
+          background: var(--bg-hover);
           cursor: pointer;
-          transition: all 0.2s ease;
-          border: 1px solid var(--border);
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          border: 1px solid var(--border-regular);
 
           &:hover {
-            border-color: var(--accent-color);
-            box-shadow: var(--shadow);
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
 
             .photo {
               transform: scale(1.05);
@@ -867,7 +966,7 @@ onMounted(() => {
           .photo {
             width: 100%;
             height: 100%;
-            transition: transform 0.3s ease;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 
             :deep(.el-image) {
               width: 100%;
@@ -951,46 +1050,13 @@ onMounted(() => {
   }
 }
 
-/* 黑夜模式 */
-html.dark {
-  .album-detail-page {
-    --bg-page: #0f172a;
-    --bg-card: #1e293b;
-    --text-primary: #f1f5f9;
-    --text-regular: #cbd5e1;
-    --text-muted: #94a3b8;
-    --border: #334155;
-    --border-light: #1e293b;
-    --border-regular: #475569;
-    --accent-soft: #1e3a5f;
-    --accent-border: #1e40af;
-    --accent-hover: #2563eb;
-    --danger-soft: #450a0a;
-    --danger-border: #991b1b;
-    --hover-bg: #1e293b;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-
-    .page-hero {
-      background: var(--bg-card);
-      border-color: var(--border);
-    }
-
-    .photo-grid .photo-item .photo .placeholder,
-    .photo-grid .photo-item .photo .error {
-      background: var(--bg-page);
-    }
-  }
-}
-
 /* 对话框样式 */
 .upload-dialog,
 .edit-dialog,
 .cover-dialog {
   :deep(.el-dialog__header) {
     padding: 20px 24px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-regular);
   }
 
   :deep(.el-dialog__title) {
@@ -1005,7 +1071,7 @@ html.dark {
 
   :deep(.el-dialog__footer) {
     padding: 16px 24px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--border-regular);
     display: flex;
     justify-content: flex-end;
     gap: 12px;
@@ -1054,13 +1120,13 @@ html.dark {
   }
 
   .btn-cancel {
-    background: var(--hover-bg);
+    background: var(--bg-hover);
     color: var(--text-primary);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-regular);
     margin-right: 10px;
 
     &:hover {
-      background: var(--border);
+      background: var(--border-light);
     }
   }
 
@@ -1125,7 +1191,7 @@ html.dark {
       .error {
         width: 100%;
         height: 100%;
-        background: var(--hover-bg);
+        background: var(--bg-hover);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -1232,7 +1298,7 @@ html.dark {
   }
 
   .album-content {
-    padding: 24px 16px !important;
+    padding: 16px 20px !important;
 
     .photo-grid {
       grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));

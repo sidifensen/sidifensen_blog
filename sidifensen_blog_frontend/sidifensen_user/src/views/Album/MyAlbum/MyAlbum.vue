@@ -1,20 +1,25 @@
 <template>
   <div class="my-album-page">
-    <!-- Hero Banner -->
-    <div class="page-hero">
-      <div class="hero-content">
+    <div class="container">
+      <!-- Hero Banner -->
+      <div class="page-hero">
         <div class="hero-copy">
           <div class="hero-kicker">My Album</div>
           <h1>我的相册</h1>
           <p>管理你的个人相册，记录美好时光。</p>
         </div>
+        <div class="hero-actions">
+          <button class="btn-square" @click="goToAlbumSquare">
+            <el-icon><ArrowLeft /></el-icon>
+            <span>返回相册广场</span>
+          </button>
+        </div>
       </div>
-    </div>
 
-    <!-- 主要内容区 -->
-    <LoadingAnimation v-if="loading" />
+      <!-- 主要内容区 -->
+      <LoadingAnimation v-if="loading" />
 
-    <div v-else-if="albumList.length > 0" class="album-masonry">
+      <div v-else-if="albumList.length > 0" class="album-masonry">
       <div
         v-for="(album, index) in albumList"
         :key="album.id"
@@ -89,6 +94,7 @@
         </span>
       </template>
     </el-dialog>
+    </div>
   </div>
 </template>
 
@@ -208,8 +214,22 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+// 相册详情页 - 现代极简主义科技风
+// 完全匹配参考文件：Article/index.vue 和 AlbumSquare.vue
+
 .my-album-page {
-  // 浅色模式
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg-page);
+  overflow-x: hidden;
+
+  html.dark & {
+    background: #000000;
+  }
+}
+
+.container {
+  // ===== CSS 变量定义 - 浅色模式 =====
   --bg-page: #f8fafc;
   --bg-hero-divider: rgba(0, 0, 0, 0.08);
   --bg-metric: rgba(0, 0, 0, 0.02);
@@ -231,131 +251,128 @@ onMounted(() => {
   --accent-border: rgba(0, 102, 255, 0.15);
   --accent-hover: rgba(0, 102, 255, 0.08);
 
+  // ===== 黑夜模式覆盖 =====
+  html.dark & {
+    --bg-page: #000000;
+    --bg-hero-divider: rgba(255, 255, 255, 0.1);
+    --bg-metric: rgba(255, 255, 255, 0.03);
+    --bg-subtle: rgba(255, 255, 255, 0.02);
+    --bg-card: rgba(255, 255, 255, 0.02);
+    --bg-hover: rgba(255, 255, 255, 0.02);
+
+    --text-primary: #ffffff;
+    --text-secondary: #888888;
+    --text-regular: #dddddd;
+    --text-muted: #666666;
+
+    --border-light: rgba(255, 255, 255, 0.05);
+    --border-regular: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(255, 255, 255, 0.15);
+
+    --accent-color: #00d4ff;
+    --accent-soft: rgba(0, 212, 255, 0.05);
+    --accent-border: rgba(0, 212, 255, 0.15);
+    --accent-hover: rgba(0, 212, 255, 0.08);
+  }
+
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
   min-height: 100vh;
   background: var(--bg-page);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
 
-  // Hero Banner
+  // 手机端适配
+  @media (max-width: 768px) {
+    padding: 0 20px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  // ===== 页面头部 =====
   .page-hero {
-    position: relative;
-    padding: 80px 24px 64px;
-    background: linear-gradient(to bottom, var(--bg-card), var(--bg-page));
-    border-bottom: 1px solid var(--border-regular);
+    padding: 60px 0 40px;
+    border-bottom: 1px solid var(--bg-hero-divider);
 
-    // 顶部渐变线条
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent-color), var(--accent-soft));
+    @media (max-width: 768px) {
+      padding: 40px 0 25px;
     }
 
-    .hero-content {
-      max-width: 1200px;
-      margin: 0 auto;
+    .hero-copy {
+      max-width: 500px;
 
-      .hero-copy {
-        max-width: 600px;
+      .hero-kicker {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--accent-color);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
 
-        .hero-kicker {
-          font-size: 12px;
-          font-weight: 600;
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          color: var(--accent-color);
-          margin-bottom: 12px;
-        }
-
-        h1 {
-          font-size: 42px;
-          font-weight: 800;
-          color: var(--text-primary);
-          margin: 0 0 16px 0;
-          line-height: 1.2;
-        }
-
-        p {
-          font-size: 16px;
-          color: var(--text-secondary);
-          margin: 0;
-          line-height: 1.6;
+        &::before {
+          content: '';
+          width: 20px;
+          height: 1px;
+          background: linear-gradient(90deg, var(--accent-color), transparent);
         }
       }
-    }
-  }
 
-  // 统计指标栏
-  .hero-metrics {
-    display: flex;
-    gap: 32px;
-    margin-top: 32px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border-light);
-
-    .metric {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-
-      .metric-value {
-        font-size: 24px;
+      h1 {
+        font-size: 40px;
         font-weight: 700;
+        letter-spacing: -0.04em;
+        margin-bottom: 12px;
         color: var(--text-primary);
+
+        @media (max-width: 768px) {
+          font-size: 28px;
+        }
       }
 
-      .metric-label {
-        font-size: 13px;
-        color: var(--text-muted);
+      p {
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.7;
       }
     }
-  }
 
-  // 操作按钮区
-  .hero-actions {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-top: 32px;
+    .hero-actions {
+      .btn-square {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: var(--accent-soft);
+        border: 1px solid var(--accent-border);
+        border-radius: 8px;
+        color: var(--accent-color);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
 
-    .album-count {
-      font-size: 14px;
-      color: var(--text-secondary);
-    }
+        &:hover {
+          background: var(--accent-hover);
+          border-color: var(--accent-color);
+        }
 
-    .btn-primary {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      background: var(--accent-color);
-      color: #ffffff;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      &:hover {
-        background: var(--accent-hover);
-        box-shadow: 0 4px 12px var(--accent-border);
-      }
-
-      &:active {
-        transform: scale(0.98);
+        .el-icon {
+          font-size: 16px;
+        }
       }
     }
   }
 
   /* 瀑布流布局 */
   .album-masonry {
-    max-width: 1600px;
-    margin: 0 auto;
-    padding: 48px 24px;
+    padding: 40px 0;
     column-count: 4;
-    column-gap: 20px;
+    column-gap: 16px;
 
     @media (max-width: 1200px) {
       column-count: 3;
@@ -368,12 +385,12 @@ onMounted(() => {
     @media (max-width: 600px) {
       column-count: 2;
       column-gap: 12px;
-      padding: 24px 16px;
+      padding: 24px 0;
     }
 
     .masonry-item {
       break-inside: avoid;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       opacity: 0;
       animation: fadeInUp 0.5s ease forwards;
 
@@ -382,59 +399,61 @@ onMounted(() => {
       }
 
       .item-inner {
-        background: var(--bg-card);
+        background: transparent;
         border: 1px solid var(--border-regular);
-        border-radius: 12px;
+        border-radius: 6px;
         overflow: hidden;
-        transition: all 0.25s ease;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
 
-        // 底部渐变线条
-        &::after {
+        &::before {
           content: '';
           position: absolute;
-          bottom: 0;
+          top: 0;
           left: 0;
           right: 0;
-          height: 2px;
-          background: linear-gradient(90deg, var(--accent-color), var(--accent-soft));
+          height: 1px;
+          background: linear-gradient(90deg, var(--accent-color), transparent);
           opacity: 0;
           transition: opacity 0.25s ease;
         }
 
+        &:hover::before {
+          opacity: 1;
+        }
+
         &:hover {
           border-color: var(--border-hover);
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-          transform: translateY(-2px);
+          background: var(--bg-hover);
+        }
 
-          &::after {
-            opacity: 1;
-          }
-
-          .hover-layer {
-            opacity: 1;
-          }
-
-          .album-cover {
-            transform: scale(1.05);
+        html.dark & {
+          &:hover {
+            background: rgba(255, 255, 255, 0.02);
+            border-color: rgba(255, 255, 255, 0.15);
           }
         }
 
         .image-container {
           position: relative;
           overflow: hidden;
-          cursor: pointer;
+          aspect-ratio: 4/3;
 
           .album-cover {
             width: 100%;
+            height: 100%;
             display: block;
+            object-fit: cover;
             transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
           }
 
           .placeholder,
           .error-state {
             width: 100%;
-            height: 280px;
-            background: var(--bg-subtle);
+            height: 100%;
+            aspect-ratio: 4/3;
+            background: var(--bg-metric);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -454,7 +473,7 @@ onMounted(() => {
           .hover-layer {
             position: absolute;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.4);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -473,6 +492,7 @@ onMounted(() => {
                 height: 48px;
                 border-radius: 50%;
                 background: rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(10px);
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -492,13 +512,12 @@ onMounted(() => {
 
         .item-footer {
           padding: 16px;
-          position: relative;
 
           .album-title-text {
             font-size: 15px;
             font-weight: 600;
             color: var(--text-primary);
-            margin: 0 0 8px 0;
+            margin: 0 0 6px 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -535,47 +554,6 @@ onMounted(() => {
           &:hover .actions .btn-icon {
             opacity: 1;
             transform: translateX(0);
-          }
-        }
-      }
-    }
-  }
-}
-
-// 黑夜模式
-html.dark {
-  .my-album-page {
-    --bg-page: #000000;
-    --bg-hero-divider: rgba(255, 255, 255, 0.1);
-    --bg-metric: rgba(255, 255, 255, 0.03);
-    --bg-subtle: rgba(255, 255, 255, 0.02);
-    --bg-card: rgba(255, 255, 255, 0.02);
-    --bg-hover: rgba(255, 255, 255, 0.02);
-
-    --text-primary: #ffffff;
-    --text-secondary: #888888;
-    --text-regular: #dddddd;
-    --text-muted: #666666;
-
-    --border-light: rgba(255, 255, 255, 0.05);
-    --border-regular: rgba(255, 255, 255, 0.08);
-    --border-hover: rgba(255, 255, 255, 0.15);
-
-    --accent-color: #00d4ff;
-    --accent-soft: rgba(0, 212, 255, 0.05);
-    --accent-border: rgba(0, 212, 255, 0.15);
-    --accent-hover: rgba(0, 212, 255, 0.08);
-
-    .page-hero {
-      background: linear-gradient(to bottom, var(--bg-card), var(--bg-page));
-      border-bottom-color: var(--border-regular);
-    }
-
-    .album-masonry {
-      .masonry-item {
-        .item-inner {
-          &:hover {
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
           }
         }
       }

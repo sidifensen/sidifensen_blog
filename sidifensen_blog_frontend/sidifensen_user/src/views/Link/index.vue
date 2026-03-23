@@ -1,126 +1,113 @@
 <template>
   <div class="link-page">
-    <div class="link-page__hero">
-      <div class="link-page__hero-inner container">
-        <div class="link-page__hero-copy">
-          <p class="link-page__eyebrow">Directory</p>
-          <h1 class="link-page__title">友情链接</h1>
-          <p class="link-page__description">收录长期维护、内容稳定更新的网站。这里不是堆砌卡片的展示墙，而是一份可以持续回访的站点目录。</p>
-          <div class="link-page__meta">
-            <span class="link-page__meta-item">已收录 {{ totalDisplay }} 个站点</span>
-            <span class="link-page__meta-item">点击卡片可直接访问</span>
+    <div class="container">
+      <!-- 页面头部 -->
+      <div class="page-hero">
+        <div class="hero-content">
+          <div class="hero-copy">
+            <div class="hero-kicker">Friend Links</div>
+            <h1>友情链接</h1>
+            <p>收录长期维护、内容稳定更新的网站。</p>
           </div>
-        </div>
-
-        <div class="link-page__hero-side">
-          <div class="link-page__hero-panel">
-            <div class="link-page__hero-panel-top">
-              <span class="link-page__hero-panel-label">站点目录</span>
-              <strong class="link-page__hero-panel-value">{{ totalDisplay }}</strong>
-            </div>
-            <p class="link-page__hero-panel-description">如果你的网站也在持续写作、更新或提供稳定服务，可以申请加入这里。</p>
-            <div class="link-page__hero-panel-actions">
-              <el-button v-if="isUserLoggedIn" type="primary" class="link-page__apply-button" @click="showApplyDialog">申请友链</el-button>
-              <el-button v-else class="link-page__login-button" @click="goToLogin">登录后申请</el-button>
-            </div>
+          <div class="hero-actions">
+            <button v-if="isUserLoggedIn" class="btn-apply" @click="showApplyDialog">
+              <span>申请友链</span>
+              <el-icon><ArrowRight /></el-icon>
+            </button>
+            <button v-else class="btn-login" @click="goToLogin">
+              <span>登录后申请</span>
+              <el-icon><ArrowRight /></el-icon>
+            </button>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="link-page__content">
-      <div class="link-page__content-inner container">
-        <div class="link-page__section">
-          <div class="link-page__section-head">
-            <div class="link-page__section-title">
-              <h2>站点目录</h2>
-              <p>优先展示内容明确、可长期访问的网站。</p>
-            </div>
-            <div class="link-page__section-side">
-              <span class="link-page__section-count">{{ linkList.length }} / {{ totalDisplay }}</span>
-            </div>
-          </div>
-
-          <div v-if="loading" class="link-page__loading">
-            <el-skeleton animated :count="6">
-              <template #template>
-                <div class="link-page__skeleton-card">
-                  <el-skeleton-item variant="image" class="link-page__skeleton-cover" />
-                  <div class="link-page__skeleton-body">
-                    <el-skeleton-item variant="h3" style="width: 52%; margin-bottom: 10px" />
-                    <el-skeleton-item variant="text" style="width: 100%; margin-bottom: 8px" />
-                    <el-skeleton-item variant="text" style="width: 74%" />
-                  </div>
+      <!-- 内容区域 -->
+      <div class="content-layout">
+        <div class="main-content">
+          <!-- 加载状态 -->
+          <div v-if="loading" class="link-masonry">
+            <div v-for="n in 8" :key="n" class="masonry-item">
+              <div class="item-inner skeleton">
+                <div class="image-container">
+                  <div class="skeleton-cover"></div>
                 </div>
-              </template>
-            </el-skeleton>
-          </div>
-
-          <div v-else-if="linkList.length === 0" class="link-page__empty">
-            <div class="link-page__empty-body">
-              <div class="link-page__empty-icon">
-                <el-icon><DocumentRemove /></el-icon>
+                <div class="item-footer">
+                  <div class="skeleton-title"></div>
+                  <div class="skeleton-text"></div>
+                  <div class="skeleton-text short"></div>
+                </div>
               </div>
-              <h3>暂时还没有友链</h3>
-              <p>{{ isUserLoggedIn ? "如果你的网站适合长期展示，可以成为这里的第一条友链。" : "登录后可以提交你的网站，我们会在审核通过后展示。" }}</p>
-              <el-button v-if="isUserLoggedIn" type="primary" class="link-page__apply-button" @click="showApplyDialog">申请友链</el-button>
-              <el-button v-else class="link-page__login-button" @click="goToLogin">前往登录</el-button>
             </div>
           </div>
 
-          <div v-else class="link-page__grid">
-            <article v-for="(link, index) in linkList" :key="link.id" class="link-card" :style="{ animationDelay: `${index * 0.04}s` }" @click="visitLink(link)">
-              <div class="link-card__cover">
-                <el-image :src="link.coverUrl || ''" fit="cover" class="link-card__cover-image" :alt="link.name">
-                  <template #placeholder>
-                    <div class="link-card__cover-state">
-                      <el-icon><Picture /></el-icon>
-                      <span>封面加载中</span>
-                    </div>
-                  </template>
-                  <template #error>
-                    <div class="link-card__cover-state">
-                      <el-icon><Picture /></el-icon>
-                      <span>暂无封面</span>
-                    </div>
-                  </template>
-                </el-image>
-              </div>
+          <!-- 空状态 -->
+          <div v-else-if="linkList.length === 0" class="empty-state">
+            <div class="empty-icon">
+              <el-icon><DocumentRemove /></el-icon>
+            </div>
+            <h3>暂时还没有友链</h3>
+            <p>{{ isUserLoggedIn ? "如果你的网站适合长期展示，可以成为这里的第一条友链。" : "登录后可以提交你的网站，我们会在审核通过后展示。" }}</p>
+            <button v-if="isUserLoggedIn" class="btn-apply" @click="showApplyDialog">申请友链</button>
+            <button v-else class="btn-login" @click="goToLogin">前往登录</button>
+          </div>
 
-              <div class="link-card__body">
-                <div class="link-card__top">
-                  <div class="link-card__identity">
-                    <h3 class="link-card__name" :title="link.name">{{ link.name }}</h3>
-                    <p class="link-card__domain">{{ formatUrl(link.url) }}</p>
-                  </div>
+          <!-- 瀑布流列表 -->
+          <div v-else class="link-masonry">
+            <div
+              v-for="(link, index) in linkList"
+              :key="link.id"
+              class="masonry-item"
+              :style="{ animationDelay: `${index * 0.05}s` }"
+            >
+              <div class="item-inner" @click="visitLink(link)">
+                <!-- 封面图 -->
+                <div class="image-container">
+                  <el-image
+                    :src="link.coverUrl || ''"
+                    class="link-cover"
+                    fit="cover"
+                    lazy
+                  >
+                    <template #placeholder>
+                      <div class="placeholder">
+                        <el-icon class="spinner"><Loading /></el-icon>
+                      </div>
+                    </template>
+                    <template #error>
+                      <div class="error-state">
+                        <el-icon><Picture /></el-icon>
+                      </div>
+                    </template>
+                  </el-image>
 
-                  <div v-if="isCurrentUserLink(link)" class="link-card__actions" @click.stop>
-                    <el-tooltip content="删除友链" placement="top">
-                      <el-button circle text class="link-card__delete" :loading="deletingLinkId === link.id" @click="handleDeleteLink(link)">
+                </div>
+
+                <!-- 内容区 -->
+                <div class="item-footer">
+                  <div class="link-header">
+                    <div class="link-name">{{ link.name }}</div>
+                    <div v-if="isCurrentUserLink(link)" class="link-delete" @click.stop="handleDeleteLink(link)">
+                      <el-tooltip content="删除友链" placement="top">
                         <el-icon><Delete /></el-icon>
-                      </el-button>
-                    </el-tooltip>
+                      </el-tooltip>
+                    </div>
                   </div>
-                </div>
-
-                <p class="link-card__description" :title="link.description">{{ link.description }}</p>
-
-                <div class="link-card__footer">
-                  <span class="link-card__visit">
-                    <el-icon><View /></el-icon>
-                    <span>访问网站</span>
-                  </span>
-                  <span v-if="isCurrentUserLink(link)" class="link-card__owner">我的友链</span>
+                  <div class="link-domain">{{ formatUrl(link.url) }}</div>
+                  <div class="link-description">{{ link.description }}</div>
+                  <div v-if="isCurrentUserLink(link)" class="link-owner">我的友链</div>
                 </div>
               </div>
-            </article>
+            </div>
           </div>
 
-          <div v-if="loadingMore && linkList.length > 0" class="link-page__loading-more">
+          <!-- 加载更多 -->
+          <div v-if="loadingMore && linkList.length > 0" class="loading-more">
             <span>加载更多...</span>
           </div>
 
-          <div v-if="!hasMore && linkList.length > 0 && !loading" class="link-page__no-more">
+          <!-- 没有更多 -->
+          <div v-if="!hasMore && linkList.length > 0 && !loading" class="no-more">
             <span>没有更多了</span>
           </div>
         </div>
@@ -136,7 +123,6 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { Delete, DocumentRemove, Link, Picture, View } from "@element-plus/icons-vue";
 import { deleteLink, getLinkList } from "@/api/link";
 import LinkApplyDialog from "@/views/Link/LinkApplyDialog.vue";
 import { useUserStore } from "@/stores/userStore";
@@ -282,486 +268,455 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
+// 友链页面 - 现代极简科技风（匹配相册广场风格）
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 .link-page {
-  --link-page-bg: #f3f5f7;
-  --link-page-panel: #ffffff;
-  --link-page-panel-soft: #f7f9fb;
-  --link-page-text-primary: #18212b;
-  --link-page-text-regular: #53606d;
-  --link-page-text-muted: #7f8a96;
-  --link-page-border: #dce3e9;
-  --link-page-border-soft: #ebf0f4;
-  --link-page-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-  --link-page-shadow-soft: 0 1px 3px rgba(15, 23, 42, 0.08);
-
+  width: 100%;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, var(--link-page-panel-soft) 0%, transparent 30%),
-    linear-gradient(180deg, var(--link-page-bg) 0%, var(--link-page-bg) 100%);
+  background: #f8fafc;
+  overflow-x: hidden;
 
-  .container {
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 0 24px;
+  html.dark & {
+    background: #000000;
+  }
+}
+
+.container {
+  // ===== CSS 变量定义 - 浅色模式 =====
+  --bg-page: #f8fafc;
+  --bg-hero-divider: rgba(0, 0, 0, 0.08);
+  --bg-metric: rgba(0, 0, 0, 0.02);
+  --bg-subtle: rgba(0, 0, 0, 0.02);
+  --bg-card: rgba(0, 0, 0, 0.015);
+  --bg-hover: rgba(0, 0, 0, 0.01);
+
+  --text-primary: #0a0a0a;
+  --text-secondary: #888888;
+  --text-regular: #666666;
+  --text-muted: #aaaaaa;
+
+  --border-light: rgba(0, 0, 0, 0.05);
+  --border-regular: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.15);
+
+  --accent-color: #0066ff;
+  --accent-soft: rgba(0, 102, 255, 0.04);
+  --accent-border: rgba(0, 102, 255, 0.15);
+  --accent-hover: rgba(0, 102, 255, 0.08);
+
+  // ===== 黑夜模式覆盖 =====
+  html.dark & {
+    --bg-page: #000000;
+    --bg-hero-divider: rgba(255, 255, 255, 0.1);
+    --bg-metric: rgba(255, 255, 255, 0.03);
+    --bg-subtle: rgba(255, 255, 255, 0.02);
+    --bg-card: rgba(255, 255, 255, 0.02);
+    --bg-hover: rgba(255, 255, 255, 0.02);
+
+    --text-primary: #ffffff;
+    --text-secondary: #888888;
+    --text-regular: #dddddd;
+    --text-muted: #666666;
+
+    --border-light: rgba(255, 255, 255, 0.05);
+    --border-regular: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(255, 255, 255, 0.15);
+
+    --accent-color: #00d4ff;
+    --accent-soft: rgba(0, 212, 255, 0.05);
+    --accent-border: rgba(0, 212, 255, 0.15);
+    --accent-hover: rgba(0, 212, 255, 0.08);
   }
 
-  .link-page__hero {
-    .link-page__hero-inner {
-      display: grid;
-      grid-template-columns: minmax(0, 1.6fr) minmax(280px, 360px);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  min-height: 100vh;
+  background: var(--bg-page);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
+
+  // 手机端适配
+  @media (max-width: 768px) {
+    padding: 0 20px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  // ===== 页面头部 - 极致简约 =====
+  .page-hero {
+    padding: 60px 0 40px;
+    border-bottom: 1px solid var(--bg-hero-divider);
+
+    @media (max-width: 768px) {
+      padding: 40px 0 25px;
+    }
+
+    .hero-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
       gap: 24px;
-      padding-top: 40px;
-      padding-bottom: 28px;
 
-      .link-page__hero-copy {
-        .link-page__eyebrow {
-          margin: 0 0 12px;
-          font-size: 12px;
-          letter-spacing: 0.16em;
+      @media (max-width: 768px) {
+        justify-content: flex-start;
+        gap: 8px;
+      }
+
+      .hero-copy {
+        max-width: 500px;
+
+        .hero-kicker {
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.2em;
           text-transform: uppercase;
-          color: var(--link-page-text-muted);
-        }
-
-        .link-page__title {
-          margin: 0;
-          font-size: 40px;
-          line-height: 1.05;
-          font-weight: 700;
-          color: var(--link-page-text-primary);
-        }
-
-        .link-page__description {
-          max-width: 720px;
-          margin: 16px 0 0;
-          font-size: 16px;
-          line-height: 1.9;
-          color: var(--link-page-text-regular);
-        }
-
-        .link-page__meta {
+          color: var(--accent-color);
+          margin-bottom: 12px;
           display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
-          margin-top: 20px;
+          align-items: center;
+          gap: 8px;
 
-          .link-page__meta-item {
-            display: inline-flex;
-            align-items: center;
-            min-height: 34px;
-            padding: 0 12px;
-            border-radius: 999px;
-            border: 1px solid var(--link-page-border);
-            background: var(--link-page-panel);
-            color: var(--link-page-text-regular);
-            font-size: 13px;
-            box-shadow: var(--link-page-shadow-soft);
+          &::before {
+            content: '';
+            width: 20px;
+            height: 1px;
+            background: linear-gradient(90deg, var(--accent-color), transparent);
           }
+        }
+
+        h1 {
+          font-size: 40px;
+          font-weight: 700;
+          letter-spacing: -0.04em;
+          margin-bottom: 12px;
+          color: var(--text-primary);
+
+          @media (max-width: 768px) {
+            font-size: 28px;
+          }
+        }
+
+        p {
+          font-size: 14px;
+          color: var(--text-secondary);
+          line-height: 1.7;
         }
       }
 
-      .link-page__hero-side {
-        .link-page__hero-panel {
-          height: 100%;
-          padding: 24px;
-          border: 1px solid var(--link-page-border);
-          border-radius: 24px;
-          background: var(--link-page-panel);
-          box-shadow: var(--link-page-shadow);
+      .hero-actions {
+        .btn-apply,
+        .btn-login {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 20px;
+          background: var(--accent-soft);
+          border: 1px solid var(--accent-border);
+          border-radius: 8px;
+          color: var(--accent-color);
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
 
-          .link-page__hero-panel-top {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 16px;
-
-            .link-page__hero-panel-label {
-              font-size: 13px;
-              color: var(--link-page-text-muted);
-            }
-
-            .link-page__hero-panel-value {
-              font-size: 34px;
-              line-height: 1;
-              color: var(--link-page-text-primary);
-            }
+          &:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-color);
           }
 
-          .link-page__hero-panel-description {
-            margin: 0;
-            font-size: 14px;
-            line-height: 1.8;
-            color: var(--link-page-text-regular);
-          }
-
-          .link-page__hero-panel-actions {
-            margin-top: 20px;
-
-            .link-page__apply-button,
-            .link-page__login-button {
-              min-width: 132px;
-              border-radius: 12px;
-            }
-
-            .link-page__apply-button {
-              box-shadow: none;
-            }
-
-            .link-page__login-button {
-              border-color: var(--link-page-border);
-              color: var(--link-page-text-primary);
-              background: var(--link-page-panel);
-            }
+          .el-icon {
+            font-size: 16px;
           }
         }
       }
     }
   }
 
-  .link-page__content {
-    .link-page__content-inner {
-      padding-bottom: 40px;
+  // ===== 内容布局 =====
+  .content-layout {
+    padding: 40px 0 60px;
 
-      .link-page__section {
-        .link-page__section-head {
+    @media (max-width: 768px) {
+      padding: 30px 0 50px;
+    }
+
+    // ===== 主内容区 =====
+    .main-content {
+      width: 100%;
+      max-width: 100%;
+
+      // ===== 空状态 =====
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 80px 24px;
+        text-align: center;
+
+        .empty-icon {
+          width: 80px;
+          height: 80px;
+          border-radius: 20px;
+          background: var(--bg-metric);
           display: flex;
-          align-items: flex-end;
-          justify-content: space-between;
-          gap: 16px;
-          margin-bottom: 18px;
+          justify-content: center;
+          align-items: center;
+          margin-bottom: 24px;
 
-          .link-page__section-title {
-            h2 {
-              margin: 0;
-              font-size: 22px;
-              font-weight: 600;
-              color: var(--link-page-text-primary);
-            }
-
-            p {
-              margin: 8px 0 0;
-              font-size: 14px;
-              color: var(--link-page-text-regular);
-            }
-          }
-
-          .link-page__section-side {
-            .link-page__section-count {
-              font-size: 13px;
-              color: var(--link-page-text-muted);
-            }
+          .el-icon {
+            font-size: 36px;
+            color: var(--text-muted);
           }
         }
 
-        .link-page__loading {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 18px;
+        h3 {
+          font-size: 24px;
+          font-weight: 600;
+          color: var(--text-primary);
+          margin: 0 0 12px;
+        }
 
-          .link-page__skeleton-card {
+        p {
+          font-size: 14px;
+          color: var(--text-secondary);
+          max-width: 400px;
+          margin: 0 0 24px;
+        }
+      }
+
+      // ===== 骨架屏 =====
+      .skeleton {
+        .skeleton-cover {
+          width: 100%;
+          height: 180px;
+          background: var(--bg-metric);
+        }
+
+        .skeleton-title {
+          width: 60%;
+          height: 20px;
+          background: var(--bg-metric);
+          border-radius: 4px;
+          margin-bottom: 12px;
+        }
+
+        .skeleton-text {
+          width: 100%;
+          height: 14px;
+          background: var(--bg-metric);
+          border-radius: 4px;
+          margin-bottom: 8px;
+
+          &.short {
+            width: 40%;
+          }
+        }
+      }
+
+      // ===== 瀑布流布局 =====
+      .link-masonry {
+        column-count: 4;
+        column-gap: 16px;
+
+        @media (max-width: 1200px) {
+          column-count: 3;
+        }
+
+        @media (max-width: 900px) {
+          column-count: 2;
+        }
+
+        @media (max-width: 600px) {
+          column-count: 2;
+          column-gap: 12px;
+          padding: 0;
+        }
+
+        .masonry-item {
+          break-inside: avoid;
+          margin-bottom: 16px;
+          opacity: 0;
+          animation: fadeInUp 0.5s ease forwards;
+
+          @media (max-width: 600px) {
+            margin-bottom: 12px;
+          }
+
+          .item-inner {
+            background: transparent;
+            border: 1px solid var(--border-regular);
+            border-radius: 6px;
             overflow: hidden;
-            border: 1px solid var(--link-page-border);
-            border-radius: 20px;
-            background: var(--link-page-panel);
-            box-shadow: var(--link-page-shadow-soft);
-
-            .link-page__skeleton-cover {
-              width: 100%;
-              height: 180px;
-            }
-
-            .link-page__skeleton-body {
-              padding: 18px;
-            }
-          }
-        }
-
-        .link-page__empty {
-          padding: 40px 0 12px;
-
-          .link-page__empty-body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 24px;
-            border: 1px solid var(--link-page-border);
-            border-radius: 24px;
-            background: var(--link-page-panel);
-            text-align: center;
-
-            .link-page__empty-icon {
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              width: 64px;
-              height: 64px;
-              margin-bottom: 18px;
-              border-radius: 20px;
-              background: var(--link-page-panel-soft);
-              color: var(--link-page-text-muted);
-              font-size: 28px;
-            }
-
-            h3 {
-              margin: 0;
-              font-size: 24px;
-              color: var(--link-page-text-primary);
-            }
-
-            p {
-              max-width: 520px;
-              margin: 14px 0 0;
-              font-size: 14px;
-              line-height: 1.8;
-              color: var(--link-page-text-regular);
-            }
-
-            .el-button {
-              margin-top: 20px;
-            }
-          }
-        }
-
-        .link-page__grid {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 18px;
-
-          .link-card {
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid var(--link-page-border);
-            border-radius: 22px;
-            background: var(--link-page-panel);
-            box-shadow: var(--link-page-shadow-soft);
             cursor: pointer;
-            opacity: 0;
-            transform: translateY(10px);
-            animation: link-card-enter 0.45s ease forwards;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+
+            &::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              height: 1px;
+              background: linear-gradient(90deg, var(--accent-color), transparent);
+              opacity: 0;
+              transition: opacity 0.25s ease;
+              z-index: 1;
+            }
+
+            &:hover::before {
+              opacity: 1;
+            }
 
             &:hover {
-              transform: translateY(-3px);
-              border-color: var(--link-page-text-muted);
-              box-shadow: var(--link-page-shadow);
+              border-color: var(--border-hover);
+              background: var(--bg-hover);
             }
 
-            .link-card__cover {
-              position: relative;
-              aspect-ratio: 16 / 9;
-              overflow: hidden;
-              background: var(--link-page-panel-soft);
-              border-bottom: 1px solid var(--link-page-border-soft);
+            html.dark & {
+              &:hover {
+                background: rgba(255, 255, 255, 0.02);
+                border-color: rgba(255, 255, 255, 0.15);
+              }
+            }
 
-              .link-card__cover-image {
+            .image-container {
+              position: relative;
+              overflow: hidden;
+
+              .link-cover {
                 width: 100%;
-                height: 100%;
+                display: block;
+                transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
               }
 
-              .link-card__cover-state {
-                display: flex;
+              .placeholder,
+              .error-state {
                 width: 100%;
-                height: 100%;
-                flex-direction: column;
-                align-items: center;
+                height: 180px;
+                background: var(--bg-metric);
+                display: flex;
                 justify-content: center;
-                gap: 8px;
-                color: var(--link-page-text-muted);
-                font-size: 13px;
+                align-items: center;
+
+                .spinner {
+                  animation: rotate 1.5s linear infinite;
+                  font-size: 28px;
+                  color: var(--text-muted);
+                }
 
                 .el-icon {
-                  font-size: 22px;
+                  font-size: 40px;
+                  color: var(--text-muted);
                 }
               }
             }
 
-            .link-card__body {
-              display: flex;
-              min-height: 188px;
-              flex: 1;
-              flex-direction: column;
-              padding: 18px;
+              .item-footer {
+                padding: 16px;
 
-              .link-card__top {
+              .link-header {
                 display: flex;
                 align-items: flex-start;
                 justify-content: space-between;
-                gap: 12px;
+                gap: 8px;
+                margin-bottom: 6px;
 
-                .link-card__identity {
-                  min-width: 0;
-
-                  .link-card__name {
-                    margin: 0;
-                    font-size: 18px;
-                    font-weight: 600;
-                    color: var(--link-page-text-primary);
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                  }
-
-                  .link-card__domain {
-                    margin: 8px 0 0;
-                    font-size: 13px;
-                    color: var(--link-page-text-muted);
-                  }
+                .link-name {
+                  font-size: 15px;
+                  font-weight: 600;
+                  color: var(--text-primary);
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+                  flex: 1;
                 }
 
-                .link-card__actions {
-                  .link-card__delete {
-                    color: var(--link-page-text-muted);
+                .link-delete {
+                  color: var(--text-muted);
+                  cursor: pointer;
+                  padding: 4px;
+                  border-radius: 4px;
+                  transition: all 0.2s ease;
+
+                  &:hover {
+                    color: #ff4d4f;
+                    background: rgba(255, 77, 79, 0.1);
                   }
                 }
               }
 
-              .link-card__description {
-                margin: 14px 0 0;
-                font-size: 14px;
-                line-height: 1.8;
-                color: var(--link-page-text-regular);
+              .link-domain {
+                font-size: 12px;
+                color: var(--text-muted);
+                margin-bottom: 10px;
+              }
+
+              .link-description {
+                font-size: 13px;
+                color: var(--text-regular);
+                line-height: 1.6;
                 display: -webkit-box;
                 overflow: hidden;
                 -webkit-box-orient: vertical;
-                -webkit-line-clamp: 3;
+                -webkit-line-clamp: 2;
               }
 
-              .link-card__footer {
-                display: flex;
+              .link-owner {
+                display: inline-flex;
                 align-items: center;
-                justify-content: space-between;
-                gap: 12px;
-                margin-top: auto;
-                padding-top: 18px;
-                border-top: 1px solid var(--link-page-border-soft);
-
-                .link-card__visit {
-                  display: inline-flex;
-                  align-items: center;
-                  gap: 8px;
-                  font-size: 13px;
-                  color: var(--link-page-text-primary);
-                }
-
-                .link-card__owner {
-                  display: inline-flex;
-                  align-items: center;
-                  min-height: 28px;
-                  padding: 0 10px;
-                  border-radius: 999px;
-                  background: var(--link-page-panel-soft);
-                  color: var(--link-page-text-regular);
-                  font-size: 12px;
-                }
+                margin-top: 12px;
+                padding: 4px 10px;
+                border-radius: 999px;
+                background: var(--bg-subtle);
+                border: 1px solid var(--border-light);
+                color: var(--text-secondary);
+                font-size: 12px;
               }
             }
           }
         }
+      }
 
-        .link-page__loading-more,
-        .link-page__no-more {
-          display: flex;
-          justify-content: center;
-          padding: 20px 0 10px;
-          font-size: 13px;
-          color: var(--link-page-text-muted);
-        }
+      // ===== 加载更多 =====
+      .loading-more,
+      .no-more {
+        display: flex;
+        justify-content: center;
+        padding: 30px 0 10px;
+        font-size: 13px;
+        color: var(--text-muted);
       }
     }
   }
 }
 
-html.dark {
-  .link-page {
-    --link-page-bg: #0f1720;
-    --link-page-panel: #16202a;
-    --link-page-panel-soft: #1a2631;
-    --link-page-text-primary: #e8edf2;
-    --link-page-text-regular: #bcc6cf;
-    --link-page-text-muted: #8d98a5;
-    --link-page-border: #2a3544;
-    --link-page-border-soft: #212c38;
-    --link-page-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
-    --link-page-shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.28);
+// ===== 动画 =====
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-}
-
-@media (max-width: 992px) {
-  .link-page {
-    .link-page__hero {
-      .link-page__hero-inner {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .link-page__content {
-      .link-page__content-inner {
-        .link-page__section {
-          .link-page__loading,
-          .link-page__grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-        }
-      }
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .link-page {
-    .container {
-      padding: 0 16px;
-    }
-
-    .link-page__hero {
-      .link-page__hero-inner {
-        gap: 18px;
-        padding-top: 24px;
-        padding-bottom: 20px;
-
-        .link-page__hero-copy {
-          .link-page__title {
-            font-size: 32px;
-          }
-
-          .link-page__description {
-            font-size: 15px;
-          }
-        }
-
-        .link-page__hero-side {
-          .link-page__hero-panel {
-            padding: 20px;
-          }
-        }
-      }
-    }
-
-    .link-page__content {
-      .link-page__content-inner {
-        padding-bottom: 28px;
-
-        .link-page__section {
-          .link-page__section-head {
-            align-items: flex-start;
-            flex-direction: column;
-          }
-
-          .link-page__loading,
-          .link-page__grid {
-            grid-template-columns: 1fr;
-          }
-        }
-      }
-    }
-  }
-}
-
-@keyframes link-card-enter {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>

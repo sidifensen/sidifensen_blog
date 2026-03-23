@@ -9,6 +9,12 @@
           <h1>相册广场</h1>
           <p>探索社区精彩瞬间，发现视觉之美。</p>
         </div>
+        <div class="hero-actions">
+          <button class="btn-my-album" @click="goToMyAlbum">
+            <span>我的相册</span>
+            <el-icon><ArrowRight /></el-icon>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -69,20 +75,6 @@
 
         <el-empty v-else description="暂无相册" :image-size="160" />
       </div>
-
-      <!-- 侧边栏 -->
-      <aside class="sidebar">
-        <div class="sidebar-card">
-          <h4 class="card-title">
-            <span class="icon">📊</span> 相册统计
-          </h4>
-          <p class="card-description">社区相册数据概览</p>
-          <div class="album-stat-item">
-            <div class="stat-label">相册总数</div>
-            <div class="stat-value">{{ albums.length }}</div>
-          </div>
-        </div>
-      </aside>
     </div>
   </div>
   </div>
@@ -91,7 +83,7 @@
 <script setup>
 import { ref, onMounted } from "vue"
 import { useRouter } from "vue-router"
-import { Picture, Loading, ZoomIn } from "@element-plus/icons-vue"
+import { Picture, Loading, ZoomIn, ArrowRight } from "@element-plus/icons-vue"
 import { listAllAlbum } from "@/api/album"
 import LoadingAnimation from "@/components/LoadingAnimation.vue"
 
@@ -113,6 +105,10 @@ const getAllAlbums = async () => {
 
 const handleViewAlbum = (albumId) => {
   router.push({ name: "AlbumDetail", params: { albumId } })
+}
+
+const goToMyAlbum = () => {
+  router.push({ name: "MyAlbum" })
 }
 
 onMounted(() => {
@@ -265,23 +261,44 @@ onMounted(() => {
           line-height: 1.7;
         }
       }
+
+      .hero-actions {
+        flex-shrink: 0;
+
+        .btn-my-album {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 20px;
+          background: var(--accent-soft);
+          border: 1px solid var(--accent-border);
+          border-radius: 8px;
+          color: var(--accent-color);
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          white-space: nowrap;
+
+          &:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-color);
+          }
+
+          .el-icon {
+            font-size: 16px;
+          }
+        }
+      }
     }
   }
 
   // ===== 内容布局 =====
   .content-layout {
-    display: grid;
-    grid-template-columns: 1fr 280px;
-    gap: 32px;
     padding: 40px 0 60px;
-
-    @media (max-width: 992px) {
-      grid-template-columns: 1fr;
-    }
 
     @media (max-width: 768px) {
       padding: 30px 0 50px;
-      gap: 24px;
     }
 
     // ===== 主内容区 =====
@@ -358,17 +375,21 @@ onMounted(() => {
             .image-container {
               position: relative;
               overflow: hidden;
+              aspect-ratio: 4/3;
 
               .album-cover {
                 width: 100%;
+                height: 100%;
                 display: block;
+                object-fit: cover;
                 transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
               }
 
               .placeholder,
               .error-state {
                 width: 100%;
-                height: 280px;
+                height: 100%;
+                aspect-ratio: 4/3;
                 background: var(--bg-metric);
                 display: flex;
                 justify-content: center;
@@ -448,63 +469,6 @@ onMounted(() => {
                 }
               }
             }
-          }
-        }
-      }
-    }
-
-    // ===== 侧边栏 =====
-    .sidebar {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-
-      @media (max-width: 992px) {
-        display: none;
-      }
-
-      .sidebar-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border-light);
-        border-radius: 8px;
-        padding: 20px;
-
-        .card-title {
-          font-size: 13px;
-          font-weight: 600;
-          margin-bottom: 8px;
-          color: var(--text-primary);
-          display: flex;
-          align-items: center;
-          gap: 8px;
-
-          .icon {
-            font-size: 14px;
-          }
-        }
-
-        .card-description {
-          font-size: 11px;
-          color: var(--text-muted);
-          margin-bottom: 16px;
-        }
-
-        .album-stat-item {
-          padding: 12px;
-          background: var(--bg-metric);
-          border-radius: 6px;
-          margin-bottom: 8px;
-
-          .stat-label {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-bottom: 4px;
-          }
-
-          .stat-value {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-primary);
           }
         }
       }
