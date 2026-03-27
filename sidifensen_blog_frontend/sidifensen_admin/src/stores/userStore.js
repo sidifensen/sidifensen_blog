@@ -27,7 +27,7 @@ export const useUserStore = defineStore("user", () => {
   const getUserInfo = async () => {
     // 获取用户信息
     await info().then((res) => {
-      user.value = res.data.data;
+      user.value = res.data;
     });
   };
 
@@ -74,7 +74,7 @@ export const useUserStore = defineStore("user", () => {
       const res = await getMenuList();
 
       // 按照 sort 排序并树形化
-      menus.value = formatMenu(res.data.data);
+      menus.value = formatMenu(res.data);
 
       //生成路由
       routes.value = generateRoutes(menus.value);

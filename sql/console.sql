@@ -159,7 +159,7 @@ create table article
     create_time    datetime     not null comment '创建时间',
     update_time    datetime     not null comment '更新时间',
     is_deleted     tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
-    index idx_user_id_examine_edit_visible_status_create_time (user_id, examine_status, edit_status, visible_range, create_time),
+    index idx_examine_edit_visible_status_update_time (examine_status, edit_status, visible_range, update_time),
     index idx_examine_edit_visible_status_create_time (examine_status, edit_status, visible_range, create_time)
 );
 
@@ -296,12 +296,14 @@ create table sys_blacklist
     type        tinyint      not null comment '黑名单类型 0-用户 1-ip地址',
     user_id     int                   default null comment '用户id',
     ip          varchar(100)          default null comment 'ip地址',
-    reason      varchar(200) not null comment '拉黑原因', 
+    reason      varchar(200) not null comment '拉黑原因',
     ban_time    datetime     not null comment '拉黑时间',
     expire_time datetime              default null comment '到期时间',
     create_time datetime     not null comment '创建时间',
     update_time datetime     not null comment '更新时间',
     is_deleted  tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
+    -- 唯一索引，防止并发场景下重复插入（配合 Redis setIfAbsent 双重保险）
+    unique index uk_type_ip (type, ip),
     -- 查询某用户是否在黑名单(检查是否过期)
     index idx_user_expire (user_id, expire_time),
     -- 查询某IP是否在黑名单(检查是否过期)

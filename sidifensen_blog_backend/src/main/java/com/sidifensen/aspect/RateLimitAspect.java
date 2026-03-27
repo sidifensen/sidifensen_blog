@@ -15,9 +15,11 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,6 +34,9 @@ import java.util.concurrent.TimeUnit;
 @Component
 @Slf4j
 public class RateLimitAspect {
+
+    @Value("${sidifensen.rate-limit.enabled:true}")
+    private boolean rateLimitEnabled;
 
     @Resource
     private RedisUtils redisUtils;
@@ -63,10 +68,15 @@ public class RateLimitAspect {
             return joinPoint.proceed();
         }
 
+        // 限流开关，关闭时直接放行（用于压力测试）
+        if (!rateLimitEnabled) {
+            return joinPoint.proceed();
+        }
+
         // 获取用户标识（登录用户ID或IP地址）
         String identifier;
         Integer userId = SecurityUtils.getUserId();
-        if (userId != 0) {
+        if (!Objects.equals(userId, 0)) {
             identifier = "user:" + userId;
         } else {
             identifier = "ip:" + ipUtils.getIp();
@@ -81,13 +91,24 @@ public class RateLimitAspect {
         // 执行限流检查并记录访问次数
         boolean allowed;
         Long currentCount;
+        long rateLimitExpireSeconds = rateLimit.period(); // 默认使用注解指定的过期时间
         try {
             // 访问次数自增
             currentCount = redisUtils.incr(rateLimitKey, 1);
 
             // 首次访问时设置过期时间
             if (currentCount == 1) {
-                redisUtils.expire(rateLimitKey, rateLimit.period(), TimeUnit.SECONDS);
+                // 优先使用黑名单策略的封禁时长作为过期时间，避免限流key早于黑名单过期
+                // 导致计数器重置后用户在黑名单有效期内再次触发限流
+                BlacklistStrategy firstStrategy = BlacklistStrategy.getStrategyByAccessCount(rateLimit.value());
+                if (firstStrategy != null) {
+                    rateLimitExpireSeconds = firstStrategy.getBanDuration();
+                }
+                redisUtils.expire(rateLimitKey, rateLimitExpireSeconds, TimeUnit.SECONDS);
+            } else {
+                // 非首次访问，确保过期时间与黑名单保持一致
+                // 如果之前设置的过期时间较短，需要延长
+                redisUtils.expire(rateLimitKey, rateLimitExpireSeconds, TimeUnit.SECONDS);
             }
 
             // 检查是否超过限流限制
@@ -100,9 +121,20 @@ public class RateLimitAspect {
                 String blacklistKey = RedisConstants.Blacklist + identifier;
                 // 构建接口路径
                 String apiPath = className + ":" + method.getName();
+                // 生成详细违规原因
+                String detailedReason = newStrategy.getDetailedReason(apiPath, currentCount.intValue());
 
-                // 检查用户是否已经在黑名单中
-                if (redisUtils.hasKey(blacklistKey)) {
+                // 使用 setIfAbsent 原子操作，防止并发竞态条件导致重复加入黑名单
+                // setIfAbsent 返回 true 表示 key 不存在且设置成功（即首次加入黑名单）
+                // 返回 false 表示 key 已存在（已在黑名单中）
+                boolean isFirstAdd = redisUtils.setIfAbsent(blacklistKey, detailedReason, newStrategy.getBanDuration(), TimeUnit.SECONDS);
+
+                if (isFirstAdd) {
+                    // 首次加入黑名单成功，发送通知
+                    sysBlacklistService.addToBlacklist(identifier, detailedReason, newStrategy.getBanDuration());
+                    log.warn("用户加入黑名单 - 用户标识: {}, 访问接口: {}, 访问次数: {}, 策略: {}, 封禁时长: {}秒",
+                            identifier, apiPath, currentCount, newStrategy.getDescription(), newStrategy.getBanDuration());
+                } else {
                     // 用户已在黑名单中，检查是否需要升级策略
                     String currentReasonInRedis = (String) redisUtils.get(blacklistKey);
                     BlacklistStrategy currentStrategy = BlacklistStrategy.fromDetailedReason(currentReasonInRedis);
@@ -116,7 +148,7 @@ public class RateLimitAspect {
                         redisUtils.set(blacklistKey, newDetailedReason, newStrategy.getBanDuration(), TimeUnit.SECONDS);
 
                         // 更新数据库记录
-                        sysBlacklistService.updateBlacklist(identifier, newDetailedReason,newStrategy.getBanDuration());
+                        sysBlacklistService.updateBlacklist(identifier, newDetailedReason, newStrategy.getBanDuration());
 
                         // 延长计数器过期时间，与新的封禁时长保持一致
                         redisUtils.expire(rateLimitKey, newStrategy.getBanDuration(), TimeUnit.SECONDS);
@@ -126,22 +158,9 @@ public class RateLimitAspect {
                                 currentStrategy != null ? currentStrategy.getDescription() : "未知",
                                 newStrategy.getDescription(), newStrategy.getBanDuration());
                     }
-                } else {
-                    // 用户不在黑名单中，首次加入黑名单
-                    String detailedReason = newStrategy.getDetailedReason(apiPath, currentCount.intValue());
-
-                    // 加入Redis黑名单（快速检查）
-                    redisUtils.set(blacklistKey, detailedReason, newStrategy.getBanDuration(), TimeUnit.SECONDS);
-
-                    // 保存到数据库（持久化记录）
-                    sysBlacklistService.addToBlacklist(identifier, detailedReason, newStrategy.getBanDuration());
-
-                    // 延长计数器过期时间，与封禁时长保持一致
-                    redisUtils.expire(rateLimitKey, newStrategy.getBanDuration(), TimeUnit.SECONDS);
-
-                    log.warn("用户加入黑名单 - 用户标识: {}, 访问接口: {}, 访问次数: {}, 策略: {}, 封禁时长: {}秒",
-                            identifier, apiPath, currentCount, newStrategy.getDescription(),newStrategy.getBanDuration());
                 }
+                // 延长计数器过期时间，与封禁时长保持一致
+                redisUtils.expire(rateLimitKey, newStrategy.getBanDuration(), TimeUnit.SECONDS);
             }
         } catch (Exception e) {
             log.error("限流检查异常，允许访问 - key: {}", rateLimitKey, e);

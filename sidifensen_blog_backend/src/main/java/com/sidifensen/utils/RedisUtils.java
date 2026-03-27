@@ -183,6 +183,32 @@ public class RedisUtils {
     }
 
     /**
+     * 原子性设值：仅当key不存在时才设置成功
+     * 用于防止并发场景下的竞态条件
+     *
+     * @param key   键
+     * @param value 值
+     * @return true=key不存在且设置成功, false=key已存在
+     */
+    public boolean setIfAbsent(String key, Object value) {
+        return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(key, value));
+    }
+
+    /**
+     * 原子性设值：仅当key不存在时才设置成功，并设置过期时间
+     * 用于防止并发场景下的竞态条件
+     *
+     * @param key      键
+     * @param value    值
+     * @param time     时间
+     * @param timeUnit 时间单位
+     * @return true=key不存在且设置成功, false=key已存在
+     */
+    public boolean setIfAbsent(String key, Object value, long time, TimeUnit timeUnit) {
+        return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(key, value, time, timeUnit));
+    }
+
+    /**
      * 递增
      *
      * @param key   键

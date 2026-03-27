@@ -82,6 +82,46 @@ public class IpUtils {
         return StrUtil.isBlank(checkString) || "unknown".equalsIgnoreCase(checkString);
     }
 
+    /**
+     * 检测IP是否为内网IP或回环地址
+     * 避免对本地IP发起无意义的外部API查询
+     *
+     * @param ip IP地址
+     * @return 是否为内网或回环IP
+     */
+    private boolean isPrivateOrLoopbackIp(String ip) {
+        if (StrUtil.isBlank(ip)) {
+            return false;
+        }
+        // 127.0.0.0 - 127.255.255.255 (回环地址)
+        if (ip.startsWith("127.")) {
+            return true;
+        }
+        // 10.0.0.0 - 10.255.255.255
+        if (ip.startsWith("10.")) {
+            return true;
+        }
+        // 172.16.0.0 - 172.31.255.255
+        if (ip.startsWith("172.")) {
+            try {
+                int second = Integer.parseInt(ip.split("\\.")[1]);
+                if (second >= 16 && second <= 31) {
+                    return true;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        // 192.168.0.0 - 192.168.255.255
+        if (ip.startsWith("192.168.")) {
+            return true;
+        }
+        // ::1 (IPv6回环)
+        if ("::1".equals(ip) || "0:0:0:0:0:0:0:1".equals(ip)) {
+            return true;
+        }
+        return false;
+    }
+
     private static final String GET_IP_URL = "https://ip9.com.cn/get";
     private static final String GET_IP_URL1 = "https://ip9.com.cn/get?ip={}";
 
@@ -134,6 +174,11 @@ public class IpUtils {
         if (StrUtil.isBlank(ip)) {
             log.warn("输入IP为空");
             return "未知地址";
+        }
+
+        // 内网/回环IP不查询外部API，直接返回
+        if (isPrivateOrLoopbackIp(ip)) {
+            return "内网地址";
         }
 
         String address;

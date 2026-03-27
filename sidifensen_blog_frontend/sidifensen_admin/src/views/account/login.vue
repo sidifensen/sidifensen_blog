@@ -101,10 +101,10 @@ const handleLogin = async () => {
   try {
     const res = await login(loginForm.value);
     // 登录成功后先持久化 token，再并行加载用户信息和菜单数据
-    SetJwt(res.data.data);
+    SetJwt(res.data);
 
     const [userInfoRes] = await Promise.all([info(), userStore.loadMenusAndRoutes()]);
-    userStore.setUser(userInfoRes.data.data);
+    userStore.setUser(userInfoRes.data);
 
     await router.push("/home");
     ElMessage.success("登录成功");

@@ -229,13 +229,13 @@ const submitPaymentForm = (formHtml, targetName) => {
 // 支付成功后刷新站点用户态，保证 VIP 标识和额度即时生效
 const refreshUserInfo = async () => {
   const response = await info();
-  userStore.user = response.data.data;
+  userStore.user = response.data;
 };
 
 // 刷新订单列表
 const refreshOrderList = async () => {
   const response = await getVipOrderList(1, 10);
-  orders.value = response.data.data?.data || [];
+  orders.value = response.data?.data || [];
 };
 
 // 关闭支付结果弹窗
@@ -256,9 +256,9 @@ const handlePaymentSuccess = async () => {
 // 会员中心初始化时并行拉取套餐、会员信息和订单记录
 const fetchVipData = async () => {
   const [plansRes, vipRes, orderRes] = await Promise.all([getVipPlans(), getVipMe(), getVipOrderList(1, 10)]);
-  plans.value = plansRes.data.data || [];
-  vipInfo.value = vipRes.data.data || {};
-  orders.value = orderRes.data.data.data || [];
+  plans.value = plansRes.data || [];
+  vipInfo.value = vipRes.data || {};
+  orders.value = orderRes.data.data || [];
   if (!selectedPlanCode.value && plans.value.length) {
     selectedPlanCode.value = plans.value[0].code;
   }
@@ -278,7 +278,7 @@ const handleCreateOrder = async (plan) => {
       planCode: plan.code,
       clientType,
     });
-    const payload = response.data.data;
+    const payload = response.data;
     // 5. 创建订单成功后，先打开结果弹窗（无论 PC 还是 H5）
     currentOrderNo.value = payload.orderNo;
     paymentResultVisible.value = true;
@@ -329,7 +329,7 @@ onMounted(async () => {
     if (jwt) {
       try {
         const response = await info();
-        userStore.user = response.data.data;
+        userStore.user = response.data;
       } catch (error) {
         // 获取用户信息失败（401 等），说明 token 已过期或无效，跳转登录
         router.push(`/login?redirect=${encodeURIComponent(route.fullPath)}`);
@@ -367,7 +367,7 @@ const orderStatusText = (status) => {
 const handleRepayOrder = async (order) => {
   try {
     const response = await repayVipOrder(order.orderNo);
-    const payload = response.data.data;
+    const payload = response.data;
 
     // 打开支付结果弹窗
     currentOrderNo.value = payload.orderNo;

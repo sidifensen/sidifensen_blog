@@ -377,10 +377,9 @@ const loadArticles = async (reset = false) => {
       }
     }
     // 发送请求获取文章列表
-    const response = await getArticleManageList(currentPage.value, pageSize.value, params);
-    const result = response.data || {};
-    const newArticles = result.data ? result.data.data || [] : [];
-    const total = result.data ? result.data.total || 0 : 0;
+    const res = await getArticleManageList(currentPage.value, pageSize.value, params);
+    const newArticles = res.data ? res.data.data || [] : [];
+    const total = res.data ? res.data.total || 0 : 0;
 
     if (reset) {
       // 初次加载或筛选条件改变时
@@ -519,7 +518,7 @@ const updateDateFiltersFromArticles = (articleList) => {
 const loadStatistics = async () => {
   try {
     const res = await getUserArticleStatistics();
-    const statistics = res.data.data || {};
+    const statistics = res.data || {};
 
     // 更新统计数据
     totalCount.value = statistics.totalCount || 0;
@@ -528,7 +527,7 @@ const loadStatistics = async () => {
     draftCount.value = statistics.draftCount || 0;
     garbageCount.value = statistics.garbageCount || 0;
   } catch (error) {
-    console.error("加载统计数据失败:", error);
+    // 静默处理
     // 如果统计接口失败，使用默认值
     totalCount.value = 0;
     publishedCount.value = 0;

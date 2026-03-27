@@ -22,9 +22,9 @@ const visitorCount = ref(0);
 const fetchVisitorCount = async () => {
   try {
     const res = await getTodayVisitorCount();
-    visitorCount.value = res.data.data || 0;
+    visitorCount.value = res.data || 0;
   } catch (error) {
-    console.error("获取今日访问量失败:", error);
+    // 静默处理
     // 失败时显示 0
     visitorCount.value = 0;
   }

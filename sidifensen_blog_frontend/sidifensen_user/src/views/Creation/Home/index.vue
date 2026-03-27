@@ -217,10 +217,9 @@ const fetchStatistics = async () => {
   try {
     statisticsLoading.value = true;
     const res = await getCreationStatistics();
-    statistics.value = res.data.data;
+    statistics.value = res.data;
   } catch (error) {
-    ElMessage.error("获取统计数据失败");
-    console.error("获取统计数据失败:", error);
+    // 静默处理
   } finally {
     statisticsLoading.value = false;
   }

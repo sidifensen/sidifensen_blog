@@ -16,13 +16,11 @@ class WebSocketClient {
   connect() {
     const token = GetJwt();
     if (!token) {
-      console.error("WebSocket 连接失败：token 为空");
       return;
     }
 
     // 如果已经有连接，先关闭
     if (this.ws) {
-      console.log("WebSocket 已存在，先关闭旧连接");
       this.close();
     }
 
@@ -51,13 +49,13 @@ class WebSocketClient {
           // 处理收到的消息
           this.handleMessage(data);
         } catch (error) {
-          console.error("解析 WebSocket 消息失败:", error);
+          // 静默处理
         }
       };
 
       // 连接错误
       this.ws.onerror = (error) => {
-        console.error("WebSocket 错误:", error);
+        // 静默处理
         // 触发连接错误事件
         this.triggerHandler("error", error);
       };
@@ -76,7 +74,7 @@ class WebSocketClient {
         }
       };
     } catch (error) {
-      console.error("创建 WebSocket 连接失败:", error);
+      // 静默处理
     }
   }
 
@@ -87,13 +85,12 @@ class WebSocketClient {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       const json = JSON.stringify(message);
       this.ws.send(json);
-      // 心跳消息不打印日志，避免控制台刷屏
+      // 心跳消息不打印日志，避免控制屏
       if (message.type !== "HEARTBEAT") {
-        console.log("发送 WebSocket 消息:", message);
+        // 静默处理
       }
     } else {
-      console.error("WebSocket 未连接");
-      ElMessage.error("网络连接异常，请稍后重试");
+      // 静默处理
     }
   }
 
@@ -119,6 +116,16 @@ class WebSocketClient {
       content: "[图片]",
       messageType: 2,
       imageUrl,
+    });
+  }
+
+  /**
+   * 发送正在输入通知
+   */
+  sendTyping(toUserId) {
+    this.send({
+      type: "TYPING",
+      toUserId,
     });
   }
 
@@ -183,7 +190,7 @@ class WebSocketClient {
         position: "top-right",
       });
     } else {
-      console.log(`[系统通知] ${content}`);
+      // 静默处理
     }
   }
 
@@ -263,7 +270,6 @@ class WebSocketClient {
       return;
     }
 
-    console.log("5秒后尝试重连...");
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
       this.connect();

@@ -276,7 +276,7 @@ const handleSubmit = async () => {
     if (error.message) {
       ElMessage.error("申请提交失败：" + error.message);
     } else {
-      console.error("友链申请失败:", error);
+      // 静默处理
     }
   } finally {
     submitLoading.value = false;

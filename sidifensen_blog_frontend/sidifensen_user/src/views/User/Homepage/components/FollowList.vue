@@ -178,8 +178,8 @@ const fetchFollowingList = async (reset = false) => {
 
     const userId = route.params.userId;
     const res = await getFollowList(userId, followingCurrentPage.value, pageSize.value);
-    const newUsers = res.data.data.data || [];
-    followingTotal.value = res.data.data.total || 0;
+    const newUsers = res.data.data || [];
+    followingTotal.value = res.data.total || 0;
 
     if (reset) {
       followingList.value = newUsers;
@@ -195,8 +195,7 @@ const fetchFollowingList = async (reset = false) => {
       followingCurrentPage.value++;
     }
   } catch (error) {
-    ElMessage.error("获取关注列表失败");
-    console.error("获取关注列表失败:", error);
+    // 静默处理
   } finally {
     followingLoading.value = false;
     followingLoadingMore.value = false;
@@ -219,8 +218,8 @@ const fetchFansList = async (reset = false) => {
 
     const userId = route.params.userId;
     const res = await getFansList(userId, fansCurrentPage.value, pageSize.value);
-    const newUsers = res.data.data.data || [];
-    fansTotal.value = res.data.data.total || 0;
+    const newUsers = res.data.data || [];
+    fansTotal.value = res.data.total || 0;
 
     if (reset) {
       fansList.value = newUsers;
@@ -241,8 +240,7 @@ const fetchFansList = async (reset = false) => {
       await checkFollowStatusForUsers(newUsers);
     }
   } catch (error) {
-    ElMessage.error("获取粉丝列表失败");
-    console.error("获取粉丝列表失败:", error);
+    // 静默处理
   } finally {
     fansLoading.value = false;
     fansLoadingMore.value = false;
@@ -257,9 +255,9 @@ const checkFollowStatusForUsers = async (users) => {
   for (const user of users) {
     try {
       const res = await isFollowing(currentUserId, user.id);
-      userFollowStatus.value.set(user.id, res.data.data);
+      userFollowStatus.value.set(user.id, res.data);
     } catch (error) {
-      console.error(`检查用户 ${user.id} 关注状态失败:`, error);
+      // 静默处理
     }
   }
 };
@@ -337,8 +335,7 @@ const handleToggleFollow = async (userId) => {
       await fetchFansList(true);
     }
   } catch (error) {
-    ElMessage.error("操作失败");
-    console.error("关注操作失败:", error);
+    // 静默处理
   } finally {
     followActionLoading.value = false;
   }

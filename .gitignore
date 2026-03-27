@@ -34,3 +34,7 @@ docs
 # Git Worktrees 工作区
 .worktrees/
 /tests/
+
+
+node_modules/
+/jmeter/

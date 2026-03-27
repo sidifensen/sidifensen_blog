@@ -158,7 +158,7 @@ const pollOrder = async (attempt = 0) => {
 
   try {
     const response = await getVipOrder(props.orderNo);
-    const orderData = response.data.data;
+    const orderData = response.data;
     orderStatus.value = orderData?.status || "PAYING";
     // 同步订单过期时间
     orderExpiredTime.value = orderData?.expiredTime;

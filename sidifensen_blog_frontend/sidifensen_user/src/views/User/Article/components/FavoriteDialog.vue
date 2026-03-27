@@ -133,10 +133,9 @@ const fetchFavoriteList = async () => {
   try {
     loading.value = true;
     const res = await getFavoriteListByArticle(props.articleId);
-    favoriteList.value = res.data.data || [];
+    favoriteList.value = res.data || [];
   } catch (error) {
-    console.error("获取收藏夹列表失败:", error);
-    ElMessage.error("获取收藏夹列表失败");
+    // 静默处理
   } finally {
     loading.value = false;
   }
@@ -179,9 +178,7 @@ const handleCreateFavorite = async () => {
     await fetchFavoriteList();
   } catch (error) {
     if (error !== false) {
-      // 不是表单验证错误
-      console.error("创建收藏夹失败:", error);
-      ElMessage.error("创建收藏夹失败");
+      // 静默处理
     }
   } finally {
     creating.value = false;
@@ -229,8 +226,7 @@ const handleToggleCollect = async (favorite) => {
       });
     }
   } catch (error) {
-    console.error("收藏操作失败:", error);
-    ElMessage.error("收藏操作失败");
+    // 静默处理
   } finally {
     // 移除操作ID
     const index = operatingIds.value.indexOf(favorite.id);

@@ -192,7 +192,7 @@ const fetchNotifications = async (reset = false) => {
     }
 
     const res = await getUserNotifications(typeMap[activeTab.value], currentPage.value, pageSize.value);
-    const data = res.data.data || {};
+    const data = res.data || {};
     const parsedData = (data.data || []).map((item) => parseNotificationContent(item));
 
     if (reset) {
@@ -205,8 +205,7 @@ const fetchNotifications = async (reset = false) => {
     hasMore.value = notificationList.value.length < total.value;
     autoMarkAsRead(parsedData);
   } catch (error) {
-    ElMessage.error("获取通知列表失败");
-    console.error("获取通知列表失败:", error);
+    // 静默处理
   } finally {
     loading.value = false;
     loadingMore.value = false;
@@ -229,14 +228,14 @@ const autoMarkAsRead = async (newNotifications) => {
     await fetchUnreadCount();
     window.dispatchEvent(new CustomEvent("notification-read"));
   } catch (error) {
-    console.error("自动标记已读失败:", error);
+    // 静默处理
   }
 };
 
 const fetchUnreadCount = async () => {
   try {
     const res = await getUnreadNotificationCount();
-    const data = res.data.data || {};
+    const data = res.data || {};
     Object.assign(unreadCount, {
       total: data.total || 0,
       system: data.system || 0,
@@ -246,7 +245,7 @@ const fetchUnreadCount = async () => {
       follow: data.follow || 0,
     });
   } catch (error) {
-    console.error("获取未读数量失败:", error);
+    // 静默处理
   }
 };
 
@@ -288,8 +287,7 @@ const handleMarkCurrentAsRead = async () => {
     window.dispatchEvent(new CustomEvent("notification-read"));
     ElMessage.success("已标记为已读");
   } catch (error) {
-    ElMessage.error("操作失败");
-    console.error("批量标记已读失败:", error);
+    // 静默处理
   }
 };
 
@@ -301,8 +299,7 @@ const handleSingleRead = async (notification) => {
     window.dispatchEvent(new CustomEvent("notification-read"));
     ElMessage.success("已标记为已读");
   } catch (error) {
-    ElMessage.error("操作失败");
-    console.error("单条标记已读失败:", error);
+    // 静默处理
   }
 };
 
@@ -322,8 +319,7 @@ const handleDelete = async (notificationId) => {
     ElMessage.success("删除成功");
   } catch (error) {
     if (error !== "cancel") {
-      ElMessage.error("删除失败");
-      console.error("删除通知失败:", error);
+      // 静默处理
     }
   }
 };

@@ -2,10 +2,10 @@
   <h1>🚀 Sidifensen Blog</h1>
   <p>现代化社区系统 | 前后端分离架构</p>
 
-  ![Java](https://img.shields.io/badge/Java-21-orange.svg)
-  ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.0-brightgreen.svg)
-  ![Vue.js](https://img.shields.io/badge/Vue.js-3.5.13-4FC08D.svg)
-  ![Element Plus](https://img.shields.io/badge/Element%20Plus-2.10.2-409EFF.svg)
+[![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk)](https://www.java.com/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.0-6DB33F?logo=springboot)](https://spring.io/projects/spring-boot)
+[![Vue](https://img.shields.io/badge/Vue-3.5.13-4FC08D?logo=vue.js)](https://vuejs.org/)
+[![Element Plus](https://img.shields.io/badge/Element%20Plus-2.10.2-409EFF?logo=element)](https://element-plus.org/)
 
   <p>
     <a href="#-功能特性">功能特性</a> •
@@ -21,9 +21,11 @@
 <div align="center">
 
 **🌐 官网地址**: [https://www.sidifensen.com](https://www.sidifensen.com)
+
 **🔧 后台管理**: [https://admin.sidifensen.com](https://admin.sidifensen.com)
 
 **📦 Gitee 仓库**: [https://gitee.com/sidifensen/sidifensen_blog](https://gitee.com/sidifensen/sidifensen_blog)
+
 **💻 GitHub 仓库**: [https://github.com/sidifensen/sidifensen_blog](https://github.com/sidifensen/sidifensen_blog)
 
 </div>
@@ -41,9 +43,10 @@
 - ⚡ **高性能**: Redis 缓存 + RabbitMQ 异步处理
 - 🤖 **AI 赋能**: DeepSeek API 提供摘要、标题生成、标签推荐、评论回复建议与流式智能客服，全面提升创作与互动效率
 - 💎 **VIP 会员**: 完整的会员体系 + 套餐管理 + 支付对接（支付宝沙箱环境）+ AI 配额管理
-- 💬 **实时通信**: WebSocket 私信系统，支持消息撤回、已读状态
+- 💬 **实时通信**: WebSocket 私信系统，支持消息撤回、已读状态、正在输入状态显示
 - 🔔 **通知中心**: 实时消息通知，点赞、评论、关注、收藏全面追踪
 - 📱 **响应式设计**: 完美适配桌面端和移动端
+- 📱 **微信小程序**: UniApp 多端支持，可编译为微信小程序、H5 等多平台
 - 🔧 **易于扩展**: 模块化架构，支持功能定制
 - 🚀 **开箱即用**: Docker 一键部署，快速上线
 - 🤖 **自动化部署**: Jenkins + Gitea CI/CD 自动化构建和部署
@@ -87,6 +90,7 @@
 
 - **核心框架**: Vue 3.5.13
 - **构建工具**: Vite 6.2.4
+- **移动端支持**: Capacitor (iOS/Android 原生打包)
 - **UI 组件库**: Element Plus 2.10.2
 - **状态管理**: Pinia 3.0.1 + 持久化插件
 - **路由管理**: Vue Router 4.5.0
@@ -101,6 +105,14 @@
 - **数据可视化**: ECharts 5.6.0
 - **Excel 处理**: XLSX 0.18.5
 - **文件保存**: FileSaver 2.0.5
+
+#### 微信小程序端
+
+- **核心框架**: UniApp + Vue 3
+- **状态管理**: Pinia
+- **UI 组件**: uView UI
+- **样式预处理**: SCSS
+- **构建工具**: Vite
 
 #### 开发工具
 
@@ -163,6 +175,7 @@ sidifensen_blog/
 │           ├── utils/                              #     工具函数
 │           └── views/                              #     页面组件
 │
+├── sidifensen_blog_miniprogram/                      # 微信小程序端 (UniApp)
 ├── sql/                                            # 数据库初始化脚本
 │   ├── console.sql                                 #   控制台 SQL
 │   └── sidifensen_blog.sql                         #   完整数据库结构
@@ -185,7 +198,7 @@ sidifensen_blog/
 - **图形验证码**: 防止恶意注册和登录
 - **用户主页**: 个人主页展示 + 关注/粉丝系统
 - **创作中心**: 文章管理 + 专栏管理 + 评论管理
-- **私信功能**: WebSocket 实时聊天 + 消息通知 + 会话管理
+- **私信功能**: WebSocket 实时聊天 + 消息通知 + 会话管理 + 正在输入状态显示
 - **通知中心**: 系统通知 + 互动提醒（点赞、评论、关注、收藏）+ 消息统一管理
 - **VIP 会员**: 会员套餐购买 + 支付宝支付 + 会员有效期管理 + AI 配额权益
 
@@ -204,13 +217,14 @@ sidifensen_blog/
 ### 🎨 用户界面
 
 - **响应式设计**: 完美适配桌面、平板、手机
+- **微信小程序**: UniApp 多端支持（微信小程序、H5）
 - **暗黑模式**: 支持明暗主题切换
 - **加载动画**: 优雅的加载和过渡效果
 - **无限滚动**: 流畅的内容浏览体验
 - **搜索功能**: 全文搜索和标签筛选
 - **用户交互**: 点赞 + 收藏 + 评论 + 关注 + 私信
 - **历史记录**: 浏览历史
-- **实时通信**: WebSocket 私信聊天 + 在线状态
+- **实时通信**: WebSocket 私信聊天 + 在线状态 + 正在输入状态显示
 - **通知中心**: 实时通知提醒 + 分类筛选（系统/点赞/评论/关注/收藏）+ 消息已读管理
 
 </td>
@@ -757,6 +771,7 @@ docker-compose up -d --build
   - ✅ 实时消息推送（WebSocket）
   - ✅ 消息撤回和删除
   - ✅ 用户在线状态显示
+  - ✅ 正在输入状态显示
 
 - [x] **🔔 通知中心**
   - ✅ 系统通知推送

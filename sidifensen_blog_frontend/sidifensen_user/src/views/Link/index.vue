@@ -63,24 +63,20 @@
               <div class="item-inner" @click="visitLink(link)">
                 <!-- 封面图 -->
                 <div class="image-container">
-                  <el-image
-                    :src="link.coverUrl || ''"
+                  <img
+                    v-if="link.coverUrl"
+                    :src="link.coverUrl"
                     class="link-cover"
-                    fit="cover"
-                    lazy
-                  >
-                    <template #placeholder>
-                      <div class="placeholder">
-                        <el-icon class="spinner"><Loading /></el-icon>
-                      </div>
-                    </template>
-                    <template #error>
-                      <div class="error-state">
-                        <el-icon><Picture /></el-icon>
-                      </div>
-                    </template>
-                  </el-image>
-
+                    alt="封面"
+                    @load="onImageLoad(link.id)"
+                    @error="onImageError(link.id)"
+                  />
+                  <div v-else class="placeholder">
+                    <el-icon><Picture /></el-icon>
+                  </div>
+                  <div v-if="imageLoading[link.id]" class="loading-overlay">
+                    <el-icon class="spinner"><Loading /></el-icon>
+                  </div>
                 </div>
 
                 <!-- 内容区 -->
@@ -141,6 +137,15 @@ const hasMore = ref(true);
 
 const linkList = ref([]);
 const deletingLinkId = ref(null);
+const imageLoading = ref({});
+
+const onImageLoad = (linkId) => {
+  imageLoading.value[linkId] = false;
+};
+
+const onImageError = (linkId) => {
+  imageLoading.value[linkId] = false;
+};
 
 const isUserLoggedIn = computed(() => {
   return userStore.user && userStore.user.id;
@@ -169,8 +174,8 @@ const fetchLinkList = async (reset = false) => {
     }
 
     const res = await getLinkList(currentPage.value, pageSize.value);
-    const data = res.data.data;
-    const newLinks = data.data || [];
+    const newLinks = res.data?.data || [];
+    const totalCount = res.data?.total || 0;
 
     if (reset) {
       linkList.value = newLinks;
@@ -178,15 +183,14 @@ const fetchLinkList = async (reset = false) => {
       linkList.value = [...linkList.value, ...newLinks];
     }
 
-    total.value = data.total || 0;
+    total.value = totalCount;
     hasMore.value = linkList.value.length < total.value;
 
     if (hasMore.value && newLinks.length > 0) {
       currentPage.value++;
     }
   } catch (error) {
-    ElMessage.error("获取友链列表失败");
-    console.error("获取友链列表失败:", error);
+    // 静默处理
   } finally {
     loading.value = false;
     loadingMore.value = false;
@@ -249,8 +253,7 @@ const handleDeleteLink = async (link) => {
     ElMessage.success("友链删除成功");
   } catch (error) {
     if (error !== "cancel") {
-      ElMessage.error("删除友链失败");
-      console.error("删除友链失败:", error);
+      // 静默处理
     }
   } finally {
     deletingLinkId.value = null;
@@ -490,6 +493,28 @@ onUnmounted(() => {
           max-width: 400px;
           margin: 0 0 24px;
         }
+
+        // 空状态按钮样式
+        .btn-apply,
+        .btn-login {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 20px;
+          background: var(--accent-soft);
+          border: 1px solid var(--accent-border);
+          border-radius: 8px;
+          color: var(--accent-color);
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-color);
+          }
+        }
       }
 
       // ===== 骨架屏 =====
@@ -591,30 +616,45 @@ onUnmounted(() => {
             .image-container {
               position: relative;
               overflow: hidden;
+              height: 180px;
+              background: var(--bg-metric);
 
               .link-cover {
                 width: 100%;
+                height: 180px;
+                object-fit: cover;
                 display: block;
                 transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
               }
 
-              .placeholder,
-              .error-state {
+              .placeholder {
                 width: 100%;
                 height: 180px;
-                background: var(--bg-metric);
                 display: flex;
                 justify-content: center;
                 align-items: center;
+                background: var(--bg-metric);
+
+                .el-icon {
+                  font-size: 40px;
+                  color: var(--text-muted);
+                }
+              }
+
+              .loading-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: var(--bg-metric);
 
                 .spinner {
                   animation: rotate 1.5s linear infinite;
                   font-size: 28px;
-                  color: var(--text-muted);
-                }
-
-                .el-icon {
-                  font-size: 40px;
                   color: var(--text-muted);
                 }
               }

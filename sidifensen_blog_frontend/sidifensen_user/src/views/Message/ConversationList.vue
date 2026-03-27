@@ -70,6 +70,9 @@
               </div>
               <div class="conversation-item__nickname">{{ conv.targetUserNickname }}</div>
               <div class="conversation-item__message">{{ conv.lastMessageContent }}</div>
+              <div class="conversation-item__typing" v-if="messageStore.conversationTypingMap[conv.targetUserId]">
+                <span class="typing-text">正在输入</span>
+              </div>
             </div>
 
             <!-- 未读消息数 -->
@@ -122,9 +125,9 @@ const fetchConversationList = async () => {
   try {
     loading.value = true;
     const res = await getConversationList();
-    messageStore.setConversationList(res.data.data);
+    messageStore.setConversationList(res.data || []);
   } catch (error) {
-    console.error("获取会话列表失败:", error);
+    // 静默处理
   } finally {
     loading.value = false;
   }
@@ -153,7 +156,7 @@ const handleDelete = async (userId) => {
     messageStore.removeConversation(userId);
   } catch (error) {
     if (error !== "cancel") {
-      console.error("删除会话失败:", error);
+      // 静默处理
     }
   }
 };
@@ -185,8 +188,7 @@ const handleMarkAllRead = async () => {
     });
     ElMessage.success("已全部标记为已读");
   } catch (error) {
-    ElMessage.error("操作失败");
-    console.error("标记已读失败:", error);
+    // 静默处理
   }
 };
 
@@ -206,6 +208,17 @@ const handleUserOnlineStatus = (data) => {
   messageStore.updateUserOnlineStatus(data.userId, data.isOnline);
 };
 
+// 处理对方正在输入通知（用于会话列表）
+const handleTypingNotify = (data) => {
+  // 设置该会话的输入状态
+  messageStore.setConversationTyping(data.fromUserId, true);
+
+  // 5 秒后自动清除（比 ChatWindow 稍短，因为列表不需要持续显示）
+  setTimeout(() => {
+    messageStore.setConversationTyping(data.fromUserId, false);
+  }, 5000);
+};
+
 // 组件挂载
 onMounted(() => {
   // 如果会话列表为空，才主动获取（避免重复获取）
@@ -218,6 +231,7 @@ onMounted(() => {
   // 只需要监听新消息事件，用于检测新会话
   WebSocketClient.on("NEW_MESSAGE", handleNewMessage);
   WebSocketClient.on("USER_ONLINE_STATUS", handleUserOnlineStatus);
+  WebSocketClient.on("TYPING_NOTIFY", handleTypingNotify);
 });
 
 // 组件卸载
@@ -225,6 +239,7 @@ onUnmounted(() => {
   // 移除监听器
   WebSocketClient.off("NEW_MESSAGE", handleNewMessage);
   WebSocketClient.off("USER_ONLINE_STATUS", handleUserOnlineStatus);
+  WebSocketClient.off("TYPING_NOTIFY", handleTypingNotify);
 });
 </script>
 
@@ -472,6 +487,25 @@ onUnmounted(() => {
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
+            }
+
+            // 输入状态显示
+            .conversation-item__typing {
+              margin-top: 4px;
+              font-size: 12px;
+              color: var(--accent);
+
+              .typing-text::after {
+                content: '';
+                animation: typing-dots 1.5s infinite;
+              }
+            }
+
+            @keyframes typing-dots {
+              0%   { content: '.'; }
+              33%  { content: '..'; }
+              66%  { content: '...'; }
+              100% { content: '.'; }
             }
           }
 

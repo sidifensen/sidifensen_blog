@@ -528,7 +528,7 @@ const fetchDashboard = async () => {
   dashboardLoading.value = true;
   try {
     const res = await getVipDashboard();
-    Object.assign(dashboard, res.data.data || {});
+    Object.assign(dashboard, res.data || {});
   } catch (error) {
     ElMessage.error("获取会员总览失败");
   } finally {
@@ -540,8 +540,8 @@ const fetchMemberPage = async () => {
   memberLoading.value = true;
   try {
     const res = await getVipMemberPage(buildMemberParams());
-    memberList.value = res.data.data?.data || [];
-    memberTotal.value = Number(res.data.data?.total || 0);
+    memberList.value = res.data?.data || [];
+    memberTotal.value = Number(res.data?.total || 0);
   } catch (error) {
     ElMessage.error("获取会员列表失败");
   } finally {
@@ -553,8 +553,8 @@ const fetchOrderPage = async () => {
   orderLoading.value = true;
   try {
     const res = await getVipOrderPage(buildOrderParams());
-    orderList.value = res.data.data?.data || [];
-    orderTotal.value = Number(res.data.data?.total || 0);
+    orderList.value = res.data?.data || [];
+    orderTotal.value = Number(res.data?.total || 0);
   } catch (error) {
     ElMessage.error("获取会员订单失败");
   } finally {
@@ -566,7 +566,7 @@ const fetchPlanList = async () => {
   planLoading.value = true;
   try {
     const res = await getVipPlanList();
-    planList.value = res.data.data || [];
+    planList.value = res.data || [];
   } catch (error) {
     ElMessage.error("获取套餐列表失败");
   } finally {
@@ -620,7 +620,7 @@ const openMemberDetail = async (userId) => {
   detailLoading.value = true;
   try {
     const res = await getVipMemberDetail(userId);
-    memberDetail.value = res.data.data;
+    memberDetail.value = res.data;
   } catch (error) {
     detailVisible.value = false;
     ElMessage.error("获取会员详情失败");

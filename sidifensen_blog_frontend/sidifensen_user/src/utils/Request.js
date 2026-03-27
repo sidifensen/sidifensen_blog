@@ -44,7 +44,7 @@ request.interceptors.response.use(
       if (msg) {
         ElMessage.success(msg);
       }
-      return response;
+      return response.data;
     } else {
       // 响应失败的处理 401 400
       ElMessage.error(msg);

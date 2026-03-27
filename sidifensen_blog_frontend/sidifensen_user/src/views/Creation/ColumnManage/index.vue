@@ -642,8 +642,8 @@ const loadColumns = async (reset = false) => {
 
     // 发送请求获取专栏列表
     const res = await getUserColumnManageList(currentPage.value, pageSize.value, filterParams);
-    const newColumns = res.data.data.data || [];
-    const total = res.data.data.total || 0;
+    const newColumns = res.data.data || [];
+    const total = res.data.total || 0;
 
     if (reset) {
       // 初次加载或筛选条件改变时
@@ -665,7 +665,6 @@ const loadColumns = async (reset = false) => {
       currentPage.value++;
     }
   } catch (error) {
-    console.error("加载专栏列表失败:", error);
     ElMessage.error("加载专栏列表失败");
   } finally {
     // 重置加载状态
@@ -817,7 +816,6 @@ const handleSortUp = async (column) => {
 
     ElMessage.success("专栏排序调整成功");
   } catch (error) {
-    console.error("专栏排序失败:", error);
     ElMessage.error("专栏排序失败，请重试");
     // 恢复原始排序
     loadColumns(true);
@@ -870,7 +868,6 @@ const handleSortDown = async (column) => {
 
     ElMessage.success("专栏排序调整成功");
   } catch (error) {
-    console.error("专栏排序失败:", error);
     ElMessage.error("专栏排序失败，请重试");
     // 恢复原始排序
     loadColumns(true);
@@ -909,11 +906,10 @@ const handleUploadCover = async (options) => {
     const res = await uploadColumnPhoto(file);
 
     // 更新表单数据
-    editForm.value.coverUrl = res.data.data;
+    editForm.value.coverUrl = res.data;
 
     ElMessage.success("封面上传成功");
   } catch (error) {
-    console.error("封面上传失败:", error);
     ElMessage.error("封面上传失败，请重试");
   } finally {
     uploadLoading.value = false;
@@ -976,7 +972,6 @@ const handleSubmitEdit = async () => {
     hasMore.value = true;
     loadColumns(true);
   } catch (error) {
-    console.error("更新专栏失败:", error);
     ElMessage.error("更新专栏失败，请重试");
   } finally {
     editSubmitting.value = false;
@@ -1047,7 +1042,6 @@ const handleSubmitCreate = async () => {
     hasMore.value = true;
     loadColumns(true);
   } catch (error) {
-    console.error("创建专栏失败:", error);
     ElMessage.error("创建专栏失败，请重试");
   } finally {
     createSubmitting.value = false;
@@ -1098,11 +1092,10 @@ const handleCreateUploadCover = async (options) => {
     const res = await uploadColumnPhoto(file);
 
     // 更新表单数据
-    createForm.value.coverUrl = res.data.data;
+    createForm.value.coverUrl = res.data;
 
     ElMessage.success("封面上传成功");
   } catch (error) {
-    console.error("上传封面失败:", error);
     ElMessage.error("上传封面失败，请重试");
   } finally {
     createUploadLoading.value = false;
@@ -1134,7 +1127,6 @@ const handleDeleteColumn = async (columnId) => {
     loadColumns(true);
   } catch (error) {
     if (error !== "cancel") {
-      console.error("删除专栏失败:", error);
       ElMessage.error("删除专栏失败，请重试");
     }
   }
@@ -1152,7 +1144,7 @@ const loadColumnArticles = async (columnId) => {
   try {
     articleLoading.value = true;
     const res = await getColumnDetail(columnId);
-    columnArticles.value = res.data.data.articles || [];
+    columnArticles.value = res.data.articles || [];
 
     // 保存原始排序，用于检测是否有变化
     originalArticleOrder.value = columnArticles.value.map((article, index) => ({
@@ -1162,7 +1154,6 @@ const loadColumnArticles = async (columnId) => {
 
     hasSortChanges.value = false;
   } catch (error) {
-    console.error("获取专栏文章失败:", error);
     ElMessage.error("获取专栏文章失败，请重试");
   } finally {
     articleLoading.value = false;
@@ -1254,7 +1245,6 @@ const handleSaveSort = async () => {
       article.sortChanged = false;
     });
   } catch (error) {
-    console.error("保存排序失败:", error);
     ElMessage.error("保存排序失败，请重试");
   } finally {
     articleSortLoading.value = false;
@@ -1301,7 +1291,6 @@ const handleRemoveArticle = async (article) => {
     hasSortChanges.value = false;
   } catch (error) {
     if (error !== "cancel") {
-      console.error("移除文章失败:", error);
       ElMessage.error("移除文章失败，请重试");
     }
   } finally {

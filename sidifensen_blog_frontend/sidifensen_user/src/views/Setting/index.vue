@@ -527,16 +527,15 @@ const fetchUserInfo = async () => {
   try {
     userLoading.value = true;
     const res = await info();
-    userInfo.value = res.data.data;
+    userInfo.value = res.data;
     // 初始化私信邮件通知开关状态
-    isReceivePrivateMessageEmail.value = res.data.data.isReceivePrivateMessageEmail || 0;
+    isReceivePrivateMessageEmail.value = res.data.isReceivePrivateMessageEmail || 0;
     // 初始化评论邮件通知开关状态
-    isReceiveCommentEmail.value = res.data.data.isReceiveCommentEmail || 0;
+    isReceiveCommentEmail.value = res.data.isReceiveCommentEmail || 0;
     // 初始化系统邮件通知开关状态
-    isReceiveSystemEmail.value = res.data.data.isReceiveSystemEmail || 0;
+    isReceiveSystemEmail.value = res.data.isReceiveSystemEmail || 0;
   } catch (error) {
-    ElMessage.error("获取用户信息失败");
-    console.error("获取用户信息失败:", error);
+    // 静默处理
   } finally {
     userLoading.value = false;
   }
@@ -584,13 +583,12 @@ const saveField = async (field) => {
     userInfo.value[field] = editingData[field];
 
     const res = await info();
-    userStore.user = res.data.data;
+    userStore.user = res.data;
 
     editingField[field] = false;
     ElMessage.success("修改成功");
   } catch (error) {
-    ElMessage.error("修改失败");
-    console.error("修改失败:", error);
+    // 静默处理
   } finally {
     saveLoading[field] = false;
   }
@@ -614,7 +612,7 @@ const handleAvatarUpload = async (options) => {
     options.onSuccess && options.onSuccess();
     ElMessage.success("头像上传成功，正在审核中，审核通过后将自动更新");
   } catch (error) {
-    console.error("头像上传失败:", error);
+    // 静默处理
     ElMessage.error("头像上传失败，请重试");
     options.onError && options.onError();
   }
@@ -727,8 +725,7 @@ const sendEmailCode = async () => {
       }
     }, 1000);
   } catch (error) {
-    ElMessage.error("发送验证码失败");
-    console.error("发送验证码失败:", error);
+    // 静默处理
   }
 };
 
@@ -752,7 +749,6 @@ const verifyEmail = async () => {
   } catch (error) {
     if (error !== false) {
       ElMessage.error("验证失败，请检查验证码是否正确");
-      console.error("邮箱验证失败:", error);
     }
   } finally {
     verifyLoading.value = false;
@@ -782,7 +778,6 @@ const resetPasswordSubmit = async () => {
   } catch (error) {
     if (error !== false) {
       ElMessage.error("密码修改失败，请检查验证码是否正确");
-      console.error("密码修改失败:", error);
     }
   } finally {
     resetLoading.value = false;
@@ -861,8 +856,7 @@ const sendOldEmailCode = async () => {
       }
     }, 1000);
   } catch (error) {
-    ElMessage.error("发送验证码失败");
-    console.error("发送验证码失败:", error);
+    // 静默处理
   }
 };
 
@@ -886,7 +880,6 @@ const verifyOldEmail = async () => {
   } catch (error) {
     if (error !== false) {
       ElMessage.error("验证失败，请检查验证码是否正确");
-      console.error("验证原邮箱失败:", error);
     }
   } finally {
     emailVerifyLoading.value = false;
@@ -914,14 +907,13 @@ const updateEmailSubmit = async () => {
     userInfo.value.email = emailForm.newEmail;
 
     const res = await info();
-    userStore.user = res.data.data;
+    userStore.user = res.data;
 
     emailDialogVisible.value = false;
     resetEmailDialog();
   } catch (error) {
     if (error !== false) {
       ElMessage.error("邮箱修改失败");
-      console.error("邮箱修改失败:", error);
     }
   } finally {
     emailUpdateLoading.value = false;
@@ -937,7 +929,6 @@ const handlePrivateMessageEmailChange = async (value) => {
     ElMessage.success(value === 1 ? "已开启私信邮件通知" : "已关闭私信邮件通知");
   } catch (error) {
     ElMessage.error("设置失败");
-    console.error("设置私信邮件通知失败:", error);
     // 恢复状态
     isReceivePrivateMessageEmail.value = value === 1 ? 0 : 1;
   }
@@ -950,7 +941,6 @@ const handleCommentEmailChange = async (value) => {
     ElMessage.success(value === 1 ? "已开启评论邮件通知" : "已关闭评论邮件通知");
   } catch (error) {
     ElMessage.error("设置失败");
-    console.error("设置评论邮件通知失败:", error);
     // 恢复状态
     isReceiveCommentEmail.value = value === 1 ? 0 : 1;
   }
@@ -963,7 +953,6 @@ const handleSystemEmailChange = async (value) => {
     ElMessage.success(value === 1 ? "已开启系统邮件通知" : "已关闭系统邮件通知");
   } catch (error) {
     ElMessage.error("设置失败");
-    console.error("设置系统邮件通知失败:", error);
     // 恢复状态
     isReceiveSystemEmail.value = value === 1 ? 0 : 1;
   }

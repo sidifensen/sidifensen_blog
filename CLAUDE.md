@@ -29,6 +29,7 @@ brainstorming → using-git-worktrees → writing-plans → executing-plans
 | 异常处理 | `BlogException` + `BlogConstants` (禁止硬编码) |
 | Service 模式 | 继承 `ServiceImpl<Mapper, Entity>` |
 | 日志 | `@Slf4j` + `log.error` (只记录错误，禁用 `log.info`) |
+| 操作日志 | 管理端 Controller 必须添加 `@LogOperation` 注解 |
 | 注释 | 新增/修改代码必须补充中文注释 |
 
 ### 命名规范
@@ -66,6 +67,7 @@ cd sidifensen_blog_backend && mvn clean compile -DskipTests
 - [ ] 导入完整无冗余
 - [ ] 无拼写错误/注解错误
 - [ ] 已补充必要中文注释
+- [ ] 管理端 Controller 已添加 `@LogOperation` 注解
 
 > **注意**: 调试代码时不要自动重启后端服务
 
@@ -75,11 +77,13 @@ cd sidifensen_blog_backend && mvn clean compile -DskipTests
 
 ### 三大铁律
 
-#### 规则 1：所有页面必须适配黑夜模式
+#### 规则 1：所有页面必须适配黑夜模式 + 移动端响应式
 
-**禁止**：硬编码颜色值、只写浅色模式、生成完不测试
+**禁止**：硬编码颜色值、只写浅色模式、生成完不测试、移动端布局错乱
 
-**必须**：使用 CSS 变量、提供 `html.dark` 覆盖、切换验证
+**必须**：使用 CSS 变量、提供 `html.dark` 覆盖、切换验证、**移动端布局正常**
+
+> ⚠️ **移动端常见问题**：首页模块（如"欢迎来到斯蒂芬森"）未固定，随屏幕大小改变被挤到屏幕外不可见。必须使用 `min-height` 或固定定位确保内容始终可见。
 
 **标准模板：**
 
@@ -143,7 +147,8 @@ cd sidifensen_blog_frontend/sidifensen_admin && npm run build
 - [ ] 页面正常加载，无白屏/报错
 - [ ] 功能正常（表单/按钮/跳转）
 - [ ] 黑夜模式显示正常
-- [ ] 响应式布局正常
+- [ ] 响应式布局正常（**特别检查移动端**）
+- [ ] 浏览器打开验证（非 Playwright）
 
 ---
 

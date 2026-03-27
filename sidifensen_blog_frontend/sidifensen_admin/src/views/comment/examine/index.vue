@@ -305,7 +305,7 @@ const userList = ref([]);
 const getUsers = async () => {
   try {
     const res = await getUserListWithCommentCount();
-    userList.value = res.data.data;
+    userList.value = res.data;
   } catch (error) {
     ElMessage.error("获取用户列表失败");
   }
@@ -368,13 +368,13 @@ const fetchComments = async () => {
     let pageData = null;
     if (hasSearchConditions()) {
       const res = await adminSearchComment(buildSearchPayload());
-      pageData = res.data.data;
+      pageData = res.data;
     } else {
       const res = await adminGetCommentList({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       });
-      pageData = res.data.data;
+      pageData = res.data;
     }
     applyPageData(pageData);
   } catch (error) {

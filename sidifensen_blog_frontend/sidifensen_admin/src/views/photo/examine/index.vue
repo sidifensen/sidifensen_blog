@@ -130,7 +130,7 @@ const userList = ref([]);
 // 获取用户列表
 const getUsers = async () => {
   const res = await getUserList();
-  userList.value = res.data.data;
+  userList.value = res.data;
 };
 
 // 获取图片列表
@@ -193,13 +193,13 @@ const fetchPhotos = async () => {
     let pageData = null;
     if (hasSearchConditions()) {
       const res = await adminSearchPhoto(buildSearchPayload());
-      pageData = res.data.data;
+      pageData = res.data;
     } else {
       const res = await adminGetPhotoList({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       });
-      pageData = res.data.data;
+      pageData = res.data;
     }
     applyPageData(pageData);
   } catch (error) {

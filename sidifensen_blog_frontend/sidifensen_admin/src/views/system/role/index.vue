@@ -227,13 +227,13 @@ const fetchRoles = async () => {
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       });
-      pageData = res.data.data;
+      pageData = res.data;
     } else {
       const res = await getRolePage({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       });
-      pageData = res.data.data;
+      pageData = res.data;
     }
     applyPageData(pageData);
   } catch (error) {
@@ -399,12 +399,12 @@ const handleAuthorizeUser = async (row) => {
 
   // 获取角色列表
   const res = await getUserList();
-  allUser.value = res.data.data;
+  allUser.value = res.data;
 
   // 获取已分配当前角色的用户
   const res1 = await getUsersByRole(row.id);
   // 把数组里的id取出来
-  res1.data.data.forEach((item) => {
+  res1.data.forEach((item) => {
     // 默认选中已经有角色的用户
     selectedUser.value.push(item.id);
   });

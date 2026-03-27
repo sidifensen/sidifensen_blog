@@ -102,7 +102,7 @@ const handleLoginClick = () => {
 
 const getUserInfo = async () => {
   const res = await info();
-  user.value = res.data.data;
+  user.value = res.data;
 };
 
 const logout = () => {

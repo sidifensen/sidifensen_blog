@@ -499,7 +499,6 @@ const clearHistory = () => {
 
 // 执行搜索请求
 const performSearch = async (reset = false) => {
-  console.log('performSearch 被调用，reset:', reset, 'currentPage:', currentPage.value, 'hasMoreData:', hasMoreData.value);
   try {
     if (reset) {
       searchLoading.value = true;
@@ -524,15 +523,15 @@ const performSearch = async (reset = false) => {
         searchArticleByTag(searchKeyword.value, currentPage.value, pageSize.value)
       ]);
 
-      // 解析标题搜索结果
-      const titleData = titleRes?.data?.data || titleRes?.data || {};
-      const titleArticles = titleData.data || titleData.records || [];
-      totalTitle = titleData.total || titleArticles.length;
+      // 解析标题搜索结果：PageVo { data: [...], total }
+      const titlePageVo = titleRes?.data || {};
+      const titleArticles = titlePageVo.data || titlePageVo.records || [];
+      totalTitle = titlePageVo.total || titleArticles.length;
 
-      // 解析标签搜索结果
-      const tagData = tagRes?.data?.data || tagRes?.data || {};
-      const tagArticles = tagData.data || tagData.records || [];
-      totalTag = tagData.total || tagArticles.length;
+      // 解析标签搜索结果：PageVo { data: [...], total }
+      const tagPageVo = tagRes?.data || {};
+      const tagArticles = tagPageVo.data || tagPageVo.records || [];
+      totalTag = tagPageVo.total || tagArticles.length;
 
       // 合并结果（按文章 ID 去重）
       const articleMap = new Map();
@@ -551,23 +550,23 @@ const performSearch = async (reset = false) => {
     } else if (searchType.value === "title") {
       // 标题搜索
       const res = await searchArticleByTitle(searchKeyword.value, currentPage.value, pageSize.value);
-      const responseData = res?.data?.data || res?.data || {};
-      allArticles = responseData.data || responseData.records || [];
-      total.value = responseData.total || allArticles.length;
+      const pageVo = res?.data || {};
+      allArticles = pageVo.data || pageVo.records || [];
+      total.value = pageVo.total || allArticles.length;
 
     } else if (searchType.value === "tag") {
       // 标签搜索
       const res = await searchArticleByTag(searchKeyword.value, currentPage.value, pageSize.value);
-      const responseData = res?.data?.data || res?.data || {};
-      allArticles = responseData.data || responseData.records || [];
-      total.value = responseData.total || allArticles.length;
+      const pageVo = res?.data || {};
+      allArticles = pageVo.data || pageVo.records || [];
+      total.value = pageVo.total || allArticles.length;
 
     } else if (searchType.value === "author") {
       // 作者搜索
       const res = await searchArticleByAuthor(searchKeyword.value, currentPage.value, pageSize.value);
-      const responseData = res?.data?.data || res?.data || {};
-      allArticles = responseData.data || responseData.records || [];
-      total.value = responseData.total || allArticles.length;
+      const pageVo = res?.data || {};
+      allArticles = pageVo.data || pageVo.records || [];
+      total.value = pageVo.total || allArticles.length;
     }
 
     if (reset) {
@@ -588,13 +587,10 @@ const performSearch = async (reset = false) => {
       currentPage.value++;
     }
 
-    console.log('performSearch 完成，articles.length:', articles.value.length, 'total:', total.value, 'hasMoreData:', hasMoreData.value, 'allArticles.length:', allArticles.length);
-
     if (total.value === 0) {
       ElMessage.info(`未找到相关内容`);
     }
   } catch (error) {
-    console.error("搜索失败:", error);
     ElMessage.error("搜索失败，请稍后重试");
   } finally {
     searchLoading.value = false;
@@ -659,31 +655,17 @@ const handleScroll = throttle(() => {
   const documentHeight = document.documentElement.scrollHeight;
   const remaining = documentHeight - scrollTop - windowHeight;
 
-  console.log('handleScroll 触发:', {
-    scrollTop,
-    windowHeight,
-    documentHeight,
-    remaining,
-    loadingMore: loadingMore.value,
-    searchLoading: searchLoading.value,
-    hasSearched: hasSearched.value,
-    hasMoreData: hasMoreData.value
-  });
-
   if (loadingMore.value || searchLoading.value || !hasSearched.value) {
-    console.log('阻止加载：loadingMore || searchLoading || !hasSearched');
     return;
   }
 
   // 检查是否还有更多数据
   if (!hasMore.value) {
-    console.log('阻止加载：!hasMore');
     return;
   }
 
   // 距离底部 300px 时触发加载
   if (remaining <= 300) {
-    console.log('触发滚动加载，currentPage:', currentPage.value, 'articles.length:', articles.value.length, 'total:', total.value);
     performSearch(false);
   }
 }, 300);
@@ -715,16 +697,15 @@ onMounted(async () => {
 
   await nextTick();
   window.addEventListener("scroll", handleScroll, { passive: true });
-  console.log('滚动事件监听器已绑定');
 });
 
 // 加载热门标签
 const loadHotTags = async () => {
   try {
     const res = await getHotTags(10);
-    hotTags.value = res.data.data || [];
+    hotTags.value = res.data || [];
   } catch (error) {
-    console.error("加载热门标签失败:", error);
+    // 静默处理
   }
 };
 
@@ -732,9 +713,9 @@ const loadHotTags = async () => {
 const loadRecommendedAuthors = async () => {
   try {
     const res = await getRecommendedAuthors(3);
-    recommendedAuthors.value = res.data.data || [];
+    recommendedAuthors.value = res.data || [];
   } catch (error) {
-    console.error("加载推荐作者失败:", error);
+    // 静默处理
   }
 };
 
@@ -743,9 +724,8 @@ const loadHotSearches = async () => {
   try {
     const res = await getHotSearches(10);
     // 后端返回格式：[{keyword: "xxx", count: 123}, ...]
-    hotSearches.value = res.data?.data || [];
+    hotSearches.value = res.data || [];
   } catch (error) {
-    console.error("加载热门搜索失败:", error);
     // 失败时使用默认空数组，不影响页面其他功能
     hotSearches.value = [];
   }

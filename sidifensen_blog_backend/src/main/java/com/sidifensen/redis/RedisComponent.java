@@ -96,8 +96,13 @@ public class RedisComponent {
     public String saveOauthTicket(Integer userId, Integer loginType) {
         String ticket = UUID.randomUUID().toString().replace("-", "");
         String value = userId + ":" + loginType;
-        redisUtils.set(RedisConstants.OauthTicket + ticket, value,
-                RedisConstants.OAUTH_TICKET_EXPIRE_TIME, TimeUnit.SECONDS);
+        String key = RedisConstants.OauthTicket + ticket;
+        log.info("【OAuth调试】准备保存票据 - userId={}, loginType={}, ticket={}, key={}, value={}",
+                userId, loginType, ticket, key, value);
+        redisUtils.set(key, value, RedisConstants.OAUTH_TICKET_EXPIRE_TIME, TimeUnit.SECONDS);
+        // 验证是否保存成功
+        Object savedValue = redisUtils.get(key);
+        log.info("【OAuth调试】验证票据是否保存成功 - key={}, savedValue={}", key, savedValue);
         return ticket;
     }
 

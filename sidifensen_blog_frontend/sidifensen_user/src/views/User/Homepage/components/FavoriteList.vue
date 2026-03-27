@@ -268,11 +268,7 @@ const handleEditSubmit = async () => {
 
     ElMessage.success("收藏夹更新成功");
   } catch (error) {
-    console.error("更新收藏夹失败:", error);
-    if (error !== false) {
-      // 不是表单验证错误
-      ElMessage.error("更新收藏夹失败");
-    }
+    // 静默处理
   } finally {
     editLoading.value = false;
   }
@@ -321,11 +317,11 @@ $bg-color: #f5f7fa;
 
   // 黑夜模式适配 - 深蓝色背景 (与个人主页卡片背景一致)
   html.dark & {
-    --bg-card: #1e293b;
+    --bg-card: rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.08);
     --text-primary: #f1f5f9;
     --text-regular: #cbd5e1;
     --text-secondary: #94a3b8;
-    --border-color: #334155;
+    --border-color: rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.2);
     --shadow-color: rgba(0, 0, 0, 0.3);
   }
 

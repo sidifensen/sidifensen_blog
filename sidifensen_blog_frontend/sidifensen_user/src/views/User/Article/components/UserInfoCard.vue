@@ -112,9 +112,9 @@ const checkUserFollowStatus = async () => {
     const followerId = userStore.user.id;
     const followedId = props.userInfo.id;
     const res = await isFollowing(followerId, followedId);
-    isFollowed.value = res.data.data;
+    isFollowed.value = res.data;
   } catch (error) {
-    console.error("检查关注状态失败:", error);
+    // 静默处理
     isFollowed.value = false;
   }
 };
@@ -141,8 +141,7 @@ const handleFollow = async () => {
     // 显示操作结果
     ElMessage.success(isFollowed.value ? "关注成功" : "取消关注成功");
   } catch (error) {
-    ElMessage.error("操作失败，请重试");
-    console.error("关注操作失败:", error);
+    // 静默处理
   } finally {
     followLoading.value = false;
   }

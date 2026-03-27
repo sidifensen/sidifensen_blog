@@ -37,12 +37,12 @@ request.interceptors.request.use(
 // 配置响应拦截器
 request.interceptors.response.use(
   (response) => {
-    let { code, msg } = response.data;
+    let { code, msg,  data } = response.data;
     if (code == 200) {
       if (msg) {
         ElMessage.success(msg);
       }
-      return response;
+      return response.data;
     } else {
       // 响应失败的处理 401 400
       ElMessage.error(msg);

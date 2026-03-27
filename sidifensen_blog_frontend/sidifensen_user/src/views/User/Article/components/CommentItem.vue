@@ -199,8 +199,8 @@ const fetchReplies = async (reset = false) => {
 
     loadingReplies.value = true;
     const res = await getReplyList(props.comment.id, currentPage.value, pageSize.value);
-    const newReplies = res.data.data.data || [];
-    replyTotal.value = res.data.data.total || 0;
+    const newReplies = res.data.data || [];
+    replyTotal.value = res.data.total || 0;
 
     if (reset) {
       replyList.value = newReplies;
@@ -216,8 +216,7 @@ const fetchReplies = async (reset = false) => {
     // 更新页码
     currentPage.value++;
   } catch (error) {
-    ElMessage.error("获取回复失败");
-    console.error("获取回复失败:", error);
+    // 静默处理
   } finally {
     loadingReplies.value = false;
   }
@@ -304,8 +303,7 @@ const handleLike = async () => {
       props.comment.likeCount = (props.comment.likeCount || 0) + 1;
     }
   } catch (error) {
-    ElMessage.error("操作失败");
-    console.error("点赞操作失败:", error);
+    // 静默处理
   }
 };
 
@@ -322,8 +320,7 @@ const handleDelete = async () => {
     emit("comment-deleted", props.comment.id);
   } catch (error) {
     if (error !== "cancel") {
-      ElMessage.error("删除失败");
-      console.error("删除评论失败:", error);
+      // 静默处理
     }
   }
 };

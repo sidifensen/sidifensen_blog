@@ -46,8 +46,8 @@
           <span v-if="user.isVip" class="vip-badge">VIP</span>
         </div>
         <el-dropdown placement="bottom-end">
-          <el-avatar v-if="user.avatar" style="cursor: pointer" :size="40" :src="user.avatar" />
-          <el-avatar v-else style="cursor: pointer" :size="40" :icon="UserFilled" />
+          <el-avatar class="user-avatar" v-if="user.avatar" :size="40" :src="user.avatar" />
+          <el-avatar class="user-avatar" v-else :size="40" :icon="UserFilled" />
           <template #dropdown>
             <el-dropdown-menu class="user-dropdown-menu">
               <!-- 用户信息卡片 -->
@@ -214,9 +214,9 @@ const fetchUnreadCount = async () => {
   if (user.value) {
     try {
       const res = await getUnreadCount();
-      messageStore.totalUnreadCount = res.data.data || 0;
+      messageStore.totalUnreadCount = res.data || 0;
     } catch (error) {
-      console.error("获取未读消息数失败:", error);
+      // 静默处理
     }
   }
 };
@@ -226,11 +226,11 @@ const fetchNotificationUnreadCount = async () => {
   if (user.value) {
     try {
       const res = await getUnreadNotificationCount();
-      const data = res.data.data;
+      const data = res.data;
       // 计算总未读数量
       notificationUnreadCount.value = data.total || 0;
     } catch (error) {
-      console.error("获取未读通知数失败:", error);
+      // 静默处理
     }
   }
 };
@@ -301,7 +301,7 @@ const handleWebSocketOpen = () => {
 
 const getUserInfo = async () => {
   const res = await info();
-  user.value = res.data.data;
+  user.value = res.data;
 };
 
 const logout = () => {
@@ -394,9 +394,9 @@ const handleNotificationRead = () => {
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
   window.addEventListener("notification-read", handleNotificationRead);
-  // 如果 pinia 有 userid 再获取用户信息
+  // 如果 pinia 有 userid 再获取用户信息（添加错误处理，避免 info() 失败时覆盖已有数据）
   if (user.value) {
-    getUserInfo();
+    getUserInfo().catch(() => {});
   }
 });
 
@@ -421,8 +421,9 @@ onBeforeUnmount(() => {
   justify-content: center;
   align-items: center;
   position: fixed;
-  top: 0;
+  top: env(safe-area-inset-top, 24px);
   left: 0;
+  right: 0;
   z-index: 1000;
   transition: transform 0.5s ease;
   border: none;
@@ -531,6 +532,17 @@ onBeforeUnmount(() => {
     .user-info {
       display: flex;
       align-items: center;
+
+      .user-avatar {
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        &:hover {
+          transform: scale(1.08);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+      }
+
       .user-name-group {
         display: flex;
         align-items: center;
@@ -552,16 +564,53 @@ onBeforeUnmount(() => {
         }
 
         .vip-badge {
+          position: relative;
           display: inline-flex;
           align-items: center;
           justify-content: center;
           height: 22px;
           padding: 0 8px;
           border-radius: 999px;
-          background: rgba(var(--el-color-warning-rgb, 230, 162, 60), 0.14);
-          color: var(--el-color-warning);
+          background: rgba(245, 158, 11, 0.12);
+          border: 1px solid rgba(245, 158, 11, 0.4);
+          color: #d97706;
           font-size: 12px;
           font-weight: 700;
+          overflow: hidden;
+          animation: vip-glow 2s ease-in-out infinite;
+
+          &::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+              90deg,
+              transparent,
+              rgba(255, 255, 255, 0.15),
+              transparent
+            );
+            transition: left 0.4s ease;
+          }
+
+          &:hover::after {
+            left: 100%;
+          }
+        }
+
+        @keyframes vip-glow {
+          0%, 100% {
+            border-color: rgba(245, 158, 11, 0.3);
+            background: rgba(245, 158, 11, 0.08);
+            box-shadow: 0 0 4px rgba(245, 158, 11, 0.2);
+          }
+          50% {
+            border-color: rgba(245, 158, 11, 0.8);
+            background: rgba(245, 158, 11, 0.18);
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+          }
         }
 
         @media (max-width: 1314px) {
@@ -625,10 +674,12 @@ onBeforeUnmount(() => {
           height: 22px;
           padding: 0 8px;
           border-radius: 999px;
-          background: rgba(var(--el-color-warning-rgb, 230, 162, 60), 0.14);
-          color: var(--el-color-warning);
+          background: linear-gradient(135deg, #f59e0b, #d97706);
+          color: #fff;
           font-size: 12px;
           font-weight: 700;
+          box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+          animation: vip-glow 2s ease-in-out infinite;
         }
       }
     }

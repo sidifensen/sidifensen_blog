@@ -108,8 +108,7 @@ const handleLike = async () => {
     // 通知父组件更新文章数据
     emit("updateArticle", updatedArticle);
   } catch (error) {
-    console.error("点赞操作失败:", error);
-    ElMessage.error("点赞操作失败，请重试");
+    // 静默处理
   } finally {
     likeLoading.value = false;
   }

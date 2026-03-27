@@ -71,8 +71,8 @@ const fetchArticleList = async () => {
   try {
     loading.value = true;
     const response = await getVipArticleList(pageNum.value, pageSize.value);
-    const records = response.data.data.data || [];
-    const total = response.data.data.total || 0;
+    const records = response.data.data || [];
+    const total = response.data.total || 0;
     articleList.value = [...articleList.value, ...records];
     hasMore.value = articleList.value.length < total;
     if (records.length > 0) {

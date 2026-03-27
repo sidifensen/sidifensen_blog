@@ -323,7 +323,7 @@ const fetchAllStatistics = async () => {
 
     // 使用聚合接口一次性获取所有统计数据
     const res = await getDashboardStatistics(trendDays.value);
-    const data = res.data.data;
+    const data = res.data;
 
     // 解析统计数据
     userCount.value = data.userTotalCount || 0;

@@ -1,10 +1,12 @@
 <template>
   <div class="home-container">
-    <!-- 使用原有 Header 组件 -->
-    <Header />
 
     <!-- Hero 区域 -->
-    <section class="hero">
+    <section class="hero" ref="heroRef" @mousemove="handleMouseMove" @mouseleave="handleMouseLeave">
+      <!-- 鼠标跟随光效 -->
+      <div class="hero-glow" ref="heroGlow"></div>
+      <div class="hero-glow-secondary"></div>
+
       <div class="hero-content">
         <div class="hero-badge">
           <span class="dot"></span>
@@ -12,8 +14,13 @@
         </div>
 
         <h1 class="hero-title">
-          探索技术的<br>
-          <span class="gradient">无限可能</span>
+          <span class="title-line" @mouseenter="onTitleHover(true)" @mouseleave="onTitleHover(false)">
+            探索技术的<br>
+            <span class="underline-wrap">
+              <span class="gradient">无限可能</span>
+              <span class="underline"></span>
+            </span>
+          </span>
         </h1>
 
         <div class="hero-subtitle">
@@ -243,6 +250,8 @@ const currentYear = ref(new Date().getFullYear());
 const contentSection = ref(null);
 const articlesSectionRef = ref(null);
 const hotTags = ref([]); // 热门标签
+const heroRef = ref(null);
+const heroGlow = ref(null);
 
 // 社区统计数据
 const stats = ref({
@@ -313,6 +322,28 @@ const typeSubtitle = () => {
   }
 };
 
+// 鼠标跟随光效
+const handleMouseMove = (e) => {
+  if (!heroRef.value || !heroGlow.value) return;
+
+  const rect = heroRef.value.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  heroGlow.value.style.background = `radial-gradient(
+    300px circle at ${x}px ${y}px,
+    rgba(0, 102, 255, 0.12),
+    transparent 40%
+  )`;
+  heroGlow.value.style.opacity = '1';
+};
+
+const handleMouseLeave = () => {
+  if (heroGlow.value) {
+    heroGlow.value.style.opacity = '0';
+  }
+};
+
 // 滚动入场动画
 const observeElements = () => {
   const observer = new IntersectionObserver(
@@ -340,16 +371,9 @@ const fetchArticleList = async () => {
   try {
     articleLoading.value = true;
     const res = await getAllArticleList(1, 6);
-    console.log('API 响应 res:', res);
-    console.log('res.data:', res.data);
-    console.log('res.data.data:', res.data.data);
-    console.log('res.data.data.data:', res.data.data.data);
-
-    articles.value = res.data?.data?.data || [];
-    console.log('最终 articles:', articles.value);
+    articles.value = res.data?.data || [];
   } catch (error) {
     ElMessage.error("获取文章列表失败");
-    console.error("获取文章列表失败:", error);
   } finally {
     articleLoading.value = false;
   }
@@ -411,9 +435,9 @@ const handleRegister = () => {
 const loadHotTags = async () => {
   try {
     const res = await getHotTags(10);
-    hotTags.value = res.data.data || [];
+    hotTags.value = res.data || [];
   } catch (error) {
-    console.error("加载热门标签失败:", error);
+    // 静默处理
   }
 };
 
@@ -421,7 +445,7 @@ const loadHotTags = async () => {
 const loadCommunityStats = async () => {
   try {
     const res = await getCommunityStats();
-    const data = res.data.data || {};
+    const data = res.data || {};
     stats.value = {
       articleCount: data.articleCount || 0,
       userCount: data.userCount || 0,
@@ -436,7 +460,7 @@ const loadCommunityStats = async () => {
       animateNumber("authorCount", stats.value.authorCount);
     }, 500);
   } catch (error) {
-    console.error("加载社区统计数据失败:", error);
+    // 静默处理
   }
 };
 
@@ -541,11 +565,37 @@ html.dark {
   &.btn-primary {
     background: var(--accent);
     color: #fff;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.2) 0%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.1) 100%
+      );
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
 
     &:hover {
       background: #0052cc;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 102, 255, 0.4);
+      transform: translateY(-2px);
+      box-shadow:
+        0 4px 12px rgba(0, 102, 255, 0.4),
+        0 0 20px rgba(0, 102, 255, 0.3);
+
+      &::before {
+        opacity: 1;
+      }
+    }
+
+    &:active {
+      transform: translateY(0);
     }
   }
 
@@ -570,6 +620,25 @@ html.dark {
     var(--bg-page);
   overflow: hidden;
 
+  // 鼠标跟随光效
+  .hero-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
+  }
+
+  .hero-glow-secondary {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 50%, rgba(0, 102, 255, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
   // 网格背景
   &::before {
     content: '';
@@ -580,6 +649,7 @@ html.dark {
       linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
     background-size: 40px 40px;
     pointer-events: none;
+    z-index: 0;
 
     html.dark & {
       background-image:
@@ -605,10 +675,11 @@ html.dark {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 9999px;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
-    margin-bottom: 24px;
+    margin-bottom: 40px;
     animation: fadeInUp 0.6s ease-out both;
+    transform: translateY(-8px);
 
     .dot {
       width: 6px;
@@ -625,15 +696,47 @@ html.dark {
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.1;
-    margin-bottom: 20px;
+    margin-bottom: 32px;
     animation: fadeInUp 0.6s ease-out 0.15s both;
     color: var(--text-primary);
+
+    .title-line {
+      display: inline-block;
+      position: relative;
+      cursor: default;
+    }
+
+    .underline-wrap {
+      position: relative;
+      display: inline-block;
+
+      .underline {
+        position: absolute;
+        bottom: -4px;
+        left: 0;
+        width: 0;
+        height: 3px;
+        background: var(--accent-gradient);
+        border-radius: 2px;
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      &:hover .underline {
+        width: 100%;
+      }
+    }
 
     .gradient {
       background: var(--accent-gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      display: inline-block;
+      transition: transform 0.3s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+      }
     }
 
     @media (max-width: 768px) {
@@ -646,7 +749,7 @@ html.dark {
     font-size: 1.125rem;
     color: var(--text-secondary);
     max-width: 600px;
-    margin: 0 auto 32px;
+    margin: 0 auto 48px;
     animation: fadeInUp 0.6s ease-out 0.3s both;
 
     .hero-typewriter {
@@ -658,6 +761,27 @@ html.dark {
 
       &-text {
         font-weight: 500;
+        position: relative;
+        transition: color 0.3s ease;
+
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          width: 0;
+          height: 2px;
+          background: var(--accent);
+          transition: width 0.3s ease;
+        }
+
+        &:hover {
+          color: var(--accent);
+
+          &::after {
+            width: 100%;
+          }
+        }
       }
 
       &-cursor {
@@ -674,7 +798,7 @@ html.dark {
     display: flex;
     gap: 12px;
     justify-content: center;
-    margin-top: 40px;
+    margin-top: 56px;
     animation: fadeInUp 0.6s ease-out 0.45s both;
   }
 
@@ -683,8 +807,8 @@ html.dark {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 10px;
-    margin-top: 48px;
+    gap: 14px;
+    margin-top: 64px;
     animation: fadeInUp 0.6s ease-out 0.6s both;
 
     &-item {
@@ -698,16 +822,23 @@ html.dark {
       font-size: 0.875rem;
       color: var(--text-secondary);
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+      .icon {
+        font-size: 1rem;
+        transition: transform 0.25s ease;
+      }
 
       &:hover {
         background: var(--bg-subtle);
         border-color: var(--accent);
         color: var(--accent);
-      }
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 102, 255, 0.15);
 
-      .icon {
-        font-size: 1rem;
+        .icon {
+          transform: scale(1.2);
+        }
       }
     }
   }

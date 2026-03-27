@@ -21,6 +21,10 @@ const DetectorType = {
  * 用于禁用浏览器开发者工具，保护前端代码
  */
 export function setupDisableDevtool() {
+  // Electron 环境不启用禁用开发者工具
+  if (window.electronAPI) {
+    return;
+  }
   DisableDevtool({
     md5: '8ee665ec42804db3fd0bee4793f1266f',                     // 绕过禁用的md5值，留空表示不启用绕过禁用
     url: 'about:blank',            // 关闭页面失败时的跳转页面

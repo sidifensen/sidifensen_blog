@@ -216,7 +216,7 @@ const handleResize = () => {
 const getUsers = async () => {
   try {
     const res = await getUserList();
-    userList.value = res.data.data;
+    userList.value = res.data;
   } catch (error) {
     ElMessage.error("获取用户列表失败");
   }
@@ -253,13 +253,13 @@ const fetchLinks = async () => {
     let pageData = null;
     if (hasSearchConditions()) {
       const res = await adminSearchLink(buildSearchPayload());
-      pageData = res.data.data;
+      pageData = res.data;
     } else {
       const res = await adminGetLinkList({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       });
-      pageData = res.data.data;
+      pageData = res.data;
     }
     applyPageData(pageData);
   } catch (error) {

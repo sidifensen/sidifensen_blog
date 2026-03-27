@@ -67,10 +67,12 @@
               <div class="article-author">
                 <el-image :src="article.avatar" class="author-avatar" fit="cover">
                   <template #placeholder>
-                    <div class="avatar-loading">加载中...</div>
+                    <div class="avatar-placeholder">
+                      <el-icon><User /></el-icon>
+                    </div>
                   </template>
                   <template #error>
-                    <div class="avatar-error">
+                    <div class="avatar-placeholder">
                       <el-icon><User /></el-icon>
                     </div>
                   </template>
@@ -322,8 +324,8 @@ const fetchArticleList = async (reset = false) => {
     }
 
     const res = await getAllArticleList(currentPage.value, pageSize.value);
-    const newArticles = res.data.data.data || [];
-    total.value = res.data.data.total || 0;
+    const newArticles = res.data.data || [];
+    total.value = res.data.total || 0;
 
     if (reset) {
       articleList.value = newArticles;
@@ -338,7 +340,6 @@ const fetchArticleList = async (reset = false) => {
     }
   } catch (error) {
     ElMessage.error("获取文章列表失败");
-    console.error("获取文章列表失败:", error);
   } finally {
     articleLoading.value = false;
     loadingMore.value = false;
@@ -389,9 +390,9 @@ const fetchHotArticleList = async () => {
   try {
     hotArticleLoading.value = true;
     const res = await getHotArticleList(1, 10);
-    hotArticleList.value = res.data.data.data || [];
+    hotArticleList.value = res.data.data || [];
   } catch (error) {
-    console.error("获取热门文章列表失败:", error);
+    // 静默处理
   } finally {
     hotArticleLoading.value = false;
   }
@@ -402,9 +403,9 @@ const fetchFeaturedArticleList = async () => {
   try {
     featuredArticleLoading.value = true;
     const res = await getVipPreviewArticleList(1, 4);
-    featuredArticleList.value = res.data.data.data || [];
+    featuredArticleList.value = res.data.data || [];
   } catch (error) {
-    console.error("获取会员精选失败:", error);
+    // 静默处理
   } finally {
     featuredArticleLoading.value = false;
   }
@@ -856,22 +857,27 @@ onUnmounted(() => {
                 background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
                 border: 1px solid rgba(0, 0, 0, 0.1);
 
-                .avatar-loading,
-                .avatar-error {
+                .avatar-placeholder {
                   display: flex;
                   justify-content: center;
                   align-items: center;
                   width: 100%;
                   height: 100%;
-                  background: transparent;
+                  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
                   color: var(--text-muted);
-                  font-size: 10px;
-                }
 
-                .avatar-error {
                   .el-icon {
                     font-size: 14px;
                     color: var(--text-muted);
+                  }
+                }
+
+                // 黑夜模式头像占位符
+                html.dark & {
+                  background: rgba(255, 255, 255, 0.1);
+
+                  .avatar-placeholder {
+                    background: rgba(255, 255, 255, 0.1);
                   }
                 }
               }

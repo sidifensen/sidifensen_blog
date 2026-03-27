@@ -28,3 +28,15 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# Android
+android/
+*.apk
+*.aab
+
+# Electron
+dist-electron/
+*.exe
+*.dmg
+*.AppImage
+*.deb

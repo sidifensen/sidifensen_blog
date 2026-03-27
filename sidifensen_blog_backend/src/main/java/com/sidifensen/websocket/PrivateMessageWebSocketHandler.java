@@ -94,6 +94,9 @@ public class PrivateMessageWebSocketHandler extends TextWebSocketHandler {
             } else if (WebSocketMessageTypeEnum.HEARTBEAT.getType().equals(type)) {
                 // 心跳保活
                 handleHeartbeat(session);
+            } else if (WebSocketMessageTypeEnum.TYPING.getType().equals(type)) {
+                // 正在输入
+                handleTyping(fromUserId, wsMessage);
             } else {
                 log.warn("未知的消息类型: {}", type);
             }
@@ -281,6 +284,24 @@ public class PrivateMessageWebSocketHandler extends TextWebSocketHandler {
      */
     private void handleHeartbeat(WebSocketSession session) {
         sendMessage(session, WebSocketMessage.heartbeat());
+    }
+
+    /**
+     * 处理正在输入通知
+     */
+    private void handleTyping(Integer fromUserId, WebSocketMessage wsMessage) {
+        Integer toUserId = wsMessage.getToUserId();
+
+        // 推送输入状态给接收者（如果在线）
+        WebSocketSession toSession = sessionManager.getSession(toUserId);
+        if (toSession != null && toSession.isOpen()) {
+            WebSocketMessage pushMessage = WebSocketMessage.builder()
+                    .type(WebSocketMessageTypeEnum.TYPING_NOTIFY.getType())
+                    .fromUserId(fromUserId)
+                    .toUserId(toUserId)
+                    .build();
+            sendMessage(toSession, pushMessage);
+        }
     }
 
     /**

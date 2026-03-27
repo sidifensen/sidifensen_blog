@@ -328,14 +328,13 @@ const fetchColumnDetail = async () => {
     columnLoading.value = true;
     const columnId = route.params.columnId;
     const res = await getColumnDetail(columnId);
-    columnInfo.value = res.data.data;
+    columnInfo.value = res.data;
     // 保存原始顺序的文章列表
-    originalArticleList.value = res.data.data.articles || [];
+    originalArticleList.value = res.data.articles || [];
     // 初始显示也是按原始顺序
     articleList.value = [...originalArticleList.value];
   } catch (error) {
-    ElMessage.error("获取专栏信息失败");
-    console.error("获取专栏信息失败:", error);
+    // 静默处理
   } finally {
     columnLoading.value = false;
   }
@@ -346,15 +345,14 @@ const fetchAuthorInfo = async () => {
   try {
     const userId = route.params.userId;
     const res = await getUserInfoById(userId);
-    authorInfo.value = res.data.data;
+    authorInfo.value = res.data;
 
     // 如果不是当前用户且已登录，检查关注状态
     if (!isCurrentUser.value && userStore.user) {
       await checkUserFollowStatus();
     }
   } catch (error) {
-    ElMessage.error("获取作者信息失败");
-    console.error("获取作者信息失败:", error);
+    // 静默处理
   }
 };
 
@@ -364,11 +362,11 @@ const fetchOtherColumns = async () => {
     const userId = route.params.userId;
     const currentColumnId = route.params.columnId;
     const res = await getUserColumnList(1, 5, userId);
-    const columns = res.data.data.data;
+    const columns = res.data.data;
     // 过滤掉当前专栏
     otherColumns.value = columns.filter((column) => column.id !== parseInt(currentColumnId));
   } catch (error) {
-    console.error("获取其他专栏失败:", error);
+    // 静默处理
     otherColumns.value = []; // 设置默认值
   }
 };
@@ -421,9 +419,9 @@ const checkUserFollowStatus = async () => {
     const followerId = userStore.user.id;
     const followedId = parseInt(route.params.userId);
     const res = await isFollowing(followerId, followedId);
-    isFollowed.value = res.data.data; // 后端返回 Boolean 值
+    isFollowed.value = res.data; // 后端返回 Boolean 值
   } catch (error) {
-    console.error("检查关注状态失败:", error);
+    // 静默处理
     isFollowed.value = false;
   }
 };
@@ -459,8 +457,7 @@ const handleFollow = async () => {
       }
     }
   } catch (error) {
-    ElMessage.error("操作失败");
-    console.error("关注操作失败:", error);
+    // 静默处理
   } finally {
     followLoading.value = false;
   }

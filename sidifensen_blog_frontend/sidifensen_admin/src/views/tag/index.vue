@@ -226,7 +226,7 @@ const getTagsList = async () => {
   loading.value = true;
   try {
     const res = await getTagList();
-    tagData.value = res.data.data;
+    tagData.value = res.data;
 
     // 转换数据结构 - 后端现在返回 Map<String, List<Tag>>，已经按 sort 排序
     // 不再使用 .sort()，因为后端已经按照 sort 排序返回

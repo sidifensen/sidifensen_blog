@@ -12,7 +12,10 @@
             </div>
             <div class="user-details">
               <span class="username">{{ targetUser.nickname }}</span>
-              <span class="online-status-text" v-if="isOnline">在线</span>
+              <span class="online-status-text" v-if="isOnline && !messageStore.targetUserTyping">在线</span>
+              <span class="typing-status" v-if="messageStore.targetUserTyping">
+                <span class="typing-text">正在输入</span>
+              </span>
             </div>
           </div>
         </div>
@@ -80,7 +83,7 @@
 
         <!-- 消息输入框 -->
         <div class="message-input-area">
-          <el-input ref="messageInput" v-model="messageContent" type="textarea" :rows="3" placeholder="请输入消息... (Shift+Enter 换行)" @keydown.enter="handleEnterKey" resize="none" />
+          <el-input ref="messageInput" v-model="messageContent" type="textarea" :rows="3" placeholder="请输入消息... (Shift+Enter 换行)" @keydown.enter="handleEnterKey" @input="handleInput" resize="none" />
           <div class="input-actions">
             <div class="input-actions-left">
               <el-button :icon="ChatDotSquare" @click="toggleEmojiPicker">表情</el-button>
@@ -155,13 +158,17 @@ const isLongPress = ref(false); // 是否是长按
 // 撤回提示
 const revokeNotification = ref(""); // 撤回提示文本
 const revokeNotificationTimer = ref(null); // 撤回提示定时器
+
+// 输入检测相关
+const lastTypingSentTime = ref(0);  // 上次发送 TYPING 消息的时间
+const typingTimer = ref(null);  // 输入状态消失定时器
 // 获取目标用户信息
 const fetchTargetUser = async () => {
   try {
     const res = await getUserInfoById(targetUserId.value);
-    targetUser.value = res.data.data;
+    targetUser.value = res.data;
   } catch (error) {
-    console.error("获取用户信息失败:", error);
+    // 静默处理
   }
 };
 
@@ -170,7 +177,7 @@ const fetchChatHistory = async () => {
   try {
     loading.value = true;
     const res = await getChatHistory(targetUserId.value, 1, 50);
-    const messages = res.data.data?.data || [];
+    const messages = res.data?.data || [];
     // 将消息列表反转，确保最新消息在底部
     messageStore.setCurrentChatMessages(messages.reverse());
     scrollToBottom();
@@ -180,7 +187,7 @@ const fetchChatHistory = async () => {
       WebSocketClient.markAsRead(targetUserId.value);
     }
   } catch (error) {
-    console.error("获取聊天记录失败:", error);
+    // 静默处理
   } finally {
     loading.value = false;
   }
@@ -228,6 +235,34 @@ const handleEnterKey = (event) => {
   sendMessage();
 };
 
+// 处理输入事件 - 发送正在输入通知
+const handleInput = () => {
+  const now = Date.now();
+
+  // 检查：距离上次发送 TYPING 是否超过 3 秒
+  if (now - lastTypingSentTime.value < 3000) {
+    return;
+  }
+
+  // 检查：对方在 10 秒内给我发过消息？
+  const messages = messageStore.currentChatMessages;
+  if (messages.length > 0) {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage.fromUserId === targetUserId.value) {
+      // 最后一条是对方发的
+      const messageTime = new Date(lastMessage.createTime).getTime();
+      if (now - messageTime > 10000) {
+        // 超过 10 秒没收到对方消息，不发送 TYPING
+        return;
+      }
+    }
+  }
+
+  // 发送 TYPING 通知
+  lastTypingSentTime.value = now;
+  WebSocketClient.sendTyping(targetUserId.value);
+};
+
 // 打开图片选择器
 const openImagePicker = () => {
   // 创建隐藏的文件输入框
@@ -266,7 +301,7 @@ const handleImageSelect = async (event) => {
 
     // 上传图片
     const res = await uploadMessagePhoto(file);
-    const imageUrl = res.data.data;
+    const imageUrl = res.data;
 
     // 立即添加到消息列表（乐观更新）
     const tempMessage = {
@@ -292,8 +327,7 @@ const handleImageSelect = async (event) => {
     WebSocketClient.sendImageMessage(targetUserId.value, imageUrl);
     ElMessage.success("图片发送成功");
   } catch (error) {
-    ElMessage.error("图片上传失败");
-    console.error("上传图片失败:", error);
+    // 静默处理
   } finally {
     imageUploadLoading.value = false;
     // 清空文件输入框，允许重复上传同一文件
@@ -459,15 +493,14 @@ const handleCopy = async () => {
         document.execCommand("copy");
         ElMessage.success("消息已复制到剪贴板");
       } catch (err) {
-        console.error("复制失败:", err);
+        // 静默处理
         ElMessage.error("复制失败，请手动复制");
       }
 
       document.body.removeChild(textArea);
     }
   } catch (error) {
-    console.error("复制消息失败:", error);
-    ElMessage.error("复制失败，请手动复制");
+    // 静默处理
   }
 
   // 关闭右键菜单
@@ -551,6 +584,25 @@ const handleNewMessage = (data) => {
   }
 };
 
+// 处理对方正在输入通知
+const handleTypingNotify = (data) => {
+  if (data.fromUserId === targetUserId.value) {
+    // 设置 typing 状态
+    messageStore.setTargetUserTyping(true);
+
+    // 清除之前的定时器
+    if (typingTimer.value) {
+      clearTimeout(typingTimer.value);
+    }
+
+    // 设置 6 秒后自动消失
+    typingTimer.value = setTimeout(() => {
+      messageStore.setTargetUserTyping(false);
+      typingTimer.value = null;
+    }, 6000);
+  }
+};
+
 const handleSendSuccess = (data) => {
   // 消息发送成功，更新临时ID为真实ID
   const messages = messageStore.currentChatMessages;
@@ -605,7 +657,6 @@ const handleRevokeSuccess = (data) => {
 // 处理撤回失败响应
 const handleRevokeFailed = (data) => {
   ElMessage.error(data.message || "撤回消息失败");
-  console.error("撤回消息失败:", data.message);
 };
 
 // 处理消息撤回通知（对方撤回）
@@ -646,7 +697,7 @@ onMounted(async () => {
   if (messageStore.conversationList.length === 0) {
     try {
       const res = await getConversationList();
-      messageStore.setConversationList(res.data.data);
+      messageStore.setConversationList(res.data || []);
 
       // 在获取会话列表后立即更新在线状态
       const conversation = messageStore.conversationList.find((conv) => conv.targetUserId === targetUserId.value);
@@ -654,7 +705,7 @@ onMounted(async () => {
         isOnline.value = conversation.isOnline || false;
       }
     } catch (error) {
-      console.error("获取会话列表失败:", error);
+      // 静默处理
     }
   } else {
     // 从已有的会话列表中获取初始在线状态
@@ -673,6 +724,7 @@ onMounted(async () => {
   WebSocketClient.on("REVOKE_SUCCESS", handleRevokeSuccess);
   WebSocketClient.on("REVOKE_FAILED", handleRevokeFailed);
   WebSocketClient.on("MESSAGE_REVOKED", handleMessageRevoke);
+  WebSocketClient.on("TYPING_NOTIFY", handleTypingNotify);
 
   // 监听点击事件，关闭右键菜单
   document.addEventListener("click", closeContextMenu);
@@ -687,6 +739,7 @@ onUnmounted(() => {
   WebSocketClient.off("REVOKE_SUCCESS", handleRevokeSuccess);
   WebSocketClient.off("REVOKE_FAILED", handleRevokeFailed);
   WebSocketClient.off("MESSAGE_REVOKED", handleMessageRevoke);
+  WebSocketClient.off("TYPING_NOTIFY", handleTypingNotify);
   messageStore.setCurrentChatUser(null);
 
   // 清理事件监听器
@@ -695,6 +748,11 @@ onUnmounted(() => {
   // 清理长按定时器
   if (longPressTimer.value) {
     clearTimeout(longPressTimer.value);
+  }
+
+  // 清理 typing 定时器
+  if (typingTimer.value) {
+    clearTimeout(typingTimer.value);
   }
 
   // 清理撤回提示定时器
@@ -839,6 +897,26 @@ onUnmounted(() => {
             font-size: 12px;
             color: var(--success-color);
             font-weight: 500;
+          }
+
+          .typing-status {
+            display: inline-flex;
+            align-items: center;
+            font-size: 12px;
+            color: var(--success-color);
+            font-weight: 500;
+
+            .typing-text::after {
+              content: '';
+              animation: typing-dots 1.5s infinite;
+            }
+          }
+
+          @keyframes typing-dots {
+            0%   { content: '.'; }
+            33%  { content: '..'; }
+            66%  { content: '...'; }
+            100% { content: '.'; }
           }
         }
       }

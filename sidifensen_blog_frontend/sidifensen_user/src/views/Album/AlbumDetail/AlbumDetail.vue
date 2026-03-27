@@ -256,12 +256,12 @@ const getPhotoList = async () => {
   loading.value = true
   try {
     const res = await getAlbum(albumForm.value.id)
-    photoList.value = res.data.data.photos || []
-    albumForm.value.showStatus = res.data.data.showStatus || 0
-    albumForm.value.name = res.data.data.name || ""
-    albumForm.value.coverUrl = res.data.data.coverUrl || ""
-    albumForm.value.userName = res.data.data.userName || ""
-    albumForm.value.userId = res.data.data.userId || ""
+    photoList.value = res.data.photos || []
+    albumForm.value.showStatus = res.data.showStatus || 0
+    albumForm.value.name = res.data.name || ""
+    albumForm.value.coverUrl = res.data.coverUrl || ""
+    albumForm.value.userName = res.data.userName || ""
+    albumForm.value.userId = res.data.userId || ""
     groupPhotosByDate()
   } catch (error) {
     ElMessage.error("获取相册图片失败")
@@ -539,7 +539,7 @@ const coverDialogPhotos = ref([])
 const handleChangeCover = async () => {
   try {
     const res = await getAlbum(albumId)
-    const photos = res.data.data.photos
+    const photos = res.data.photos
     if (!photos || photos.length === 0) {
       ElMessage.warning("该相册暂无图片，请先上传图片")
       return
@@ -869,17 +869,17 @@ onMounted(() => {
       }
 
       :deep(.el-switch__core) {
-        width: 72px !important;
-        height: 28px;
-        border-radius: 14px;
+        width: 58px !important;
+        height: 26px;
+        border-radius: 13px;
         background-color: var(--border-regular);
         border: none;
         overflow: hidden;
       }
 
       :deep(.el-switch__action) {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
         background-color: #fff;
         border-radius: 50%;
         box-shadow: var(--shadow-sm);
@@ -887,9 +887,9 @@ onMounted(() => {
       }
 
       :deep(.el-switch__label) {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 500;
-        line-height: 28px;
+        line-height: 26px;
       }
     }
   }

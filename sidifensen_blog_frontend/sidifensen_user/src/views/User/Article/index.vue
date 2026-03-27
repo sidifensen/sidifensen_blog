@@ -50,7 +50,14 @@ import ArticleActions from "./components/ArticleActions.vue";
 // 路由参数
 const route = useRoute();
 const router = useRouter();
-const { userId, articleId } = route.params;
+const userId = route.params.userId;
+const articleId = route.params.articleId;
+
+// 调试：打印路由参数
+// 防御性检查：确保参数存在
+if (!articleId) {
+  // 静默处理
+}
 
 // 响应式数据
 const userInfo = ref(null);
@@ -65,8 +72,9 @@ const fetchUserInfo = async () => {
   try {
     userLoading.value = true;
     const response = await getUserInfoById(userId);
-    userInfo.value = response.data.data;
+    userInfo.value = response.data;
   } catch (error) {
+    // 静默处理
     ElMessage.error("获取用户信息失败");
   } finally {
     userLoading.value = false;
@@ -80,12 +88,12 @@ const fetchArticleDetail = async () => {
     accessState.value = "";
     accessMessage.value = "";
     const response = await getArticleDetail(articleId);
-    articleInfo.value = response.data.data;
-
+    articleInfo.value = response.data;
     // 注意：阅读量统计已集成到后端获取文章详情接口中，会自动异步统计，无需前端单独调用
   } catch (error) {
+    // 静默处理
     articleInfo.value = null;
-    const message = error?.msg || "获取文章详情失败";
+    const message = error?.msg || error?.message || "获取文章详情失败";
     accessMessage.value = message;
     if (message === "该文章仅VIP可见") {
       accessState.value = "vip";

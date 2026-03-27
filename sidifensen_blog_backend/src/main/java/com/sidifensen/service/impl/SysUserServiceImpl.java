@@ -30,6 +30,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -322,8 +323,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     public SysUserVo info() {
         Integer userId = SecurityUtils.getUserId();
+        log.info("【OAuth调试】info() - SecurityUtils.getUserId()={}, SecurityContext={}", userId, SecurityContextHolder.getContext().getAuthentication());
         SysUser sysUser = sysUserMapper.selectById(userId);
         if (sysUser == null) {
+            log.error("【OAuth调试】info() - 用户查询为空, userId={}", userId);
             throw new BlogException(BlogConstants.NotFoundUser); // 用户不存在
         }
         SysUserVo sysUserVo = new SysUserVo();

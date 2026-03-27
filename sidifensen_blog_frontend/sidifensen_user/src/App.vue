@@ -145,7 +145,7 @@ const loadSavedPosition = () => {
       }
     }
   } catch (e) {
-    console.warn("加载按钮位置失败", e);
+    // 静默处理
   }
   return false;
 };
@@ -155,7 +155,7 @@ const savePosition = () => {
   try {
     localStorage.setItem("aiServiceBtnPosition", JSON.stringify(buttonPosition.value));
   } catch (e) {
-    console.warn("保存按钮位置失败", e);
+    // 静默处理
   }
 };
 
@@ -317,6 +317,11 @@ onUnmounted(() => {
 html.dark .article-page-body {
   --el-bg-color-page: #000000 !important;
   background-color: #000000 !important;
+}
+
+// 个人主页背景覆盖 - 黑夜模式下覆盖全局背景色
+html.dark .user-homepage {
+  background-color: #0f172a !important;
 }
 
 // 粒子特效容器（全局 fixed）

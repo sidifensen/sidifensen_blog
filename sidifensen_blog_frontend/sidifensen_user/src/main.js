@@ -17,14 +17,21 @@ pinia.use(piniaPluginPersistedstate);
 // 夜间模式
 import "element-plus/theme-chalk/dark/css-vars.css";
 
+// 状态栏高度适配
+import { StatusBar, Style } from "@capacitor/status-bar";
+
 const app = createApp(App);
 
-// 引入并配置disable-devtool
-// 只在生产环境启用禁用开发者工具功能
-import { setupDisableDevtool } from "@/utils/disableDevtool";
-if (import.meta.env.PROD) {
-  // setupDisableDevtool();
-}
+// 设置状态栏样式并获取高度
+const setupStatusBar = async () => {
+  try {
+    await StatusBar.setStyle({ style: Style.Dark });
+    await StatusBar.setBackgroundColor({ color: "#ffffff" });
+  } catch (e) {
+    // 非 Capacitor 环境忽略
+  }
+};
+setupStatusBar();
 
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component);

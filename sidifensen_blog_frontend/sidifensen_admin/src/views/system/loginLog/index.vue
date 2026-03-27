@@ -206,13 +206,13 @@ const fetchLoginLogs = async () => {
     let pageData = null;
     if (hasSearchConditions()) {
       const res = await searchLoginLog(buildSearchPayload());
-      pageData = res.data.data;
+      pageData = res.data;
     } else {
       const res = await getLoginLogList({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       });
-      pageData = res.data.data;
+      pageData = res.data;
     }
     applyPageData(pageData);
   } catch (error) {

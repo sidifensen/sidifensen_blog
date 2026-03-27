@@ -22,7 +22,11 @@ public enum RegisterOrLoginTypeEnum {
     /**
      * QQ
      */
-    QQ(3, "qq","QQ登录" );
+    QQ(3, "qq","QQ登录" ),
+    /**
+     * 微信小程序
+     */
+    WECHAT_MINIPROGRAM(4, "wechat","微信小程序登录" );
 
 
     /**

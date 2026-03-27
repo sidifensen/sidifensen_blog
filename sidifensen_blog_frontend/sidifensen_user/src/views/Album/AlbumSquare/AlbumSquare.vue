@@ -95,9 +95,9 @@ const getAllAlbums = async () => {
   loading.value = true
   try {
     const res = await listAllAlbum()
-    albums.value = res.data.data.sort((a, b) => a.id - b.id)
+    albums.value = res.data.sort((a, b) => a.id - b.id)
   } catch (error) {
-    console.error("获取相册列表失败:", error)
+    // 静默处理
   } finally {
     loading.value = false
   }

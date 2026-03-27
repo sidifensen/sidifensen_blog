@@ -1,0 +1,144 @@
+{
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^uv-avatar$": "@/components/avatar/index.vue",
+      "^uv-loading-icon$": "@/components/loading-icon/index.vue",
+      "^uv-icon$": "@/components/icon/index.vue",
+      "^uv-input$": "@/components/input/index.vue",
+      "^uv-(.*)": "@/components/$1/index.vue"
+    }
+  },
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "首页",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/article/article",
+      "style": {
+        "navigationBarTitleText": "文章详情"
+      }
+    },
+    {
+      "path": "pages/album/album",
+      "style": {
+        "navigationBarTitleText": "相册"
+      }
+    },
+    {
+      "path": "pages/albumDetail/albumDetail",
+      "style": {
+        "navigationBarTitleText": "相册详情"
+      }
+    },
+    {
+      "path": "pages/column/column",
+      "style": {
+        "navigationBarTitleText": "专栏"
+      }
+    },
+    {
+      "path": "pages/columnDetail/columnDetail",
+      "style": {
+        "navigationBarTitleText": "专栏详情"
+      }
+    },
+    {
+      "path": "pages/user/user",
+      "style": {
+        "navigationBarTitleText": "个人中心"
+      }
+    },
+    {
+      "path": "pages/user/profile",
+      "style": {
+        "navigationBarTitleText": "个人主页"
+      }
+    },
+    {
+      "path": "pages/user/articles",
+      "style": {
+        "navigationBarTitleText": "我的文章"
+      }
+    },
+    {
+      "path": "pages/user/favorites",
+      "style": {
+        "navigationBarTitleText": "我的收藏"
+      }
+    },
+    {
+      "path": "pages/user/albums",
+      "style": {
+        "navigationBarTitleText": "我的相册"
+      }
+    },
+    {
+      "path": "pages/user/followList",
+      "style": {
+        "navigationBarTitleText": "关注列表"
+      }
+    },
+    {
+      "path": "pages/message/message",
+      "style": {
+        "navigationBarTitleText": "消息通知"
+      }
+    },
+    {
+      "path": "pages/vip/vip",
+      "style": {
+        "navigationBarTitleText": "VIP会员"
+      }
+    },
+    {
+      "path": "pages/login/login",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/search/search",
+      "style": {
+        "navigationBarTitleText": "搜索"
+      }
+    },
+    {
+      "path": "pages/settings/settings",
+      "style": {
+        "navigationBarTitleText": "设置"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "斯蒂芬森博客",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#f8fafc"
+  },
+  "tabBar": {
+    "color": "#64748b",
+    "selectedColor": "#0891b2",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/album/album",
+        "text": "相册"
+      },
+      {
+        "pagePath": "pages/user/user",
+        "text": "我的"
+      }
+    ]
+  }
+}

@@ -130,7 +130,7 @@ const getAlbumList = async () => {
   loading.value = true
   try {
     const res = await listAlbum()
-    albumList.value = res.data.data.sort((a, b) => a.id - b.id)
+    albumList.value = res.data.sort((a, b) => a.id - b.id)
   } catch (error) {
     ElMessage.error("获取相册列表失败")
   } finally {

@@ -333,13 +333,13 @@ const fetchMenus = async () => {
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       });
-      pageData = res.data.data;
+      pageData = res.data;
     } else {
       const res = await getMenuPage({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       });
-      pageData = res.data.data;
+      pageData = res.data;
     }
     applyPageData(pageData);
   } catch (error) {
@@ -390,7 +390,7 @@ const allMenus = ref([]);
 const getAllMenus = async () => {
   try {
     const res = await getAllMenuList();
-    allMenus.value = res.data.data;
+    allMenus.value = res.data;
   } catch (error) {
     ElMessage.error("获取所有菜单失败");
     console.error("获取所有菜单失败:", error);
@@ -549,12 +549,12 @@ const handleAuthorizeRole = async (row) => {
   selectedRoles.value = [];
 
   const res = await getRoleList();
-  allRoles.value = res.data.data;
+  allRoles.value = res.data;
 
   // 获取已经有菜单的角色
   const res1 = await getRolesByMenu(row.id);
   // 把数组里的id取出来
-  res1.data.data.forEach((item) => {
+  res1.data.forEach((item) => {
     // 默认选中已有菜单的角色
     selectedRoles.value.push(item.id);
   });

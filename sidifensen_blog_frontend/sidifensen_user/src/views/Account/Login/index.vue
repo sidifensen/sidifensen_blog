@@ -12,14 +12,14 @@
       class="login-form"
       @keyup.enter="loginBtn"
     >
-      <!-- 用户名 -->
+      <!-- 用户名/邮箱 -->
       <div class="form-item-wrap">
-        <label class="form-label">用户名</label>
+        <label class="form-label">用户名 / 邮箱</label>
         <el-form-item prop="username">
           <el-input
             v-model="formData.username"
-            placeholder="请输入用户名"
-            maxlength="20"
+            placeholder="请输入用户名或邮箱"
+            maxlength="50"
             clearable
             class="login-input"
           >
@@ -160,14 +160,12 @@ const formData = ref({
 });
 const loginLoading = ref(false);
 
-// 验证用户名
+// 验证用户名（支持用户名或邮箱登录）
 const validateUsername = (rule, value, callback) => {
   if (value === "") {
-    callback(new Error("请输入用户名"));
-  } else if (!/^[a-zA-Z0-9]+$/.test(value)) {
-    callback(new Error("用户名只能是英文和数字"));
-  } else if (value.length < 4 || value.length > 20) {
-    callback(new Error("用户名的长度必须在 4-20 个字符之间"));
+    callback(new Error("请输入用户名或邮箱"));
+  } else if (value.length < 4 || value.length > 50) {
+    callback(new Error("长度必须在 4-50 个字符之间"));
   } else {
     callback();
   }
@@ -221,10 +219,10 @@ const loginBtn = async () => {
     const res = await login(formData.value);
     ElMessage.success("登录成功");
     // 将 jwt 存储到 localStorage
-    SetJwt(res.data.data);
-    info().then((userInfoRes) => {
-      userStore.user = userInfoRes.data.data;
-    });
+    SetJwt(res.data);
+    // 等待 info() 获取用户信息完成后再跳转，避免 Header 组件挂载时 user 为空
+    const userInfoRes = await info();
+    userStore.user = userInfoRes.data;
     router.push({ name: "Home" });
   } catch {
     // 登录失败后刷新验证码，避免继续使用旧验证码
@@ -238,8 +236,8 @@ const checkCodeInfo = ref({});
 // 刷新验证码
 const changeCheckCode = async () => {
   await checkCode().then((res) => {
-    checkCodeInfo.value = res.data.data;
-    formData.value.checkCodeKey = res.data.data.checkCodeKey;
+    checkCodeInfo.value = res.data;
+    formData.value.checkCodeKey = res.data.checkCodeKey;
   });
 };
 

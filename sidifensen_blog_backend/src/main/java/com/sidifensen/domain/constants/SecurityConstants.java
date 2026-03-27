@@ -63,6 +63,7 @@ public class SecurityConstants {
             "/oauth/github/callback",
             "/oauth/qq/login",
             "/oauth/qq/callback",
+            "/oauth/wechat/login",
 
             // VIP 相关
             "/vip/plans",

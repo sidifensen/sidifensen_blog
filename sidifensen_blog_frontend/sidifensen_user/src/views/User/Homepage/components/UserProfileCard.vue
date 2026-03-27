@@ -192,6 +192,7 @@ watch(
   --avatar-border: rgba(var(--el-bg-color-rgb, 255, 255, 255), 0.95);
   --hero-overhang: 24px;
   padding: 20px 0 0 0;
+  overflow: hidden;
 
   // 黑夜模式适配
   html.dark & {

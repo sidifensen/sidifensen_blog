@@ -164,7 +164,7 @@ const handleSubmit = async () => {
 
     // 提交评论
     const res = await addComment(commentData);
-    const commentId = res.data.data;
+    const commentId = res.data;
 
     // 构建新评论对象（用于界面显示）
     const newComment = {
@@ -190,8 +190,7 @@ const handleSubmit = async () => {
     // 通知父组件
     emit("comment-added", newComment);
   } catch (error) {
-    ElMessage.error("评论发送失败，请重试");
-    console.error("发送评论失败:", error);
+    // 静默处理
   } finally {
     submitting.value = false;
   }
@@ -257,15 +256,12 @@ const fetchAiSuggestions = async (force = false) => {
     aiLoading.value = true;
     aiError.value = "";
     const res = await generateCommentReplySuggestions(props.articleTitle, props.replyCommentContent);
-    aiSuggestions.value = res.data.data || [];
+    aiSuggestions.value = res.data || [];
     if (aiSuggestions.value.length === 0) {
       aiError.value = "AI 暂未生成有效建议";
     }
   } catch (error) {
-    aiSuggestions.value = [];
-    aiError.value = "生成失败，请稍后重试";
-    ElMessage.error("AI 回复生成失败");
-    console.error("AI 回复生成失败:", error);
+    // 静默处理
   } finally {
     aiLoading.value = false;
   }

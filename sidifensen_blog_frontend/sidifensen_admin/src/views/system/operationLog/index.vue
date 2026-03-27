@@ -433,13 +433,13 @@ const fetchOperationLogs = async () => {
     let pageData = null;
     if (hasSearchConditions()) {
       const res = await searchOperationLog(buildSearchPayload());
-      pageData = res.data.data;
+      pageData = res.data;
     } else {
       const res = await getOperationLogList({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       });
-      pageData = res.data.data;
+      pageData = res.data;
     }
     applyPageData(pageData);
   } catch (error) {
@@ -509,7 +509,7 @@ const handleMobileSelect = (log) => {
 const handleViewDetail = async (id) => {
   try {
     const res = await getOperationLogDetail(id);
-    detailData.value = res.data.data;
+    detailData.value = res.data;
     detailDialogVisible.value = true;
   } catch (error) {
     ElMessage.error("获取详情失败");

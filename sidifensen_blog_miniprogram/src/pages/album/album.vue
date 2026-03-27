@@ -1,0 +1,201 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+import { getAlbumList } from '@/api/album'
+import { timeAgo } from '@/utils/format'
+
+// 相册列表
+const albumList = ref([])
+// 加载状态
+const loading = ref(false)
+const refreshing = ref(false)
+const loadMore = ref(false)
+const noMore = ref(false)
+const pageNum = ref(1)
+const pageSize = ref(10)
+
+/**
+ * 获取相册列表
+ */
+async function fetchAlbumList() {
+  try {
+    const params = { pageNum: pageNum.value, pageSize: pageSize.value }
+    const res = await getAlbumList(params)
+
+    if (pageNum.value === 1) {
+      albumList.value = res.data || res
+    } else {
+      albumList.value = [...albumList.value, ...(res.data || res)]
+    }
+
+    if (res.data && res.data.length < pageSize.value) {
+      noMore.value = true
+    }
+  } catch (err) {
+    console.error('获取相册列表失败', err)
+  }
+}
+
+/**
+ * 下拉刷新
+ */
+function onRefresh() {
+  refreshing.value = true
+  noMore.value = false
+  pageNum.value = 1
+
+  fetchAlbumList().finally(() => {
+    refreshing.value = false
+  })
+}
+
+/**
+ * 上拉加载更多
+ */
+function onLoadMore() {
+  if (noMore.value || loadMore.value) return
+
+  loadMore.value = true
+  pageNum.value++
+
+  fetchAlbumList().finally(() => {
+    loadMore.value = false
+  })
+}
+
+/**
+ * 跳转相册详情
+ */
+function goToAlbumDetail(albumId) {
+  uni.navigateTo({ url: `/pages/albumDetail/albumDetail?id=${albumId}` })
+}
+
+onMounted(() => {
+  fetchAlbumList()
+})
+</script>
+
+<template>
+  <view class="album-page">
+    <!-- 相册列表 -->
+    <scroll-view
+      class="album-list"
+      scroll-y
+      :refresher-enabled="true"
+      :refresher-triggered="refreshing"
+      @refresherrefresh="onRefresh"
+      @scrolltolower="onLoadMore"
+    >
+      <view class="album-grid">
+        <view
+          v-for="album in albumList"
+          :key="album.id"
+          class="album-card"
+          @click="goToAlbumDetail(album.id)"
+        >
+          <image class="album-cover" :src="album.coverUrl" mode="aspectFill" />
+          <view class="album-info">
+            <view class="album-name">{{ album.name }}</view>
+            <view class="album-meta">
+              <text class="album-count">{{ album.photoCount }} 张</text>
+              <text class="album-time">{{ timeAgo(album.createTime) }}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 空状态 -->
+      <view v-if="albumList.length === 0 && !loading" class="empty-state">
+        <text class="empty-icon">&#xe601;</text>
+        <text class="empty-text">暂无相册</text>
+      </view>
+
+      <!-- 加载更多 -->
+      <view v-if="loadMore" class="load-more">
+        <uv-loading-icon mode="circle" />
+      </view>
+
+      <!-- 没有更多 -->
+      <view v-if="noMore && albumList.length > 0" class="no-more">
+        <text>没有更多了</text>
+      </view>
+    </scroll-view>
+  </view>
+</template>
+
+<style lang="scss" scoped>
+.album-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-page);
+}
+
+/* 相册列表 */
+.album-list {
+  flex: 1;
+
+  .album-container {
+    padding: var(--spacing-lg);
+  }
+
+  .album-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+
+    .album-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border);
+
+      .album-cover {
+        width: 100%;
+        height: 150px;
+      }
+
+      .album-info {
+        padding: var(--spacing-md);
+
+        .album-name {
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--text-primary);
+          @include text-ellipsis;
+        }
+
+        .album-meta {
+          display: flex;
+          justify-content: space-between;
+          margin-top: var(--spacing-sm);
+          font-size: 12px;
+          color: var(--text-muted);
+        }
+      }
+    }
+  }
+
+  .empty-state {
+    @include flex-center-column;
+    padding: var(--spacing-2xl);
+    color: var(--text-muted);
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: var(--spacing-lg);
+    }
+  }
+
+  .load-more {
+    @include flex-center;
+    padding: var(--spacing-lg);
+  }
+
+  .no-more {
+    @include flex-center;
+    padding: var(--spacing-lg);
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+}
+</style>

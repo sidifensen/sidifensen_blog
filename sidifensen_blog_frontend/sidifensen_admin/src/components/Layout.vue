@@ -171,7 +171,7 @@ const messageDropdownRef = ref(null);
 const fetchUnreadCount = async () => {
   try {
     const res = await getMessagesCount();
-    unreadCount.value = Number(res.data.data);
+    unreadCount.value = Number(res.data);
   } catch (error) {
     ElMessage.error("获取消息数量失败");
     console.error("获取消息数量失败:", error);
@@ -182,7 +182,7 @@ const fetchUnreadCount = async () => {
 const fetchMessages = async () => {
   try {
     const res = await getMessageList();
-    messages.value = res.data.data.map((msg) => {
+    messages.value = res.data.map((msg) => {
       // 解析content字段（JSON字符串）
       let contentObj = {};
       try {

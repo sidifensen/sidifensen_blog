@@ -444,13 +444,13 @@ const fetchUsers = async () => {
     let pageData = null;
     if (hasSearchConditions()) {
       const res = await queryUserPage(buildSearchPayload());
-      pageData = res.data.data;
+      pageData = res.data;
     } else {
       const res = await getUserPage({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       });
-      pageData = res.data.data;
+      pageData = res.data;
     }
     applyPageData(pageData);
   } catch (error) {

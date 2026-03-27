@@ -536,7 +536,7 @@ const getUsers = async () => {
   userLoading.value = true;
   try {
     const res = await getUserListWithArticleCount();
-    userList.value = res.data.data;
+    userList.value = res.data;
   } catch (error) {
     ElMessage.error("获取用户列表失败");
   } finally {
@@ -602,13 +602,13 @@ const fetchUserArticles = async (userId = currentUser.value?.id) => {
     let pageData = null;
     if (hasSearchConditions()) {
       const res = await adminSearchArticle(buildSearchPayload());
-      pageData = res.data.data;
+      pageData = res.data;
     } else {
       const res = await adminGetArticlesByUserId(userId, {
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       });
-      pageData = res.data.data;
+      pageData = res.data;
     }
     applyPageData(pageData);
   } catch (error) {
@@ -689,8 +689,8 @@ const handleViewArticle = async (articleId) => {
 
     const res = await adminGetArticle(articleId);
 
-    if (res && res.data && res.data.data) {
-      currentArticle.value = res.data.data;
+    if (res && res.data) {
+      currentArticle.value = res.data;
       dialogVisible.value = true;
     } else {
       throw new Error("文章数据为空或格式错误");

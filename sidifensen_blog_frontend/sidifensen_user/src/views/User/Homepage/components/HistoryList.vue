@@ -120,8 +120,8 @@ const fetchHistoryList = async (reset = false) => {
     }
 
     const res = await getUserHistoryList(currentPage.value, pageSize.value);
-    const newHistoryList = res.data.data.data || [];
-    total.value = res.data.data.total || 0;
+    const newHistoryList = res.data.data || [];
+    total.value = res.data.total || 0;
 
     if (reset) {
       // 初次加载或重置时
@@ -139,8 +139,7 @@ const fetchHistoryList = async (reset = false) => {
       currentPage.value++;
     }
   } catch (error) {
-    ElMessage.error("获取浏览历史失败");
-    console.error("获取浏览历史失败:", error);
+    // 静默处理
   } finally {
     // 重置加载状态
     historyLoading.value = false;
@@ -159,7 +158,7 @@ const handleClearHistory = async () => {
 
     clearLoading.value = true;
     const res = await clearUserHistory();
-    const clearedCount = res.data.data;
+    const clearedCount = res.data;
 
     // 清空本地数据
     historyList.value = [];
@@ -170,8 +169,7 @@ const handleClearHistory = async () => {
     ElMessage.success(`成功清空 ${clearedCount} 条浏览记录`);
   } catch (error) {
     if (error !== "cancel") {
-      ElMessage.error("清空历史记录失败");
-      console.error("清空历史记录失败:", error);
+      // 静默处理
     }
   } finally {
     clearLoading.value = false;
@@ -268,6 +266,11 @@ defineExpose({
     padding: 15px 20px;
     border-bottom: 1px solid var(--el-border-color-light);
     background-color: var(--el-bg-color);
+
+    // 黑夜模式适配 - 蓝色主题背景
+    html.dark & {
+      background-color: rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.08);
+    }
 
     .control-left {
       .history-count {

@@ -479,7 +479,7 @@ const getUsers = async () => {
   userLoading.value = true;
   try {
     const res = await getUserListWithColumnCount();
-    userList.value = res.data.data;
+    userList.value = res.data;
   } catch (error) {
     ElMessage.error("获取用户列表失败");
   } finally {
@@ -547,13 +547,13 @@ const fetchUserColumns = async (userId = currentUser.value?.id) => {
     let pageData = null;
     if (hasSearchConditions()) {
       const res = await adminSearchColumn(buildSearchPayload());
-      pageData = res.data.data;
+      pageData = res.data;
     } else {
       const res = await adminGetColumnsByUserId(userId, {
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       });
-      pageData = res.data.data;
+      pageData = res.data;
     }
     applyPageData(pageData);
   } catch (error) {
@@ -634,7 +634,7 @@ const handleViewColumn = async (column) => {
 
   try {
     const res = await adminGetColumnDetail(column.id);
-    currentColumn.value = res.data.data;
+    currentColumn.value = res.data;
   } catch (error) {
     ElMessage.error("获取专栏详情失败");
     console.error("获取专栏详情失败:", error);

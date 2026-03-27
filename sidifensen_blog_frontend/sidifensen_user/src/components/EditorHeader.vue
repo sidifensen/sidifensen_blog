@@ -51,7 +51,7 @@ const { user } = storeToRefs(userStore);
 
 const getUserInfo = async () => {
   const res = await info();
-  user.value = res.data.data;
+  user.value = res.data;
 };
 
 const logout = () => {
@@ -70,7 +70,6 @@ const goToProfile = () => {
 
 // 跳转到个人设置页面
 const goToSettings = () => {
-  console.log("点击个人设置，准备跳转");
   // 直接使用 location.href
   location.href = "/setting";
 };

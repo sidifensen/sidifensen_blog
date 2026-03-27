@@ -384,7 +384,7 @@ const userList = ref([]);
 const getUsers = async () => {
   try {
     const res = await getUserList();
-    userList.value = res.data.data;
+    userList.value = res.data;
   } catch (error) {
     ElMessage.error("获取用户列表失败");
   }
@@ -447,13 +447,13 @@ const fetchArticles = async () => {
     let pageData = null;
     if (hasSearchConditions()) {
       const res = await adminSearchArticle(buildSearchPayload());
-      pageData = res.data.data;
+      pageData = res.data;
     } else {
       const res = await adminGetArticleList({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       });
-      pageData = res.data.data;
+      pageData = res.data;
     }
     applyPageData(pageData);
   } catch (error) {
@@ -532,8 +532,8 @@ const handleViewArticle = async (articleId) => {
     currentArticle.value = null; // 清空之前的数据
     dialogTitle.value = "文章详情";
     const res = await adminGetArticle(articleId);
-    if (res && res.data && res.data.data) {
-      currentArticle.value = res.data.data;
+    if (res && res.data) {
+      currentArticle.value = res.data;
       dialogVisible.value = true; // 数据加载成功后再显示对话框
     } else {
       throw new Error("文章数据为空或格式错误");

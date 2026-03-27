@@ -204,8 +204,8 @@ const loadComments = async (reset = false) => {
 
     // 发送请求获取评论列表
     const res = await getUserCommentManageList(currentPage.value, pageSize.value, filterParams);
-    const newComments = res.data.data.data || [];
-    const total = res.data.data.total || 0;
+    const newComments = res.data.data || [];
+    const total = res.data.total || 0;
 
     if (reset) {
       // 初次加载或筛选条件改变时
@@ -227,8 +227,7 @@ const loadComments = async (reset = false) => {
       currentPage.value++;
     }
   } catch (error) {
-    console.error("加载评论列表失败:", error);
-    ElMessage.error("加载评论列表失败");
+    // 静默处理
   } finally {
     // 重置加载状态
     loading.value = false;
@@ -313,8 +312,7 @@ const handleDeleteComment = async (commentId) => {
     loadComments(true);
   } catch (error) {
     if (error !== "cancel") {
-      console.error("删除评论失败:", error);
-      ElMessage.error("删除评论失败，请重试");
+      // 静默处理
     }
   }
 };

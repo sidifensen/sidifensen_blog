@@ -60,10 +60,10 @@ const handleOauthCallback = async () => {
 
   try {
     const exchangeRes = await exchangeOauthTicket({ ticket });
-    SetJwt(exchangeRes.data.data);
+    SetJwt(exchangeRes.data);
 
     const userRes = await info();
-    userStore.user = userRes.data.data;
+    userStore.user = userRes.data;
     status.value = "success";
 
     await router.replace({ name: "Home" });

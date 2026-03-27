@@ -184,13 +184,13 @@ const fetchUserInfo = async () => {
     userLoading.value = true;
     const userId = route.params.userId;
     const res = await getUserInfoById(userId);
-    userInfo.value = res.data.data;
+    userInfo.value = res.data;
 
     if (!isCurrentUser.value && userStore.user) {
       await checkUserFollowStatus();
     }
   } catch (error) {
-    console.error("获取用户信息失败:", error);
+    // 静默处理
     ElMessage.error("获取用户信息失败");
   } finally {
     userLoading.value = false;
@@ -202,12 +202,12 @@ const fetchArticleStatistics = async () => {
   try {
     const userId = route.params.userId;
     const res = await getUserArticleStatisticsById(userId);
-    articleStatistics.value = res.data.data;
+    articleStatistics.value = res.data;
     if (articleStatistics.value && articleStatistics.value.totalReadCount !== undefined) {
       totalViews.value = articleStatistics.value.totalReadCount;
     }
   } catch (error) {
-    console.error("获取文章统计信息失败:", error);
+    // 静默处理
     ElMessage.error("获取文章统计信息失败");
   }
 };
@@ -241,8 +241,8 @@ const fetchArticleList = async (reset = false) => {
     }
 
     const res = await getUserArticleList(currentPage.value, pageSize.value, articleStatusDto);
-    const newArticles = res.data.data.data || [];
-    total.value = res.data.data.total || 0;
+    const newArticles = res.data.data || [];
+    total.value = res.data.total || 0;
 
     if (reset) {
       articleList.value = newArticles;
@@ -260,8 +260,7 @@ const fetchArticleList = async (reset = false) => {
       totalViews.value = articleStatistics.value.totalReadCount;
     }
   } catch (error) {
-    ElMessage.error("获取文章列表失败");
-    console.error("获取文章列表失败:", error);
+    // 静默处理
   } finally {
     articleLoading.value = false;
     loadingMore.value = false;
@@ -283,8 +282,8 @@ const fetchColumnList = async (reset = false) => {
 
     const userId = route.params.userId;
     const res = await getUserColumnList(columnCurrentPage.value, pageSize.value, parseInt(userId));
-    const newColumns = res.data.data.data || [];
-    columnTotal.value = res.data.data.total || 0;
+    const newColumns = res.data.data || [];
+    columnTotal.value = res.data.total || 0;
 
     if (reset) {
       columnList.value = newColumns;
@@ -298,8 +297,7 @@ const fetchColumnList = async (reset = false) => {
       columnCurrentPage.value++;
     }
   } catch (error) {
-    ElMessage.error("获取专栏列表失败");
-    console.error("获取专栏列表失败:", error);
+    // 静默处理
   } finally {
     columnLoading.value = false;
     loadingMore.value = false;
@@ -312,15 +310,14 @@ const fetchFavoriteList = async () => {
     favoriteLoading.value = true;
     const userId = route.params.userId;
     const res = await getFavoriteListByUserId(parseInt(userId));
-    favoriteList.value = (res.data.data || []).map((favorite) => ({
+    favoriteList.value = (res.data || []).map((favorite) => ({
       ...favorite,
       expanded: false,
       loading: false,
       articles: [],
     }));
   } catch (error) {
-    ElMessage.error("获取收藏夹列表失败");
-    console.error("获取收藏夹列表失败:", error);
+    // 静默处理
   } finally {
     favoriteLoading.value = false;
   }
@@ -331,10 +328,9 @@ const fetchFavoriteArticleList = async (favorite) => {
   try {
     favorite.loading = true;
     const res = await getArticleListByFavoriteId(favorite.id);
-    favorite.articles = res.data.data || [];
+    favorite.articles = res.data || [];
   } catch (error) {
-    ElMessage.error("获取收藏夹文章失败");
-    console.error("获取收藏夹文章失败:", error);
+    // 静默处理
   } finally {
     favorite.loading = false;
   }
@@ -359,7 +355,7 @@ const handleUpdateFavorite = async (formData) => {
     }
     ElMessage.success("收藏夹更新成功");
   } catch (error) {
-    console.error("更新收藏夹失败:", error);
+    // 静默处理
     ElMessage.error("更新收藏夹失败");
     throw error;
   }
@@ -406,9 +402,9 @@ const checkUserFollowStatus = async () => {
     const followerId = userStore.user.id;
     const followedId = parseInt(route.params.userId);
     const res = await isFollowing(followerId, followedId);
-    isFollowed.value = res.data.data;
+    isFollowed.value = res.data;
   } catch (error) {
-    console.error("检查关注状态失败:", error);
+    // 静默处理
     isFollowed.value = false;
   }
 };
@@ -437,8 +433,7 @@ const handleFollow = async () => {
         : Math.max((userInfo.value.fansCount || 0) - 1, 0);
     }
   } catch (error) {
-    ElMessage.error("操作失败，请重试");
-    console.error("关注操作失败:", error);
+    // 静默处理
   } finally {
     followLoading.value = false;
   }
@@ -546,7 +541,7 @@ onUnmounted(() => {
   --bg-card: #ffffff;
   min-height: 100vh;
   position: relative;
-  overflow: visible;
+  //overflow-x: hidden;
   background: var(--bg-page);
 
   // 黑夜模式适配

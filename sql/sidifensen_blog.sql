@@ -73,7 +73,7 @@ CREATE TABLE `article`  (
   `update_time` datetime NOT NULL COMMENT '更新时间',
   `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '是否删除 0-未删除 1-已删除',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_user_id_examine_edit_visible_status_create_time`(`user_id` ASC, `examine_status` ASC, `edit_status` ASC, `visible_range` ASC, `create_time` ASC) USING BTREE,
+  INDEX `idx_examine_edit_visible_status_update_time`(`examine_status` ASC, `edit_status` ASC, `visible_range` ASC, `update_time` ASC) USING BTREE,
   INDEX `idx_examine_edit_visible_status_create_time`(`examine_status` ASC, `edit_status` ASC, `visible_range` ASC, `create_time` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 79 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 

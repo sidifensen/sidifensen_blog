@@ -238,7 +238,7 @@ const userList = ref([]);
 // 获取用户列表
 const getUsers = async () => {
   const res = await getUserList();
-  userList.value = res.data.data;
+  userList.value = res.data;
 };
 
 // 移动端检测
@@ -329,13 +329,13 @@ const fetchAlbums = async () => {
     let pageData = null;
     if (hasSearchConditions()) {
       const res = await adminSearchAlbum(buildSearchPayload());
-      pageData = res.data.data;
+      pageData = res.data;
     } else {
       const res = await adminList({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       });
-      pageData = res.data.data;
+      pageData = res.data;
     }
     applyPageData(pageData);
   } catch (error) {
@@ -495,7 +495,7 @@ const handleAlbumDetail = async (id) => {
   loading.value = true;
   try {
     const res = await adminGetAlbumDetail(id);
-    albumDetail.value = res.data.data;
+    albumDetail.value = res.data;
     albumDetailDialogVisible.value = true;
     // 重置选中状态
     selectedPhotos.value = [];

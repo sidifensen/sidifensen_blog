@@ -16,6 +16,12 @@ export const useMessageStore = defineStore(
     // 当前聊天窗口的消息列表
     const currentChatMessages = ref([]);
 
+    // 当前聊天用户是否正在输入
+    const targetUserTyping = ref(false);
+
+    // 各会话的输入状态 Map<userId, boolean>
+    const conversationTypingMap = ref({});
+
     /**
      * 设置会话列表
      */
@@ -177,11 +183,39 @@ export const useMessageStore = defineStore(
       currentChatMessages.value = [];
     };
 
+    /**
+     * 设置当前聊天用户是否正在输入
+     */
+    const setTargetUserTyping = (isTyping) => {
+      targetUserTyping.value = isTyping;
+    };
+
+    /**
+     * 设置某个会话的输入状态
+     */
+    const setConversationTyping = (userId, isTyping) => {
+      if (isTyping) {
+        conversationTypingMap.value[userId] = true;
+      } else {
+        delete conversationTypingMap.value[userId];
+      }
+    };
+
+    /**
+     * 清除所有输入状态
+     */
+    const clearAllTyping = () => {
+      targetUserTyping.value = false;
+      conversationTypingMap.value = {};
+    };
+
     return {
       conversationList,
       totalUnreadCount,
       currentChatUserId,
       currentChatMessages,
+      targetUserTyping,
+      conversationTypingMap,
       setConversationList,
       updateConversation,
       clearConversationUnread,
@@ -193,6 +227,9 @@ export const useMessageStore = defineStore(
       updateUserOnlineStatus,
       updateConversationLastMessage,
       clearAll,
+      setTargetUserTyping,
+      setConversationTyping,
+      clearAllTyping,
     };
   },
   {

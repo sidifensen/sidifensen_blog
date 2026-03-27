@@ -1,0 +1,9 @@
+{
+  "appId": "com.sidifensen.blog",
+  "appName": "斯蒂芬森社区",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "hostname": "localhost"
+  }
+}

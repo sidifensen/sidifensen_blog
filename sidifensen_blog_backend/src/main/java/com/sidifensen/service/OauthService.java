@@ -23,6 +23,9 @@ import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class OauthService {
 
@@ -100,7 +103,10 @@ public class OauthService {
             ipService.setRegisterIp(sysUser.getId(), ip);
             sysUserRoleService.setRegisterRole(sysUser.getId());
             sysLoginLogService.recordLoginLog(sysUser.getId(), username, code, ip, LoginStatusEnum.SUCCESS.getCode());
-            return redisComponent.saveOauthTicket(sysUser.getId(), code);
+            log.info("【OAuth调试】准备保存新用户票据 - userId={}, code={}", sysUser.getId(), code);
+            String ticket = redisComponent.saveOauthTicket(sysUser.getId(), code);
+            log.info("【OAuth调试】新用户票据保存完成 - ticket={}", ticket);
+            return ticket;
         }
 
         if (StatusEnum.DISABLE.getStatus().equals(user.getStatus())) {
@@ -121,7 +127,10 @@ public class OauthService {
 
         ipService.setLoginIp(user.getId(), ip);
         sysLoginLogService.recordLoginLog(user.getId(), username, code, ip, LoginStatusEnum.SUCCESS.getCode());
-        return redisComponent.saveOauthTicket(user.getId(), code);
+        log.info("【OAuth调试】准备保存老用户票据 - userId={}, code={}", user.getId(), code);
+        String ticket = redisComponent.saveOauthTicket(user.getId(), code);
+        log.info("【OAuth调试】老用户票据保存完成 - ticket={}", ticket);
+        return ticket;
     }
 
     /**
@@ -168,5 +177,71 @@ public class OauthService {
             normalizedUuid = uuid.substring(0, maxUuidLength);
         }
         return prefix + normalizedUuid;
+    }
+
+    /**
+     * 微信小程序登录
+     *
+     * @param openid 微信 openid
+     * @param code   登录方式编码
+     * @return 一次性票据
+     */
+    public String wechatLogin(String openid, Integer code) {
+        String ip = ipUtils.getIp();
+        String loginType = RegisterOrLoginTypeEnum.getType(code);
+
+        if (openid == null || openid.isEmpty()) {
+            throw new BlogException(BlogConstants.OauthLoginError);
+        }
+
+        // 以登录方式前缀 + 微信 openid 生成本地账号
+        String username = buildOauthUsername(loginType, openid);
+        SysUser user = sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, username));
+
+        if (ObjectUtil.isEmpty(user)) {
+            // 新用户注册
+            SysUser sysUser = new SysUser();
+            sysUser.setUsername(username);
+            sysUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString().replace("-", "")));
+            sysUser.setNickname("微信用户");
+            sysUser.setAvatar("https://image.sidifensen.com/sidifensen-blog/user/avatar/default.png");
+            sysUser.setStatus(StatusEnum.NORMAL.getStatus());
+            sysUser.setRegisterIp(ip);
+            sysUser.setRegisterAddress(ipUtils.getAddress(ip));
+            sysUser.setRegisterType(code);
+            sysUser.setLoginTime(new Date());
+            sysUser.setLoginType(code);
+            sysUser.setLoginIp(ip);
+            sysUser.setLoginAddress(ipUtils.getAddress(ip));
+            int insert = sysUserMapper.insert(sysUser);
+            if (insert <= 0) {
+                throw new BlogException(BlogConstants.OauthLoginError);
+            }
+
+            ipService.setRegisterIp(sysUser.getId(), ip);
+            sysUserRoleService.setRegisterRole(sysUser.getId());
+            sysLoginLogService.recordLoginLog(sysUser.getId(), username, code, ip, LoginStatusEnum.SUCCESS.getCode());
+            return redisComponent.saveOauthTicket(sysUser.getId(), code);
+        }
+
+        if (StatusEnum.DISABLE.getStatus().equals(user.getStatus())) {
+            throw new BlogException(BlogConstants.UserDisabled);
+        }
+
+        // 更新登录态
+        SysUser updateUser = new SysUser();
+        updateUser.setId(user.getId());
+        updateUser.setLoginTime(new Date());
+        updateUser.setLoginType(code);
+        updateUser.setLoginIp(ip);
+        updateUser.setLoginAddress(ipUtils.getAddress(ip));
+        int update = sysUserMapper.updateById(updateUser);
+        if (update <= 0) {
+            throw new BlogException(BlogConstants.OauthLoginError);
+        }
+
+        ipService.setLoginIp(user.getId(), ip);
+        sysLoginLogService.recordLoginLog(user.getId(), username, code, ip, LoginStatusEnum.SUCCESS.getCode());
+        return redisComponent.saveOauthTicket(user.getId(), code);
     }
 }

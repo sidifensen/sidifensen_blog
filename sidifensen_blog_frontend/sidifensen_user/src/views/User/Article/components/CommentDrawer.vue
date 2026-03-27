@@ -148,8 +148,8 @@ const fetchCommentList = async (reset = false) => {
     }
 
     const res = await getCommentList(props.articleId, currentPage.value, pageSize.value);
-    const newComments = res.data.data.data || [];
-    commentTotal.value = res.data.data.total || 0;
+    const newComments = res.data.data || [];
+    commentTotal.value = res.data.total || 0;
 
     if (reset) {
       commentList.value = newComments;
@@ -165,8 +165,7 @@ const fetchCommentList = async (reset = false) => {
       currentPage.value++;
     }
   } catch (error) {
-    ElMessage.error("获取评论列表失败");
-    console.error("获取评论列表失败:", error);
+    // 静默处理
   } finally {
     loading.value = false;
     loadingMore.value = false;

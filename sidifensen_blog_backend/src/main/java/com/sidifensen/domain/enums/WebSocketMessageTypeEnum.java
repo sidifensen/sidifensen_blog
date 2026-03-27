@@ -17,6 +17,8 @@ public enum WebSocketMessageTypeEnum {
     MESSAGE_REVOKED("MESSAGE_REVOKED", "消息撤回通知"),
     SEND_SUCCESS("SEND_SUCCESS", "发送成功"),
     HEARTBEAT("HEARTBEAT", "心跳"),
+    TYPING("TYPING", "正在输入"),
+    TYPING_NOTIFY("TYPING_NOTIFY", "正在输入通知"),
     USER_ONLINE_STATUS("USER_ONLINE_STATUS", "用户在线状态"),
     SYSTEM("SYSTEM", "系统消息"),
     NEW_NOTIFICATION("NEW_NOTIFICATION", "新通知");

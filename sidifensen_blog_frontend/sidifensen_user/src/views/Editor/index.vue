@@ -301,7 +301,7 @@ const countWords = () => {
     // 更新字数统计
     wordCount.value = words;
   } catch (error) {
-    console.error("计算字数时出错:", error);
+    // 静默处理
   }
 };
 
@@ -337,7 +337,7 @@ const loadArticleDetail = async () => {
     if (articleId && !isNaN(articleId)) {
       // 调用获取文章详情接口
       const response = await getArticleDetail(articleId);
-      const articleData = response.data.data;
+      const articleData = response.data;
 
       // 填充文章基本信息
       if (articleData) {
@@ -382,7 +382,7 @@ const loadArticleDetail = async () => {
       }
     }
   } catch (error) {
-    console.error("加载文章详情失败:", error);
+    // 静默处理
     ElMessage.error("加载文章详情失败，请重试");
   }
 };
@@ -427,14 +427,13 @@ onMounted(async () => {
                 resolve({
                   errorCode: 0,
                   data: {
-                    src: response.data.data,
+                    src: response.data,
                     alt: "文章图片",
                   },
                 });
               })
               .catch((error) => {
-                // 处理请求异常情况
-                console.error("上传异常:", error);
+                // 静默处理
                 if (error.msg || error.message) {
                   reject(new Error(error.msg || error.message));
                 } else {
@@ -528,7 +527,7 @@ const updateDirectory = () => {
     // 更新目录数据
     directoryItems.value = newItems;
   } catch (error) {
-    console.error("更新目录时出错:", error);
+    // 静默处理
   }
 };
 
@@ -554,7 +553,6 @@ const scrollToHeading = (id) => {
     // 从映射中获取标题信息
     const headingInfo = headingElementsMap.get(id);
     if (!headingInfo) {
-      console.error(`未找到ID为${id}的标题`);
       return;
     }
     // 获取标题文本、级别和索引
@@ -562,7 +560,6 @@ const scrollToHeading = (id) => {
     // 获取编辑器内容区域
     const contentArea = document.querySelector(".editor-content");
     if (!contentArea) {
-      console.error("未找到编辑器内容区域");
       return;
     }
     // 获取所有标题元素
@@ -578,11 +575,9 @@ const scrollToHeading = (id) => {
       activeHeadingId.value = id;
       // 执行滚动操作
       targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      console.error(`未找到ID为"${id}"或包含文本"${text}"的标题元素`);
     }
   } catch (error) {
-    console.error("滚动到标题时出错:", error);
+    // 静默处理
   }
 };
 
@@ -631,7 +626,7 @@ watch(
 const allTags = ref({});
 getTagList().then((res) => {
   // 后端返回的是分组的标签数据: { "前沿技术": [{id, category, name}, ...], ... }
-  allTags.value = res.data.data;
+  allTags.value = res.data;
 });
 
 // 标签选择器显示状态
@@ -782,13 +777,13 @@ const handleCoverUpload = async (options) => {
     ElMessage.info("封面图片上传中...");
     const response = await uploadArticlePhoto(compressedFile);
     // 将服务器返回的URL赋值给coverImage
-    coverImage.value = response.data.data;
-    article.value.coverUrl = response.data.data;
+    coverImage.value = response.data;
+    article.value.coverUrl = response.data;
     // 调用成功回调
     options.onSuccess && options.onSuccess();
     ElMessage.success("封面图片上传成功");
   } catch (error) {
-    console.error("封面图片上传失败:", error);
+    // 静默处理
     ElMessage.error("封面图片上传失败，请重试");
     options.onError && options.onError();
   }
@@ -802,10 +797,10 @@ const aiQuotaDailyLimit = ref(null);
 const fetchAiQuota = async () => {
   try {
     const response = await getAiQuota();
-    aiQuotaRemaining.value = response.data.data.remaining;
-    aiQuotaDailyLimit.value = response.data.data.dailyLimit;
+    aiQuotaRemaining.value = response.data.remaining;
+    aiQuotaDailyLimit.value = response.data.dailyLimit;
   } catch (error) {
-    console.error("获取AI配额失败:", error);
+    // 静默处理
   }
 };
 
@@ -830,7 +825,7 @@ const extractSummary = async () => {
 
     // 调用后端接口提取摘要
     const response = await extractSummaryApi(content);
-    const summary = response.data.data;
+    const summary = response.data;
 
     // 将提取的摘要填充到文章摘要输入框
     article.value.description = summary;
@@ -840,7 +835,7 @@ const extractSummary = async () => {
     // 更新AI配额
     await fetchAiQuota();
   } catch (error) {
-    console.error("AI提取摘要失败:", error);
+    // 静默处理
     ElMessage.error(error.response?.data?.msg || "AI提取摘要失败，请重试");
   }
 };
@@ -908,7 +903,7 @@ const generateAiTitles = async () => {
 
     // 调用后端接口生成标题
     const response = await generateTitlesApi(content);
-    const titles = response.data.data;
+    const titles = response.data;
 
     if (!titles || titles.length === 0) {
       ElMessage.warning("AI 未能生成标题建议");
@@ -925,7 +920,7 @@ const generateAiTitles = async () => {
     // 显示对话框
     aiTitleSuggestionsDialogVisible.value = true;
   } catch (error) {
-    console.error("AI 生成标题失败:", error);
+    // 静默处理
     ElMessage.error(error.response?.data?.msg || "AI 生成标题失败，请重试");
   } finally {
     isGeneratingTitle.value = false;
@@ -1028,7 +1023,7 @@ const recommendAiTags = async () => {
 
     // 调用后端接口推荐标签
     const response = await recommendTagsApi(title, content);
-    const recommendedTags = response.data.data;
+    const recommendedTags = response.data;
 
     if (!recommendedTags || recommendedTags.length === 0) {
       ElMessage.warning("AI 未能推荐标签");
@@ -1044,7 +1039,7 @@ const recommendAiTags = async () => {
     // 显示对话框
     aiRecommendedTagsDialogVisible.value = true;
   } catch (error) {
-    console.error("AI 推荐标签失败:", error);
+    // 静默处理
     ElMessage.error(error.response?.data?.msg || "AI 推荐标签失败，请重试");
   } finally {
     isRecommendingTags.value = false;
@@ -1065,7 +1060,7 @@ const showColumnListOnHover = async () => {
   showColumnDropdown.value = true;
   try {
     const res = await getColumnList();
-    allColumns.value = res.data.data
+    allColumns.value = res.data
       .sort((a, b) => {
         return a.sort - b.sort;
       })
@@ -1076,8 +1071,7 @@ const showColumnListOnHover = async () => {
         };
       });
   } catch (error) {
-    console.error("获取专栏列表失败:", error);
-    ElMessage.error("获取专栏列表失败");
+    // 静默处理
   }
 };
 
@@ -1140,7 +1134,7 @@ const addNewColumnn = () => {
       .then((res) => {
         // 刷新专栏列表
         getColumnList().then((res) => {
-          allColumns.value = res.data.data
+          allColumns.value = res.data
             .sort((a, b) => {
               return a.sort - b.sort;
             })
@@ -1289,17 +1283,17 @@ const handleSaveDraft = async () => {
     const response = await saveDraft(article.value);
 
     // 保存草稿成功后，更新文章ID和路由参数
-    if (response.data && response.data.data && response.data.data.id) {
-      article.value.id = response.data.data.id;
+    if (response.data && response.data.id) {
+      article.value.id = response.data.id;
       // 更新路由参数，确保后续发布时能正确识别为更新操作
       router.replace({
-        query: { ...route.query, articleId: response.data.data.id },
+        query: { ...route.query, articleId: response.data.id },
       });
     }
 
     ElMessage.success("草稿保存成功!");
   } catch (error) {
-    console.error("草稿保存失败:", error);
+    // 静默处理
     ElMessage.error("草稿保存失败!");
   } finally {
     isSavingDraft.value = false;

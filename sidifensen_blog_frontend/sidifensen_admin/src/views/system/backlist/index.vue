@@ -327,13 +327,13 @@ const fetchBlacklists = async () => {
     let pageData = null;
     if (hasSearchConditions()) {
       const res = await searchBlacklist(buildSearchPayload());
-      pageData = res.data.data;
+      pageData = res.data;
     } else {
       const res = await getBlacklistList({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       });
-      pageData = res.data.data;
+      pageData = res.data;
     }
     applyPageData(pageData);
   } catch (error) {

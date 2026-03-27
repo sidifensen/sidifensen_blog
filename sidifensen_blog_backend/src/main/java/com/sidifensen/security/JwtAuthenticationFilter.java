@@ -1,6 +1,7 @@
 package com.sidifensen.security;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.sidifensen.config.SidifensenConfig;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.constants.RabbitMQConstants;
@@ -79,9 +80,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 可选认证接口：有token就认证，没有就跳过
         if (isOptionalAuth) {
             String jwt = request.getHeader("Authorization");
+            log.info("【OAuth调试】Optional_Auth 路径: {}, JWT={}", request.getRequestURI(), jwt);
             if (ObjectUtil.isNotEmpty(jwt)) {
                 try {
                     authenticateUser(request, response);
+                    log.info("【OAuth调试】Optional_Auth 认证完成, SecurityContext={}", SecurityContextHolder.getContext().getAuthentication());
                 } catch (Exception e) {
                     // 可选认证失败，忽略错误继续放行
                     log.debug("可选认证失败: {}", e.getMessage());
@@ -108,6 +111,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      */
     private boolean authenticateUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String jwt = request.getHeader("Authorization");
+        // 去掉 Bearer 前缀（如果有）
+        if (StrUtil.isNotBlank(jwt) && jwt.startsWith("Bearer ") && jwt.length() > 7) {
+            jwt = jwt.substring(7);
+        }
         if (ObjectUtil.isEmpty(jwt)) {
             log.error("用户访问接口{}, 提示:请先登录", request.getRequestURI());
             WebUtils.Unauthorized(response, Result.unauthorized(BlogConstants.LoginRequired).toJson());
@@ -162,8 +169,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 获取用户ID（如果已登录）
             Integer userId = null;
             String jwt = request.getHeader("Authorization");
-            if (ObjectUtil.isNotEmpty(jwt)) {
-                userId = jwtUtils.parseToken(jwt);
+            // 校验JWT格式有效性后再解析，避免解析无效字符串导致JSON异常
+            if (ObjectUtil.isNotEmpty(jwt) && jwt.startsWith("Bearer ") && jwt.length() > 7) {
+                String token = jwt.substring(7);
+                if (StrUtil.isNotBlank(token) && token.contains(".")) {
+                    userId = jwtUtils.parseToken(token);
+                }
             }
 
             // 获取IP和设备信息

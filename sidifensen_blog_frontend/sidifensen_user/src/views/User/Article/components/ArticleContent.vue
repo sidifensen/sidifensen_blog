@@ -152,7 +152,9 @@ const props = defineProps({
 
 // 渲染富文本内容
 const renderContent = computed(() => {
-  if (!props.article?.content) return "";
+  if (!props.article?.content) {
+    return "";
+  }
   return props.article.content;
 });
 
@@ -210,8 +212,7 @@ const copyCodeBlock = async (codeElement) => {
     // 显示成功提示
     ElMessage.success("代码已复制到剪贴板");
   } catch (error) {
-    console.error("复制失败:", error);
-    ElMessage.error("复制失败，请手动复制");
+    // 静默处理
   }
 };
 

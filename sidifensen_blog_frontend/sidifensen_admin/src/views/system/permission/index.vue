@@ -180,7 +180,7 @@ import * as XLSX from "xlsx";
 
 const exportPermission = async () => {
   const res = await getPermissionList();
-  const fullPermissionList = res.data.data || [];
+  const fullPermissionList = res.data || [];
   const data = fullPermissionList.map((item) => {
     return {
       权限id: item.id,
@@ -299,13 +299,13 @@ const fetchPermissions = async () => {
     let pageData = null;
     if (hasSearchConditions()) {
       const res = await queryPermissionPage(buildSearchPayload());
-      pageData = res.data.data;
+      pageData = res.data;
     } else {
       const res = await getPermissionPage({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       });
-      pageData = res.data.data;
+      pageData = res.data;
     }
     applyPageData(pageData);
   } catch (error) {
@@ -456,12 +456,12 @@ const handleAuthorizeRole = async (row) => {
 
   // 获取角色列表
   const res = await getRoleList();
-  allRole.value = res.data.data;
+  allRole.value = res.data;
 
   // 已获得当前权限授权的角色
   const res1 = await getRolesByPermission(row.id);
   // 把数组里的id取出来
-  res1.data.data.forEach((item) => {
+  res1.data.forEach((item) => {
     // 默认选中已经有权限授权的用户
     selectedRole.value.push(item.id);
   });
@@ -509,7 +509,7 @@ const handleSelectionChange = async (permission) => {
   currentPermissionList.value = permission;
   // 获取角色列表
   const res = await getRoleList();
-  allRole.value = res.data.data;
+  allRole.value = res.data;
 };
 
 // 检查权限是否被选中
