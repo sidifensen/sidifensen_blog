@@ -2,11 +2,7 @@
   "easycom": {
     "autoscan": true,
     "custom": {
-      "^uv-avatar$": "@/components/avatar/index.vue",
-      "^uv-loading-icon$": "@/components/loading-icon/index.vue",
-      "^uv-icon$": "@/components/icon/index.vue",
-      "^uv-input$": "@/components/input/index.vue",
-      "^uv-(.*)": "@/components/$1/index.vue"
+      "^uv-(.*)": "uview-pro/components/u-$1/u-$1.vue"
     }
   },
   "pages": [

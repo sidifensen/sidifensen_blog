@@ -26,4 +26,8 @@ onHide(() => {
 <style lang="scss">
 @import '@/styles/variables.scss';
 @import '@/styles/common.scss';
+/* uView Pro 全局样式 */
+@import 'uview-pro/index.scss';
+/* uView Pro 主题变量 */
+@import 'uview-pro/theme.scss';
 </style>
