@@ -81,8 +81,8 @@ function onTabChange(index) {
   right: 0;
   bottom: 0;
   z-index: 999;
-  background: #ffffff;
-  border-top: 1px solid #e5e7eb;
+  background: var(--u-bg-white);
+  border-top: 1px solid var(--u-border-color);
   padding-bottom: constant(safe-area-inset-bottom);
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -104,12 +104,12 @@ function onTabChange(index) {
 
   .tabbar-text {
     font-size: 12px;
-    color: #9ca3af;
+    color: var(--u-tips-color);
     transition: color 0.3s;
   }
 
   &.active .tabbar-text {
-    color: #0891b2;
+    color: var(--u-type-primary);
   }
 }
 </style>

@@ -194,7 +194,7 @@ public class SysBlacklistServiceImpl extends ServiceImpl<SysBlacklistMapper, Sys
             if (!result) {
                 log.error("更新黑名单记录失败 - 标识: {}", identifier);
             } else {
-                log.info("黑名单记录已升级 - 标识: {}, 新原因: {}, 新封禁时长: {}秒", identifier, banDurationSeconds);
+                
             }
 
         } catch (Exception e) {

@@ -222,13 +222,6 @@ public class VipAdminServiceImpl implements VipAdminService {
         String actionName = actionEnum.name();
         Integer days = vipAdminMemberAdjustDto.getDays();
         String remark = vipAdminMemberAdjustDto.getRemark();
-        log.info("管理员调整会员开始，targetUserId={}, targetUsername={}, action={}, days={}, remark={}",
-                vipAdminMemberAdjustDto.getUserId(),
-                sysUser.getUsername(),
-                actionName,
-                days,
-                remark == null ? "" : remark);
-
         // 手动调整只改会员数据，不伪造支付订单；续期时沿用最后订单号便于后续追溯。
         switch (actionEnum) {
             case ACTIVATE -> vipMemberService.overwriteVip(vipAdminMemberAdjustDto.getUserId(), vipAdminMemberAdjustDto.getDays());
@@ -237,7 +230,7 @@ public class VipAdminServiceImpl implements VipAdminService {
             default -> throw new BlogException(BlogConstants.VipAdjustActionInvalid);
         }
 
-        log.info("管理员调整会员完成，targetUserId={}, action={}, days={}", vipAdminMemberAdjustDto.getUserId(), actionName, days);
+        
     }
 
     /**

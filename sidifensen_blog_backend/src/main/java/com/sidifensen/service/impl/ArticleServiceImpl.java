@@ -24,12 +24,14 @@ import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.ColumnMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.redis.RedisComponent;
+import com.sidifensen.redis.NotificationThreadPool;
 import com.sidifensen.service.*;
 import com.sidifensen.utils.IpUtils;
-import com.sidifensen.utils.MyThreadFactory;
 import com.sidifensen.utils.SecurityUtils;
 import com.sidifensen.utils.EmailUtils;
+import com.sidifensen.utils.PageUtils;
 import com.sidifensen.utils.TextAuditUtils;
+import com.sidifensen.utils.UserUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -39,10 +41,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -56,11 +54,8 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
-
-    ExecutorService executorService = new ThreadPoolExecutor(
-            2, 4, 0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(500),
-            new MyThreadFactory("ArticleServiceImpl"));
+    @Resource
+    private NotificationThreadPool notificationThreadPool;
     @Resource
     private ArticleMapper articleMapper;
     @Resource
@@ -106,7 +101,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public PageVo<List<ArticleVo>> getAllArticleList(Integer pageNum, Integer pageSize) {
-        Page<Article> page = new Page<>(pageNum, pageSize);
+        Page<Article> page = PageUtils.buildPage(pageNum, pageSize);
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
                 .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
                 .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
@@ -121,21 +116,17 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         // 添加用户昵称和专栏信息
         if (!articleVoList.isEmpty()) {
-            List<Integer> userIds = articleVoList.stream().map(ArticleVo::getUserId).collect(Collectors.toList());
-            List<SysUser> users = sysUserMapper
-                    .selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIds));
-            Map<Integer, String> userIdToNicknameMap = users.stream()
-                    .collect(Collectors.toMap(
-                            SysUser::getId,
-                            user -> user.getNickname() != null ? user.getNickname() : "",
-                            (v1, v2) -> v1));
-            Map<Integer, String> userIdToAvatarMap = users.stream()
-                    .collect(Collectors.toMap(
-                            SysUser::getId,
-                            user -> user.getAvatar() != null ? user.getAvatar() : "",
-                            (v1, v2) -> v1));
-            articleVoList.forEach(articleVo -> articleVo.setNickname(userIdToNicknameMap.get(articleVo.getUserId())));
-            articleVoList.forEach(articleVo -> articleVo.setAvatar(userIdToAvatarMap.get(articleVo.getUserId())));
+            // 使用UserUtils批量获取用户信息
+            Map<Integer, SysUser> userMap = UserUtils.getUserMap(
+                    articleVoList.stream().map(ArticleVo::getUserId).collect(Collectors.toList()),
+                    sysUserMapper);
+            articleVoList.forEach(articleVo -> {
+                SysUser user = userMap.get(articleVo.getUserId());
+                if (user != null) {
+                    articleVo.setNickname(user.getNickname());
+                    articleVo.setAvatar(user.getAvatar());
+                }
+            });
 
             // 添加专栏信息
             List<Integer> articleIds = articleVoList.stream().map(ArticleVo::getId).collect(Collectors.toList());
@@ -160,7 +151,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             }
         }
 
-        return new PageVo<>(articleVoList, page.getTotal());
+        return PageUtils.<ArticleVo>buildPageVo(page, articleVoList);
     }
 
     @Override
@@ -171,7 +162,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
 
         // 会员专区只收敛展示真正可供 VIP 查看的文章，不混入草稿和待审内容。
-        Page<Article> page = new Page<>(pageNum, pageSize);
+        Page<Article> page = PageUtils.buildPage(pageNum, pageSize);
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
                 .eq(Article::getExamineStatus, ExamineStatusEnum.PASS.getCode())
                 .eq(Article::getEditStatus, EditStatusEnum.PUBLISHED.getCode())
@@ -185,13 +176,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 会员专区额外补齐作者信息和专栏信息，避免前端逐条补查。
         fillArticleUserInfo(articleVoList);
         fillArticleColumns(articleVoList);
-        return new PageVo<>(articleVoList, page.getTotal());
+        return PageUtils.<ArticleVo>buildPageVo(page, articleVoList);
     }
 
     @Override
     public PageVo<List<ArticleVo>> getVipPreviewArticleList(Integer pageNum, Integer pageSize) {
         // 文章广场里的会员精选只做预览曝光，不返回正文内容。
-        Page<Article> page = new Page<>(pageNum, pageSize);
+        Page<Article> page = PageUtils.buildPage(pageNum, pageSize);
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
                 .select(Article::getId, Article::getUserId, Article::getTitle, Article::getCoverUrl,
                         Article::getReadCount, Article::getLikeCount, Article::getUpdateTime)
@@ -204,7 +195,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         List<ArticleVo> articleVoList = articleList.stream()
                 .map(article -> BeanUtil.copyProperties(article, ArticleVo.class))
                 .collect(Collectors.toList());
-        return new PageVo<>(articleVoList, page.getTotal());
+        return PageUtils.<ArticleVo>buildPageVo(page, articleVoList);
     }
 
     @Override
@@ -218,7 +209,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             targetUserId = currentUserId;
         }
 
-        Page<Article> page = new Page<>(pageNum, pageSize);
+        Page<Article> page = PageUtils.buildPage(pageNum, pageSize);
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
                 .eq(Article::getUserId, targetUserId);
 
@@ -285,7 +276,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             }
         }
 
-        return new PageVo<>(articleVoList, page.getTotal());
+        return PageUtils.<ArticleVo>buildPageVo(page, articleVoList);
     }
 
     @Override
@@ -295,7 +286,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Integer targetUserId = ObjectUtil.isNotEmpty(articleStatusDto.getUserId()) ? articleStatusDto.getUserId()
                 : currentUserId; // 目标用户ID
 
-        Page<Article> page = new Page<>(pageNum, pageSize);
+        Page<Article> page = PageUtils.buildPage(pageNum, pageSize);
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
                 .eq(targetUserId != 0, Article::getUserId, targetUserId);
 
@@ -364,7 +355,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             return articleVo;
         }).toList();
 
-        return new PageVo<>(articleVoList, page.getTotal());
+        return PageUtils.<ArticleVo>buildPageVo(page, articleVoList);
     }
 
     @Override
@@ -549,22 +540,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (userIds.isEmpty()) {
             return;
         }
-        LambdaQueryWrapper<SysUser> userWrapper = new LambdaQueryWrapper<SysUser>()
-                        .in(SysUser::getId, userIds)
-                        .select(SysUser::getId, SysUser::getNickname, SysUser::getAvatar);
-                List<SysUser> users = sysUserMapper.selectList(userWrapper);
-        Map<Integer, String> userIdToNicknameMap = users.stream()
-                .collect(Collectors.toMap(
-                        SysUser::getId,
-                        user -> ObjectUtil.defaultIfNull(user.getNickname(), ""),
-                        (v1, v2) -> v1));
-        Map<Integer, String> userIdToAvatarMap = users.stream()
-                .collect(Collectors.toMap(
-                        SysUser::getId,
-                        user -> ObjectUtil.defaultIfNull(user.getAvatar(), ""),
-                        (v1, v2) -> v1));
-        articleVoList.forEach(articleVo -> articleVo.setNickname(userIdToNicknameMap.get(articleVo.getUserId())));
-        articleVoList.forEach(articleVo -> articleVo.setAvatar(userIdToAvatarMap.get(articleVo.getUserId())));
+        // 使用UserUtils批量获取用户信息
+        Map<Integer, SysUser> userMap = UserUtils.getUserMap(userIds, sysUserMapper);
+        articleVoList.forEach(articleVo -> {
+            SysUser user = userMap.get(articleVo.getUserId());
+            if (user != null) {
+                articleVo.setNickname(ObjectUtil.defaultIfNull(user.getNickname(), ""));
+                articleVo.setAvatar(ObjectUtil.defaultIfNull(user.getAvatar(), ""));
+            }
+        });
     }
 
     /**
@@ -597,7 +581,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     // 异步增加阅读量
     private void incrReadCount(Integer articleId, Integer userId, String ipAddress) {
-        executorService.execute(() -> {
+        notificationThreadPool.getNotificationPool("article").execute(() -> {
             try {
                 // 检查并记录浏览，如果用户/访客已浏览过，则不增加阅读量
                 boolean shouldIncrement = historyService.checkAndRecordRead(articleId, userId, ipAddress);
@@ -622,7 +606,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public PageVo<List<ArticleVo>> searchArticleByTitle(String title, Integer pageNum, Integer pageSize) {
-        Page<Article> page = new Page<>(pageNum, pageSize);
+        Page<Article> page = PageUtils.buildPage(pageNum, pageSize);
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
                 .select(Article.class, info -> !info.getColumn().equals("content")) // 排除 content 字段
                 .like(Article::getTitle, title)
@@ -647,12 +631,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 })
                 .collect(Collectors.toList());
 
-        return new PageVo<>(articleVos, page.getTotal());
+        return PageUtils.<ArticleVo>buildPageVo(page, articleVos);
     }
 
     @Override
     public PageVo<List<ArticleVo>> searchArticleByTag(String tag, Integer pageNum, Integer pageSize) {
-        Page<Article> page = new Page<>(pageNum, pageSize);
+        Page<Article> page = PageUtils.buildPage(pageNum, pageSize);
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
                 .select(Article.class, info -> !info.getColumn().equals("content")) // 排除 content 字段
                 .like(Article::getTag, tag)
@@ -677,7 +661,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 })
                 .collect(Collectors.toList());
 
-        return new PageVo<>(articleVos, page.getTotal());
+        return PageUtils.<ArticleVo>buildPageVo(page, articleVos);
     }
 
     @Override
@@ -698,7 +682,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         List<Integer> userIds = users.stream().map(SysUser::getId).collect(Collectors.toList());
 
         // 3. 查询这些用户发布的文章
-        Page<Article> page = new Page<>(pageNum, pageSize);
+        Page<Article> page = PageUtils.buildPage(pageNum, pageSize);
         LambdaQueryWrapper<Article> articleQuery = new LambdaQueryWrapper<Article>()
                 .select(Article.class, info -> !info.getColumn().equals("content")) // 排除 content 字段
                 .in(Article::getUserId, userIds)
@@ -717,7 +701,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 填充作者昵称和头像信息
         fillArticleUserInfo(articleVos);
 
-        return new PageVo<>(articleVos, page.getTotal());
+        return PageUtils.<ArticleVo>buildPageVo(page, articleVos);
     }
 
     @Override
@@ -791,7 +775,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     // 文章审核
     private void auditArticle(ArticleDto articleDto) {
-        executorService.execute(() -> {
+        notificationThreadPool.getNotificationPool("article").execute(() -> {
 
             MessageDto messageDto = new MessageDto();
             messageDto.setType(MessageTypeEnum.SYSTEM.getCode());
@@ -1021,49 +1005,31 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public PageVo<List<ArticleVo>> adminGetArticleList(Integer pageNum, Integer pageSize) {
-        Page<Article> page = new Page<>(pageNum, pageSize);
+        Page<Article> page = PageUtils.buildPage(pageNum, pageSize);
         LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
                 .orderByDesc(Article::getCreateTime);
         List<Article> articleList = articleMapper.selectPage(page, qw).getRecords();
         List<ArticleVo> articleVoList = BeanUtil.copyToList(articleList, ArticleVo.class);
 
-        // 批量查询用户名并设置到文章中
+        // 使用UserUtils批量获取用户昵称
         if (!articleVoList.isEmpty()) {
-            // 收集所有不为空的用户ID
-            List<Integer> userIds = articleVoList.stream()
-                    .map(ArticleVo::getUserId)
-                    .filter(ObjectUtil::isNotNull)
-                    .distinct()
-                    .toList();
-
-            if (!userIds.isEmpty()) {
-                // 批量查询用户信息
-                List<SysUser> users = sysUserMapper.selectList(
-                        new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIds));
-
-                // 创建用户ID到用户昵称的映射
-                Map<Integer, String> userIdToNicknameMap = users.stream()
-                        .collect(Collectors.toMap(
-                                SysUser::getId,
-                                user -> user.getNickname() != null ? user.getNickname() : "",
-                                (v1, v2) -> v1));
-
-                // 为每篇文章设置用户昵称
-                articleVoList.forEach(articleVo -> {
-                    if (articleVo.getUserId() != null) {
-                        String nickname = userIdToNicknameMap.get(articleVo.getUserId());
-                        articleVo.setNickname(nickname);
-                    }
-                });
-            }
+            Map<Integer, SysUser> userMap = UserUtils.getUserMap(
+                    articleVoList.stream().map(ArticleVo::getUserId).filter(Objects::nonNull).distinct().collect(Collectors.toList()),
+                    sysUserMapper);
+            articleVoList.forEach(articleVo -> {
+                if (articleVo.getUserId() != null) {
+                    SysUser user = userMap.get(articleVo.getUserId());
+                    articleVo.setNickname(user != null ? user.getNickname() : null);
+                }
+            });
         }
 
-        return new PageVo<>(articleVoList, page.getTotal());
+        return PageUtils.<ArticleVo>buildPageVo(page, articleVoList);
     }
 
     @Override
     public PageVo<List<ArticleVo>> adminGetArticlesByUserId(Integer userId, Integer pageNum, Integer pageSize) {
-        Page<Article> page = new Page<>(pageNum, pageSize);
+        Page<Article> page = PageUtils.buildPage(pageNum, pageSize);
         // 构建查询条件：根据用户ID查询该用户的所有文章
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Article::getUserId, userId)
@@ -1073,29 +1039,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         List<ArticleVo> articleVos = BeanUtil.copyToList(articles, ArticleVo.class);
 
         if (!articleVos.isEmpty()) {
-            // 获取文章对应的用户信息
-            List<Integer> userIds = articleVos.stream()
-                    .map(ArticleVo::getUserId)
-                    .distinct()
-                    .collect(Collectors.toList());
+            // 使用UserUtils批量获取用户信息
+            Map<Integer, SysUser> userMap = UserUtils.getUserMap(
+                    articleVos.stream().map(ArticleVo::getUserId).distinct().collect(Collectors.toList()),
+                    sysUserMapper);
 
-            if (!userIds.isEmpty()) {
-                List<SysUser> users = sysUserMapper.selectList(
-                        new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIds));
-                Map<Integer, String> userMap = users.stream()
-                        .collect(Collectors.toMap(
-                                SysUser::getId,
-                                user -> user.getNickname() != null ? user.getNickname() : "",
-                                (v1, v2) -> v1));
-
-                // 设置用户昵称
-                articleVos.forEach(articleVo -> {
-                    String nickname = userMap.get(articleVo.getUserId());
-                    if (nickname != null) {
-                        articleVo.setNickname(nickname);
-                    }
-                });
-            }
+            // 设置用户昵称
+            articleVos.forEach(articleVo -> {
+                SysUser user = userMap.get(articleVo.getUserId());
+                articleVo.setNickname(user != null ? user.getNickname() : null);
+            });
 
             // 获取专栏信息
             List<Integer> articleIds = articleVos.stream()
@@ -1140,7 +1093,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             }
         }
 
-        return new PageVo<>(articleVos, page.getTotal());
+        return PageUtils.<ArticleVo>buildPageVo(page, articleVos);
     }
 
     @Override
@@ -1182,7 +1135,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     // 管理员搜索文章
     @Override
     public PageVo<List<ArticleVo>> adminSearchArticle(ArticleDto articleDto) {
-        Page<Article> page = new Page<>(articleDto.getPageNum(), articleDto.getPageSize());
+        Page<Article> page = PageUtils.buildPage(articleDto.getPageNum(), articleDto.getPageSize());
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ObjectUtil.isNotEmpty(articleDto.getUserId()), Article::getUserId, articleDto.getUserId())
                 .like(ObjectUtil.isNotEmpty(articleDto.getTitle()), Article::getTitle, articleDto.getTitle())
@@ -1206,19 +1159,18 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         List<Article> articles = articleMapper.selectPage(page, queryWrapper).getRecords();
         List<ArticleVo> articleVos = BeanUtil.copyToList(articles, ArticleVo.class);
 
-        // 用userId把nickname查询出来
-        HashMap<Integer, String> userMap = new HashMap<>();
-        // 查询所有用户信息
-        List<SysUser> users = sysUserMapper.selectList(null);
-        for (SysUser user : users) {
-            userMap.put(user.getId(), user.getNickname());
-        }
-        // 将用户昵称设置到ArticleVo中
-        for (ArticleVo articleVo : articleVos) {
-            articleVo.setNickname(userMap.get(articleVo.getUserId()));
-        }
+        // 使用UserUtils批量获取用户昵称
+        Map<Integer, SysUser> userMap = UserUtils.getUserMap(
+                articleVos.stream().map(ArticleVo::getUserId).collect(Collectors.toList()),
+                sysUserMapper);
+        articleVos.forEach(articleVo -> {
+            SysUser user = userMap.get(articleVo.getUserId());
+            if (user != null) {
+                articleVo.setNickname(user.getNickname());
+            }
+        });
 
-        return new PageVo<>(articleVos, page.getTotal());
+        return PageUtils.<ArticleVo>buildPageVo(page, articleVos);
     }
 
     @Override

@@ -266,6 +266,17 @@ function handleShare() {
 }
 
 /**
+ * 滚动到评论区域
+ */
+function scrollToComments() {
+  // 使用评论数量元素作为锚点
+  const commentSection = document.querySelector('.comment-section')
+  if (commentSection) {
+    commentSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
+/**
  * 判断评论是否属于当前用户
  */
 function isOwnComment(comment) {
@@ -322,15 +333,19 @@ onLoad((options) => {
       <!-- 操作栏 -->
       <view class="action-bar">
         <view class="action-item" :class="{ active: article.isLiked }" @click="handleLike">
-          <uv-icon name="fabulous" :size="18" :color="article.isLiked ? 'var(--u-type-primary)' : 'var(--u-tips-color)'" />
+          <text class="action-icon">{{ article.isLiked ? '❤️' : '🤍' }}</text>
           <text class="action-text">{{ formatCount(article.likeCount) }}</text>
         </view>
         <view class="action-item" :class="{ active: article.isCollected }" @click="handleFavorite">
-          <uv-icon name="favorite" :size="18" :color="article.isCollected ? 'var(--u-type-primary)' : 'var(--u-tips-color)'" />
+          <text class="action-icon">{{ article.isCollected ? '⭐' : '☆' }}</text>
           <text class="action-text">{{ formatCount(article.collectCount) }}</text>
         </view>
+        <view class="action-item" @click="scrollToComments">
+          <text class="action-icon">💬</text>
+          <text class="action-text">{{ formatCount(article.commentCount) }}</text>
+        </view>
         <view class="action-item" @click="handleShare">
-          <uv-icon name="upload" :size="18" color="var(--u-tips-color)" />
+          <text class="action-icon">↗️</text>
           <text class="action-text">分享</text>
         </view>
       </view>
@@ -351,16 +366,16 @@ onLoad((options) => {
                 <view class="comment-user">{{ comment.nickname }}</view>
                 <view class="comment-actions">
                   <view class="action-btn" @click="handleLikeComment(comment)">
-                    <uv-icon name="fabulous" :size="14" :color="comment.isLiked ? 'var(--u-type-primary)' : 'var(--u-tips-color)'" />
-                    <text :class="{ 'liked': comment.isLiked }">{{ formatCount(comment.likeCount || 0) }}</text>
+                    <text class="action-icon">{{ comment.isLiked ? '❤️' : '🤍' }}</text>
+                    <text class="action-text">赞 {{ formatCount(comment.likeCount || 0) }}</text>
                   </view>
                   <view class="action-btn" @click="showReplyInput(comment)">
-                    <uv-icon name="chat" :size="14" color="var(--u-tips-color)" />
-                    <text>回复</text>
+                    <text class="action-icon">💬</text>
+                    <text class="action-text">回复</text>
                   </view>
                   <view v-if="isOwnComment(comment)" class="action-btn delete" @click="handleDeleteComment(comment)">
-                    <uv-icon name="trash" :size="14" color="var(--u-type-error)" />
-                    <text>删除</text>
+                    <text class="action-icon">🗑️</text>
+                    <text class="action-text">删除</text>
                   </view>
                 </view>
               </view>
@@ -374,7 +389,19 @@ onLoad((options) => {
                 <view v-for="reply in comment.children" :key="reply.id" class="reply-item">
                   <uv-avatar :src="reply.avatar" size="48" />
                   <view class="reply-content">
-                    <view class="reply-user">{{ reply.nickname }}</view>
+                    <view class="reply-header">
+                      <view class="reply-user">{{ reply.nickname }}</view>
+                      <view class="reply-actions">
+                        <view class="action-btn" @click="handleLikeComment(reply)">
+                          <text class="action-icon-sm">{{ reply.isLiked ? '❤️' : '🤍' }}</text>
+                          <text class="action-text-sm">赞 {{ formatCount(reply.likeCount || 0) }}</text>
+                        </view>
+                        <view class="action-btn" @click="showReplyInput(comment, reply)">
+                          <text class="action-icon-sm">💬</text>
+                          <text class="action-text-sm">回复</text>
+                        </view>
+                      </view>
+                    </view>
                     <view class="reply-text">{{ reply.content }}</view>
                     <view class="reply-time">{{ timeAgo(reply.createTime) }}</view>
                   </view>
@@ -496,6 +523,10 @@ onLoad((options) => {
         color: var(--u-type-primary);
       }
 
+      .action-icon {
+        font-size: 18px;
+      }
+
       .action-text {
         font-size: 14px;
       }
@@ -537,10 +568,17 @@ onLoad((options) => {
               font-size: 14px;
               font-weight: 500;
               color: var(--u-main-color);
+              flex-shrink: 0;
+              max-width: 120px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
             }
 
             .comment-actions {
               display: flex;
+              flex-wrap: nowrap;
+              flex-shrink: 0;
               gap: var(--spacing-md);
 
               .action-btn {
@@ -549,6 +587,14 @@ onLoad((options) => {
                 gap: 4px;
                 font-size: 12px;
                 color: var(--u-tips-color);
+
+                .action-icon {
+                  font-size: 14px;
+                }
+
+                .action-text {
+                  font-size: 12px;
+                }
 
                 &.delete {
                   color: var(--u-type-error);
@@ -598,10 +644,48 @@ onLoad((options) => {
               .reply-content {
                 flex: 1;
 
-                .reply-user {
-                  font-size: 13px;
-                  font-weight: 500;
-                  color: var(--u-main-color);
+                .reply-header {
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+
+                  .reply-user {
+                    font-size: 13px;
+                    font-weight: 500;
+                    color: var(--u-main-color);
+                    flex-shrink: 0;
+                    max-width: 100px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                  }
+
+                  .reply-actions {
+                    display: flex;
+                    flex-wrap: nowrap;
+                    flex-shrink: 0;
+                    gap: var(--spacing-sm);
+
+                    .action-btn {
+                      display: flex;
+                      align-items: center;
+                      gap: 2px;
+                      font-size: 11px;
+                      color: var(--u-tips-color);
+
+                      .action-icon-sm {
+                        font-size: 12px;
+                      }
+
+                      .action-text-sm {
+                        font-size: 11px;
+                      }
+
+                      .liked {
+                        color: var(--u-type-primary);
+                      }
+                    }
+                  }
                 }
 
                 .reply-text {

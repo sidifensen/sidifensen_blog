@@ -362,6 +362,7 @@ const handleEditArticle = () => {
             display: flex;
             align-items: center;
             flex-shrink: 0; // 防止按钮被压缩
+            margin-left: auto; // 推到右侧
 
             .el-button {
               border-radius: 6px;

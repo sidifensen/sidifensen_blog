@@ -32,32 +32,11 @@
             @touchend="handleTouchEnd"
             @touchmove="handleTouchMove"
           >
-            <el-avatar :size="40" :src="msg.fromUserAvatar" class="message-avatar" @click="goToUserHomepage(msg.fromUserId)" />
-            <div class="message-content">
-              <div class="message-header">
-                <span class="message-nickname">{{ msg.fromUserNickname }}</span>
-                <span class="message-time">{{ getFriendlyTime(msg.createTime) }}</span>
-              </div>
-              <div class="message-body">
-                <div v-if="msg.messageType === 1" class="text-message">{{ msg.content }}</div>
-                <el-image v-else-if="msg.messageType === 2" :src="msg.imageUrl" class="image-message" fit="cover" :preview-src-list="[msg.imageUrl]" :initial-index="0" preview-teleported>
-                  <template #placeholder>
-                    <div class="image-loading">加载中...</div>
-                  </template>
-                  <template #error>
-                    <div class="image-error">
-                      <el-icon><Picture /></el-icon>
-                      <span>加载失败</span>
-                    </div>
-                  </template>
-                </el-image>
-              </div>
-              <!-- 显示自己消息的已读/未读状态 -->
-              <div v-if="msg.fromUserId === currentUserId" class="read-status">
-                <span v-if="msg.isRead === 1" class="read-text">已读</span>
-                <span v-else class="unread-text">未读</span>
-              </div>
-            </div>
+            <MessageBubble
+              :message="msg"
+              :is-mine="msg.fromUserId === currentUserId"
+              @avatar-click="goToUserHomepage(msg.fromUserId)"
+            />
           </div>
 
           <!-- 撤回提示 -->
@@ -123,6 +102,7 @@ import { useUserStore } from "@/stores/userStore";
 import WebSocketClient from "@/utils/WebSocketClient";
 import { getFriendlyTime } from "@/utils/formatTime";
 import { emojiList } from "@/utils/emoji";
+import MessageBubble from "@/components/MessageBubble.vue";
 
 const route = useRoute();
 const router = useRouter();

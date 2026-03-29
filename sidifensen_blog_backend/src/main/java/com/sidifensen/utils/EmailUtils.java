@@ -160,7 +160,7 @@ public class EmailUtils {
             // 检查用户是否开启了系统邮件通知
             Integer receiveSystemEmail = userSettingsService.getReceiveSystemEmail(userId);
             if (receiveSystemEmail == 0) {
-                log.debug("用户 {} 关闭了系统邮件通知，跳过发送", userId);
+                
                 return;
             }
 
@@ -189,7 +189,7 @@ public class EmailUtils {
                     RabbitMQConstants.System_Email_Routing_Key,
                     emailMessage);
 
-            log.info("系统邮件通知已发送到队列：to={}, title={}", user.getEmail(), notificationTitle);
+            
         } catch (Exception e) {
             log.error("发送系统邮件通知失败：userId={}", userId, e);
         }

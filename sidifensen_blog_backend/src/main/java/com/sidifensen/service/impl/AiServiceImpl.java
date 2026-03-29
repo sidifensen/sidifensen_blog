@@ -93,10 +93,6 @@ public class AiServiceImpl implements AiService {
                 throw new BlogException(BlogConstants.AiDailyLimitExceeded);
             }
 
-            // 6. 记录调用日志
-            log.info("用户 [ID: {}] 调用AI摘要提取 - 内容长度: {} 字符, 剩余配额: {}",
-                    userId, plainText.length(), aiUsageService.getRemainingQuota(userId));
-
             // 限制文本长度，避免超过 token 限制（取前 3000 个字符）
             if (plainText.length() > 3000) {
                 plainText = plainText.substring(0, 3000);
@@ -162,7 +158,7 @@ public class AiServiceImpl implements AiService {
         if (userId == null || userId == 0) {
             log.warn("智能客服调用时无法获取有效用户ID，可能用户未登录或SecurityContext异常");
         } else {
-            log.debug("智能客服调用，获取到用户ID: {}", userId);
+            
         }
 
         try {
@@ -173,7 +169,7 @@ public class AiServiceImpl implements AiService {
             }
 
             // 2. 记录调用日志
-            log.info("用户 [ID: {}] 调用智能客服 - 剩余配额: {}", userId, aiUsageService.getRemainingQuota(userId));
+            
 
             // 3. 使用流式返回，提升用户体验
             // 保存当前的Authentication，以便在异步处理中使用
@@ -218,7 +214,7 @@ public class AiServiceImpl implements AiService {
                                     if (finalUserId == null || finalUserId == 0) {
                                         log.warn("异步处理中无法获取有效用户ID，原始userId: {}, 重新获取的userId: {}", userId, currentUserId);
                                     } else {
-                                        log.debug("异步处理中获取用户ID成功，最终使用userId: {}", finalUserId);
+                                        
                                     }
 
                                     // 检测并处理友链申请
@@ -453,7 +449,7 @@ public class AiServiceImpl implements AiService {
             }
 
             // 5. 记录调用日志
-            log.info("用户 [ID: {}] 调用AI生成标题建议 - 剩余配额: {}", userId, aiUsageService.getRemainingQuota(userId));
+            
 
             String prompt = AiPromptConstants.generateTitleSuggestionsPrompt(plainText);
 
@@ -515,7 +511,7 @@ public class AiServiceImpl implements AiService {
             }
 
             // 6. 记录调用日志
-            log.info("用户 [ID: {}] 调用AI推荐标签 - 剩余配额: {}", userId, aiUsageService.getRemainingQuota(userId));
+            
 
             // 7. 构建提示词，传入可用标签列表
             String prompt = AiPromptConstants.recommendTagsPrompt(title, plainText, availableTagNames);
@@ -532,7 +528,7 @@ public class AiServiceImpl implements AiService {
                     .limit(8)
                     .collect(Collectors.toList());
 
-            log.info("用户 [ID: {}] AI推荐标签完成，最终推荐数量: {}", userId, recommendedTags.size());
+            
 
             // 10. 调用成功后记录使用次数
             aiUsageService.recordUsage(userId);
@@ -563,7 +559,7 @@ public class AiServiceImpl implements AiService {
             }
 
             // 3. 记录调用日志
-            log.info("用户 [ID: {}] 调用AI生成评论回复建议 - 剩余配额: {}", userId, aiUsageService.getRemainingQuota(userId));
+            
 
             String prompt = AiPromptConstants.generateCommentReplySuggestionsPrompt(articleTitle, commentContent);
 

@@ -81,7 +81,8 @@ const renderChart = () => {
         domain: ["实际", "目标"],
         title: null,
       },
-      y: { nice: true },
+      y: { nice: true, title: null },
+      value: { title: null },
     },
     legend: {
       color: {
@@ -92,7 +93,7 @@ const renderChart = () => {
     animate: { enter: { type: "waveIn", duration: 1000 } },
     axis: {
       x: { title: null, tick: false },
-      y: { domain: [0, 1], tick: false },
+      y: { domain: [0, 1], tick: false, title: null },
     },
     tooltip: {
       items: [

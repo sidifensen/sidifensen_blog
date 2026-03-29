@@ -21,6 +21,7 @@ import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.FavoriteService;
 import com.sidifensen.service.MessageService;
 import com.sidifensen.utils.SecurityUtils;
+import com.sidifensen.redis.NotificationThreadPool;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -28,10 +29,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -61,20 +58,8 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
     @Resource
     private SysUserMapper sysUserMapper;
 
-    // 通知发送专用线程池
-    private final ExecutorService notificationExecutor = new ThreadPoolExecutor(
-            3, // 核心线程数
-            5, // 最大线程数
-            60L, // 空闲线程存活时间
-            TimeUnit.SECONDS, // 时间单位
-            new LinkedBlockingQueue<>(500), // 任务队列
-            r -> {
-                Thread thread = new Thread(r);
-                thread.setName("favorite-notification-thread-" + thread.getId());
-                thread.setDaemon(true);
-                return thread;
-            },
-            new ThreadPoolExecutor.CallerRunsPolicy());
+    @Resource
+    private NotificationThreadPool notificationThreadPool;
 
     @Override
     public void addFavorite(AddFavoriteDto addFavoriteDto) {
@@ -191,7 +176,7 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
      */
     private void sendCollectArticleNotification(Integer collectorId, Article article) {
         // 使用线程池异步执行
-        notificationExecutor.execute(() -> {
+        notificationThreadPool.getNotificationPool("favorite").execute(() -> {
             try {
                 // 查询收藏者信息
                 SysUser collector = sysUserMapper.selectById(collectorId);

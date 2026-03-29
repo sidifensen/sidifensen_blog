@@ -36,173 +36,90 @@
 
           <!-- 空状态 -->
           <div v-else-if="articleList.length === 0" class="empty-state">
-            <el-empty description="暂无文章" :image-size="80" />
+            <EmptyState type="article" />
           </div>
 
           <!-- 文章列表 -->
           <template v-else>
-          <div
-            v-for="(article, index) in articleList"
-            :key="article.id"
-            ref="articleRefs"
-            class="article-item"
-            @click="goToArticle(article.id, article.userId)"
-          >
-            <!-- 文章封面 -->
-            <div class="article-cover">
-              <el-image :src="article.coverUrl" class="cover-image">
-                <template #placeholder>
-                  <div class="loading-text">加载中...</div>
-                </template>
-                <template #error>
-                  <div class="error">
-                    <el-icon><Picture /></el-icon>
-                  </div>
-                </template>
-              </el-image>
-            </div>
-
-            <!-- 文章内容 -->
-            <div class="article-content">
-              <div class="article-author">
-                <el-image :src="article.avatar" class="author-avatar" fit="cover">
-                  <template #placeholder>
-                    <div class="avatar-placeholder">
-                      <el-icon><User /></el-icon>
-                    </div>
-                  </template>
-                  <template #error>
-                    <div class="avatar-placeholder">
-                      <el-icon><User /></el-icon>
-                    </div>
-                  </template>
-                </el-image>
-                <span>{{ article.nickname }}</span>
-              </div>
-
-              <h3 class="article-title">{{ article.title }}</h3>
-
-              <p class="article-description">{{ article.description }}</p>
-
-              <div class="article-meta">
-                <span>{{ formatDate(article.createTime) }}</span>
-                <span><el-icon><View /></el-icon> {{ formatCount(article.readCount) }}</span>
-                <span><svg-icon name="like" width="13px" height="13px" color="currentColor" /> {{ formatCount(article.likeCount) }}</span>
-                <span><el-icon><Star /></el-icon> {{ formatCount(article.collectCount) }}</span>
-              </div>
-            </div>
-          </div>
+            <ArticleCard
+              v-for="(article, index) in articleList"
+              :key="article.id"
+              :article="article"
+              mode="simple"
+              :show-author="true"
+              :show-meta="true"
+              @click="goToArticle(article.id, article.userId)"
+            />
           </template>
 
           <!-- 加载更多指示器 -->
-          <div v-if="loadingMore" class="loading-more">
-            <div class="loading-spinner"></div>
-            <span>加载更多...</span>
-          </div>
+          <LoadingMore :loading="loadingMore" />
         </div>
       </div>
 
       <!-- 侧边栏 -->
       <aside class="sidebar">
         <!-- 热门文章 -->
-        <div class="sidebar-card">
-          <h4 class="card-title">
-            <span class="icon">🔥</span> 热门文章
-          </h4>
-          <p class="card-description">按阅读热度排序</p>
-
-          <!-- 加载中骨架屏 -->
-          <div v-if="hotArticleLoading" class="hot-articles-loading">
-            <el-skeleton animated :count="5">
-              <template #template>
-                <div class="hot-skeleton-item" />
-              </template>
-            </el-skeleton>
-          </div>
-
-          <!-- 空状态 -->
-          <div v-else-if="hotArticleList.length === 0" class="hot-articles-empty">
-            <el-empty description="暂无热门文章" :image-size="60" />
-          </div>
-
-          <!-- 热门文章列表 -->
-          <div v-else class="hot-articles">
-            <div
-              v-for="(article, index) in hotArticleList"
-              :key="article.id"
-              class="hot-article-item"
-              @click="goToArticle(article.id, article.userId)"
-            >
-              <div class="hot-article-rank">{{ index + 1 }}</div>
-              <div class="hot-article-content">
-                <div class="hot-article-title">{{ article.title }}</div>
-                <div class="hot-article-meta">
-                  <span><el-icon><View /></el-icon> {{ formatCount(article.readCount) }}</span>
-                  <span class="hot-article-score">🔥 {{ formatCount(article.hotScore) }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <SidebarCard title="热门文章" icon="🔥" description="按阅读热度排序">
+          <HotArticleList
+            :articles="hotArticleList"
+            :loading="hotArticleLoading"
+            @article-click="(article) => goToArticle(article.id, article.userId)"
+          />
+        </SidebarCard>
 
         <!-- 会员精选 -->
-        <div class="sidebar-card">
-          <h4 class="card-title">
-            <span class="icon">⭐</span> 会员精选
-          </h4>
-          <p class="card-description">高质量付费内容</p>
-
-          <!-- 加载中骨架屏 -->
-          <div v-if="featuredArticleLoading" class="featured-articles-loading">
-            <div v-for="index in 4" :key="index" class="featured-skeleton-item">
-              <div class="featured-skeleton-cover"></div>
-              <div class="featured-skeleton-content">
-                <div class="skeleton-title"></div>
-                <div class="skeleton-meta"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 空状态 -->
-          <div v-else-if="featuredArticleList.length === 0" class="featured-articles-empty">
-            <el-empty description="暂无会员精选" :image-size="60" />
-          </div>
-
-          <!-- 会员精选列表 -->
-          <div v-else class="featured-articles">
-            <div
-              v-for="article in featuredArticleList"
-              :key="article.id"
-              class="featured-article-item"
-              @click="goToArticle(article.id, article.userId)"
-            >
-              <div class="featured-article-cover">
-                <el-image :src="article.coverUrl" class="cover-image">
-                  <template #placeholder>
-                    <div class="loading-text">加载中...</div>
-                  </template>
-                  <template #error>
-                    <div class="error">
-                      <el-icon><Picture /></el-icon>
-                    </div>
-                  </template>
-                </el-image>
-              </div>
-
-              <div class="featured-article-content">
-                <div class="featured-article-title">{{ article.title }}</div>
-                <div class="featured-article-meta">
-                  <span><el-icon><View /></el-icon> {{ formatCount(article.readCount) }}</span>
-                  <span><svg-icon name="like" width="13px" height="13px" color="currentColor" /> {{ formatCount(article.likeCount) }}</span>
+        <SidebarCard title="会员精选" icon="⭐" description="高质量付费内容">
+          <template v-if="featuredArticleLoading">
+            <div class="featured-articles-loading">
+              <div v-for="index in 4" :key="index" class="featured-skeleton-item">
+                <div class="featured-skeleton-cover"></div>
+                <div class="featured-skeleton-content">
+                  <div class="skeleton-title"></div>
+                  <div class="skeleton-meta"></div>
                 </div>
               </div>
             </div>
-          </div>
+          </template>
+          <template v-else-if="featuredArticleList.length === 0">
+            <EmptyState type="article" description="暂无会员精选" :image-size="60" />
+          </template>
+          <template v-else>
+            <div class="featured-articles">
+              <div
+                v-for="article in featuredArticleList"
+                :key="article.id"
+                class="featured-article-item"
+                @click="goToArticle(article.id, article.userId)"
+              >
+                <div class="featured-article-cover">
+                  <el-image :src="article.coverUrl" class="cover-image">
+                    <template #placeholder>
+                      <div class="loading-text">加载中...</div>
+                    </template>
+                    <template #error>
+                      <div class="error">
+                        <el-icon><Picture /></el-icon>
+                      </div>
+                    </template>
+                  </el-image>
+                </div>
 
-          <div class="featured-footer">
-            <button class="featured-link" @click="goToVipArticles">进入会员专区</button>
-          </div>
-        </div>
+                <div class="featured-article-content">
+                  <div class="featured-article-title">{{ article.title }}</div>
+                  <div class="featured-article-meta">
+                    <span><el-icon><View /></el-icon> {{ formatCount(article.readCount) }}</span>
+                    <span><svg-icon name="like" width="13px" height="13px" color="currentColor" /> {{ formatCount(article.likeCount) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="featured-footer">
+              <button class="featured-link" @click="goToVipArticles">进入会员专区</button>
+            </div>
+          </template>
+        </SidebarCard>
       </aside>
     </div>
   </div>
@@ -214,6 +131,11 @@ import { ref, onMounted, onUnmounted, computed, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { Star, Picture, View, User } from "@element-plus/icons-vue";
 import { getAllArticleList, getHotArticleList, getVipPreviewArticleList } from "@/api/article";
+import ArticleCard from "@/components/ArticleCard.vue";
+import SidebarCard from "@/components/SidebarCard.vue";
+import HotArticleList from "@/components/HotArticleList.vue";
+import EmptyState from "@/components/EmptyState.vue";
+import LoadingMore from "@/components/LoadingMore.vue";
 
 // 路由
 const router = useRouter();

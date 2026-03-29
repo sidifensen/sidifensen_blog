@@ -43,7 +43,7 @@ public class PayOrderExpireCheckTask {
 
         var expiredOrders = payOrderMapper.selectList(queryWrapper);
         if (expiredOrders.isEmpty()) {
-            log.info("订单超时检查完成，无过期订单，耗时={}ms", System.currentTimeMillis() - startTime);
+            log.info("补偿关闭超时订单任务执行完成，未发现待关闭订单，耗时={}ms", System.currentTimeMillis() - startTime);
             return;
         }
 
@@ -59,7 +59,6 @@ public class PayOrderExpireCheckTask {
             }
         }
 
-        log.info("订单超时补偿完成，扫描={}个，关闭={}个，耗时={}ms",
-                expiredOrders.size(), closedCount, System.currentTimeMillis() - startTime);
+        log.info("补偿关闭超时订单任务执行完成，共关闭 {} 个订单，耗时={}ms", closedCount, System.currentTimeMillis() - startTime);
     }
 }

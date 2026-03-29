@@ -15,6 +15,7 @@ import com.sidifensen.domain.vo.*;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.*;
 import com.sidifensen.redis.RedisComponent;
+import com.sidifensen.redis.NotificationThreadPool;
 import com.sidifensen.security.SysUserDetailsService;
 import com.sidifensen.service.IpService;
 import com.sidifensen.service.SysUserRoleService;
@@ -107,6 +108,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Resource
     private UserSettingsService userSettingsService;
 
+    @Resource
+    private NotificationThreadPool notificationThreadPool;
+
     @Override
     public String login(LoginDto loginDto) {
         try {
@@ -184,18 +188,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             Integer userId = user.getId();
 
             // 异步创建用户设置
-            ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-            try {
-                executor.submit(() -> {
-                    try {
-                        userSettingsService.createDefaultSettings(userId);
-                    } catch (Exception e) {
-                        log.error("异步创建用户设置失败，userId={}", userId, e);
-                    }
-                });
-            } finally {
-                executor.shutdown();
-            }
+            notificationThreadPool.getNotificationPool("user").execute(() -> {
+                try {
+                    userSettingsService.createDefaultSettings(userId);
+                } catch (Exception e) {
+                    log.error("异步创建用户设置失败，userId={}", userId, e);
+                }
+            });
 
             ipService.setRegisterIp(user.getId(), ip);
             sysUserRoleService.setRegisterRole(user.getId());
@@ -664,7 +663,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysUser::getIsDeleted, 0) // 只统计未删除的用户
                 .orderByDesc(SysUser::getFansCount) // 按粉丝数降序
-                .last("LIMIT " + limit);
+                // 添加参数边界验证，防止负数或过大值导致 SQL 错误
+                .last("LIMIT " + Math.min(Math.max(1, limit), 100));
 
         List<SysUser> users = this.list(queryWrapper);
         List<SysUserVo> result = BeanUtil.copyToList(users, SysUserVo.class);
@@ -684,7 +684,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     private void maskEmailsForNonAdmin(List<SysUserVo> sysUserVos) {
         SysUser currentUser = SecurityUtils.getUser();
-        boolean isAdmin = currentUser.getSysRoles().stream()
+        boolean isAdmin = currentUser.getSysRoles() != null && currentUser.getSysRoles().stream()
                 .anyMatch(role -> "admin".equals(role.getRole()));
         if (!isAdmin) {
             sysUserVos.forEach(userVo -> userVo.setEmail(null));

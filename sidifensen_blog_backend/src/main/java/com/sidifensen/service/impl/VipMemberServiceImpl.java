@@ -183,7 +183,7 @@ public class VipMemberServiceImpl extends ServiceImpl<VipMemberMapper, VipMember
         sysUserRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>()
                 .eq(SysUserRole::getRoleId, vipRole.getId())
                 .in(SysUserRole::getUserId, userIds));
-        log.info("已同步过期VIP角色，用户数量: {}", userIds.size());
+        
     }
 
     /**

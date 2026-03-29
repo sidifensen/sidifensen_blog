@@ -97,12 +97,10 @@ public class RedisComponent {
         String ticket = UUID.randomUUID().toString().replace("-", "");
         String value = userId + ":" + loginType;
         String key = RedisConstants.OauthTicket + ticket;
-        log.info("【OAuth调试】准备保存票据 - userId={}, loginType={}, ticket={}, key={}, value={}",
-                userId, loginType, ticket, key, value);
         redisUtils.set(key, value, RedisConstants.OAUTH_TICKET_EXPIRE_TIME, TimeUnit.SECONDS);
         // 验证是否保存成功
         Object savedValue = redisUtils.get(key);
-        log.info("【OAuth调试】验证票据是否保存成功 - key={}, savedValue={}", key, savedValue);
+        
         return ticket;
     }
 
@@ -266,7 +264,7 @@ public class RedisComponent {
                     String rateLimitPattern = RedisConstants.RateLimit + "*:user:" + userId;
                     long deletedCount = redisUtils.deleteByPattern(rateLimitPattern);
                     if (deletedCount > 0) {
-                        log.info("成功删除用户ID={}的{}个限流缓存key", userId, deletedCount);
+                        
                     }
                 } catch (Exception ex) {
                     log.error("删除用户ID={}的限流缓存失败", userId, ex);
@@ -324,7 +322,7 @@ public class RedisComponent {
             // 批量删除所有key
             if (!keysToDelete.isEmpty()) {
                 redisUtils.del(keysToDelete.toArray(new String[0]));
-                log.info("成功删除{}个黑名单相关缓存key", keysToDelete.size());
+                
             }
 
             // 删除用户相关的所有限流缓存
@@ -336,7 +334,7 @@ public class RedisComponent {
                         String rateLimitPattern = RedisConstants.RateLimit + "*:user:" + userId;
                         long deletedCount = redisUtils.deleteByPattern(rateLimitPattern);
                         if (deletedCount > 0) {
-                            log.info("成功删除用户ID={}的{}个限流缓存key", userId, deletedCount);
+                            
                         }
                     } catch (Exception ex) {
                         log.error("删除用户ID={}的限流缓存失败", userId, ex);
@@ -620,6 +618,21 @@ public class RedisComponent {
      */
     public void removeUserDetail(Integer userId) {
         redisUtils.del(RedisConstants.UserDetail + userId);
+    }
+
+    /**
+     * 清除指定角色下所有用户的详情缓存
+     * 当角色权限发生变更时调用此方法，清除该角色下所有用户的缓存
+     *
+     * @param userIds 受影响的用户 ID 列表
+     */
+    public void removeUserDetailsByRole(List<Integer> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return;
+        }
+        for (Integer userId : userIds) {
+            redisUtils.del(RedisConstants.UserDetail + userId);
+        }
     }
 
     // ==================== 热门搜索相关方法 ====================

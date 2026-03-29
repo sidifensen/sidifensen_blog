@@ -3,9 +3,19 @@
 
     <!-- Hero 区域 -->
     <section class="hero" ref="heroRef" @mousemove="handleMouseMove" @mouseleave="handleMouseLeave">
+      <!-- 粒子背景层 -->
+      <div class="hero-particles">
+        <div v-for="(style, i) in particleStyles" :key="i" class="particle" :style="style"></div>
+      </div>
+      <!-- 星星闪烁层 -->
+      <div class="hero-stars">
+        <div v-for="(star, i) in stars" :key="i" class="star" :style="star.style"></div>
+      </div>
+      <!-- 网格背景 -->
+      <div class="hero-grid"></div>
+
       <!-- 鼠标跟随光效 -->
       <div class="hero-glow" ref="heroGlow"></div>
-      <div class="hero-glow-secondary"></div>
 
       <div class="hero-content">
         <div class="hero-badge">
@@ -66,70 +76,32 @@
         <div class="article-grid" ref="articlesSectionRef">
           <!-- 加载状态 -->
           <template v-if="articleLoading">
-            <div v-for="i in 6" :key="i" class="article-card skeleton">
-              <div class="article-cover-skeleton"></div>
-              <div class="article-content">
-                <div class="article-tags-skeleton"></div>
-                <div class="article-title-skeleton"></div>
-                <div class="article-excerpt-skeleton"></div>
-                <div class="article-meta-skeleton"></div>
-              </div>
-            </div>
+            <SkeletonLoader type="article" :count="6" />
           </template>
 
           <!-- 空状态 -->
           <template v-else-if="articles.length === 0">
             <div class="empty-state">
-              <el-empty description="暂无文章" />
+              <EmptyState type="article" />
             </div>
           </template>
 
           <!-- 文章列表 -->
           <template v-else>
-            <div
+            <ArticleCard
               v-for="(article, index) in articles"
               :key="article.id"
-              class="article-card"
+              :article="article"
+              mode="grid"
               @click="goToArticle(article)"
-            >
-              <div class="article-image">
-                <el-image :src="article.coverUrl" class="article-cover" fit="cover">
-                  <template #placeholder>
-                    <div class="image-placeholder">
-                      <el-icon class="is-loading"><Loading /></el-icon>
-                    </div>
-                  </template>
-                  <template #error>
-                    <div class="image-error">
-                      <el-icon><Picture /></el-icon>
-                    </div>
-                  </template>
-                </el-image>
-              </div>
-              <div class="article-content">
-                <div class="article-tags">
-                  <span class="tag tag-hot" v-if="article.readCount > 1000">🔥 热门</span>
-                  <span class="tag tag-new" v-else-if="isNewArticle(article)">✨ 新作</span>
-                </div>
-                <h3 class="article-title">{{ article.title }}</h3>
-                <p class="article-excerpt">{{ article.description || "暂无描述" }}</p>
-                <div class="article-meta">
-                  <span class="article-date">{{ formatDate(article.createTime) }}</span>
-                  <div class="article-stats">
-                    <span class="stat">👁 {{ formatNumber(article.readCount || 0) }}</span>
-                    <span class="stat"><span class="heart-icon">♡</span> {{ formatNumber(article.likeCount || 0) }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            />
           </template>
         </div>
 
         <!-- 右侧边栏 -->
         <aside class="sidebar">
           <!-- 项目链接 -->
-          <div class="sidebar-card">
-            <h4 class="sidebar-title">📦 项目链接</h4>
+          <SidebarCard title="项目链接" icon="📦">
             <div class="project-links">
               <a href="https://github.com/sidifensen//sidifensen_blog" target="_blank" class="project-link">
                 <svg-icon name="github" width="20px" height="20px" class="github-icon" />
@@ -146,45 +118,17 @@
                 </div>
               </a>
             </div>
-          </div>
+          </SidebarCard>
 
           <!-- 热门标签 -->
-          <div class="sidebar-card">
-            <h4 class="sidebar-title">🏷️ 热门标签</h4>
-            <div class="tag-cloud">
-              <span
-                v-for="(tag, index) in hotTags"
-                :key="index"
-                class="tag-cloud-item"
-                @click="navigateToTag(tag.name)"
-              >
-                {{ tag.name }}
-              </span>
-            </div>
-          </div>
+          <SidebarCard title="热门标签" icon="🏷️">
+            <TagCloud :tags="hotTags" />
+          </SidebarCard>
 
           <!-- 社区统计 -->
-          <div class="sidebar-card">
-            <h4 class="sidebar-title">📊 社区统计</h4>
-            <div class="stats-list">
-              <div class="stat-item">
-                <div class="stat-value">{{ animatedStats.articleCount }}</div>
-                <div class="stat-label">文章总数</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-value">{{ animatedStats.userCount }}</div>
-                <div class="stat-label">注册用户</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-value">{{ animatedStats.viewCount }}</div>
-                <div class="stat-label">总阅读量</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-value">{{ animatedStats.authorCount }}</div>
-                <div class="stat-label">活跃作者</div>
-              </div>
-            </div>
-          </div>
+          <SidebarCard title="社区统计" icon="📊">
+            <StatsCard :stats="statsList" :animated="true" :columns="2" />
+          </SidebarCard>
         </aside>
       </div>
     </main>
@@ -238,6 +182,12 @@ import { formatCompactNumber } from "@/utils/formatNumber";
 import { useUserStore } from "@/stores/userStore";
 import { getCommunityStats } from "@/api/user";
 import Header from "@/components/Header.vue";
+import ArticleCard from "@/components/ArticleCard.vue";
+import SidebarCard from "@/components/SidebarCard.vue";
+import TagCloud from "@/components/TagCloud.vue";
+import StatsCard from "@/components/StatsCard.vue";
+import EmptyState from "@/components/EmptyState.vue";
+import SkeletonLoader from "@/components/SkeletonLoader.vue";
 
 // 路由和用户状态
 const router = useRouter();
@@ -261,7 +211,15 @@ const stats = ref({
   authorCount: 0,
 });
 
-// 动画显示的数字
+// 用于 StatsCard 组件的统计数据格式
+const statsList = ref([
+  { value: 0, label: "文章总数" },
+  { value: 0, label: "注册用户" },
+  { value: 0, label: "总阅读量" },
+  { value: 0, label: "活跃作者" },
+]);
+
+// 动画显示的数字（用于本地显示）
 const animatedStats = ref({
   articleCount: 0,
   userCount: 0,
@@ -282,7 +240,81 @@ const quickNavItems = ref([
   { title: "友情链接", path: "/link", icon: "🔗" },
 ]);
 
-// 副标题列表
+// 粒子样式 - 响应式引用，mounted 时生成一次真正的随机值
+const particleStyles = ref([]);
+
+// 星星数据 - 每个星星有独立的状态、位置和定时器
+const stars = ref([]);
+let starTimers = [];
+
+const generateParticleStyles = () => {
+  particleStyles.value = Array.from({ length: 30 }, () => ({
+    left: `${Math.random() * 100}%`,
+    animationDelay: `${Math.random() * 15}s`,
+    animationDuration: `${15 + Math.random() * 10}s`,
+    width: `${2 + Math.random() * 3}px`,
+    height: `${2 + Math.random() * 3}px`,
+  }));
+
+  // 生成星星 - JS 控制闪烁和位置切换
+const createStar = () => ({
+  style: {
+    left: `${Math.random() * 100}%`,
+    top: `${12 + Math.random() * 16}%`,
+    width: `${1 + Math.random() * 2}px`,
+    height: `${1 + Math.random() * 2}px`,
+    opacity: 0,
+  },
+});
+
+stars.value = Array.from({ length: 12 }, createStar);
+
+// 启动星星闪烁定时器
+starTimers.forEach(clearInterval);
+starTimers = [];
+
+stars.value.forEach((star, index) => {
+  const flashStar = () => {
+    // 随机闪烁次数（1-4次）
+    const flashCount = 1 + Math.floor(Math.random() * 4);
+    let currentFlash = 0;
+
+    const doFlash = () => {
+      currentFlash++;
+      // 亮起
+      star.style.opacity = 0.3 + Math.random() * 0.4;
+      star.style.transform = 'scale(1.2)';
+
+      // 亮持续时间（0.5-2秒）
+      const lightDuration = 500 + Math.random() * 1500;
+      setTimeout(() => {
+        // 熄灭
+        star.style.opacity = 0;
+        star.style.transform = 'scale(0.8)';
+
+        // 如果还没到次数，等待后再次亮起
+        if (currentFlash < flashCount) {
+          const offDuration = 800 + Math.random() * 1200;
+          starTimers[index] = setTimeout(doFlash, offDuration);
+        } else {
+          // 次数用完了，消失并换位置重新生成
+          starTimers[index] = setTimeout(() => {
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${12 + Math.random() * 16}%`;
+            flashStar(); // 重新开始
+          }, 2000 + Math.random() * 5000);
+        }
+      }, lightDuration);
+    };
+
+    doFlash();
+  };
+
+  // 初始延迟启动
+  starTimers[index] = setTimeout(flashStar, Math.random() * 5000);
+});
+};
+
 const subtitles = [
   "在这里，发现知识 · 分享经验 · 连接开发者",
   "探索代码的无限可能",
@@ -452,6 +484,13 @@ const loadCommunityStats = async () => {
       viewCount: data.viewCount || 0,
       authorCount: data.authorCount || 0,
     };
+    // 更新 statsList（用于 StatsCard 组件）
+    statsList.value = [
+      { value: data.articleCount || 0, label: "文章总数" },
+      { value: data.userCount || 0, label: "注册用户" },
+      { value: data.viewCount || 0, label: "总阅读量" },
+      { value: data.authorCount || 0, label: "活跃作者" },
+    ];
     // 数据加载完成后，开始数字动画
     setTimeout(() => {
       animateNumber("articleCount", stats.value.articleCount);
@@ -493,6 +532,7 @@ const animateNumber = (key, target) => {
 };
 
 onMounted(async () => {
+  generateParticleStyles();
   await Promise.all([
     fetchArticleList(),
     loadHotTags(),
@@ -608,17 +648,73 @@ html.dark {
 // ===== Hero 区域 =====
 .hero {
   position: relative;
-  min-height: calc(100vh - 48px); // 减去 Header 高度
-  padding-top: 20px; // Header 已经占 48px，这里只需要少量 padding
+  min-height: calc(100vh - 48px);
+  padding-top: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background:
-    radial-gradient(ellipse at top, rgba(0, 102, 255, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse at bottom right, rgba(0, 194, 255, 0.06) 0%, transparent 50%),
-    var(--bg-page);
+  background: var(--bg-page);
   overflow: hidden;
+
+  // 粒子层 - 从下往上缓缓升起
+  .hero-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    bottom: -10px;
+    border-radius: 50%;
+    background: rgba(0, 102, 255, 0.5);
+    animation: particleRise linear infinite;
+    box-shadow: 0 0 4px rgba(0, 102, 255, 0.3);
+    opacity: 0.5; // 统一透明度
+
+    html.dark & {
+      background: rgba(100, 180, 255, 0.4);
+      box-shadow: 0 0 6px rgba(100, 180, 255, 0.3);
+    }
+  }
+
+  // 星星闪烁层
+  .hero-stars {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.8);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+
+    html.dark & {
+      background: rgba(200, 220, 255, 0.8);
+    }
+  }
+
+  // 网格背景
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+
+    html.dark & {
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    }
+  }
 
   // 鼠标跟随光效
   .hero-glow {
@@ -627,40 +723,12 @@ html.dark {
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.3s ease;
-    z-index: 0;
-  }
-
-  .hero-glow-secondary {
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 50% at 50% 50%, rgba(0, 102, 255, 0.03) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  // 网格背景
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-
-    html.dark & {
-      background-image:
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    }
+    z-index: 1;
   }
 
   .hero-content {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     text-align: center;
     max-width: 900px;
     padding: 0 24px;
@@ -1348,6 +1416,24 @@ html.dark {
 }
 
 // ===== 动画 =====
+// 粒子从下往上缓缓升起
+@keyframes particleRise {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+  5% {
+    opacity: 0.7;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-100vh) scale(0.5);
+    opacity: 0;
+  }
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;

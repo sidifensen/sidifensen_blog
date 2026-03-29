@@ -2,6 +2,7 @@ package com.sidifensen.domain.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -67,6 +68,7 @@ public class ArticleDto implements Serializable {
     /**
      * 内容
      */
+    @Size(max = 100000, message = "文章内容不能超过100000字符")
     private String content;
 
     /**

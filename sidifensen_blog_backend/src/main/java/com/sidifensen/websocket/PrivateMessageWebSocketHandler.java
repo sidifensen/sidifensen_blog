@@ -146,6 +146,7 @@ public class PrivateMessageWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) {
         Integer userId = session != null ? (Integer) session.getAttributes().get("userId") : null;
+        log.error("WebSocket 传输异常，用户ID: {}, sessionId: {}", userId, session != null ? session.getId() : "null", exception);
     }
 
     /**

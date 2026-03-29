@@ -16,16 +16,13 @@ import com.sidifensen.mapper.LikeMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.LikeService;
 import com.sidifensen.service.MessageService;
+import com.sidifensen.redis.NotificationThreadPool;
+import com.sidifensen.utils.CountUpdateUtils;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -49,22 +46,10 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Like> implements Li
     private MessageService messageService;
 
     @Resource
-    private SysUserMapper sysUserMapper;
+    private NotificationThreadPool notificationThreadPool;
 
-    // 通知发送专用线程池
-    private final ExecutorService notificationExecutor = new ThreadPoolExecutor(
-            3, // 核心线程数
-            5, // 最大线程数
-            60L, // 空闲线程存活时间
-            TimeUnit.SECONDS, // 时间单位
-            new LinkedBlockingQueue<>(500), // 任务队列
-            r -> {
-                Thread thread = new Thread(r);
-                thread.setName("like-notification-thread-" + thread.getId());
-                thread.setDaemon(true);
-                return thread;
-            },
-            new ThreadPoolExecutor.CallerRunsPolicy());
+    @Resource
+    private SysUserMapper sysUserMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -139,15 +124,8 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Like> implements Li
 
         LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Article::getId, articleId);
-
-        if (delta > 0) {
-            // 增加点赞量
-            updateWrapper.setSql("like_count = like_count + " + delta);
-        } else {
-            // 减少点赞量，但不能小于0
-            updateWrapper.setSql(
-                    "like_count = CASE WHEN like_count + " + delta + " < 0 THEN 0 ELSE like_count + " + delta + " END");
-        }
+        // 使用工具类更新计数，处理正负数边界情况
+        CountUpdateUtils.incrementCount(updateWrapper, "like_count", delta);
 
         int updated = articleMapper.update(null, updateWrapper);
         if (updated == 0) {
@@ -170,15 +148,8 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Like> implements Li
 
         LambdaUpdateWrapper<Comment> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Comment::getId, commentId);
-
-        if (delta > 0) {
-            // 增加点赞量
-            updateWrapper.setSql("like_count = like_count + " + delta);
-        } else {
-            // 减少点赞量，但不能小于0
-            updateWrapper.setSql(
-                    "like_count = CASE WHEN like_count + " + delta + " < 0 THEN 0 ELSE like_count + " + delta + " END");
-        }
+        // 使用工具类更新计数，处理正负数边界情况
+        CountUpdateUtils.incrementCount(updateWrapper, "like_count", delta);
 
         int updated = commentMapper.update(null, updateWrapper);
         if (updated == 0) {
@@ -218,7 +189,7 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Like> implements Li
      */
     private void sendLikeArticleNotification(Integer likerId, Integer articleId) {
         // 使用线程池异步执行
-        notificationExecutor.execute(() -> {
+        notificationThreadPool.getNotificationPool("like").execute(() -> {
             try {
                 // 查询文章信息
                 Article article = articleMapper.selectById(articleId);
@@ -255,7 +226,7 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Like> implements Li
      */
     private void sendLikeCommentNotification(Integer likerId, Integer commentId) {
         // 使用线程池异步执行
-        notificationExecutor.execute(() -> {
+        notificationThreadPool.getNotificationPool("like").execute(() -> {
             try {
                 // 查询评论信息
                 Comment comment = commentMapper.selectById(commentId);

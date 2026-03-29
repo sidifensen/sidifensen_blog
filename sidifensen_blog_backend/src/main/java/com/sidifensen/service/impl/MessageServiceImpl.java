@@ -271,8 +271,6 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
 
             Long existingCount = messageMapper.selectCount(checkWrapper);
             if (existingCount > 0) {
-                log.debug("点赞文章通知已存在，不再重复发送：likerId={}, authorId={}, articleId={}",
-                        likerId, authorId, articleId);
                 return;
             }
 
@@ -332,8 +330,6 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
 
             Long existingCount = messageMapper.selectCount(checkWrapper);
             if (existingCount > 0) {
-                log.debug("点赞评论通知已存在，不再重复发送：likerId={}, commenterId={}",
-                        likerId, commenterId);
                 return;
             }
 
@@ -390,8 +386,6 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
 
             Long existingCount = messageMapper.selectCount(checkWrapper);
             if (existingCount > 0) {
-                log.debug("收藏文章通知已存在，不再重复发送：collectorId={}, authorId={}, articleId={}",
-                        collectorId, authorId, articleId);
                 return;
             }
 
@@ -449,8 +443,6 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
 
             Long existingCount = messageMapper.selectCount(checkWrapper);
             if (existingCount > 0) {
-                log.debug("关注通知已存在，不再重复发送：followerId={}, followedId={}",
-                        followerId, followedId);
                 return;
             }
 
@@ -499,7 +491,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         try {
             // 检查用户是否在线
             if (!webSocketSessionManager.isOnline(receiverId)) {
-                log.debug("用户 {} 不在线，无法实时推送通知", receiverId);
+                
                 return;
             }
 
@@ -514,7 +506,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
             String message = JSON.toJSONString(wsMessage);
             webSocketSessionManager.sendMessage(receiverId, message);
 
-            log.debug("成功通过 WebSocket 推送新通知给用户 {}, 类型: {}", receiverId, messageType.getDesc());
+            
         } catch (Exception e) {
             log.error("通过 WebSocket 推送新通知失败：receiverId={}, messageType={}",
                     receiverId, messageType.getDesc(), e);

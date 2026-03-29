@@ -113,7 +113,8 @@ function goToPrivacy() {
 
     <!-- 版本信息 -->
     <view class="version-info">
-      <text>斯蒂芬森博客 v1.0.0</text>
+      <text>斯蒂芬森助手 v1.0.0</text>
+      <text class="icp">粤 ICP 备 2024324512 号 -2</text>
     </view>
   </view>
 </template>
@@ -180,5 +181,10 @@ function goToPrivacy() {
   margin-top: var(--spacing-xl);
   font-size: 12px;
   color: var(--u-tips-color);
+
+  .icp {
+    display: block;
+    margin-top: var(--spacing-xs);
+  }
 }
 </style>

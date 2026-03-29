@@ -193,7 +193,6 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
         }
         // 防重放校验：已支付订单（有 paidTime）直接返回成功，防止支付宝重复通知导致重复续期。
         if (payOrder.getPaidTime() != null) {
-            log.info("订单重复回调，跳过处理，orderNo={}", orderNo);
             return true;
         }
 
@@ -297,7 +296,7 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
         // 更新订单状态为已关闭
         payOrder.setStatus(PayOrderStatusEnum.CLOSED.getCode());
         payOrderMapper.updateById(payOrder);
-        log.info("用户取消订单，userId={}, orderNo={}", userId, orderNo);
+        
     }
 
     /**

@@ -22,14 +22,17 @@ import com.sidifensen.mapper.AlbumPhotoMapper;
 import com.sidifensen.mapper.PhotoMapper;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.AlbumService;
+import com.sidifensen.utils.EntityCheckUtils;
+import com.sidifensen.utils.PageUtils;
 import com.sidifensen.utils.SecurityUtils;
+import com.sidifensen.utils.UserUtils;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -60,9 +63,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     @Override
     public AlbumVo getAlbum(Integer albumId) {
         Album album = albumMapper.selectById(albumId);
-        if (ObjectUtil.isEmpty(album)) {
-            throw new BlogException(BlogConstants.NotFoundAlbum);
-        }
+        EntityCheckUtils.getOrThrowNotEmpty(album, BlogConstants.NotFoundAlbum);
 
         AlbumVo albumVo = BeanUtil.copyProperties(album, AlbumVo.class);
         // 把album_id为albumId的全部照片查询出来
@@ -103,7 +104,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         Album album = this.getById(albumDto.getId());
         album.setName(albumDto.getName());
 
-        if (userId != album.getUserId()) {
+        if (!Objects.equals(userId, album.getUserId())) {
             throw new BlogException(BlogConstants.CannotHandleOthersAlbum);
         }
         if (albumDto.getCoverUrl() != null) {
@@ -119,8 +120,8 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     @Override
     public void deleteAlbum(Integer albumId) {
         Integer userId = SecurityUtils.getUserId();
-        Album album = albumMapper.selectById(albumId);
-        if (userId != album.getUserId()) {
+        Album album = EntityCheckUtils.getOrThrowNotEmpty(albumMapper.selectById(albumId), BlogConstants.NotFoundAlbum);
+        if (!Objects.equals(userId, album.getUserId())) {
             throw new BlogException(BlogConstants.CannotHandleOthersAlbum);
         }
         int i = albumMapper.deleteById(albumId);
@@ -153,12 +154,9 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         LambdaQueryWrapper<Album> eq = new LambdaQueryWrapper<Album>().eq(Album::getShowStatus, ShowStatusEnum.PUBLIC.getCode());
         List<Album> albums = this.list(eq);
         List<AlbumVo> albumVos = BeanUtil.copyToList(albums, AlbumVo.class);
-        // 查询所有用户信息
-        List<SysUser> users = sysUserMapper.selectList(null);
-        Map<Integer, String> userMap = users.stream().collect(Collectors.toMap(SysUser::getId, SysUser::getUsername));
-        // 将用户名设置到AlbumVo中
-        albumVos.forEach(albumVo -> albumVo.setUserName(userMap.get(albumVo.getUserId())));
-
+        // 使用UserUtils填充用户名
+        Map<Integer, SysUser> userMap = UserUtils.getUserMap(albums.stream().map(Album::getUserId).toList(), sysUserMapper);
+        albumVos.forEach(albumVo -> albumVo.setUserName(userMap.get(albumVo.getUserId()).getNickname()));
         return albumVos;
     }
 
@@ -170,7 +168,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         if (album == null) {
             throw new BlogException(BlogConstants.NotFoundAlbum);
         }
-        if (userId != album.getUserId()) {
+        if (!Objects.equals(userId, album.getUserId())) {
             throw new BlogException(BlogConstants.CannotHandleOthersAlbum);
         }
         album.setShowStatus(albumDto.getShowStatus());
@@ -182,7 +180,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     public void changeCover(AlbumDto albumDto) {
         Album album = this.getById(albumDto.getId());
         Integer userId = SecurityUtils.getUserId();
-        if (userId != album.getUserId()) {
+        if (!Objects.equals(userId, album.getUserId())) {
             throw new BlogException(BlogConstants.CannotHandleOthersAlbum);
         }
         album.setCoverUrl(albumDto.getCoverUrl());
@@ -194,30 +192,20 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     // 查询所有相册
     @Override
     public PageVo<List<AlbumVo>> adminList(Integer pageNum, Integer pageSize) {
-        Page<Album> page = new Page<>(pageNum, pageSize);
+        Page<Album> page = PageUtils.buildPage(pageNum, pageSize);
         List<Album> albums = this.page(page, new LambdaQueryWrapper<Album>().orderByDesc(Album::getCreateTime)).getRecords();
         List<AlbumVo> albumVos = BeanUtil.copyToList(albums, AlbumVo.class);
-        // 用userId把username查询出来
-        HashMap<Integer, String> userMap = new HashMap<>();
-        // 查询所有用户信息
-        List<SysUser> users = sysUserMapper.selectList(null);
-        for (SysUser user : users) {
-            userMap.put(user.getId(), user.getUsername());
-        }
-        // 将用户名设置到AlbumVo中
-        for (AlbumVo albumVo : albumVos) {
-            albumVo.setUserName(userMap.get(albumVo.getUserId()));
-        }
-        return new PageVo<>(albumVos, page.getTotal());
+        // 使用UserUtils填充用户名
+        Map<Integer, SysUser> userMap = UserUtils.getUserMap(albums.stream().map(Album::getUserId).toList(), sysUserMapper);
+        albumVos.forEach(albumVo -> albumVo.setUserName(userMap.get(albumVo.getUserId()).getNickname()));
+        return PageUtils.<AlbumVo>buildPageVo(page, albumVos);
     }
 
     // 更新相册
     @Override
     public void adminUpdateAlbum(AlbumDto albumDto) {
         Album album = this.getById(albumDto.getId());
-        if (album == null) {
-            throw new BlogException(BlogConstants.NotFoundAlbum);
-        }
+        EntityCheckUtils.getOrThrowNotEmpty(album, BlogConstants.NotFoundAlbum);
         album.setName(albumDto.getName());
         album.setCoverUrl(albumDto.getCoverUrl());
         album.setShowStatus(albumDto.getShowStatus());
@@ -227,10 +215,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     // 删除相册
     @Override
     public void adminDeleteAlbum(Integer albumId) {
-        Album album = albumMapper.selectById(albumId);
-        if (album == null) {
-            throw new BlogException(BlogConstants.NotFoundAlbum);
-        }
+        Album album = EntityCheckUtils.getOrThrowNotEmpty(albumMapper.selectById(albumId), BlogConstants.NotFoundAlbum);
         int i = albumMapper.deleteById(albumId);
         if (i == 0) {
             throw new BlogException(BlogConstants.NotFoundAlbum);
@@ -242,14 +227,12 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
 
         // 删除相册照片关联表
         albumPhotoMapper.delete(new LambdaQueryWrapper<AlbumPhoto>().eq(AlbumPhoto::getAlbumId, albumId));
-
-
     }
 
     // 搜索相册
     @Override
     public PageVo<List<AlbumVo>> searchAlbum(AlbumDto albumDto) {
-        Page<Album> page = new Page<>(albumDto.getPageNum(), albumDto.getPageSize());
+        Page<Album> page = PageUtils.buildPage(albumDto.getPageNum(), albumDto.getPageSize());
         LambdaQueryWrapper<Album> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ObjectUtil.isNotEmpty(albumDto.getUserId()), Album::getUserId, albumDto.getUserId())
                 .like(ObjectUtil.isNotEmpty(albumDto.getName()), Album::getName, albumDto.getName())
@@ -260,18 +243,10 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
 
         List<Album> albums = this.page(page, queryWrapper).getRecords();
         List<AlbumVo> albumVos = BeanUtil.copyToList(albums, AlbumVo.class);
-        // 用userId把username查询出来
-        HashMap<Integer, String> userMap = new HashMap<>();
-        // 查询所有用户信息
-        List<SysUser> users = sysUserMapper.selectList(null);
-        for (SysUser user : users) {
-            userMap.put(user.getId(), user.getUsername());
-        }
-        // 将用户名设置到AlbumVo中
-        for (AlbumVo albumVo : albumVos) {
-            albumVo.setUserName(userMap.get(albumVo.getUserId()));
-        }
-        return new PageVo<>(albumVos, page.getTotal());
+        // 使用UserUtils填充用户名
+        Map<Integer, SysUser> userMap = UserUtils.getUserMap(albums.stream().map(Album::getUserId).toList(), sysUserMapper);
+        albumVos.forEach(albumVo -> albumVo.setUserName(userMap.get(albumVo.getUserId()).getNickname()));
+        return PageUtils.<AlbumVo>buildPageVo(page, albumVos);
     }
 
     // 搜索相册（公开）
@@ -283,15 +258,9 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
 
         List<Album> albums = this.list(queryWrapper);
         List<AlbumVo> albumVos = BeanUtil.copyToList(albums, AlbumVo.class);
-        // 用userId把username查询出来
-        HashMap<Integer, String> userMap = new HashMap<>();
-        List<SysUser> users = sysUserMapper.selectList(null);
-        for (SysUser user : users) {
-            userMap.put(user.getId(), user.getUsername());
-        }
-        for (AlbumVo albumVo : albumVos) {
-            albumVo.setUserName(userMap.get(albumVo.getUserId()));
-        }
+        // 使用UserUtils填充用户名
+        Map<Integer, SysUser> userMap = UserUtils.getUserMap(albums.stream().map(Album::getUserId).toList(), sysUserMapper);
+        albumVos.forEach(albumVo -> albumVo.setUserName(userMap.get(albumVo.getUserId()).getNickname()));
         return albumVos;
     }
 
@@ -299,9 +268,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     @Override
     public AlbumVo adminGetAlbum(Integer albumId) {
         Album album = this.getById(albumId);
-        if (ObjectUtil.isEmpty(album)) {
-            throw new BlogException(BlogConstants.NotFoundAlbum);
-        }
+        EntityCheckUtils.getOrThrowNotEmpty(album, BlogConstants.NotFoundAlbum);
 
         AlbumVo albumVo = BeanUtil.copyProperties(album, AlbumVo.class);
         // 把album_id为albumId的全部照片查询出来
@@ -314,7 +281,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         List<PhotoVo> photoVos = BeanUtil.copyToList(photos, PhotoVo.class);
         albumVo.setPhotos(photoVos);
         SysUser sysUser = sysUserMapper.selectById(album.getUserId());
-        albumVo.setUserName(sysUser.getUsername());
+        albumVo.setUserName(sysUser != null ? sysUser.getNickname() : null);
         return albumVo;
     }
 }

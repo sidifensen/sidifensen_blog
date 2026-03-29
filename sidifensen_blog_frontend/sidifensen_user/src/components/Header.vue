@@ -21,13 +21,13 @@
       <el-icon><Link /></el-icon>
       <span class="menu-text">友链</span>
     </el-menu-item>
-    <el-menu-item index="/creation" class="menu-item">
-      <el-icon><MagicStick /></el-icon>
-      <span class="menu-text">创作中心</span>
-    </el-menu-item>
     <el-menu-item index="/vip" class="menu-item">
       <el-icon><Star /></el-icon>
       <span class="menu-text">会员中心</span>
+    </el-menu-item>
+    <el-menu-item index="/creation" class="menu-item">
+      <el-icon><MagicStick /></el-icon>
+      <span class="menu-text">创作中心</span>
     </el-menu-item>
     <div class="right">
       <div class="search" @click="handleSearch">
@@ -130,13 +130,13 @@
             <el-icon><Link /></el-icon>
             <span class="menu-text">友链</span>
           </el-menu-item>
-          <el-menu-item index="/creation" class="menu-item">
-            <el-icon><MagicStick /></el-icon>
-            <span class="menu-text">创作中心</span>
-          </el-menu-item>
           <el-menu-item index="/vip" class="menu-item">
             <el-icon><Star /></el-icon>
             <span class="menu-text">会员中心</span>
+          </el-menu-item>
+          <el-menu-item index="/creation" class="menu-item">
+            <el-icon><MagicStick /></el-icon>
+            <span class="menu-text">创作中心</span>
           </el-menu-item>
         </el-menu>
       </div>

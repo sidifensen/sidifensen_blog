@@ -53,9 +53,9 @@ public class FileUploadUtils {
                 client.makeBucket(MakeBucketArgs.builder()
                         .bucket(bucketName)
                         .build());
-                log.info("成功创建 MinIO 存储桶：{}", bucketName);
+                // 删除 MinIO 初始化成功日志
             } else {
-                log.info("MinIO 存储桶已存在：{}", bucketName);
+                // MinIO 存储桶已存在，无需操作
             }
 
             // 设置桶的访问策略为公开读取
@@ -63,13 +63,13 @@ public class FileUploadUtils {
 
             // 标记 MinIO 可用
             minioAvailable = true;
-            log.info("MinIO 初始化完成，服务可用");
+            // MinIO 初始化完成
 
         } catch (Exception e) {
             // 容忍初始化失败，不阻止应用启动
             // MinIO 不可用时，文件上传功能将不可用，但不影响其他功能
             log.warn("MinIO 未可用，文件上传功能暂时禁用：{}", e.getMessage());
-            log.debug("MinIO 初始化失败详情", e);
+            
         }
     }
 

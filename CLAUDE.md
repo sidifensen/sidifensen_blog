@@ -55,18 +55,6 @@ XxxVo            # 视图对象
 XxxEntity        # 实体类 (业务命名，如 Article, User)
 ```
 
-### 异常处理规范
-
-```java
-// 正确：使用 BlogException + BlogConstants
-if (Objects.isNull(user)) {
-    throw new BlogException(BlogConstants.USER_NOT_EXIST);
-}
-
-// 错误：禁止硬编码
-throw new BlogException("用户不存在");
-```
-
 ### 修改后检查
 
 ```bash
@@ -217,40 +205,6 @@ cd sidifensen_blog_frontend/sidifensen_admin && npm run build
 
 ---
 
-## Git 协作规范
-
-### 分支命名
-
-```
-feature/功能名        # 新功能
-fix/问题描述          # 修复
-hotfix/紧急修复       # 紧急修复
-refactor/重构内容     # 重构
-```
-
-### 提交信息
-
-```
-feat: 新功能描述
-fix: 修复问题描述
-docs: 文档更新
-style: 格式调整
-refactor: 重构
-test: 测试相关
-chore: 构建/工具相关
-```
-
-### Commit 流程
-
-使用 `skill: /commit` 或手动执行：
-
-```bash
-git add <files>
-git commit -m "type: 描述"
-git push
-```
-
----
 
 ## 数据库工具
 
@@ -271,3 +225,45 @@ git push
 ### 前端页面调试
 
 项目已配置 `chrome-devtools` MCP 工具，可用于打开浏览器查看和调试页面，包括元素检查、交互操作、控制台日志查看等功能。
+
+---
+
+## gstack
+
+所有网页浏览必须使用 gstack 的 `/browse` 技能，**禁止**使用 `mcp__claude-in-chrome__*` 工具。
+
+如果 gstack 技能不起作用，请运行 `cd .claude/skills/gstack && ./setup` 来构建二进制文件并注册技能。
+
+### 可用技能
+
+| 技能 | 说明 |
+|------|------|
+| `/office-hours` | 办公时间咨询 |
+| `/plan-ceo-review` | CEO 计划审查 |
+| `/plan-eng-review` | 工程计划审查 |
+| `/plan-design-review` | 设计计划审查 |
+| `/design-consultation` | 设计咨询 |
+| `/design-shotgun` | 快速设计评审 |
+| `/review` | 代码审查 |
+| `/ship` | 发布功能 |
+| `/land-and-deploy` | 部署上线 |
+| `/canary` | 金丝雀发布 |
+| `/benchmark` | 性能基准测试 |
+| `/browse` | 网页浏览 |
+| `/connect-chrome` | 连接 Chrome |
+| `/qa` | QA 测试 |
+| `/qa-only` | 仅 QA 测试 |
+| `/design-review` | 设计审查 |
+| `/setup-browser-cookies` | 设置浏览器 Cookie |
+| `/setup-deploy` | 设置部署 |
+| `/retro` | 回顾 |
+| `/investigate` | 调查 |
+| `/document-release` | 文档发布 |
+| `/codex` | Codex 助手 |
+| `/cso` | CSO 助手 |
+| `/autoplan` | 自动规划 |
+| `/careful` | 谨慎模式 |
+| `/freeze` | 冻结 |
+| `/guard` | 守护模式 |
+| `/unfreeze` | 解冻 |
+| `/gstack-upgrade` | 升级 gstack |

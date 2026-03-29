@@ -27,9 +27,13 @@ import com.sidifensen.mapper.ArticleMapper;
 import com.sidifensen.mapper.CommentMapper;
 import com.sidifensen.mapper.LikeMapper;
 import com.sidifensen.mapper.SysUserMapper;
+import com.sidifensen.redis.NotificationThreadPool;
 import com.sidifensen.service.CommentService;
 import com.sidifensen.service.MessageService;
 import com.sidifensen.service.UserSettingsService;
+import com.sidifensen.utils.CountUpdateUtils;
+import com.sidifensen.utils.EntityCheckUtils;
+import com.sidifensen.utils.PageUtils;
 import com.sidifensen.utils.SecurityUtils;
 import com.sidifensen.utils.TextAuditUtils;
 import jakarta.annotation.Resource;
@@ -42,10 +46,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -85,20 +85,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Resource
     private UserSettingsService userSettingsService;
 
-    // 通知发送专用线程池
-    private final ExecutorService notificationExecutor = new ThreadPoolExecutor(
-            3, // 核心线程数
-            5, // 最大线程数
-            60L, // 空闲线程存活时间
-            TimeUnit.SECONDS, // 时间单位
-            new LinkedBlockingQueue<>(500), // 任务队列
-            r -> {
-                Thread thread = new Thread(r);
-                thread.setName("comment-notification-thread-" + thread.getId());
-                thread.setDaemon(true);
-                return thread;
-            },
-            new ThreadPoolExecutor.CallerRunsPolicy());
+    @Resource
+    private NotificationThreadPool notificationThreadPool;
 
     @Override
     @Transactional
@@ -108,9 +96,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         // 验证父评论是否存在
         if (commentDto.getParentId() != null && commentDto.getParentId() > 0) {
             Comment parentComment = getById(commentDto.getParentId());
-            if (parentComment == null || parentComment.getIsDeleted() == 1) {
-                throw new BlogException(BlogConstants.NotFoundParentComment);
-            }
+            EntityCheckUtils.getOrThrowNotDeleted(parentComment, BlogConstants.NotFoundParentComment);
 
             // 如果父评论的审核状态不是通过，不允许回复
             if (parentComment.getExamineStatus() != 1) {
@@ -255,9 +241,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         Integer currentUserId = SecurityUtils.getUserId();
 
         Comment comment = getById(commentId);
-        if (comment == null || comment.getIsDeleted() == 1) {
-            throw new BlogException(BlogConstants.NotFoundComment);
-        }
+        EntityCheckUtils.getOrThrowNotDeleted(comment, BlogConstants.NotFoundComment);
 
         // 只能删除自己的评论
         if (!comment.getUserId().equals(currentUserId)) {
@@ -296,6 +280,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         }
 
         Integer offset = (pageNum - 1) * pageSize;
+        // 添加参数边界验证，防止负数或过大值导致 SQL 错误
+        offset = Math.max(0, offset);
+        pageSize = Math.min(Math.max(1, pageSize), 100);
         Integer currentUserId = SecurityUtils.getUserId() == 0 ? null : SecurityUtils.getUserId();
 
         // 1. 查询顶级评论基础信息
@@ -337,11 +324,12 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         }
 
         Comment parentComment = getById(commentId);
-        if (parentComment == null || parentComment.getIsDeleted() == 1) {
-            throw new BlogException(BlogConstants.NotFoundParentComment);
-        }
+        EntityCheckUtils.getOrThrowNotDeleted(parentComment, BlogConstants.NotFoundParentComment);
 
         Integer offset = (pageNum - 1) * pageSize;
+        // 添加参数边界验证，防止负数或过大值导致 SQL 错误
+        offset = Math.max(0, offset);
+        pageSize = Math.min(Math.max(1, pageSize), 100);
         Integer currentUserId = SecurityUtils.getUserId() == 0 ? null : SecurityUtils.getUserId();
 
         // 1. 查询回复评论基础信息
@@ -750,9 +738,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         }
 
         Comment comment = getById(commentAuditDto.getCommentId());
-        if (comment == null || comment.getIsDeleted() == 1) {
-            throw new BlogException(BlogConstants.NotFoundComment);
-        }
+        EntityCheckUtils.getOrThrowNotDeleted(comment, BlogConstants.NotFoundComment);
 
         comment.setExamineStatus(examineStatus);
         // 如果审核未通过且有原因，可以记录原因（这里暂时不保存到数据库）
@@ -776,7 +762,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      */
     private void sendCommentNotification(Comment comment) {
         // 使用线程池异步执行
-        notificationExecutor.execute(() -> {
+        notificationThreadPool.getNotificationPool("comment").execute(() -> {
             try {
                 // 查询文章信息
                 Article article = articleMapper.selectById(comment.getArticleId());
@@ -856,7 +842,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             // 检查用户是否开启了评论邮件通知
             Integer receiveCommentEmail = userSettingsService.getReceiveCommentEmail(notifiedUserId);
             if (receiveCommentEmail == 0) {
-                log.debug("用户 {} 关闭了评论邮件通知，跳过发送", notifiedUserId);
+                
                 return;
             }
 
@@ -884,7 +870,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                     RabbitMQConstants.Comment_Email_Routing_Key,
                     emailMessage);
 
-            log.info("评论邮件通知已发送到队列：to={}, articleId={}", notifiedUser.getEmail(), articleId);
+            
         } catch (Exception e) {
             log.error("发送评论邮件通知失败：notifiedUserId={}", notifiedUserId, e);
         }
@@ -917,9 +903,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         }
 
         Comment comment = getById(commentId);
-        if (comment == null || comment.getIsDeleted() == 1) {
-            throw new BlogException(BlogConstants.NotFoundComment);
-        }
+        EntityCheckUtils.getOrThrowNotDeleted(comment, BlogConstants.NotFoundComment);
 
         // 统计要删除的评论总数（包括所有子评论）
         int deletedCommentCount = countCommentAndReplies(commentId);

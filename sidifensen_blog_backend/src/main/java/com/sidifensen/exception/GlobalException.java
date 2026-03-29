@@ -35,8 +35,7 @@ public class GlobalException {
 
     @ExceptionHandler(Exception.class)
     Object handleException(Exception e) {
-        e.printStackTrace();
-        log.error("系统异常：{}", e.getMessage());
+        log.error("系统异常：{}", e.getMessage(), e);
         return Result.error("系统异常，请联系管理员");
     }
 
@@ -95,15 +94,13 @@ public class GlobalException {
 
     @ExceptionHandler(BadSqlGrammarException.class)
     Object handleBadSqlGrammarException(BadSqlGrammarException e) {
-        log.error("数据库语法错误：{}", e.getMessage());
-        e.printStackTrace();
+        log.error("数据库查询错误：{}", e.getMessage(), e);
         return Result.error("数据库查询错误，请检查参数是否正确");
     }
 
     @ExceptionHandler(ThreadPoolException.class)
     Object handleThreadPoolException(ThreadPoolException e) {
-        log.error("线程池异常：{}", e.getMessage());
-        e.printStackTrace();
+        log.error("线程池异常：{}", e.getMessage(), e);
         return Result.error(e.getMessage());
     }
 
@@ -132,8 +129,7 @@ public class GlobalException {
      */
     @ExceptionHandler(QueryTimeoutException.class)
     Object handleQueryTimeoutException(QueryTimeoutException e) {
-        log.error("服务器超时：{}", e.getMessage());
-        e.printStackTrace();
+        log.error("服务器超时：{}", e.getMessage(), e);
         return Result.error("服务器超时");
     }
 

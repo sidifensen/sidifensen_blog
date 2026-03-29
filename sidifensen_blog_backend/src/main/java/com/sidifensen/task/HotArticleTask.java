@@ -120,10 +120,6 @@ public class HotArticleTask {
             // 批量更新到Redis（使用原子操作，避免并发读取问题）
             redisComponent.batchSetArticleHotScore(articleScores);
 
-            long endTime = System.currentTimeMillis();
-            log.info("热门文章数据同步完成，共同步 {} 篇文章，耗时 {}ms",
-                    articleScores.size(), (endTime - startTime));
-
         } catch (Exception e) {
             log.error("同步热门文章数据失败: {}", e.getMessage(), e);
         }

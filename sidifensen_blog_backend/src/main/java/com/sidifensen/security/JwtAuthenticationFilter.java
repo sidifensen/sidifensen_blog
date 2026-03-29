@@ -85,7 +85,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authenticateUser(request, response);
                 } catch (Exception e) {
                     // 可选认证失败，忽略错误继续放行
-                    log.debug("可选认证失败: {}", e.getMessage());
+                    
                 }
             }
             filterChain.doFilter(request, response);
@@ -192,7 +192,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     visitorMessage
             );
 
-            log.debug("访客记录消息已发送到MQ: userId={}, ip={}, device={}", userId, ip, device);
+            
         } catch (Exception e) {
             // 访客记录失败不影响主业务，记录日志即可
             log.warn("发送访客记录消息失败: {}", e.getMessage());

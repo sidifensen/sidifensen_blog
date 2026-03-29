@@ -7,8 +7,6 @@ import { formatCount } from '@/utils/format'
 const articleList = ref([])
 // 加载状态
 const loading = ref(false)
-// 下拉刷新状态
-const refreshing = ref(false)
 // 上拉加载更多状态
 const loadMore = ref(false)
 // 没有更多数据
@@ -21,13 +19,6 @@ const pageSize = ref(10)
 const searchKey = ref('')
 // 选中分类
 const selectedCategory = ref('')
-// 分类列表
-const categoryList = ref([
-  { id: '', name: '全部' },
-  { id: 'tech', name: '技术' },
-  { id: 'life', name: '生活' },
-  { id: 'other', name: '其他' }
-])
 
 /**
  * 获取文章列表
@@ -60,19 +51,6 @@ async function fetchArticleList() {
 }
 
 /**
- * 下拉刷新
- */
-function onRefresh() {
-  refreshing.value = true
-  noMore.value = false
-  pageNum.value = 1
-
-  fetchArticleList().finally(() => {
-    refreshing.value = false
-  })
-}
-
-/**
  * 上拉加载更多
  */
 function onLoadMore() {
@@ -84,14 +62,6 @@ function onLoadMore() {
   fetchArticleList().finally(() => {
     loadMore.value = false
   })
-}
-
-/**
- * 切换分类
- */
-function onCategoryChange(categoryId) {
-  selectedCategory.value = categoryId
-  onRefresh()
 }
 
 /**
@@ -130,30 +100,14 @@ onMounted(() => {
       </view>
     </view>
 
-    <!-- 分类标签 -->
-    <scroll-view class="category-scroll" scroll-x>
-      <view class="category-list">
-        <view
-          v-for="category in categoryList"
-          :key="category.id"
-          class="category-item"
-          :class="{ active: selectedCategory === category.id }"
-          @click="onCategoryChange(category.id)"
-        >
-          {{ category.name }}
-        </view>
-      </view>
-    </scroll-view>
-
     <!-- 文章列表 -->
     <scroll-view
       class="article-list"
       scroll-y
-      :refresher-enabled="true"
-      :refresher-triggered="refreshing"
-      @refresherrefresh="onRefresh"
+      :scrolltolower-threshold="50"
       @scrolltolower="onLoadMore"
     >
+
       <view class="article-container">
         <view
           v-for="article in articleList"
@@ -218,6 +172,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  overflow: hidden;
   background: var(--u-bg-color);
 }
 
@@ -233,7 +188,6 @@ onMounted(() => {
     display: flex;
     align-items: center;
     width: 100%;
-    max-width: 280px;
     height: 36px;
     padding: 0 var(--spacing-md);
     background: var(--u-bg-color);
@@ -257,133 +211,108 @@ onMounted(() => {
   }
 }
 
-/* 分类滚动 */
-.category-scroll {
-  background: var(--u-bg-white);
-  border-bottom: 1px solid var(--u-border-color);
-
-  .category-list {
-    display: flex;
-    padding: var(--spacing-sm) var(--spacing-lg);
-    gap: var(--spacing-md);
-  }
-
-  .category-item {
-    flex-shrink: 0;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--radius-full);
-    font-size: 14px;
-    color: var(--u-content-color);
-    background: var(--u-bg-color);
-
-    &.active {
-      color: #ffffff;
-      background: var(--u-type-primary);
-    }
-  }
-}
-
 /* 文章列表 */
 .article-list {
   flex: 1;
+  overflow: hidden;
   padding-bottom: 60px;
 
   .article-container {
     padding: var(--spacing-lg);
   }
+}
 
-  .article-card {
-    margin-bottom: var(--spacing-lg);
-    padding: 0;
-    overflow: hidden;
+.article-card {
+  margin-bottom: var(--spacing-lg);
+  padding: 0;
+  overflow: hidden;
 
-    .article-cover {
-      width: 100%;
-      height: 180px;
+  .article-cover {
+    width: 100%;
+    height: 180px;
+  }
+
+  .article-info {
+    padding: var(--spacing-md);
+
+    .article-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--u-main-color);
+      margin-bottom: var(--spacing-sm);
+      @include text-ellipsis(2);
     }
 
-    .article-info {
-      padding: var(--spacing-md);
+    .article-summary {
+      font-size: 14px;
+      color: var(--u-tips-color);
+      margin-bottom: var(--spacing-md);
+      @include text-ellipsis(2);
+    }
 
-      .article-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--u-main-color);
-        margin-bottom: var(--spacing-sm);
-        @include text-ellipsis(2);
-      }
+    .article-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
 
-      .article-summary {
-        font-size: 14px;
-        color: var(--u-tips-color);
-        margin-bottom: var(--spacing-md);
-        @include text-ellipsis(2);
-      }
-
-      .article-meta {
+      .article-author {
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        gap: var(--spacing-sm);
 
-        .article-author {
+        .author-name {
+          font-size: 12px;
+          color: var(--u-content-color);
+          max-width: 120px;
+          line-height: 1.4;
+          word-break: break-all;
+        }
+      }
+
+      .article-stats {
+        display: flex;
+        gap: var(--spacing-lg);
+
+        .stat-item {
           display: flex;
           align-items: center;
-          gap: var(--spacing-sm);
+          gap: 4px;
+          font-size: 12px;
+          color: var(--u-tips-color);
 
-          .author-name {
-            font-size: 12px;
-            color: var(--u-content-color);
-            max-width: 120px;
-            line-height: 1.4;
-            word-break: break-all;
-          }
-        }
-
-        .article-stats {
-          display: flex;
-          gap: var(--spacing-lg);
-
-          .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 12px;
-            color: var(--u-tips-color);
-
-            .icon {
-              font-size: 14px;
-            }
+          .icon {
+            font-size: 14px;
           }
         }
       }
     }
   }
+}
 
-  .empty-state {
-    @include flex-center-column;
-    padding: var(--spacing-2xl);
+.empty-state {
+  @include flex-center-column;
+  padding: var(--spacing-2xl);
+  color: var(--u-tips-color);
+}
+
+.load-more {
+  @include flex-center;
+  padding: var(--spacing-lg);
+  gap: var(--spacing-sm);
+
+  .load-text {
+    font-size: 14px;
     color: var(--u-tips-color);
   }
+}
 
-  .load-more {
-    @include flex-center;
-    padding: var(--spacing-lg);
-    gap: var(--spacing-sm);
+.no-more {
+  @include flex-center;
+  padding: var(--spacing-lg);
 
-    .load-text {
-      font-size: 14px;
-      color: var(--u-tips-color);
-    }
-  }
-
-  .no-more {
-    @include flex-center;
-    padding: var(--spacing-lg);
-
-    .no-more-text {
-      font-size: 14px;
-      color: var(--u-tips-color);
-    }
+  .no-more-text {
+    font-size: 14px;
+    color: var(--u-tips-color);
   }
 }
 </style>

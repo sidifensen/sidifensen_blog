@@ -30,9 +30,14 @@ public class SecurityUtils {
      * @return
      */
     public static SysUser getUser() {
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        SysUser sysUser = loginUser.getSysUser();
-        return sysUser;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return null;
+        }
+        if (!(authentication.getPrincipal() instanceof LoginUser loginUser)) {
+            return null;
+        }
+        return loginUser.getSysUser();
     }
 
     /**
@@ -40,7 +45,13 @@ public class SecurityUtils {
      * @return
      */
     public static LoginUser getLoginUser() {
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return null;
+        }
+        if (!(authentication.getPrincipal() instanceof LoginUser loginUser)) {
+            return null;
+        }
         return loginUser;
     }
 

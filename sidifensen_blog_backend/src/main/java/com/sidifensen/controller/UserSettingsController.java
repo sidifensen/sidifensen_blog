@@ -46,7 +46,6 @@ public class UserSettingsController {
     public Result updatePrivateMessageEmailSetting(@RequestParam Integer isReceive) {
         Integer userId = SecurityUtils.getUserId();
         userSettingsService.setReceivePrivateMessageEmail(userId, isReceive);
-        log.info("更新私信邮件通知设置：userId={}, isReceive={}", userId, isReceive);
         return Result.success();
     }
 
@@ -60,7 +59,6 @@ public class UserSettingsController {
     public Result updateCommentEmailSetting(@RequestParam Integer isReceive) {
         Integer userId = SecurityUtils.getUserId();
         userSettingsService.setReceiveCommentEmail(userId, isReceive);
-        log.info("更新评论邮件通知设置：userId={}, isReceive={}", userId, isReceive);
         return Result.success();
     }
 
@@ -74,7 +72,6 @@ public class UserSettingsController {
     public Result updateSystemEmailSetting(@RequestParam Integer isReceive) {
         Integer userId = SecurityUtils.getUserId();
         userSettingsService.setReceiveSystemEmail(userId, isReceive);
-        log.info("更新系统邮件通知设置：userId={}, isReceive={}", userId, isReceive);
         return Result.success();
     }
 

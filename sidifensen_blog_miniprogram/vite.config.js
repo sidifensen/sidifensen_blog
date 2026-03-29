@@ -79,7 +79,7 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: `@import "@/styles/variables.scss"; @import "@/styles/mixins.scss"; @import "uview-pro/theme.scss";`,
+        additionalData: `@import "@/styles/variables.scss"; @import "@/styles/mixins.scss"; @import "@/styles/theme-override.scss";`,
         silenceDeprecations: ['legacy-js-api', 'import']
       }
     }

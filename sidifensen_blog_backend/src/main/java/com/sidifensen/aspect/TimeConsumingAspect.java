@@ -63,9 +63,9 @@ public class TimeConsumingAspect {
             // 异步输出耗时信息
             CompletableFuture.runAsync(() -> {
                 if (description.isEmpty()) {
-                    log.info("方法 {}.{} 执行耗时: {} ms", className, methodName, consumeTime);
+                    
                 } else {
-                    log.info("方法 {}.{}(\"{}\") 执行耗时: {} ms", className, methodName, description, consumeTime);
+                    
                 }
             });
 

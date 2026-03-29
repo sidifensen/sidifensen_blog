@@ -67,18 +67,18 @@
 - **ORM 框架**: MyBatis-Plus 3.5.14
 - **缓存中间件**: Redis 3.4.0
 - **消息队列**: RabbitMQ 3.4.0
-- **文件存储**: MinIO 8.3.6
+- **文件存储**: MinIO 8.3.6 (支持 S3 协议)
 - **模板引擎**: Thymeleaf 3.4.0
 - **邮件服务**: Spring Mail
 - **第三方登录**: JustAuth 1.16.7
 - **内容安全**: 阿里云图片内容检测 2.0.6
-- **AI 能力**: Spring AI 1.0.0 + DeepSeek API
+- **AI 能力**: Spring AI 1.0.0 + DeepSeek API 1.0.0
 - **监控运维**: Spring Actuator
 - **切面编程**: Spring AOP
 - **工具库**:
   - Lombok 1.18.38 (代码简化)
-  - Hutool 5.8.38 (Java 工具库)
-  - FastJSON 2.0.50 (JSON 处理)
+  - Hutool 6.3.0 (Java 工具库)
+  - FastJSON 2.0.52 (JSON 处理)
   - Easy-Captcha 1.6.2 (验证码生成)
 
 </td>
@@ -90,6 +90,7 @@
 
 - **核心框架**: Vue 3.5.13
 - **构建工具**: Vite 6.2.4
+- **桌面应用**: Electron 36.x (Windows/macOS/Linux 原生桌面)
 - **移动端支持**: Capacitor (iOS/Android 原生打包)
 - **UI 组件库**: Element Plus 2.10.2
 - **状态管理**: Pinia 3.0.1 + 持久化插件
@@ -165,17 +166,19 @@ sidifensen_blog/
 │   │       ├── utils/                              #     工具函数
 │   │       └── views/                              #     页面组件
 │   │
-│   └── sidifensen_user/                            #   用户端前台
-│       └── src/
-│           ├── api/                                #     API 接口
-│           ├── assets/                             #     静态资源
-│           ├── components/                         #     可复用组件
-│           ├── router/                             #     路由配置
-│           ├── stores/                             #     Pinia 状态管理
-│           ├── utils/                              #     工具函数
-│           └── views/                              #     页面组件
+│   ├── sidifensen_user/                            #   用户端前台
+│   │   └── src/
+│   │       ├── api/                                #     API 接口
+│   │       ├── assets/                             #     静态资源
+│   │       ├── components/                         #     可复用组件
+│   │       ├── router/                             #     路由配置
+│   │       ├── stores/                             #     Pinia 状态管理
+│   │       ├── utils/                              #     工具函数
+│   │       └── views/                              #     页面组件
+│   │
+│   └── sidifensen_electron/                        #   Electron 桌面应用
 │
-├── sidifensen_blog_miniprogram/                      # 微信小程序端 (UniApp)
+├── sidifensen_blog_miniprogram/                    # 微信小程序端 (UniApp + uView Pro)
 ├── sql/                                            # 数据库初始化脚本
 │   ├── console.sql                                 #   控制台 SQL
 │   └── sidifensen_blog.sql                         #   完整数据库结构
@@ -217,7 +220,9 @@ sidifensen_blog/
 ### 🎨 用户界面
 
 - **响应式设计**: 完美适配桌面、平板、手机
+- **Electron 桌面应用**: Windows/macOS/Linux 原生桌面客户端
 - **微信小程序**: UniApp 多端支持（微信小程序、H5）
+- **移动端 App**: Capacitor 原生 iOS/Android 打包
 - **暗黑模式**: 支持明暗主题切换
 - **加载动画**: 优雅的加载和过渡效果
 - **无限滚动**: 流畅的内容浏览体验
@@ -279,7 +284,7 @@ sidifensen_blog/
 | 🐬 MySQL          | 8.0+                         | 主数据库          |
 | 🔴 Redis          | 6.0+                         | 缓存数据库        |
 | 🐰 RabbitMQ       | 3.8+                         | 消息队列          |
-| ☁️ MinIO          | RELEASE.2025-04-08T15-41-24Z | 对象存储          |
+| ☁️ MinIO          | RELEASE.2025-06-05T02-37-50Z | 对象存储          |
 | 🐳 Docker         | 20.0+                        | 容器化部署 (推荐) |
 | 🐳 Docker Compose | 1.29+                        | 容器编排          |
 
@@ -758,6 +763,17 @@ docker-compose up -d --build
   - ✅ 核心指标卡片展示
   - ✅ 系统状态监控
 
+- [x] **🖥️ Electron 桌面应用**
+  - ✅ Windows/macOS/Linux 原生桌面客户端
+  - ✅ 桌面通知支持
+  - ✅ 系统托盘运行
+  - ✅ 自动更新支持
+
+- [x] **📱 Capacitor 移动端 App**
+  - ✅ iOS/Android 原生打包
+  - ✅ 移动端优化适配
+  - ✅ 原生功能调用
+
 - [x] **🔐 OAuth 登录流程重构**
   - ✅ Gitee/GitHub/QQ 第三方登录支持
   - ✅ OAuth 回调处理优化
@@ -793,6 +809,10 @@ docker-compose up -d --build
   - ✅ 去 AI 味设计指南
   - ✅ 黑夜模式适配规范
   - ✅ Docker 配置优化
+
+- [x] **📱 小程序组件库重构**
+  - ✅ 从 uv-ui 迁移到 uView Pro
+  - ✅ 组件样式和交互优化
 
 ### 🚧 计划中的功能
 

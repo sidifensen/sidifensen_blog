@@ -206,7 +206,7 @@ public class DeadLetterQueueListener {
             }
 
             if (!PayOrderStatusEnum.PAYING.getCode().equals(payOrder.getStatus())) {
-                log.info("订单状态非待支付，无需关闭，orderNo={}, status={}", orderNo, payOrder.getStatus());
+                
                 return;
             }
 
@@ -215,7 +215,7 @@ public class DeadLetterQueueListener {
             payOrder.setNotifyContent("系统自动关闭：订单超时未支付");
             payOrderMapper.updateById(payOrder);
 
-            log.info("订单已关闭，orderNo={}", orderNo);
+            
         } catch (Exception e) {
             // 订单关闭失败属于异常，需要记录告警并保存站内消息通知管理员
             log.error("处理订单超时死信失败，messageBody={}", messageBody, e);

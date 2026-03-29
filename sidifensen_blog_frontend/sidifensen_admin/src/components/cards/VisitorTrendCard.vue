@@ -51,6 +51,16 @@ const handleDaysChange = (newDays) => {
 </script>
 
 <style lang="scss" scoped>
+// 浅色模式切换按钮变量
+$toggle-bg-light: rgba(71, 85, 105, 0.1);
+$toggle-hover-bg-light: rgba(71, 85, 105, 0.18);
+$toggle-active-text-light: #ffffff;
+
+// 深色模式切换按钮变量
+$toggle-bg-dark: rgba(255, 255, 255, 0.1);
+$toggle-hover-bg-dark: rgba(255, 255, 255, 0.18);
+$toggle-active-text-dark: #1a1a1a;
+
 .trend-chart-container {
   width: 100%;
   height: 100%;
@@ -62,7 +72,7 @@ const handleDaysChange = (newDays) => {
   gap: 4px;
   padding: 4px;
   border-radius: 12px;
-  background: var(--toggle-bg);
+  background: var(--toggle-bg, #{$toggle-bg-light});
 
   .trend-days__btn {
     padding: 6px 14px;
@@ -76,13 +86,29 @@ const handleDaysChange = (newDays) => {
     transition: background-color 0.2s ease, color 0.2s ease;
 
     &:hover {
-      background: var(--toggle-hover-bg);
+      background: var(--toggle-hover-bg, #{$toggle-hover-bg-light});
       color: var(--text-primary);
     }
 
     &.is-active {
       background: var(--chart-line);
-      color: var(--toggle-active-text);
+      color: var(--toggle-active-text, #{$toggle-active-text-light});
+    }
+  }
+}
+
+html.dark {
+  .trend-days {
+    background: $toggle-bg-dark;
+
+    .trend-days__btn {
+      &:hover {
+        background: $toggle-hover-bg-dark;
+      }
+
+      &.is-active {
+        color: $toggle-active-text-dark;
+      }
     }
   }
 }

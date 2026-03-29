@@ -36,11 +36,11 @@ public class HotSearchCleanTask {
             if (keywordsToDelete != null && !keywordsToDelete.isEmpty()) {
                 redisComponent.getStringRedisTemplate()
                         .opsForZSet().remove("hot_searches", keywordsToDelete.toArray());
-                log.info("清理热门搜索完成，删除={}条，耗时={}ms", keywordsToDelete.size(), System.currentTimeMillis() - startTime);
+                
             } else {
                 long currentSize = redisComponent.getStringRedisTemplate()
                         .opsForZSet().size("hot_searches");
-                log.info("热门搜索无需清理，当前={}条，耗时={}ms", currentSize, System.currentTimeMillis() - startTime);
+                
             }
         } catch (Exception e) {
             log.error("清理热门搜索失败，耗时={}ms", System.currentTimeMillis() - startTime, e);
