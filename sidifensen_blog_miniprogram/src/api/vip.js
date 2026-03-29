@@ -4,17 +4,17 @@
 import { get, post } from './index'
 
 /**
- * 获取 VIP 权益信息
+ * 获取 VIP 套餐列表
  */
-export function getVipInfo() {
-  return get('/vip/info')
+export function getVipPlans() {
+  return get('/vip/plans')
 }
 
 /**
- * 获取 VIP 会员状态
+ * 获取当前用户 VIP 状态
  */
 export function getVipStatus() {
-  return get('/vip/status')
+  return get('/vip/me')
 }
 
 /**
@@ -22,29 +22,36 @@ export function getVipStatus() {
  * @param {Object} data 订单数据
  */
 export function createVipOrder(data) {
-  return post('/vip/order/create', data)
+  return post('/vip/orders', data)
 }
 
 /**
- * 获取 VIP 订单状态
- * @param {string} orderId 订单ID
+ * 查询当前用户订单
+ * @param {string} orderNo 订单号
  */
-export function getVipOrderStatus(orderId) {
-  return get('/vip/order/status', { orderId })
+export function getVipOrder(orderNo) {
+  return get(`/vip/orders/${orderNo}`)
+}
+
+/**
+ * 分页查询当前用户订单
+ */
+export function listVipOrders(pageNum = 1, pageSize = 10) {
+  return get('/vip/orders', { pageNum, pageSize })
 }
 
 /**
  * 取消 VIP 订单
- * @param {string} orderId 订单ID
+ * @param {string} orderNo 订单号
  */
-export function cancelVipOrder(orderId) {
-  return post('/vip/order/cancel', { orderId })
+export function cancelVipOrder(orderNo) {
+  return post(`/vip/orders/${orderNo}/cancel`)
 }
 
 /**
- * 获取支付宝支付链接
- * @param {string} orderId 订单ID
+ * 重新支付订单
+ * @param {string} orderNo 订单号
  */
-export function getAlipayUrl(orderId) {
-  return get('/vip/pay/alipay', { orderId })
+export function repayVipOrder(orderNo) {
+  return post(`/vip/orders/${orderNo}/pay`)
 }

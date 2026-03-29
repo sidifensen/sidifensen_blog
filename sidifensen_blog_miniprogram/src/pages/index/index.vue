@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getArticleList } from '@/api/article'
+import { formatCount } from '@/utils/format'
 
 // 文章列表
 const articleList = ref([])
@@ -123,12 +124,10 @@ onMounted(() => {
   <view class="index-page">
     <!-- 顶部搜索栏 -->
     <view class="search-bar" @click="goToSearch">
-      <uv-input
-        placeholder="搜索文章..."
-        :disabled="true"
-        prefixIcon="search"
-        shape="circle"
-      />
+      <view class="search-box">
+        <text class="search-icon">🔍</text>
+        <text class="search-placeholder">搜索文章...</text>
+      </view>
     </view>
 
     <!-- 分类标签 -->
@@ -173,20 +172,20 @@ onMounted(() => {
           <!-- 文章信息 -->
           <view class="article-info">
             <view class="article-title">{{ article.title }}</view>
-            <view class="article-summary">{{ article.summary }}</view>
+            <view class="article-summary">{{ article.description || article.summary }}</view>
             <view class="article-meta">
               <view class="article-author">
-                <uv-avatar :src="article.authorAvatar" size="20px" />
-                <text class="author-name">{{ article.authorName }}</text>
+                <uv-avatar :src="article.avatar" size="40" />
+                <text class="author-name">{{ article.nickname }}</text>
               </view>
               <view class="article-stats">
                 <text class="stat-item">
-                  <text class="icon">&#xe8f8;</text>
-                  {{ article.likeCount || 0 }}
+                  <text class="icon">👁</text>
+                  {{ formatCount(article.readCount) }}
                 </text>
                 <text class="stat-item">
-                  <text class="icon">&#xe8f9;</text>
-                  {{ article.commentCount || 0 }}
+                  <text class="icon">♥</text>
+                  {{ formatCount(article.likeCount) }}
                 </text>
               </view>
             </view>
@@ -195,13 +194,12 @@ onMounted(() => {
 
         <!-- 空状态 -->
         <view v-if="articleList.length === 0 && !loading" class="empty-state">
-          <text class="empty-icon">&#xe601;</text>
           <text class="empty-text">暂无文章</text>
         </view>
 
         <!-- 加载更多 -->
         <view v-if="loadMore" class="load-more">
-          <uv-loading-icon mode="circle" />
+          <u-loading mode="circle" />
           <text class="load-text">加载中...</text>
         </view>
 
@@ -211,6 +209,7 @@ onMounted(() => {
         </view>
       </view>
     </scroll-view>
+
   </view>
 </template>
 
@@ -219,20 +218,49 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: var(--bg-page);
+  background: var(--u-bg-color);
 }
 
 /* 搜索栏 */
 .search-bar {
+  width: 100%;
   padding: var(--spacing-md) var(--spacing-lg);
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
+  background: var(--u-bg-white);
+  border-bottom: 1px solid var(--u-border-color);
+  box-sizing: border-box;
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 280px;
+    height: 36px;
+    padding: 0 var(--spacing-md);
+    background: var(--u-bg-color);
+    border-radius: 18px;
+    box-sizing: border-box;
+
+    .search-icon {
+      flex-shrink: 0;
+      font-size: 14px;
+      margin-right: var(--spacing-sm);
+    }
+
+    .search-placeholder {
+      flex: 1;
+      font-size: 14px;
+      color: var(--u-tips-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
 }
 
 /* 分类滚动 */
 .category-scroll {
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
+  background: var(--u-bg-white);
+  border-bottom: 1px solid var(--u-border-color);
 
   .category-list {
     display: flex;
@@ -245,12 +273,12 @@ onMounted(() => {
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--radius-full);
     font-size: 14px;
-    color: var(--text-regular);
-    background: var(--bg-page);
+    color: var(--u-content-color);
+    background: var(--u-bg-color);
 
     &.active {
       color: #ffffff;
-      background: var(--color-primary);
+      background: var(--u-type-primary);
     }
   }
 }
@@ -258,6 +286,7 @@ onMounted(() => {
 /* 文章列表 */
 .article-list {
   flex: 1;
+  padding-bottom: 60px;
 
   .article-container {
     padding: var(--spacing-lg);
@@ -279,14 +308,14 @@ onMounted(() => {
       .article-title {
         font-size: 16px;
         font-weight: 600;
-        color: var(--text-primary);
+        color: var(--u-main-color);
         margin-bottom: var(--spacing-sm);
         @include text-ellipsis(2);
       }
 
       .article-summary {
         font-size: 14px;
-        color: var(--text-muted);
+        color: var(--u-tips-color);
         margin-bottom: var(--spacing-md);
         @include text-ellipsis(2);
       }
@@ -303,7 +332,10 @@ onMounted(() => {
 
           .author-name {
             font-size: 12px;
-            color: var(--text-regular);
+            color: var(--u-content-color);
+            max-width: 120px;
+            line-height: 1.4;
+            word-break: break-all;
           }
         }
 
@@ -316,7 +348,7 @@ onMounted(() => {
             align-items: center;
             gap: 4px;
             font-size: 12px;
-            color: var(--text-muted);
+            color: var(--u-tips-color);
 
             .icon {
               font-size: 14px;
@@ -330,12 +362,7 @@ onMounted(() => {
   .empty-state {
     @include flex-center-column;
     padding: var(--spacing-2xl);
-    color: var(--text-muted);
-
-    .empty-icon {
-      font-size: 48px;
-      margin-bottom: var(--spacing-lg);
-    }
+    color: var(--u-tips-color);
   }
 
   .load-more {
@@ -345,7 +372,7 @@ onMounted(() => {
 
     .load-text {
       font-size: 14px;
-      color: var(--text-muted);
+      color: var(--u-tips-color);
     }
   }
 
@@ -355,7 +382,7 @@ onMounted(() => {
 
     .no-more-text {
       font-size: 14px;
-      color: var(--text-muted);
+      color: var(--u-tips-color);
     }
   }
 }

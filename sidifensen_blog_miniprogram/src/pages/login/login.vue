@@ -168,7 +168,13 @@ onMounted(() => {
     <view class="login-card">
       <!-- 标题 -->
       <view class="login-header">
-        <view class="logo">&#xe8f0;</view>
+        <view class="logo-wrapper">
+          <image
+            class="logo-icon"
+            src="/static/icons/logo.svg"
+            mode="aspectFit"
+          />
+        </view>
         <view class="title">斯蒂芬森博客</view>
         <view class="subtitle">欢迎回来</view>
       </view>
@@ -180,7 +186,11 @@ onMounted(() => {
           :disabled="loading"
           @click="handleWxLogin"
         >
-          <text class="weixin-icon">&#xe8f1;</text>
+          <image
+            class="weixin-icon"
+            src="/static/weixin.svg"
+            mode="aspectFit"
+          />
           <text>微信授权登录</text>
         </button>
 
@@ -267,7 +277,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .login-page {
   min-height: 100vh;
-  background: var(--bg-page);
+  background: var(--u-bg-color);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -288,7 +298,7 @@ onMounted(() => {
   .circle {
     position: absolute;
     border-radius: 50%;
-    background: var(--color-primary);
+    background: var(--u-type-primary);
     opacity: 0.1;
   }
 
@@ -310,7 +320,7 @@ onMounted(() => {
 /* 登录卡片 */
 .login-card {
   width: 320px;
-  background: var(--bg-card);
+  background: var(--u-bg-white);
   border-radius: var(--radius-lg);
   padding: var(--spacing-2xl);
   box-shadow: var(--shadow-md);
@@ -323,21 +333,33 @@ onMounted(() => {
   text-align: center;
   margin-bottom: var(--spacing-2xl);
 
-  .logo {
-    font-size: 48px;
-    color: var(--color-primary);
-    margin-bottom: var(--spacing-md);
+  .logo-wrapper {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto var(--spacing-md);
+    background: var(--u-type-primary);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    box-sizing: border-box;
+  }
+
+  .logo-icon {
+    width: 100%;
+    height: 100%;
   }
 
   .title {
     font-size: 24px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--u-main-color);
   }
 
   .subtitle {
     font-size: 14px;
-    color: var(--text-muted);
+    color: var(--u-tips-color);
     margin-top: var(--spacing-sm);
   }
 }
@@ -352,15 +374,15 @@ onMounted(() => {
     width: 100%;
     height: 44px;
     padding: 0 var(--spacing-md);
-    border: 1px solid var(--border);
+    border: 1px solid var(--u-border-color);
     border-radius: var(--radius-md);
     font-size: 14px;
-    background: var(--bg-page);
-    color: var(--text-primary);
+    background: var(--u-bg-color);
+    color: var(--u-main-color);
     box-sizing: border-box;
 
     &:focus {
-      border-color: var(--color-primary);
+      border-color: var(--u-type-primary);
     }
   }
 
@@ -375,9 +397,9 @@ onMounted(() => {
     .check-code-img {
       width: 100px;
       height: 44px;
-      border: 1px solid var(--border);
+      border: 1px solid var(--u-border-color);
       border-radius: var(--radius-md);
-      background: var(--bg-page);
+      background: var(--u-bg-color);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -395,7 +417,7 @@ onMounted(() => {
 
       .check-code-placeholder {
         font-size: 12px;
-        color: var(--text-muted);
+        color: var(--u-tips-color);
       }
     }
   }
@@ -408,7 +430,7 @@ onMounted(() => {
       align-items: center;
       gap: var(--spacing-sm);
       font-size: 14px;
-      color: var(--text-regular);
+      color: var(--u-content-color);
     }
   }
 
@@ -426,14 +448,15 @@ onMounted(() => {
     gap: var(--spacing-sm);
 
     .weixin-icon {
-      font-size: 20px;
+      width: 22px;
+      height: 22px;
     }
   }
 
   .btn-primary {
     width: 100%;
     height: 48px;
-    background: var(--color-primary);
+    background: var(--u-type-primary);
     color: #ffffff;
     border: none;
     border-radius: var(--radius-md);
@@ -444,10 +467,10 @@ onMounted(() => {
     margin-top: var(--spacing-lg);
     text-align: center;
     font-size: 14px;
-    color: var(--text-muted);
+    color: var(--u-tips-color);
 
     .link {
-      color: var(--color-primary);
+      color: var(--u-type-primary);
       margin-left: 4px;
     }
   }
@@ -458,11 +481,11 @@ onMounted(() => {
   position: absolute;
   bottom: var(--spacing-2xl);
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--u-tips-color);
   text-align: center;
 
   .link {
-    color: var(--color-primary);
+    color: var(--u-type-primary);
   }
 }
 </style>

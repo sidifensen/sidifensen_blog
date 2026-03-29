@@ -25,6 +25,10 @@
       <el-icon><MagicStick /></el-icon>
       <span class="menu-text">创作中心</span>
     </el-menu-item>
+    <el-menu-item index="/vip" class="menu-item">
+      <el-icon><Star /></el-icon>
+      <span class="menu-text">会员中心</span>
+    </el-menu-item>
     <div class="right">
       <div class="search" @click="handleSearch">
         <el-icon size="29px" color="var(--el-text-color-primary)"><Search /></el-icon>
@@ -43,7 +47,7 @@
       <div v-if="user" class="user-info">
         <div class="user-name-group" @click="goToUserHomepage">
           <el-text size="large" class="nickname">{{ user.nickname }}</el-text>
-          <span v-if="user.isVip" class="vip-badge">VIP</span>
+          <VipBadge v-if="user.isVip" type="header" :glow="true" />
         </div>
         <el-dropdown placement="bottom-end">
           <el-avatar class="user-avatar" v-if="user.avatar" :size="40" :src="user.avatar" />
@@ -56,7 +60,7 @@
                 <div class="user-name">
                   <div class="name-row">
                     <span class="nickname">{{ user.nickname }}</span>
-                    <span v-if="user.isVip" class="vip-badge">VIP</span>
+                    <VipBadge v-if="user.isVip" type="header" />
                   </div>
                 </div>
 
@@ -130,6 +134,10 @@
             <el-icon><MagicStick /></el-icon>
             <span class="menu-text">创作中心</span>
           </el-menu-item>
+          <el-menu-item index="/vip" class="menu-item">
+            <el-icon><Star /></el-icon>
+            <span class="menu-text">会员中心</span>
+          </el-menu-item>
         </el-menu>
       </div>
     </transition>
@@ -138,6 +146,7 @@
 
 <script setup>
 import Dark from "./Dark.vue";
+import VipBadge from "./VipBadge.vue";
 import { useUserStore } from "@/stores/userStore.js";
 import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { storeToRefs } from "pinia";
@@ -563,56 +572,6 @@ onBeforeUnmount(() => {
           }
         }
 
-        .vip-badge {
-          position: relative;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          height: 22px;
-          padding: 0 8px;
-          border-radius: 999px;
-          background: rgba(245, 158, 11, 0.12);
-          border: 1px solid rgba(245, 158, 11, 0.4);
-          color: #d97706;
-          font-size: 12px;
-          font-weight: 700;
-          overflow: hidden;
-          animation: vip-glow 2s ease-in-out infinite;
-
-          &::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-              90deg,
-              transparent,
-              rgba(255, 255, 255, 0.15),
-              transparent
-            );
-            transition: left 0.4s ease;
-          }
-
-          &:hover::after {
-            left: 100%;
-          }
-        }
-
-        @keyframes vip-glow {
-          0%, 100% {
-            border-color: rgba(245, 158, 11, 0.3);
-            background: rgba(245, 158, 11, 0.08);
-            box-shadow: 0 0 4px rgba(245, 158, 11, 0.2);
-          }
-          50% {
-            border-color: rgba(245, 158, 11, 0.8);
-            background: rgba(245, 158, 11, 0.18);
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
-          }
-        }
-
         @media (max-width: 1314px) {
           margin-left: 0;
           display: none;
@@ -665,21 +624,6 @@ onBeforeUnmount(() => {
           color: var(--el-text-color-primary);
           word-wrap: break-word;
           word-break: break-all;
-        }
-
-        .vip-badge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          height: 22px;
-          padding: 0 8px;
-          border-radius: 999px;
-          background: linear-gradient(135deg, #f59e0b, #d97706);
-          color: #fff;
-          font-size: 12px;
-          font-weight: 700;
-          box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
-          animation: vip-glow 2s ease-in-out infinite;
         }
       }
     }

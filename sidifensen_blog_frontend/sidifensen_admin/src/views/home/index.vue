@@ -16,8 +16,8 @@
       </div>
     </div>
 
-    <!-- 统计数据卡片区域 -->
-    <div class="statistics-section">
+    <!-- 统计卡片区域 -->
+    <div class="stats-section">
       <div class="stats-grid">
         <!-- 用户统计卡片 -->
         <div class="stat-card stat-card--user">
@@ -101,119 +101,36 @@
       </div>
     </div>
 
-    <!-- 详细数据展示区域 -->
-    <div class="details-section">
-      <div class="details-grid">
-        <!-- 文章状态分布 -->
-        <div class="detail-card">
-          <div class="detail-card__header">
-            <div class="detail-card__title">
-              <span class="title-icon">
-                <el-icon><PieChart /></el-icon>
-              </span>
-              <span>文章状态分布</span>
-            </div>
-          </div>
-          <div class="detail-card__content">
-            <div class="status-list" v-if="!statisticsLoading">
-              <div class="status-item">
-                <div class="status-item__header">
-                  <span class="status-item__label status-item__label--published">
-                    <span class="status-dot status-dot--published"></span>
-                    已发布
-                  </span>
-                  <span class="status-item__count">{{ articleStatistics?.publishedCount || 0 }}</span>
-                </div>
-                <div class="status-item__bar">
-                  <div class="progress-bar">
-                    <div class="progress-bar__fill progress-bar__fill--published" :style="{ width: getPercentage(articleStatistics?.publishedCount, articleStatistics?.totalCount) + '%' }"></div>
-                  </div>
-                  <span class="progress-bar__text">{{ getPercentage(articleStatistics?.publishedCount, articleStatistics?.totalCount) }}%</span>
-                </div>
-              </div>
-
-              <div class="status-item">
-                <div class="status-item__header">
-                  <span class="status-item__label status-item__label--reviewing">
-                    <span class="status-dot status-dot--reviewing"></span>
-                    审核中
-                  </span>
-                  <span class="status-item__count">{{ articleStatistics?.reviewingCount || 0 }}</span>
-                </div>
-                <div class="status-item__bar">
-                  <div class="progress-bar">
-                    <div class="progress-bar__fill progress-bar__fill--reviewing" :style="{ width: getPercentage(articleStatistics?.reviewingCount, articleStatistics?.totalCount) + '%' }"></div>
-                  </div>
-                  <span class="progress-bar__text">{{ getPercentage(articleStatistics?.reviewingCount, articleStatistics?.totalCount) }}%</span>
-                </div>
-              </div>
-
-              <div class="status-item">
-                <div class="status-item__header">
-                  <span class="status-item__label status-item__label--draft">
-                    <span class="status-dot status-dot--draft"></span>
-                    草稿箱
-                  </span>
-                  <span class="status-item__count">{{ articleStatistics?.draftCount || 0 }}</span>
-                </div>
-                <div class="status-item__bar">
-                  <div class="progress-bar">
-                    <div class="progress-bar__fill progress-bar__fill--draft" :style="{ width: getPercentage(articleStatistics?.draftCount, articleStatistics?.totalCount) + '%' }"></div>
-                  </div>
-                  <span class="progress-bar__text">{{ getPercentage(articleStatistics?.draftCount, articleStatistics?.totalCount) }}%</span>
-                </div>
-              </div>
-
-              <div class="status-item">
-                <div class="status-item__header">
-                  <span class="status-item__label status-item__label--garbage">
-                    <span class="status-dot status-dot--garbage"></span>
-                    回收站
-                  </span>
-                  <span class="status-item__count">{{ articleStatistics?.garbageCount || 0 }}</span>
-                </div>
-                <div class="status-item__bar">
-                  <div class="progress-bar">
-                    <div class="progress-bar__fill progress-bar__fill--garbage" :style="{ width: getPercentage(articleStatistics?.garbageCount, articleStatistics?.totalCount) + '%' }"></div>
-                  </div>
-                  <span class="progress-bar__text">{{ getPercentage(articleStatistics?.garbageCount, articleStatistics?.totalCount) }}%</span>
-                </div>
-              </div>
-            </div>
-            <el-skeleton v-else :rows="4" animated />
-          </div>
-        </div>
-
-        <!-- 网站访问趋势 -->
-        <div class="detail-card detail-card--chart">
-          <div class="detail-card__header">
-            <div class="detail-card__title">
-              <span class="title-icon">
-                <el-icon><TrendCharts /></el-icon>
-              </span>
-              <span>访问趋势</span>
-            </div>
-            <div class="detail-card__actions">
-              <div class="trend-days">
-                <button
-                  :class="['trend-days__btn', trendDays === 7 ? 'is-active' : '']"
-                  @click="trendDays = 7; handleDaysChange()">7 天</button>
-                <button
-                  :class="['trend-days__btn', trendDays === 14 ? 'is-active' : '']"
-                  @click="trendDays = 14; handleDaysChange()">14 天</button>
-                <button
-                  :class="['trend-days__btn', trendDays === 30 ? 'is-active' : '']"
-                  @click="trendDays = 30; handleDaysChange()">30 天</button>
-              </div>
-            </div>
-          </div>
-          <div class="detail-card__content">
-            <div class="trend-chart-container">
-              <el-skeleton v-if="trendLoading" :rows="6" animated />
-              <div v-else ref="chartRef" class="trend-chart"></div>
-            </div>
-          </div>
-        </div>
+    <!-- 图表 -->
+    <div class="chart-section">
+      <div class="card-grid">
+        <UserActivityCard
+          :active-user-count="todayActiveUserCount"
+          :total-user-count="userCount"
+          :loading="statisticsLoading"
+        />
+        <ArticleStatusCard
+          :data="articleStatistics"
+          :loading="statisticsLoading"
+        />
+        <VisitorTrendCard
+          :data="visitorTrend"
+          :loading="trendLoading"
+          v-model:days="trendDays"
+          @days-change="handleDaysChange"
+        />
+        <InteractionTrendCard
+          :data="interactionTrend"
+          :loading="interactionTrendLoading"
+        />
+        <UserGrowthCard
+          :data="weeklyTrend"
+          :loading="weeklyTrendLoading"
+        />
+        <VipStatisticsCard
+          :data="vipStatisticsData"
+          :loading="vipStatisticsLoading"
+        />
       </div>
     </div>
 
@@ -238,6 +155,9 @@
                 <span class="action-item__title">文章审核</span>
                 <span class="action-item__desc">审核待发布文章</span>
               </div>
+              <div class="action-item__badge" v-if="examineCountData.articleCount > 0">
+                {{ examineCountData.articleCount }}
+              </div>
               <div class="action-item__arrow">
                 <el-icon><ArrowRight /></el-icon>
               </div>
@@ -250,6 +170,9 @@
               <div class="action-item__content">
                 <span class="action-item__title">评论审核</span>
                 <span class="action-item__desc">管理用户评论</span>
+              </div>
+              <div class="action-item__badge" v-if="examineCountData.commentCount > 0">
+                {{ examineCountData.commentCount }}
               </div>
               <div class="action-item__arrow">
                 <el-icon><ArrowRight /></el-icon>
@@ -277,6 +200,9 @@
                 <span class="action-item__title">图片审核</span>
                 <span class="action-item__desc">审核上传图片</span>
               </div>
+              <div class="action-item__badge" v-if="examineCountData.photoCount > 0">
+                {{ examineCountData.photoCount }}
+              </div>
               <div class="action-item__arrow">
                 <el-icon><ArrowRight /></el-icon>
               </div>
@@ -289,44 +215,60 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { useDarkStore } from "@/stores/darkStore";
-import { storeToRefs } from "pinia";
-import { User, Document, ChatLineRound, View, PieChart, Monitor, Operation, Picture, TrendCharts, Refresh, Top, Right, ArrowRight } from "@element-plus/icons-vue";
-import { getDashboardStatistics } from "@/api/dashboard";
-import * as echarts from "echarts";
+import { User, Document, ChatLineRound, View, Monitor, Operation, Picture, Refresh, Top, Right, ArrowRight } from "@element-plus/icons-vue";
+import { getDashboardStatistics, getExamineCount, getVipStatistics, getWeeklyTrend, getInteractionTrend, getVisitorTrend } from "@/api/dashboard";
+
+// 图表卡片组件
+import UserActivityCard from "@/components/cards/UserActivityCard.vue";
+import ArticleStatusCard from "@/components/cards/ArticleStatusCard.vue";
+import VisitorTrendCard from "@/components/cards/VisitorTrendCard.vue";
+import InteractionTrendCard from "@/components/cards/InteractionTrendCard.vue";
+import UserGrowthCard from "@/components/cards/UserGrowthCard.vue";
+import VipStatisticsCard from "@/components/cards/VipStatisticsCard.vue";
 
 // 路由和状态管理
 const router = useRouter();
-const darkStore = useDarkStore();
-const { isDark } = storeToRefs(darkStore);
 
 // 响应式数据
-const loading = ref(false); // 刷新数据 loading
-const statisticsLoading = ref(true); // 统计数据加载状态
-const userCount = ref(0); // 用户总数
-const articleStatistics = ref(null); // 文章统计数据
-const totalVisits = ref(0); // 总访问量
-const todayVisits = ref(0); // 今日访问量
-const trendDays = ref(7); // 访客趋势天数，默认 7 天
-const visitorTrend = ref([]); // 访客趋势数据
-const trendLoading = ref(false); // 趋势图加载状态
-const chartInstance = ref(null); // ECharts 图表实例
-const chartRef = ref(null); // 图表 DOM 引用
+const loading = ref(false);
+const statisticsLoading = ref(true);
+const userCount = ref(0);
+const todayActiveUserCount = ref(0);
+const articleStatistics = ref(null);
+const totalVisits = ref(0);
+const todayVisits = ref(0);
+const trendDays = ref(7);
+const visitorTrend = ref([]);
+const trendLoading = ref(false);
+const examineCountData = ref({
+  articleCount: 0,
+  commentCount: 0,
+  photoCount: 0
+});
+const vipStatisticsData = ref({
+  totalVipCount: 0,
+  newVipCount: 0,
+  newVipCount30Days: 0,
+  normalUserCount: 0,
+  vipPercentage: 0
+});
+const vipStatisticsLoading = ref(false);
+const weeklyTrend = ref([]);
+const weeklyTrendLoading = ref(false);
+const interactionTrend = ref([]);
+const interactionTrendLoading = ref(false);
 
-// 方法定义
-// 获取所有统计数据（使用聚合接口）
+// 获取所有统计数据
 const fetchAllStatistics = async () => {
   try {
     statisticsLoading.value = true;
-
-    // 使用聚合接口一次性获取所有统计数据
-    const res = await getDashboardStatistics(trendDays.value);
+    const res = await getDashboardStatistics(7);
     const data = res.data;
 
-    // 解析统计数据
     userCount.value = data.userTotalCount || 0;
+    todayActiveUserCount.value = data.todayActiveUserCount || 0;
     articleStatistics.value = data.articleStatistics || null;
     totalVisits.value = data.totalVisits || 0;
     todayVisits.value = data.todayVisits || 0;
@@ -340,167 +282,67 @@ const fetchAllStatistics = async () => {
   }
 };
 
-// 计算百分比
-const getPercentage = (value, total) => {
-  if (!total || total === 0) return 0;
-  return Math.round((value / total) * 100);
-};
-
-// 获取访客趋势数据（切换天数时调用聚合接口）
+// 获取访客趋势数据
 const fetchVisitorTrend = async () => {
   try {
     trendLoading.value = true;
-    // 切换天数时重新调用聚合接口获取数据
-    await fetchAllStatistics();
+    const res = await getVisitorTrend(trendDays.value);
+    visitorTrend.value = res.data || [];
   } catch (error) {
     ElMessage.error("获取访客趋势失败");
     console.error("获取访客趋势失败:", error);
   } finally {
     trendLoading.value = false;
-    // 等待 DOM 更新完成后再渲染图表
-    await nextTick();
-    renderChart();
   }
 };
 
-// 渲染 ECharts 折线图
-const renderChart = () => {
-  if (!chartRef.value) return;
-
-  // 销毁旧实例，重新初始化
-  if (chartInstance.value) {
-    chartInstance.value.dispose();
-    chartInstance.value = null;
+// 获取待审核数量
+const fetchExamineCount = async () => {
+  try {
+    const res = await getExamineCount();
+    examineCountData.value = res.data || { articleCount: 0, commentCount: 0, photoCount: 0 };
+  } catch (error) {
+    console.error('获取待审核数量失败:', error);
   }
+};
 
-  // 初始化图表实例
-  chartInstance.value = echarts.init(chartRef.value);
+// 获取 VIP 统计数据
+const fetchVipStatistics = async () => {
+  try {
+    vipStatisticsLoading.value = true;
+    const res = await getVipStatistics();
+    vipStatisticsData.value = res.data || { totalVipCount: 0, newVipCount: 0 };
+  } catch (error) {
+    console.error('获取VIP统计数据失败:', error);
+  } finally {
+    vipStatisticsLoading.value = false;
+  }
+};
 
-  // 准备数据
-  const dates = visitorTrend.value.map((item) => item.date);
-  const counts = visitorTrend.value.map((item) => item.count);
-  const chartStyles = getComputedStyle(chartRef.value);
+// 获取周趋势数据
+const fetchWeeklyTrend = async () => {
+  try {
+    weeklyTrendLoading.value = true;
+    const res = await getWeeklyTrend();
+    weeklyTrend.value = res.data || [];
+  } catch (error) {
+    console.error('获取周趋势数据失败:', error);
+  } finally {
+    weeklyTrendLoading.value = false;
+  }
+};
 
-  // 读取页面主题变量，让图表跟随浅色/黑夜模式切换
-  const getThemeValue = (name, fallback) => {
-    const value = chartStyles.getPropertyValue(name).trim();
-    return value || fallback;
-  };
-
-  // 配置图表选项 - 简约风格
-  const option = {
-    tooltip: {
-      trigger: "axis",
-      backgroundColor: getThemeValue("--chart-tooltip-bg", "rgba(255, 255, 255, 0.98)"),
-      borderColor: getThemeValue("--chart-tooltip-border", "#e2e8f0"),
-      borderWidth: 1,
-      textStyle: {
-        color: getThemeValue("--chart-tooltip-text", "#1e3a8a"),
-      },
-      axisPointer: {
-        type: "line",
-        lineStyle: {
-          color: getThemeValue("--chart-line", "#1e40af"),
-          width: 1,
-        },
-      },
-    },
-    grid: {
-      left: "4%",
-      right: "2%",
-      bottom: "4%",
-      top: "8%",
-      containLabel: true,
-    },
-    xAxis: {
-      type: "category",
-      boundaryGap: false,
-      data: dates,
-      axisLine: {
-        lineStyle: {
-          color: getThemeValue("--chart-axis-line", "#e2e8f0"),
-        },
-      },
-      axisLabel: {
-        color: getThemeValue("--chart-axis-text", "#64748b"),
-        fontSize: 12,
-        formatter: (value) => {
-          const date = new Date(value);
-          return `${date.getMonth() + 1}/${date.getDate()}`;
-        },
-      },
-      axisTick: {
-        show: false,
-      },
-    },
-    yAxis: {
-      type: "value",
-      name: "访问量",
-      nameTextStyle: {
-        color: getThemeValue("--chart-axis-text", "#64748b"),
-        fontSize: 12,
-        padding: [0, 0, 0, 0],
-      },
-      minInterval: 1,
-      splitLine: {
-        lineStyle: {
-          color: getThemeValue("--chart-grid-line", "#f1f5f9"),
-          type: "dashed",
-        },
-      },
-      axisLine: {
-        show: false,
-      },
-      axisLabel: {
-        color: getThemeValue("--chart-axis-text", "#64748b"),
-        fontSize: 12,
-        padding: [0, 8, 0, 0],
-      },
-      axisTick: {
-        show: false,
-      },
-    },
-    series: [
-      {
-        name: "访问量",
-        type: "line",
-        smooth: true,
-        symbol: "circle",
-        symbolSize: 6,
-        itemStyle: {
-          color: getThemeValue("--chart-line", "#1e40af"),
-          borderWidth: 2,
-          borderColor: getThemeValue("--chart-point-border", "#ffffff"),
-        },
-        lineStyle: {
-          color: getThemeValue("--chart-line", "#1e40af"),
-          width: 2.5,
-        },
-        areaStyle: {
-          color: {
-            type: "linear",
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              {
-                offset: 0,
-                color: getThemeValue("--chart-area-start", "rgba(30, 64, 175, 0.12)"),
-              },
-              {
-                offset: 1,
-                color: getThemeValue("--chart-area-end", "rgba(30, 64, 175, 0.02)"),
-              },
-            ],
-          },
-        },
-        data: counts,
-      },
-    ],
-  };
-
-  chartInstance.value.setOption(option);
+// 获取互动趋势数据
+const fetchInteractionTrend = async () => {
+  try {
+    interactionTrendLoading.value = true;
+    const res = await getInteractionTrend();
+    interactionTrend.value = res.data || [];
+  } catch (error) {
+    console.error('获取互动趋势数据失败:', error);
+  } finally {
+    interactionTrendLoading.value = false;
+  }
 };
 
 // 切换天数
@@ -508,7 +350,7 @@ const handleDaysChange = () => {
   fetchVisitorTrend();
 };
 
-// 导航到指定页面
+// 导航
 const navigateTo = (path) => {
   router.push(path);
 };
@@ -522,84 +364,83 @@ const refreshData = () => {
   });
 };
 
-// 窗口大小变化时重新调整图表大小
-const handleResize = () => {
-  chartInstance.value?.resize();
-};
-
 // 生命周期
 onMounted(async () => {
   await fetchAllStatistics();
-  await nextTick();
-  renderChart();
-
-  // 监听窗口大小变化
-  window.addEventListener("resize", handleResize);
-});
-
-onBeforeUnmount(() => {
-  // 销毁图表实例
-  if (chartInstance.value) {
-    chartInstance.value.dispose();
-    chartInstance.value = null;
-  }
-
-  // 移除窗口大小变化监听
-  window.removeEventListener("resize", handleResize);
-});
-
-watch(isDark, async () => {
-  await nextTick();
-  renderChart();
+  await fetchExamineCount();
+  await fetchVipStatistics();
+  await fetchWeeklyTrend();
+  await fetchInteractionTrend();
 });
 </script>
 
 <style lang="scss" scoped>
 .dashboard-container {
-  --bg-page: #f8fafc;
+  /* 页面背景 */
+  --bg-page: #f5f5f5;
+  /* 卡片背景 */
   --bg-card: #ffffff;
-  --bg-card-muted: #f3f7fd;
-  --text-primary: #1e3a8a;
+  /* 次级卡片背景 */
+  --bg-card-muted: #f0f0f0;
+  /* 主文字颜色 */
+  --text-primary: #1e2938;
+  /* 常规文字颜色 */
   --text-regular: #475569;
+  /* 次要文字颜色 */
   --text-muted: #64748b;
+  /* 边框颜色 */
   --border: #e2e8f0;
+  /* 浅色边框 */
   --border-light: #edf2f7;
+  /* 卡片阴影 */
   --shadow-card: 0 10px 24px rgba(15, 23, 42, 0.06);
-  --shadow-hover: 0 16px 30px rgba(30, 64, 175, 0.1);
-  --page-glow: rgba(59, 130, 246, 0.08);
+  /* 悬停阴影 */
+  --shadow-hover: 0 16px 30px rgba(71, 85, 105, 0.1);
+  /* 页面光晕效果 */
+  --page-glow: rgba(0, 0, 0, 0.02);
+  /* 页面渐变遮罩（顶部） */
   --page-overlay-top: rgba(255, 255, 255, 0.35);
-  --page-overlay-bottom: rgba(248, 250, 252, 0.92);
+  /* 页面渐变遮罩（底部） */
+  --page-overlay-bottom: rgba(245, 245, 245, 0.92);
+  /* 按钮背景 */
   --button-bg: #ffffff;
-  --button-hover-bg: #eff6ff;
-  --button-border: #d6e3ff;
-  --button-text: #1e3a8a;
-  --title-icon-bg: rgba(30, 64, 175, 0.08);
+  /* 按钮悬停背景 */
+  --button-hover-bg: #f5f5f5;
+  /* 按钮边框颜色 */
+  --button-border: #d0d0d0;
+  /* 按钮文字颜色 */
+  --button-text: #475569;
+  /* 标题图标背景 */
+  --title-icon-bg: rgba(71, 85, 105, 0.08);
+  /* 正向趋势背景（上涨） */
   --trend-positive-bg: rgba(16, 185, 129, 0.12);
+  /* 中性趋势背景（持平） */
   --trend-neutral-bg: rgba(100, 116, 139, 0.12);
-  --toggle-bg: #eef4ff;
-  --toggle-hover-bg: #dbeafe;
-  --toggle-active-text: #eff6ff;
+  /* 开关组件背景 */
+  --toggle-bg: #f0f0f0;
+  /* 开关悬停背景 */
+  --toggle-hover-bg: #e0e0e0;
+  /* 开关激活文字颜色 */
+  --toggle-active-text: #ffffff;
+  /* 文章操作背景 */
   --action-article-bg: rgba(124, 58, 237, 0.12);
+  /* 文章操作文字颜色 */
   --action-article-text: #7c3aed;
+  /* 评论操作背景 */
   --action-comment-bg: rgba(14, 165, 233, 0.12);
+  /* 评论操作文字颜色 */
   --action-comment-text: #0284c7;
+  /* 用户操作背景 */
   --action-user-bg: rgba(16, 185, 129, 0.12);
+  /* 用户操作文字颜色 */
   --action-user-text: #059669;
+  /* 图片操作背景 */
   --action-photo-bg: rgba(245, 158, 11, 0.12);
+  /* 图片操作文字颜色 */
   --action-photo-text: #d97706;
-  --chart-tooltip-bg: rgba(255, 255, 255, 0.98);
-  --chart-tooltip-border: #e2e8f0;
-  --chart-tooltip-text: #1e3a8a;
-  --chart-axis-line: #d9e2ef;
-  --chart-axis-text: #64748b;
-  --chart-grid-line: #edf2f7;
-  --chart-line: #1e40af;
-  --chart-point-border: #ffffff;
-  --chart-area-start: rgba(30, 64, 175, 0.14);
-  --chart-area-end: rgba(30, 64, 175, 0.02);
+  /* 成功状态色 */
   --success: #10b981;
-  --warning: #f59e0b;
-  --info: #64748b;
+  /* 危险/错误状态色 */
   --danger: #ef4444;
 
   min-height: calc(100vh - 88px);
@@ -674,7 +515,7 @@ watch(isDark, async () => {
   }
 
   /* 统计卡片区域 */
-  .statistics-section {
+  .stats-section {
     margin-bottom: 20px;
 
     .stats-grid {
@@ -712,7 +553,7 @@ watch(isDark, async () => {
         }
 
         &.stat-card--user {
-          --card-accent: linear-gradient(90deg, #5b86e5, #36d1dc);
+          --card-accent: linear-gradient(90deg, #64748b, #94a3b8);
         }
 
         &.stat-card--article {
@@ -720,7 +561,7 @@ watch(isDark, async () => {
         }
 
         &.stat-card--visits {
-          --card-accent: linear-gradient(90deg, #4facfe, #00f2fe);
+          --card-accent: linear-gradient(90deg, #475569, #64748b);
         }
 
         &.stat-card--today {
@@ -789,21 +630,34 @@ watch(isDark, async () => {
     }
   }
 
-  /* 详情模块区域 */
-  .details-section {
+  /* 卡片网格 */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  /* 图表区域 */
+  .chart-section {
+    margin-bottom: 20px;
+  }
+
+  /* 快速操作区域 */
+  .quick-actions-section {
     margin-bottom: 20px;
 
-    .details-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
+    .detail-card {
+      min-height: auto;
+
+      .detail-card__content {
+        padding: 16px;
+      }
     }
   }
 
   .detail-card {
     display: flex;
     flex-direction: column;
-    min-height: 420px;
     border: 1px solid var(--border);
     border-radius: 18px;
     background: var(--bg-card);
@@ -838,173 +692,12 @@ watch(isDark, async () => {
           line-height: 0;
         }
       }
-
-      .detail-card__actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-
-        .trend-days {
-          display: flex;
-          gap: 4px;
-          padding: 4px;
-          border-radius: 12px;
-          background: var(--toggle-bg);
-
-          .trend-days__btn {
-            padding: 6px 14px;
-            border: none;
-            border-radius: 8px;
-            background: transparent;
-            color: var(--text-regular);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition:
-              background-color 0.2s ease,
-              color 0.2s ease;
-
-            &:hover {
-              background: var(--toggle-hover-bg);
-              color: var(--text-primary);
-            }
-
-            &.is-active {
-              background: var(--chart-line);
-              color: var(--toggle-active-text);
-            }
-          }
-        }
-      }
     }
 
     .detail-card__content {
       flex: 1;
       padding: 20px;
       overflow: hidden;
-
-      .status-list {
-        .status-item {
-          margin-bottom: 20px;
-
-          &:last-child {
-            margin-bottom: 0;
-          }
-
-          .status-item__header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-
-            .status-item__label {
-              display: inline-flex;
-              align-items: center;
-              gap: 8px;
-              font-size: 14px;
-              font-weight: 500;
-              color: var(--text-regular);
-
-              &.status-item__label--published {
-                color: var(--success);
-              }
-
-              &.status-item__label--reviewing {
-                color: var(--warning);
-              }
-
-              &.status-item__label--draft {
-                color: var(--info);
-              }
-
-              &.status-item__label--garbage {
-                color: var(--danger);
-              }
-
-              .status-dot {
-                width: 8px;
-                height: 8px;
-                border-radius: 999px;
-
-                &.status-dot--published {
-                  background: var(--success);
-                }
-
-                &.status-dot--reviewing {
-                  background: var(--warning);
-                }
-
-                &.status-dot--draft {
-                  background: var(--info);
-                }
-
-                &.status-dot--garbage {
-                  background: var(--danger);
-                }
-              }
-            }
-
-            .status-item__count {
-              font-size: 16px;
-              font-weight: 600;
-              color: var(--text-primary);
-            }
-          }
-
-          .status-item__bar {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-
-            .progress-bar {
-              flex: 1;
-              height: 8px;
-              border-radius: 999px;
-              background: var(--bg-card-muted);
-              overflow: hidden;
-
-              .progress-bar__fill {
-                height: 100%;
-                border-radius: inherit;
-                transition: width 0.6s ease;
-
-                &.progress-bar__fill--published {
-                  background: var(--success);
-                }
-
-                &.progress-bar__fill--reviewing {
-                  background: var(--warning);
-                }
-
-                &.progress-bar__fill--draft {
-                  background: var(--info);
-                }
-
-                &.progress-bar__fill--garbage {
-                  background: var(--danger);
-                }
-              }
-            }
-
-            .progress-bar__text {
-              min-width: 42px;
-              text-align: right;
-              font-size: 12px;
-              font-weight: 600;
-              color: var(--text-muted);
-            }
-          }
-        }
-      }
-
-      .trend-chart-container {
-        height: 340px;
-
-        .trend-chart {
-          width: 100%;
-          height: 340px;
-        }
-      }
 
       .action-grid {
         display: grid;
@@ -1090,6 +783,20 @@ watch(isDark, async () => {
               color 0.2s ease,
               transform 0.2s ease;
           }
+
+          .action-item__badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: var(--danger);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+          }
         }
       }
     }
@@ -1098,28 +805,28 @@ watch(isDark, async () => {
 
 html.dark {
   .dashboard-container {
-    --bg-page: #0b1220;
-    --bg-card: #111b2d;
-    --bg-card-muted: #162235;
+    --bg-page: #0a0a0a;
+    --bg-card: #1a1a1a;
+    --bg-card-muted: #262626;
     --text-primary: #e2e8f0;
     --text-regular: #cbd5e1;
     --text-muted: #8ea0b7;
-    --border: #22314a;
-    --border-light: #1c2940;
-    --shadow-card: 0 14px 32px rgba(2, 6, 23, 0.28);
-    --shadow-hover: 0 18px 36px rgba(2, 6, 23, 0.36);
-    --page-glow: rgba(59, 130, 246, 0.12);
-    --page-overlay-top: rgba(11, 18, 32, 0.64);
-    --page-overlay-bottom: rgba(11, 18, 32, 0.96);
-    --button-bg: #162235;
-    --button-hover-bg: #1b2b44;
-    --button-border: #32455f;
+    --border: #333333;
+    --border-light: #2a2a2a;
+    --shadow-card: 0 14px 32px rgba(0, 0, 0, 0.28);
+    --shadow-hover: 0 18px 36px rgba(0, 0, 0, 0.36);
+    --page-glow: rgba(0, 0, 0, 0.2);
+    --page-overlay-top: rgba(10, 10, 10, 0.64);
+    --page-overlay-bottom: rgba(10, 10, 10, 0.96);
+    --button-bg: #262626;
+    --button-hover-bg: #333333;
+    --button-border: #404040;
     --button-text: #dbeafe;
-    --title-icon-bg: rgba(96, 165, 250, 0.14);
+    --title-icon-bg: rgba(148, 163, 184, 0.14);
     --trend-positive-bg: rgba(16, 185, 129, 0.18);
     --trend-neutral-bg: rgba(148, 163, 184, 0.16);
-    --toggle-bg: #162235;
-    --toggle-hover-bg: #1b2b44;
+    --toggle-bg: #262626;
+    --toggle-hover-bg: #333333;
     --toggle-active-text: #eff6ff;
     --action-article-bg: rgba(167, 139, 250, 0.16);
     --action-article-text: #c4b5fd;
@@ -1129,30 +836,21 @@ html.dark {
     --action-user-text: #6ee7b7;
     --action-photo-bg: rgba(251, 191, 36, 0.16);
     --action-photo-text: #fcd34d;
-    --chart-tooltip-bg: rgba(17, 27, 45, 0.98);
-    --chart-tooltip-border: #22314a;
-    --chart-tooltip-text: #e2e8f0;
-    --chart-axis-line: #22314a;
-    --chart-axis-text: #8ea0b7;
-    --chart-grid-line: #1c2940;
-    --chart-line: #60a5fa;
-    --chart-point-border: #111b2d;
-    --chart-area-start: rgba(96, 165, 250, 0.18);
-    --chart-area-end: rgba(96, 165, 250, 0.03);
+    --danger: #ef4444;
   }
 }
 
 @media (max-width: 1200px) {
   .dashboard-container {
-    .statistics-section {
+    .stats-section {
       .stats-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
-    .details-section {
-      .details-grid {
-        grid-template-columns: 1fr;
+    .chart-section {
+      .card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
   }
@@ -1178,8 +876,14 @@ html.dark {
       }
     }
 
-    .statistics-section {
+    .stats-section {
       .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-section {
+      .card-grid {
         grid-template-columns: 1fr;
       }
     }

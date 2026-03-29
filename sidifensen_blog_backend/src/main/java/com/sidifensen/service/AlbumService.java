@@ -42,6 +42,9 @@ public interface AlbumService extends IService<Album> {
     // 修改相册封面
     void changeCover(AlbumDto albumDto);
 
+    // 搜索相册（公开）
+    List<AlbumVo> searchAlbum(String keyword);
+
     /*管理端*/
 
     // 查询所有相册

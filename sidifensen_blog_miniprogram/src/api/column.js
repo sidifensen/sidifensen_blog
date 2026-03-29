@@ -27,3 +27,11 @@ export function getColumnDetail(id) {
 export function getColumnArticles(columnId, params) {
   return get(`/column/${columnId}/articles`, params)
 }
+
+/**
+ * 搜索专栏
+ * @param {Object} params 查询参数 { keyword, pageNum, pageSize }
+ */
+export function searchColumns(params) {
+  return get('/column/search', params)
+}

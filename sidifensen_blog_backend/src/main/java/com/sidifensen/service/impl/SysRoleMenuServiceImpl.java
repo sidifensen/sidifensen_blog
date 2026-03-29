@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sidifensen.domain.constants.BlogConstants;
+import com.sidifensen.domain.dto.SysRoleMenuAssignDto;
 import com.sidifensen.domain.dto.SysRoleMenuDto;
 import com.sidifensen.domain.entity.SysRole;
 import com.sidifensen.domain.entity.SysRoleMenu;
@@ -112,5 +113,70 @@ public class SysRoleMenuServiceImpl extends ServiceImpl<SysRoleMenuMapper, SysRo
         return sysRoleVos;
     }
 
+    @Override
+    public List<Integer> getMenus(Integer roleId) {
+        // 根据角色ID查询菜单ID列表
+        List<SysRoleMenu> sysRoleMenus = this.lambdaQuery().eq(SysRoleMenu::getRoleId, roleId).list();
+        if (sysRoleMenus.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return sysRoleMenus.stream().map(SysRoleMenu::getMenuId).toList();
+    }
+
+    @Override
+    public void assignMenus(SysRoleMenuAssignDto dto) {
+        Integer roleId = dto.getRoleId();
+        List<Integer> menuIds = dto.getMenuIds();
+
+        if (ObjectUtil.isEmpty(menuIds)) {
+            // 用户没有选择, 删除该角色所有关联记录
+            this.remove(Wrappers.<SysRoleMenu>lambdaQuery().eq(SysRoleMenu::getRoleId, roleId));
+            return;
+        }
+
+        // 查询已存在的关联记录
+        List<SysRoleMenu> existingRoleMenus = this.lambdaQuery()
+                .eq(SysRoleMenu::getRoleId, roleId)
+                .in(SysRoleMenu::getMenuId, menuIds)
+                .list();
+
+        // 构建已存在的menuId集合
+        Set<Integer> existingMenuIds = existingRoleMenus.stream()
+                .map(SysRoleMenu::getMenuId)
+                .collect(Collectors.toSet());
+
+        // 过滤出需要保存的记录
+        List<SysRoleMenu> roleMenuList = menuIds.stream()
+                .filter(menuId -> !existingMenuIds.contains(menuId))
+                .map(menuId -> {
+                    SysRoleMenu sysRoleMenu = new SysRoleMenu();
+                    sysRoleMenu.setRoleId(roleId);
+                    sysRoleMenu.setMenuId(menuId);
+                    return sysRoleMenu;
+                })
+                .collect(Collectors.toList());
+
+        // 如果有需要保存的记录，批量保存
+        if (ObjectUtil.isNotEmpty(roleMenuList)) {
+            boolean exist = this.saveBatch(roleMenuList);
+            if (!exist) {
+                throw new BlogException(BlogConstants.ExistRoleMenu);
+            }
+        }
+
+        // 过滤出需要删除的记录（该角色有但不在新菜单列表中的）
+        List<SysRoleMenu> noExistingRoleMenus = this.lambdaQuery()
+                .eq(SysRoleMenu::getRoleId, roleId)
+                .notIn(SysRoleMenu::getMenuId, menuIds)
+                .list();
+
+        // 批量删除不需要的记录
+        if (ObjectUtil.isNotEmpty(noExistingRoleMenus)) {
+            boolean exist = this.removeByIds(noExistingRoleMenus.stream().map(SysRoleMenu::getId).toList());
+            if (!exist) {
+                throw new BlogException(BlogConstants.ExistRoleMenu);
+            }
+        }
+    }
 
 }

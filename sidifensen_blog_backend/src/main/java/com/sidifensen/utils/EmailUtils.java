@@ -1,9 +1,14 @@
 package com.sidifensen.utils;
 
+import com.sidifensen.domain.constants.RabbitMQConstants;
+import com.sidifensen.domain.entity.SysUser;
+import com.sidifensen.mapper.SysUserMapper;
+import com.sidifensen.service.UserSettingsService;
 import jakarta.annotation.Resource;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -12,6 +17,9 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -26,6 +34,15 @@ public class EmailUtils {
 
     @Resource
     private TemplateEngine templateEngine;
+
+    @Resource
+    private RabbitTemplate rabbitTemplate;
+
+    @Resource
+    private UserSettingsService userSettingsService;
+
+    @Resource
+    private SysUserMapper sysUserMapper;
 
     @Value("${spring.mail.username}")
     private String username;
@@ -125,6 +142,57 @@ public class EmailUtils {
 
         // 发送
         javaMailSender.send(message);
+    }
+
+    /**
+     * 发送系统邮件通知到消息队列
+     *
+     * @param userId              用户ID
+     * @param notificationTitle    通知标题
+     * @param notificationContent  通知内容
+     * @param extraInfo           额外信息
+     * @param linkUrl             链接URL
+     * @param linkText            链接文本
+     */
+    public void sendSystemEmailNotification(Integer userId, String notificationTitle, String notificationContent,
+            String extraInfo, String linkUrl, String linkText) {
+        try {
+            // 检查用户是否开启了系统邮件通知
+            Integer receiveSystemEmail = userSettingsService.getReceiveSystemEmail(userId);
+            if (receiveSystemEmail == 0) {
+                log.debug("用户 {} 关闭了系统邮件通知，跳过发送", userId);
+                return;
+            }
+
+            // 查询用户邮箱
+            SysUser user = sysUserMapper.selectById(userId);
+            if (user == null || user.getEmail() == null) {
+                log.warn("发送系统邮件通知失败：用户 {} 不存在或邮箱为空", userId);
+                return;
+            }
+
+            // 构建邮件消息
+            HashMap<String, Object> emailMessage = new HashMap<>();
+            emailMessage.put("email", user.getEmail());
+            emailMessage.put("recipientNickname", user.getNickname());
+            emailMessage.put("notificationTitle", notificationTitle);
+            emailMessage.put("notificationContent", notificationContent);
+            emailMessage.put("extraInfo", extraInfo != null ? extraInfo : "");
+            emailMessage.put("sendTime", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            emailMessage.put("linkUrl", linkUrl != null ? linkUrl : "");
+            emailMessage.put("linkText", linkText != null ? linkText : "");
+            emailMessage.put("type", "systemNotification");
+
+            // 发送邮件到队列
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConstants.Email_Exchange,
+                    RabbitMQConstants.System_Email_Routing_Key,
+                    emailMessage);
+
+            log.info("系统邮件通知已发送到队列：to={}, title={}", user.getEmail(), notificationTitle);
+        } catch (Exception e) {
+            log.error("发送系统邮件通知失败：userId={}", userId, e);
+        }
     }
 
 

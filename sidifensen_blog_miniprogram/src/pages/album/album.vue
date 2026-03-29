@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getAlbumList } from '@/api/album'
-import { timeAgo } from '@/utils/format'
 
 // 相册列表
 const albumList = ref([])
@@ -95,23 +94,18 @@ onMounted(() => {
           <image class="album-cover" :src="album.coverUrl" mode="aspectFill" />
           <view class="album-info">
             <view class="album-name">{{ album.name }}</view>
-            <view class="album-meta">
-              <text class="album-count">{{ album.photoCount }} 张</text>
-              <text class="album-time">{{ timeAgo(album.createTime) }}</text>
-            </view>
           </view>
         </view>
       </view>
 
       <!-- 空状态 -->
       <view v-if="albumList.length === 0 && !loading" class="empty-state">
-        <text class="empty-icon">&#xe601;</text>
         <text class="empty-text">暂无相册</text>
       </view>
 
       <!-- 加载更多 -->
       <view v-if="loadMore" class="load-more">
-        <uv-loading-icon mode="circle" />
+        <u-loading mode="circle" />
       </view>
 
       <!-- 没有更多 -->
@@ -119,6 +113,7 @@ onMounted(() => {
         <text>没有更多了</text>
       </view>
     </scroll-view>
+
   </view>
 </template>
 
@@ -127,12 +122,13 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: var(--bg-page);
+  background: var(--u-bg-color);
 }
 
 /* 相册列表 */
 .album-list {
   flex: 1;
+  padding-bottom: 60px;
 
   .album-container {
     padding: var(--spacing-lg);
@@ -142,12 +138,13 @@ onMounted(() => {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-md);
+    padding: 0 var(--spacing-lg);
 
     .album-card {
-      background: var(--bg-card);
+      background: var(--u-bg-white);
       border-radius: var(--radius-md);
       overflow: hidden;
-      border: 1px solid var(--border);
+      border: 1px solid var(--u-border-color);
 
       .album-cover {
         width: 100%;
@@ -160,16 +157,8 @@ onMounted(() => {
         .album-name {
           font-size: 14px;
           font-weight: 500;
-          color: var(--text-primary);
+          color: var(--u-main-color);
           @include text-ellipsis;
-        }
-
-        .album-meta {
-          display: flex;
-          justify-content: space-between;
-          margin-top: var(--spacing-sm);
-          font-size: 12px;
-          color: var(--text-muted);
         }
       }
     }
@@ -178,7 +167,7 @@ onMounted(() => {
   .empty-state {
     @include flex-center-column;
     padding: var(--spacing-2xl);
-    color: var(--text-muted);
+    color: var(--u-tips-color);
 
     .empty-icon {
       font-size: 48px;
@@ -194,7 +183,7 @@ onMounted(() => {
   .no-more {
     @include flex-center;
     padding: var(--spacing-lg);
-    color: var(--text-muted);
+    color: var(--u-tips-color);
     font-size: 14px;
   }
 }

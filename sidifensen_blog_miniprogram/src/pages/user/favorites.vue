@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/store/user'
 import { getMyFavorites } from '@/api/favorite'
+import { formatCount } from '@/utils/format'
 
 const userStore = useUserStore()
 const favorites = ref([])
@@ -46,8 +47,8 @@ function onLoadMore() {
   })
 }
 
-function goToFavoriteDetail(favoriteId) {
-  uni.navigateTo({ url: `/pages/favoriteDetail/favoriteDetail?id=${favoriteId}` })
+function goToFavoriteDetail(favorite) {
+  uni.navigateTo({ url: `/pages/user/favoriteDetail?id=${favorite.id}&name=${encodeURIComponent(favorite.name)}` })
 }
 
 onMounted(() => {
@@ -73,14 +74,18 @@ onMounted(() => {
           v-for="item in favorites"
           :key="item.id"
           class="favorite-item card"
-          @click="goToFavoriteDetail(item.id)"
+          @click="goToFavoriteDetail(item)"
         >
-          <view class="favorite-icon">&#xe614;</view>
+          <view class="favorite-icon">
+            <uv-icon name="star" color="var(--u-type-warning)" size="28px" />
+          </view>
           <view class="favorite-info">
             <view class="favorite-name">{{ item.name }}</view>
-            <view class="favorite-meta">{{ item.articleCount }} 篇文章</view>
+            <view class="favorite-meta">{{ formatCount(item.articleCount) }} 篇文章</view>
           </view>
-          <view class="favorite-arrow">&#xe603;</view>
+          <view class="favorite-arrow">
+            <uv-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
+          </view>
         </view>
       </view>
 
@@ -89,7 +94,7 @@ onMounted(() => {
       </view>
 
       <view v-if="loadMore" class="load-more">
-        <uv-loading-icon mode="circle" />
+        <u-loading mode="circle" />
       </view>
 
       <view v-if="noMore && favorites.length > 0" class="no-more">
@@ -102,7 +107,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .my-favorites-page {
   min-height: 100vh;
-  background: var(--bg-page);
+  background: var(--u-bg-color);
   padding: var(--spacing-lg);
 }
 
@@ -115,8 +120,13 @@ onMounted(() => {
     padding: var(--spacing-md);
 
     .favorite-icon {
-      font-size: 32px;
-      color: var(--color-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: var(--u-bg-color);
+      border-radius: var(--radius-md);
     }
 
     .favorite-info {
@@ -125,19 +135,19 @@ onMounted(() => {
       .favorite-name {
         font-size: 15px;
         font-weight: 500;
-        color: var(--text-primary);
+        color: var(--u-main-color);
       }
 
       .favorite-meta {
         font-size: 12px;
-        color: var(--text-muted);
+        color: var(--u-tips-color);
         margin-top: 4px;
       }
     }
 
     .favorite-arrow {
-      font-size: 14px;
-      color: var(--text-muted);
+      display: flex;
+      align-items: center;
     }
   }
 }
@@ -145,7 +155,7 @@ onMounted(() => {
 .empty-state {
   @include flex-center-column;
   padding: var(--spacing-2xl);
-  color: var(--text-muted);
+  color: var(--u-tips-color);
 }
 
 .load-more {
@@ -156,7 +166,7 @@ onMounted(() => {
 .no-more {
   @include flex-center;
   padding: var(--spacing-lg);
-  color: var(--text-muted);
+  color: var(--u-tips-color);
   font-size: 14px;
 }
 </style>

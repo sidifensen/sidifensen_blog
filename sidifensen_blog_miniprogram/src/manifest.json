@@ -1,47 +1,62 @@
 {
-	"name" : "斯蒂芬森博客",
-	"appid" : "__UNI__SIDIFENSEN",
-	"description" : "斯蒂芬森博客微信小程序",
-	"versionName" : "1.0.0",
-	"versionCode" : "100",
-	"transformPx" : false,
-	"uniStatistics" : {
-		"enable" : true
-	},
-	"vueVersion" : "3",
-	"mp-weixin" : {
-		"appid" : "wx18566ceafaa34e53",
-		"setting" : {
-			"urlCheck" : false,
-			"es6" : true,
-			"postcss" : true,
-			"minified" : true
-		},
-		"usingComponents" : true,
-		"permission" : {
-			"scope.userLocation" : {
-				"desc" : "你的位置信息将用于小程序定位"
-			}
-		},
-		"requiredPrivateInfos" : [ "getLocation" ]
-	},
-	"h5" : {
-		"router" : {
-			"mode" : "hash"
-		},
-		"title" : "斯蒂芬森博客",
-		"devServer" : {
-			"port" : 9000,
-			"disableHostCheck" : true,
-			"proxy" : {
-				"/api" : {
-					"target" : "http://localhost:5000",
-					"changeOrigin" : true,
-					"pathRewrite" : {
-						"^/api" : ""
-					}
-				}
-			}
-		}
-	}
+    "name" : "斯蒂芬森博客",
+    "appid" : "__UNI__B09AB3C",
+    "description" : "斯蒂芬森博客微信小程序",
+    "versionName" : "1.0.0",
+    "versionCode" : "100",
+    "transformPx" : false,
+    "uniStatistics" : {
+        "enable" : true
+    },
+    "vueVersion" : "3",
+    "mp-weixin" : {
+        "appid" : "wx18566ceafaa34e53",
+        "setting" : {
+            "urlCheck" : false,
+            "es6" : true,
+            "postcss" : true,
+            "minified" : true
+        },
+        "usingComponents" : true,
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "你的位置信息将用于小程序定位"
+            }
+        },
+        "requiredPrivateInfos" : [ "getLocation" ]
+    },
+    "h5" : {
+        "router" : {
+            "mode" : "hash"
+        },
+        "title" : "斯蒂芬森博客",
+        "tabBar" : {
+            "iconStyle" : {
+                "iconPathSize" : 22,
+                "iconFontSize" : 22
+            }
+        },
+        "devServer" : {
+            "port" : 9000,
+            "disableHostCheck" : true,
+            "proxy" : {
+                "/api" : {
+                    "target" : "http://localhost:5000",
+                    "changeOrigin" : true,
+                    "pathRewrite" : {
+                        "^/api" : ""
+                    }
+                }
+            }
+        }
+    },
+    "app-plus" : {
+        "distribute" : {
+            "ios" : {
+                "dSYMs" : false
+            }
+        },
+        "networkTimeout" : 30000,
+        "allowCleartextTraffic" : true
+    }
 }

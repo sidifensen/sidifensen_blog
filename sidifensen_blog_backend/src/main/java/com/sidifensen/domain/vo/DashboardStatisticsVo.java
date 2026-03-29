@@ -26,6 +26,11 @@ public class DashboardStatisticsVo implements Serializable {
     private Long userTotalCount;
 
     /**
+     * 今日活跃用户数（当日登录的不同用户数）
+     */
+    private Long todayActiveUserCount;
+
+    /**
      * 文章统计数据
      */
     private ArticleStatisticsVo articleStatistics;

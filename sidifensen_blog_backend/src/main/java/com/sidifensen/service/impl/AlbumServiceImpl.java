@@ -274,6 +274,27 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         return new PageVo<>(albumVos, page.getTotal());
     }
 
+    // 搜索相册（公开）
+    @Override
+    public List<AlbumVo> searchAlbum(String keyword) {
+        LambdaQueryWrapper<Album> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(ObjectUtil.isNotEmpty(keyword), Album::getName, keyword)
+                .orderByDesc(Album::getCreateTime);
+
+        List<Album> albums = this.list(queryWrapper);
+        List<AlbumVo> albumVos = BeanUtil.copyToList(albums, AlbumVo.class);
+        // 用userId把username查询出来
+        HashMap<Integer, String> userMap = new HashMap<>();
+        List<SysUser> users = sysUserMapper.selectList(null);
+        for (SysUser user : users) {
+            userMap.put(user.getId(), user.getUsername());
+        }
+        for (AlbumVo albumVo : albumVos) {
+            albumVo.setUserName(userMap.get(albumVo.getUserId()));
+        }
+        return albumVos;
+    }
+
     // 管理员查询相册详情
     @Override
     public AlbumVo adminGetAlbum(Integer albumId) {

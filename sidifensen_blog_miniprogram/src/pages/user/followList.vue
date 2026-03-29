@@ -112,7 +112,7 @@ onMounted(() => {
         class="user-item card"
         @click="goToProfile(user.id)"
       >
-        <uv-avatar :src="user.avatar" size="48px" />
+        <uv-avatar :src="user.avatar" size="96" />
         <view class="user-info">
           <view class="user-name">{{ user.nickname }}</view>
           <view v-if="user.bio" class="user-bio">{{ user.bio }}</view>
@@ -129,23 +129,23 @@ onMounted(() => {
 <style lang="scss" scoped>
 .follow-list-page {
   min-height: 100vh;
-  background: var(--bg-page);
+  background: var(--u-bg-color);
 }
 
 .tabs {
   display: flex;
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
+  background: var(--u-bg-white);
+  border-bottom: 1px solid var(--u-border-color);
 
   .tab-item {
     flex: 1;
     text-align: center;
     padding: var(--spacing-md) 0;
     font-size: 15px;
-    color: var(--text-muted);
+    color: var(--u-tips-color);
 
     &.active {
-      color: var(--color-primary);
+      color: var(--u-type-primary);
       font-weight: 500;
     }
   }
@@ -167,12 +167,12 @@ onMounted(() => {
       .user-name {
         font-size: 15px;
         font-weight: 500;
-        color: var(--text-primary);
+        color: var(--u-main-color);
       }
 
       .user-bio {
         font-size: 13px;
-        color: var(--text-muted);
+        color: var(--u-tips-color);
         margin-top: 4px;
         @include text-ellipsis;
       }
@@ -183,6 +183,6 @@ onMounted(() => {
 .empty-state {
   @include flex-center-column;
   padding: var(--spacing-2xl);
-  color: var(--text-muted);
+  color: var(--u-tips-color);
 }
 </style>

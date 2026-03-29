@@ -41,6 +41,54 @@ a {
   outline: unset;
 }
 
+// 图表主题变量 - 浅色模式
+#app {
+  /* 图表提示框背景 */
+  --chart-tooltip-bg: rgba(255, 255, 255, 0.98);
+  /* 图表提示框边框 */
+  --chart-tooltip-border: #e2e8f0;
+  /* 图表提示框文字 */
+  --chart-tooltip-text: #475569;
+  /* 图表坐标轴线 */
+  --chart-axis-line: #d9e2ef;
+  /* 图表坐标轴文字 */
+  --chart-axis-text: #64748b;
+  /* 图表网格线 */
+  --chart-grid-line: #edf2f7;
+  /* 图表线条颜色 */
+  --chart-line: #475569;
+  /* 图表数据点边框 */
+  --chart-point-border: #ffffff;
+  /* 图表面积图起始颜色 */
+  --chart-area-start: rgba(71, 85, 105, 0.14);
+  /* 图表面积图结束颜色 */
+  --chart-area-end: rgba(71, 85, 105, 0.02);
+}
+
+// 图表主题变量 - 深色模式
+html.dark {
+  /* 图表提示框背景 */
+  --chart-tooltip-bg: rgba(26, 26, 26, 0.98);
+  /* 图表提示框边框 */
+  --chart-tooltip-border: #ffffff;
+  /* 图表提示框文字 */
+  --chart-tooltip-text: #ffffff;
+  /* 图表坐标轴线 */
+  --chart-axis-line: #ffffff;
+  /* 图表坐标轴文字 */
+  --chart-axis-text: #ffffff;
+  /* 图表网格线 */
+  --chart-grid-line: #475569;
+  /* 图表线条颜色 */
+  --chart-line: #94a3b8;
+  /* 图表数据点边框 */
+  --chart-point-border: #1a1a1a;
+  /* 图表面积图起始颜色 */
+  --chart-area-start: rgba(148, 163, 184, 0.18);
+  /* 图表面积图结束颜色 */
+  --chart-area-end: rgba(148, 163, 184, 0.03);
+}
+
 /* 设置滚动条样式 */
 ::-webkit-scrollbar {
   width: 8px;
@@ -65,26 +113,3 @@ a {
   }
 }
 
-// -enter-active 和 -leave-active 定义进入和离开的动画效果
-// -enter-from 和 -leave-to定义进入和离开的状态
-
-// 淡入淡出动画
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-// 缩放动画
-.scale-enter-active,
-.scale-leave-active {
-  transition: all 0.5s ease;
-}
-.scale-enter-from,
-.scale-leave-to {
-  opacity: 0;
-  transform: scale(0.9);
-}

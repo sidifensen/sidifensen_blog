@@ -1,42 +1,36 @@
 import { defineStore } from 'pinia'
+import { useTheme } from 'uview-pro'
 
 export const useAppStore = defineStore('app', {
   state: () => ({
-    theme: 'light',
     isDark: false
   }),
 
   actions: {
     /**
-     * 初始化主题
+     * 初始化主题（由 main.js 的 initTheme() 自动处理）
      */
     initTheme() {
-      const theme = uni.getStorageSync('theme') || 'light'
-      this.setTheme(theme)
-    },
-
-    /**
-     * 设置主题
-     */
-    setTheme(theme) {
-      this.theme = theme
-      this.isDark = theme === 'dark'
-      uni.setStorageSync('theme', theme)
-
-      // 通过切换 CSS 类来应用主题
-      if (this.isDark) {
-        uni.$setTheme?.('dark')
-      } else {
-        uni.$setTheme?.('light')
-      }
+      const { isInDarkMode } = useTheme()
+      this.isDark = isInDarkMode()
     },
 
     /**
      * 切换主题
      */
     toggleTheme() {
-      const newTheme = this.theme === 'light' ? 'dark' : 'light'
-      this.setTheme(newTheme)
+      const { toggleDarkMode, isInDarkMode } = useTheme()
+      toggleDarkMode()
+      this.isDark = isInDarkMode()
+    },
+
+    /**
+     * 设置深色模式
+     */
+    setDarkMode(dark) {
+      const { setDarkMode, isInDarkMode } = useTheme()
+      setDarkMode(dark ? 'dark' : 'light')
+      this.isDark = isInDarkMode()
     }
   }
 })

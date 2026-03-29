@@ -1,11 +1,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/store/user'
-import { getUserInfo, followUser, unfollowUser, getFollowers, getFollowings } from '@/api/user'
+import { getUserInfo, followUser, unfollowUser, getFollowers, getFollowings, getUserArticles, getUserAlbums } from '@/api/user'
+import { formatCount } from '@/utils/format'
 
 const userStore = useUserStore()
 const userId = ref('')
 const userInfo = ref({})
+const userArticles = ref([])
+const userAlbums = ref([])
 const isFollowing = ref(false)
 const loading = ref(false)
 const activeTab = ref('articles')
@@ -27,6 +30,36 @@ async function fetchUserInfo() {
     uni.showToast({ title: '加载失败', icon: 'none' })
   } finally {
     loading.value = false
+  }
+}
+
+/**
+ * 获取用户文章和相册列表
+ */
+async function fetchUserContent() {
+  try {
+    const [articlesRes, albumsRes] = await Promise.all([
+      getUserArticles(userId.value, { pageNum: 1, pageSize: 20 }),
+      getUserAlbums(userId.value, { pageNum: 1, pageSize: 20 })
+    ])
+    userArticles.value = articlesRes.data || articlesRes || []
+    userAlbums.value = albumsRes.data || albumsRes || []
+  } catch (err) {
+    console.error('获取用户内容失败', err)
+  }
+}
+
+/**
+ * 检查关注状态
+ */
+async function checkFollowStatus() {
+  try {
+    const res = await getFollowers(userId.value, { pageNum: 1, pageSize: 100 })
+    const followers = res.data || res || []
+    const currentUserId = userStore.userInfo?.id
+    isFollowing.value = followers.some(f => f.id === currentUserId)
+  } catch (err) {
+    console.error('检查关注状态失败', err)
   }
 }
 
@@ -61,6 +94,20 @@ function onTabChange(tab) {
   activeTab.value = tab
 }
 
+/**
+ * 跳转文章详情
+ */
+function goToArticle(articleId) {
+  uni.navigateTo({ url: `/pages/article/article?id=${articleId}` })
+}
+
+/**
+ * 跳转相册详情
+ */
+function goToAlbum(albumId) {
+  uni.navigateTo({ url: `/pages/albumDetail/albumDetail?id=${albumId}` })
+}
+
 onMounted(() => {
   const pages = getCurrentPages()
   const currentPage = pages[pages.length - 1]
@@ -68,6 +115,8 @@ onMounted(() => {
 
   if (userId.value) {
     fetchUserInfo()
+    fetchUserContent()
+    checkFollowStatus()
   }
 })
 </script>
@@ -77,7 +126,7 @@ onMounted(() => {
     <!-- 用户信息头部 -->
     <view class="profile-header card">
       <view class="user-info">
-        <uv-avatar :src="userInfo.avatar" size="80px" />
+        <uv-avatar :src="userInfo.avatar" size="160" />
         <view class="user-detail">
           <view class="nickname">{{ userInfo.nickname || '匿名用户' }}</view>
           <view v-if="userInfo.bio" class="bio">{{ userInfo.bio }}</view>
@@ -86,15 +135,15 @@ onMounted(() => {
 
       <view class="user-stats">
         <view class="stat-item">
-          <view class="stat-value">{{ userInfo.articleCount || 0 }}</view>
+          <view class="stat-value">{{ formatCount(userInfo.articleCount) }}</view>
           <view class="stat-label">文章</view>
         </view>
         <view class="stat-item">
-          <view class="stat-value">{{ userInfo.followerCount || 0 }}</view>
+          <view class="stat-value">{{ formatCount(userInfo.followerCount) }}</view>
           <view class="stat-label">粉丝</view>
         </view>
         <view class="stat-item">
-          <view class="stat-value">{{ userInfo.followingCount || 0 }}</view>
+          <view class="stat-value">{{ formatCount(userInfo.followingCount) }}</view>
           <view class="stat-label">关注</view>
         </view>
       </view>
@@ -128,7 +177,7 @@ onMounted(() => {
       <view v-if="activeTab === 'articles'" class="article-list">
         <!-- 文章列表 -->
         <view
-          v-for="article in userInfo.articles"
+          v-for="article in userArticles"
           :key="article.id"
           class="article-item card"
           @click="goToArticle(article.id)"
@@ -141,7 +190,7 @@ onMounted(() => {
       <view v-if="activeTab === 'albums'" class="album-list">
         <!-- 相册列表 -->
         <view
-          v-for="album in userInfo.albums"
+          v-for="album in userAlbums"
           :key="album.id"
           class="album-item"
           @click="goToAlbum(album.id)"
@@ -151,7 +200,7 @@ onMounted(() => {
         </view>
       </view>
 
-      <view v-if="!userInfo.articles?.length && !userInfo.albums?.length" class="empty-state">
+      <view v-if="!userArticles.length && !userAlbums.length" class="empty-state">
         <text class="empty-text">暂无内容</text>
       </view>
     </scroll-view>
@@ -161,7 +210,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .profile-page {
   min-height: 100vh;
-  background: var(--bg-page);
+  background: var(--u-bg-color);
 }
 
 .profile-header {
@@ -177,12 +226,12 @@ onMounted(() => {
       .nickname {
         font-size: 20px;
         font-weight: 600;
-        color: var(--text-primary);
+        color: var(--u-main-color);
       }
 
       .bio {
         font-size: 14px;
-        color: var(--text-muted);
+        color: var(--u-tips-color);
         margin-top: var(--spacing-sm);
       }
     }
@@ -193,7 +242,7 @@ onMounted(() => {
     justify-content: space-around;
     margin-top: var(--spacing-xl);
     padding-top: var(--spacing-lg);
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--u-border-color);
 
     .stat-item {
       text-align: center;
@@ -201,12 +250,12 @@ onMounted(() => {
       .stat-value {
         font-size: 18px;
         font-weight: 600;
-        color: var(--text-primary);
+        color: var(--u-main-color);
       }
 
       .stat-label {
         font-size: 12px;
-        color: var(--text-muted);
+        color: var(--u-tips-color);
         margin-top: 4px;
       }
     }
@@ -217,24 +266,24 @@ onMounted(() => {
     padding: 0 var(--spacing-2xl);
     height: 36px;
     line-height: 36px;
-    background: var(--color-primary);
+    background: var(--u-type-primary);
     color: #ffffff;
     border: none;
     border-radius: var(--radius-full);
     font-size: 14px;
 
     &.following {
-      background: var(--bg-page);
-      color: var(--text-regular);
-      border: 1px solid var(--border);
+      background: var(--u-bg-color);
+      color: var(--u-content-color);
+      border: 1px solid var(--u-border-color);
     }
   }
 }
 
 .content-tabs {
   display: flex;
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
+  background: var(--u-bg-white);
+  border-bottom: 1px solid var(--u-border-color);
   margin-top: var(--spacing-md);
 
   .tab-item {
@@ -242,10 +291,10 @@ onMounted(() => {
     text-align: center;
     padding: var(--spacing-md) 0;
     font-size: 15px;
-    color: var(--text-muted);
+    color: var(--u-tips-color);
 
     &.active {
-      color: var(--color-primary);
+      color: var(--u-type-primary);
       font-weight: 500;
     }
   }
@@ -263,12 +312,12 @@ onMounted(() => {
     .article-title {
       font-size: 15px;
       font-weight: 500;
-      color: var(--text-primary);
+      color: var(--u-main-color);
     }
 
     .article-summary {
       font-size: 14px;
-      color: var(--text-muted);
+      color: var(--u-tips-color);
       margin-top: var(--spacing-sm);
       @include text-ellipsis(2);
     }
@@ -283,7 +332,7 @@ onMounted(() => {
   .album-item {
     border-radius: var(--radius-md);
     overflow: hidden;
-    border: 1px solid var(--border);
+    border: 1px solid var(--u-border-color);
 
     .album-cover {
       width: 100%;
@@ -292,7 +341,7 @@ onMounted(() => {
 
     .album-name {
       font-size: 14px;
-      color: var(--text-primary);
+      color: var(--u-main-color);
       padding: var(--spacing-sm);
     }
   }
@@ -301,6 +350,6 @@ onMounted(() => {
 .empty-state {
   @include flex-center-column;
   padding: var(--spacing-2xl);
-  color: var(--text-muted);
+  color: var(--u-tips-color);
 }
 </style>

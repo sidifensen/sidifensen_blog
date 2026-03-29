@@ -163,7 +163,7 @@ public class IpUtils {
                 address = country + "-" + prov + "-" + city + "-" + area;
             }
         } catch (Exception e) {
-            log.error("获取IP地址失败，使用默认值", e);
+            log.debug("获取IP地址失败，使用默认值: {}", e.getMessage());
             address = "未知地址";
         }
         return address;

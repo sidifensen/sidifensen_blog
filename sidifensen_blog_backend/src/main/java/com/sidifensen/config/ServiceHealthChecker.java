@@ -98,7 +98,7 @@ public class ServiceHealthChecker implements ApplicationRunner {
             // 使用 PING 命令检测连接
             String pong = redisConn.ping();
             redisConn.close();
-            if ("PONG".equals(pong)) {
+            if (pong != null && "PONG".equals(pong)) {
                 log.info("\u001B[32m✓\u001B[0m {} 连接正常", serviceName);
                 return true;
             } else {

@@ -1,5 +1,9 @@
 server:
   port: 5000
+  compression:
+    enabled: true                          # 启用 gzip 压缩
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain  # 压缩类型
+    min-response-size: 1024                # 最小压缩阈值 1KB
 spring:
   profiles:
     active: dev
@@ -157,10 +161,13 @@ sidifensen:
   AllowOrigins:
     - http://localhost:7000
     - http://localhost:8000
+    - http://localhost:9000
     - http://127.0.0.1:7000
     - http://127.0.0.1:8000
+    - http://127.0.0.1:9000
     - http://115.190.116.72:7000
     - http://115.190.116.72:8000
+    - http://115.190.116.72:9000
     - https://sidifensen.com
     - https://www.sidifensen.com
     - https://admin.sidifensen.com

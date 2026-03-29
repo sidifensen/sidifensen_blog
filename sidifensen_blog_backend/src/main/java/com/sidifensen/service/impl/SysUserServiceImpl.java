@@ -323,10 +323,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     public SysUserVo info() {
         Integer userId = SecurityUtils.getUserId();
-        log.info("【OAuth调试】info() - SecurityUtils.getUserId()={}, SecurityContext={}", userId, SecurityContextHolder.getContext().getAuthentication());
         SysUser sysUser = sysUserMapper.selectById(userId);
         if (sysUser == null) {
-            log.error("【OAuth调试】info() - 用户查询为空, userId={}", userId);
             throw new BlogException(BlogConstants.NotFoundUser); // 用户不存在
         }
         SysUserVo sysUserVo = new SysUserVo();
@@ -458,9 +456,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             Authentication authenticate = authenticationManager.authenticate(authentication);
             // 获取用户信息
             LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
+            if (loginUser.getSysUser() == null) {
+                throw new BlogException(BlogConstants.NotFoundUser);
+            }
             List<SysRole> sysRoles = loginUser.getSysUser().getSysRoles();
 
-            if (sysRoles.stream().noneMatch(r -> r.getRole().equals("admin") || r.getRole().equals("viewer"))) {
+            if (sysRoles == null || sysRoles.stream().noneMatch(r -> r.getRole().equals("admin") || r.getRole().equals("viewer"))) {
                 throw new BlogException(BlogConstants.NotAdminAccount); // 不是管理后台账户
             }
             // 创建token,此处的token时由UUID编码而成JWT字符串

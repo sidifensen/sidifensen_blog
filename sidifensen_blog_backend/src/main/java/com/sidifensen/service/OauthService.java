@@ -1,13 +1,18 @@
 package com.sidifensen.service;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.dto.OauthExchangeDto;
+import com.sidifensen.domain.dto.WechatLoginDto;
 import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.enums.LoginStatusEnum;
 import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
 import com.sidifensen.domain.enums.StatusEnum;
+import com.sidifensen.domain.oauth.Wechat;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.redis.RedisComponent;
@@ -52,6 +57,9 @@ public class OauthService {
 
     @Resource
     private JwtUtils jwtUtils;
+
+    @Resource
+    private Wechat wechat;
 
     /**
      * 处理 OAuth 回调，创建本地用户并生成一次性票据
@@ -103,9 +111,7 @@ public class OauthService {
             ipService.setRegisterIp(sysUser.getId(), ip);
             sysUserRoleService.setRegisterRole(sysUser.getId());
             sysLoginLogService.recordLoginLog(sysUser.getId(), username, code, ip, LoginStatusEnum.SUCCESS.getCode());
-            log.info("【OAuth调试】准备保存新用户票据 - userId={}, code={}", sysUser.getId(), code);
             String ticket = redisComponent.saveOauthTicket(sysUser.getId(), code);
-            log.info("【OAuth调试】新用户票据保存完成 - ticket={}", ticket);
             return ticket;
         }
 
@@ -127,9 +133,7 @@ public class OauthService {
 
         ipService.setLoginIp(user.getId(), ip);
         sysLoginLogService.recordLoginLog(user.getId(), username, code, ip, LoginStatusEnum.SUCCESS.getCode());
-        log.info("【OAuth调试】准备保存老用户票据 - userId={}, code={}", user.getId(), code);
         String ticket = redisComponent.saveOauthTicket(user.getId(), code);
-        log.info("【OAuth调试】老用户票据保存完成 - ticket={}", ticket);
         return ticket;
     }
 
@@ -177,6 +181,38 @@ public class OauthService {
             normalizedUuid = uuid.substring(0, maxUuidLength);
         }
         return prefix + normalizedUuid;
+    }
+
+    /**
+     * 微信小程序登录
+     *
+     * @param loginDto 微信小程序登录请求 DTO
+     * @return 一次性票据
+     */
+    public String wechatMiniprogramLogin(WechatLoginDto loginDto) {
+        // 调用微信接口获取 openid
+        String jscode2sessionUrl = wechat.getJscode2sessionUrl();
+        String appId = wechat.getAppId();
+        String appSecret = wechat.getAppSecret();
+        if (jscode2sessionUrl == null || appId == null || appSecret == null) {
+            throw new BlogException(BlogConstants.OauthLoginError);
+        }
+        String url = jscode2sessionUrl + "?appid=" + appId + "&secret=" + appSecret + "&js_code=" + loginDto.getCode() + "&grant_type=authorization_code";
+        String result = HttpUtil.get(url);
+        JSONObject jsonResult = JSON.parseObject(result);
+
+        // 检查微信返回的错误
+        if (jsonResult.containsKey("errcode") && jsonResult.getInteger("errcode") != 0) {
+            throw new BlogException(BlogConstants.OauthLoginError);
+        }
+
+        String openid = jsonResult.getString("openid");
+        if (openid == null || openid.isEmpty()) {
+            throw new BlogException(BlogConstants.OauthLoginError);
+        }
+
+        // 使用 openid 登录或注册
+        return wechatLogin(openid, RegisterOrLoginTypeEnum.WECHAT_MINIPROGRAM.getCode());
     }
 
     /**

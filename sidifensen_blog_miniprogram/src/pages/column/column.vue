@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getColumnList } from '@/api/column'
-import { timeAgo } from '@/utils/format'
+import { timeAgo, formatCount } from '@/utils/format'
 
 const columnList = ref([])
 const loading = ref(false)
@@ -78,7 +78,7 @@ onMounted(() => {
             <view class="column-name">{{ column.name }}</view>
             <view class="column-desc">{{ column.description }}</view>
             <view class="column-meta">
-              <text class="article-count">{{ column.articleCount }} 篇文章</text>
+              <text class="article-count">{{ formatCount(column.articleCount) }} 篇文章</text>
               <text class="update-time">{{ timeAgo(column.updateTime) }}</text>
             </view>
           </view>
@@ -95,7 +95,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .column-page {
   min-height: 100vh;
-  background: var(--bg-page);
+  background: var(--u-bg-color);
   padding: var(--spacing-lg);
 }
 
@@ -119,12 +119,12 @@ onMounted(() => {
       .column-name {
         font-size: 16px;
         font-weight: 600;
-        color: var(--text-primary);
+        color: var(--u-main-color);
       }
 
       .column-desc {
         font-size: 14px;
-        color: var(--text-muted);
+        color: var(--u-tips-color);
         margin-top: var(--spacing-sm);
         @include text-ellipsis(2);
       }
@@ -134,7 +134,7 @@ onMounted(() => {
         justify-content: space-between;
         margin-top: var(--spacing-md);
         font-size: 12px;
-        color: var(--text-muted);
+        color: var(--u-tips-color);
       }
     }
   }
@@ -143,6 +143,6 @@ onMounted(() => {
 .empty-state {
   @include flex-center-column;
   padding: var(--spacing-2xl);
-  color: var(--text-muted);
+  color: var(--u-tips-color);
 }
 </style>

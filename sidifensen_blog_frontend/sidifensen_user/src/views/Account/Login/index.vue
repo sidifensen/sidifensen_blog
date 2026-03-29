@@ -241,9 +241,18 @@ const changeCheckCode = async () => {
   });
 };
 
+// 测试模式自动填充（仅开发环境生效）
+const autoFillTestAccount = () => {
+  if (import.meta.env.VITE_TEST_MODE === 'true') {
+    formData.value.username = import.meta.env.VITE_TEST_USERNAME || 'test';
+    formData.value.password = import.meta.env.VITE_TEST_PASSWORD || '123456';
+  }
+};
+
 // 页面加载完成后刷新验证码
 onMounted(() => {
   changeCheckCode();
+  autoFillTestAccount();
 });
 </script>
 

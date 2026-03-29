@@ -7,7 +7,8 @@
     "dev:mp-weixin": "uni -p mp-weixin",
     "build:mp-weixin": "uni build -p mp-weixin",
     "dev:h5": "uni",
-    "build:h5": "uni build"
+    "build:h5": "uni build",
+    "build:app": "uni build -p app"
   },
   "dependencies": {
     "@dcloudio/uni-app": "3.0.0-5000520260324001",
@@ -25,6 +26,7 @@
     "@dcloudio/types": "^3.4.8",
     "@dcloudio/uni-automator": "3.0.0-5000520260324001",
     "@dcloudio/uni-stacktracey": "3.0.0-5000520260324001",
+    "@uni-helper/vite-plugin-uni-components": "^0.2.10",
     "sass": "^1.75.0",
     "vite": "^5.2.8"
   }

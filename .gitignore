@@ -38,3 +38,6 @@ docs
 
 node_modules/
 /jmeter/
+
+/.mcp.json
+/.golutra/

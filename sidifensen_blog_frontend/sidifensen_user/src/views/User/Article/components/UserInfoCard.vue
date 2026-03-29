@@ -25,7 +25,7 @@
             <h3 class="nickname clickable-nickname" @click="goToUserHomepage">
               {{ userInfo.nickname }}
             </h3>
-            <span v-if="userInfo.isVip" class="vip-badge">VIP</span>
+            <VipBadge v-if="userInfo.isVip" type="card" />
           </div>
 
           <!-- 用户统计信息 -->
@@ -63,6 +63,7 @@ import { useRouter } from "vue-router";
 import { Message, Plus } from "@element-plus/icons-vue";
 import { toggleFollow, isFollowing } from "@/api/follow";
 import { useUserStore } from "@/stores/userStore";
+import VipBadge from "@/components/VipBadge.vue";
 
 // 路由和状态管理
 const router = useRouter();
@@ -271,19 +272,6 @@ onMounted(() => {
           font-size: 18px;
           font-weight: 600;
           color: var(--el-text-color-primary);
-        }
-
-        .vip-badge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          height: 22px;
-          padding: 0 8px;
-          border-radius: 999px;
-          background: rgba(var(--el-color-warning-rgb, 230, 162, 60), 0.14);
-          color: var(--el-color-warning);
-          font-size: 12px;
-          font-weight: 700;
         }
 
       // 头像容器 - 3D效果区域

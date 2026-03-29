@@ -3,8 +3,8 @@
 
 /* 页面背景 */
 page {
-  background: var(--bg-page);
-  color: var(--text-primary);
+  background: var(--u-bg-color);
+  color: var(--u-main-color);
   font-size: 14px;
   line-height: 1.5;
 }
@@ -20,26 +20,26 @@ page {
 .title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--u-main-color);
 }
 
 .title-sm {
   font-size: 16px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: var(--u-main-color);
 }
 
 /* 文字样式 */
 .text-primary {
-  color: var(--text-primary);
+  color: var(--u-main-color);
 }
 
 .text-regular {
-  color: var(--text-regular);
+  color: var(--u-content-color);
 }
 
 .text-muted {
-  color: var(--text-muted);
+  color: var(--u-tips-color);
 }
 
 /* Flex 工具类 */
@@ -104,17 +104,17 @@ page {
 }
 
 .btn-primary {
-  background: var(--color-primary);
+  background: var(--u-type-primary);
   color: #ffffff;
 
   &:active {
-    background: var(--color-primary-dark);
+    background: var(--u-type-primary-dark);
   }
 }
 
 .btn-outline {
-  border: 1px solid var(--border);
-  color: var(--text-primary);
+  border: 1px solid var(--u-border-color);
+  color: var(--u-main-color);
   background: transparent;
 }
 
@@ -122,7 +122,7 @@ page {
 .empty-state {
   @include flex-center-column;
   padding: var(--spacing-2xl);
-  color: var(--text-muted);
+  color: var(--u-tips-color);
 
   .empty-icon {
     font-size: 48px;
@@ -137,6 +137,6 @@ page {
 /* 分隔线 */
 .divider {
   height: 1px;
-  background: var(--border);
+  background: var(--u-divider-color);
   margin: var(--spacing-lg) 0;
 }

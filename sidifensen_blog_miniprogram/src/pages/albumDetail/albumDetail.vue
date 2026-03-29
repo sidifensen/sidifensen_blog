@@ -82,29 +82,29 @@ onMounted(() => {
 <style lang="scss" scoped>
 .album-detail-page {
   min-height: 100vh;
-  background: var(--bg-page);
+  background: var(--u-bg-color);
 }
 
 .album-header {
   padding: var(--spacing-lg);
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
+  background: var(--u-bg-white);
+  border-bottom: 1px solid var(--u-border-color);
 
   .album-title {
     font-size: 20px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--u-main-color);
   }
 
   .album-desc {
     font-size: 14px;
-    color: var(--text-muted);
+    color: var(--u-tips-color);
     margin-top: var(--spacing-sm);
   }
 
   .album-stats {
     font-size: 12px;
-    color: var(--text-muted);
+    color: var(--u-tips-color);
     margin-top: var(--spacing-md);
   }
 }
@@ -129,7 +129,7 @@ onMounted(() => {
 .empty-state {
   @include flex-center-column;
   padding: var(--spacing-2xl);
-  color: var(--text-muted);
+  color: var(--u-tips-color);
 
   .empty-icon {
     font-size: 48px;

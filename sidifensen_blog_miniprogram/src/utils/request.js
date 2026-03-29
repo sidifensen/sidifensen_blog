@@ -3,8 +3,8 @@
  * 基于 UniApp 的 uni.request 封装
  */
 
-// 开发环境后端地址（微信小程序需要使用实际 IP 或域名）
-const BASE_URL = 'http://192.168.31.220:5000'
+// 环境变量配置
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
 /**
  * 获取 Token

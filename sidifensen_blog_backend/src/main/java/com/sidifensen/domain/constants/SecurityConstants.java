@@ -35,6 +35,7 @@ public class SecurityConstants {
             "/article/hot",
             "/article/listVipPreview",
             "/article/creation/statistics",
+            "/article/search",
 
             // 评论相关
             "/comment/list",
@@ -43,10 +44,12 @@ public class SecurityConstants {
             // 专栏相关
             "/column/list/{userId:\\d+}",
             "/column/detail/{columnId:\\d+}",
+            "/column/search",
 
             // 相册相关
             "/album/listAll",
             "/album/get/{albumId:\\d+}",
+            "/album/search",
 
             // 收藏相关
             "/favorite/listByUser",

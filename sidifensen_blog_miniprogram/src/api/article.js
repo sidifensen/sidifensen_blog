@@ -74,3 +74,10 @@ export function unfavoriteArticle(articleId) {
 export function getMyFavorites(params) {
   return get('/article/favorites', params)
 }
+
+/**
+ * 获取用户文章统计
+ */
+export function getUserArticleStatistics() {
+  return get('/article/user/statistics')
+}

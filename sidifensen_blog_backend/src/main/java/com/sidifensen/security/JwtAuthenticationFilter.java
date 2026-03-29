@@ -80,11 +80,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 可选认证接口：有token就认证，没有就跳过
         if (isOptionalAuth) {
             String jwt = request.getHeader("Authorization");
-            log.info("【OAuth调试】Optional_Auth 路径: {}, JWT={}", request.getRequestURI(), jwt);
             if (ObjectUtil.isNotEmpty(jwt)) {
                 try {
                     authenticateUser(request, response);
-                    log.info("【OAuth调试】Optional_Auth 认证完成, SecurityContext={}", SecurityContextHolder.getContext().getAuthentication());
                 } catch (Exception e) {
                     // 可选认证失败，忽略错误继续放行
                     log.debug("可选认证失败: {}", e.getMessage());

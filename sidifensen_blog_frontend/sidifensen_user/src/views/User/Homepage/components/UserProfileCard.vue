@@ -28,7 +28,7 @@
                     <div class="user-details">
                       <h2 class="username">
                         <span class="name-text">{{ userInfo.nickname }}</span>
-                        <span v-if="userInfo.isVip" class="vip-badge">VIP</span>
+                        <VipBadge v-if="userInfo.isVip" type="card" height="28" padding="0 10px" />
                       </h2>
                       <div class="user-intro-container">
                         <p class="user-intro" :class="{ expanded: isIntroExpanded }">{{ userInfo.introduction || "这个人很懒，什么都没写~" }}</p>
@@ -95,6 +95,7 @@
 import { ref, computed, watch } from "vue";
 import { Plus, Message, ArrowDown, ArrowUp, Location, Calendar } from "@element-plus/icons-vue";
 import CountTo from "@/components/CountTo.vue";
+import VipBadge from "@/components/VipBadge.vue";
 
 // 定义 props
 const props = defineProps({
@@ -293,19 +294,6 @@ watch(
                   overflow: hidden;
                   text-overflow: ellipsis;
                   white-space: nowrap;
-                }
-
-                .vip-badge {
-                  display: inline-flex;
-                  align-items: center;
-                  justify-content: center;
-                  height: 28px;
-                  padding: 0 10px;
-                  border-radius: 999px;
-                  background: rgba(var(--el-color-warning-rgb, 230, 162, 60), 0.14);
-                  color: var(--el-color-warning);
-                  font-size: 12px;
-                  font-weight: 700;
                 }
               }
 

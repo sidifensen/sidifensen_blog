@@ -2,6 +2,17 @@
 
 ---
 
+## 项目结构
+
+| 模块 | 路径 | 本地地址                  | 生产地址 |
+|------|------|-----------------------|----------|
+| 后端 API | `sidifensen_blog_backend/` | http://localhost:5000 | https://api.sidifensen.com |
+| 前端用户端 | `sidifensen_blog_frontend/` | http://localhost:7000 | https://sidifensen.com |
+| 前端管理端 | `sidifensen_blog_frontend/` | http://localhost:8000 | https://admin.sidifensen.com |
+| 小程序 | `sidifensen_blog_miniprogram/` | http://localhost:9000 | 需配置合法域名 |
+
+---
+
 ## 复杂任务流程
 
 > 遇到复杂任务时，必须遵循以下流程，确保质量和可维护性。
@@ -256,3 +267,7 @@ git push
 | Claude Code | `/commit` | 提交当前更改 |
 | Claude Code | `/frontend-design` | 前端设计优化 |
 | Claude Code | `skill: superpowers:*` | 复杂任务流程 |
+
+### 前端页面调试
+
+项目已配置 `chrome-devtools` MCP 工具，可用于打开浏览器查看和调试页面，包括元素检查、交互操作、控制台日志查看等功能。

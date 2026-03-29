@@ -1,8 +1,12 @@
 {
   "mcpServers": {
-    "playwright": {
+    "antd-components": {
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "@executeautomation/playwright-mcp-server"]
+      "args": ["/c", "npx", "-y", "@jzone-mcp/antd-components-mcp"]
+    },
+    "chrome-devtools": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "chrome-devtools-mcp", "--isolated"]
     },
     "mysql": {
       "command": "cmd",
@@ -14,6 +18,10 @@
         "MYSQL_PASSWORD": "root",
         "MYSQL_DATABASE": "sidifensen_blog"
       }
+    },
+    "ssh": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@fangjunjie/ssh-mcp-server", "--config-file", "C:\\Users\\x\\ssh-config.json"]
     }
   }
 }

@@ -27,6 +27,7 @@ import com.sidifensen.mapper.SysUserMapper;
 import com.sidifensen.service.ArticleColumnService;
 import com.sidifensen.service.ColumnService;
 import com.sidifensen.service.UserSettingsService;
+import com.sidifensen.utils.EmailUtils;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -75,6 +76,9 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
 
     @Resource
     private org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
+
+    @Resource
+    private EmailUtils emailUtils;
 
     /**
      * 为专栏管理VO设置作者昵称
@@ -612,7 +616,7 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
         }
 
         // 发送系统邮件通知
-        sendSystemEmailNotification(
+        emailUtils.sendSystemEmailNotification(
                 column.getUserId(),
                 examineStatus.equals(ExamineStatusEnum.PASS.getCode()) ? "专栏审核通过" : "专栏审核未通过",
                 examineStatus.equals(ExamineStatusEnum.PASS.getCode())
@@ -652,7 +656,7 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
 
         // 批量发送系统邮件通知
         for (Column column : columns) {
-            sendSystemEmailNotification(
+            emailUtils.sendSystemEmailNotification(
                     column.getUserId(),
                     examineStatus.equals(ExamineStatusEnum.PASS.getCode()) ? "专栏审核通过" : "专栏审核未通过",
                     examineStatus.equals(ExamineStatusEnum.PASS.getCode())
@@ -823,56 +827,5 @@ public class ColumnServiceImpl extends ServiceImpl<ColumnMapper, Column> impleme
         }
 
         return columnDetailVo;
-    }
-
-    /**
-     * 发送系统邮件通知
-     *
-     * @param userId 用户 ID
-     * @param notificationTitle 通知标题
-     * @param notificationContent 通知内容
-     * @param extraInfo 附加信息
-     * @param linkUrl 链接地址
-     * @param linkText 链接文字
-     */
-    private void sendSystemEmailNotification(Integer userId, String notificationTitle, String notificationContent,
-            String extraInfo, String linkUrl, String linkText) {
-        try {
-            // 检查用户是否开启了系统邮件通知
-            Integer receiveSystemEmail = userSettingsService.getReceiveSystemEmail(userId);
-            if (receiveSystemEmail == 0) {
-                log.debug("用户 {} 关闭了系统邮件通知，跳过发送", userId);
-                return;
-            }
-
-            // 查询用户邮箱
-            SysUser user = sysUserMapper.selectById(userId);
-            if (user == null || user.getEmail() == null) {
-                log.warn("发送系统邮件通知失败：用户 {} 不存在或邮箱为空", userId);
-                return;
-            }
-
-            // 构建邮件消息
-            java.util.HashMap<String, Object> emailMessage = new java.util.HashMap<>();
-            emailMessage.put("email", user.getEmail());
-            emailMessage.put("recipientNickname", user.getNickname());
-            emailMessage.put("notificationTitle", notificationTitle);
-            emailMessage.put("notificationContent", notificationContent);
-            emailMessage.put("extraInfo", extraInfo != null ? extraInfo : "");
-            emailMessage.put("sendTime", java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-            emailMessage.put("linkUrl", linkUrl != null ? linkUrl : "");
-            emailMessage.put("linkText", linkText != null ? linkText : "");
-            emailMessage.put("type", "systemNotification");
-
-            // 发送邮件到队列
-            rabbitTemplate.convertAndSend(
-                    com.sidifensen.domain.constants.RabbitMQConstants.Email_Exchange,
-                    com.sidifensen.domain.constants.RabbitMQConstants.System_Email_Routing_Key,
-                    emailMessage);
-
-            log.info("系统邮件通知已发送到队列：to={}, title={}", user.getEmail(), notificationTitle);
-        } catch (Exception e) {
-            log.error("发送系统邮件通知失败：userId={}", userId, e);
-        }
     }
 }

@@ -5,7 +5,8 @@ import {
   getMessageList,
   getUnreadCount,
   markAsRead,
-  markAllAsRead
+  markAllAsRead,
+  deleteMessage
 } from '@/api/message'
 
 const userStore = useUserStore()
@@ -100,6 +101,28 @@ function onMessageClick(message) {
   }
 }
 
+/**
+ * 删除消息
+ */
+function handleDeleteMessage(message) {
+  uni.showModal({
+    title: '提示',
+    content: '确定要删除这条消息吗？',
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await deleteMessage(message.id)
+          uni.showToast({ title: '删除成功', icon: 'success' })
+          fetchMessageList()
+          fetchUnreadCount()
+        } catch (err) {
+          uni.showToast({ title: '删除失败', icon: 'none' })
+        }
+      }
+    }
+  })
+}
+
 onMounted(() => {
   if (!userStore.isLoggedIn) {
     uni.navigateTo({ url: '/pages/login/login' })
@@ -138,19 +161,23 @@ onMounted(() => {
         :key="message.id"
         class="message-item card"
         :class="{ unread: !message.isRead }"
-        @click="onMessageClick(message)"
       >
-        <view class="message-avatar">
-          <uv-avatar :src="message.fromUserAvatar" size="40px" />
-        </view>
-        <view class="message-content">
-          <view class="message-header">
-            <text class="user-name">{{ message.fromUserName }}</text>
-            <text class="message-time">{{ message.createTime }}</text>
+        <view class="message-main" @click="onMessageClick(message)">
+          <view class="message-avatar">
+            <uv-avatar :src="message.fromUserAvatar" size="80" />
           </view>
-          <view class="message-text">{{ message.content }}</view>
+          <view class="message-content">
+            <view class="message-header">
+              <text class="user-name">{{ message.fromUserName }}</text>
+              <text class="message-time">{{ message.createTime }}</text>
+            </view>
+            <view class="message-text">{{ message.content }}</view>
+          </view>
+          <view v-if="!message.isRead" class="unread-dot"></view>
         </view>
-        <view v-if="!message.isRead" class="unread-dot"></view>
+        <view class="message-actions">
+          <text class="delete-btn" @click="handleDeleteMessage(message)">删除</text>
+        </view>
       </view>
 
       <view v-if="messageList.length === 0 && !loading" class="empty-state">
@@ -163,13 +190,13 @@ onMounted(() => {
 <style lang="scss" scoped>
 .message-page {
   min-height: 100vh;
-  background: var(--bg-page);
+  background: var(--u-bg-color);
 }
 
 .tabs {
   display: flex;
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
+  background: var(--u-bg-white);
+  border-bottom: 1px solid var(--u-border-color);
   padding: 0 var(--spacing-lg);
 
   .tab-item {
@@ -177,11 +204,11 @@ onMounted(() => {
     text-align: center;
     padding: var(--spacing-md) 0;
     font-size: 15px;
-    color: var(--text-muted);
+    color: var(--u-tips-color);
     position: relative;
 
     &.active {
-      color: var(--color-primary);
+      color: var(--u-type-primary);
       font-weight: 500;
 
       &::after {
@@ -192,7 +219,7 @@ onMounted(() => {
         transform: translateX(-50%);
         width: 40px;
         height: 2px;
-        background: var(--color-primary);
+        background: var(--u-type-primary);
         border-radius: 1px;
       }
     }
@@ -204,17 +231,17 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-md) var(--spacing-lg);
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
+  background: var(--u-bg-white);
+  border-bottom: 1px solid var(--u-border-color);
 
   .unread-tip {
     font-size: 14px;
-    color: var(--color-primary);
+    color: var(--u-type-primary);
   }
 
   .mark-all {
     font-size: 14px;
-    color: var(--text-muted);
+    color: var(--u-tips-color);
   }
 }
 
@@ -224,13 +251,18 @@ onMounted(() => {
 
   .message-item {
     display: flex;
-    align-items: flex-start;
-    gap: var(--spacing-md);
+    flex-direction: column;
     margin-bottom: var(--spacing-md);
     position: relative;
 
     &.unread {
-      background: var(--bg-card-hover);
+      background: var(--u-bg-gray-light);
+    }
+
+    .message-main {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-md);
     }
 
     .message-content {
@@ -244,18 +276,18 @@ onMounted(() => {
         .user-name {
           font-size: 14px;
           font-weight: 500;
-          color: var(--text-primary);
+          color: var(--u-main-color);
         }
 
         .message-time {
           font-size: 12px;
-          color: var(--text-muted);
+          color: var(--u-tips-color);
         }
       }
 
       .message-text {
         font-size: 14px;
-        color: var(--text-regular);
+        color: var(--u-content-color);
         margin-top: 4px;
         @include text-ellipsis(2);
       }
@@ -265,17 +297,29 @@ onMounted(() => {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--color-error);
+      background: var(--u-type-error);
       position: absolute;
       top: var(--spacing-md);
       right: var(--spacing-md);
+    }
+
+    .message-actions {
+      display: flex;
+      justify-content: flex-end;
+      padding-top: var(--spacing-sm);
+
+      .delete-btn {
+        font-size: 12px;
+        color: var(--u-type-error);
+        padding: 4px 8px;
+      }
     }
   }
 
   .empty-state {
     @include flex-center-column;
     padding: var(--spacing-2xl);
-    color: var(--text-muted);
+    color: var(--u-tips-color);
   }
 }
 </style>

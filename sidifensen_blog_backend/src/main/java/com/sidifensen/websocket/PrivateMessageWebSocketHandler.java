@@ -58,6 +58,15 @@ public class PrivateMessageWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         Integer userId = (Integer) session.getAttributes().get("userId");
+        if (userId == null) {
+            log.warn("WebSocket 连接建立时 userId 为 null，关闭连接");
+            try {
+                session.close();
+            } catch (IOException e) {
+                log.error("关闭 WebSocket 连接失败", e);
+            }
+            return;
+        }
         sessionManager.registerSession(userId, session);
 
         // 广播用户上线状态
@@ -76,6 +85,10 @@ public class PrivateMessageWebSocketHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
         try {
             Integer fromUserId = (Integer) session.getAttributes().get("userId");
+            if (fromUserId == null) {
+                log.warn("WebSocket 消息处理时 userId 为 null");
+                return;
+            }
             String payload = message.getPayload();
 
             // 解析消息 {"type": "SEND_MESSAGE","content": "你好","toUserId": 123}
@@ -114,6 +127,10 @@ public class PrivateMessageWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         Integer userId = (Integer) session.getAttributes().get("userId");
+        if (userId == null) {
+            log.warn("WebSocket 连接关闭时 userId 为 null");
+            return;
+        }
 
         // 广播用户下线状态（在移除会话之前广播，确保能正常发送）
         sessionManager.broadcastUserOnlineStatus(userId, false);
@@ -128,8 +145,7 @@ public class PrivateMessageWebSocketHandler extends TextWebSocketHandler {
      */
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) {
-        Integer userId = (Integer) session.getAttributes().get("userId");
-        log.error("WebSocket 传输异常，userId: {}", userId, exception);
+        Integer userId = session != null ? (Integer) session.getAttributes().get("userId") : null;
     }
 
     /**

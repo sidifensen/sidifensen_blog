@@ -1,18 +1,20 @@
 <script setup>
-import { ref } from 'vue'
-import { useAppStore } from '@/store/app'
+import { computed } from 'vue'
+import { useTheme } from 'uview-pro'
 import { useUserStore } from '@/store/user'
 
-const appStore = useAppStore()
 const userStore = useUserStore()
+const { darkMode, toggleDarkMode } = useTheme()
 
-// 深色模式
-const isDark = ref(appStore.isDark)
+// 图标大小
+const iconSize = '18px'
+
+// 深色模式（响应式）
+const isDark = computed(() => darkMode.value === 'dark')
 
 // 深色模式开关
 function onDarkModeChange(e) {
-  const dark = e.detail.value
-  appStore.setTheme(dark ? 'dark' : 'light')
+  toggleDarkMode()
 }
 
 /**
@@ -38,21 +40,21 @@ function handleLogout() {
  * 跳转关于页面
  */
 function goToAbout() {
-  uni.showToast({ title: '关于页面', icon: 'none' })
+  uni.navigateTo({ url: '/pages/settings/about' })
 }
 
 /**
  * 跳转用户协议
  */
 function goToAgreement() {
-  uni.showToast({ title: '用户协议', icon: 'none' })
+  uni.navigateTo({ url: '/pages/settings/agreement' })
 }
 
 /**
  * 跳转隐私政策
  */
 function goToPrivacy() {
-  uni.showToast({ title: '隐私政策', icon: 'none' })
+  uni.navigateTo({ url: '/pages/settings/privacy' })
 }
 </script>
 
@@ -63,7 +65,7 @@ function goToPrivacy() {
       <view class="settings-title">显示</view>
       <view class="settings-item">
         <view class="settings-label">
-          <text class="label-icon">&#xe8f2;</text>
+          <uv-icon name="setting" :size="iconSize" color="var(--u-content-color)" />
           <text>深色模式</text>
         </view>
         <switch
@@ -78,10 +80,10 @@ function goToPrivacy() {
       <view class="settings-title">账号</view>
       <view class="settings-item" @click="goToAbout">
         <view class="settings-label">
-          <text class="label-icon">&#xe8f3;</text>
+          <uv-icon name="file-text" :size="iconSize" color="var(--u-content-color)" />
           <text>关于我们</text>
         </view>
-        <uv-icon name="arrow-right" color="var(--text-muted)" size="16px" />
+        <uv-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
       </view>
     </view>
 
@@ -90,17 +92,17 @@ function goToPrivacy() {
       <view class="settings-title">其他</view>
       <view class="settings-item" @click="goToAgreement">
         <view class="settings-label">
-          <text class="label-icon">&#xe8f4;</text>
+          <uv-icon name="file-text" :size="iconSize" color="var(--u-content-color)" />
           <text>用户协议</text>
         </view>
-        <uv-icon name="arrow-right" color="var(--text-muted)" size="16px" />
+        <uv-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
       </view>
       <view class="settings-item" @click="goToPrivacy">
         <view class="settings-label">
-          <text class="label-icon">&#xe8f5;</text>
+          <uv-icon name="file-text" :size="iconSize" color="var(--u-content-color)" />
           <text>隐私政策</text>
         </view>
-        <uv-icon name="arrow-right" color="var(--text-muted)" size="16px" />
+        <uv-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
       </view>
     </view>
 
@@ -119,7 +121,7 @@ function goToPrivacy() {
 <style lang="scss" scoped>
 .settings-page {
   min-height: 100vh;
-  background: var(--bg-page);
+  background: var(--u-bg-color);
   padding: var(--spacing-lg);
 }
 
@@ -129,9 +131,9 @@ function goToPrivacy() {
 
   .settings-title {
     font-size: 13px;
-    color: var(--text-muted);
+    color: var(--u-tips-color);
     padding: var(--spacing-md) var(--spacing-lg);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--u-border-color);
   }
 
   .settings-item {
@@ -141,7 +143,7 @@ function goToPrivacy() {
     padding: var(--spacing-md) var(--spacing-lg);
 
     &:active {
-      background: var(--bg-card-hover);
+      background: var(--u-bg-gray-light);
     }
 
     .settings-label {
@@ -149,14 +151,9 @@ function goToPrivacy() {
       align-items: center;
       gap: var(--spacing-md);
 
-      .label-icon {
-        font-size: 18px;
-        color: var(--text-regular);
-      }
-
       text {
         font-size: 15px;
-        color: var(--text-primary);
+        color: var(--u-main-color);
       }
     }
   }
@@ -170,8 +167,8 @@ function goToPrivacy() {
     width: 100%;
     height: 44px;
     line-height: 44px;
-    background: var(--bg-card);
-    color: var(--color-error);
+    background: var(--u-bg-white);
+    color: var(--u-type-error);
     border: none;
     border-radius: var(--radius-md);
     font-size: 15px;
@@ -182,6 +179,6 @@ function goToPrivacy() {
   text-align: center;
   margin-top: var(--spacing-xl);
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--u-tips-color);
 }
 </style>

@@ -1,8 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { searchArticles } from '@/api/article'
-import { getAlbumList } from '@/api/album'
-import { getColumnList } from '@/api/column'
+import { searchAlbums } from '@/api/album'
+import { searchColumns } from '@/api/column'
+import { formatCount } from '@/utils/format'
 
 const searchKey = ref('')
 const searchResults = ref({
@@ -36,15 +37,20 @@ async function handleSearch() {
     const keyword = searchKey.value.trim()
 
     const [articleRes, albumRes, columnRes] = await Promise.all([
-      searchArticles({ keyword }),
-      getAlbumList({ keyword }),
-      getColumnList({ keyword })
+      searchArticles({ title: keyword }),
+      searchAlbums({ keyword }),
+      searchColumns({ keyword })
     ])
 
+    // 提取分页数据（后端返回 PageVo<PageVo<T>> 结构）
+    const articleList = articleRes.data?.data || articleRes.data || []
+    const columnList = columnRes.data?.data || columnRes.data || []
+    const albumList = albumRes.data || albumRes || []
+
     searchResults.value = {
-      articles: articleRes.data || [],
-      albums: albumRes.data || [],
-      columns: columnRes.data || []
+      articles: articleList,
+      albums: albumList,
+      columns: columnList
     }
   } catch (err) {
     uni.showToast({ title: '搜索失败', icon: 'none' })
@@ -80,23 +86,30 @@ function goToAlbum(albumId) {
 function goToColumn(columnId) {
   uni.navigateTo({ url: `/pages/columnDetail/columnDetail?id=${columnId}` })
 }
+
+// 初始化主题
+onMounted(() => {
+})
 </script>
 
 <template>
   <view class="search-page">
     <!-- 搜索框 -->
     <view class="search-bar">
-      <uv-input
-        v-model="searchKey"
-        placeholder="搜索文章、相册、专栏..."
-        confirm-type="search"
-        @confirm="handleSearch"
-      >
-        <template #prefix>
-          <uv-icon name="search" color="var(--text-muted)" />
-        </template>
-      </uv-input>
-      <button class="search-btn" @click="handleSearch">搜索</button>
+      <view class="search-box" @click="focusInput = true">
+        <text class="search-icon">🔍</text>
+        <input
+          v-model="searchKey"
+          class="search-input"
+          type="text"
+          placeholder="搜索文章、相册、专栏..."
+          confirm-type="search"
+          @confirm="handleSearch"
+        />
+      </view>
+      <view class="search-btn" @click="handleSearch">
+        <uv-icon name="search" size="20px" color="#ffffff" />
+      </view>
     </view>
 
     <!-- 标签切换 -->
@@ -119,7 +132,7 @@ function goToColumn(columnId) {
         <view
           v-for="article in searchResults.articles"
           :key="article.id"
-          class="result-item card"
+          class="result-item"
           @click="goToArticle(article.id)"
         >
           <view class="item-title">{{ article.title }}</view>
@@ -136,7 +149,7 @@ function goToColumn(columnId) {
         <view
           v-for="album in searchResults.albums"
           :key="album.id"
-          class="result-item card"
+          class="result-item"
           @click="goToAlbum(album.id)"
         >
           <view class="item-cover">
@@ -144,7 +157,7 @@ function goToColumn(columnId) {
           </view>
           <view class="item-info">
             <view class="item-title">{{ album.name }}</view>
-            <view class="item-count">{{ album.photoCount }} 张照片</view>
+            <view class="item-count">{{ formatCount(album.photoCount) }} 张照片</view>
           </view>
         </view>
 
@@ -158,7 +171,7 @@ function goToColumn(columnId) {
         <view
           v-for="column in searchResults.columns"
           :key="column.id"
-          class="result-item card"
+          class="result-item"
           @click="goToColumn(column.id)"
         >
           <view class="item-title">{{ column.name }}</view>
@@ -172,7 +185,7 @@ function goToColumn(columnId) {
 
       <!-- 初始状态 -->
       <view v-if="!hasSearched" class="empty-state">
-        <text class="empty-icon">&#xe601;</text>
+        <uv-icon name="search" size="48px" color="var(--text-muted)" />
         <text class="empty-text">输入关键词搜索</text>
       </view>
     </scroll-view>
@@ -182,42 +195,71 @@ function goToColumn(columnId) {
 <style lang="scss" scoped>
 .search-page {
   min-height: 100vh;
-  background: var(--bg-page);
+  background: var(--u-bg-color);
 }
 
 .search-bar {
   display: flex;
+  align-items: center;
   gap: var(--spacing-md);
   padding: var(--spacing-md) var(--spacing-lg);
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
+  background: var(--u-bg-white);
+  border-bottom: 1px solid var(--u-border-color);
+
+  .search-box {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--u-bg-color);
+    border: 1px solid var(--u-border-color);
+    border-radius: var(--radius-full);
+
+    .search-icon {
+      font-size: 16px;
+      color: var(--u-tips-color);
+    }
+
+    .search-input {
+      flex: 1;
+      height: 32px;
+      font-size: 14px;
+      color: var(--u-main-color);
+      background: transparent;
+
+      &::placeholder {
+        color: var(--u-tips-color);
+      }
+    }
+  }
 
   .search-btn {
-    padding: 0 var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
     height: 36px;
-    line-height: 36px;
-    background: var(--color-primary);
-    color: #ffffff;
+    background: var(--u-type-primary);
     border: none;
-    border-radius: var(--radius-full);
-    font-size: 14px;
+    border-radius: 50%;
   }
 }
 
 .tabs {
   display: flex;
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
+  background: var(--u-bg-white);
+  border-bottom: 1px solid var(--u-border-color);
 
   .tab-item {
     flex: 1;
     text-align: center;
     padding: var(--spacing-md) 0;
     font-size: 15px;
-    color: var(--text-muted);
+    color: var(--u-tips-color);
 
     &.active {
-      color: var(--color-primary);
+      color: var(--u-type-primary);
       font-weight: 500;
     }
   }
@@ -226,6 +268,7 @@ function goToColumn(columnId) {
 .search-results {
   height: calc(100vh - 120px);
   padding: var(--spacing-lg);
+  box-sizing: border-box;
 }
 
 .result-list {
@@ -233,6 +276,12 @@ function goToColumn(columnId) {
     display: flex;
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--u-bg-white);
+    border: 1px solid var(--u-border-color);
+    border-radius: var(--radius-md);
+    box-sizing: border-box;
+    overflow: hidden;
 
     .item-cover {
       width: 80px;
@@ -249,19 +298,26 @@ function goToColumn(columnId) {
 
     .item-info {
       flex: 1;
+      min-width: 0;
     }
 
     .item-title {
       font-size: 15px;
       font-weight: 500;
-      color: var(--text-primary);
+      color: var(--u-main-color);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .item-summary,
     .item-count {
       font-size: 14px;
-      color: var(--text-muted);
+      color: var(--u-tips-color);
       margin-top: var(--spacing-sm);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 }
@@ -269,11 +325,15 @@ function goToColumn(columnId) {
 .empty-state {
   @include flex-center-column;
   padding: var(--spacing-2xl);
-  color: var(--text-muted);
+  color: var(--u-tips-color);
 
   .empty-icon {
     font-size: 48px;
     margin-bottom: var(--spacing-lg);
+  }
+
+  .empty-text {
+    font-size: 14px;
   }
 }
 </style>

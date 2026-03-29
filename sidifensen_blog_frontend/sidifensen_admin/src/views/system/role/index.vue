@@ -35,12 +35,13 @@
           </el-table-column>
           <el-table-column prop="createTime" label="创建时间" sortable width="120" />
           <el-table-column prop="updateTime" label="更新时间" sortable width="120" />
-          <el-table-column label="操作" width="260">
+          <el-table-column label="操作" width="340">
             <template #default="{ row }">
               <div class="table-actions">
                 <el-button type="primary" size="small" @click="handleEditRole(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
                 <el-button type="danger" size="small" @click="handleDeleteRole(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
                 <el-button size="small" type="warning" @click="handleAuthorizeUser(row)" :icon="User" class="user-button"> 分配用户 </el-button>
+                <el-button size="small" type="success" @click="handleAuthorizeMenu(row)" :icon="Key" class="menu-button"> 分配权限 </el-button>
               </div>
             </template>
           </el-table-column>
@@ -92,6 +93,7 @@
                 <el-button type="primary" size="small" @click="handleEditRole(role)" :icon="Edit" class="edit-button">编辑</el-button>
                 <el-button type="danger" size="small" @click="handleDeleteRole(role.id)" :icon="Delete" class="delete-button">删除</el-button>
                 <el-button size="small" type="warning" @click="handleAuthorizeUser(role)" :icon="User" class="user-button">分配用户</el-button>
+                <el-button size="small" type="success" @click="handleAuthorizeMenu(role)" :icon="Key" class="menu-button">分配权限</el-button>
               </div>
             </div>
           </el-card>
@@ -142,16 +144,59 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- 分配权限弹窗对话框 -->
+    <el-dialog v-model="authorizeMenuDialogVisible" :title="'分配 ' + currentMenuRole?.name + ' 的菜单权限'" :before-close="handleAuthorizeMenuDialogClose" width="600px">
+      <div class="authorize-menu-dialog-content">
+        <!-- 操作按钮区域 -->
+        <div class="menu-toolbar">
+          <el-button size="small" @click="handleExpandAll(false)">全部收起</el-button>
+          <el-button size="small" type="primary" @click="handleExpandAll(true)">全部展开</el-button>
+        </div>
+        <!-- 菜单树形控件 -->
+        <el-tree
+          ref="menuTreeRef"
+          :data="menuTreeData"
+          :props="menuTreeProps"
+          node-key="id"
+          :default-expand-all="false"
+          :expand-on-click-node="false"
+          :check-strictly="false"
+          show-checkbox
+          :default-checked-keys="selectedMenuIds"
+          :default-expanded-keys="defaultExpandedKeys"
+          @node-click="handleNodeClick"
+          class="menu-tree"
+        >
+          <template #default="{ node, data }">
+            <span class="tree-node">
+              <span class="node-icon">
+                <el-icon v-if="data.icon"><component :is="data.icon" /></el-icon>
+              </span>
+              <span class="node-label">{{ node.label }}</span>
+            </span>
+          </template>
+        </el-tree>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="handleAuthorizeMenuDialogClose">取消</el-button>
+          <el-button type="primary" @click="handleAuthorizeMenuSubmit">提交</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, computed } from "vue";
+import { ref, onMounted, onUnmounted, watch, computed, nextTick } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Search, Plus, Edit, Delete, User } from "@element-plus/icons-vue";
+import { Search, Plus, Edit, Delete, User, Key } from "@element-plus/icons-vue";
 import { getRoleList, getRolePage, addRole, updateRole, deleteRole, queryRolePage } from "@/api/role";
 import { addUser, getUsersByRole } from "@/api/user-role";
 import { getUserList } from "@/api/user";
+import { getAllMenuList } from "@/api/menu";
+import { getMenusByRole, assignMenus } from "@/api/role-menu";
 import Pagination from "@/components/Pagination.vue";
 
 // 搜索查询
@@ -434,6 +479,129 @@ const handleAuthorizeDialogClose = () => {
   selectedUser.value = [];
 };
 
+// 分配权限弹窗
+const authorizeMenuDialogVisible = ref(false);
+// 菜单树形控件引用
+const menuTreeRef = ref(null);
+// 当前角色
+const currentMenuRole = ref(null);
+// 菜单树形数据
+const menuTreeData = ref([]);
+// 菜单树形配置
+const menuTreeProps = {
+  children: "children",
+  label: "name",
+};
+// 选中的菜单ID列表
+const selectedMenuIds = ref([]);
+// 默认展开的菜单ID列表
+const defaultExpandedKeys = ref([]);
+
+// 处理分配权限
+const handleAuthorizeMenu = async (row) => {
+  currentMenuRole.value = row;
+  selectedMenuIds.value = [];
+  defaultExpandedKeys.value = [];
+
+  // 获取所有菜单
+  const res = await getAllMenuList();
+  menuTreeData.value = buildMenuTree(res.data);
+
+  // 默认展开所有节点
+  defaultExpandedKeys.value = res.data.map((menu) => menu.id);
+
+  // 获取当前角色已有的菜单权限
+  try {
+    const menuRes = await getMenusByRole(row.id);
+    selectedMenuIds.value = menuRes.data || [];
+  } catch (error) {
+    console.error("获取角色菜单权限失败:", error);
+  }
+
+  // 打开弹窗
+  authorizeMenuDialogVisible.value = true;
+};
+
+// 构建菜单树形结构
+const buildMenuTree = (menus) => {
+  const menuMap = new Map();
+  const result = [];
+
+  // 将菜单转换为 map 结构
+  menus.forEach((menu) => {
+    menuMap.set(menu.id, { ...menu, children: [] });
+  });
+
+  // 构建树形结构
+  menus.forEach((menu) => {
+    const menuNode = menuMap.get(menu.id);
+    if (menu.parentId === 0) {
+      result.push(menuNode);
+    } else {
+      const parentNode = menuMap.get(menu.parentId);
+      if (parentNode) {
+        parentNode.children.push(menuNode);
+      }
+    }
+  });
+
+  return result;
+};
+
+// 处理展开/收起全部
+const handleExpandAll = (expand) => {
+  const tree = menuTreeRef.value;
+  if (tree) {
+    const nodes = tree.store.nodesMap;
+    Object.values(nodes).forEach((node) => {
+      node.expanded = expand;
+    });
+  }
+};
+
+// 处理节点点击
+const handleNodeClick = (data) => {
+  // 点击节点时不进行选中操作，仅展开/收起
+};
+
+// 处理分配权限提交
+const handleAuthorizeMenuSubmit = async () => {
+  try {
+    const checkedKeys = menuTreeRef.value?.getCheckedKeys() || [];
+    const halfCheckedKeys = menuTreeRef.value?.getHalfCheckedKeys() || [];
+    const allSelectedKeys = [...checkedKeys, ...halfCheckedKeys];
+
+    await assignMenus({
+      roleId: currentMenuRole.value.id,
+      menuIds: allSelectedKeys,
+    });
+    ElMessage.success(`已为角色 ${currentMenuRole.value.name} 分配菜单权限`);
+  } catch (error) {
+    ElMessage.error(`为角色 ${currentMenuRole.value.name} 分配菜单权限失败`);
+    console.error("分配菜单权限失败:", error);
+  } finally {
+    authorizeMenuDialogVisible.value = false;
+  }
+};
+
+// 处理分配权限对话框关闭
+const handleAuthorizeMenuDialogClose = () => {
+  authorizeMenuDialogVisible.value = false;
+  selectedMenuIds.value = [];
+  menuTreeData.value = [];
+};
+
+// 监听弹窗打开状态，等树渲染完成后设置选中状态
+watch([authorizeMenuDialogVisible, menuTreeData], async ([isOpen, data]) => {
+  if (isOpen && data.length > 0) {
+    await nextTick();
+    await nextTick(); // 确保树组件完全渲染
+    if (menuTreeRef.value && selectedMenuIds.value.length > 0) {
+      menuTreeRef.value.setCheckedKeys(selectedMenuIds.value);
+    }
+  }
+});
+
 // 移动端检测
 const isMobileView = ref(false);
 
@@ -615,6 +783,22 @@ const handleResize = () => {
             box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
           }
         }
+
+        .menu-button {
+          margin-left: 0;
+          background-color: #d1fae5;
+          color: #059669;
+          border-color: #d1fae5;
+          border-radius: 6px;
+          transition: all 0.3s ease;
+
+          &:hover {
+            background-color: #a7f3d0;
+            border-color: #a7f3d0;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+          }
+        }
       }
     }
 
@@ -755,6 +939,17 @@ const handleResize = () => {
                   border-color: #fde68a;
                 }
               }
+
+              .menu-button {
+                background-color: #d1fae5;
+                color: #059669;
+                border-color: #d1fae5;
+
+                &:hover {
+                  background-color: #a7f3d0;
+                  border-color: #a7f3d0;
+                }
+              }
             }
           }
         }
@@ -815,6 +1010,51 @@ const handleResize = () => {
         :deep(.el-checkbox) {
           margin-right: 16px;
           margin-bottom: 8px;
+        }
+      }
+    }
+  }
+
+  // 分配权限对话框样式
+  .authorize-menu-dialog-content {
+    padding: 10px;
+
+    .menu-toolbar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--el-border-color-lighter);
+    }
+
+    .menu-tree {
+      max-height: 400px;
+      overflow-y: auto;
+
+      :deep(.el-tree-node__content) {
+        height: 36px;
+      }
+
+      .tree-node {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .node-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+          border-radius: 4px;
+          background: linear-gradient(135deg, #42b983 0%, #3aa17e 100%);
+          color: #fff;
+          font-size: 14px;
+        }
+
+        .node-label {
+          font-size: 14px;
+          color: var(--el-text-color-regular);
         }
       }
     }

@@ -43,6 +43,23 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component);
 }
 
+// G2 图表中文 locale 配置
+import { register, Chart } from "@antv/g2";
+register("locale.zh-CN", {
+  legend: {
+    open: "收起",
+    close: "展开",
+  },
+  tooltip: {
+    showTitle: true,
+    confirm: "确认",
+    confirmButton: "关闭",
+  },
+  axis: {
+    unit: "单位",
+  },
+});
+
 // 引入 darkStore
 import { useDarkStore } from "./stores/darkStore";
 const darkStore = useDarkStore();

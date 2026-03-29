@@ -74,11 +74,11 @@ onMounted(() => {
 <style lang="scss" scoped>
 .column-detail-page {
   min-height: 100vh;
-  background: var(--bg-page);
+  background: var(--u-bg-color);
 }
 
 .column-header {
-  background: var(--bg-card);
+  background: var(--u-bg-white);
   padding: var(--spacing-lg);
 
   .column-cover {
@@ -90,13 +90,13 @@ onMounted(() => {
   .column-name {
     font-size: 20px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--u-main-color);
     margin-top: var(--spacing-md);
   }
 
   .column-desc {
     font-size: 14px;
-    color: var(--text-muted);
+    color: var(--u-tips-color);
     margin-top: var(--spacing-sm);
   }
 }
@@ -110,12 +110,12 @@ onMounted(() => {
     .article-title {
       font-size: 16px;
       font-weight: 500;
-      color: var(--text-primary);
+      color: var(--u-main-color);
     }
 
     .article-summary {
       font-size: 14px;
-      color: var(--text-muted);
+      color: var(--u-tips-color);
       margin-top: var(--spacing-sm);
       @include text-ellipsis(2);
     }
@@ -125,6 +125,6 @@ onMounted(() => {
 .empty-state {
   @include flex-center-column;
   padding: var(--spacing-2xl);
-  color: var(--text-muted);
+  color: var(--u-tips-color);
 }
 </style>

@@ -1,14 +1,10 @@
 package com.sidifensen.controller;
 
-import cn.hutool.http.HttpUtil;
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
 import com.sidifensen.domain.oauth.Gitee;
 import com.sidifensen.domain.oauth.Github;
 import com.sidifensen.domain.oauth.QQ;
-import com.sidifensen.domain.oauth.Wechat;
 import com.sidifensen.service.OauthService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -30,10 +26,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sidifensen.domain.dto.WechatLoginDto;
+import com.sidifensen.domain.result.Result;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,9 +52,6 @@ public class OauthController {
     private QQ qq;
 
     @Resource
-    private Wechat wechat;
-
-    @Resource
     private OauthService oauthService;
 
     @Value(("${frontend.userHost}"))
@@ -74,12 +66,9 @@ public class OauthController {
 
     @GetMapping("/gitee/callback")
     public void giteeCallback(AuthCallback callback, HttpServletResponse request) throws IOException {
-        log.info("【OAuth调试】Gitee callback 收到请求 - callback={}", callback);
         AuthRequest authRequest = getGiteeAuthRequest();
         AuthResponse authResponse = authRequest.login(callback);
-        log.info("【OAuth调试】Gitee authResponse - code={}, msg={}, data={}", authResponse.getCode(), authResponse.getMsg(), authResponse.getData());
         String ticket = oauthService.login(authResponse, RegisterOrLoginTypeEnum.GITEE.getCode());
-        log.info("【OAuth调试】Gitee login 成功 - ticket={}", ticket);
         request.sendRedirect(buildFrontendCallbackUrl(ticket));
     }
 
@@ -119,36 +108,9 @@ public class OauthController {
      * @return 包含 ticket 的响应，用于前端兑换 JWT
      */
     @PostMapping("/wechat/login")
-    public Map<String, Object> wechatLogin(@Valid @RequestBody WechatLoginDto loginDto) {
-        // 调用微信接口获取 openid
-        String jscode2sessionUrl = wechat.getJscode2sessionUrl() + "?appid=" + wechat.getAppId() + "&secret=" + wechat.getAppSecret() + "&js_code=" + loginDto.getCode() + "&grant_type=authorization_code";
-        String result = HttpUtil.get(jscode2sessionUrl);
-        JSONObject jsonResult = JSON.parseObject(result);
-
-        // 检查微信返回的错误
-        if (jsonResult.containsKey("errcode") && jsonResult.getInteger("errcode") != 0) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("code", 500);
-            error.put("msg", "微信登录失败：" + jsonResult.getString("errmsg"));
-            return error;
-        }
-
-        String openid = jsonResult.getString("openid");
-        if (openid == null || openid.isEmpty()) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("code", 500);
-            error.put("msg", "获取 openid 失败");
-            return error;
-        }
-
-        // 使用 openid 登录或注册
-        String ticket = oauthService.wechatLogin(openid, RegisterOrLoginTypeEnum.WECHAT_MINIPROGRAM.getCode());
-
-        // 返回 ticket 给前端
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("data", ticket);
-        return response;
+    public Result<String> wechatLogin(@Valid @RequestBody WechatLoginDto loginDto) {
+        String ticket = oauthService.wechatMiniprogramLogin(loginDto);
+        return Result.success(ticket);
     }
 
 

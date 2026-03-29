@@ -48,7 +48,7 @@ export function getUserArticles(userId, params) {
  * @param {Object} params 查询参数
  */
 export function getUserAlbums(userId, params) {
-  return get('/album/list', params)
+  return get(`/album/list/${userId}`, params)
 }
 
 /**
@@ -65,7 +65,11 @@ export function getUserFavorites(userId, params) {
  * @param {Object} params 查询参数
  */
 export function getMyArticles(params) {
-  return post('/article/user/list', { editStatus: 0, ...params })
+  const { pageNum, pageSize, ...body } = params
+  let queryStr = ''
+  if (pageNum) queryStr += (queryStr ? '&' : '?') + 'pageNum=' + pageNum
+  if (pageSize) queryStr += (queryStr ? '&' : '?') + 'pageSize=' + pageSize
+  return post(`/article/user/list${queryStr}`, { editStatus: 0, ...body })
 }
 
 /**

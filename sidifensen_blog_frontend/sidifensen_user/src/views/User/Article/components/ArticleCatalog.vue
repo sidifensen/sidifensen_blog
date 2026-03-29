@@ -1,6 +1,7 @@
 <template>
-  <div class="article-catalog" :class="{ 'is-fixed': isFixed }">
-    <div class="catalog-header">
+  <Teleport to="body">
+    <div v-if="isVisible" class="article-catalog is-fixed" :style="{ left: catalogLeft + 'px' }">
+      <div class="catalog-header">
       <el-icon>
         <Document />
       </el-icon>
@@ -16,7 +17,8 @@
 
     <!-- 无目录提示 -->
     <el-empty v-else description="暂无目录" :image-size="100" />
-  </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -34,7 +36,8 @@ const props = defineProps({
 // 目录数据
 const catalog = ref([]);
 const currentHeading = ref("");
-const isFixed = ref(false);
+const catalogLeft = ref(0);
+const isVisible = ref(false);
 
 // 解析文章内容中的标题（HTML格式）
 const parseHeadings = () => {
@@ -68,31 +71,16 @@ const scrollToHeading = (headingText) => {
   }
 };
 
-// 监听滚动，高亮当前标题和判断是否固定
+// 监听滚动，高亮当前标题
 const handleScroll = () => {
   const headings = document.querySelectorAll(".article-body h1, .article-body h2, .article-body h3, .article-body h4, .article-body h5, .article-body h6");
   const scrollPosition = window.scrollY;
 
-  // 判断是否应该固定目录（当滚动超过文章开始位置时）
+  // 计算目录位置：紧贴在文章内容右侧
   const articleContent = document.querySelector(".article-content");
   if (articleContent) {
-    const articleTop = articleContent.offsetTop;
-    const shouldBeFixed = scrollPosition > articleTop - 100;
-
-    // 如果状态发生变化，记录原始位置
-    if (shouldBeFixed && !isFixed.value) {
-      const catalogElement = document.querySelector(".article-catalog");
-      if (catalogElement) {
-        // 获取目录元素的原始位置
-        const rect = catalogElement.getBoundingClientRect();
-
-        // 设置 CSS 变量来保持原始位置
-        catalogElement.style.setProperty("--catalog-left", `${rect.left}px`);
-        catalogElement.style.setProperty("--catalog-width", `${rect.width}px`);
-      }
-    }
-
-    isFixed.value = shouldBeFixed;
+    const contentRect = articleContent.getBoundingClientRect();
+    catalogLeft.value = contentRect.right + 20; // 文章内容右边界 + 20px 间距
   }
 
   for (const heading of headings) {
@@ -107,8 +95,21 @@ const handleScroll = () => {
 // 生命周期钩子
 onMounted(() => {
   parseHeadings();
+  // 初始化目录位置
+  updateCatalogPosition();
+  // 位置计算完成后再显示目录，避免初始位置错误
+  isVisible.value = true;
   window.addEventListener("scroll", handleScroll);
 });
+
+// 更新目录位置
+const updateCatalogPosition = () => {
+  const articleContent = document.querySelector(".article-content");
+  if (articleContent) {
+    const contentRect = articleContent.getBoundingClientRect();
+    catalogLeft.value = contentRect.right + 20;
+  }
+};
 
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
@@ -128,13 +129,16 @@ onUnmounted(() => {
   &.is-fixed {
     position: fixed;
     top: 90px;
-    left: var(--catalog-left, auto);
-    width: var(--catalog-width, 280px);
-    max-height: calc(100vh - 120px);
+    left: auto;
+    width: 240px;
+    max-height: calc(100vh - 110px);
+    overflow: hidden;
     z-index: 100;
     backdrop-filter: blur(10px);
-    background-color: rgba(var(--el-bg-color-rgb), 0.9);
+    background-color: rgba(var(--el-bg-color-rgb), 0.95);
     border: 1px solid var(--el-border-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   }
 
   // 目录头部
@@ -157,7 +161,7 @@ onUnmounted(() => {
 
     // 固定状态下的目录列表高度调整
     .is-fixed & {
-      max-height: calc(100vh - 160px);
+      max-height: calc(100vh - 200px);
     }
 
     // 目录项

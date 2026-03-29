@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { User, Lock } from "@element-plus/icons-vue";
 import { login, info } from "@/api/user";
 import { SetJwt } from "@/utils/Auth";
@@ -84,6 +84,19 @@ const rules = {
 
 // 登录
 const loginFormRef = ref(null);
+
+// 测试模式自动填充（仅开发环境生效）
+const autoFillTestAccount = () => {
+  if (import.meta.env.VITE_TEST_MODE === 'true') {
+    loginForm.value.username = import.meta.env.VITE_TEST_USERNAME || 'test';
+    loginForm.value.password = import.meta.env.VITE_TEST_PASSWORD || '123456';
+  }
+};
+
+onMounted(() => {
+  autoFillTestAccount();
+});
+
 const handleLogin = async () => {
   if (loading.value) {
     return;

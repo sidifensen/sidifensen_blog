@@ -1,20 +1,21 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/store/user'
-import { getVipInfo, getVipStatus, createVipOrder, getAlipayUrl } from '@/api/vip'
+import { getVipPlans, getVipStatus, createVipOrder } from '@/api/vip'
 
 const userStore = useUserStore()
 
-const vipInfo = ref({
-  name: 'VIP会员',
-  price: 99,
-  benefits: [
-    { icon: 'file-text', text: '专属内容阅读' },
-    { icon: 'close-circle', text: '无广告打扰' },
-    { icon: 'flash', text: '优先体验新功能' },
-    { icon: 'chat', text: '专属客服支持' }
-  ]
-})
+// 权益信息（静态）
+const benefits = [
+  { icon: 'file-text', text: '专属内容阅读' },
+  { icon: 'close-circle', text: '无广告打扰' },
+  { icon: 'flash', text: '优先体验新功能' },
+  { icon: 'chat', text: '专属客服支持' }
+]
+
+// 套餐列表
+const plans = ref([])
+const selectedPlan = ref(null)
 
 const vipStatus = ref({
   isVip: false,
@@ -25,14 +26,18 @@ const loading = ref(false)
 const orderLoading = ref(false)
 
 /**
- * 获取 VIP 信息
+ * 获取 VIP 套餐列表
  */
-async function fetchVipInfo() {
+async function fetchVipPlans() {
   try {
-    const res = await getVipInfo()
-    vipInfo.value = res.data || res
+    const res = await getVipPlans()
+    plans.value = res.data || res || []
+    // 默认选中第一个套餐
+    if (plans.value.length > 0 && !selectedPlan.value) {
+      selectedPlan.value = plans.value[0]
+    }
   } catch (err) {
-    console.error('获取VIP信息失败', err)
+    console.error('获取VIP套餐失败', err)
   }
 }
 
@@ -42,10 +47,26 @@ async function fetchVipInfo() {
 async function fetchVipStatus() {
   try {
     const res = await getVipStatus()
-    vipStatus.value = res.data || res
+    const data = res.data || res
+    vipStatus.value = {
+      isVip: data?.isVip || false,
+      vipEndTime: data?.vipExpireTime ? formatDate(data.vipExpireTime) : ''
+    }
   } catch (err) {
     console.error('获取VIP状态失败', err)
   }
+}
+
+/**
+ * 格式化日期
+ */
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 /**
@@ -62,26 +83,29 @@ async function handleOpenVip() {
 
     // 创建订单
     const orderRes = await createVipOrder({
-      type: 1,
-      price: vipInfo.value.price
+      planCode: selectedPlan.value.code,
+      clientType: 'H5'
     })
 
-    const orderId = orderRes.data?.orderId
+    const orderData = orderRes.data
 
-    if (orderId) {
-      // 获取支付宝支付链接
-      const payRes = await getAlipayUrl(orderId)
+    // 打开支付页面
+    if (orderData?.payUrl) {
+      // #ifdef MP-WEIXIN
+      uni.showToast({ title: '小程序不支持支付宝', icon: 'none' })
+      // #endif
 
-      // 打开支付页面
-      if (payRes.data?.payUrl) {
-        // #ifdef MP-WEIXIN
-        uni.showToast({ title: '小程序不支持支付宝', icon: 'none' })
-        // #endif
-
-        // #ifdef H5
-        window.location.href = payRes.data.payUrl
-        // #endif
-      }
+      // #ifdef H5
+      window.location.href = orderData.payUrl
+      // #endif
+    } else if (orderData?.formHtml) {
+      // 如果返回的是表单HTML，写入页面并自动提交
+      // #ifdef H5
+      const div = document.createElement('div')
+      div.innerHTML = orderData.formHtml
+      document.body.appendChild(div)
+      div.querySelector('form')?.submit()
+      // #endif
     }
   } catch (err) {
     uni.showToast({ title: err.message || '创建订单失败', icon: 'none' })
@@ -91,7 +115,7 @@ async function handleOpenVip() {
 }
 
 onMounted(() => {
-  fetchVipInfo()
+  fetchVipPlans()
   fetchVipStatus()
 })
 </script>
@@ -113,8 +137,8 @@ onMounted(() => {
     <view class="benefits-card card">
       <view class="benefits-title">会员权益</view>
       <view class="benefits-list">
-        <view v-for="(benefit, index) in vipInfo.benefits" :key="index" class="benefit-item">
-          <uv-icon :name="benefit.icon" color="var(--color-primary)" size="20px" />
+        <view v-for="(benefit, index) in benefits" :key="index" class="benefit-item">
+          <uv-icon :name="benefit.icon" color="var(--u-type-primary)" size="20px" />
           <text class="benefit-text">{{ benefit.text }}</text>
         </view>
       </view>
@@ -124,9 +148,16 @@ onMounted(() => {
     <view class="price-card card">
       <view class="price-label">选择套餐</view>
       <view class="price-options">
-        <view class="price-option selected">
-          <view class="price-value">¥{{ vipInfo.price }}</view>
-          <view class="price-period">年费会员</view>
+        <view
+          v-for="plan in plans"
+          :key="plan.code"
+          class="price-option"
+          :class="{ selected: selectedPlan?.code === plan.code }"
+          @click="selectedPlan = plan"
+        >
+          <view class="price-value">¥{{ plan.priceYuan }}</view>
+          <view class="price-period">{{ plan.name }}</view>
+          <view class="price-desc">{{ plan.description }}</view>
         </view>
       </view>
     </view>
@@ -161,7 +192,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .vip-page {
   min-height: 100vh;
-  background: var(--bg-page);
+  background: var(--u-bg-color);
   padding: var(--spacing-lg);
 }
 
@@ -186,7 +217,7 @@ onMounted(() => {
 
   .vip-expire {
     font-size: 14px;
-    color: var(--text-muted);
+    color: var(--u-tips-color);
     margin-top: var(--spacing-md);
   }
 }
@@ -195,7 +226,7 @@ onMounted(() => {
   .benefits-title {
     font-size: 16px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--u-main-color);
     margin-bottom: var(--spacing-lg);
   }
 
@@ -211,7 +242,7 @@ onMounted(() => {
 
       .benefit-text {
         font-size: 14px;
-        color: var(--text-regular);
+        color: var(--u-content-color);
       }
     }
   }
@@ -223,32 +254,44 @@ onMounted(() => {
   .price-label {
     font-size: 16px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--u-main-color);
     margin-bottom: var(--spacing-lg);
   }
 
   .price-options {
     .price-option {
       padding: var(--spacing-lg);
-      border: 2px solid var(--border);
+      border: 2px solid var(--u-border-color);
       border-radius: var(--radius-md);
       text-align: center;
+      margin-bottom: var(--spacing-md);
+      cursor: pointer;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
 
       &.selected {
-        border-color: var(--color-primary);
+        border-color: var(--u-type-primary);
         background: rgba(8, 145, 178, 0.05);
       }
 
       .price-value {
         font-size: 24px;
         font-weight: 700;
-        color: var(--color-primary);
+        color: var(--u-type-primary);
       }
 
       .price-period {
         font-size: 14px;
-        color: var(--text-muted);
+        color: var(--u-tips-color);
         margin-top: var(--spacing-sm);
+      }
+
+      .price-desc {
+        font-size: 12px;
+        color: var(--u-tips-color);
+        margin-top: var(--spacing-xs);
       }
     }
   }
@@ -260,7 +303,7 @@ onMounted(() => {
   .btn-primary {
     width: 100%;
     height: 48px;
-    background: var(--color-primary);
+    background: var(--u-type-primary);
     color: #ffffff;
     border: none;
     border-radius: var(--radius-md);
@@ -271,8 +314,8 @@ onMounted(() => {
   .btn-disabled {
     width: 100%;
     height: 48px;
-    background: var(--border);
-    color: var(--text-muted);
+    background: var(--u-border-color);
+    color: var(--u-tips-color);
     border: none;
     border-radius: var(--radius-md);
     font-size: 16px;
@@ -282,19 +325,19 @@ onMounted(() => {
 .pay-notice {
   margin-top: var(--spacing-xl);
   padding: var(--spacing-lg);
-  background: var(--bg-card);
+  background: var(--u-bg-white);
   border-radius: var(--radius-md);
 
   .notice-title {
     font-size: 14px;
     font-weight: 500;
-    color: var(--text-primary);
+    color: var(--u-main-color);
     margin-bottom: var(--spacing-md);
   }
 
   .notice-text {
     font-size: 13px;
-    color: var(--text-muted);
+    color: var(--u-tips-color);
     line-height: 1.8;
   }
 }

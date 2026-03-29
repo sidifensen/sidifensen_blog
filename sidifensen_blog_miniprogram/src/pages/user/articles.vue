@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/store/user'
 import { getMyArticles } from '@/api/user'
+import { formatCount } from '@/utils/format'
 
 const userStore = useUserStore()
 const articles = ref([])
@@ -14,17 +15,23 @@ const loadMore = ref(false)
 
 async function fetchArticles() {
   try {
+    loading.value = true
     const res = await getMyArticles({ pageNum: pageNum.value, pageSize: pageSize.value })
+    // res 格式: { code: 200, data: { data: [...], total: xxx }, message: "success" }
+    const pageVo = res.data || res
+    const listData = pageVo.data || []
     if (pageNum.value === 1) {
-      articles.value = res.data || res
+      articles.value = listData
     } else {
-      articles.value = [...articles.value, ...(res.data || res)]
+      articles.value = [...articles.value, ...listData]
     }
-    if (res.data && res.data.length < pageSize.value) {
+    if (listData.length < pageSize.value) {
       noMore.value = true
     }
   } catch (err) {
     console.error('获取文章失败', err)
+  } finally {
+    loading.value = false
   }
 }
 
@@ -76,10 +83,10 @@ onMounted(() => {
           @click="goToArticle(article.id)"
         >
           <view class="article-title">{{ article.title }}</view>
-          <view class="article-summary">{{ article.summary }}</view>
+          <view class="article-summary">{{ article.description || article.summary }}</view>
           <view class="article-meta">
-            <text>{{ article.likeCount }} 点赞</text>
-            <text>{{ article.commentCount }} 评论</text>
+            <text>{{ formatCount(article.viewCount || 0) }} 阅读</text>
+            <text>{{ formatCount(article.likeCount || 0) }} 点赞</text>
             <text>{{ article.createTime }}</text>
           </view>
         </view>
@@ -95,7 +102,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .my-articles-page {
   min-height: 100vh;
-  background: var(--bg-page);
+  background: var(--u-bg-color);
   padding: var(--spacing-lg);
 }
 
@@ -106,12 +113,12 @@ onMounted(() => {
     .article-title {
       font-size: 16px;
       font-weight: 500;
-      color: var(--text-primary);
+      color: var(--u-main-color);
     }
 
     .article-summary {
       font-size: 14px;
-      color: var(--text-muted);
+      color: var(--u-tips-color);
       margin-top: var(--spacing-sm);
       @include text-ellipsis(2);
     }
@@ -121,7 +128,7 @@ onMounted(() => {
       gap: var(--spacing-lg);
       margin-top: var(--spacing-md);
       font-size: 12px;
-      color: var(--text-muted);
+      color: var(--u-tips-color);
     }
   }
 }
@@ -129,6 +136,6 @@ onMounted(() => {
 .empty-state {
   @include flex-center-column;
   padding: var(--spacing-2xl);
-  color: var(--text-muted);
+  color: var(--u-tips-color);
 }
 </style>

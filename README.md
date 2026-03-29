@@ -110,7 +110,7 @@
 
 - **核心框架**: UniApp + Vue 3
 - **状态管理**: Pinia
-- **UI 组件**: uView UI
+- **UI 组件**: uView Pro
 - **样式预处理**: SCSS
 - **构建工具**: Vite
 

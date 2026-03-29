@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/store/user'
 import { getUserAlbums } from '@/api/user'
+import { formatCount } from '@/utils/format'
 
 const userStore = useUserStore()
 const albums = ref([])
@@ -77,7 +78,7 @@ onMounted(() => {
         >
           <image class="album-cover" :src="album.coverUrl" mode="aspectFill" />
           <view class="album-name">{{ album.name }}</view>
-          <view class="album-count">{{ album.photoCount }} 张</view>
+          <view class="album-count">{{ formatCount(album.photoCount) }} 张</view>
         </view>
       </view>
 
@@ -91,7 +92,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .my-albums-page {
   min-height: 100vh;
-  background: var(--bg-page);
+  background: var(--u-bg-color);
   padding: var(--spacing-lg);
 }
 
@@ -101,10 +102,10 @@ onMounted(() => {
   gap: var(--spacing-md);
 
   .album-item {
-    background: var(--bg-card);
+    background: var(--u-bg-white);
     border-radius: var(--radius-md);
     overflow: hidden;
-    border: 1px solid var(--border);
+    border: 1px solid var(--u-border-color);
 
     .album-cover {
       width: 100%;
@@ -114,14 +115,14 @@ onMounted(() => {
     .album-name {
       font-size: 14px;
       font-weight: 500;
-      color: var(--text-primary);
+      color: var(--u-main-color);
       padding: var(--spacing-sm) var(--spacing-md);
       @include text-ellipsis;
     }
 
     .album-count {
       font-size: 12px;
-      color: var(--text-muted);
+      color: var(--u-tips-color);
       padding: 0 var(--spacing-md) var(--spacing-sm);
     }
   }
@@ -130,6 +131,6 @@ onMounted(() => {
 .empty-state {
   @include flex-center-column;
   padding: var(--spacing-2xl);
-  color: var(--text-muted);
+  color: var(--u-tips-color);
 }
 </style>

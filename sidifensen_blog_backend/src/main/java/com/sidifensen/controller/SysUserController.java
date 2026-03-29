@@ -48,6 +48,8 @@ public class SysUserController {
     @GetMapping("/checkCode")
     public Result checkCode() {
         ArithmeticCaptcha captcha = new ArithmeticCaptcha(100, 32);
+        // 只生成加法运算，避免出现负数结果
+        captcha.setCharType(2);
         // checkCode是验证码的值
         String checkCode = captcha.text();
         // checkCodeKey是验证码的唯一标识，验证码存入redis

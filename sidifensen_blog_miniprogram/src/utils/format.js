@@ -64,6 +64,23 @@ export function timeAgo(date) {
 }
 
 /**
+ * 格式化数字（超过千显示K，超过百万显示M）
+ * @param {number} num 数字
+ * @param {number} threshold 阈值，默认1000
+ */
+export function formatCount(num, threshold = 1000) {
+  if (!num) return '0'
+
+  if (num >= threshold * 1000 * 1000) {
+    return (num / (threshold * 1000 * 1000)).toFixed(1).replace(/\.0$/, '') + 'M'
+  } else if (num >= threshold * 1000) {
+    return (num / (threshold * 1000)).toFixed(1).replace(/\.0$/, '') + 'K'
+  }
+
+  return String(num)
+}
+
+/**
  * 格式化数字（超过万显示万）
  * @param {number} num 数字
  */
@@ -117,6 +134,7 @@ export function maskEmail(email) {
 export default {
   formatDate,
   timeAgo,
+  formatCount,
   formatNumber,
   formatFileSize,
   maskPhone,

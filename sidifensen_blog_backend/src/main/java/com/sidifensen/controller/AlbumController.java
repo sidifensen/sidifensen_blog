@@ -103,6 +103,16 @@ public class AlbumController {
     }
 
     /**
+     * 搜索相册（公开）
+     */
+    @RateLimit
+    @GetMapping("/search")
+    public Result<List<AlbumVo>> searchAlbum(@RequestParam @NotNull(message = "搜索关键词不能为空") String keyword) {
+        List<AlbumVo> albumVos = albumService.searchAlbum(keyword);
+        return Result.success(albumVos);
+    }
+
+    /**
      * 修改相册展示状态
      *
      * @param albumDto

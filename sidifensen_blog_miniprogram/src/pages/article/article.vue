@@ -1,9 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { onLoad } from '@dcloudio/uni-app'
 import { useUserStore } from '@/store/user'
 import { getArticleDetail, likeArticle, unlikeArticle, favoriteArticle, unfavoriteArticle } from '@/api/article'
-import { getArticleComments, addComment } from '@/api/comment'
-import { formatDate, timeAgo } from '@/utils/format'
+import { getArticleComments, addComment, replyComment, deleteComment } from '@/api/comment'
+import { likeComment, unlikeComment } from '@/api/like'
+import { formatDate, timeAgo, formatCount } from '@/utils/format'
 
 // 获取页面参数
 const articleId = ref('')
@@ -16,12 +18,13 @@ const article = ref({
   content: '',
   summary: '',
   coverImage: '',
-  author: {},
+  avatar: '',
+  nickname: '',
   likeCount: 0,
   commentCount: 0,
-  favoriteCount: 0,
+  collectCount: 0,
   isLiked: false,
-  isFavorited: false,
+  isCollected: false,
   createTime: ''
 })
 
@@ -29,6 +32,11 @@ const article = ref({
 const comments = ref([])
 const commentText = ref('')
 const commentLoading = ref(false)
+
+// 回复相关
+const replyToComment = ref(null)
+const replyText = ref('')
+const replyLoading = ref(false)
 
 // 加载状态
 const loading = ref(false)
@@ -39,9 +47,22 @@ const loading = ref(false)
 async function fetchArticleDetail() {
   try {
     loading.value = true
+    console.log('开始获取文章详情, articleId:', articleId.value)
     const res = await getArticleDetail(articleId.value)
-    article.value = res.data || res
+    console.log('文章API响应:', res)
+    console.log('res.data:', res?.data)
+    if (res?.data) {
+      article.value = res.data
+      console.log('设置后的article:', article.value)
+    } else if (res && typeof res === 'object' && !Array.isArray(res)) {
+      // 兜底：如果res本身就是要的对象
+      article.value = res
+    } else {
+      console.error('文章数据格式异常:', res)
+      uni.showToast({ title: '数据格式异常', icon: 'none' })
+    }
   } catch (err) {
+    console.error('获取文章详情失败:', err)
     uni.showToast({ title: '加载失败', icon: 'none' })
   } finally {
     loading.value = false
@@ -53,8 +74,8 @@ async function fetchArticleDetail() {
  */
 async function fetchComments() {
   try {
-    const res = await getArticleComments(articleId.value, { pageNum: 1, pageSize: 20 })
-    comments.value = res.data || res
+    const res = await getArticleComments(articleId.value, { pageNum: 1, pageSize: 50 })
+    comments.value = res.data?.data || []
   } catch (err) {
     console.error('获取评论失败', err)
   }
@@ -93,14 +114,14 @@ async function handleFavorite() {
   }
 
   try {
-    if (article.value.isFavorited) {
+    if (article.value.isCollected) {
       await unfavoriteArticle(articleId.value)
-      article.value.favoriteCount--
+      article.value.collectCount--
     } else {
       await favoriteArticle(articleId.value)
-      article.value.favoriteCount++
+      article.value.collectCount++
     }
-    article.value.isFavorited = !article.value.isFavorited
+    article.value.isCollected = !article.value.isCollected
   } catch (err) {
     uni.showToast({ title: '操作失败', icon: 'none' })
   }
@@ -140,6 +161,101 @@ async function handlePublishComment() {
 }
 
 /**
+ * 显示回复输入框
+ */
+function showReplyInput(comment) {
+  replyToComment.value = comment
+  replyText.value = ''
+}
+
+/**
+ * 取消回复
+ */
+function cancelReply() {
+  replyToComment.value = null
+  replyText.value = ''
+}
+
+/**
+ * 提交回复
+ */
+async function handleSubmitReply() {
+  if (!userStore.isLoggedIn) {
+    uni.navigateTo({ url: '/pages/login/login' })
+    return
+  }
+
+  if (!replyText.value.trim()) {
+    uni.showToast({ title: '请输入回复', icon: 'none' })
+    return
+  }
+
+  try {
+    replyLoading.value = true
+    await replyComment({
+      articleId: articleId.value,
+      parentCommentId: replyToComment.value.id,
+      content: replyText.value
+    })
+
+    replyText.value = ''
+    replyToComment.value = null
+    uni.showToast({ title: '回复成功', icon: 'success' })
+
+    // 刷新评论
+    fetchComments()
+  } catch (err) {
+    uni.showToast({ title: '回复失败', icon: 'none' })
+  } finally {
+    replyLoading.value = false
+  }
+}
+
+/**
+ * 删除评论
+ */
+async function handleDeleteComment(comment) {
+  uni.showModal({
+    title: '提示',
+    content: '确定要删除这条评论吗？',
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await deleteComment(comment.id)
+          uni.showToast({ title: '删除成功', icon: 'success' })
+          fetchComments()
+        } catch (err) {
+          uni.showToast({ title: '删除失败', icon: 'none' })
+        }
+      }
+    }
+  })
+}
+
+/**
+ * 点赞评论
+ */
+async function handleLikeComment(comment) {
+  if (!userStore.isLoggedIn) {
+    uni.navigateTo({ url: '/pages/login/login' })
+    return
+  }
+
+  try {
+    if (comment.isLiked) {
+      await unlikeComment(comment.id)
+      comment.likeCount--
+    } else {
+      await likeComment(comment.id)
+      comment.likeCount++
+    }
+    comment.isLiked = !comment.isLiked
+  } catch (err) {
+    uni.showToast({ title: '操作失败', icon: 'none' })
+  }
+}
+
+/**
  * 分享文章
  */
 function handleShare() {
@@ -149,14 +265,25 @@ function handleShare() {
   })
 }
 
-onMounted(() => {
-  const pages = getCurrentPages()
-  const currentPage = pages[pages.length - 1]
-  articleId.value = currentPage.options?.id || ''
+/**
+ * 判断评论是否属于当前用户
+ */
+function isOwnComment(comment) {
+  return userStore.userInfo?.id === comment.userId
+}
+
+onLoad((options) => {
+  console.log('article page onLoad, options:', options)
+  // 确保 articleId 是整数类型
+  articleId.value = parseInt(options?.id, 10) || 0
+  console.log('parsed articleId:', articleId.value)
 
   if (articleId.value) {
+    console.log('开始获取文章详情...')
     fetchArticleDetail()
     fetchComments()
+  } else {
+    console.error('articleId 无效:', options?.id)
   }
 })
 </script>
@@ -178,9 +305,9 @@ onMounted(() => {
         <view class="article-title">{{ article.title }}</view>
         <view class="article-meta">
           <view class="author-info">
-            <uv-avatar :src="article.author?.avatar" size="36px" />
+            <uv-avatar :src="article.avatar" size="72" />
             <view class="author-detail">
-              <view class="author-name">{{ article.author?.nickname || '匿名' }}</view>
+              <view class="author-name">{{ article.nickname || '匿名' }}</view>
               <view class="publish-time">{{ timeAgo(article.createTime) }}</view>
             </view>
           </view>
@@ -195,15 +322,15 @@ onMounted(() => {
       <!-- 操作栏 -->
       <view class="action-bar">
         <view class="action-item" :class="{ active: article.isLiked }" @click="handleLike">
-          <text class="action-icon">&#xe8f8;</text>
-          <text class="action-text">{{ article.likeCount || 0 }}</text>
+          <uv-icon name="fabulous" :size="18" :color="article.isLiked ? 'var(--u-type-primary)' : 'var(--u-tips-color)'" />
+          <text class="action-text">{{ formatCount(article.likeCount) }}</text>
         </view>
-        <view class="action-item" :class="{ active: article.isFavorited }" @click="handleFavorite">
-          <text class="action-icon">&#xe8fa;</text>
-          <text class="action-text">{{ article.favoriteCount || 0 }}</text>
+        <view class="action-item" :class="{ active: article.isCollected }" @click="handleFavorite">
+          <uv-icon name="favorite" :size="18" :color="article.isCollected ? 'var(--u-type-primary)' : 'var(--u-tips-color)'" />
+          <text class="action-text">{{ formatCount(article.collectCount) }}</text>
         </view>
         <view class="action-item" @click="handleShare">
-          <text class="action-icon">&#xe8fb;</text>
+          <uv-icon name="upload" :size="18" color="var(--u-tips-color)" />
           <text class="action-text">分享</text>
         </view>
       </view>
@@ -218,11 +345,41 @@ onMounted(() => {
         <!-- 评论列表 -->
         <view class="comment-list">
           <view v-for="comment in comments" :key="comment.id" class="comment-item">
-            <uv-avatar :src="comment.userAvatar" size="32px" />
+            <uv-avatar :src="comment.avatar" size="64" />
             <view class="comment-content">
-              <view class="comment-user">{{ comment.userName }}</view>
+              <view class="comment-header">
+                <view class="comment-user">{{ comment.nickname }}</view>
+                <view class="comment-actions">
+                  <view class="action-btn" @click="handleLikeComment(comment)">
+                    <uv-icon name="fabulous" :size="14" :color="comment.isLiked ? 'var(--u-type-primary)' : 'var(--u-tips-color)'" />
+                    <text :class="{ 'liked': comment.isLiked }">{{ formatCount(comment.likeCount || 0) }}</text>
+                  </view>
+                  <view class="action-btn" @click="showReplyInput(comment)">
+                    <uv-icon name="chat" :size="14" color="var(--u-tips-color)" />
+                    <text>回复</text>
+                  </view>
+                  <view v-if="isOwnComment(comment)" class="action-btn delete" @click="handleDeleteComment(comment)">
+                    <uv-icon name="trash" :size="14" color="var(--u-type-error)" />
+                    <text>删除</text>
+                  </view>
+                </view>
+              </view>
               <view class="comment-text">{{ comment.content }}</view>
-              <view class="comment-time">{{ timeAgo(comment.createTime) }}</view>
+              <view class="comment-footer">
+                <view class="comment-time">{{ timeAgo(comment.createTime) }}</view>
+                <view v-if="comment.replyCount > 0" class="reply-count">{{ comment.replyCount }} 条回复</view>
+              </view>
+              <!-- 回复列表 -->
+              <view v-if="comment.children && comment.children.length > 0" class="reply-list">
+                <view v-for="reply in comment.children" :key="reply.id" class="reply-item">
+                  <uv-avatar :src="reply.avatar" size="48" />
+                  <view class="reply-content">
+                    <view class="reply-user">{{ reply.nickname }}</view>
+                    <view class="reply-text">{{ reply.content }}</view>
+                    <view class="reply-time">{{ timeAgo(reply.createTime) }}</view>
+                  </view>
+                </view>
+              </view>
             </view>
           </view>
 
@@ -233,8 +390,24 @@ onMounted(() => {
       </view>
     </scroll-view>
 
+    <!-- 回复输入框 -->
+    <view v-if="replyToComment" class="reply-input-bar">
+      <view class="reply-to">回复 @{{ replyToComment.nickname }}</view>
+      <view class="reply-form">
+        <input
+          v-model="replyText"
+          class="reply-input"
+          placeholder="写下你的回复..."
+          confirm-type="send"
+          @confirm="handleSubmitReply"
+        />
+        <button class="reply-btn cancel" @click="cancelReply">取消</button>
+        <button class="reply-btn submit" :disabled="replyLoading" @click="handleSubmitReply">发送</button>
+      </view>
+    </view>
+
     <!-- 底部评论输入 -->
-    <view class="comment-input-bar">
+    <view v-else class="comment-input-bar">
       <input
         v-model="commentText"
         class="comment-input"
@@ -254,7 +427,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: var(--bg-page);
+  background: var(--u-bg-color);
 }
 
 .article-content {
@@ -270,7 +443,7 @@ onMounted(() => {
     .article-title {
       font-size: 22px;
       font-weight: 700;
-      color: var(--text-primary);
+      color: var(--u-main-color);
       line-height: 1.4;
       margin-bottom: var(--spacing-lg);
     }
@@ -284,12 +457,12 @@ onMounted(() => {
         .author-name {
           font-size: 14px;
           font-weight: 500;
-          color: var(--text-primary);
+          color: var(--u-main-color);
         }
 
         .publish-time {
           font-size: 12px;
-          color: var(--text-muted);
+          color: var(--u-tips-color);
           margin-top: 2px;
         }
       }
@@ -300,31 +473,27 @@ onMounted(() => {
     padding: 0 var(--spacing-lg) var(--spacing-lg);
     font-size: 16px;
     line-height: 1.8;
-    color: var(--text-regular);
+    color: var(--u-content-color);
   }
 
   .action-bar {
     display: flex;
     justify-content: space-around;
     padding: var(--spacing-lg);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-card);
+    border-top: 1px solid var(--u-border-color);
+    border-bottom: 1px solid var(--u-border-color);
+    background: var(--u-bg-white);
 
     .action-item {
       display: flex;
       align-items: center;
       gap: var(--spacing-sm);
-      color: var(--text-muted);
+      color: var(--u-tips-color);
       padding: var(--spacing-sm) var(--spacing-md);
       border-radius: var(--radius-full);
 
       &.active {
-        color: var(--color-primary);
-      }
-
-      .action-icon {
-        font-size: 18px;
+        color: var(--u-type-primary);
       }
 
       .action-text {
@@ -339,13 +508,13 @@ onMounted(() => {
     .section-title {
       font-size: 16px;
       font-weight: 600;
-      color: var(--text-primary);
+      color: var(--u-main-color);
       margin-bottom: var(--spacing-lg);
 
       .comment-count {
         margin-left: var(--spacing-sm);
         font-weight: 400;
-        color: var(--text-muted);
+        color: var(--u-tips-color);
       }
     }
 
@@ -354,28 +523,100 @@ onMounted(() => {
         display: flex;
         gap: var(--spacing-md);
         padding: var(--spacing-md) 0;
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid var(--u-border-color);
 
         .comment-content {
           flex: 1;
 
-          .comment-user {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-primary);
+          .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            .comment-user {
+              font-size: 14px;
+              font-weight: 500;
+              color: var(--u-main-color);
+            }
+
+            .comment-actions {
+              display: flex;
+              gap: var(--spacing-md);
+
+              .action-btn {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                font-size: 12px;
+                color: var(--u-tips-color);
+
+                &.delete {
+                  color: var(--u-type-error);
+                }
+
+                .liked {
+                  color: var(--u-type-primary);
+                }
+              }
+            }
           }
 
           .comment-text {
             font-size: 14px;
-            color: var(--text-regular);
+            color: var(--u-content-color);
             margin-top: 4px;
             line-height: 1.5;
           }
 
-          .comment-time {
-            font-size: 12px;
-            color: var(--text-muted);
+          .comment-footer {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
             margin-top: 4px;
+
+            .comment-time {
+              font-size: 12px;
+              color: var(--u-tips-color);
+            }
+
+            .reply-count {
+              font-size: 12px;
+              color: var(--u-type-primary);
+            }
+          }
+
+          .reply-list {
+            margin-top: var(--spacing-md);
+            padding-left: var(--spacing-md);
+            border-left: 2px solid var(--u-border-color);
+
+            .reply-item {
+              display: flex;
+              gap: var(--spacing-sm);
+              padding: var(--spacing-sm) 0;
+
+              .reply-content {
+                flex: 1;
+
+                .reply-user {
+                  font-size: 13px;
+                  font-weight: 500;
+                  color: var(--u-main-color);
+                }
+
+                .reply-text {
+                  font-size: 13px;
+                  color: var(--u-content-color);
+                  margin-top: 2px;
+                }
+
+                .reply-time {
+                  font-size: 11px;
+                  color: var(--u-tips-color);
+                  margin-top: 2px;
+                }
+              }
+            }
           }
         }
       }
@@ -383,8 +624,58 @@ onMounted(() => {
       .empty-tip {
         text-align: center;
         padding: var(--spacing-xl);
-        color: var(--text-muted);
+        color: var(--u-tips-color);
         font-size: 14px;
+      }
+    }
+  }
+}
+
+.reply-input-bar {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--u-bg-white);
+  border-top: 1px solid var(--u-border-color);
+
+  .reply-to {
+    font-size: 13px;
+    color: var(--u-type-primary);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .reply-form {
+    display: flex;
+    gap: var(--spacing-sm);
+
+    .reply-input {
+      flex: 1;
+      height: 36px;
+      padding: 0 var(--spacing-md);
+      background: var(--u-bg-color);
+      border: 1px solid var(--u-border-color);
+      border-radius: var(--radius-full);
+      font-size: 14px;
+    }
+
+    .reply-btn {
+      padding: 0 var(--spacing-md);
+      height: 36px;
+      line-height: 36px;
+      border: none;
+      border-radius: var(--radius-full);
+      font-size: 14px;
+
+      &.cancel {
+        background: var(--u-bg-color);
+        color: var(--u-content-color);
+      }
+
+      &.submit {
+        background: var(--u-type-primary);
+        color: #ffffff;
+      }
+
+      &[disabled] {
+        opacity: 0.6;
       }
     }
   }
@@ -395,15 +686,15 @@ onMounted(() => {
   align-items: center;
   gap: var(--spacing-md);
   padding: var(--spacing-md) var(--spacing-lg);
-  background: var(--bg-card);
-  border-top: 1px solid var(--border);
+  background: var(--u-bg-white);
+  border-top: 1px solid var(--u-border-color);
 
   .comment-input {
     flex: 1;
     height: 36px;
     padding: 0 var(--spacing-md);
-    background: var(--bg-page);
-    border: 1px solid var(--border);
+    background: var(--u-bg-color);
+    border: 1px solid var(--u-border-color);
     border-radius: var(--radius-full);
     font-size: 14px;
   }
@@ -412,7 +703,7 @@ onMounted(() => {
     padding: 0 var(--spacing-lg);
     height: 36px;
     line-height: 36px;
-    background: var(--color-primary);
+    background: var(--u-type-primary);
     color: #ffffff;
     border: none;
     border-radius: var(--radius-full);

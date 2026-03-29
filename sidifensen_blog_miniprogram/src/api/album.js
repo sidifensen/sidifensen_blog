@@ -12,6 +12,14 @@ export function getAlbumList(params) {
 }
 
 /**
+ * 搜索相册
+ * @param {Object} params 查询参数 { keyword }
+ */
+export function searchAlbums(params) {
+  return get('/album/search', params)
+}
+
+/**
  * 获取相册详情
  * @param {number} id 相册ID
  */
