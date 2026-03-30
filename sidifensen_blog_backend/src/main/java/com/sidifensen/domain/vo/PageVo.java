@@ -2,12 +2,14 @@ package com.sidifensen.domain.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author sidifensen
  * @since 2025-08-24
  */
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class PageVo<T> {
 

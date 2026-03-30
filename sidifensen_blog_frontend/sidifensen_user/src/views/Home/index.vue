@@ -188,6 +188,14 @@ import TagCloud from "@/components/TagCloud.vue";
 import StatsCard from "@/components/StatsCard.vue";
 import EmptyState from "@/components/EmptyState.vue";
 import SkeletonLoader from "@/components/SkeletonLoader.vue";
+import { useSeoMeta } from "@/plugins/seo";
+
+// SEO - 首页
+useSeoMeta({
+  title: "首页",
+  description: "探索技术的无限可能，斯蒂芬森社区是一个分享技术文章、生活感悟和创意作品的多元化平台",
+  keywords: "技术博客,程序员,前端,后端,全栈,编程,开发者社区,斯蒂芬森"
+});
 
 // 路由和用户状态
 const router = useRouter();
@@ -281,12 +289,12 @@ stars.value.forEach((star, index) => {
 
     const doFlash = () => {
       currentFlash++;
-      // 亮起
-      star.style.opacity = 0.3 + Math.random() * 0.4;
-      star.style.transform = 'scale(1.2)';
+      // 亮起 - 每次亮度都随机
+      star.style.opacity = 0.5 + Math.random() * 0.5;
+      star.style.transform = 'scale(1)';
 
-      // 亮持续时间（0.5-2秒）
-      const lightDuration = 500 + Math.random() * 1500;
+      // 亮持续时间（2-4秒）
+      const lightDuration = 2000 + Math.random() * 2000;
       setTimeout(() => {
         // 熄灭
         star.style.opacity = 0;
@@ -294,7 +302,7 @@ stars.value.forEach((star, index) => {
 
         // 如果还没到次数，等待后再次亮起
         if (currentFlash < flashCount) {
-          const offDuration = 800 + Math.random() * 1200;
+          const offDuration = 1500 + Math.random() * 2000;
           starTimers[index] = setTimeout(doFlash, offDuration);
         } else {
           // 次数用完了，消失并换位置重新生成
@@ -302,7 +310,7 @@ stars.value.forEach((star, index) => {
             star.style.left = `${Math.random() * 100}%`;
             star.style.top = `${12 + Math.random() * 16}%`;
             flashStar(); // 重新开始
-          }, 2000 + Math.random() * 5000);
+          }, 10000 + Math.random() * 10000); // 10-20秒后再出现
         }
       }, lightDuration);
     };
@@ -691,11 +699,13 @@ html.dark {
   .star {
     position: absolute;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.8), 0 0 12px 4px rgba(200, 220, 255, 0.4);
     transition: opacity 0.3s ease, transform 0.3s ease;
 
     html.dark & {
-      background: rgba(200, 220, 255, 0.8);
+      background: rgba(220, 235, 255, 1);
+      box-shadow: 0 0 8px 2px rgba(200, 220, 255, 0.9), 0 0 16px 6px rgba(150, 180, 255, 0.5);
     }
   }
 

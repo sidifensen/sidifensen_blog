@@ -129,7 +129,7 @@ onMounted(() => {
             <view class="article-summary">{{ article.description || article.summary }}</view>
             <view class="article-meta">
               <view class="article-author">
-                <uv-avatar :src="article.avatar" size="40" />
+                <u-avatar :src="article.avatar" size="40" />
                 <text class="author-name">{{ article.nickname }}</text>
               </view>
               <view class="article-stats">

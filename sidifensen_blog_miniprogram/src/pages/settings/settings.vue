@@ -65,7 +65,7 @@ function goToPrivacy() {
       <view class="settings-title">显示</view>
       <view class="settings-item">
         <view class="settings-label">
-          <uv-icon name="setting" :size="iconSize" color="var(--u-content-color)" />
+          <u-icon name="setting" :size="iconSize" color="var(--u-content-color)" />
           <text>深色模式</text>
         </view>
         <switch
@@ -80,10 +80,10 @@ function goToPrivacy() {
       <view class="settings-title">账号</view>
       <view class="settings-item" @click="goToAbout">
         <view class="settings-label">
-          <uv-icon name="file-text" :size="iconSize" color="var(--u-content-color)" />
+          <u-icon name="file-text" :size="iconSize" color="var(--u-content-color)" />
           <text>关于我们</text>
         </view>
-        <uv-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
+        <u-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
       </view>
     </view>
 
@@ -92,17 +92,17 @@ function goToPrivacy() {
       <view class="settings-title">其他</view>
       <view class="settings-item" @click="goToAgreement">
         <view class="settings-label">
-          <uv-icon name="file-text" :size="iconSize" color="var(--u-content-color)" />
+          <u-icon name="file-text" :size="iconSize" color="var(--u-content-color)" />
           <text>用户协议</text>
         </view>
-        <uv-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
+        <u-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
       </view>
       <view class="settings-item" @click="goToPrivacy">
         <view class="settings-label">
-          <uv-icon name="file-text" :size="iconSize" color="var(--u-content-color)" />
+          <u-icon name="file-text" :size="iconSize" color="var(--u-content-color)" />
           <text>隐私政策</text>
         </view>
-        <uv-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
+        <u-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
       </view>
     </view>
 

@@ -26,6 +26,7 @@
     "@capacitor/status-bar": "^8.0.1",
     "@element-plus/icons-vue": "^2.3.1",
     "@vueuse/core": "^13.5.0",
+    "@vueuse/head": "^2.0.0",
     "aieditor": "^1.4.0",
     "axios": "^1.10.0",
     "disable-devtool": "^0.3.9",
@@ -39,8 +40,6 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.3",
     "@vue/test-utils": "^2.4.6",
-    "vitest": "^3.0.0",
-    "jsdom": "^25.0.0",
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
     "electron": "^28.3.3",
@@ -48,6 +47,7 @@
     "electron-updater": "^6.8.3",
     "fast-glob": "^3.3.3",
     "javascript-obfuscator": "^4.2.2",
+    "jsdom": "^25.0.0",
     "sass-embedded": "^1.89.2",
     "unplugin-auto-import": "^19.3.0",
     "unplugin-element-plus": "^0.10.0",
@@ -55,6 +55,7 @@
     "vite": "^6.2.4",
     "vite-plugin-pwa": "^1.2.0",
     "vite-plugin-vue-devtools": "^7.7.2",
+    "vitest": "^3.0.0",
     "wait-on": "^7.2.0"
   }
 }

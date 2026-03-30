@@ -77,14 +77,14 @@ onMounted(() => {
           @click="goToFavoriteDetail(item)"
         >
           <view class="favorite-icon">
-            <uv-icon name="star" color="var(--u-type-warning)" size="28px" />
+            <u-icon name="star" color="var(--u-type-warning)" size="28px" />
           </view>
           <view class="favorite-info">
             <view class="favorite-name">{{ item.name }}</view>
             <view class="favorite-meta">{{ formatCount(item.articleCount) }} 篇文章</view>
           </view>
           <view class="favorite-arrow">
-            <uv-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
+            <u-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
           </view>
         </view>
       </view>

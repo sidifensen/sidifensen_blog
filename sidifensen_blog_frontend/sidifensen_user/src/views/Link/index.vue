@@ -122,6 +122,14 @@ import { useRouter } from "vue-router";
 import { deleteLink, getLinkList } from "@/api/link";
 import LinkApplyDialog from "@/views/Link/LinkApplyDialog.vue";
 import { useUserStore } from "@/stores/userStore";
+import { useSeoMeta } from "@/plugins/seo";
+
+// SEO - 友链
+useSeoMeta({
+  title: "友链",
+  description: "交换友链，结识志同道合的开发者朋友",
+  keywords: "友链,交换链接,开发者,博客,网站导航"
+});
 
 const router = useRouter();
 const userStore = useUserStore();

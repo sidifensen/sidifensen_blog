@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { getArticleDetail } from "@/api/article";
 import { getUserInfoById } from "@/api/user";
@@ -46,6 +46,7 @@ import UserInfoCard from "./components/UserInfoCard.vue";
 import ArticleContent from "./components/ArticleContent.vue";
 import ArticleCatalog from "./components/ArticleCatalog.vue";
 import ArticleActions from "./components/ArticleActions.vue";
+import { useSeoMeta } from "@/plugins/seo";
 
 // 路由参数
 const route = useRoute();
@@ -121,6 +122,20 @@ const goToVipCenter = () => {
 const goToVipArticles = () => {
   router.push("/vip/articles");
 };
+
+// SEO - 文章详情（动态）
+watch(articleInfo, (article) => {
+  if (article) {
+    const baseUrl = window.location.origin;
+    useSeoMeta({
+      title: article.title,
+      description: article.summary || article.content?.replace(/<[^>]+>/g, '').slice(0, 150) || '斯蒂芬森社区文章',
+      keywords: article.tags?.join(',') || '技术文章,博客',
+      image: article.coverImage,
+      url: `${baseUrl}/user/${userId}/article/${articleId}`
+    });
+  }
+});
 
 // 页面初始化
 onMounted(async () => {

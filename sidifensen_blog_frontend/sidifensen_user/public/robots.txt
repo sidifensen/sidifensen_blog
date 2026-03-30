@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+Disallow: /creation/
+Disallow: /editor/
+Disallow: /message/
+Disallow: /notification/
+Disallow: /setting/
+Disallow: /vip/
+Disallow: /account/login
+Disallow: /account/register
+Disallow: /account/reset
+
+# 允许爬取的主要内容
+Allow: /article
+Allow: /user/
+
+# Sitemap
+Sitemap: https://sidifensen.com/sitemap.xml
+
+# 爬虫友好提示
+Crawl-delay: 1

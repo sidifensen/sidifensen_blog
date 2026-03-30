@@ -1,10 +1,11 @@
-import "@/assets/scss/base.scss";
+  import "@/assets/scss/base.scss";
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 // 引入 ElementPlus 样式
 // import "element-plus/dist/index.css";
 
 import { createApp } from "vue";
 import { createPinia } from "pinia";
+import { createHead } from "@vueuse/head";
 
 import App from "./App.vue";
 import router from "./router";
@@ -21,6 +22,10 @@ import "element-plus/theme-chalk/dark/css-vars.css";
 import { StatusBar, Style } from "@capacitor/status-bar";
 
 const app = createApp(App);
+
+// 创建 head 实例用于 SEO（必须在 createApp 之后）
+const head = createHead();
+app.use(head);
 
 // 设置状态栏样式并获取高度
 const setupStatusBar = async () => {

@@ -174,7 +174,7 @@ onShow(() => {
           <view v-if="userInfo.bio" class="bio">{{ userInfo.bio }}</view>
           <view v-else-if="!userStore.isLoggedIn" class="bio tip">点击登录</view>
         </view>
-        <uv-icon name="arrow-right" color="var(--u-tips-color)" size="18px" />
+        <u-icon name="arrow-right" color="var(--u-tips-color)" size="18px" />
       </view>
 
       <!-- 用户数据 -->
@@ -199,7 +199,7 @@ onShow(() => {
     <!-- VIP 卡片 -->
     <view class="vip-card card" @click="goToVip">
       <view class="vip-left">
-        <uv-icon name="crown" color="#fbbf24" size="32px" />
+        <u-icon name="crown" color="#fbbf24" size="32px" />
         <view class="vip-info">
           <view class="vip-title">{{ vipStatus.isVip ? 'VIP 会员' : 'VIP 会员' }}</view>
           <view class="vip-desc">{{ vipStatus.isVip ? 'VIP有效期至 ' + formatDate(vipStatus.expireTime, 'YYYY-MM-DD') : '开通享更多权益' }}</view>
@@ -207,40 +207,40 @@ onShow(() => {
       </view>
       <view class="vip-action">
         <text class="vip-btn">{{ vipStatus.isVip ? '已开通' : '立即开通' }}</text>
-        <uv-icon name="arrow-right" color="var(--u-type-primary)" size="16px" />
+        <u-icon name="arrow-right" color="var(--u-type-primary)" size="16px" />
       </view>
     </view>
 
     <!-- 功能菜单 -->
     <view class="menu-list card">
       <view class="menu-item" @click="goToMyArticles">
-        <view class="menu-icon"><uv-icon name="file-text" color="var(--u-type-primary)" size="20px" /></view>
+        <view class="menu-icon"><u-icon name="file-text" color="var(--u-type-primary)" size="20px" /></view>
         <text class="menu-text">我的文章</text>
-        <uv-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
+        <u-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
       </view>
       <view class="menu-item" @click="goToMyFavorites">
-        <view class="menu-icon"><uv-icon name="star" color="var(--u-type-warning)" size="20px" /></view>
+        <view class="menu-icon"><u-icon name="star" color="var(--u-type-warning)" size="20px" /></view>
         <text class="menu-text">我的收藏</text>
-        <uv-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
+        <u-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
       </view>
       <view class="menu-item" @click="goToMyAlbums">
-        <view class="menu-icon"><uv-icon name="grid" color="var(--u-type-success)" size="20px" /></view>
+        <view class="menu-icon"><u-icon name="grid" color="var(--u-type-success)" size="20px" /></view>
         <text class="menu-text">我的相册</text>
-        <uv-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
+        <u-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
       </view>
       <view class="menu-item" @click="goToMessage">
-        <view class="menu-icon"><uv-icon name="chat" color="var(--u-type-error)" size="20px" /></view>
+        <view class="menu-icon"><u-icon name="chat" color="var(--u-type-error)" size="20px" /></view>
         <text class="menu-text">消息通知</text>
-        <uv-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
+        <u-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
       </view>
     </view>
 
     <!-- 设置入口 -->
     <view class="menu-list card">
       <view class="menu-item" @click="goToSettings">
-        <view class="menu-icon"><uv-icon name="setting" color="var(--text-regular)" size="20px" /></view>
+        <view class="menu-icon"><u-icon name="setting" color="var(--text-regular)" size="20px" /></view>
         <text class="menu-text">设置</text>
-        <uv-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
+        <u-icon name="arrow-right" color="var(--u-tips-color)" size="16px" />
       </view>
     </view>
 

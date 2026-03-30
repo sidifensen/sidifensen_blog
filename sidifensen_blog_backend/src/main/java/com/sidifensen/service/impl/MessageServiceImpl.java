@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.alibaba.fastjson.JSON;
@@ -111,22 +112,42 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
 
     }
 
-    // 统计管理员未读消息数量
+    // 统计管理员未读消息数量（仅 type=0 系统通知）
     @Override
     public Integer getAdminMessagesCount() {
-        Long count = messageMapper.selectCount(new LambdaQueryWrapper<Message>().eq(Message::getIsRead, 0));
+        Long count = messageMapper.selectCount(new LambdaQueryWrapper<Message>()
+                .eq(Message::getIsRead, 0)
+                .eq(Message::getType, 0));
         return count.intValue();
     }
 
-    // 获取管理员消息列表
+    // 获取管理员消息列表（仅 type=0 系统通知，用于 Bell 下拉，全量返回）
     @Override
     public List<MessageVo> getAdminMessages() {
-        List<Message> messages = this.list(new LambdaQueryWrapper<Message>().orderByDesc(Message::getCreateTime));
+        LambdaQueryWrapper<Message> wrapper = new LambdaQueryWrapper<Message>()
+                .eq(Message::getType, 0)
+                .orderByDesc(Message::getCreateTime)
+                .last("LIMIT 20");
+        List<Message> messages = this.list(wrapper);
         if (ObjectUtil.isEmpty(messages)) {
             return List.of();
         }
-        List<MessageVo> messageVos = BeanUtil.copyToList(messages, MessageVo.class);
-        return messageVos;
+        return BeanUtil.copyToList(messages, MessageVo.class);
+    }
+
+    // 获取管理员消息列表（仅 type=0 系统通知，分页返回）
+    @Override
+    public PageVo<List<MessageVo>> getAdminMessagesPage(Integer pageNum, Integer pageSize) {
+        LambdaQueryWrapper<Message> wrapper = new LambdaQueryWrapper<Message>()
+                .eq(Message::getType, 0)
+                .orderByDesc(Message::getCreateTime);
+        IPage<Message> page = new Page<>(pageNum, pageSize);
+        IPage<Message> result = this.page(page, wrapper);
+        List<MessageVo> messageVos = BeanUtil.copyToList(result.getRecords(), MessageVo.class);
+        PageVo<List<MessageVo>> pageVo = new PageVo<>();
+        pageVo.setData(messageVos);
+        pageVo.setTotal(result.getTotal());
+        return pageVo;
     }
 
     // 管理员读取消息

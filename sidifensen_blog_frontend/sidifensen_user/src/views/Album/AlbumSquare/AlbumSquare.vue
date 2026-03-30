@@ -86,6 +86,14 @@ import { useRouter } from "vue-router"
 import { Picture, Loading, ZoomIn, ArrowRight } from "@element-plus/icons-vue"
 import { listAllAlbum } from "@/api/album"
 import LoadingAnimation from "@/components/LoadingAnimation.vue"
+import { useSeoMeta } from "@/plugins/seo"
+
+// SEO - 相册广场
+useSeoMeta({
+  title: "相册广场",
+  description: "浏览社区精彩相册，发现摄影作品和创意分享",
+  keywords: "相册,图片,摄影,作品展示,社区图库"
+});
 
 const router = useRouter()
 const loading = ref(false)

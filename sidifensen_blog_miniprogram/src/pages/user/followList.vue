@@ -112,7 +112,7 @@ onMounted(() => {
         class="user-item card"
         @click="goToProfile(user.id)"
       >
-        <uv-avatar :src="user.avatar" size="96" />
+        <u-avatar :src="user.avatar" size="96" />
         <view class="user-info">
           <view class="user-name">{{ user.nickname }}</view>
           <view v-if="user.bio" class="user-bio">{{ user.bio }}</view>

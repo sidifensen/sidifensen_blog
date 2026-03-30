@@ -144,4 +144,21 @@ public class RabbitMQConstants {
      */
     public static final String Order_Expire_Routing_Key = "order_expire_routing_key";
 
+    // ==================== 公告发送相关 ====================
+
+    /**
+     * 公告发送交换机
+     */
+    public static final String Announcement_Exchange = "announcement_exchange";
+
+    /**
+     * 公告发送队列
+     */
+    public static final String Announcement_Queue = "announcement_queue";
+
+    /**
+     * 公告发送路由键
+     */
+    public static final String Announcement_Routing_Key = "announcement_routing_key";
+
 }

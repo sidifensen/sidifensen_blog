@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.MessageDto;
 import com.sidifensen.domain.entity.Message;
 import com.sidifensen.domain.vo.MessageVo;
+import com.sidifensen.domain.vo.PageVo;
 
 import java.util.List;
 
@@ -25,11 +26,14 @@ public interface MessageService extends IService<Message> {
     // 发送消息给管理员
     void sendToAdmin(MessageDto messageDto);
 
-    // 获取管理员消息数量
+    // 获取管理员消息数量（仅 type=0 系统通知）
     Integer getAdminMessagesCount();
 
-    // 获取管理员消息列表
+    // 获取管理员消息列表（仅 type=0 系统通知，用于 Bell 下拉，全量返回）
     List<MessageVo> getAdminMessages();
+
+    // 获取管理员消息列表（仅 type=0 系统通知，分页返回）
+    PageVo<List<MessageVo>> getAdminMessagesPage(Integer pageNum, Integer pageSize);
 
     // 管理员读取消息
     void readAdminMessages(List<Integer> messageIds);

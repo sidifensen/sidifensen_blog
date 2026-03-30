@@ -45,51 +45,94 @@
         </div>
 
         <div v-else class="notification-items">
-          <article v-for="notification in notificationList" :key="notification.id" class="notification-item" :class="{ unread: isUnread(notification) }">
-            <div class="notification-item__avatar" @click.stop="goToUserPage(notification.contentData?.userId)">
-              <el-avatar :size="46" :src="notification.contentData?.avatar" class="user-avatar">
-                <el-icon v-if="notification.type === 0"><Bell /></el-icon>
-                <el-icon v-else><User /></el-icon>
-              </el-avatar>
-            </div>
-
-            <div class="notification-item__content" @click="handleNotificationClick(notification)">
-              <div class="notification-item__top">
-                <span class="type-pill">{{ getTypeLabel(notification.type) }}</span>
-                <span class="notification-time">{{ formatTime(notification.createTime) }}</span>
+          <!-- 公告列表 -->
+          <template v-if="activeTab === 'announcement'">
+            <article
+              v-for="item in notificationList"
+              :key="item.id"
+              class="notification-item announcement-card"
+              :class="{ unread: !isAnnouncementRead(item.id) }"
+              @click="handleAnnouncementClick(item)"
+            >
+              <div class="notification-item__avatar">
+                <el-avatar :size="46" class="user-avatar">
+                  <el-icon><Bell /></el-icon>
+                </el-avatar>
               </div>
-              <div class="notification-item__text">
-                <span class="user-nickname" @click.stop="goToUserPage(notification.contentData?.userId)">
-                  {{ notification.contentData?.nickname || "系统" }}
-                </span>
-                <span class="message-text">{{ getMessageText(notification) }}</span>
-                <span
-                  v-if="notification.contentData?.articleTitle"
-                  class="article-title"
-                  @click.stop="goToArticle(notification.contentData?.authorId, notification.contentData?.articleId)"
+              <div class="notification-item__content">
+                <div class="notification-item__top">
+                  <span class="type-pill">公告</span>
+                  <span class="notification-time">{{ formatTime(item.sendTime || item.createTime) }}</span>
+                </div>
+                <div class="notification-item__text">
+                  <span class="user-nickname">{{ item.title }}</span>
+                </div>
+                <div class="comment-content">
+                  <span class="comment-content__text">{{ item.content }}</span>
+                </div>
+              </div>
+              <div class="notification-item__actions">
+                <el-button
+                  v-if="!isAnnouncementRead(item.id)"
+                  plain
+                  size="small"
+                  :icon="Select"
+                  class="notification-action"
+                  @click.stop="handleAnnouncementRead(item)"
                 >
-                  《{{ notification.contentData?.articleTitle }}》
-                </span>
+                  已读
+                </el-button>
               </div>
-              <div v-if="notification.contentData?.commentContent" class="comment-content">
-                <span class="comment-content__text">{{ notification.contentData.commentContent }}</span>
+            </article>
+          </template>
+          <!-- 普通通知列表 -->
+          <template v-else>
+            <article v-for="notification in notificationList" :key="notification.id" class="notification-item" :class="{ unread: isUnread(notification) }">
+              <div class="notification-item__avatar" @click.stop="goToUserPage(notification.contentData?.userId)">
+                <el-avatar :size="46" :src="notification.contentData?.avatar" class="user-avatar">
+                  <el-icon v-if="notification.type === 0"><Bell /></el-icon>
+                  <el-icon v-else><User /></el-icon>
+                </el-avatar>
               </div>
-            </div>
 
-            <div class="notification-item__actions">
-              <el-button
-                v-if="isUnread(notification)"
-                plain
-                size="small"
-                :icon="Select"
-                class="notification-action"
-                @click.stop="handleSingleRead(notification)"
-              >
-                已读
-              </el-button>
-              <el-button plain size="small" :icon="Delete" class="notification-action" @click.stop="handleDelete(notification.id)">删除</el-button>
-            </div>
-          </article>
+              <div class="notification-item__content" @click="handleNotificationClick(notification)">
+                <div class="notification-item__top">
+                  <span class="type-pill">{{ getTypeLabel(notification.type) }}</span>
+                  <span class="notification-time">{{ formatTime(notification.createTime) }}</span>
+                </div>
+                <div class="notification-item__text">
+                  <span class="user-nickname" @click.stop="goToUserPage(notification.contentData?.userId)">
+                    {{ notification.contentData?.nickname || "系统" }}
+                  </span>
+                  <span class="message-text">{{ getMessageText(notification) }}</span>
+                  <span
+                    v-if="notification.contentData?.articleTitle"
+                    class="article-title"
+                    @click.stop="goToArticle(notification.contentData?.authorId, notification.contentData?.articleId)"
+                  >
+                    《{{ notification.contentData?.articleTitle }}》
+                  </span>
+                </div>
+                <div v-if="notification.contentData?.commentContent" class="comment-content">
+                  <span class="comment-content__text">{{ notification.contentData.commentContent }}</span>
+                </div>
+              </div>
+
+              <div class="notification-item__actions">
+                <el-button
+                  v-if="isUnread(notification)"
+                  plain
+                  size="small"
+                  :icon="Select"
+                  class="notification-action"
+                  @click.stop="handleSingleRead(notification)"
+                >
+                  已读
+                </el-button>
+                <el-button plain size="small" :icon="Delete" class="notification-action" @click.stop="handleDelete(notification.id)">删除</el-button>
+              </div>
+            </article>
+          </template>
 
           <div v-if="loadingMore" class="loading-more">
             <div class="loading-more__spinner"></div>
@@ -109,6 +152,7 @@ import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { Bell, Delete, RefreshRight, Select, User } from "@element-plus/icons-vue";
 import { deleteNotifications, getUnreadNotificationCount, getUserNotifications, markNotificationsAsRead } from "@/api/notification";
+import { getAnnouncementPage, readAnnouncement, getReadAnnouncementIds } from "@/api/announcement";
 import { formatTimeAgo } from "@/utils/timeUtils";
 
 const router = useRouter();
@@ -129,9 +173,11 @@ const unreadCount = reactive({
   like: 0,
   collect: 0,
   follow: 0,
+  announcement: 0,
 });
 
 const tabOptions = [
+  { name: "announcement", label: "公告", type: -1 },
   { name: "system", label: "系统", type: 0 },
   { name: "comment", label: "评论", type: 1 },
   { name: "like", label: "点赞", type: 2 },
@@ -145,6 +191,7 @@ const typeMap = {
   like: 2,
   collect: 3,
   follow: 4,
+  announcement: -1,
 };
 
 const currentTabLabel = computed(() => tabOptions.find((item) => item.name === activeTab.value)?.label || "系统");
@@ -156,6 +203,29 @@ const summaryCards = computed(() => [
 ]);
 
 const isUnread = (notification) => Number(notification.isRead) !== 1;
+
+// 公告相关
+const isAnnouncementRead = (id) => readAnnouncementIds.value.includes(id);
+
+const handleAnnouncementClick = async (item) => {
+  if (isAnnouncementRead(item.id)) return;
+  await handleAnnouncementRead(item);
+};
+
+const handleAnnouncementRead = async (item) => {
+  if (isAnnouncementRead(item.id)) return;
+  try {
+    await readAnnouncement(item.id);
+    if (!readAnnouncementIds.value.includes(item.id)) {
+      readAnnouncementIds.value.push(item.id);
+    }
+    unreadCount.announcement = Math.max(unreadCount.announcement - 1, 0);
+    unreadCount.total = Math.max(unreadCount.total - 1, 0);
+    window.dispatchEvent(new CustomEvent("notification-read"));
+  } catch (error) {
+    // 静默处理
+  }
+};
 
 const getTypeLabel = (type) => tabOptions.find((item) => item.type === type)?.label || "系统";
 
@@ -180,7 +250,56 @@ const parseNotificationContent = (notification) => {
   }
 };
 
+// 公告相关数据
+const readAnnouncementIds = ref([]);
+
+const fetchAnnouncements = async (reset = false) => {
+  if (reset) {
+    loading.value = true;
+    currentPage.value = 1;
+    notificationList.value = [];
+    hasMore.value = true;
+  } else {
+    loadingMore.value = true;
+  }
+
+  try {
+    const res = await getAnnouncementPage(currentPage.value, pageSize.value);
+    const data = res.data || {};
+    const list = data.data || [];
+
+    if (reset) {
+      notificationList.value = list;
+    } else {
+      notificationList.value = [...notificationList.value, ...list];
+    }
+
+    total.value = data.total || 0;
+    hasMore.value = notificationList.value.length < total.value;
+  } catch (error) {
+    // 静默处理
+  } finally {
+    loading.value = false;
+    loadingMore.value = false;
+  }
+};
+
+const fetchReadAnnouncementIds = async () => {
+  try {
+    const res = await getReadAnnouncementIds();
+    readAnnouncementIds.value = res.data || [];
+  } catch (error) {
+    readAnnouncementIds.value = [];
+  }
+};
+
 const fetchNotifications = async (reset = false) => {
+  // 公告 tab 使用独立的 API
+  if (activeTab.value === "announcement") {
+    await fetchAnnouncements(reset);
+    return;
+  }
+
   try {
     if (reset) {
       loading.value = true;
@@ -244,6 +363,13 @@ const fetchUnreadCount = async () => {
       collect: data.collect || 0,
       follow: data.follow || 0,
     });
+    // 获取公告未读数
+    const announcementRes = await getAnnouncementPage(1, 1);
+    const totalAnnouncements = announcementRes.data?.total || 0;
+    const readIds = readAnnouncementIds.value;
+    unreadCount.announcement = Math.max(totalAnnouncements - readIds.length, 0);
+    // 公告未读数计入总数
+    unreadCount.total += unreadCount.announcement;
   } catch (error) {
     // 静默处理
   }
@@ -251,6 +377,11 @@ const fetchUnreadCount = async () => {
 
 const handleTabChange = (tabName) => {
   activeTab.value = tabName;
+  if (tabName === "announcement") {
+    fetchReadAnnouncementIds().then(() => {
+      fetchUnreadCount();
+    });
+  }
   fetchNotifications(true);
 };
 
@@ -375,6 +506,7 @@ const handleRefreshNotifications = async () => {
 };
 
 onMounted(async () => {
+  await fetchReadAnnouncementIds();
   await handleRefreshNotifications();
   window.addEventListener("scroll", handleScroll);
   window.addEventListener("refresh-notifications", handleRefreshNotifications);
@@ -601,6 +733,18 @@ onUnmounted(() => {
 
           &.unread {
             background: var(--bg-accent);
+          }
+
+          &.announcement-card {
+            .notification-item__text {
+              .user-nickname {
+                font-size: 17px;
+              }
+            }
+
+            .comment-content {
+              margin-top: 4px;
+            }
           }
 
           .notification-item__avatar {

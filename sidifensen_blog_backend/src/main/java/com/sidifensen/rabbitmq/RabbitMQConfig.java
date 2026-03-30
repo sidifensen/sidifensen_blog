@@ -305,6 +305,28 @@ public class RabbitMQConfig {
                 .with(RabbitMQConstants.Order_Expire_Routing_Key);
     }
 
+    // ==================== 公告发送队列配置 ====================
+
+    @Bean
+    public DirectExchange announcementExchange() {
+        return new DirectExchange(RabbitMQConstants.Announcement_Exchange, true, false);
+    }
+
+    @Bean
+    public Queue announcementQueue() {
+        return QueueBuilder.durable(RabbitMQConstants.Announcement_Queue)
+                .withArguments(DEAD_LETTER_ARGS)
+                .build();
+    }
+
+    @Bean
+    public Binding bindingAnnouncementQueueToExchange() {
+        return BindingBuilder
+                .bind(announcementQueue())
+                .to(announcementExchange())
+                .with(RabbitMQConstants.Announcement_Routing_Key);
+    }
+
     // ==================== RabbitTemplate 配置 ====================
 
     /**

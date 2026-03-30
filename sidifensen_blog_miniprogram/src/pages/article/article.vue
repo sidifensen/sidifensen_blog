@@ -316,7 +316,7 @@ onLoad((options) => {
         <view class="article-title">{{ article.title }}</view>
         <view class="article-meta">
           <view class="author-info">
-            <uv-avatar :src="article.avatar" size="72" />
+            <u-avatar :src="article.avatar" size="72" />
             <view class="author-detail">
               <view class="author-name">{{ article.nickname || '匿名' }}</view>
               <view class="publish-time">{{ timeAgo(article.createTime) }}</view>
@@ -360,7 +360,7 @@ onLoad((options) => {
         <!-- 评论列表 -->
         <view class="comment-list">
           <view v-for="comment in comments" :key="comment.id" class="comment-item">
-            <uv-avatar :src="comment.avatar" size="64" />
+            <u-avatar :src="comment.avatar" size="64" />
             <view class="comment-content">
               <view class="comment-header">
                 <view class="comment-user">{{ comment.nickname }}</view>
@@ -387,7 +387,7 @@ onLoad((options) => {
               <!-- 回复列表 -->
               <view v-if="comment.children && comment.children.length > 0" class="reply-list">
                 <view v-for="reply in comment.children" :key="reply.id" class="reply-item">
-                  <uv-avatar :src="reply.avatar" size="48" />
+                  <u-avatar :src="reply.avatar" size="48" />
                   <view class="reply-content">
                     <view class="reply-header">
                       <view class="reply-user">{{ reply.nickname }}</view>

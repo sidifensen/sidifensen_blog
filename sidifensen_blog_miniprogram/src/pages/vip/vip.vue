@@ -125,7 +125,7 @@ onMounted(() => {
     <!-- VIP 头部 -->
     <view class="vip-header">
       <view class="vip-badge">
-        <uv-icon name="crown" color="#ffffff" size="24px" />
+        <u-icon name="crown" color="#ffffff" size="24px" />
         <text class="vip-title">{{ vipStatus.isVip ? 'VIP会员' : '开通VIP' }}</text>
       </view>
       <view v-if="vipStatus.isVip" class="vip-expire">
@@ -138,7 +138,7 @@ onMounted(() => {
       <view class="benefits-title">会员权益</view>
       <view class="benefits-list">
         <view v-for="(benefit, index) in benefits" :key="index" class="benefit-item">
-          <uv-icon :name="benefit.icon" color="var(--u-type-primary)" size="20px" />
+          <u-icon :name="benefit.icon" color="var(--u-type-primary)" size="20px" />
           <text class="benefit-text">{{ benefit.text }}</text>
         </view>
       </view>

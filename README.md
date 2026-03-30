@@ -63,9 +63,9 @@
 - **开发语言**: Java 21
 - **安全框架**: Spring Security 6.4.1 + JWT
 - **实时通信**: Spring WebSocket 6.4.1
-- **数据库**: MySQL 8.1.0
+- **数据库**: MySQL 8.4.x
 - **ORM 框架**: MyBatis-Plus 3.5.14
-- **缓存中间件**: Redis 3.4.0
+- **缓存中间件**: Redis 7.x
 - **消息队列**: RabbitMQ 3.4.0
 - **文件存储**: MinIO 8.3.6 (支持 S3 协议)
 - **模板引擎**: Thymeleaf 3.4.0
@@ -166,17 +166,17 @@ sidifensen_blog/
 │   │       ├── utils/                              #     工具函数
 │   │       └── views/                              #     页面组件
 │   │
-│   ├── sidifensen_user/                            #   用户端前台
-│   │   └── src/
-│   │       ├── api/                                #     API 接口
-│   │       ├── assets/                             #     静态资源
-│   │       ├── components/                         #     可复用组件
-│   │       ├── router/                             #     路由配置
-│   │       ├── stores/                             #     Pinia 状态管理
-│   │       ├── utils/                              #     工具函数
-│   │       └── views/                              #     页面组件
-│   │
-│   └── sidifensen_electron/                        #   Electron 桌面应用
+│   └── sidifensen_user/                            #   用户端前台 (含 Electron + Capacitor)
+│       ├── src/                                   #     Vue 3 源码
+│       │   ├── api/                               #       API 接口
+│       │   ├── assets/                            #       静态资源
+│       │   ├── components/                        #       可复用组件
+│       │   ├── router/                            #       路由配置
+│       │   ├── stores/                            #       Pinia 状态管理
+│       │   ├── utils/                             #       工具函数
+│       │   └── views/                             #       页面组件
+│       ├── electron/                              #     Electron 桌面应用
+│       └── android/                               #     Capacitor Android 原生应用
 │
 ├── sidifensen_blog_miniprogram/                    # 微信小程序端 (UniApp + uView Pro)
 ├── sql/                                            # 数据库初始化脚本
@@ -368,13 +368,13 @@ cd script && dev\start.bat
 cd sidifensen_blog_frontend/sidifensen_user
 npm install
 npm run dev
-# 访问 http://localhost:5173
+# 访问 http://localhost:7000
 
 # 管理端启动 (新开终端)
 cd sidifensen_blog_frontend/sidifensen_admin
 npm install
 npm run dev
-# 访问 http://localhost:5174
+# 访问 http://localhost:8000
 ```
 
 #### Docker Compose 方式启动（推荐）
@@ -387,8 +387,8 @@ npm run dev
 
 #### 传统方式启动
 
-- 📱 **用户端**: http://localhost:5173 (社区前台)
-- 🔧 **管理端**: http://localhost:5174 (后台管理)
+- 📱 **用户端**: http://localhost:7000 (社区前台)
+- 🔧 **管理端**: http://localhost:8000 (后台管理)
 - 🔌 **后端 API**: http://localhost:8080 (REST API)
 
 #### Docker Compose 方式启动（推荐）
@@ -662,19 +662,19 @@ docker-compose up -d --build
 
 **创作中心 - 首页**
 
-<img src="img/Snipaste_2025-10-14_13-39-30.png" alt="创作中心 - 文章列表" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-39-30.png" alt="创作中心 - 首页" width="800"/>
 
 **创作中心 - 文章管理**
 
-<img src="img/Snipaste_2025-10-14_13-39-33.png" alt="创作中心 - 文章编辑" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-39-33.png" alt="创作中心 - 文章管理" width="800"/>
 
 **创作中心 - 专栏管理**
 
-<img src="img/Snipaste_2025-10-14_13-39-36.png" alt="创作中心-AI 摘要" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-39-36.png" alt="创作中心 - 专栏管理" width="800"/>
 
 **创作中心 - 评论管理**
 
-<img src="img/Snipaste_2025-10-14_13-39-38.png" alt="创作中心 - 专栏管理" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-39-38.png" alt="创作中心 - 评论管理" width="800"/>
 
 </div>
 
@@ -684,19 +684,19 @@ docker-compose up -d --build
 
 **个人主页 - 文章展示**
 
-<img src="img/Snipaste_2025-10-14_13-40-13.png" alt="个人主页 - 用户信息" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-40-13.png" alt="个人主页 - 文章展示" width="800"/>
 
 **个人主页 - 专栏展示**
 
-<img src="img/Snipaste_2025-10-14_13-40-17.png" alt="个人主页 - 文章展示" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-40-17.png" alt="个人主页 - 专栏展示" width="800"/>
 
 **个人主页 - 收藏内容**
 
-<img src="img/Snipaste_2025-10-14_13-40-19.png" alt="个人主页 - 专栏展示" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-40-19.png" alt="个人主页 - 收藏内容" width="800"/>
 
 **个人主页 - 关注/粉丝**
 
-<img src="img/Snipaste_2025-10-14_13-40-22.png" alt="个人主页 - 收藏内容" width="800"/>
+<img src="img/Snipaste_2025-10-14_13-40-22.png" alt="个人主页 - 关注/粉丝" width="800"/>
 
 **个人主页 - 历史记录**
 

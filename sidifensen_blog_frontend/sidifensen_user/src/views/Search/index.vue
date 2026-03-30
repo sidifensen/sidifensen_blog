@@ -340,6 +340,14 @@ import {
 } from "@/api/article";
 import { getRecommendedAuthors, getHotSearches } from "@/api/user";
 import { formatCompactNumber } from "@/utils/formatNumber";
+import { useSeoMeta } from "@/plugins/seo";
+
+// SEO - 搜索
+useSeoMeta({
+  title: "搜索",
+  description: "搜索技术文章、标签和作者，发现你感兴趣的内容",
+  keywords: "搜索,查找文章,标签搜索,作者搜索"
+});
 
 // 路由
 const router = useRouter();

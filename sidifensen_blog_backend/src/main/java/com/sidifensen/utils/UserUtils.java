@@ -46,7 +46,7 @@ public class UserUtils {
         // 批量查询用户信息
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<SysUser>()
                 .in(SysUser::getId, validUserIds)
-                .select(SysUser::getId, SysUser::getNickname);
+                .select(SysUser::getId, SysUser::getNickname, SysUser::getAvatar);
 
         List<SysUser> users = userMapper.selectList(queryWrapper);
 

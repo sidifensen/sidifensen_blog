@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- 首页 -->
+  <url>
+    <loc>https://sidifensen.com/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <!-- 文章列表 -->
+  <url>
+    <loc>https://sidifensen.com/article</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <!-- 搜索页 -->
+  <url>
+    <loc>https://sidifensen.com/search</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <!-- 友链 -->
+  <url>
+    <loc>https://sidifensen.com/link</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <!-- 相册 -->
+  <url>
+    <loc>https://sidifensen.com/album</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <!-- 相册广场 -->
+  <url>
+    <loc>https://sidifensen.com/album/square</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>

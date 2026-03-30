@@ -136,6 +136,14 @@ import SidebarCard from "@/components/SidebarCard.vue";
 import HotArticleList from "@/components/HotArticleList.vue";
 import EmptyState from "@/components/EmptyState.vue";
 import LoadingMore from "@/components/LoadingMore.vue";
+import { useSeoMeta } from "@/plugins/seo";
+
+// SEO - 文章广场
+useSeoMeta({
+  title: "文章广场",
+  description: "按发布时间浏览社区内容，持续发现值得读的技术文章",
+  keywords: "技术文章,博客,编程,前端,后端,全栈,开发者"
+});
 
 // 路由
 const router = useRouter();

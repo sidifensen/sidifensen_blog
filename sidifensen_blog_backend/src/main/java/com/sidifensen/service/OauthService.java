@@ -61,6 +61,9 @@ public class OauthService {
     @Resource
     private Wechat wechat;
 
+    @Resource
+    private UserSettingsService userSettingsService;
+
     /**
      * 处理 OAuth 回调，创建本地用户并生成一次性票据
      *
@@ -111,6 +114,7 @@ public class OauthService {
             ipService.setRegisterIp(sysUser.getId(), ip);
             sysUserRoleService.setRegisterRole(sysUser.getId());
             sysLoginLogService.recordLoginLog(sysUser.getId(), username, code, ip, LoginStatusEnum.SUCCESS.getCode());
+            userSettingsService.createDefaultSettings(sysUser.getId());
             String ticket = redisComponent.saveOauthTicket(sysUser.getId(), code);
             return ticket;
         }
@@ -257,6 +261,7 @@ public class OauthService {
             ipService.setRegisterIp(sysUser.getId(), ip);
             sysUserRoleService.setRegisterRole(sysUser.getId());
             sysLoginLogService.recordLoginLog(sysUser.getId(), username, code, ip, LoginStatusEnum.SUCCESS.getCode());
+            userSettingsService.createDefaultSettings(sysUser.getId());
             return redisComponent.saveOauthTicket(sysUser.getId(), code);
         }
 

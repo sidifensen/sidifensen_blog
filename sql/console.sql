@@ -487,3 +487,18 @@ select
     0 as receive_system_email
 from sys_user
 where is_deleted = 0;
+
+
+create table announcement (
+    id int not null auto_increment primary key comment '通知ID',
+    title varchar(255) not null comment '通知标题',
+    content text not null comment '通知内容',
+    send_method varchar(255) not null comment '发送方式(JSON数组): system=系统通知(指定用户走message表), website=公告(全部用户走announcement表), email=邮件; 可多选如["system","email"]',
+    target_type tinyint not null default 1 comment '发送对象：1-全部用户 2-指定用户',
+    target_users text comment '发送对象id(JSON数组)',
+    status tinyint not null default 0 comment '状态：0-待发送 1-发送中 2-已发送 3-发送失败',
+    send_time datetime default null comment '发送时间',
+    create_time datetime not null comment '创建时间',
+    update_time datetime not null comment '更新时间',
+    is_deleted tinyint not null default 0 comment '是否删除：0-未删除 1-已删除'
+) engine=innodb default charset=utf8mb4 comment='公告表';

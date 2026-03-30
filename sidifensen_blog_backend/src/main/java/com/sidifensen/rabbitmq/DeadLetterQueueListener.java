@@ -5,10 +5,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sidifensen.domain.constants.RabbitMQConstants;
 import com.sidifensen.domain.dto.MessageDto;
 import com.sidifensen.domain.dto.PayOrderExpireMessage;
+import com.sidifensen.domain.entity.Announcement;
 import com.sidifensen.domain.entity.PayOrder;
 import com.sidifensen.domain.enums.IsReadStatusEnum;
 import com.sidifensen.domain.enums.MessageTypeEnum;
 import com.sidifensen.domain.enums.PayOrderStatusEnum;
+import com.sidifensen.mapper.AnnouncementMapper;
 import com.sidifensen.mapper.PayOrderMapper;
 import com.sidifensen.service.MessageService;
 import jakarta.annotation.Resource;
@@ -46,6 +48,9 @@ public class DeadLetterQueueListener {
 
     @Resource
     private PayOrderMapper payOrderMapper;
+
+    @Resource
+    private AnnouncementMapper announcementMapper;
 
     /**
      * 监听死信队列
@@ -101,6 +106,8 @@ public class DeadLetterQueueListener {
             } else if (RabbitMQConstants.Order_Expire_Queue.equals(sourceQueue)) {
                 // 订单超时消息，需要实际关闭订单
                 handleOrderExpireDeadLetter(messageBody);
+            } else if (RabbitMQConstants.Announcement_Queue.equals(sourceQueue)) {
+                handleAnnouncementDeadLetter(messageBody, sourceQueue, sourceExchange, sourceRoutingKey, retryCount);
             } else {
                 handleUnknownDeadLetter(messageBody, sourceQueue, sourceExchange, sourceRoutingKey, retryCount);
             }
@@ -173,7 +180,29 @@ public class DeadLetterQueueListener {
         log.error("访客记录写入失败，已达最大重试次数，消息内容: {}", messageBody);
         saveDeadLetterNotice("访客记录写入", messageBody, sourceQueue, sourceExchange, sourceRoutingKey, retryCount);
     }
-    
+
+    /**
+     * 处理公告发送死信
+     */
+    private void handleAnnouncementDeadLetter(String messageBody, String sourceQueue, String sourceExchange,
+            String sourceRoutingKey, Integer retryCount) {
+        log.error("公告发送失败，已达最大重试次数，消息内容: {}", messageBody);
+        // 更新公告状态为发送失败
+        try {
+            com.alibaba.fastjson2.JSONObject obj = JSON.parseObject(messageBody);
+            Integer announcementId = obj.getInteger("announcementId");
+            if (announcementId != null) {
+                Announcement announcement = new Announcement();
+                announcement.setId(announcementId);
+                announcement.setStatus(3);
+                announcementMapper.updateById(announcement);
+            }
+        } catch (Exception e) {
+            log.error("更新公告状态为发送失败失败，messageBody={}", messageBody, e);
+        }
+        saveDeadLetterNotice("公告发送", messageBody, sourceQueue, sourceExchange, sourceRoutingKey, retryCount);
+    }
+
     /**
      * 处理未知类型死信
      */

@@ -219,16 +219,16 @@ const fetchExamineCount = async () => {
   }
 };
 
-// 获取 VIP 统计数据
-const fetchVipStatistics = async () => {
+// 获取互动趋势数据
+const fetchInteractionTrend = async () => {
   try {
-    vipStatisticsLoading.value = true;
-    const res = await getVipStatistics();
-    vipStatisticsData.value = res.data || { totalVipCount: 0, newVipCount: 0 };
+    interactionTrendLoading.value = true;
+    const res = await getInteractionTrend();
+    interactionTrend.value = res.data || [];
   } catch (error) {
-    console.error('获取VIP统计数据失败:', error);
+    console.error('获取互动趋势数据失败:', error);
   } finally {
-    vipStatisticsLoading.value = false;
+    interactionTrendLoading.value = false;
   }
 };
 
@@ -245,18 +245,19 @@ const fetchWeeklyTrend = async () => {
   }
 };
 
-// 获取互动趋势数据
-const fetchInteractionTrend = async () => {
+// 获取 VIP 统计数据
+const fetchVipStatistics = async () => {
   try {
-    interactionTrendLoading.value = true;
-    const res = await getInteractionTrend();
-    interactionTrend.value = res.data || [];
+    vipStatisticsLoading.value = true;
+    const res = await getVipStatistics();
+    vipStatisticsData.value = res.data || { totalVipCount: 0, newVipCount: 0 };
   } catch (error) {
-    console.error('获取互动趋势数据失败:', error);
+    console.error('获取VIP统计数据失败:', error);
   } finally {
-    interactionTrendLoading.value = false;
+    vipStatisticsLoading.value = false;
   }
 };
+
 
 // 切换天数
 const handleDaysChange = () => {
@@ -276,9 +277,9 @@ const refreshData = () => {
 onMounted(async () => {
   await fetchAllStatistics();
   await fetchExamineCount();
-  await fetchVipStatistics();
-  await fetchWeeklyTrend();
   await fetchInteractionTrend();
+  await fetchWeeklyTrend();
+  await fetchVipStatistics();
 });
 </script>
 

@@ -8,11 +8,20 @@ export function getMessagesCount() {
   });
 }
 
-// 获取管理员消息列表
+// 获取管理员消息列表（仅 type=0 系统通知，用于 Bell 下拉，全量返回）
 export function getMessageList() {
   return request({
     url: '/message/admin/list',
     method: 'get'
+  });
+}
+
+// 分页获取管理员消息列表（仅 type=0 系统通知，用于管理页面）
+export function getMessagePage(pageNum, pageSize) {
+  return request({
+    url: '/message/admin/page',
+    method: 'get',
+    params: { pageNum, pageSize }
   });
 }
 

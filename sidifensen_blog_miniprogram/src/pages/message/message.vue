@@ -164,7 +164,7 @@ onMounted(() => {
       >
         <view class="message-main" @click="onMessageClick(message)">
           <view class="message-avatar">
-            <uv-avatar :src="message.fromUserAvatar" size="80" />
+            <u-avatar :src="message.fromUserAvatar" size="80" />
           </view>
           <view class="message-content">
             <view class="message-header">

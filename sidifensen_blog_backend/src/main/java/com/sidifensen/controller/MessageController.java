@@ -4,6 +4,7 @@ import com.sidifensen.aspect.OperationLog;
 import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.MessageVo;
+import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.service.MessageService;
 import jakarta.annotation.Resource;
@@ -41,9 +42,8 @@ public class MessageController {
     }
 
     /**
-     * 查看管理员消息
+     * 查看管理员消息（仅 type=0 系统通知，用于 Bell 下拉）
      *
-     * @param
      * @return
      */
     @OperationLog(module = "消息管理", type = OperationTypeEnum.SELECT, description = "管理员获取消息列表")
@@ -52,6 +52,23 @@ public class MessageController {
     public Result getAdminMessages() {
         List<MessageVo> messageVos = messageService.getAdminMessages();
         return Result.success(messageVos);
+    }
+
+    /**
+     * 分页查看管理员消息（仅 type=0 系统通知，用于管理页面）
+     *
+     * @param pageNum  页码
+     * @param pageSize 每页条数
+     * @return
+     */
+    @OperationLog(module = "消息管理", type = OperationTypeEnum.SELECT, description = "管理员分页获取消息列表")
+    @PreAuthorize("hasAuthority('message:list')")
+    @GetMapping("/admin/page")
+    public Result getAdminMessagesPage(
+            @RequestParam Integer pageNum,
+            @RequestParam Integer pageSize) {
+        PageVo<List<MessageVo>> pageVo = messageService.getAdminMessagesPage(pageNum, pageSize);
+        return Result.success(pageVo);
     }
 
     /**

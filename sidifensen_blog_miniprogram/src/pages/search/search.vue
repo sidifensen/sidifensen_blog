@@ -108,7 +108,7 @@ onMounted(() => {
         />
       </view>
       <view class="search-btn" @click="handleSearch">
-        <uv-icon name="search" size="20px" color="#ffffff" />
+        <u-icon name="search" size="20px" color="#ffffff" />
       </view>
     </view>
 
@@ -185,7 +185,7 @@ onMounted(() => {
 
       <!-- 初始状态 -->
       <view v-if="!hasSearched" class="empty-state">
-        <uv-icon name="search" size="48px" color="var(--text-muted)" />
+        <u-icon name="search" size="48px" color="var(--text-muted)" />
         <text class="empty-text">输入关键词搜索</text>
       </view>
     </scroll-view>

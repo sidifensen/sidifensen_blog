@@ -126,7 +126,7 @@ onMounted(() => {
     <!-- 用户信息头部 -->
     <view class="profile-header card">
       <view class="user-info">
-        <uv-avatar :src="userInfo.avatar" size="160" />
+        <u-avatar :src="userInfo.avatar" size="160" />
         <view class="user-detail">
           <view class="nickname">{{ userInfo.nickname || '匿名用户' }}</view>
           <view v-if="userInfo.bio" class="bio">{{ userInfo.bio }}</view>
