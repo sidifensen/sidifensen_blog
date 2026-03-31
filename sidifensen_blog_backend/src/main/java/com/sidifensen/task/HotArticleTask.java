@@ -121,7 +121,8 @@ public class HotArticleTask {
             redisComponent.batchSetArticleHotScore(articleScores);
 
         } catch (Exception e) {
-            log.error("同步热门文章数据失败: {}", e.getMessage(), e);
+            long costTime = System.currentTimeMillis() - startTime;
+            log.error("同步热门文章数据失败，耗时{}ms: {}", costTime, e.getMessage(), e);
         }
     }
 

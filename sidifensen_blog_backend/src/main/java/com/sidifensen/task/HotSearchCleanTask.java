@@ -37,10 +37,6 @@ public class HotSearchCleanTask {
                 redisComponent.getStringRedisTemplate()
                         .opsForZSet().remove("hot_searches", keywordsToDelete.toArray());
                 
-            } else {
-                long currentSize = redisComponent.getStringRedisTemplate()
-                        .opsForZSet().size("hot_searches");
-                
             }
         } catch (Exception e) {
             log.error("清理热门搜索失败，耗时={}ms", System.currentTimeMillis() - startTime, e);

@@ -112,11 +112,10 @@ export default defineConfig(({ mode }) => ({
             },
             {
               urlPattern: /\/api\/.*/i,
-              handler: "NetworkFirst",
+              handler: "NetworkOnly",
               options: {
                 cacheName: "api-cache",
-                networkTimeoutSeconds: 10,
-                expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 },
+                expiration: { maxEntries: 0 },
               },
             },
           ],

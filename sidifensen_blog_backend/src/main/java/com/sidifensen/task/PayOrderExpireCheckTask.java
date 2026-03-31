@@ -43,7 +43,6 @@ public class PayOrderExpireCheckTask {
 
         var expiredOrders = payOrderMapper.selectList(queryWrapper);
         if (expiredOrders.isEmpty()) {
-            log.info("补偿关闭超时订单任务执行完成，未发现待关闭订单，耗时={}ms", System.currentTimeMillis() - startTime);
             return;
         }
 

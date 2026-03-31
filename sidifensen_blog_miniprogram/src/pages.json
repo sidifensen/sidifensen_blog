@@ -109,6 +109,13 @@
       "style": {
         "navigationBarTitleText": "设置"
       }
+    },
+    {
+      "path": "pages/announcement/announcement",
+      "style": {
+        "navigationBarTitleText": "网站公告",
+        "enablePullDownRefresh": true
+      }
     }
   ],
   "globalStyle": {

@@ -24,7 +24,6 @@ public class VipExpireTask {
         long startTime = System.currentTimeMillis();
         try {
             vipMemberService.syncExpiredVipRoles();
-            
         } catch (Exception e) {
             log.error("VIP角色同步任务执行失败，耗时={}ms", System.currentTimeMillis() - startTime, e);
         }

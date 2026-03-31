@@ -63,9 +63,10 @@
           </el-table-column>
           <el-table-column prop="sendTime" label="发送时间" width="160" />
           <el-table-column prop="createTime" label="创建时间" sortable width="160" />
-          <el-table-column label="操作" width="150">
+          <el-table-column label="操作" width="180">
             <template #default="{ row }">
               <div class="table-actions">
+                <el-button type="primary" @click="handleEdit(row)" :icon="Edit" class="edit-button" size="small">编辑</el-button>
                 <el-button v-if="row.status === 0" type="warning" @click="handleCancel(row)" :icon="Close" class="cancel-button" size="small">取消</el-button>
                 <el-button type="danger" @click="handleDelete(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
@@ -96,6 +97,7 @@
                 <span class="card-time">{{ item.createTime }}</span>
               </div>
               <div class="card-actions">
+                <el-button type="primary" @click="handleEdit(item)" size="small">编辑</el-button>
                 <el-button v-if="item.status === 0" type="warning" @click="handleCancel(item)" size="small">取消</el-button>
                 <el-button type="danger" @click="handleDelete(item.id)" size="small">删除</el-button>
               </div>
@@ -165,7 +167,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
-import { Delete, Close } from "@element-plus/icons-vue";
+import { Delete, Close, Edit } from "@element-plus/icons-vue";
 import { getAnnouncementPage, createAnnouncement, cancelAnnouncement, deleteAnnouncement } from "@/api/announcement";
 import { getUserList } from "@/api/user";
 import Pagination from "@/components/Pagination.vue";
@@ -182,6 +184,8 @@ const total = ref(0);
 const dialogVisible = ref(false);
 const submitLoading = ref(false);
 const announcementFormRef = ref(null);
+const isEdit = ref(false);
+const editingId = ref(null);
 
 // 搜索表单
 const searchForm = reactive({
@@ -306,6 +310,8 @@ const handleSearch = async () => {
 
 // 打开发送对话框
 const handleSend = async () => {
+  isEdit.value = false;
+  editingId.value = null;
   announcementForm.sendMethod = [];
   announcementForm.title = "";
   announcementForm.content = "";
@@ -315,10 +321,24 @@ const handleSend = async () => {
   await fetchUsers();
 };
 
+// 编辑公告
+const handleEdit = (row) => {
+  isEdit.value = true;
+  editingId.value = row.id;
+  announcementForm.sendMethod = parseSendMethod(row.sendMethod);
+  announcementForm.title = row.title;
+  announcementForm.content = row.content;
+  announcementForm.targetType = row.targetType || 1;
+  announcementForm.targetUsers = [];
+  dialogVisible.value = true;
+};
+
 // 关闭对话框
 const handleDialogClose = () => {
   announcementFormRef.value?.resetFields();
   dialogVisible.value = false;
+  isEdit.value = false;
+  editingId.value = null;
 };
 
 // 提交表单
@@ -335,9 +355,12 @@ const handleSubmit = async () => {
       targetType: announcementForm.targetType,
       targetUsers: JSON.stringify(announcementForm.targetUsers || []),
     };
+    if (isEdit.value && editingId.value) {
+      data.id = editingId.value;
+    }
 
     await createAnnouncement(data);
-    ElMessage.success("公告发送成功");
+    ElMessage.success(isEdit.value ? "编辑成功" : "发送成功");
     dialogVisible.value = false;
     await fetchAnnouncements();
   } catch (error) {
@@ -550,6 +573,13 @@ onUnmounted(() => {
         gap: 5px;
 
         :deep(.el-button) { margin-left: 0; }
+
+        .edit-button {
+          background-color: #e0f2fe;
+          color: #0284c7;
+          border-color: #e0f2fe;
+          border-radius: 6px;
+        }
 
         .cancel-button {
           background-color: #fef3c7;
