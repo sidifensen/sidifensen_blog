@@ -192,16 +192,18 @@
     </el-dialog>
 
     <!-- 分配角色对话框 -->
-    <el-dialog v-model="authorizeDialogVisible" title="菜单分配角色" :before-close="handleAuthorizeDialogClose" width="500px">
-      <div class="authorize-dialog-content">
+    <el-dialog v-model="authorizeDialogVisible" title="菜单分配角色" :before-close="handleAuthorizeDialogClose" class="authorize-dialog">
+      <div v-loading="authorizeLoading" class="authorize-dialog-content">
         <p class="menu-name">当前菜单: {{ currentMenu?.name }}</p>
-        <el-form ref="authorizeFormRef" class="authorize-form">
-          <el-form-item label="选择角色">
-            <el-checkbox-group v-model="selectedRoles" class="role-checkbox-group">
-              <el-checkbox v-for="role in allRoles" :key="role.id" :label="role.id">{{ role.name }}</el-checkbox>
-            </el-checkbox-group>
-          </el-form-item>
-        </el-form>
+        <template v-if="!authorizeLoading">
+          <el-form ref="authorizeFormRef" class="authorize-form">
+            <el-form-item label="选择角色">
+              <el-checkbox-group v-model="selectedRoles" class="role-checkbox-group">
+                <el-checkbox v-for="role in allRoles" :key="role.id" :label="role.id">{{ role.name }}</el-checkbox>
+              </el-checkbox-group>
+            </el-form-item>
+          </el-form>
+        </template>
       </div>
       <template #footer>
         <span class="dialog-footer">
@@ -540,24 +542,33 @@ const currentMenu = ref(null);
 const selectedRoles = ref([]);
 // 所有角色
 const allRoles = ref([]);
+// 授权弹窗加载状态
+const authorizeLoading = ref(false);
 
 // 处理授权角色
 const handleAuthorizeRole = async (row) => {
   currentMenu.value = row;
-  authorizeDialogVisible.value = true;
-  // 清空已选角色
   selectedRoles.value = [];
 
-  const res = await getRoleList();
-  allRoles.value = res.data;
+  // 先打开弹窗并显示 loading
+  authorizeDialogVisible.value = true;
+  authorizeLoading.value = true;
 
-  // 获取已经有菜单的角色
-  const res1 = await getRolesByMenu(row.id);
-  // 把数组里的id取出来
-  res1.data.forEach((item) => {
-    // 默认选中已有菜单的角色
-    selectedRoles.value.push(item.id);
-  });
+  try {
+    // 并行加载角色列表和菜单已有角色
+    const [roleRes, menuRolesRes] = await Promise.all([
+      getRoleList(),
+      getRolesByMenu(row.id),
+    ]);
+
+    allRoles.value = roleRes.data;
+    selectedRoles.value = menuRolesRes.data.map((item) => item.id);
+  } catch (error) {
+    ElMessage.error("获取角色列表失败");
+    console.error("获取角色列表失败:", error);
+  } finally {
+    authorizeLoading.value = false;
+  }
 };
 
 // 处理授权提交

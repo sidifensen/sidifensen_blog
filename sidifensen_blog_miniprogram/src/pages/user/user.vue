@@ -6,6 +6,7 @@ import { getMyInfo } from '@/api/user'
 import { getUserArticleStatistics } from '@/api/article'
 import { getVipStatus } from '@/api/vip'
 import { formatCount, formatDate } from '@/utils/format'
+import TabBar from '@/components/TabBar/TabBar.vue'
 
 const userStore = useUserStore()
 
@@ -244,6 +245,8 @@ onShow(() => {
       </view>
     </view>
 
+    <!-- 自定义底部导航栏 -->
+    <TabBar />
   </view>
 </template>
 

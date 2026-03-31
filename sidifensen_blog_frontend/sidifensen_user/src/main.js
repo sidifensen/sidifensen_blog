@@ -5,7 +5,6 @@ import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import { createHead } from "@vueuse/head";
 
 import App from "./App.vue";
 import router from "./router";
@@ -18,25 +17,7 @@ pinia.use(piniaPluginPersistedstate);
 // 夜间模式
 import "element-plus/theme-chalk/dark/css-vars.css";
 
-// 状态栏高度适配
-import { StatusBar, Style } from "@capacitor/status-bar";
-
 const app = createApp(App);
-
-// 创建 head 实例用于 SEO（必须在 createApp 之后）
-const head = createHead();
-app.use(head);
-
-// 设置状态栏样式并获取高度
-const setupStatusBar = async () => {
-  try {
-    await StatusBar.setStyle({ style: Style.Dark });
-    await StatusBar.setBackgroundColor({ color: "#ffffff" });
-  } catch (e) {
-    // 非 Capacitor 环境忽略
-  }
-};
-setupStatusBar();
 
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component);

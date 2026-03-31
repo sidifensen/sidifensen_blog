@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * 公告表
@@ -71,7 +72,7 @@ public class Announcement {
      * 更新时间
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
+    private Date updateTime;
 
     /**
      * 是否删除：0-未删除 1-已删除

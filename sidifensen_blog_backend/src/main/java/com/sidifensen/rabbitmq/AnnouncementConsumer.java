@@ -23,6 +23,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -157,6 +158,8 @@ public class AnnouncementConsumer {
                 message.setIsRead(0);
                 String content = String.format("{\"text\":\"%s\",\"announcementId\":%d}", task.getContent(), task.getAnnouncementId());
                 message.setContent(content);
+                message.setCreateTime(new Date()); // RabbitMQ 消费者中手动设置时间，MyBatis-Plus 自动填充不生效
+                message.setUpdateTime(new Date());
                 messages.add(message);
             }
 

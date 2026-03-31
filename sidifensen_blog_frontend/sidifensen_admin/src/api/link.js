@@ -84,3 +84,16 @@ export function adminBatchDeleteLink(linkIds) {
     data: linkIds,
   });
 }
+
+/**
+ * 管理员更新友链
+ * @param {Object} linkData 友链更新信息
+ * @returns {Promise} 操作结果
+ */
+export function adminUpdateLink(linkData) {
+  return request({
+    url: "/link/admin/update",
+    method: "put",
+    data: linkData,
+  });
+}

@@ -59,6 +59,9 @@ public class MessageController {
      *
      * @param pageNum  页码
      * @param pageSize 每页条数
+     * @param isRead   阅读状态筛选（0-未读，1-已读）
+     * @param startTime 开始时间筛选
+     * @param endTime   结束时间筛选
      * @return
      */
     @OperationLog(module = "消息管理", type = OperationTypeEnum.SELECT, description = "管理员分页获取消息列表")
@@ -66,8 +69,11 @@ public class MessageController {
     @GetMapping("/admin/page")
     public Result getAdminMessagesPage(
             @RequestParam Integer pageNum,
-            @RequestParam Integer pageSize) {
-        PageVo<List<MessageVo>> pageVo = messageService.getAdminMessagesPage(pageNum, pageSize);
+            @RequestParam Integer pageSize,
+            @RequestParam(required = false) Integer isRead,
+            @RequestParam(required = false) String startTime,
+            @RequestParam(required = false) String endTime) {
+        PageVo<List<MessageVo>> pageVo = messageService.getAdminMessagesPage(pageNum, pageSize, isRead, startTime, endTime);
         return Result.success(pageVo);
     }
 

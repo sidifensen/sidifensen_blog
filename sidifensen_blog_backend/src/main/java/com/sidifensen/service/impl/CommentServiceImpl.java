@@ -36,6 +36,7 @@ import com.sidifensen.utils.EntityCheckUtils;
 import com.sidifensen.utils.PageUtils;
 import com.sidifensen.utils.SecurityUtils;
 import com.sidifensen.utils.TextAuditUtils;
+import com.sidifensen.utils.XssUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -110,6 +111,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         comment.setUserId(currentUserId);
         // 先设置为待审核状态
         comment.setExamineStatus(ExamineStatusEnum.WAIT.getCode());
+
+        // XSS 过滤评论内容，防止 XSS 攻击
+        comment.setContent(XssUtils.cleanRichText(commentDto.getContent()));
 
         // 保存评论
         boolean saved = save(comment);

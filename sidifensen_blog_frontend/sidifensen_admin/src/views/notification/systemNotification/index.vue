@@ -188,7 +188,7 @@ const fetchMessages = async () => {
   loading.value = true;
   try {
     const params = buildQueryParams();
-    const res = await getMessagePage(params.pageNum, params.pageSize);
+    const res = await getMessagePage(params);
     applyPageData(res.data);
   } catch (error) {
     ElMessage.error("获取系统通知列表失败");

@@ -30,6 +30,7 @@
             "mode" : "hash"
         },
         "title" : "斯蒂芬森博客",
+        "favicon" : "static/logo.svg",
         "tabBar" : {
             "iconStyle" : {
                 "iconPathSize" : 22,

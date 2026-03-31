@@ -125,6 +125,7 @@
     "backgroundColor": "#f8fafc"
   },
   "tabBar": {
+    "custom": true,
     "color": "#64748b",
     "selectedColor": "#0891b2",
     "borderStyle": "black",

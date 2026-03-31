@@ -5,6 +5,7 @@ import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.LinkAuditDto;
 import com.sidifensen.domain.dto.LinkRequestDto;
 import com.sidifensen.domain.dto.LinkSearchDto;
+import com.sidifensen.domain.dto.LinkUpdateDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.AdminLinkVo;
 import com.sidifensen.domain.vo.LinkVo;
@@ -154,6 +155,20 @@ public class LinkController {
     @DeleteMapping("/admin/delete/batch")
     public Result<Void> adminDeleteBatchLink(@RequestBody @NotNull(message = "友链ID列表不能为空") List<Integer> linkIds) {
         linkService.adminDeleteBatchLink(linkIds);
+        return Result.success();
+    }
+
+    /**
+     * 管理员更新友链
+     *
+     * @param linkUpdateDto 友链更新信息
+     * @return 操作结果
+     */
+    @OperationLog(module = "友链管理", type = OperationTypeEnum.UPDATE, description = "管理员更新友链")
+    @PreAuthorize("hasAuthority('link:update')")
+    @PutMapping("/admin/update")
+    public Result<Void> adminUpdateLink(@RequestBody @Valid LinkUpdateDto linkUpdateDto) {
+        linkService.adminUpdateLink(linkUpdateDto);
         return Result.success();
     }
 }

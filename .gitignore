@@ -42,3 +42,4 @@ node_modules/
 /.mcp.json
 /.golutra/
 .gstack/
+/sidifensen_blog_backend/src/test/

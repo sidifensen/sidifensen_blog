@@ -130,6 +130,7 @@ public class OauthService {
         updateUser.setLoginType(code);
         updateUser.setLoginIp(ip);
         updateUser.setLoginAddress(ipUtils.getAddress(ip));
+        updateUser.setUpdateTime(new Date());
         int update = sysUserMapper.updateById(updateUser);
         if (update <= 0) {
             throw new BlogException(BlogConstants.OauthLoginError);
@@ -276,6 +277,7 @@ public class OauthService {
         updateUser.setLoginType(code);
         updateUser.setLoginIp(ip);
         updateUser.setLoginAddress(ipUtils.getAddress(ip));
+        updateUser.setUpdateTime(new Date());
         int update = sysUserMapper.updateById(updateUser);
         if (update <= 0) {
             throw new BlogException(BlogConstants.OauthLoginError);

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getAlbumList } from '@/api/album'
+import TabBar from '@/components/TabBar/TabBar.vue'
 
 // 相册列表
 const albumList = ref([])
@@ -114,6 +115,8 @@ onMounted(() => {
       </view>
     </scroll-view>
 
+    <!-- 自定义底部导航栏 -->
+    <TabBar />
   </view>
 </template>
 

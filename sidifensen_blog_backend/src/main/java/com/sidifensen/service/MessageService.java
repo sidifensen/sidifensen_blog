@@ -33,7 +33,7 @@ public interface MessageService extends IService<Message> {
     List<MessageVo> getAdminMessages();
 
     // 获取管理员消息列表（仅 type=0 系统通知，分页返回）
-    PageVo<List<MessageVo>> getAdminMessagesPage(Integer pageNum, Integer pageSize);
+    PageVo<List<MessageVo>> getAdminMessagesPage(Integer pageNum, Integer pageSize, Integer isRead, String startTime, String endTime);
 
     // 管理员读取消息
     void readAdminMessages(List<Integer> messageIds);

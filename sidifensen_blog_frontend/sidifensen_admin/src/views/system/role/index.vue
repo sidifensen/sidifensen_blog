@@ -126,16 +126,21 @@
     </el-dialog>
 
     <!-- 分配用户弹窗对话框 -->
-    <el-dialog v-model="authorizeDialogVisible" title="角色分配用户" :before-close="handleAuthorizeDialogClose" width="500px">
-      <div class="authorize-dialog-content">
+    <el-dialog v-model="authorizeDialogVisible" title="角色分配用户" :before-close="handleAuthorizeDialogClose" class="authorize-dialog">
+      <div v-loading="authorizeLoading" class="authorize-dialog-content">
         <p class="role-name">当前角色: {{ currentRole?.name }}</p>
-        <el-form ref="authorizeFormRef" class="authorize-form">
-          <el-form-item label="选择用户">
-            <el-checkbox-group v-model="selectedUser" class="user-checkbox-group">
-              <el-checkbox v-for="user in allUser" :key="user.id" :label="user.id">{{ user.username }}</el-checkbox>
-            </el-checkbox-group>
-          </el-form-item>
-        </el-form>
+        <template v-if="!authorizeLoading">
+          <el-transfer
+            v-model="selectedUser"
+            :data="transferUserData"
+            :filterable="true"
+            :filter-method="filterMethod"
+            filter-placeholder="搜索用户"
+            :titles="['待分配用户', '已分配用户']"
+            :button-texts="['取消分配', '分配用户']"
+            class="user-transfer"
+          />
+        </template>
       </div>
       <template #footer>
         <span class="dialog-footer">
@@ -428,6 +433,7 @@ const handleDialogClose = () => {
 
 // 授权角色弹窗
 const authorizeDialogVisible = ref(false);
+const authorizeLoading = ref(false);
 // 当前角色
 const currentRole = ref(null);
 // 选择的用户
@@ -435,24 +441,43 @@ const selectedUser = ref([]);
 // 所有用户
 const allUser = ref([]);
 
+// 穿梭框数据格式
+const transferUserData = computed(() => {
+  return allUser.value.map((user) => ({
+    key: user.id,
+    label: user.username,
+  }));
+});
+
+// 穿梭框筛选方法
+const filterMethod = (query, item) => {
+  return item.label.toLowerCase().includes(query.toLowerCase());
+};
+
 // 处理授权角色
 const handleAuthorizeUser = async (row) => {
   currentRole.value = row;
-  authorizeDialogVisible.value = true;
-  // 清空已选角色和禁用角色数组
   selectedUser.value = [];
 
-  // 获取角色列表
-  const res = await getUserList();
-  allUser.value = res.data;
+  // 先打开弹窗并显示 loading
+  authorizeDialogVisible.value = true;
+  authorizeLoading.value = true;
 
-  // 获取已分配当前角色的用户
-  const res1 = await getUsersByRole(row.id);
-  // 把数组里的id取出来
-  res1.data.forEach((item) => {
-    // 默认选中已经有角色的用户
-    selectedUser.value.push(item.id);
-  });
+  try {
+    // 并行加载用户列表和已分配用户
+    const [userRes, roleUsersRes] = await Promise.all([
+      getUserList(),
+      getUsersByRole(row.id),
+    ]);
+
+    allUser.value = userRes.data;
+    selectedUser.value = roleUsersRes.data.map((item) => item.id);
+  } catch (error) {
+    ElMessage.error("获取用户列表失败");
+    authorizeDialogVisible.value = false;
+  } finally {
+    authorizeLoading.value = false;
+  }
 };
 
 // 处理授权提交
@@ -468,7 +493,7 @@ const handleAuthorizeSubmit = async () => {
     console.error("分配用户失败:", error);
   } finally {
     authorizeDialogVisible.value = false;
-    // 重置选择的用户和禁用的用户
+    authorizeLoading.value = false;
     selectedUser.value = [];
   }
 };
@@ -476,6 +501,7 @@ const handleAuthorizeSubmit = async () => {
 // 处理授权对话框关闭
 const handleAuthorizeDialogClose = () => {
   authorizeDialogVisible.value = false;
+  authorizeLoading.value = false;
   selectedUser.value = [];
 };
 
@@ -960,13 +986,8 @@ const handleResize = () => {
 
   :deep(.el-dialog) {
     border-radius: 16px;
-    // 默认宽度
-    width: 500px;
-
-    // 屏幕宽度小于768px时的宽度
-    @media screen and (max-width: 767px) {
-      width: 90%;
-    }
+    width: fit-content;
+    max-width: 90%;
   }
 
   // 新增/编辑菜单对话框
@@ -997,20 +1018,21 @@ const handleResize = () => {
       color: #1e293b;
     }
 
-    .authorize-form {
-      :deep(.el-form-item) {
-        margin-bottom: 20px;
+    .user-transfer {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+
+      :deep(.el-transfer__panel) {
+        width: 280px;
+        flex: none;
       }
 
-      .user-checkbox-group {
+      :deep(.el-transfer__buttons) {
         display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-
-        :deep(.el-checkbox) {
-          margin-right: 16px;
-          margin-bottom: 8px;
-        }
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 16px;
       }
     }
   }

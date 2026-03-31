@@ -8,31 +8,31 @@
   </defs>
 
   <!-- 渐变背景 -->
-  <rect width="200" height="200" rx="40" fill="url(#grad)"/>
+  <rect width="200" height="200" rx="45" fill="url(#grad)"/>
 
   <!-- 白色代码符号 -->
   <g transform="translate(100, 100)">
     <path
-      d="M-24 -18 L-38 0 L-24 18"
+      d="M-28 -22 L-46 0 L-28 22"
       fill="none"
       stroke="#ffffff"
-      stroke-width="6"
+      stroke-width="10"
       stroke-linecap="round"
       stroke-linejoin="round"
     />
     <path
-      d="M24 -18 L38 0 L24 18"
+      d="M28 -22 L46 0 L28 22"
       fill="none"
       stroke="#ffffff"
-      stroke-width="6"
+      stroke-width="10"
       stroke-linecap="round"
       stroke-linejoin="round"
     />
     <path
-      d="M-6 24 L6 -24"
+      d="M-8 30 L8 -30"
       fill="none"
       stroke="#ffffff"
-      stroke-width="6"
+      stroke-width="10"
       stroke-linecap="round"
     />
   </g>

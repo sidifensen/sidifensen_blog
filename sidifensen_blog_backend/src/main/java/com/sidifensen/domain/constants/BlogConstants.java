@@ -163,6 +163,7 @@ public class BlogConstants {
     public static final String BatchAuditLinkError = "批量审核友链失败";
     public static final String LinkIdsRequired = "友链ID列表不能为空";
     public static final String BatchDeleteLinkError = "批量删除友链失败";
+    public static final String UpdateLinkError = "更新友链失败";
 
     // OAuth相关错误信息
     public static final String OauthLoginError = "OAuth登录失败";

@@ -154,7 +154,7 @@ aliyun:
 sidifensen:
   jwt: ${SIDIFENSEN_JWT_SECRET:sidifensen} # jwt 密钥
   rate-limit:
-    enabled: ${SIDIFENSEN_RATE_LIMIT_ENABLED:false} # 限流开关，压力测试时设为 false
+    enabled: ${SIDIFENSEN_RATE_LIMIT_ENABLED:true} # 限流开关，压力测试时设为 false
   PhotoAutoAudit: ${SIDIFENSEN_PHOTO_AUTO_AUDIT:false} # 是否开启图片自动审核
   ArticleAutoAudit: ${SIDIFENSEN_ARTICLE_AUTO_AUDIT:false} # 是否开启文章自动审核
   CommentAutoAudit: ${SIDIFENSEN_COMMENT_AUTO_AUDIT:false} # 是否开启评论自动审核

@@ -84,15 +84,17 @@
         user-width="120"
         examine-status-width="80"
         create-time-width="110"
-        :has-edit-action="false"
+        :has-edit-action="true"
         :has-delete-action="true"
         :has-audit-action="true"
         :has-reject-action="true"
+        actions-width="280"
         @selection-change="handleSelectionChange"
         @view="handleViewLink"
         @audit="handleAuditLink"
         @reject="handleRejectLink"
         @delete="handleDeleteLink"
+        @edit="handleEditLink"
       >
         <!-- URL列 -->
         <el-table-column prop="url" label="网站地址" min-width="200">
@@ -145,13 +147,55 @@
       />
     </template>
   </ManagementCard>
+
+  <!-- 编辑友链对话框 -->
+  <el-dialog
+    v-model="editDialogVisible"
+    title="编辑友链"
+    width="500px"
+    destroy-on-close
+  >
+    <el-form
+      ref="editFormRef"
+      :model="editLinkForm"
+      :rules="editFormRules"
+      label-width="80px"
+    >
+      <el-form-item label="网站名称" prop="name">
+        <el-input v-model="editLinkForm.name" placeholder="请输入网站名称" />
+      </el-form-item>
+      <el-form-item label="网站地址" prop="url">
+        <el-input v-model="editLinkForm.url" placeholder="请输入网站地址" />
+      </el-form-item>
+      <el-form-item label="封面图片" prop="coverUrl">
+        <el-input v-model="editLinkForm.coverUrl" placeholder="请输入封面图片URL" />
+      </el-form-item>
+      <el-form-item label="网站描述" prop="description">
+        <el-input
+          v-model="editLinkForm.description"
+          type="textarea"
+          :rows="3"
+          placeholder="请输入网站描述"
+        />
+      </el-form-item>
+      <el-form-item label="联系邮箱" prop="email">
+        <el-input v-model="editLinkForm.email" placeholder="请输入联系邮箱" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="editDialogVisible = false">取消</el-button>
+      <el-button type="primary" :loading="editLinkLoading" @click="submitEditLink">
+        确定
+      </el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { Search } from "@element-plus/icons-vue";
 import { getUserList } from "@/api/user";
-import { adminGetLinkList, adminSearchLink, adminExamineLink, adminBatchExamineLink, adminDeleteLink, adminBatchDeleteLink } from "@/api/link";
+import { adminGetLinkList, adminSearchLink, adminExamineLink, adminBatchExamineLink, adminDeleteLink, adminBatchDeleteLink, adminUpdateLink } from "@/api/link";
 
 // 组件
 import ManagementCard from "@/components/ManagementCard.vue";
@@ -185,6 +229,27 @@ const selectedLinks = ref([]);
 const batchAuditLoading = ref(false);
 const batchRejectLoading = ref(false);
 const batchDeleteLoading = ref(false);
+
+// 编辑对话框
+const editDialogVisible = ref(false);
+const editFormRef = ref(null);
+const editLinkLoading = ref(false);
+const editLinkForm = ref({
+  id: null,
+  name: "",
+  url: "",
+  coverUrl: "",
+  description: "",
+  email: "",
+});
+
+// 编辑表单验证规则
+const editFormRules = {
+  name: [{ required: true, message: "请输入网站名称", trigger: "blur" }],
+  url: [{ required: true, message: "请输入网站地址", trigger: "blur" }],
+  description: [{ required: true, message: "请输入网站描述", trigger: "blur" }],
+  email: [{ required: true, message: "请输入联系邮箱", trigger: "blur" }],
+};
 
 // 搜索条件判断
 const hasSearchConditions = () => !!(searchExamineStatus.value || searchKeyword.value || searchStartTime.value || searchEndTime.value || searchUserId.value);
@@ -273,6 +338,40 @@ const handleMobileSelect = (link) => {
 const handleViewLink = (link) => {
   // 可以跳转到详情页或打开详情对话框
   console.log("查看友链:", link);
+};
+
+// 编辑友链
+const handleEditLink = (link) => {
+  editLinkForm.value = {
+    id: link.id,
+    name: link.name || "",
+    url: link.url || "",
+    coverUrl: link.coverUrl || "",
+    description: link.description || "",
+    email: link.email || "",
+  };
+  editDialogVisible.value = true;
+};
+
+// 提交编辑友链
+const submitEditLink = async () => {
+  if (!editFormRef.value) return;
+
+  await editFormRef.value.validate(async (valid) => {
+    if (valid) {
+      editLinkLoading.value = true;
+      try {
+        await adminUpdateLink(editLinkForm.value);
+        ElMessage.success("编辑成功");
+        editDialogVisible.value = false;
+        await refreshLinkList();
+      } catch (error) {
+        ElMessage.error("编辑失败");
+      } finally {
+        editLinkLoading.value = false;
+      }
+    }
+  });
 };
 
 // 智能刷新列表

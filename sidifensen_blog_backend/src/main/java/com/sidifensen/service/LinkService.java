@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.sidifensen.domain.dto.LinkAuditDto;
 import com.sidifensen.domain.dto.LinkRequestDto;
 import com.sidifensen.domain.dto.LinkSearchDto;
+import com.sidifensen.domain.dto.LinkUpdateDto;
 import com.sidifensen.domain.entity.Link;
 import com.sidifensen.domain.vo.AdminLinkVo;
 import com.sidifensen.domain.vo.LinkVo;
@@ -96,4 +97,11 @@ public interface LinkService extends IService<Link> {
      * @param linkIds 友链ID列表
      */
     void adminDeleteBatchLink(List<Integer> linkIds);
+
+    /**
+     * 管理员更新友链
+     *
+     * @param linkUpdateDto 友链更新信息
+     */
+    void adminUpdateLink(LinkUpdateDto linkUpdateDto);
 }

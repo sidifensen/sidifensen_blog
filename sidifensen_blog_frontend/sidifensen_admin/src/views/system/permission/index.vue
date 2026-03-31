@@ -125,16 +125,18 @@
     </el-dialog>
 
     <!-- 授权角色弹窗对话框 -->
-    <el-dialog v-model="authorizeDialogVisible" title="权限授权角色" :before-close="handleAuthorizeDialogClose" width="500px">
-      <div class="authorize-dialog-content">
+    <el-dialog v-model="authorizeDialogVisible" title="权限授权角色" :before-close="handleAuthorizeDialogClose" class="authorize-dialog">
+      <div v-loading="authorizeLoading" class="authorize-dialog-content">
         <p class="role-name">当前权限: {{ currentPermission?.description }}</p>
-        <el-form ref="authorizeFormRef" class="authorize-form">
-          <el-form-item label="选择角色">
-            <el-checkbox-group v-model="selectedRole" class="role-checkbox-group">
-              <el-checkbox v-for="role in allRole" :key="role.id" :label="role.id">{{ role.role }}</el-checkbox>
-            </el-checkbox-group>
-          </el-form-item>
-        </el-form>
+        <template v-if="!authorizeLoading">
+          <el-form ref="authorizeFormRef" class="authorize-form">
+            <el-form-item label="选择角色">
+              <el-checkbox-group v-model="selectedRole" class="role-checkbox-group">
+                <el-checkbox v-for="role in allRole" :key="role.id" :label="role.id">{{ role.role }}</el-checkbox>
+              </el-checkbox-group>
+            </el-form-item>
+          </el-form>
+        </template>
       </div>
       <template #footer>
         <span class="dialog-footer">
@@ -150,7 +152,7 @@
         <p class="role-name">当前权限: {{ currentPermissionList.map((item) => item.description).join(", ") }}</p>
         <el-form ref="authorizeBatchFormRef" class="authorize-form">
           <el-form-item label="选择角色">
-            <el-checkbox-group v-model="selectedRole" class="role-checkbox-group">
+            <el-checkbox-group v-model="selectedRole" class="role-checkbox-group" :disabled="authorizeBatchLoading">
               <el-checkbox v-for="role in allRole" :key="role.id" :label="role.id">{{ role.role }}</el-checkbox>
             </el-checkbox-group>
           </el-form-item>
@@ -159,7 +161,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="handleAuthorizeBatchDialogClose">取消</el-button>
-          <el-button type="primary" @click="handleAuthorizeBatchSubmit">确认分配</el-button>
+          <el-button type="primary" @click="handleAuthorizeBatchSubmit" :disabled="authorizeBatchLoading">确认分配</el-button>
         </span>
       </template>
     </el-dialog>
@@ -446,25 +448,40 @@ const currentPermission = ref(null);
 const selectedRole = ref([]);
 // 所有角色
 const allRole = ref([]);
+// 授权弹窗加载状态
+const authorizeLoading = ref(false);
+
+// 授权角色弹窗（批量）
+const authorizeBatchDialogVisible = ref(false);
+// 当前权限
+const currentPermissionList = ref([]);
+// 批量授权弹窗加载状态
+const authorizeBatchLoading = ref(false);
 
 // 处理授权角色
 const handleAuthorizeRole = async (row) => {
   currentPermission.value = row;
-  authorizeDialogVisible.value = true;
-  // 清空已选角色和禁用角色数组
   selectedRole.value = [];
 
-  // 获取角色列表
-  const res = await getRoleList();
-  allRole.value = res.data;
+  // 先打开弹窗并显示 loading
+  authorizeDialogVisible.value = true;
+  authorizeLoading.value = true;
 
-  // 已获得当前权限授权的角色
-  const res1 = await getRolesByPermission(row.id);
-  // 把数组里的id取出来
-  res1.data.forEach((item) => {
-    // 默认选中已经有权限授权的用户
-    selectedRole.value.push(item.id);
-  });
+  try {
+    // 并行加载角色列表和权限已有角色
+    const [roleRes, permissionRolesRes] = await Promise.all([
+      getRoleList(),
+      getRolesByPermission(row.id),
+    ]);
+
+    allRole.value = roleRes.data;
+    selectedRole.value = permissionRolesRes.data.map((item) => item.id);
+  } catch (error) {
+    ElMessage.error("获取角色列表失败");
+    console.error("获取角色列表失败:", error);
+  } finally {
+    authorizeLoading.value = false;
+  }
 };
 
 // 处理授权提交
@@ -480,7 +497,7 @@ const handleAuthorizeSubmit = async () => {
     console.error("分配角色失败:", error);
   } finally {
     authorizeDialogVisible.value = false;
-    // 重置选择的角色和禁用的角色
+    authorizeLoading.value = false;
     selectedRole.value = [];
   }
 };
@@ -488,13 +505,9 @@ const handleAuthorizeSubmit = async () => {
 // 处理授权对话框关闭
 const handleAuthorizeDialogClose = () => {
   authorizeDialogVisible.value = false;
+  authorizeLoading.value = false;
   selectedRole.value = [];
 };
-
-// 授权角色弹窗
-const authorizeBatchDialogVisible = ref(false);
-// 当前权限
-const currentPermissionList = ref([]);
 
 // 移动端检测
 const isMobileView = ref(false);
@@ -531,6 +544,24 @@ const handleMobileSelect = (permission) => {
 
 const handleAuthorizeBatchRole = () => {
   authorizeBatchDialogVisible.value = true;
+  // 清空已选角色
+  selectedRole.value = [];
+  // 开始加载
+  authorizeBatchLoading.value = true;
+
+  // 获取角色列表
+  getRoleList()
+    .then((res) => {
+      allRole.value = res.data;
+    })
+    .catch((error) => {
+      ElMessage.error("获取角色列表失败");
+      console.error("获取角色列表失败:", error);
+    })
+    .finally(() => {
+      // 加载完成
+      authorizeBatchLoading.value = false;
+    });
 };
 
 // 处理授权提交
@@ -1006,6 +1037,13 @@ const handleAuthorizeBatchDialogClose = () => {
         margin-bottom: 8px;
       }
     }
+  }
+}
+
+.authorize-dialog {
+  :deep(.el-dialog) {
+    width: fit-content;
+    max-width: 90%;
   }
 }
 

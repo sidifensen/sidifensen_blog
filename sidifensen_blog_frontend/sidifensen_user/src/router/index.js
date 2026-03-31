@@ -1,11 +1,7 @@
-import { createRouter, createWebHistory, createWebHashHistory } from "vue-router";
-
-// Electron 模式下使用 hash 路由，避免 file:// 协议下 history 模式失效
-const historyMode = import.meta.env.VITE_ELECTRON ? createWebHashHistory : createWebHistory;
+import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
-  history: historyMode(import.meta.env.BASE_URL),
-  // history: createWebHashHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/",

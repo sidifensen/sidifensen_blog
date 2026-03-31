@@ -3,8 +3,6 @@ import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
 import JavaScriptObfuscator from "javascript-obfuscator";
-import { VitePWA } from "vite-plugin-pwa";
-
 import vue from "@vitejs/plugin-vue";
 
 import path from "path";
@@ -65,63 +63,9 @@ export default defineConfig(({ mode }) => ({
     port: 7000,
     open: true,
   },
-  base: mode === 'electron' ? './' : '/',
+  base: '/',
   plugins: [
     vue(),
-    // Electron 模式下禁用 PWA/Service Worker，避免缓存干扰 API 请求
-    ...(mode !== 'electron' ? [
-      VitePWA({
-        registerType: "autoUpdate",
-        includeAssets: ["favicon.ico", "icons/*.png"],
-        manifest: {
-          name: "斯蒂芬森社区",
-          short_name: "斯蒂芬森",
-          description: "斯蒂芬森社区",
-          theme_color: "#ffffff",
-          background_color: "#ffffff",
-          display: "standalone",
-          orientation: "portrait",
-          scope: "/",
-          start_url: "/",
-          icons: [
-            { "src": "/icons/web-app-manifest-192x192.png", "sizes": "192x192", "type": "image/png" },
-            { "src": "/icons/web-app-manifest-512x512.png", "sizes": "512x512", "type": "image/png" },
-            { "src": "/icons/web-app-manifest-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-            { "src": "/icons/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
-          ]
-        },
-        workbox: {
-          globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-          runtimeCaching: [
-            {
-              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-              handler: "CacheFirst",
-              options: {
-                cacheName: "google-fonts-cache",
-                expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              },
-            },
-            {
-              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-              handler: "CacheFirst",
-              options: {
-                cacheName: "gstatic-fonts-cache",
-                expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              },
-            },
-            {
-              urlPattern: /\/api\/.*/i,
-              handler: "NetworkOnly",
-              options: {
-                cacheName: "api-cache",
-                expiration: { maxEntries: 0 },
-              },
-            },
-          ],
-        },
-      }),
-    ] : []),
     // vueDevTools(),
     // element-plus自动导入
     // 优化Element Plus的导入，指定样式导入方式为css

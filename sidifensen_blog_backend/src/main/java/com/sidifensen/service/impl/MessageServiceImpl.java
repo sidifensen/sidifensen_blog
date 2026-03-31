@@ -137,9 +137,12 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
 
     // 获取管理员消息列表（仅 type=0 系统通知，分页返回）
     @Override
-    public PageVo<List<MessageVo>> getAdminMessagesPage(Integer pageNum, Integer pageSize) {
+    public PageVo<List<MessageVo>> getAdminMessagesPage(Integer pageNum, Integer pageSize, Integer isRead, String startTime, String endTime) {
         LambdaQueryWrapper<Message> wrapper = new LambdaQueryWrapper<Message>()
                 .eq(Message::getType, 0)
+                .eq(isRead != null, Message::getIsRead, isRead)
+                .ge(startTime != null, Message::getCreateTime, startTime)
+                .le(endTime != null, Message::getCreateTime, endTime)
                 .orderByDesc(Message::getCreateTime);
         IPage<Message> page = new Page<>(pageNum, pageSize);
         IPage<Message> result = this.page(page, wrapper);

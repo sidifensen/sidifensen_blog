@@ -32,6 +32,7 @@ import com.sidifensen.utils.EmailUtils;
 import com.sidifensen.utils.PageUtils;
 import com.sidifensen.utils.TextAuditUtils;
 import com.sidifensen.utils.UserUtils;
+import com.sidifensen.utils.XssUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -761,6 +762,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Article article = BeanUtil.copyProperties(articleDto, Article.class);
         Integer userId = SecurityUtils.getUserId();
         article.setUserId(userId);
+
+        // XSS 过滤文章内容，防止 XSS 攻击
+        article.setTitle(XssUtils.cleanPlainText(article.getTitle()));
+        article.setContent(XssUtils.cleanRichText(article.getContent()));
+        article.setDescription(XssUtils.cleanPlainText(article.getDescription()));
+
         // 如果前端没有设置editStatus，默认为已发布状态
         if (article.getEditStatus() == null) {
             article.setEditStatus(EditStatusEnum.PUBLISHED.getCode());
@@ -909,6 +916,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         handleColumnAssociation(articleDto);
 
         Article article = BeanUtil.copyProperties(articleDto, Article.class);
+        // XSS 过滤文章内容，防止 XSS 攻击
+        article.setTitle(XssUtils.cleanPlainText(article.getTitle()));
+        article.setContent(XssUtils.cleanRichText(article.getContent()));
+        article.setDescription(XssUtils.cleanPlainText(article.getDescription()));
+
         if (articleMapper.updateById(article) < 1) {
             throw new BlogException(BlogConstants.UpdateArticleError);
         }

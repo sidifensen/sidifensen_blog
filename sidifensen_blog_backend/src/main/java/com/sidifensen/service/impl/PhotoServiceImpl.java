@@ -42,6 +42,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -183,6 +184,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             photo.setUserId(userId);
             photo.setUrl(url);
             photo.setExamineStatus(ExamineStatusEnum.WAIT.getCode());// 初始设置为待审核状态
+            photo.setCreateTime(new Date()); // 异步线程中手动设置时间，MyBatis-Plus 自动填充不生效
+            photo.setUpdateTime(new Date());
             photoMapper.insert(photo);
 
             Integer status = 0;
@@ -232,6 +235,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 photo.setUserId(userId);
                 photo.setUrl(url);
                 photo.setExamineStatus(ExamineStatusEnum.WAIT.getCode());// 初始设置为待审核状态
+                photo.setCreateTime(new Date()); // 异步线程中手动设置时间，MyBatis-Plus 自动填充不生效
+                photo.setUpdateTime(new Date());
                 photoMapper.insert(photo);
 
                 Integer status = 0;
@@ -274,6 +279,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 photo.setUserId(userId);
                 photo.setUrl(url);
                 photo.setExamineStatus(ExamineStatusEnum.WAIT.getCode());
+                photo.setCreateTime(new Date()); // 异步线程中手动设置时间，MyBatis-Plus 自动填充不生效
+                photo.setUpdateTime(new Date());
                 photoMapper.insert(photo);
 
                 Integer status = 0;

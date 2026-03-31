@@ -17,11 +17,11 @@ export function getMessageList() {
 }
 
 // 分页获取管理员消息列表（仅 type=0 系统通知，用于管理页面）
-export function getMessagePage(pageNum, pageSize) {
+export function getMessagePage(params) {
   return request({
     url: '/message/admin/page',
     method: 'get',
-    params: { pageNum, pageSize }
+    params
   });
 }
 

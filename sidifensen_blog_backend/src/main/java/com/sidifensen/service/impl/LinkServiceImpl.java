@@ -12,6 +12,7 @@ import com.sidifensen.domain.constants.RabbitMQConstants;
 import com.sidifensen.domain.dto.LinkAuditDto;
 import com.sidifensen.domain.dto.LinkRequestDto;
 import com.sidifensen.domain.dto.LinkSearchDto;
+import com.sidifensen.domain.dto.LinkUpdateDto;
 import com.sidifensen.domain.dto.MessageDto;
 import com.sidifensen.domain.entity.Link;
 import com.sidifensen.domain.entity.SysUser;
@@ -324,6 +325,48 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
         } catch (Exception e) {
             log.error("管理员批量删除友链失败：{}", e.getMessage(), e);
             throw new BlogException(BlogConstants.BatchDeleteLinkError);
+        }
+    }
+
+    @Override
+    public void adminUpdateLink(LinkUpdateDto linkUpdateDto) {
+        try {
+            // 参数校验
+            if (ObjectUtil.isEmpty(linkUpdateDto.getId())) {
+                throw new BlogException(BlogConstants.LinkIdRequired);
+            }
+
+            // 查询友链是否存在
+            Link link = this.getById(linkUpdateDto.getId());
+            if (ObjectUtil.isEmpty(link)) {
+                throw new BlogException(BlogConstants.NotFoundLink);
+            }
+
+            // 更新友链信息（只更新非空字段）
+            if (StrUtil.isNotBlank(linkUpdateDto.getName())) {
+                link.setName(linkUpdateDto.getName());
+            }
+            if (StrUtil.isNotBlank(linkUpdateDto.getUrl())) {
+                link.setUrl(linkUpdateDto.getUrl());
+            }
+            if (StrUtil.isNotBlank(linkUpdateDto.getCoverUrl())) {
+                link.setCoverUrl(linkUpdateDto.getCoverUrl());
+            }
+            if (StrUtil.isNotBlank(linkUpdateDto.getDescription())) {
+                link.setDescription(linkUpdateDto.getDescription());
+            }
+            if (StrUtil.isNotBlank(linkUpdateDto.getEmail())) {
+                link.setEmail(linkUpdateDto.getEmail());
+            }
+
+            boolean updated = this.updateById(link);
+            if (!updated) {
+                throw new BlogException(BlogConstants.UpdateLinkError);
+            }
+
+        } catch (Exception e) {
+            log.error("管理员更新友链失败：{}", e.getMessage(), e);
+            throw new BlogException(BlogConstants.UpdateLinkError);
         }
     }
 

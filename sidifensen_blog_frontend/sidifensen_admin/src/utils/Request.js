@@ -18,6 +18,13 @@ const request = axios.create({
     // 配置请求头的参数类型，和编码格式
     "Content-Type": "application/json;charset=UTF-8",
   },
+  // 正确编码空格为 %20（兼容 Spring @RequestParam）
+  paramsSerializer: (params) => {
+    return Object.entries(params)
+      .filter(([_, v]) => v !== undefined && v !== null && v !== '')
+      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+      .join('&');
+  },
 });
 
 // 配置请求的拦截器
