@@ -156,4 +156,15 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
             return List.of();
         }
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateAnnouncement(Announcement announcement) {
+        Announcement existing = this.getById(announcement.getId());
+        if (existing == null) {
+            throw new BlogException("公告不存在");
+        }
+        // 更新公告信息
+        this.updateById(announcement);
+    }
 }

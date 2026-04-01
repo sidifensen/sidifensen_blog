@@ -19,7 +19,6 @@
     "@dcloudio/uni-mp-weixin": "3.0.0-5000520260324001",
     "@dcloudio/vite-plugin-uni": "3.0.0-5000520260324001",
     "pinia": "^2.1.7",
-    "uview-pro": "^0.5.16",
     "vue": "^3.4.21"
   },
   "devDependencies": {

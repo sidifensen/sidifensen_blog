@@ -141,7 +141,7 @@ onMounted(() => {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-md);
-    padding: 0 var(--spacing-lg);
+    padding: var(--spacing-lg) var(--spacing-lg) 0;
 
     .album-card {
       background: var(--u-bg-white);
