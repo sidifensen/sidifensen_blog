@@ -27,6 +27,9 @@ const request = axios.create({
   },
 });
 
+// 登录过期处理锁，防止多个请求同时 401 时弹出多个弹窗
+let isHandlingAuthError = false;
+
 // 配置请求的拦截器
 request.interceptors.request.use(
   (config) => {
@@ -60,11 +63,19 @@ request.interceptors.response.use(
     let { status, data } = error.response;
     if (status === 401) {
       // 401 代表token过期，需要重新登录
-      ElMessage.error(data.msg);
-      // 清除useStore数据和localStorage中的jwt
-      RemoveJwt();
-      // 需要重新登陆，跳转到登录页面
-      router.push("/login");
+      // 使用锁防止多个请求同时 401 时弹出多个弹窗
+      if (!isHandlingAuthError) {
+        isHandlingAuthError = true;
+        ElMessage.error(data.msg || "登录已过期，请重新登录");
+        // 清除useStore数据和localStorage中的jwt
+        RemoveJwt();
+        // 需要重新登陆，跳转到登录页面
+        router.push("/login");
+        // 3秒后解锁，防止极端情况下无法再次触发
+        setTimeout(() => {
+          isHandlingAuthError = false;
+        }, 3000);
+      }
     }
     return Promise.reject(error);
   }

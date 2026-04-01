@@ -88,7 +88,7 @@
         :has-delete-action="true"
         :has-audit-action="true"
         :has-reject-action="true"
-        actions-width="280"
+        actions-width="320"
         @selection-change="handleSelectionChange"
         @view="handleViewLink"
         @audit="handleAuditLink"

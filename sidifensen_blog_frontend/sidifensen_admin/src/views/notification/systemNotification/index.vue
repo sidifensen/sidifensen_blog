@@ -49,7 +49,7 @@
             </template>
           </el-table-column>
           <el-table-column prop="createTime" label="创建时间" sortable width="160" />
-          <el-table-column label="操作" width="150">
+          <el-table-column label="操作" width="200">
             <template #default="{ row }">
               <div class="table-actions">
                 <el-button type="primary" @click="handleRead(row)" :icon="Check" class="read-button" size="small" :disabled="row.isRead === 1">已读</el-button>

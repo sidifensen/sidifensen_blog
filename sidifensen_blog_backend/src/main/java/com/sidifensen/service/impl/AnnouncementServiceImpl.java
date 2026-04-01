@@ -21,7 +21,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -93,7 +93,7 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
         } else {
             // 仅 website 方式，直接标记为已发送
             announcement.setStatus(2);
-            announcement.setSendTime(LocalDateTime.now());
+            announcement.setSendTime(new Date());
             this.save(announcement);
         }
     }

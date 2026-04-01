@@ -114,8 +114,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     public String login(LoginDto loginDto) {
         try {
-            // 校验验证码
-            if (!loginDto.getCheckCode().equals(redisComponent.getCheckCode(loginDto.getCheckCodeKey()))) {
+            // 校验验证码（忽略大小写）
+            String storedCheckCode = redisComponent.getCheckCode(loginDto.getCheckCodeKey());
+            if (storedCheckCode == null || !loginDto.getCheckCode().equalsIgnoreCase(storedCheckCode)) {
                 throw new BlogException(BlogConstants.CheckCodeError); // 验证码错误
             }
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

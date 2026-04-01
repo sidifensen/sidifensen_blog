@@ -9,7 +9,7 @@ import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.OauthService;
 import com.sidifensen.service.SysUserService;
-import com.wf.captcha.ArithmeticCaptcha;
+import com.wf.captcha.SpecCaptcha;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -47,9 +47,9 @@ public class SysUserController {
      */
     @GetMapping("/checkCode")
     public Result checkCode() {
-        ArithmeticCaptcha captcha = new ArithmeticCaptcha(100, 32);
-        // 只生成加法运算，避免出现负数结果
-        captcha.setCharType(2);
+        // 使用字符验证码，避免出现负数结果
+        SpecCaptcha captcha = new SpecCaptcha(100, 32);
+        captcha.setLen(4);  // 4位验证码
         // checkCode是验证码的值
         String checkCode = captcha.text();
         // checkCodeKey是验证码的唯一标识，验证码存入redis
