@@ -154,7 +154,7 @@ onMounted(() => {
 
         <!-- 加载更多 -->
         <view v-if="loadMore" class="load-more">
-          <u-loading mode="circle" />
+          <loading-icon />
           <text class="load-text">加载中...</text>
         </view>
 

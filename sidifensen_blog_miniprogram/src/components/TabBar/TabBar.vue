@@ -2,7 +2,7 @@
 /**
  * 自定义底部导航栏组件
  */
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 // 导航项配置
 const tabList = [
@@ -29,6 +29,9 @@ const tabList = [
 // 当前选中索引
 const currentIndex = ref(0)
 
+// 底部安全区域高度
+const safeAreaBottom = ref(0)
+
 // 根据当前页面路径更新选中状态
 function updateCurrentIndex() {
   const pages = getCurrentPages()
@@ -42,8 +45,15 @@ function updateCurrentIndex() {
   }
 }
 
-// 初始化时获取当前页面
-updateCurrentIndex()
+// 初始化时获取当前页面和安全区域
+onMounted(() => {
+  updateCurrentIndex()
+  // 获取安全区域信息
+  const systemInfo = uni.getSystemInfoSync()
+  if (systemInfo.safeAreaInsets) {
+    safeAreaBottom.value = systemInfo.safeAreaInsets.bottom || 0
+  }
+})
 
 // 切换标签
 function onTabChange(index) {
@@ -58,7 +68,7 @@ function onTabChange(index) {
 </script>
 
 <template>
-  <view class="custom-tabbar">
+  <view class="custom-tabbar" :style="{ paddingBottom: safeAreaBottom + 'px' }">
     <view class="tabbar-content">
       <view
         v-for="(item, index) in tabList"
@@ -81,10 +91,9 @@ function onTabChange(index) {
   right: 0;
   bottom: 0;
   z-index: 999;
-  background: var(--u-bg-white);
-  border-top: 1px solid var(--u-border-color);
-  padding-bottom: constant(safe-area-inset-bottom);
-  padding-bottom: env(safe-area-inset-bottom);
+  // 使用 CSS 变量支持深色模式，同时保留回退值
+  background: var(--u-bg-color, #ffffff);
+  border-top: 1px solid var(--u-border-color, #e2e8f0);
 }
 
 .tabbar-content {
@@ -100,16 +109,15 @@ function onTabChange(index) {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  cursor: pointer;
 
   .tabbar-text {
     font-size: 12px;
-    color: var(--u-tips-color);
+    color: var(--u-tips-color, #64748b);
     transition: color 0.3s;
   }
 
   &.active .tabbar-text {
-    color: var(--u-type-primary);
+    color: var(--u-type-primary, #0891b2);
   }
 }
 </style>

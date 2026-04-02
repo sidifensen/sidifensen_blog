@@ -15,7 +15,10 @@ onShow(() => {
 onHide(() => {
 })
 
-// 更新导航栏和 tabbar 主题色
+// TabBar 页面列表
+const tabBarPages = ['pages/index/index', 'pages/album/album', 'pages/user/user']
+
+// 更新导航栏和 TabBar 主题色
 function updateNavigationBarAndTabBarTheme() {
   const html = document.documentElement
   const isDark = html.classList.contains('u-theme-dark')
@@ -26,7 +29,6 @@ function updateNavigationBarAndTabBarTheme() {
     if (isDark) {
       pageHead.style.backgroundColor = '#111827'
       pageHead.style.color = '#ffffff'
-      // 更新标题颜色
       const title = pageHead.querySelector('.uni-page-head__title')
       if (title) {
         title.style.color = '#ffffff'
@@ -41,21 +43,28 @@ function updateNavigationBarAndTabBarTheme() {
     }
   }
 
-  // 更新 tabbar 颜色
-  if (isDark) {
-    uni.setTabBarStyle({
-      color: '#9aa1af',
-      selectedColor: '#8ab4ff',
-      backgroundColor: '#111827',
-      borderStyle: 'black'
-    })
-  } else {
-    uni.setTabBarStyle({
-      color: '#64748b',
-      selectedColor: '#0891b2',
-      backgroundColor: '#ffffff',
-      borderStyle: 'black'
-    })
+  // 获取当前页面路径
+  const pages = getCurrentPages()
+  const currentPage = pages[pages.length - 1]
+  const currentPath = currentPage?.route || ''
+
+  // 只在 TabBar 页面更新 TabBar 样式
+  if (tabBarPages.some(page => currentPath.includes(page))) {
+    if (isDark) {
+      uni.setTabBarStyle({
+        color: '#9aa1af',
+        selectedColor: '#8ab4ff',
+        backgroundColor: '#111827',
+        borderStyle: 'black'
+      })
+    } else {
+      uni.setTabBarStyle({
+        color: '#64748b',
+        selectedColor: '#0891b2',
+        backgroundColor: '#ffffff',
+        borderStyle: 'black'
+      })
+    }
   }
 }
 

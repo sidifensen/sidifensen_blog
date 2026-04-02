@@ -139,6 +139,8 @@ services:
     build:
       context: ${PROJECT_ROOT}/sidifensen_blog_backend
       dockerfile: Dockerfile
+      cache_from:
+        - sidifensen-blog-backend:latest
     image: sidifensen-blog-backend
     container_name: sidifensen-backend
     restart: unless-stopped
@@ -264,6 +266,8 @@ services:
     build:
       context: ${PROJECT_ROOT}/sidifensen_blog_frontend/sidifensen_admin
       dockerfile: Dockerfile
+      cache_from:
+        - sidifensen-blog-admin:latest
     image: sidifensen-blog-admin
     container_name: sidifensen-admin
     restart: unless-stopped
@@ -279,6 +283,8 @@ services:
     build:
       context: ${PROJECT_ROOT}/sidifensen_blog_frontend/sidifensen_user
       dockerfile: Dockerfile
+      cache_from:
+        - sidifensen-blog-user:latest
     image: sidifensen-blog-user
     container_name: sidifensen-user
     restart: unless-stopped

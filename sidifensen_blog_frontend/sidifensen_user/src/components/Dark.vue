@@ -29,7 +29,7 @@ const { toggleDark } = darkStore;
 
 <style scoped lang="scss">
 .dark-box {
-  margin-right: 10px;
+  margin-right: 0;
 }
 
 .switch {

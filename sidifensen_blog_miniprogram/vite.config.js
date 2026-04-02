@@ -2,10 +2,13 @@ import { defineConfig } from 'vite'
 import uni from '@dcloudio/vite-plugin-uni'
 import path from 'path'
 import Components from '@uni-helper/vite-plugin-uni-components'
+import { uViewProResolver } from '@uni-helper/vite-plugin-uni-components/resolvers'
 
 export default defineConfig({
   plugins: [
-    Components(),
+    Components({
+      resolvers: [uViewProResolver()]
+    }),
     uni()
   ],
   resolve: {

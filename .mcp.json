@@ -10,7 +10,7 @@
     },
     "mysql": {
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-mysql", "--host", "localhost", "--port", "3306", "--user", "root", "--password", "root", "--database", "sidifensen_blog"]
+      "args": ["/c", "npx", "-y", "@berthojoris/mcp-mysql-server", "mysql://root:root@localhost:3306/sidifensen_blog"]
     },
     "ssh": {
       "command": "cmd",

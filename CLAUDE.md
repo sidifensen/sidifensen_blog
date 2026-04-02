@@ -10,6 +10,14 @@
 | 小程序 | `sidifensen_blog_miniprogram/` | http://localhost:9000 | 需配置合法域名 | `npm run dev:h5` |
 | 文档 | `docs/` | - | - | - |
 
+## 工具配置
+
+| 工具 | 包名 | 用途 |
+|------|------|------|
+| MySQL MCP | `@berthojoris/mcp-mysql-server` | 新增表/字段、调试业务逻辑 |
+| chrome-devtools MCP | `chrome-devtools-mcp` | 页面调试、元素检查、控制台日志 |
+| SSH MCP | `@fangjunjie/ssh-mcp-server` | 服务器远程连接、命令执行、文件传输 |
+
 ## 后端规范
 
 ### 核心规则
@@ -64,12 +72,33 @@ cd sidifensen_blog_backend && mvn clean compile -DskipTests
 - 按钮点击必须实现真实业务功能
 - 表单提交必须调用真实 API 持久化
 
-### Vue 组件规范
+### 组件规范
 - 语法：`<script setup>` + Composition API
 - 命名：PascalCase（`Home.vue`, `ArticleDetail.vue`）
 - 表格：`el-table-column` 使用 `min-width` + `show-overflow-tooltip`
 - SVG 图标：`<svg-icon name="github" width="20px" height="20px" color="#999" />`
 - 注释：新增/修改代码必须补充中文注释
+
+### 设计规范（去 AI 味）
+
+核心原则：少即是多，克制比表达更重要
+
+| 问题 | 反面 | 正确 |
+|------|------|------|
+| 渐变滥用 | `linear-gradient(135deg, ...)` | 纯色 |
+| 多层阴影 | 3-4 层 `box-shadow` | 单层 `0 1px 3px` |
+| 毛玻璃滥用 | 到处 `backdrop-filter: blur()` | 仅模态框 |
+| 夸张悬停 | 位移+缩放+变色+阴影 | 只变阴影或颜色 |
+
+#### 标准色板
+```scss
+--bg-page: #f8fafc;      // 浅色 / #0f172a 深色
+--bg-card: #ffffff;      // 浅色 / #1e293b 深色
+--text-primary: #1e293b;  // 浅色 / #f1f5f9 深色
+--text-regular: #475569; // 浅色 / #cbd5e1 深色
+--text-muted: #64748b;   // 浅色 / #94a3b8 深色
+--border: #e2e8f0;       // 浅色 / #334155 深色
+```
 
 ### 修改后检查
 ```bash
@@ -81,27 +110,6 @@ cd sidifensen_blog_frontend/sidifensen_admin && npm run build
 - [ ] 黑夜模式正常
 - [ ] 响应式布局正常（特别检查移动端）
 
-## 设计规范（去 AI 味）
-
-核心原则：少即是多，克制比表达更重要
-
-| 问题 | 反面 | 正确 |
-|------|------|------|
-| 渐变滥用 | `linear-gradient(135deg, ...)` | 纯色 |
-| 多层阴影 | 3-4 层 `box-shadow` | 单层 `0 1px 3px` |
-| 毛玻璃滥用 | 到处 `backdrop-filter: blur()` | 仅模态框 |
-| 夸张悬停 | 位移+缩放+变色+阴影 | 只变阴影或颜色 |
-
-### 标准色板
-```scss
---bg-page: #f8fafc;      // 浅色 / #0f172a 深色
---bg-card: #ffffff;      // 浅色 / #1e293b 深色
---text-primary: #1e293b;  // 浅色 / #f1f5f9 深色
---text-regular: #475569; // 浅色 / #cbd5e1 深色
---text-muted: #64748b;   // 浅色 / #94a3b8 深色
---border: #e2e8f0;       // 浅色 / #334155 深色
-```
-
 ## 新功能开发
 
 **核心原则：优先沿用项目现有设计和规范**
@@ -112,16 +120,6 @@ cd sidifensen_blog_frontend/sidifensen_admin && npm run build
 - 不看现有代码直接生成全新结构
 - 引入项目外 UI 库
 - 忽略黑夜模式适配
-
-## 工具配置
-
-| 工具 | 用途 |
-|------|------|
-| MySQL MCP | 新增表/字段、调试业务逻辑 |
-| chrome-devtools MCP | 页面调试、元素检查、控制台日志 |
-| gstack `/browse` | 网页浏览（禁止使用 `mcp__claude-in-chrome__*`） |
-
-> gstack 技能失效时：运行 `cd .claude/skills/gstack && ./setup`
 
 ## 文档规范
 

@@ -1,7 +1,7 @@
 /**
  * 评论相关 API
  */
-import { get, post } from './index'
+import { get, post, del } from './index'
 
 /**
  * 获取文章评论列表
@@ -21,8 +21,8 @@ export function getMyComments(params) {
 }
 
 /**
- * 发布评论
- * @param {Object} data 评论数据
+ * 发布评论或回复
+ * @param {Object} data 评论数据（包含 parentId 则为回复）
  */
 export function addComment(data) {
   return post('/comment/add', data)
@@ -33,13 +33,13 @@ export function addComment(data) {
  * @param {number} commentId 评论ID
  */
 export function deleteComment(commentId) {
-  return post('/comment/delete', { commentId })
+  return del(`/comment/${commentId}`)
 }
 
 /**
- * 回复评论
- * @param {Object} data 回复数据
+ * 回复评论（内部调用 addComment）
+ * @param {Object} data 回复数据（需要 parentCommentId）
  */
 export function replyComment(data) {
-  return post('/comment/reply', data)
+  return post('/comment/add', data)
 }

@@ -139,7 +139,7 @@ onMounted(async () => {
 
     <!-- 加载状态 -->
     <view v-if="loading && announcementList.length > 0" class="loading-more">
-      <u-loading mode="circle" />
+      <loading-icon />
       <text>加载中...</text>
     </view>
 

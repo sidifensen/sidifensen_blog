@@ -1,0 +1,52 @@
+name: Build Frontend Only
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: '构建目标'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - admin
+          - user
+
+jobs:
+  build-frontend:
+    name: Build ${{ github.event.inputs.target || 'all' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build Admin
+        if: github.event.inputs.target == 'admin' || github.event.inputs.target == 'all' || github.event.inputs.target == ''
+        run: |
+          cd sidifensen_blog_frontend/sidifensen_admin
+          npm ci
+          npm run build
+
+      - name: Build User
+        if: github.event.inputs.target == 'user' || github.event.inputs.target == 'all' || github.event.inputs.target == ''
+        run: |
+          cd sidifensen_blog_frontend/sidifensen_user
+          npm ci
+          npm run build
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-${{ github.run_id }}
+          path: |
+            sidifensen_blog_frontend/sidifensen_admin/dist
+            sidifensen_blog_frontend/sidifensen_user/dist
+          retention-days: 7

@@ -2,7 +2,7 @@
   <el-menu :default-active="activeIndex" router class="pc-menu" mode="horizontal" @select="handleSelect" :ellipsis="false" :class="{ hidden: !isVisible }">
     <!-- 移动端菜单按钮 -->
     <div class="mobile-menu-button" @click="toggleMobileMenu">
-      <svg-icon name="menu" width="50px" height="50px" cursor="pointer" />
+      <svg-icon name="menu" width="40px" height="40px" />
     </div>
     <router-link class="logo" to="/"><el-text size="large" class="logo-text">sidifensen</el-text></router-link>
     <el-menu-item index="/" class="menu-item">
@@ -423,75 +423,60 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .pc-menu {
-  height: 48px;
+  height: 56px;
   width: 100%;
-  padding: 0 10px 0 10px;
+  padding: 0 20px 0 20px;
   display: flex;
   justify-content: center;
   align-items: center;
   position: fixed;
-  top: env(safe-area-inset-top, 24px);
+  top: env(safe-area-inset-top, 0px);
   left: 0;
   right: 0;
   z-index: 1000;
-  transition: transform 0.5s ease;
+  transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
   border: none;
+  border-bottom: 1px solid var(--el-border-color);
 
-  /* 90% 透明背景 + 毛玻璃效果 */
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  /* 毛玻璃效果 */
+  background: rgba(var(--el-bg-color), 0.85);
+  backdrop-filter: blur(12px);
 
   --el-menu-bg-color: transparent;
-  --el-menu-hover-bg-color: rgba(0, 0, 0, 0.05);
+  --el-menu-hover-bg-color: var(--el-fill-color-light);
 
   &.hidden {
     transform: translateY(-100%);
   }
 
   .logo {
-    margin-right: 10px;
+    margin-right: 32px;
     font-weight: bold;
     white-space: nowrap;
+    text-decoration: none;
 
-    /* Logo文字 */
+    /* Logo文字 - 简洁设计 */
     .logo-text {
-      font-size: 26px !important;
-      color: #3d92eb;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-      letter-spacing: 1px;
-      position: relative;
-      transition: all 0.3s ease;
-
-      &::after {
-        content: "";
-        position: absolute;
-        bottom: -5px;
-        left: 0;
-        width: 100%;
-        height: 3px;
-        background: linear-gradient(90deg, #fbbf24, #f59e0b);
-        border-radius: 3px;
-        transform: scaleX(0);
-        transform-origin: right;
-        transition: transform 0.3s ease;
-      }
+      font-size: 22px !important;
+      font-weight: 700;
+      color: var(--el-text-color-primary);
+      letter-spacing: -0.5px;
+      transition: color 0.2s ease;
 
       &:hover {
-        color: #f59e0b;
-        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
-
-        &::after {
-          transform: scaleX(1);
-          transform-origin: left;
-        }
+        color: var(--el-color-primary);
       }
     }
   }
 
   .menu-item {
+    padding: 0 12px !important;
+    transition: color 0.2s ease;
+
     .menu-text {
-      font-size: 18px;
-      margin-left: 5px;
+      font-size: 15px;
+      margin-left: 6px;
+      font-weight: 500;
     }
   }
 
@@ -501,54 +486,82 @@ onBeforeUnmount(() => {
     margin-left: auto;
     justify-content: center;
     align-items: center;
+    gap: 4px;
+
     .search {
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 10px;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
       cursor: pointer;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: var(--el-fill-color-light);
+      }
     }
+
     .message-icon {
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 10px;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
       cursor: pointer;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: var(--el-fill-color-light);
+      }
 
       // 调整徽章大小和位置
       :deep(.el-badge__content) {
         font-size: 11px;
-        top: 5px;
-        right: 10px;
+        top: 4px;
+        right: 6px;
         border: none;
       }
     }
+
     .notification-icon {
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 10px;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
       cursor: pointer;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: var(--el-fill-color-light);
+      }
 
       // 调整徽章大小和位置
       :deep(.el-badge__content) {
         font-size: 11px;
-        top: 5px;
-        right: 10px;
+        top: 4px;
+        right: 6px;
         border: none;
       }
     }
+
     .user-info {
       display: flex;
       align-items: center;
+      margin-left: 8px;
 
       .user-avatar {
         cursor: pointer;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 2px solid transparent;
 
         &:hover {
-          transform: scale(1.08);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          transform: scale(1.05);
+          border-color: var(--el-color-primary-light-5);
         }
       }
 
@@ -556,19 +569,18 @@ onBeforeUnmount(() => {
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-left: 10px;
-        margin-right: 10px;
+        margin-left: 12px;
+        margin-right: 4px;
         cursor: pointer;
 
         .nickname {
-          font-size: 18px !important;
-          font-weight: 600;
-          color: var(--el-text-color-primary);
-          transition: color 0.3s ease, transform 0.3s ease;
+          font-size: 14px !important;
+          font-weight: 500;
+          color: var(--el-text-color-regular);
+          transition: color 0.2s ease;
 
           &:hover {
-            color: var(--el-text-color-regular);
-            transform: translateY(-2px);
+            color: var(--el-text-color-primary);
           }
         }
 
@@ -578,35 +590,63 @@ onBeforeUnmount(() => {
         }
       }
     }
+
     .login {
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 40px;
-      height: 40px;
-      margin-left: 5px;
-      background-color: var(--el-bg-color);
-      border: 1px solid var(--el-border-color);
-      font-size: 15px;
-      border-radius: 50%;
+      height: 32px;
+      padding: 0 16px;
+      margin-left: 8px;
+      background-color: var(--el-color-primary);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 16px;
       cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.2s ease;
+
+      &:hover {
+        background-color: var(--el-color-primary-light-3);
+        transform: translateY(-1px);
+      }
     }
   }
+
   // 移动端菜单按钮
   .mobile-menu-button {
-    // margin-right: 10px;
-    display: none;
+    display: none; // 默认隐藏，电脑端不显示
     cursor: pointer;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: var(--el-fill-color-light);
+    }
+
+    // 确保 SVG 图标垂直居中
+    :deep(svg) {
+      display: block;
+    }
   }
 }
 
 .user-dropdown-menu {
-  min-width: 220px !important;
-  max-width: 280px !important;
-  padding: 15px !important;
+  min-width: 200px !important;
+  max-width: 260px !important;
+  padding: 8px !important;
+  border: 1px solid var(--el-border-color) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
 
   // 用户信息区域
   .user-info-section {
+    padding: 8px 4px 12px;
+
     // 用户名区域
     .user-name {
       text-align: center;
@@ -619,7 +659,7 @@ onBeforeUnmount(() => {
         gap: 8px;
 
         .nickname {
-          font-size: 18px;
+          font-size: 16px;
           font-weight: 600;
           color: var(--el-text-color-primary);
           word-wrap: break-word;
@@ -633,23 +673,23 @@ onBeforeUnmount(() => {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 60px;
-      padding: 16px 0;
+      gap: 40px;
+      padding: 12px 0;
 
       .stat-item {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 4px;
+        gap: 2px;
 
         .stat-number {
-          font-size: 20px;
+          font-size: 18px;
           font-weight: 700;
           color: var(--el-text-color-primary);
         }
 
         .stat-label {
-          font-size: 14px;
+          font-size: 12px;
           color: var(--el-text-color-secondary);
         }
       }
@@ -665,45 +705,58 @@ onBeforeUnmount(() => {
   .action-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    transition: all 0.2s ease;
+    gap: 10px;
+    padding: 10px 12px;
+    margin: 2px 0;
+    border-radius: 8px;
+    transition: background-color 0.15s ease;
     cursor: pointer;
 
     &:hover {
-      background-color: var(--el-bg-color-page);
-      color: var(--el-color-primary);
+      background-color: var(--el-fill-color-light);
     }
 
     .el-icon {
       font-size: 16px;
+      color: var(--el-text-color-secondary);
     }
 
     span {
       font-size: 14px;
+      color: var(--el-text-color-regular);
     }
   }
 }
 
 // 移动端菜单覆盖层
 .mobile-menu-overlay {
-  position: fixed; // 将遮罩层固定在视窗中，不随页面滚动
-  top: 0; // 使遮盖层覆盖整个视窗
+  position: fixed;
+  top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.4);
   z-index: 999;
   display: flex;
+
   .mobile-menu {
-    width: 150px;
+    width: 200px;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: flex-start; // 菜单项水平左对齐
+    justify-content: flex-start;
+    padding-top: 60px;
     background-color: var(--el-bg-color);
+    border-radius: 0 16px 16px 0;
+
     .el-menu-item {
-      width: 100%;
+      height: 52px;
+      padding-left: 20px !important;
+
+      .menu-text {
+        font-size: 15px;
+        margin-left: 10px;
+      }
     }
   }
 }
@@ -722,15 +775,21 @@ onBeforeUnmount(() => {
 // 响应式设计 - 移动端
 @media (max-width: 870px) {
   .pc-menu {
-    padding: 0 5px 0 0;
+    padding: 0 12px 0 12px;
     .menu-item {
       display: none; // 隐藏PC端菜单
     }
     .mobile-menu-button {
-      display: block; // 显示移动端菜单按钮
+      display: flex; // 显示移动端菜单按钮
+      margin-left: 4px;
     }
     .logo {
       display: none; // 手机端隐藏 logo
+    }
+    .right {
+      .user-info {
+        margin-right: 4px;
+      }
     }
   }
 }
