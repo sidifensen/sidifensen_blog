@@ -5,15 +5,26 @@ import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.dto.ArticleAuditDto;
 import com.sidifensen.domain.dto.ArticleDto;
 import com.sidifensen.domain.dto.ArticleStatusDto;
+import com.sidifensen.domain.dto.FavoriteArticleDto;
+import com.sidifensen.domain.entity.Article;
+import com.sidifensen.domain.entity.ArticleFavorite;
+import com.sidifensen.domain.entity.Favorite;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.*;
 import com.sidifensen.domain.enums.OperationTypeEnum;
+import com.sidifensen.mapper.ArticleFavoriteMapper;
+import com.sidifensen.mapper.ArticleMapper;
+import com.sidifensen.mapper.FavoriteMapper;
 import com.sidifensen.redis.RedisComponent;
 import com.sidifensen.service.ArticleService;
+import com.sidifensen.service.FavoriteService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +42,18 @@ public class ArticleController {
 
     @Resource
     private ArticleService articleService;
+
+    @Resource
+    private FavoriteService favoriteService;
+
+    @Resource
+    private FavoriteMapper favoriteMapper;
+
+    @Resource
+    private ArticleFavoriteMapper articleFavoriteMapper;
+
+    @Resource
+    private ArticleMapper articleMapper;
 
     @Resource
     private RedisComponent redisComponent;
@@ -433,6 +456,95 @@ public class ArticleController {
     public Result getAdminStatistics() {
         ArticleStatisticsVo statisticsVo = articleService.getAdminStatistics();
         return Result.success(statisticsVo);
+    }
+
+    /**
+     * 收藏文章（添加到用户第一个收藏夹）
+     *
+     * @param favoriteArticleDto 收藏请求参数
+     * @return 收藏结果
+     */
+    @PostMapping("/favorite")
+    @Transactional(rollbackFor = Exception.class)
+    public Result<String> favoriteArticle(@RequestBody @Valid FavoriteArticleDto favoriteArticleDto) {
+        Integer userId = SecurityUtils.getUserId();
+        Integer articleId = favoriteArticleDto.getArticleId();
+        // 获取用户第一个收藏夹，如果没有则自动创建默认收藏夹
+        LambdaQueryWrapper<Favorite> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Favorite::getUserId, userId).orderByAsc(Favorite::getCreateTime).last("LIMIT 1");
+        Favorite favorite = favoriteMapper.selectOne(queryWrapper);
+        if (favorite == null) {
+            // 自动创建默认收藏夹
+            favorite = new Favorite();
+            favorite.setUserId(userId);
+            favorite.setName("我的收藏");
+            favorite.setShowStatus(0); // 公开
+            favorite.setArticleCount(0);
+            favoriteMapper.insert(favorite);
+        }
+        // 检查是否已收藏
+        LambdaQueryWrapper<ArticleFavorite> articleFavoriteQueryWrapper = new LambdaQueryWrapper<>();
+        articleFavoriteQueryWrapper.eq(ArticleFavorite::getArticleId, articleId)
+                .eq(ArticleFavorite::getFavoriteId, favorite.getId());
+        if (articleFavoriteMapper.selectCount(articleFavoriteQueryWrapper) > 0) {
+            return Result.error("已收藏");
+        }
+        // 添加收藏
+        ArticleFavorite articleFavorite = new ArticleFavorite();
+        articleFavorite.setArticleId(articleId);
+        articleFavorite.setFavoriteId(favorite.getId());
+        articleFavoriteMapper.insert(articleFavorite);
+        // 增加收藏数量
+        Article article = articleMapper.selectById(articleId);
+        if (article != null && article.getCollectCount() != null) {
+            article.setCollectCount(article.getCollectCount() + 1);
+            articleMapper.updateById(article);
+        }
+        // 增加收藏夹文章数量
+        favorite.setArticleCount(favorite.getArticleCount() == null ? 1 : favorite.getArticleCount() + 1);
+        favoriteMapper.updateById(favorite);
+        return Result.success();
+    }
+
+    /**
+     * 取消收藏（从用户第一个收藏夹移除）
+     *
+     * @param favoriteArticleDto 收藏请求参数
+     * @return 取消收藏结果
+     */
+    @DeleteMapping("/unfavorite")
+    @Transactional(rollbackFor = Exception.class)
+    public Result<String> unfavoriteArticle(@RequestBody @Valid FavoriteArticleDto favoriteArticleDto) {
+        Integer userId = SecurityUtils.getUserId();
+        Integer articleId = favoriteArticleDto.getArticleId();
+        // 获取用户第一个收藏夹
+        LambdaQueryWrapper<Favorite> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Favorite::getUserId, userId).orderByAsc(Favorite::getCreateTime).last("LIMIT 1");
+        Favorite favorite = favoriteMapper.selectOne(queryWrapper);
+        if (favorite == null) {
+            return Result.error("未收藏");
+        }
+        // 检查是否已收藏
+        LambdaQueryWrapper<ArticleFavorite> articleFavoriteQueryWrapper = new LambdaQueryWrapper<>();
+        articleFavoriteQueryWrapper.eq(ArticleFavorite::getArticleId, articleId)
+                .eq(ArticleFavorite::getFavoriteId, favorite.getId());
+        if (articleFavoriteMapper.selectCount(articleFavoriteQueryWrapper) == 0) {
+            return Result.error("未收藏");
+        }
+        // 取消收藏
+        articleFavoriteMapper.delete(articleFavoriteQueryWrapper);
+        // 减少文章收藏数量
+        Article article = articleMapper.selectById(articleId);
+        if (article != null && article.getCollectCount() != null && article.getCollectCount() > 0) {
+            article.setCollectCount(article.getCollectCount() - 1);
+            articleMapper.updateById(article);
+        }
+        // 减少收藏夹文章数量
+        if (favorite.getArticleCount() != null && favorite.getArticleCount() > 0) {
+            favorite.setArticleCount(favorite.getArticleCount() - 1);
+            favoriteMapper.updateById(favorite);
+        }
+        return Result.success();
     }
 
 }

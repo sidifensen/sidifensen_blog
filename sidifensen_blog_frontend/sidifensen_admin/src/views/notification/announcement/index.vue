@@ -168,7 +168,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
 import { Delete, Close, Edit } from "@element-plus/icons-vue";
-import { getAnnouncementPage, createAnnouncement, cancelAnnouncement, deleteAnnouncement } from "@/api/announcement";
+import { getAnnouncementPage, createAnnouncement, updateAnnouncement, cancelAnnouncement, deleteAnnouncement } from "@/api/announcement";
 import { getUserList } from "@/api/user";
 import Pagination from "@/components/Pagination.vue";
 
@@ -357,15 +357,16 @@ const handleSubmit = async () => {
     };
     if (isEdit.value && editingId.value) {
       data.id = editingId.value;
+      await updateAnnouncement(data);
+    } else {
+      await createAnnouncement(data);
     }
-
-    await createAnnouncement(data);
     ElMessage.success(isEdit.value ? "编辑成功" : "发送成功");
     dialogVisible.value = false;
     await fetchAnnouncements();
   } catch (error) {
     if (error !== false) {
-      ElMessage.error("发送失败");
+      ElMessage.error(isEdit.value ? "编辑失败" : "发送失败");
     }
   } finally {
     submitLoading.value = false;

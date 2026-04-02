@@ -59,6 +59,20 @@ public class AnnouncementController {
     }
 
     /**
+     * 更新公告
+     *
+     * @param announcement 公告信息
+     * @return
+     */
+    @OperationLog(module = "公告管理", type = OperationTypeEnum.UPDATE, description = "更新公告")
+    @PreAuthorize("hasAuthority('announcement:update')")
+    @PutMapping
+    public Result updateAnnouncement(@RequestBody @Validated Announcement announcement) {
+        announcementService.updateAnnouncement(announcement);
+        return Result.success();
+    }
+
+    /**
      * 取消待发送公告（仅 status=0 可取消）
      *
      * @param id 公告ID

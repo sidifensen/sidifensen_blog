@@ -58,4 +58,11 @@ public interface AnnouncementService extends IService<Announcement> {
      * @return 已读公告ID列表
      */
     List<Integer> getReadAnnouncementIds(Integer readerId);
+
+    /**
+     * 更新公告
+     *
+     * @param announcement 公告实体
+     */
+    void updateAnnouncement(Announcement announcement);
 }

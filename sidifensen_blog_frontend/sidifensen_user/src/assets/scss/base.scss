@@ -16,14 +16,6 @@ body.el-popup-parent--hidden {
   overflow: hidden !important;
 }
 
-@font-face {
-  font-family: "AlimamaShuHei";
-  src: url("@/assets/font/AlimamaShuHei/AlimamaShuHeiTi-Bold.woff2") format("woff2"), url("@/assets/font/AlimamaShuHei/AlimamaShuHeiTi-Bold.woff") format("woff"), url("@/assets/font/AlimamaShuHei/AlimamaShuHeiTi-Bold.ttf") format("truetype"),
-    url("@/assets/font/AlimamaShuHei/AlimamaShuHeiTi-Bold.otf") format("opentype");
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
 * {
   font-family: "Helvetica Neue", Arial, sans-serif;
   box-sizing: border-box;

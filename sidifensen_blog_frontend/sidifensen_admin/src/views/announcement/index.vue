@@ -95,7 +95,7 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from "vue";
 import { Search, Plus } from "@element-plus/icons-vue";
-import { getAnnouncementPage, createAnnouncement, cancelAnnouncement, deleteAnnouncement } from "@/api/announcement";
+import { getAnnouncementPage, createAnnouncement, updateAnnouncement, cancelAnnouncement, deleteAnnouncement } from "@/api/announcement";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 // 公告列表数据
@@ -254,7 +254,13 @@ const handleSubmit = async () => {
       status: announcementForm.status,
     };
 
-    await createAnnouncement(data);
+    // 编辑时带上 id
+    if (isEdit.value) {
+      data.id = announcementForm.id;
+      await updateAnnouncement(data);
+    } else {
+      await createAnnouncement(data);
+    }
     ElMessage.success(isEdit.value ? "编辑成功" : "发布成功");
     dialogVisible.value = false;
     await fetchAnnouncementList();

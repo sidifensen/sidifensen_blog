@@ -1,8 +1,13 @@
 <script setup>
 import { onLaunch, onShow, onHide } from '@dcloudio/uni-app'
+import { watch, onMounted } from 'vue'
+import { useTheme } from 'uview-pro'
 import { useUserStore } from '@/store/user'
+import { useAppStore } from '@/store/app'
 
 const userStore = useUserStore()
+const appStore = useAppStore()
+const { darkMode } = useTheme()
 
 onLaunch(() => {
   // 检查登录状态
@@ -15,86 +20,29 @@ onShow(() => {
 onHide(() => {
 })
 
-// 更新导航栏和 tabbar 主题色
-function updateNavigationBarAndTabBarTheme() {
-  const html = document.documentElement
-  const isDark = html.classList.contains('u-theme-dark')
+// 监听主题变化，更新导航栏和 TabBar 样式
+watch(darkMode, (newVal) => {
+  const isDark = newVal === 'dark'
+  appStore.initTheme()
 
-  // 更新导航栏颜色 - 直接操作 DOM
-  const pageHead = document.querySelector('.uni-page-head')
-  if (pageHead) {
-    if (isDark) {
-      pageHead.style.backgroundColor = '#111827'
-      pageHead.style.color = '#ffffff'
-      // 更新标题颜色
-      const title = pageHead.querySelector('.uni-page-head__title')
-      if (title) {
-        title.style.color = '#ffffff'
-      }
-    } else {
-      pageHead.style.backgroundColor = '#ffffff'
-      pageHead.style.color = '#000000'
-      const title = pageHead.querySelector('.uni-page-head__title')
-      if (title) {
-        title.style.color = '#000000'
-      }
-    }
-  }
-
-  // 更新 tabbar 颜色
-  if (isDark) {
-    uni.setTabBarStyle({
-      color: '#9aa1af',
-      selectedColor: '#8ab4ff',
-      backgroundColor: '#111827',
-      borderStyle: 'black'
-    })
-  } else {
-    uni.setTabBarStyle({
-      color: '#64748b',
-      selectedColor: '#0891b2',
-      backgroundColor: '#ffffff',
-      borderStyle: 'black'
-    })
-  }
-}
-
-// 监听 HTML 元素的 class 变化，自动更新导航栏和 tabbar
-if (typeof window !== 'undefined') {
-  // 监听主题 class 变化
-  const classObserver = new MutationObserver(() => {
-    updateNavigationBarAndTabBarTheme()
-  })
-  classObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
-
-  // 监听页面切换（uni-page-head 的出现）
-  const pageObserver = new MutationObserver((mutations) => {
-    mutations.forEach(mutation => {
-      mutation.addedNodes.forEach(node => {
-        if (node.nodeType === 1 && (node.classList?.contains('uni-page-head') || node.querySelector?.('.uni-page-head'))) {
-          updateNavigationBarAndTabBarTheme()
+  // 更新原生导航栏颜色（仅支持 H5 和部分小程序）
+  const pages = getCurrentPages()
+  const currentPage = pages[pages.length - 1]
+  if (currentPage) {
+    // H5 环境直接操作 DOM
+    if (typeof window !== 'undefined') {
+      const pageHead = document.querySelector('.uni-page-head')
+      if (pageHead) {
+        pageHead.style.backgroundColor = isDark ? '#111827' : '#ffffff'
+        pageHead.style.color = isDark ? '#ffffff' : '#000000'
+        const title = pageHead.querySelector('.uni-page-head__title')
+        if (title) {
+          title.style.color = isDark ? '#ffffff' : '#000000'
         }
-      })
-    })
-  })
-
-  // 初始同步并开始观察
-  const initAndObserve = () => {
-    updateNavigationBarAndTabBarTheme()
-    // 观察 body 下新增的 uni-page-head
-    pageObserver.observe(document.body, { childList: true, subtree: true })
-  }
-
-  // 使用 requestAnimationFrame 确保在下一帧前执行
-  requestAnimationFrame(initAndObserve)
-
-  // 监听页面显示事件（页面切换时）
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      setTimeout(updateNavigationBarAndTabBarTheme, 100)
+      }
     }
-  })
-}
+  }
+}, { immediate: true })
 </script>
 
 <style lang="scss">

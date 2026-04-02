@@ -18,6 +18,15 @@ export function createAnnouncement(data) {
   });
 }
 
+// 更新公告
+export function updateAnnouncement(data) {
+  return request({
+    url: '/announcement',
+    method: 'put',
+    data
+  });
+}
+
 // 取消待发送公告
 export function cancelAnnouncement(id) {
   return request({

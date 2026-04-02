@@ -1,13 +1,15 @@
 package com.sidifensen.controller;
 
 import com.sidifensen.aspect.RateLimit;
+import com.sidifensen.domain.dto.ToggleLikeDto;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.service.LikeService;
 import jakarta.annotation.Resource;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,13 +29,12 @@ public class LikeController {
     /**
      * 点赞或取消点赞
      *
-     * @param type   点赞类型 0-文章 1-评论
-     * @param typeId 点赞类型id
+     * @param toggleLikeDto 点赞请求参数
      * @return 点赞结果
      */
     @PostMapping("/toggle")
-    public Result<Void> toggleLike(@NotNull Integer type, @NotNull Integer typeId) {
-        likeService.toggleLike(type, typeId);
+    public Result<Void> toggleLike(@RequestBody @Valid ToggleLikeDto toggleLikeDto) {
+        likeService.toggleLike(toggleLikeDto.getType(), toggleLikeDto.getTypeId());
         return Result.success();
     }
 
@@ -45,7 +46,7 @@ public class LikeController {
      * @return 是否已点赞
      */
     @GetMapping("/isLiked")
-    public Result<Boolean> isLiked(@NotNull Integer type, @NotNull Integer typeId) {
+    public Result<Boolean> isLiked(Integer type, Integer typeId) {
         Boolean isLiked = likeService.isLiked(type, typeId);
         return Result.success(isLiked);
     }

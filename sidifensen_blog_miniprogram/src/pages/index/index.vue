@@ -1,8 +1,14 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { getArticleList } from '@/api/article'
 import { formatCount } from '@/utils/format'
+import { useTheme } from 'uview-pro'
 import TabBar from '@/components/TabBar/TabBar.vue'
+
+const { darkMode } = useTheme()
+
+// 深色模式
+const isDark = computed(() => darkMode.value === 'dark')
 
 // 文章列表
 const articleList = ref([])
@@ -92,7 +98,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <view class="index-page">
+  <view class="index-page" :class="{ 'dark-mode': isDark }">
     <!-- 顶部搜索栏 -->
     <view class="search-bar" @click="goToSearch">
       <view class="search-box">
@@ -154,7 +160,7 @@ onMounted(() => {
 
         <!-- 加载更多 -->
         <view v-if="loadMore" class="load-more">
-          <u-loading mode="circle" />
+          <loading-icon />
           <text class="load-text">加载中...</text>
         </view>
 
@@ -316,6 +322,60 @@ onMounted(() => {
   .no-more-text {
     font-size: 14px;
     color: var(--u-tips-color);
+  }
+}
+
+/* 深色模式 - 直接定义颜色，不依赖 CSS 变量 */
+.index-page.dark-mode {
+  background: #0f172a;
+
+  .search-bar {
+    background: #1e293b;
+    border-bottom-color: #334155;
+
+    .search-box {
+      background: #0f172a;
+
+      .search-placeholder {
+        color: #94a3b8;
+      }
+    }
+  }
+
+  .article-card {
+    background: #1e293b;
+
+    .article-info {
+      .article-title {
+        color: #f1f5f9;
+      }
+
+      .article-summary {
+        color: #94a3b8;
+      }
+
+      .article-author {
+        .author-name {
+          color: #cbd5e1;
+        }
+      }
+
+      .article-stats {
+        .stat-item {
+          color: #94a3b8;
+        }
+      }
+    }
+  }
+
+  .empty-state,
+  .load-more,
+  .no-more {
+    .empty-text,
+    .load-text,
+    .no-more-text {
+      color: #94a3b8;
+    }
   }
 }
 </style>

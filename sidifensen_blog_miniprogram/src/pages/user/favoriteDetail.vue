@@ -139,7 +139,7 @@ onMounted(() => {
       </view>
 
       <view v-if="loadMore" class="load-more">
-        <u-loading mode="circle" />
+        <loading-icon />
       </view>
 
       <view v-if="noMore && articles.length > 0" class="no-more">

@@ -210,7 +210,7 @@ onMounted(async () => {
 
         .header-copy__title {
           margin: 0;
-          font-family: "AlimamaShuHei", "Helvetica Neue", Arial, sans-serif;
+          font-family: "Helvetica Neue", Arial, sans-serif;
           font-size: 34px;
           color: var(--text-title);
         }

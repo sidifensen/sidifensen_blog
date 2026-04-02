@@ -1,12 +1,18 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import { useTheme } from 'uview-pro'
 import { useUserStore } from '@/store/user'
 import { getMyInfo } from '@/api/user'
 import { getUserArticleStatistics } from '@/api/article'
 import { getVipStatus } from '@/api/vip'
 import { formatCount, formatDate } from '@/utils/format'
 import TabBar from '@/components/TabBar/TabBar.vue'
+
+const { darkMode } = useTheme()
+
+// 深色模式
+const isDark = computed(() => darkMode.value === 'dark')
 
 const userStore = useUserStore()
 
@@ -162,7 +168,7 @@ onShow(() => {
 </script>
 
 <template>
-  <view class="user-page">
+  <view class="user-page" :class="{ 'dark-mode': isDark }">
     <!-- 用户信息卡片 -->
     <view class="user-card card">
       <view class="user-info" @click="!userStore.isLoggedIn && goToLogin()">
@@ -417,6 +423,29 @@ onShow(() => {
       font-size: 15px;
       color: var(--u-main-color);
     }
+  }
+}
+
+/* 深色模式 */
+.user-page.dark-mode {
+  background: #0f172a;
+
+  .user-card,
+  .menu-list.card {
+    background: #1e293b;
+    border-color: #334155;
+  }
+
+  .user-stats {
+    border-top-color: #334155;
+
+    .stat-divider {
+      background: #334155;
+    }
+  }
+
+  .menu-item::after {
+    background: #334155;
   }
 }
 </style>

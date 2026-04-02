@@ -1,11 +1,16 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { getAlbumList } from '@/api/album'
+import { useTheme } from 'uview-pro'
 import TabBar from '@/components/TabBar/TabBar.vue'
+
+const { darkMode } = useTheme()
+
+// 深色模式
+const isDark = computed(() => darkMode.value === 'dark')
 
 // 相册列表
 const albumList = ref([])
-// 加载状态
 const loading = ref(false)
 const refreshing = ref(false)
 const loadMore = ref(false)
@@ -75,7 +80,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <view class="album-page">
+  <view class="album-page" :class="{ 'dark-mode': isDark }">
     <!-- 相册列表 -->
     <scroll-view
       class="album-list"
@@ -106,7 +111,7 @@ onMounted(() => {
 
       <!-- 加载更多 -->
       <view v-if="loadMore" class="load-more">
-        <u-loading mode="circle" />
+        <loading-icon />
       </view>
 
       <!-- 没有更多 -->
@@ -141,7 +146,7 @@ onMounted(() => {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-md);
-    padding: 0 var(--spacing-lg);
+    padding: var(--spacing-lg) var(--spacing-lg) 0;
 
     .album-card {
       background: var(--u-bg-white);
@@ -188,6 +193,27 @@ onMounted(() => {
     padding: var(--spacing-lg);
     color: var(--u-tips-color);
     font-size: 14px;
+  }
+}
+
+/* 深色模式 */
+.album-page.dark-mode {
+  background: #0f172a;
+
+  .album-card {
+    background: #1e293b;
+    border-color: #334155;
+
+    .album-info {
+      .album-name {
+        color: #f1f5f9;
+      }
+    }
+  }
+
+  .empty-state,
+  .no-more {
+    color: #94a3b8;
   }
 }
 </style>

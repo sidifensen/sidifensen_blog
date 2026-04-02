@@ -1,7 +1,7 @@
 /**
  * 文章相关 API
  */
-import { get, post } from './index'
+import { get, post, del } from './index'
 
 /**
  * 获取文章列表
@@ -36,11 +36,11 @@ export function searchArticles(params) {
 }
 
 /**
- * 点赞文章
+ * 点赞或取消点赞文章
  * @param {number} articleId 文章ID
  */
 export function likeArticle(articleId) {
-  return post('/article/like', { articleId })
+  return post('/like/toggle', { type: 0, typeId: articleId })
 }
 
 /**
@@ -48,7 +48,7 @@ export function likeArticle(articleId) {
  * @param {number} articleId 文章ID
  */
 export function unlikeArticle(articleId) {
-  return post('/article/unlike', { articleId })
+  return post('/like/toggle', { type: 0, typeId: articleId })
 }
 
 /**
@@ -64,7 +64,7 @@ export function favoriteArticle(articleId) {
  * @param {number} articleId 文章ID
  */
 export function unfavoriteArticle(articleId) {
-  return post('/article/unfavorite', { articleId })
+  return del('/article/unfavorite', { articleId })
 }
 
 /**

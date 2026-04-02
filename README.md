@@ -447,41 +447,6 @@ cd sidifensen_blog_frontend/sidifensen_admin && npm run build
 
 ---
 
-## 📸 项目截图
-
-### 🏠 用户端展示
-
-#### 首页
-<img src="img/Snipaste_2026-03-31_15-45-15.png" alt="社区首页" width="800"/>
-
-#### 主页文章
-<img src="img/Snipaste_2026-03-31_15-45-50.png" alt="主页文章" width="800"/>
-
-#### 文章广场
-<img src="img/Snipaste_2026-03-31_15-47-39.png" alt="文章广场" width="800"/>
-
-#### 文章管理
-<img src="img/Snipaste_2026-03-31_15-48-22.png" alt="文章管理" width="800"/>
-
-#### 相册广场
-<img src="img/Snipaste_2026-03-31_15-47-46.png" alt="相册广场" width="800"/>
-
-#### 友链
-<img src="img/Snipaste_2026-03-31_15-47-57.png" alt="友链" width="800"/>
-
-#### 会员中心
-<img src="img/Snipaste_2026-03-31_15-48-13.png" alt="会员中心" width="800"/>
-
-#### 个人主页
-<img src="img/Snipaste_2026-03-31_15-48-30.png" alt="个人主页" width="800"/>
-
-### 🔧 管理后台
-
-#### 仪表盘
-<img src="img/Snipaste_2026-03-31_15-49-02.png" alt="管理后台仪表盘" width="800"/>
-
----
-
 ## 📅 后续计划
 
 ### ✅ 已完成功能

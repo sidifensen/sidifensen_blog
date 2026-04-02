@@ -115,6 +115,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    chunkSizeWarningLimit: 2000,
     rollupOptions: {
       output: {
         assetFileNames: (assetInfo) => {
@@ -126,6 +127,12 @@ export default defineConfig(({ mode }) => ({
         },
         chunkFileNames: "assets/js/[name]-[hash].js",
         entryFileNames: "assets/js/[name]-[hash].js",
+        manualChunks: {
+          // Element Plus 单独打包
+          'element-plus': ['element-plus'],
+          // Vue 核心库单独打包
+          'vue-vendor': ['vue', 'vue-router', 'pinia'],
+        },
       },
     },
   },

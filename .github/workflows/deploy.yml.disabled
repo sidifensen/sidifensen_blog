@@ -1,0 +1,199 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      skip_frontend:
+        description: '跳过前端构建'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  JAVA_VERSION: '21'
+  NODE_VERSION: '20'
+  DEPLOY_PATH: /opt/sidifensen_blog
+  MAVEN_SETTINGS: script/prod/jenkins/maven-settings.xml
+
+jobs:
+  # ========== 阶段1: 构建后端 ==========
+  build-backend:
+    name: Build Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: maven
+          server-id: aliyun-central
+
+      - name: Build Backend JAR
+        run: |
+          cd sidifensen_blog_backend
+          mvn -s ../${{ env.MAVEN_SETTINGS }} -B -ntp clean package -DskipTests
+
+      - name: Upload Backend JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: sidifensen_blog_backend/target/*.jar
+          retention-days: 1
+
+  # ========== 阶段2: 构建前端 ==========
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    if: github.event.inputs.skip_frontend != 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            sidifensen_blog_frontend/sidifensen_admin/package-lock.json
+            sidifensen_blog_frontend/sidifensen_user/package-lock.json
+
+      # 管理端前端
+      - name: Build Admin Frontend
+        run: |
+          cd sidifensen_blog_frontend/sidifensen_admin
+          npm ci
+          npm run build
+
+      # 用户端前端
+      - name: Build User Frontend
+        run: |
+          cd sidifensen_blog_frontend/sidifensen_user
+          npm ci
+          npm run build
+
+      - name: Upload Frontend Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: |
+            sidifensen_blog_frontend/sidifensen_admin/dist
+            sidifensen_blog_frontend/sidifensen_user/dist
+          retention-days: 1
+
+  # ========== 阶段3: 部署 ==========
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-frontend]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Download Backend JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: sidifensen_blog_backend/target
+
+      - name: Download Frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: sidifensen_blog_frontend
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT || '22' }}
+          envs: DEPLOY_PATH
+          script: |
+            set -e
+            cd $DEPLOY_PATH
+
+            echo "========== 1. 准备部署目录 =========="
+            mkdir -p sidifensen_blog_backend/target
+            mkdir -p sidifensen_blog_frontend/sidifensen_admin
+            mkdir -p sidifensen_blog_frontend/sidifensen_user
+            mkdir -p script/prod
+            mkdir -p logs
+
+            echo "========== 2. 复制后端 JAR =========="
+            JAR_FILE=$(ls sidifensen_blog_backend/target/*.jar 2>/dev/null | head -n 1)
+            if [ -n "$JAR_FILE" ]; then
+              cp "$JAR_FILE" sidifensen_blog_backend/target/
+              echo "✅ 后端 JAR: $(basename $JAR_FILE)"
+            else
+              echo "❌ 未找到后端 JAR"
+              exit 1
+            fi
+
+            echo "========== 3. 复制前端 dist =========="
+            # 管理端
+            rm -rf sidifensen_blog_frontend/sidifensen_admin/dist
+            cp -r sidifensen_blog_frontend/sidifensen_admin/dist sidifensen_blog_frontend/sidifensen_admin/ 2>/dev/null || {
+              echo "⚠️ 管理端 dist 不存在，跳过"
+            }
+
+            # 用户端
+            rm -rf sidifensen_blog_frontend/sidifensen_user/dist
+            cp -r sidifensen_blog_frontend/sidifensen_user/dist sidifensen_blog_frontend/sidifensen_user/ 2>/dev/null || {
+              echo "⚠️ 用户端 dist 不存在，跳过"
+            }
+
+            echo "========== 4. 复制部署脚本 =========="
+            cp -r script/prod/* script/prod/ 2>/dev/null || true
+
+            echo "========== 5. 检查 .env =========="
+            cd script/prod
+            if [ ! -f .env ]; then
+              if [ -f env.example ]; then
+                cp env.example .env
+                echo "⚠️ 已从 env.example 创建 .env，请检查配置"
+              fi
+            fi
+
+            echo "========== 6. 检测 docker compose 命令 =========="
+            if docker compose version >/dev/null 2>&1; then
+              DOCKER_COMPOSE_CMD="docker compose"
+              echo "✅ 使用 Docker Compose V2"
+            elif docker-compose version >/dev/null 2>&1; then
+              DOCKER_COMPOSE_CMD="docker-compose"
+              echo "✅ 使用 Docker Compose V1"
+            else
+              echo "❌ 未找到 docker compose 命令"
+              exit 1
+            fi
+
+            echo "========== 7. 停止旧容器 =========="
+            # 强制删除所有 sidifensen- 前缀的容器
+            docker ps -a --filter "name=sidifensen-" --format "{{.Names}}" | xargs -r docker rm -f 2>/dev/null || true
+
+            # 停止旧服务
+            $DOCKER_COMPOSE_CMD -f docker-compose-ssl.yml --env-file .env down --remove-orphans 2>/dev/null || true
+
+            echo "========== 8. 启动新容器 =========="
+            $DOCKER_COMPOSE_CMD -f docker-compose-ssl.yml --env-file .env up -d --build
+
+            echo "========== 9. 等待服务启动 =========="
+            sleep 20
+
+            echo "========== 10. 检查服务状态 =========="
+            $DOCKER_COMPOSE_CMD -f docker-compose-ssl.yml --env-file .env ps
+
+            echo "========== 部署完成 =========="

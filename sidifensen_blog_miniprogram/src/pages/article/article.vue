@@ -1,11 +1,18 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
+import { marked } from 'marked'
 import { useUserStore } from '@/store/user'
 import { getArticleDetail, likeArticle, unlikeArticle, favoriteArticle, unfavoriteArticle } from '@/api/article'
 import { getArticleComments, addComment, replyComment, deleteComment } from '@/api/comment'
 import { likeComment, unlikeComment } from '@/api/like'
 import { formatDate, timeAgo, formatCount } from '@/utils/format'
+
+// 配置 marked 选项
+marked.setOptions({
+  gfm: true,
+  breaks: true
+})
 
 // 获取页面参数
 const articleId = ref('')
@@ -41,6 +48,33 @@ const replyLoading = ref(false)
 // 加载状态
 const loading = ref(false)
 
+// 返回顶部
+const showBackTop = ref(false)
+const scrollTop = ref(0)
+
+/**
+ * 滚动事件处理
+ */
+function handleScroll(e) {
+  showBackTop.value = e.detail.scrollTop > 300
+}
+
+/**
+ * 返回顶部
+ */
+function scrollBackTop() {
+  scrollTop.value = 1
+  setTimeout(() => {
+    scrollTop.value = 0
+  }, 10)
+  setTimeout(() => {
+    scrollTop.value = 1
+  }, 100)
+}
+
+// 文章内容 HTML（由 markdown 转换而来）
+const articleContentHtml = ref('')
+
 /**
  * 获取文章详情
  */
@@ -53,10 +87,13 @@ async function fetchArticleDetail() {
     console.log('res.data:', res?.data)
     if (res?.data) {
       article.value = res.data
+      // 将 markdown 内容转换为 HTML
+      articleContentHtml.value = marked(article.value.content || '')
       console.log('设置后的article:', article.value)
     } else if (res && typeof res === 'object' && !Array.isArray(res)) {
       // 兜底：如果res本身就是要的对象
       article.value = res
+      articleContentHtml.value = marked(article.value.content || '')
     } else {
       console.error('文章数据格式异常:', res)
       uni.showToast({ title: '数据格式异常', icon: 'none' })
@@ -145,6 +182,7 @@ async function handlePublishComment() {
     commentLoading.value = true
     await addComment({
       articleId: articleId.value,
+      parentId: 0,
       content: commentText.value
     })
 
@@ -194,7 +232,8 @@ async function handleSubmitReply() {
     replyLoading.value = true
     await replyComment({
       articleId: articleId.value,
-      parentCommentId: replyToComment.value.id,
+      parentId: replyToComment.value.id,
+      replyUserId: replyToComment.value.userId,
       content: replyText.value
     })
 
@@ -302,7 +341,7 @@ onLoad((options) => {
 <template>
   <view class="article-page">
     <!-- 文章内容 -->
-    <scroll-view class="article-content" scroll-y>
+    <scroll-view class="article-content" scroll-y :scroll-top="scrollTop" @scroll="handleScroll">
       <!-- 封面图 -->
       <image
         v-if="article.coverUrl"
@@ -327,7 +366,7 @@ onLoad((options) => {
 
       <!-- 文章正文 -->
       <view class="article-body">
-        <rich-text :nodes="article.content"></rich-text>
+        <rich-text :nodes="articleContentHtml"></rich-text>
       </view>
 
       <!-- 操作栏 -->
@@ -417,6 +456,11 @@ onLoad((options) => {
       </view>
     </scroll-view>
 
+    <!-- 返回顶部 -->
+    <view v-if="showBackTop" class="back-top" @click="scrollBackTop">
+      <text class="back-top-icon">↑</text>
+    </view>
+
     <!-- 回复输入框 -->
     <view v-if="replyToComment" class="reply-input-bar">
       <view class="reply-to">回复 @{{ replyToComment.nickname }}</view>
@@ -497,7 +541,7 @@ onLoad((options) => {
   }
 
   .article-body {
-    padding: 0 var(--spacing-lg) var(--spacing-lg);
+    padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
     font-size: 16px;
     line-height: 1.8;
     color: var(--u-content-color);
@@ -712,6 +756,26 @@ onLoad((options) => {
         font-size: 14px;
       }
     }
+  }
+}
+
+.back-top {
+  position: fixed;
+  right: 20px;
+  bottom: 100px;
+  width: 44px;
+  height: 44px;
+  background: var(--u-bg-white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+
+  .back-top-icon {
+    font-size: 20px;
+    color: var(--u-content-color);
   }
 }
 
