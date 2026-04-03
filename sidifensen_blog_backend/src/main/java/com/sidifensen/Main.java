@@ -52,7 +52,7 @@ public class Main {
     }
 
     /**
-     * 加载 .env 文件，将变量注入系统属性
+     * 加载项目根目录下的 .env 文件，将变量注入系统属性
      * Spring Boot 的 @Value 或 ${} 占位符会优先读取系统属性
      */
     private static void loadDotenv() {

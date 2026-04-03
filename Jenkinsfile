@@ -224,16 +224,14 @@ pipeline {
                         fi
 
                         # 部署
-                        echo "[4/5] 重启容器..."
-                        docker ps -a --filter "name=sidifensen-" --format "{{.Names}}" | xargs -r docker rm -f 2>/dev/null || true
-                        \${DOCKER_COMPOSE_CMD} -f docker-compose-ssl.yml --env-file script/prod/.env down --remove-orphans 2>/dev/null || true
-                        \${DOCKER_COMPOSE_CMD} -f docker-compose-ssl.yml --env-file script/prod/.env up -d --build
+                        echo "[4/5] 启动/更新容器..."
+                        \${DOCKER_COMPOSE_CMD} -f script/prod/docker-compose-ssl.yml --env-file script/prod/.env up -d --build
 
                         echo "[5/5] 等待启动..."
                         sleep 15
 
                         echo "--- 服务状态 ---"
-                        \${DOCKER_COMPOSE_CMD} -f docker-compose-ssl.yml --env-file script/prod/.env ps 2>/dev/null | grep -v "^NAME" | head -10
+                        \${DOCKER_COMPOSE_CMD} -f script/prod/docker-compose-ssl.yml --env-file script/prod/.env ps 2>/dev/null | grep -v "^NAME" | head -10
                         echo "----------------"
                     """
                 }

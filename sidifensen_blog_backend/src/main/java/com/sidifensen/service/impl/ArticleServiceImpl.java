@@ -115,9 +115,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             return articleVo;
         }).collect(Collectors.toList());
 
-        // 添加用户昵称和专栏信息
+        // 添加用户昵称
         if (!articleVoList.isEmpty()) {
-            // 使用UserUtils批量获取用户信息
             Map<Integer, SysUser> userMap = UserUtils.getUserMap(
                     articleVoList.stream().map(ArticleVo::getUserId).collect(Collectors.toList()),
                     sysUserMapper);
@@ -128,28 +127,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                     articleVo.setAvatar(user.getAvatar());
                 }
             });
-
-            // 添加专栏信息
-            List<Integer> articleIds = articleVoList.stream().map(ArticleVo::getId).collect(Collectors.toList());
-            List<ArticleColumn> articleColumns = articleColumnMapper.selectList(
-                    new LambdaQueryWrapper<ArticleColumn>().in(ArticleColumn::getArticleId, articleIds));
-            if (ObjectUtil.isNotEmpty(articleColumns)) {
-                List<Integer> columnIds = articleColumns.stream().map(ArticleColumn::getColumnId)
-                        .distinct().collect(Collectors.toList());
-                List<Column> columns = columnMapper.selectBatchIds(columnIds);
-                Map<Integer, ColumnVo> columnIdToColumnMap = columns.stream()
-                        .collect(Collectors.toMap(Column::getId,
-                                column -> BeanUtil.copyProperties(column, ColumnVo.class)));
-
-                // 为每个文章设置专栏信息
-                Map<Integer, List<ColumnVo>> articleIdToColumnsMap = articleColumns.stream()
-                        .collect(Collectors.groupingBy(
-                                ArticleColumn::getArticleId,
-                                Collectors.mapping(ac -> columnIdToColumnMap.get(ac.getColumnId()),
-                                        Collectors.toList())));
-                articleVoList.forEach(articleVo -> articleVo
-                        .setColumns(articleIdToColumnsMap.getOrDefault(articleVo.getId(), new ArrayList<>())));
-            }
         }
 
         return PageUtils.<ArticleVo>buildPageVo(page, articleVoList);

@@ -181,10 +181,6 @@ jobs:
             fi
 
             echo "========== 7. 停止旧容器 =========="
-            # 强制删除所有 sidifensen- 前缀的容器
-            docker ps -a --filter "name=sidifensen-" --format "{{.Names}}" | xargs -r docker rm -f 2>/dev/null || true
-
-            # 停止旧服务
             $DOCKER_COMPOSE_CMD -f docker-compose-ssl.yml --env-file .env down --remove-orphans 2>/dev/null || true
 
             echo "========== 8. 启动新容器 =========="

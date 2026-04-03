@@ -8,11 +8,13 @@
 [![Element Plus](https://img.shields.io/badge/Element%20Plus-2.10.2-409EFF?logo=element)](https://element-plus.org/)
 
   <p>
-    <a href="#-功能特性">功能特性</a> •
-    <a href="#-技术架构">技术架构</a> •
-    <a href="#-快速开始">快速开始</a> •
-    <a href="#-部署指南">部署指南</a> •
-    <a href="#-项目结构">项目结构</a>
+    <a href="#项目概述">项目概述</a> •
+    <a href="#系统架构">系统架构</a> •
+    <a href="#技术架构">技术架构</a> •
+    <a href="#项目结构">项目结构</a> •
+    <a href="#功能特性">功能特性</a> •
+    <a href="#快速开始">快速开始</a> •
+    <a href="#部署指南">部署指南</a>
   </p>
 </div>
 
@@ -124,7 +126,13 @@
 | **JustAuth** | 1.16.7 | OAuth登录 |
 | **阿里云内容安全** | 2.0.6 | 内容审核 |
 
-**工具库**: Lombok 1.18.38 | Hutool 6.3.0 | FastJSON 2.0.52 | EasyCaptcha 1.6.2
+
+| 工具 | 版本 |
+|------|------|
+| Lombok | 1.18.38 |
+| Hutool | 6.3.0 |
+| FastJSON | 2.0.52 |
+| EasyCaptcha | 1.6.2 |
 
 </td>
 <td valign="top" width="50%">
@@ -473,21 +481,3 @@ cd sidifensen_blog_frontend/sidifensen_admin && npm run build
 3. **提交更改**: `git commit -m 'Add some amazing feature'`
 4. **推送分支**: `git push origin feature/amazing-feature`
 5. **创建 Pull Request**
-
----
-
-## 📄 许可证
-
-本项目基于 [MIT License](LICENSE) 开源协议。
-
-### 🌟 如果这个项目对你有帮助，请给一个 Star
-
-**💡 适合学习 Spring Boot + Vue 3 全栈开发，快速搭建社区平台，企业级项目开发参考。**
-
----
-
-## 💬 交流群
-
-**欢迎加入 QQ 交流群，一起学习讨论！**
-
-<img src="img/qq 交流群.jpg" alt="QQ 交流群" width="400"/>

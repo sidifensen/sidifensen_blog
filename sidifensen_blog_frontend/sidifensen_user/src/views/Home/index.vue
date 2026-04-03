@@ -76,7 +76,7 @@
         <div class="article-grid" ref="articlesSectionRef">
           <!-- 加载状态 -->
           <template v-if="articleLoading">
-            <SkeletonLoader type="article" :count="6" />
+            <SkeletonLoader type="article" :count="9" />
           </template>
 
           <!-- 空状态 -->
@@ -135,38 +135,78 @@
 
     <!-- 页脚 -->
     <footer class="footer">
+      <!-- 装饰线 -->
+      <div class="footer-glow-line"></div>
+
       <div class="footer-content">
+        <!-- 品牌区域 -->
         <div class="footer-brand">
-          <h3>sidifensen 社区</h3>
-          <p>分享技术、经验和见解，用代码改变世界</p>
+          <div class="footer-logo">
+            <img src="/icons/favicon.ico" alt="logo" class="logo-img" />
+            <span class="logo-text">sidifensen</span>
+          </div>
+          <p class="footer-desc">分享技术、经验和见解，用代码改变世界。探索无限可能，与开发者共同成长。</p>
+          <!-- 社交链接 -->
+          <div class="footer-social">
+            <a href="https://github.com/sidifensen" target="_blank" class="social-link" title="GitHub">
+              <svg-icon name="github" width="18px" height="18px" />
+            </a>
+            <a href="https://gitee.com/sidifensen" target="_blank" class="social-link" title="Gitee">
+              <svg-icon name="gitee" width="18px" height="18px" />
+            </a>
+            <a href="mailto:contact@sidifensen.com" class="social-link" title="邮箱">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+              </svg>
+            </a>
+          </div>
         </div>
 
-        <div class="footer-column">
-          <h4>快速导航</h4>
-          <ul>
-            <li><router-link to="/">首页</router-link></li>
-            <li><router-link to="/article">文章</router-link></li>
-            <li><router-link to="/album">相册</router-link></li>
-            <li><router-link to="/link">友链</router-link></li>
-          </ul>
-        </div>
+        <!-- 导航区域 -->
+        <div class="footer-nav-group">
+          <div class="footer-column">
+            <h4>快速导航</h4>
+            <ul>
+              <li><router-link to="/">首页</router-link></li>
+              <li><router-link to="/article">技术文章</router-link></li>
+              <li><router-link to="/album">相册空间</router-link></li>
+              <li><router-link to="/link">友情链接</router-link></li>
+            </ul>
+          </div>
 
-        <div class="footer-column">
-          <h4>关于我们</h4>
-          <ul>
-            <li><a href="javascript:void(0)" class="footer-link">关于</a></li>
-            <li><a href="javascript:void(0)" class="footer-link">联系方式</a></li>
-            <li><a href="javascript:void(0)" class="footer-link">隐私政策</a></li>
-            <li><a href="javascript:void(0)" class="footer-link">服务条款</a></li>
-          </ul>
+          <div class="footer-column">
+            <h4>资源链接</h4>
+            <ul>
+              <li><a href="https://github.com/sidifensen/sidifensen_blog" target="_blank">开源仓库</a></li>
+              <li><a href="https://gitee.com/sidifensen/sidifensen_blog" target="_blank">国内镜像</a></li>
+              <li><router-link to="/about">关于我们</router-link></li>
+              <li><router-link to="/contact">联系方式</router-link></li>
+            </ul>
+          </div>
+
+          <div class="footer-column">
+            <h4>法律信息</h4>
+            <ul>
+              <li><a href="javascript:void(0)">隐私政策</a></li>
+              <li><a href="javascript:void(0)">服务条款</a></li>
+              <li><a href="javascript:void(0)">Cookie 政策</a></li>
+            </ul>
+          </div>
         </div>
       </div>
 
+      <!-- 底部栏 -->
       <div class="footer-bottom">
-        <p>© {{ currentYear }} sidifensen 社区。All Rights Reserved.</p>
-        <p>
-          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">粤 ICP 备 2024324512 号 -2</a>
-        </p>
+        <div class="footer-bottom-left">
+          <span class="copyright">© {{ currentYear }} sidifensen. All rights reserved.</span>
+        </div>
+        <div class="footer-bottom-right">
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="icp-link">
+            <span class="icp-icon">粤</span>
+            ICP 备 2024324512 号
+          </a>
+        </div>
       </div>
     </footer>
   </div>
@@ -410,7 +450,7 @@ const observeElements = () => {
 const fetchArticleList = async () => {
   try {
     articleLoading.value = true;
-    const res = await getAllArticleList(1, 6);
+    const res = await getAllArticleList(1, 9);
     articles.value = res.data?.data || [];
   } catch (error) {
     ElMessage.error("获取文章列表失败");
@@ -1330,37 +1370,118 @@ html.dark {
 
 // ===== 页脚 =====
 .footer {
+  position: relative;
   background: var(--bg-card);
   border-top: 1px solid var(--border);
-  padding: 60px 24px 32px;
+  padding: 80px 24px 0;
   margin-top: 80px;
+  overflow: hidden;
+
+  // 顶部装饰渐变线
+  .footer-glow-line {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--accent) 20%,
+      var(--accent) 80%,
+      transparent
+    );
+    opacity: 0.6;
+
+    html.dark & {
+      opacity: 0.4;
+    }
+  }
 
   .footer-content {
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    gap: 60px;
-    margin-bottom: 40px;
+    grid-template-columns: 1.2fr 1.8fr;
+    gap: 80px;
+    padding-bottom: 60px;
 
-    @media (max-width: 768px) {
+    @media (max-width: 992px) {
       grid-template-columns: 1fr;
-      gap: 32px;
+      gap: 48px;
     }
   }
 
+  // 品牌区域
   .footer-brand {
-    h3 {
-      font-size: 1.125rem;
-      font-weight: 700;
-      margin-bottom: 12px;
-      color: var(--text-primary);
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+
+      .logo-img {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+      }
+
+      .logo-text {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: -0.01em;
+      }
     }
 
-    p {
+    .footer-desc {
       font-size: 0.875rem;
       color: var(--text-secondary);
       line-height: 1.7;
+      margin-bottom: 28px;
+      max-width: 300px;
+    }
+
+    // 社交链接
+    .footer-social {
+      display: flex;
+      gap: 8px;
+    }
+
+    .social-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--bg-page);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        transform: translateY(-2px);
+      }
+    }
+  }
+
+  // 导航区域组
+  .footer-nav-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+    }
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
     }
   }
 
@@ -1369,38 +1490,58 @@ html.dark {
       font-size: 0.75rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
       color: var(--text-muted);
-      margin-bottom: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
     }
 
     ul {
       list-style: none;
       margin: 0;
       padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
 
       li {
-        margin-bottom: 10px;
-
         a {
           color: var(--text-secondary);
           text-decoration: none;
           font-size: 0.875rem;
           transition: color 0.2s ease;
           cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+
+          &::before {
+            content: '';
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: background 0.2s ease;
+          }
 
           &:hover {
             color: var(--accent);
+
+            &::before {
+              background: var(--accent);
+            }
           }
         }
       }
     }
   }
 
+  // 底部栏
   .footer-bottom {
     max-width: 1200px;
     margin: 0 auto;
-    padding-top: 32px;
+    padding: 24px 0;
     border-top: 1px solid var(--border);
     display: flex;
     align-items: center;
@@ -1408,17 +1549,43 @@ html.dark {
     flex-wrap: wrap;
     gap: 12px;
 
-    p {
-      font-size: 0.75rem;
-      color: var(--text-muted);
+    @media (max-width: 600px) {
+      flex-direction: column;
+      text-align: center;
+    }
 
-      a {
+    .footer-bottom-left {
+      .copyright {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
+    }
+
+    .footer-bottom-right {
+      .icp-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
         color: var(--text-muted);
         text-decoration: none;
         transition: color 0.2s ease;
 
         &:hover {
           color: var(--accent);
+        }
+
+        .icp-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 18px;
+          height: 18px;
+          background: var(--bg-page);
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          font-size: 0.65rem;
+          font-weight: 600;
         }
       }
     }

@@ -110,18 +110,16 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     // 上传图片到相册
     @Override
     public void uploadAlbum(MultipartFile file, Integer albumId) {
-        // 拼接userId/albumId作为目录名
         Integer userId = SecurityUtils.getUserId();
-        String dirName = userId + "/" + albumId;
-        String url = fileUploadUtils.upload(UploadEnum.ALBUM, file, dirName);
+        // 相册ID存在数据库中，路径只保留业务分类
+        String url = fileUploadUtils.upload(UploadEnum.ALBUM, file);
         auditAndUpdate(userId, url, albumId);
     }
 
     @Override
     public String uploadArticle(MultipartFile file) {
         Integer userId = SecurityUtils.getUserId();
-        String dirName = String.valueOf(userId);
-        String url = fileUploadUtils.upload(UploadEnum.ARTICLE, file, dirName);
+        String url = fileUploadUtils.upload(UploadEnum.ARTICLE, file);
         auditAndUpdate(userId, url);
         return url;
     }
@@ -129,8 +127,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     @Override
     public String uploadColumn(MultipartFile file) {
         Integer userId = SecurityUtils.getUserId();
-        String dirName = String.valueOf(userId);
-        String url = fileUploadUtils.upload(UploadEnum.COLUMN, file, dirName);
+        String url = fileUploadUtils.upload(UploadEnum.COLUMN, file);
         auditAndUpdate(userId, url);
         return url;
     }
@@ -138,18 +135,16 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     @Override
     public void uploadAvatar(MultipartFile file) {
         Integer userId = SecurityUtils.getUserId();
-        String dirName = String.valueOf(userId);
-        String url = fileUploadUtils.upload(UploadEnum.USER_AVATAR, file, dirName);
+        String url = fileUploadUtils.upload(UploadEnum.USER_AVATAR, file);
         auditAvatarAndUpdate(userId, url);
     }
 
     @Override
     public String uploadMessage(MultipartFile file) {
         Integer userId = SecurityUtils.getUserId();
-        String dirName = String.valueOf(userId);
 
         // 上传图片
-        String url = fileUploadUtils.upload(UploadEnum.MESSAGE, file, dirName);
+        String url = fileUploadUtils.upload(UploadEnum.MESSAGE, file);
 
         // 异步记录到图片表（不阻塞返回，不做审核）
         recordMessagePhotoAsync(userId, url);

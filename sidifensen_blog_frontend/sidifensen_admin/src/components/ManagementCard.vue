@@ -251,7 +251,6 @@ onUnmounted(() => {
       justify-content: flex-end;
       gap: 10px;
       padding: 10px;
-      border-bottom: 1px solid var(--el-border-color);
 
       .time-input {
         width: 160px;
