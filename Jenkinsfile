@@ -4,7 +4,7 @@ pipeline {
     environment {
         DEFAULT_DEPLOY_PATH = '/opt/sidifensen_blog'
         JAVA_HOME = tool 'JDK-21'
-        NODEJS_HOME = tool 'NodeJS-20'
+        NODEJS_HOME = '/var/jenkins_home/tools'
         MAVEN_HOME = tool 'Maven-3'
         MAVEN_OPTS = '-Dmaven.repo.local=/var/jenkins_home/.m2/repository'
     }
@@ -213,25 +213,15 @@ pipeline {
 
                         cd \${DEPLOY_PATH}
 
-                        # 检测 docker compose
-                        if docker compose version >/dev/null 2>&1; then
-                            DOCKER_COMPOSE_CMD="docker compose"
-                        elif docker-compose version >/dev/null 2>&1; then
-                            DOCKER_COMPOSE_CMD="docker-compose"
-                        else
-                            echo "[ERROR] 未找到 docker compose"
-                            exit 1
-                        fi
-
-                        # 部署
+                        # 部署 - 使用 /tmp/docker-compose (已在 Jenkins 容器内)
                         echo "[4/5] 启动/更新容器..."
-                        \${DOCKER_COMPOSE_CMD} -f script/prod/docker-compose-ssl.yml --env-file script/prod/.env up -d --build
+                        /tmp/docker-compose -f script/prod/docker-compose-ssl.yml --env-file script/prod/.env up -d --build
 
                         echo "[5/5] 等待启动..."
                         sleep 15
 
                         echo "--- 服务状态 ---"
-                        \${DOCKER_COMPOSE_CMD} -f script/prod/docker-compose-ssl.yml --env-file script/prod/.env ps 2>/dev/null | grep -v "^NAME" | head -10
+                        /tmp/docker-compose -f script/prod/docker-compose-ssl.yml --env-file script/prod/.env ps 2>/dev/null | grep -v "^NAME" | head -10
                         echo "----------------"
                     """
                 }

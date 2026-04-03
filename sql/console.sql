@@ -287,7 +287,9 @@ create table link
     examine_status tinyint      not null default 0 comment '审核状态 0-待审核 1-审核通过 2-审核未通过',
     email          varchar(255) not null comment '网站邮箱',
     create_time    datetime     not null comment '创建时间',
-    is_deleted     tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除'
+    is_deleted     tinyint      not null default 0 comment '是否删除 0-未删除 1-已删除',
+    -- 优化友链列表查询：查询审核通过的友链并按创建时间倒序
+    index idx_examine_status_create_time (examine_status, create_time desc)
 );
 
 create table sys_blacklist
