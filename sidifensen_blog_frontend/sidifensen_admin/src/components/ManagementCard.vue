@@ -248,7 +248,7 @@ onUnmounted(() => {
 
     .card-second {
       display: flex;
-      justify-content: flex-end;
+      justify-content: flex-start;
       gap: 10px;
       padding: 10px;
 
@@ -270,7 +270,7 @@ onUnmounted(() => {
 
     .card-third {
       display: flex;
-      justify-content: flex-end;
+      justify-content: flex-start;
       padding: 10px;
       border-bottom: 1px solid var(--el-border-color);
     }

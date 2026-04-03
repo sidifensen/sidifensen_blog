@@ -9,8 +9,8 @@
             <el-option label="正常" value="0" />
             <el-option label="禁用" value="1" />
           </el-select>
-          <el-select v-model="searchUserId" placeholder="用户名称" filterable clearable size="small" class="search-input" @change="handleSearch">
-            <el-option v-for="user in userList" :key="user.id" :label="user.username" :value="user.id" />
+          <el-select v-model="searchUserId" placeholder="输入用户名搜索" filterable remote reserve-keyword :remote-method="searchUsers" :loading="userLoading" clearable size="small" class="search-input" @change="handleSearch">
+            <el-option v-for="user in filteredUserList" :key="user.id" :label="user.username" :value="user.id" />
           </el-select>
         </div>
       </div>
@@ -197,7 +197,7 @@
 import { ref, onMounted, onUnmounted, watch, computed } from "vue";
 import { Search, Plus, InfoFilled, Edit, Delete, Avatar } from "@element-plus/icons-vue";
 import { adminList, adminUpdateAlbum, adminDeleteAlbum, adminSearchAlbum, adminGetAlbumDetail } from "@/api/album";
-import { getUserList } from "@/api/user";
+import { useUserSearch } from "@/utils/userSearch";
 import { adminDeletePhoto, adminDeleteBatchPhoto, adminAuditPhoto, adminAuditBatchPhoto } from "@/api/photo";
 import Pagination from "@/components/Pagination.vue";
 
@@ -233,13 +233,8 @@ const rules = {
   name: [{ required: true, message: "请输入相册名称", trigger: "blur" }],
 };
 
-// 用户列表
-const userList = ref([]);
-// 获取用户列表
-const getUsers = async () => {
-  const res = await getUserList();
-  userList.value = res.data;
-};
+// 用户搜索
+const { filteredUserList, userLoading, searchUsers } = useUserSearch();
 
 // 移动端检测
 const isMobileView = ref(false);
@@ -258,7 +253,6 @@ const getAlbums = async () => {
 // 初始化
 onMounted(() => {
   getAlbums();
-  getUsers();
   handleResize();
   window.addEventListener("resize", handleResize);
 });

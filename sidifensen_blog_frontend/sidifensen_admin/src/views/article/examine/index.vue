@@ -10,8 +10,8 @@
             <el-option label="审核不通过" value="2" />
             <el-option label="全部" value="" />
           </el-select>
-          <el-select v-model="searchUserId" placeholder="用户名称" filterable clearable size="small" class="search-input" @change="handleSearch">
-            <el-option v-for="user in userList" :key="user.id" :label="user.nickname || user.username" :value="user.id" />
+          <el-select v-model="searchUserId" placeholder="输入用户名搜索" filterable remote reserve-keyword :remote-method="searchUsers" :loading="userLoading" clearable size="small" class="search-input" @change="handleSearch">
+            <el-option v-for="user in filteredUserList" :key="user.id" :label="user.nickname || user.username" :value="user.id" />
           </el-select>
         </div>
       </div>
@@ -346,7 +346,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import { Delete, Close, Check, View, Calendar, Picture, User, Document, Star, ChatDotRound, Collection, Clock, Refresh } from "@element-plus/icons-vue";
-import { getUserList } from "@/api/user";
+import { useUserSearch } from "@/utils/userSearch";
 import { adminGetArticleList, adminDeleteArticle, adminDeleteBatchArticle, adminExamineArticle, adminExamineBatchArticle, adminSearchArticle, adminGetArticle } from "@/api/article";
 import Pagination from "@/components/Pagination.vue";
 
@@ -377,18 +377,8 @@ const handleDialogClose = () => {
   detailLoading.value = false;
 };
 
-// 用户列表
-const userList = ref([]);
-
-// 获取用户列表
-const getUsers = async () => {
-  try {
-    const res = await getUserList();
-    userList.value = res.data;
-  } catch (error) {
-    ElMessage.error("获取用户列表失败");
-  }
-};
+// 用户搜索
+const { filteredUserList, userLoading, searchUsers } = useUserSearch();
 
 // 获取文章列表
 const getArticles = async () => {
@@ -407,7 +397,6 @@ const handleResize = () => {
 // 初始化
 onMounted(() => {
   getArticles();
-  getUsers();
   handleResize();
   window.addEventListener("resize", handleResize);
 });
