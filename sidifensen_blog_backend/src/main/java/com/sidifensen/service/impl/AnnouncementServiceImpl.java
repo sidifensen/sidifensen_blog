@@ -14,6 +14,7 @@ import com.sidifensen.domain.vo.PageVo;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.AnnouncementMapper;
 import com.sidifensen.service.AnnouncementService;
+import com.sidifensen.utils.XssUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -59,6 +60,10 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void createAnnouncement(Announcement announcement) {
+        // XSS 过滤：防止恶意脚本注入
+        announcement.setTitle(XssUtils.cleanPlainText(announcement.getTitle()));
+        announcement.setContent(XssUtils.cleanRichText(announcement.getContent()));
+
         List<String> sendMethods = JSON.parseArray(announcement.getSendMethod(), String.class);
         boolean hasSystemOrEmail = sendMethods.contains("system") || sendMethods.contains("email");
 
@@ -164,6 +169,9 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
         if (existing == null) {
             throw new BlogException("公告不存在");
         }
+        // XSS 过滤：防止恶意脚本注入
+        announcement.setTitle(XssUtils.cleanPlainText(announcement.getTitle()));
+        announcement.setContent(XssUtils.cleanRichText(announcement.getContent()));
         // 更新公告信息
         this.updateById(announcement);
     }

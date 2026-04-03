@@ -197,11 +197,7 @@
 import { ref, onMounted, onUnmounted, watch, computed } from "vue";
 import { Search, Plus, InfoFilled, Edit, Delete, Avatar } from "@element-plus/icons-vue";
 import { adminList, adminUpdateAlbum, adminDeleteAlbum, adminSearchAlbum, adminGetAlbumDetail } from "@/api/album";
-<<<<<<< refactor/user-search-optimization-and-ui-fixes
 import { useUserSearch } from "@/utils/userSearch";
-=======
-import { useUserSearch } from "@/hooks/useUserSearch";
->>>>>>> main
 import { adminDeletePhoto, adminDeleteBatchPhoto, adminAuditPhoto, adminAuditBatchPhoto } from "@/api/photo";
 import Pagination from "@/components/Pagination.vue";
 

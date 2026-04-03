@@ -11,6 +11,7 @@ import com.sidifensen.service.ConversationService;
 import com.sidifensen.service.PrivateMessageService;
 import com.sidifensen.service.UserSettingsService;
 import com.sidifensen.utils.EmailUtils;
+import com.sidifensen.utils.XssUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -157,6 +158,9 @@ public class PrivateMessageWebSocketHandler extends TextWebSocketHandler {
         String content = wsMessage.getContent();
         Integer messageType = wsMessage.getMessageType();
         String imageUrl = wsMessage.getImageUrl();
+
+        // XSS 过滤：防止恶意脚本注入
+        content = XssUtils.cleanPlainText(content);
 
         // 1. 保存消息到数据库
         PrivateMessage privateMessage = new PrivateMessage();

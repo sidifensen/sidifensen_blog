@@ -85,17 +85,6 @@ const handleAvatarClick = () => {
   margin-bottom: 20px;
   animation: bubbleSlideIn 0.3s ease-out;
 
-  @keyframes bubbleSlideIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
   // 默认浅色模式 CSS 变量
   --bg-page: #f5f7fa;
   --bg-message-received: #ffffff;
@@ -107,6 +96,17 @@ const handleAvatarClick = () => {
   --text-on-accent: #ffffff;
   --accent-color: #3b82f6;
   --success-color: #22c55e;
+
+  @keyframes bubbleSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 
   // 我的消息样式 - 右对齐
   &.is-mine {
