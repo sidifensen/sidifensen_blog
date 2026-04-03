@@ -17,6 +17,48 @@
         v-model:keyword="searchKeyword"
         keyword-placeholder="搜索友链名称或描述"
         @change="handleSearch"
+      <el-select
+        v-model="searchExamineStatus"
+        placeholder="审核状态"
+        filterable
+        clearable
+        size="small"
+        class="search-select"
+        @change="handleSearch"
+      >
+        <el-option label="全部" value="" />
+        <el-option label="待审核" value="0" />
+        <el-option label="审核通过" value="1" />
+        <el-option label="审核不通过" value="2" />
+      </el-select>
+      <el-select
+        v-model="searchUserId"
+        placeholder="输入用户名搜索"
+        filterable
+        remote
+        reserve-keyword
+        :remote-method="searchUsers"
+        :loading="userLoading"
+        clearable
+        size="small"
+        class="search-select"
+        @change="handleSearch"
+      >
+        <el-option
+          v-for="user in filteredUserList"
+          :key="user.id"
+          :label="user.nickname || user.username"
+          :value="user.id"
+        />
+      </el-select>
+      <el-input
+        v-model="searchKeyword"
+        placeholder="搜索友链名称或描述"
+        :prefix-icon="Search"
+        size="small"
+        class="search-input"
+        clearable
+        @input="handleSearch"
       />
     </template>
 
@@ -165,6 +207,9 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
+import { Search } from "@element-plus/icons-vue";
+import { useUserSearch } from "@/hooks/useUserSearch";
 import { adminGetLinkList, adminSearchLink, adminExamineLink, adminBatchExamineLink, adminDeleteLink, adminBatchDeleteLink, adminUpdateLink } from "@/api/link";
 
 // 组件
@@ -181,6 +226,9 @@ const loading = ref(false);
 const currentPage = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
+
+// 用户搜索
+const { filteredUserList, userLoading, searchUsers } = useUserSearch();
 
 // 搜索条件
 const searchExamineStatus = ref("");
