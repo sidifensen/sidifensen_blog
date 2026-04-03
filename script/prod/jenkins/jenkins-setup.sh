@@ -154,6 +154,12 @@ docker run -d \
 
 print_info "Jenkins 容器已启动"
 
+# Git HTTP/2 兼容性修复
+print_title "配置 Git HTTP 设置"
+print_info "设置 Git 使用 HTTP/1.1 协议（避免 HTTP/2 连接问题）..."
+docker exec "$CONTAINER_NAME" git config --global http.version HTTP/1.1
+print_info "✅ Git HTTP 版本已配置"
+
 # 安装 Node.js 依赖库
 print_title "安装 Node.js 依赖库"
 print_info "检查并安装 libatomic.so.1（Node.js 运行所需）..."
