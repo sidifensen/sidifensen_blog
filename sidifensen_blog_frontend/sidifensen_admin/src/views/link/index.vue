@@ -9,8 +9,8 @@
     @search="fetchLinks"
     @time-change="handleTimeChange"
   >
-    <!-- 头部搜索操作 -->
-    <template #header-actions>
+    <!-- 筛选条件（放在标题下方） -->
+    <template #second-filters>
       <el-select
         v-model="searchExamineStatus"
         placeholder="审核状态"
@@ -27,15 +27,19 @@
       </el-select>
       <el-select
         v-model="searchUserId"
-        placeholder="用户名称"
+        placeholder="输入用户名搜索"
         filterable
+        remote
+        reserve-keyword
+        :remote-method="searchUsers"
+        :loading="userLoading"
         clearable
         size="small"
         class="search-select"
         @change="handleSearch"
       >
         <el-option
-          v-for="user in userList"
+          v-for="user in filteredUserList"
           :key="user.id"
           :label="user.nickname || user.username"
           :value="user.id"
@@ -50,6 +54,10 @@
         clearable
         @input="handleSearch"
       />
+    </template>
+
+    <!-- 头部搜索操作（仅放按钮） -->
+    <template #header-actions>
     </template>
 
     <!-- 批量操作按钮 -->
@@ -194,7 +202,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { Search } from "@element-plus/icons-vue";
-import { getUserList } from "@/api/user";
+import { useUserSearch } from "@/hooks/useUserSearch";
 import { adminGetLinkList, adminSearchLink, adminExamineLink, adminBatchExamineLink, adminDeleteLink, adminBatchDeleteLink, adminUpdateLink } from "@/api/link";
 
 // 组件
@@ -212,8 +220,8 @@ const currentPage = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
 
-// 用户列表
-const userList = ref([]);
+// 用户搜索
+const { filteredUserList, userLoading, searchUsers } = useUserSearch();
 
 // 搜索条件
 const searchExamineStatus = ref("");
@@ -293,16 +301,6 @@ const fetchLinks = async () => {
     ElMessage.error(hasSearchConditions() ? "搜索友链失败" : "获取友链列表失败");
   } finally {
     loading.value = false;
-  }
-};
-
-// 获取用户列表
-const getUsers = async () => {
-  try {
-    const res = await getUserList();
-    userList.value = res.data;
-  } catch (error) {
-    ElMessage.error("获取用户列表失败");
   }
 };
 
@@ -506,7 +504,6 @@ const handleBatchDelete = () => {
 // 初始化
 onMounted(() => {
   fetchLinks();
-  getUsers();
 });
 </script>
 

@@ -3,44 +3,46 @@
     <div class="card">
       <!-- 卡片头部 -->
       <div class="card-header">
-        <h2 class="card-title" :style="{ '--title-color': titleColor }">{{ title }}</h2>
-        <div class="card-actions">
-          <slot name="header-actions" />
+        <div class="card-header-top">
+          <h2 class="card-title" :style="{ '--title-color': titleColor }">{{ title }}</h2>
+          <div class="card-actions">
+            <slot name="header-actions" />
+          </div>
         </div>
-      </div>
 
-      <!-- 第二行筛选区域（可选） -->
-      <div v-if="$slots['second-filters'] || showTimeFilter" class="card-second">
-        <slot name="second-filters" />
-        <el-date-picker
-          v-if="showTimeFilter"
-          v-model="startTime"
-          type="datetime"
-          placeholder="开始时间"
-          size="small"
-          class="time-input"
-          format="YYYY-MM-DD HH:mm:ss"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          clearable
-          @change="handleTimeChange"
-        />
-        <el-date-picker
-          v-if="showTimeFilter"
-          v-model="endTime"
-          type="datetime"
-          placeholder="结束时间"
-          size="small"
-          class="time-input"
-          format="YYYY-MM-DD HH:mm:ss"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          clearable
-          @change="handleTimeChange"
-        />
-      </div>
+        <!-- 第二行筛选区域（可选） -->
+        <div v-if="$slots['second-filters'] || showTimeFilter" class="card-second">
+          <slot name="second-filters" />
+          <el-date-picker
+            v-if="showTimeFilter"
+            v-model="startTime"
+            type="datetime"
+            placeholder="开始时间"
+            size="small"
+            class="time-input"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            clearable
+            @change="handleTimeChange"
+          />
+          <el-date-picker
+            v-if="showTimeFilter"
+            v-model="endTime"
+            type="datetime"
+            placeholder="结束时间"
+            size="small"
+            class="time-input"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            clearable
+            @change="handleTimeChange"
+          />
+        </div>
 
-      <!-- 第三行批量操作区域（可选） -->
-      <div v-if="$slots['batch-actions']" class="card-third">
-        <slot name="batch-actions" />
+        <!-- 第三行批量操作区域（可选） -->
+        <div v-if="$slots['batch-actions']" class="card-third">
+          <slot name="batch-actions" />
+        </div>
       </div>
 
       <!-- 桌面端表格视图 -->
@@ -216,10 +218,13 @@ onUnmounted(() => {
     }
 
     .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       padding: 10px 10px 0 10px;
+
+      .card-header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
 
       .card-title {
         font-size: 20px;
@@ -246,11 +251,13 @@ onUnmounted(() => {
       }
     }
 
+    // 第二行筛选区域：支持多元素换行显示（筛选器、时间范围选择器等）
     .card-second {
       display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      padding: 10px;
+      flex-wrap: wrap; // 内容超出一行时自动换行
+      row-gap: 10px; // 换行后的行间距
+      column-gap: 10px; // 列间距
+      padding: 10px 10px 0 10px;
 
       .time-input {
         width: 160px;
@@ -268,9 +275,12 @@ onUnmounted(() => {
       }
     }
 
+    // 第三行批量操作区域：支持多按钮换行显示
     .card-third {
       display: flex;
-      justify-content: flex-end;
+      flex-wrap: wrap; // 内容超出一行时自动换行
+      row-gap: 10px;
+      column-gap: 10px;
       padding: 10px;
       border-bottom: 1px solid var(--el-border-color);
     }
@@ -305,6 +315,13 @@ onUnmounted(() => {
         align-items: flex-start;
         gap: 12px;
 
+        .card-header-top {
+          flex-direction: column;
+          align-items: flex-start;
+          width: 100%;
+          gap: 12px;
+        }
+
         .card-title {
           font-size: 16px;
         }
@@ -323,7 +340,7 @@ onUnmounted(() => {
 
       .card-second {
         padding: 8px;
-        flex-direction: column;
+        // 移动端默认纵向排列，已通过 flex-wrap: wrap 自动处理
 
         .time-input {
           width: 100%;
@@ -332,7 +349,7 @@ onUnmounted(() => {
 
       .card-third {
         padding: 8px;
-        flex-direction: column;
+        // 移动端按钮全宽，已通过 flex-wrap: wrap 自动处理
 
         :deep(.el-button) {
           width: 100%;

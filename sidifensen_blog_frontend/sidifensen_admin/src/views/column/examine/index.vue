@@ -10,8 +10,8 @@
             <el-option label="审核通过" value="1" />
             <el-option label="审核不通过" value="2" />
           </el-select>
-          <el-select v-model="searchUserId" placeholder="用户名称" filterable clearable size="small" class="search-input" @change="handleSearch">
-            <el-option v-for="user in userList" :key="user.id" :label="user.nickname || user.username" :value="user.id" />
+          <el-select v-model="searchUserId" placeholder="输入用户名搜索" filterable remote reserve-keyword :remote-method="searchUsers" :loading="userLoading" clearable size="small" class="search-input" @change="handleSearch">
+            <el-option v-for="user in filteredUserList" :key="user.id" :label="user.nickname || user.username" :value="user.id" />
           </el-select>
         </div>
       </div>
@@ -367,7 +367,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import { Delete, Close, Check, View, Search, Picture, User, Star, Clock, Document, Edit, ChatDotRound } from "@element-plus/icons-vue";
-import { getUserList } from "@/api/user";
+import { useUserSearch } from "@/hooks/useUserSearch";
 import { adminGetColumnList, adminSearchColumn, adminExamineColumn, adminBatchExamineColumn, adminDeleteColumn, adminBatchDeleteColumn, adminUpdateColumn, adminGetColumnDetail } from "@/api/column";
 import Pagination from "@/components/Pagination.vue";
 
@@ -383,8 +383,8 @@ const dialogTitle = ref("专栏详情");
 const currentColumn = ref(null);
 const detailLoading = ref(false);
 
-// 用户列表
-const userList = ref([]);
+// 用户搜索
+const { filteredUserList, userLoading, searchUsers } = useUserSearch();
 
 // 搜索条件
 const searchExamineStatus = ref("");
@@ -417,16 +417,6 @@ const editLoading = ref(false);
 // 监听窗口大小变化
 const handleResize = () => {
   isMobileView.value = window.innerWidth <= 768;
-};
-
-// 获取用户列表
-const getUsers = async () => {
-  try {
-    const res = await getUserList();
-    userList.value = res.data;
-  } catch (error) {
-    ElMessage.error("获取用户列表失败");
-  }
 };
 
 // 获取专栏列表
@@ -726,7 +716,6 @@ const handleBatchDelete = () => {
 // 初始化
 onMounted(() => {
   getColumns();
-  getUsers();
   handleResize();
   window.addEventListener("resize", handleResize);
 });
