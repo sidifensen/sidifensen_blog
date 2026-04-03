@@ -10,8 +10,8 @@
             <el-option label="审核不通过" value="2" />
             <el-option label="全部" value="" />
           </el-select>
-          <el-select v-model="searchUserId" placeholder="用户名称" filterable clearable size="small" class="search-input" @change="handleSearch">
-            <el-option v-for="user in userList" :key="user.id" :label="user.nickname || user.username" :value="user.id" />
+          <el-select v-model="searchUserId" placeholder="输入用户名搜索" filterable remote reserve-keyword :remote-method="searchUsers" :loading="userLoading" clearable size="small" class="search-input" @change="handleSearch">
+            <el-option v-for="user in filteredUserList" :key="user.id" :label="user.nickname || user.username" :value="user.id" />
           </el-select>
         </div>
       </div>
@@ -267,7 +267,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import { Delete, Close, Check, View, Calendar, User, ChatDotRound, Clock } from "@element-plus/icons-vue";
-import { getUserListWithCommentCount } from "@/api/user";
+import { useUserSearch } from "@/hooks/useUserSearch";
 import { adminGetCommentList, adminDeleteComment, adminDeleteBatchComment, adminExamineComment, adminExamineBatchComment, adminSearchComment } from "@/api/comment";
 import Pagination from "@/components/Pagination.vue";
 
@@ -298,18 +298,8 @@ const handleDialogClose = () => {
   detailLoading.value = false;
 };
 
-// 用户列表
-const userList = ref([]);
-
-// 获取用户列表
-const getUsers = async () => {
-  try {
-    const res = await getUserListWithCommentCount();
-    userList.value = res.data;
-  } catch (error) {
-    ElMessage.error("获取用户列表失败");
-  }
-};
+// 用户搜索
+const { filteredUserList, userLoading, searchUsers } = useUserSearch();
 
 // 获取评论列表
 const getComments = async () => {
@@ -328,7 +318,6 @@ const handleResize = () => {
 // 初始化
 onMounted(() => {
   getComments();
-  getUsers();
   handleResize();
   window.addEventListener("resize", handleResize);
 });
