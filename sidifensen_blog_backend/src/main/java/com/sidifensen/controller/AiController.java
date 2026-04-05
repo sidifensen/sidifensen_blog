@@ -8,6 +8,8 @@ import com.sidifensen.service.AiUsageService;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
@@ -56,13 +58,16 @@ public class AiController {
 
     /**
      * 智能客服聊天（流式返回）
+     * message 长度限制 1000 字符
      *
      * @param message 用户消息
      * @param chatId  会话ID
      * @return 流式响应
      */
     @PostMapping(value = "/customer-service", produces = "text/plain;charset=UTF-8")
-    public Flux<String> customerServiceChat(@RequestParam String message, @RequestParam String chatId) {
+    public Flux<String> customerServiceChat(
+            @RequestParam @NotBlank(message = "消息内容不能为空") @Size(max = 1000, message = "消息内容不能超过1000字符") String message,
+            @RequestParam String chatId) {
         return aiService.customerServiceChat(message, chatId);
     }
 

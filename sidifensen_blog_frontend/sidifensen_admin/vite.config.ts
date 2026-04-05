@@ -121,4 +121,9 @@ export default defineConfig({
     css: true,
     setupFiles: ['./src/tests/setup.js'],
   },
+
+  // Git 暂存区检查配置
+  staged: {
+    '*': 'vp check --fix',
+  },
 })

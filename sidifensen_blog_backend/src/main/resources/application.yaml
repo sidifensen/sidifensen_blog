@@ -182,30 +182,3 @@ logging:
     org.springframework.boot.env: INFO
 
 # Actuator 监控配置
-management:
-  endpoints:
-    web:
-      exposure:
-        # 暴露的端点（生产环境建议只开启 health 和 metrics）
-        include: health,info,metrics,prometheus
-        # 排除不需要的端点
-        exclude: env,beans,caches,heapdump,threaddump,loggers
-  endpoint:
-    health:
-      show-details: when_authorized  # 仅授权用户可查看详细信息
-    metrics:
-      export:
-        prometheus:
-          enabled: true  # 启用 Prometheus 指标导出
-  health:
-    # 健康检查项
-    db:
-      enabled: true
-    redis:
-      enabled: true
-    rabbit:
-      enabled: true
-  # 路径前缀（有些反向代理不允许 /actuator 前缀）
-  base-path: /actuator
-  server:
-    port: ${server.port}

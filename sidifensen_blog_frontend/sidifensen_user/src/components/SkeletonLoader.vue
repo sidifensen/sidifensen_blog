@@ -1,5 +1,5 @@
 <template>
-  <div class="skeleton-loader">
+  <div class="skeleton-loader" :class="{ 'skeleton-grid': type === 'article' }">
     <div v-for="i in displayCount" :key="i" class="skeleton-item" :class="`skeleton-${type}`">
       <!-- article 类型：图片 + 标题 + 描述 + 日期 -->
       <template v-if="type === 'article'">
@@ -65,11 +65,23 @@ const displayCount = computed(() => Math.max(1, props.count))
 .skeleton-loader {
   width: 100%;
 
+  // article 类型使用 3 列网格
+  &.skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
   // 骨架屏项目通用样式
   .skeleton-item {
     margin-bottom: 20px;
 
     &:last-child {
+      margin-bottom: 0;
+    }
+
+    // 网格布局下不需要 margin-bottom，由 gap 控制间距
+    .skeleton-grid & {
       margin-bottom: 0;
     }
   }

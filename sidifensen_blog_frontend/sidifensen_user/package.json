@@ -38,5 +38,6 @@
     "unplugin-vue-components": "^28.8.0",
     "vite-plugin-vue-devtools": "^7.7.2",
     "vite-plus": "^0.1.15"
-  }
+  },
+  "packageManager": "npm@11.12.1"
 }

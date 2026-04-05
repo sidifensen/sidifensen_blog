@@ -38,24 +38,15 @@ pipeline {
 
                     sh label: '检查工具链', script: '''
                         # 检查 libatomic 库
-                        if ! ldconfig -p 2>/dev/null | grep -q libatomic.so.1 && ! find /usr/lib* /lib* -name "libatomic.so.1" 2>/dev/null | head -1 | grep -q .; then
-                            echo "[WARN] 缺少 libatomic.so.1 库"
-                            echo "[WARN] 安装: docker exec -u root jenkins apt-get install -y libatomic1"
+                        if ! ldconfig -p 2>/dev/null | grep -q libatomic.so.1 && ! find /usr/lib* /lib* -name "libatomic.so.1" 2>/dev/null | grep -q .; then
+                            echo "[WARN] 缺少 libatomic.so.1 库，可能导致 JVM 崩溃"
                         fi
 
-                        # 验证 Node.js
-                        if ! node -v >/dev/null 2>&1; then
-                            echo "[ERROR] Node.js 运行失败"
-                            exit 1
-                        fi
-
-                        # 输出工具链版本
-                        echo "--- 工具链版本 ---"
+                        # 验证工具链
                         java -version 2>&1 | head -1
                         mvn -version 2>&1 | head -1
                         echo "Node: $(node -v)"
                         echo "npm: $(npm -v)"
-                        echo "--------------------"
                     '''
                 }
             }
@@ -72,36 +63,7 @@ pipeline {
                     def gitUrl = env.GIT_URL ?: scm.userRemoteConfigs[0].url
                     echo "仓库: ${gitUrl}"
 
-                    def retryCount = 5
-                    def checkoutSuccess = false
-                    def attempt = 0
-
-                    while (attempt < retryCount && !checkoutSuccess) {
-                        attempt++
-                        echo "克隆 [${attempt}/${retryCount}]..."
-
-                        try {
-                            checkout([
-                                $class: 'GitSCM',
-                                userRemoteConfigs: [[
-                                    url: gitUrl,
-                                    credentialsId: scm.userRemoteConfigs[0].credentialsId
-                                ]],
-                                branches: scm.branches,
-                                extensions: [
-                                    [$class: 'CloneOption', depth: 1, noTags: true, shallow: true]
-                                ]
-                            ])
-                            checkoutSuccess = true
-                        } catch (Exception e) {
-                            if (attempt < retryCount) {
-                                sleep(10)
-                            } else {
-                                error "Git 克隆失败"
-                            }
-                        }
-                    }
-
+                    // 获取提交信息（checkout 已在 SCM 阶段完成）
                     env.GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     env.GIT_BRANCH_NAME = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
                 }
@@ -118,7 +80,7 @@ pipeline {
                 dir('sidifensen_blog_backend') {
                     sh label: 'Maven 构建', script: '''
                         echo "[1/3] Maven 打包..."
-                        mvn -s ../script/prod/jenkins/maven-settings.xml -B -ntp clean package -DskipTests 2>&1 | grep -E "^(\\[INFO\\] Building|\\[ERROR\\]|\\[WARNING\\])" | head -20
+                        mvn -s ../script/prod/jenkins/maven-settings.xml -B -ntp clean package -DskipTests -q
 
                         echo "[2/3] 检查产物..."
                         JAR=$(ls target/*.jar 2>/dev/null | head -1)
@@ -144,10 +106,10 @@ pipeline {
                         dir('sidifensen_blog_frontend/sidifensen_admin') {
                             sh label: '构建管理端', script: '''
                                 echo "[1/3] 安装依赖..."
-                                npm ci --silent 2>/dev/null
+                                npm ci --silent
 
                                 echo "[2/3] 构建..."
-                                npm run build 2>&1 | grep -vE "\\[[0-9;]+[a-zA-Z]" | tail -5
+                                npm run build 2>&1 | tail -3
 
                                 echo "[3/3] 大小: $(du -sh dist 2>/dev/null | cut -f1)"
                             '''
@@ -158,10 +120,10 @@ pipeline {
                         dir('sidifensen_blog_frontend/sidifensen_user') {
                             sh label: '构建用户端', script: '''
                                 echo "[1/3] 安装依赖..."
-                                npm ci --silent 2>/dev/null
+                                npm ci --silent
 
                                 echo "[2/3] 构建..."
-                                npm run build 2>&1 | grep -vE "\\[[0-9;]+[a-zA-Z]" | tail -5
+                                npm run build 2>&1 | tail -3
 
                                 echo "[3/3] 大小: $(du -sh dist 2>/dev/null | cut -f1)"
                             '''
@@ -215,13 +177,13 @@ pipeline {
 
                         # 部署 - 使用 /tmp/docker-compose (已在 Jenkins 容器内)
                         echo "[4/5] 启动/更新容器..."
-                        /tmp/docker-compose -f script/prod/docker-compose-ssl.yml --env-file script/prod/.env up -d --build
+                        /tmp/docker-compose -f script/prod/docker-compose-ssl.yml --env-file script/prod/.env up -d --build -q
 
                         echo "[5/5] 等待启动..."
                         sleep 15
 
                         echo "--- 服务状态 ---"
-                        /tmp/docker-compose -f script/prod/docker-compose-ssl.yml --env-file script/prod/.env ps 2>/dev/null | grep -v "^NAME" | head -10
+                        /tmp/docker-compose -f script/prod/docker-compose-ssl.yml --env-file script/prod/.env ps | tail -n +2 | head -10
                         echo "----------------"
                     """
                 }

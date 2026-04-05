@@ -1,5 +1,6 @@
 package com.sidifensen.config;
 
+import com.sidifensen.aspect.OriginCheckInterceptor;
 import com.sidifensen.aspect.SysBlacklistInterceptor;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Configuration;
@@ -20,10 +21,17 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     @Resource
     private SysBlacklistInterceptor sysBlacklistInterceptor;
 
+    @Resource
+    private OriginCheckInterceptor originCheckInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 注册黑名单拦截器
         registry.addInterceptor(sysBlacklistInterceptor)
+                .addPathPatterns("/**"); // 拦截所有请求
+
+        // 注册来源校验拦截器
+        registry.addInterceptor(originCheckInterceptor)
                 .addPathPatterns("/**"); // 拦截所有请求
     }
 }

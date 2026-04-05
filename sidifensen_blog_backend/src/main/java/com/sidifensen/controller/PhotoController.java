@@ -44,11 +44,12 @@ public class PhotoController {
 
     /**
      * 上传照片到相册
+     * albumId 不能为空
      */
     @RateLimit(10)
     @PostMapping("/uploadAlbum")
     public Result uploadAlbum(@RequestParam("file") MultipartFile file,
-            @RequestParam("albumId") Integer albumId) {
+            @RequestParam("albumId") @NotNull(message = "相册ID不能为空") Integer albumId) {
         photoService.uploadAlbum(file, albumId);
         return Result.success();
     }

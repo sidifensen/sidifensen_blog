@@ -25,6 +25,7 @@ public class LinkRequestDto {
      */
     @NotBlank(message = "网站地址不能为空")
     @Size(max = 200, message = "网站地址不能超过200个字")
+    @org.hibernate.validator.constraints.URL(message = "网站地址格式不正确")
     private String url;
 
     /**
