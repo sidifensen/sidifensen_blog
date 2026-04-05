@@ -2,6 +2,8 @@ package com.sidifensen.domain.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -41,11 +43,14 @@ public class ColumnDto implements Serializable {
     /**
      * 专栏名称
      */
+    @NotBlank(message = "专栏名称不能为空")
+    @Size(max = 30, message = "专栏名称不能超过30个字")
     private String name;
 
     /**
      * 专栏描述
      */
+    @Size(max = 100, message = "专栏描述不能超过100个字")
     private String description;
 
     /**

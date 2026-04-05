@@ -1,5 +1,6 @@
 package com.sidifensen.domain.dto;
 
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -36,6 +37,7 @@ public class UpdateUserInfoDto implements Serializable {
     /**
      * 简介
      */
+    @Size(max = 200, message = "简介不能超过200个字符")
     private String introduction;
 
     /**

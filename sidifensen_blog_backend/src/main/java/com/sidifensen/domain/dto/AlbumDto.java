@@ -2,6 +2,8 @@ package com.sidifensen.domain.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -46,6 +48,8 @@ public class AlbumDto implements Serializable {
     /**
      * 相册名称
      */
+    @NotBlank(message = "相册名称不能为空")
+    @Size(max = 20, message = "相册名称不能超过20个字")
     private String name;
 
     /**

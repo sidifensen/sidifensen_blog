@@ -1,4 +1,25 @@
 #!/bin/sh
-# VitePlus Commit Hook
+# VitePlus Commit Hook - 智能检测改动了哪些前端项目
 cd "$(git rev-parse --show-toplevel)"
-npx vp staged --fail-on-changes
+
+# 检测哪些前端项目有暂存文件
+ADMIN_STAGED=$(git diff --cached --name-only | grep -c "^sidifensen_blog_frontend/sidifensen_admin/" || true)
+USER_STAGED=$(git diff --cached --name-only | grep -c "^sidifensen_blog_frontend/sidifensen_user/" || true)
+
+if [ "$ADMIN_STAGED" -gt 0 ]; then
+  echo "[pre-commit] 检测到 admin 前端有改动，运行检查..."
+  cd "sidifensen_blog_frontend/sidifensen_admin"
+  npx vp staged --fail-on-changes
+  if [ $? -ne 0 ]; then exit 1; fi
+  cd "$(git rev-parse --show-toplevel)"
+fi
+
+if [ "$USER_STAGED" -gt 0 ]; then
+  echo "[pre-commit] 检测到 user 前端有改动，运行检查..."
+  cd "sidifensen_blog_frontend/sidifensen_user"
+  npx vp staged --fail-on-changes
+  if [ $? -ne 0 ]; then exit 1; fi
+  cd "$(git rev-parse --show-toplevel)"
+fi
+
+exit 0

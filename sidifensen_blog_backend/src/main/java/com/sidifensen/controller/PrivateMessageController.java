@@ -6,6 +6,7 @@ import com.sidifensen.domain.vo.PrivateMessageVo;
 import com.sidifensen.service.PrivateMessageService;
 import com.sidifensen.utils.SecurityUtils;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,11 +24,12 @@ public class PrivateMessageController {
 
     /**
      * 获取聊天记录
+     * 参数需要 @Valid 注解触发校验
      */
     @GetMapping("/history")
-    public Result<PageVo<List<PrivateMessageVo>>> getChatHistory(@NotNull Integer targetUserId,
-            @NotNull Integer pageNum,
-            @NotNull Integer pageSize) {
+    public Result<PageVo<List<PrivateMessageVo>>> getChatHistory(@Valid @NotNull Integer targetUserId,
+            @Valid @NotNull Integer pageNum,
+            @Valid @NotNull Integer pageSize) {
         Integer userId = SecurityUtils.getUserId();
         PageVo<List<PrivateMessageVo>> result = privateMessageService.getChatHistory(
                 userId, targetUserId, pageNum, pageSize);
@@ -36,9 +38,10 @@ public class PrivateMessageController {
 
     /**
      * 撤回消息
+     * messageId 不能为空
      */
     @PutMapping("/revoke/{messageId}")
-    public Result<Void> revokeMessage(@PathVariable Integer messageId) {
+    public Result<Void> revokeMessage(@PathVariable @NotNull(message = "消息ID不能为空") Integer messageId) {
         Integer userId = SecurityUtils.getUserId();
         privateMessageService.revokeMessage(messageId, userId);
         return Result.success();
@@ -46,9 +49,10 @@ public class PrivateMessageController {
 
     /**
      * 删除消息
+     * messageId 不能为空
      */
     @DeleteMapping("/{messageId}")
-    public Result<Void> deleteMessage(@PathVariable Integer messageId) {
+    public Result<Void> deleteMessage(@PathVariable @NotNull(message = "消息ID不能为空") Integer messageId) {
         Integer userId = SecurityUtils.getUserId();
         privateMessageService.deleteMessage(messageId, userId);
         return Result.success();
