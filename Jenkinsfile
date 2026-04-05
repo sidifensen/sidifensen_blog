@@ -177,7 +177,7 @@ pipeline {
 
                         # 部署 - 使用 /tmp/docker-compose (已在 Jenkins 容器内)
                         echo "[4/5] 启动/更新容器..."
-                        /tmp/docker-compose -f script/prod/docker-compose-ssl.yml --env-file script/prod/.env up -d --build -q
+                        /tmp/docker-compose -f script/prod/docker-compose-ssl.yml --env-file script/prod/.env up -d --build
 
                         echo "[5/5] 等待启动..."
                         sleep 15
