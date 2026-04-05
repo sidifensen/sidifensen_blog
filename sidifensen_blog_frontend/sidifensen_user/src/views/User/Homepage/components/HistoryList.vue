@@ -6,7 +6,16 @@
         <span class="history-count">共 {{ total }} 条浏览记录</span>
       </div>
       <div class="control-right">
-        <el-button type="danger" size="small" :icon="Delete" :loading="clearLoading" :disabled="historyList.length === 0" @click="handleClearHistory"> 清空历史 </el-button>
+        <el-button
+          type="danger"
+          size="small"
+          :icon="Delete"
+          :loading="clearLoading"
+          :disabled="historyList.length === 0"
+          @click="handleClearHistory"
+        >
+          清空历史
+        </el-button>
       </div>
     </div>
 
@@ -35,7 +44,12 @@
 
       <!-- 历史记录列表 -->
       <div v-else class="history-list">
-        <div v-for="history in historyList" :key="history.id" class="history-item" @click="goToArticle(history.articleId)">
+        <div
+          v-for="history in historyList"
+          :key="history.id"
+          class="history-item"
+          @click="goToArticle(history.articleId)"
+        >
           <!-- 文章封面 -->
           <el-image :src="history.coverUrl" class="history-cover">
             <template #placeholder>
@@ -82,154 +96,154 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
-import { useRouter } from "vue-router";
-import { Delete, Picture, Clock } from "@element-plus/icons-vue";
-import { getUserHistoryList, clearUserHistory } from "@/api/history";
-import { formatDate } from "@/utils/formatTime";
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { Delete, Picture, Clock } from '@element-plus/icons-vue'
+import { getUserHistoryList, clearUserHistory } from '@/api/history'
+import { formatDate } from '@/utils/formatTime'
 
 // 路由
-const router = useRouter();
+const router = useRouter()
 
 // 响应式数据
-const historyLoading = ref(false); // 历史记录加载状态
-const loadingMore = ref(false); // 加载更多状态
-const clearLoading = ref(false); // 清空历史加载状态
-const historyList = ref([]); // 历史记录列表
-const total = ref(0); // 总记录数
-const currentPage = ref(1); // 当前页码
-const pageSize = ref(10); // 每页数据量
-const hasMore = ref(true); // 是否还有更多数据
+const historyLoading = ref(false) // 历史记录加载状态
+const loadingMore = ref(false) // 加载更多状态
+const clearLoading = ref(false) // 清空历史加载状态
+const historyList = ref([]) // 历史记录列表
+const total = ref(0) // 总记录数
+const currentPage = ref(1) // 当前页码
+const pageSize = ref(10) // 每页数据量
+const hasMore = ref(true) // 是否还有更多数据
 
 // 容器引用
-const historyContainer = ref(null);
+const historyContainer = ref(null)
 
 // 获取历史记录列表
 const fetchHistoryList = async (reset = false) => {
   // 如果没有更多数据或者已经在加载中，则不再请求
   if (!hasMore.value || historyLoading.value || loadingMore.value) {
-    return;
+    return
   }
 
   try {
     // 设置加载状态
     if (reset) {
-      historyLoading.value = true;
+      historyLoading.value = true
     } else {
-      loadingMore.value = true;
+      loadingMore.value = true
     }
 
-    const res = await getUserHistoryList(currentPage.value, pageSize.value);
-    const newHistoryList = res.data.data || [];
-    total.value = res.data.total || 0;
+    const res = await getUserHistoryList(currentPage.value, pageSize.value)
+    const newHistoryList = res.data.data || []
+    total.value = res.data.total || 0
 
     if (reset) {
       // 初次加载或重置时
-      historyList.value = newHistoryList;
+      historyList.value = newHistoryList
     } else {
       // 无限滚动时加载下一页数据
-      historyList.value = [...historyList.value, ...newHistoryList];
+      historyList.value = [...historyList.value, ...newHistoryList]
     }
 
     // 判断是否还有更多数据
-    hasMore.value = historyList.value.length < total.value;
+    hasMore.value = historyList.value.length < total.value
 
     // 更新页码
     if (hasMore.value && newHistoryList.length > 0) {
-      currentPage.value++;
+      currentPage.value++
     }
   } catch (error) {
     // 静默处理
   } finally {
     // 重置加载状态
-    historyLoading.value = false;
-    loadingMore.value = false;
+    historyLoading.value = false
+    loadingMore.value = false
   }
-};
+}
 
 // 处理清空历史记录
 const handleClearHistory = async () => {
   try {
-    await ElMessageBox.confirm("确定要清空所有浏览记录吗？此操作不可恢复。", "确认清空", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await ElMessageBox.confirm('确定要清空所有浏览记录吗？此操作不可恢复。', '确认清空', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
 
-    clearLoading.value = true;
-    const res = await clearUserHistory();
-    const clearedCount = res.data;
+    clearLoading.value = true
+    const res = await clearUserHistory()
+    const clearedCount = res.data
 
     // 清空本地数据
-    historyList.value = [];
-    total.value = 0;
-    currentPage.value = 1;
-    hasMore.value = true;
+    historyList.value = []
+    total.value = 0
+    currentPage.value = 1
+    hasMore.value = true
 
-    ElMessage.success(`成功清空 ${clearedCount} 条浏览记录`);
+    ElMessage.success(`成功清空 ${clearedCount} 条浏览记录`)
   } catch (error) {
-    if (error !== "cancel") {
+    if (error !== 'cancel') {
       // 静默处理
     }
   } finally {
-    clearLoading.value = false;
+    clearLoading.value = false
   }
-};
+}
 
 // 处理滚动事件 - 无限滚动（移到父组件处理）
 // 这个函数现在不再使用，滚动监听由父组件统一处理
 
 // 格式化浏览时间
 const formatViewTime = (viewTime) => {
-  if (!viewTime) return "";
+  if (!viewTime) return ''
 
-  const now = new Date();
-  const view = new Date(viewTime);
-  const diffTime = now - view;
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
-  const diffMinutes = Math.floor(diffTime / (1000 * 60));
+  const now = new Date()
+  const view = new Date(viewTime)
+  const diffTime = now - view
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+  const diffHours = Math.floor(diffTime / (1000 * 60 * 60))
+  const diffMinutes = Math.floor(diffTime / (1000 * 60))
 
   if (diffDays > 0) {
     if (diffDays === 1) {
-      return "昨天浏览";
+      return '昨天浏览'
     } else if (diffDays < 7) {
-      return `${diffDays}天前浏览`;
+      return `${diffDays}天前浏览`
     } else {
-      return formatDate(viewTime, "MM-DD");
+      return formatDate(viewTime, 'MM-DD')
     }
   } else if (diffHours > 0) {
-    return `${diffHours}小时前浏览`;
+    return `${diffHours}小时前浏览`
   } else if (diffMinutes > 0) {
-    return `${diffMinutes}分钟前浏览`;
+    return `${diffMinutes}分钟前浏览`
   } else {
-    return "刚刚浏览";
+    return '刚刚浏览'
   }
-};
+}
 
 // 跳转到文章详情页
 const goToArticle = (articleId) => {
-  router.push(`/article/${articleId}`);
-};
+  router.push(`/article/${articleId}`)
+}
 
 // 组件挂载时获取数据
 onMounted(() => {
-  fetchHistoryList(true);
-});
+  fetchHistoryList(true)
+})
 
 // 暴露给父组件的方法
 defineExpose({
   refresh: () => {
-    currentPage.value = 1;
-    hasMore.value = true;
-    fetchHistoryList(true);
+    currentPage.value = 1
+    hasMore.value = true
+    fetchHistoryList(true)
   },
   loadMore: () => {
     if (!historyLoading.value && !loadingMore.value && hasMore.value) {
-      fetchHistoryList();
+      fetchHistoryList()
     }
   },
-});
+})
 </script>
 
 <style lang="scss" scoped>

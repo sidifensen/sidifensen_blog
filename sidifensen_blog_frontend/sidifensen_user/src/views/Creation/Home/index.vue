@@ -34,23 +34,31 @@
           </div>
           <div class="stat-main">
             <span class="stat-label">文章</span>
-            <span class="stat-value">{{ formatDisplayNumber(statistics?.articleStatistics?.totalCount) }}</span>
+            <span class="stat-value">{{
+              formatDisplayNumber(statistics?.articleStatistics?.totalCount)
+            }}</span>
           </div>
           <div class="stat-breakdown">
             <span class="breakdown-item">
               <span class="dot dot-published"></span>
               <span class="label">已发布</span>
-              <span class="value">{{ formatDisplayNumber(statistics?.articleStatistics?.publishedCount) }}</span>
+              <span class="value">{{
+                formatDisplayNumber(statistics?.articleStatistics?.publishedCount)
+              }}</span>
             </span>
             <span class="breakdown-item">
               <span class="dot dot-draft"></span>
               <span class="label">草稿</span>
-              <span class="value">{{ formatDisplayNumber(statistics?.articleStatistics?.draftCount) }}</span>
+              <span class="value">{{
+                formatDisplayNumber(statistics?.articleStatistics?.draftCount)
+              }}</span>
             </span>
             <span class="breakdown-item">
               <span class="dot dot-reviewing"></span>
               <span class="label">审核中</span>
-              <span class="value">{{ formatDisplayNumber(statistics?.articleStatistics?.reviewingCount) }}</span>
+              <span class="value">{{
+                formatDisplayNumber(statistics?.articleStatistics?.reviewingCount)
+              }}</span>
             </span>
           </div>
         </div>
@@ -185,8 +193,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   EditPen,
   Document,
@@ -200,50 +208,50 @@ import {
   Message,
   Top,
   Star,
-} from "@element-plus/icons-vue";
-import { getCreationStatistics } from "@/api/article";
-import { formatCompactNumber } from "@/utils/formatNumber";
+} from '@element-plus/icons-vue'
+import { getCreationStatistics } from '@/api/article'
+import { formatCompactNumber } from '@/utils/formatNumber'
 
-const router = useRouter();
+const router = useRouter()
 
-const statisticsLoading = ref(false);
-const statistics = ref(null);
+const statisticsLoading = ref(false)
+const statistics = ref(null)
 
 const formatDisplayNumber = (num) => {
-  return formatCompactNumber(num);
-};
+  return formatCompactNumber(num)
+}
 
 const fetchStatistics = async () => {
   try {
-    statisticsLoading.value = true;
-    const res = await getCreationStatistics();
-    statistics.value = res.data;
+    statisticsLoading.value = true
+    const res = await getCreationStatistics()
+    statistics.value = res.data
   } catch (error) {
     // 静默处理
   } finally {
-    statisticsLoading.value = false;
+    statisticsLoading.value = false
   }
-};
+}
 
 const goToEditor = () => {
-  window.open("/editor", "_blank");
-};
+  window.open('/editor', '_blank')
+}
 
 const goToArticleManage = () => {
-  router.push("/creation/articlemanage");
-};
+  router.push('/creation/articlemanage')
+}
 
 const goToColumnManage = () => {
-  router.push("/creation/columnmanage");
-};
+  router.push('/creation/columnmanage')
+}
 
 const goToCommentManage = () => {
-  router.push("/creation/commentmanage");
-};
+  router.push('/creation/commentmanage')
+}
 
 onMounted(() => {
-  fetchStatistics();
-});
+  fetchStatistics()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -266,7 +274,9 @@ onMounted(() => {
   background: var(--el-bg-color);
   border-bottom: 1px solid var(--el-border-color-lighter);
   padding: 32px 0;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 
   .welcome-content {
     max-width: 1200px;
@@ -374,7 +384,9 @@ section {
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 12px;
     padding: 20px;
-    transition: all 0.2s ease, border-color 0.3s ease;
+    transition:
+      all 0.2s ease,
+      border-color 0.3s ease;
 
     &.clickable {
       cursor: pointer;
@@ -544,7 +556,9 @@ section {
       display: flex;
       align-items: center;
       gap: 12px;
-      transition: background-color 0.3s ease, border-color 0.3s ease;
+      transition:
+        background-color 0.3s ease,
+        border-color 0.3s ease;
 
       .skeleton-content {
         flex: 1;
@@ -575,7 +589,10 @@ section {
     align-items: center;
     gap: 12px;
     cursor: pointer;
-    transition: all 0.2s ease, border-color 0.3s ease, background-color 0.3s ease;
+    transition:
+      all 0.2s ease,
+      border-color 0.3s ease,
+      background-color 0.3s ease;
 
     &:hover {
       border-color: var(--el-border-color);

@@ -21,7 +21,12 @@
       </div>
 
       <div v-else class="column-list">
-        <div v-for="column in columnList" :key="column.id" class="column-item" @click="handleColumnClick(column.id)">
+        <div
+          v-for="column in columnList"
+          :key="column.id"
+          class="column-item"
+          @click="handleColumnClick(column.id)"
+        >
           <!-- 专栏封面 -->
           <el-image :src="column.coverUrl || ''" class="column-cover">
             <template #placeholder>
@@ -39,7 +44,7 @@
           <!-- 专栏内容 -->
           <div class="column-content">
             <h3 class="column-title">{{ column.name }}</h3>
-            <p class="column-description">{{ column.description || "暂无描述" }}</p>
+            <p class="column-description">{{ column.description || '暂无描述' }}</p>
 
             <!-- 专栏元信息 -->
             <div class="column-meta">
@@ -73,7 +78,7 @@
 </template>
 
 <script setup>
-import { Collection, Document, Star } from "@element-plus/icons-vue";
+import { Collection, Document, Star } from '@element-plus/icons-vue'
 
 // 定义 props
 const props = defineProps({
@@ -89,15 +94,15 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-});
+})
 
 // 定义 emits
-const emit = defineEmits(["column-click"]);
+const emit = defineEmits(['column-click'])
 
 // 处理专栏点击事件
 const handleColumnClick = (columnId) => {
-  emit("column-click", columnId);
-};
+  emit('column-click', columnId)
+}
 </script>
 
 <style lang="scss" scoped>
@@ -288,7 +293,7 @@ $bg-color: #f5f7fa;
             }
 
             &::before {
-              content: "•";
+              content: '•';
               margin-right: 8px;
               color: var(--el-text-color-placeholder);
             }

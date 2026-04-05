@@ -10,7 +10,13 @@
         </div>
         <div class="header-actions">
           <el-button plain :icon="RefreshRight" @click="handleRefresh">刷新列表</el-button>
-          <el-button plain :icon="Select" :disabled="messageStore.totalUnreadCount === 0" @click="handleMarkAllRead">全部已读</el-button>
+          <el-button
+            plain
+            :icon="Select"
+            :disabled="messageStore.totalUnreadCount === 0"
+            @click="handleMarkAllRead"
+            >全部已读</el-button
+          >
         </div>
       </div>
 
@@ -56,7 +62,10 @@
             @click="openChat(conv.targetUserId)"
           >
             <!-- 用户头像 -->
-            <div class="conversation-item__avatar" @click.stop="goToUserHomepage(conv.targetUserId)">
+            <div
+              class="conversation-item__avatar"
+              @click.stop="goToUserHomepage(conv.targetUserId)"
+            >
               <el-avatar :size="50" :src="conv.targetUserAvatar" />
             </div>
 
@@ -70,7 +79,10 @@
               </div>
               <div class="conversation-item__nickname">{{ conv.targetUserNickname }}</div>
               <div class="conversation-item__message">{{ conv.lastMessageContent }}</div>
-              <div class="conversation-item__typing" v-if="messageStore.conversationTypingMap[conv.targetUserId]">
+              <div
+                class="conversation-item__typing"
+                v-if="messageStore.conversationTypingMap[conv.targetUserId]"
+              >
                 <span class="typing-text">正在输入</span>
               </div>
             </div>
@@ -99,148 +111,150 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useRouter } from "vue-router";
-import { RefreshRight, Select, Delete } from "@element-plus/icons-vue";
-import { ElMessageBox } from "element-plus";
-import { getConversationList, deleteConversation, clearUnreadCount } from "@/api/conversation";
-import { useMessageStore } from "@/stores/messageStore";
-import WebSocketClient from "@/utils/WebSocketClient";
-import { formatConversationTime } from "@/utils/formatTime";
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { RefreshRight, Select, Delete } from '@element-plus/icons-vue'
+import { ElMessageBox } from 'element-plus'
+import { getConversationList, deleteConversation, clearUnreadCount } from '@/api/conversation'
+import { useMessageStore } from '@/stores/messageStore'
+import WebSocketClient from '@/utils/WebSocketClient'
+import { formatConversationTime } from '@/utils/formatTime'
 
-const router = useRouter();
-const messageStore = useMessageStore();
-const loading = ref(false);
+const router = useRouter()
+const messageStore = useMessageStore()
+const loading = ref(false)
 
 // ==================== 统计数据 ====================
 // 计算属性：汇总页面统计数据
 const statistics = computed(() => ({
-  totalUnread: messageStore.totalUnreadCount || 0,      // 全部未读消息数
-  conversationCount: messageStore.conversationList.length || 0,  // 会话总数
-  onlineCount: messageStore.conversationList.filter(conv => conv.isOnline).length || 0,  // 在线好友数
-}));
+  totalUnread: messageStore.totalUnreadCount || 0, // 全部未读消息数
+  conversationCount: messageStore.conversationList.length || 0, // 会话总数
+  onlineCount: messageStore.conversationList.filter((conv) => conv.isOnline).length || 0, // 在线好友数
+}))
 
 // 获取会话列表
 const fetchConversationList = async () => {
   try {
-    loading.value = true;
-    const res = await getConversationList();
-    messageStore.setConversationList(res.data || []);
+    loading.value = true
+    const res = await getConversationList()
+    messageStore.setConversationList(res.data || [])
   } catch (error) {
     // 静默处理
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 打开聊天窗口
 const openChat = (userId) => {
-  router.push(`/message/chat/${userId}`);
-};
+  router.push(`/message/chat/${userId}`)
+}
 
 // 跳转到用户主页
 const goToUserHomepage = (userId) => {
-  router.push(`/user/${userId}`);
-};
+  router.push(`/user/${userId}`)
+}
 
 // 删除会话
 const handleDelete = async (userId) => {
   try {
-    await ElMessageBox.confirm("确定要删除该会话吗？", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await ElMessageBox.confirm('确定要删除该会话吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
 
-    await deleteConversation(userId);
-    messageStore.removeConversation(userId);
+    await deleteConversation(userId)
+    messageStore.removeConversation(userId)
   } catch (error) {
-    if (error !== "cancel") {
+    if (error !== 'cancel') {
       // 静默处理
     }
   }
-};
+}
 
 // 刷新会话列表
 const handleRefresh = async () => {
   try {
-    await fetchConversationList();
-    ElMessage.success("刷新成功");
+    await fetchConversationList()
+    ElMessage.success('刷新成功')
   } catch (error) {
     // 错误已在 fetchConversationList 中记录
   }
-};
+}
 
 // 全部标记已读
 const handleMarkAllRead = async () => {
-  const unreadConversations = messageStore.conversationList.filter((conv) => conv.unreadCount > 0);
+  const unreadConversations = messageStore.conversationList.filter((conv) => conv.unreadCount > 0)
   if (unreadConversations.length === 0) {
-    ElMessage.info("没有未读消息");
-    return;
+    ElMessage.info('没有未读消息')
+    return
   }
 
   try {
     // 遍历所有未读会话，调用清空未读数接口
-    await Promise.all(unreadConversations.map((conv) => clearUnreadCount(conv.targetUserId)));
+    await Promise.all(unreadConversations.map((conv) => clearUnreadCount(conv.targetUserId)))
     // 更新本地状态
     unreadConversations.forEach((conv) => {
-      messageStore.clearConversationUnread(conv.targetUserId);
-    });
-    ElMessage.success("已全部标记为已读");
+      messageStore.clearConversationUnread(conv.targetUserId)
+    })
+    ElMessage.success('已全部标记为已读')
   } catch (error) {
     // 静默处理
   }
-};
+}
 
 // 新消息处理器（如果会话列表中没有这个用户，重新获取会话列表）
 const handleNewMessage = (data) => {
   // Header.vue 已经更新了 messageStore,这里不需要再次调用 updateConversation
   // 只需要检查是否是新会话，如果是则重新获取会话列表
-  const hasConversation = messageStore.conversationList.some((conv) => conv.targetUserId === data.fromUserId);
+  const hasConversation = messageStore.conversationList.some(
+    (conv) => conv.targetUserId === data.fromUserId,
+  )
 
   if (!hasConversation) {
-    fetchConversationList();
+    fetchConversationList()
   }
-};
+}
 
 // 处理用户在线状态变化
 const handleUserOnlineStatus = (data) => {
-  messageStore.updateUserOnlineStatus(data.userId, data.isOnline);
-};
+  messageStore.updateUserOnlineStatus(data.userId, data.isOnline)
+}
 
 // 处理对方正在输入通知（用于会话列表）
 const handleTypingNotify = (data) => {
   // 设置该会话的输入状态
-  messageStore.setConversationTyping(data.fromUserId, true);
+  messageStore.setConversationTyping(data.fromUserId, true)
 
   // 5 秒后自动清除（比 ChatWindow 稍短，因为列表不需要持续显示）
   setTimeout(() => {
-    messageStore.setConversationTyping(data.fromUserId, false);
-  }, 5000);
-};
+    messageStore.setConversationTyping(data.fromUserId, false)
+  }, 5000)
+}
 
 // 组件挂载
 onMounted(() => {
   // 如果会话列表为空，才主动获取（避免重复获取）
   // Header.vue 已经在用户登录时获取过一次了
   if (messageStore.conversationList.length === 0) {
-    fetchConversationList();
+    fetchConversationList()
   }
 
   // 注意：不要在这里初始化 WebSocket，Header.vue 已经全局初始化了
   // 只需要监听新消息事件，用于检测新会话
-  WebSocketClient.on("NEW_MESSAGE", handleNewMessage);
-  WebSocketClient.on("USER_ONLINE_STATUS", handleUserOnlineStatus);
-  WebSocketClient.on("TYPING_NOTIFY", handleTypingNotify);
-});
+  WebSocketClient.on('NEW_MESSAGE', handleNewMessage)
+  WebSocketClient.on('USER_ONLINE_STATUS', handleUserOnlineStatus)
+  WebSocketClient.on('TYPING_NOTIFY', handleTypingNotify)
+})
 
 // 组件卸载
 onUnmounted(() => {
   // 移除监听器
-  WebSocketClient.off("NEW_MESSAGE", handleNewMessage);
-  WebSocketClient.off("USER_ONLINE_STATUS", handleUserOnlineStatus);
-  WebSocketClient.off("TYPING_NOTIFY", handleTypingNotify);
-});
+  WebSocketClient.off('NEW_MESSAGE', handleNewMessage)
+  WebSocketClient.off('USER_ONLINE_STATUS', handleUserOnlineStatus)
+  WebSocketClient.off('TYPING_NOTIFY', handleTypingNotify)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -301,7 +315,7 @@ onUnmounted(() => {
 
         .header-copy__title {
           margin: 0;
-          font-family: "Helvetica Neue", Arial, sans-serif;
+          font-family: 'Helvetica Neue', Arial, sans-serif;
           font-size: 28px;
           color: var(--text-title);
         }
@@ -321,7 +335,7 @@ onUnmounted(() => {
         gap: 12px;
         align-content: flex-start;
 
-        :deep(.el-button) {
+        ::v-deep(.el-button) {
           height: 40px;
           padding: 0 16px;
           border-radius: 999px;
@@ -414,7 +428,9 @@ onUnmounted(() => {
           background: var(--bg-card);
           box-shadow: var(--shadow);
           cursor: pointer;
-          transition: box-shadow 0.2s ease, border-color 0.2s ease;
+          transition:
+            box-shadow 0.2s ease,
+            border-color 0.2s ease;
 
           &:hover {
             border-color: var(--border-strong);
@@ -436,7 +452,7 @@ onUnmounted(() => {
             align-items: flex-start;
             justify-content: center;
 
-            :deep(.el-avatar) {
+            ::v-deep(.el-avatar) {
               border: 1px solid var(--border);
               border-radius: 14px;
             }
@@ -502,10 +518,18 @@ onUnmounted(() => {
             }
 
             @keyframes typing-dots {
-              0%   { content: '.'; }
-              33%  { content: '..'; }
-              66%  { content: '...'; }
-              100% { content: '.'; }
+              0% {
+                content: '.';
+              }
+              33% {
+                content: '..';
+              }
+              66% {
+                content: '...';
+              }
+              100% {
+                content: '.';
+              }
             }
           }
 
@@ -538,11 +562,11 @@ onUnmounted(() => {
     }
 
     // 空状态样式
-    :deep(.el-empty) {
+    ::v-deep(.el-empty) {
       padding: 60px 20px;
     }
 
-    :deep(.el-empty__description) {
+    ::v-deep(.el-empty__description) {
       color: var(--text-muted);
     }
   }
@@ -638,7 +662,7 @@ html.dark {
             grid-template-columns: 44px minmax(0, 1fr) auto;
 
             .conversation-item__avatar {
-              :deep(.el-avatar) {
+              ::v-deep(.el-avatar) {
                 width: 44px;
                 height: 44px;
               }

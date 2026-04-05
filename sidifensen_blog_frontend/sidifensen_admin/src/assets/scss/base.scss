@@ -1,5 +1,5 @@
 * {
-  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
   box-sizing: border-box;
 }
 
@@ -62,9 +62,8 @@ html.dark {
   background-color: #c0c4cc;
   border-radius: 2px;
   transition: background-color 0.3s;
-  
+
   &:hover {
     background-color: #909399;
   }
 }
-

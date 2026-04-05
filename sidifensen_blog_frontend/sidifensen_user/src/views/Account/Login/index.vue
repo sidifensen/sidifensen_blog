@@ -78,15 +78,8 @@
 
       <!-- 记住我 & 忘记密码 -->
       <div class="form-options">
-        <el-checkbox v-model="formData.rememberMe" class="remember-checkbox">
-          记住我
-        </el-checkbox>
-        <el-button
-          type="primary"
-          link
-          class="forgot-link"
-          @click="router.push('/reset')"
-        >
+        <el-checkbox v-model="formData.rememberMe" class="remember-checkbox"> 记住我 </el-checkbox>
+        <el-button type="primary" link class="forgot-link" @click="router.push('/reset')">
           忘记密码？
         </el-button>
       </div>
@@ -105,12 +98,7 @@
       <!-- 注册链接 -->
       <div class="register-link-wrap">
         <span class="register-text">还没有账号？</span>
-        <el-button
-          type="primary"
-          link
-          class="register-link"
-          @click="router.push('/register')"
-        >
+        <el-button type="primary" link class="register-link" @click="router.push('/register')">
           立即注册
         </el-button>
       </div>
@@ -140,120 +128,120 @@
 </template>
 
 <script setup>
-import { giteeLogin, githubLogin, qqLogin } from "@/api/oauth";
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { login, checkCode, info } from "@/api/user";
-import { SetJwt } from "@/utils/Auth";
-import { useUserStore } from "@/stores/userStore.js";
+import { giteeLogin, githubLogin, qqLogin } from '@/api/oauth'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { login, checkCode, info } from '@/api/user'
+import { SetJwt } from '@/utils/Auth'
+import { useUserStore } from '@/stores/userStore.js'
 
-const userStore = useUserStore();
+const userStore = useUserStore()
 
-const router = useRouter();
-const formDataRef = ref(null);
+const router = useRouter()
+const formDataRef = ref(null)
 const formData = ref({
-  username: "",
-  password: "",
+  username: '',
+  password: '',
   rememberMe: false,
-  checkCodeKey: "",
-  checkCode: "",
-});
-const loginLoading = ref(false);
+  checkCodeKey: '',
+  checkCode: '',
+})
+const loginLoading = ref(false)
 
 // 验证用户名（支持用户名或邮箱登录）
 const validateUsername = (rule, value, callback) => {
-  if (value === "") {
-    callback(new Error("请输入用户名或邮箱"));
+  if (value === '') {
+    callback(new Error('请输入用户名或邮箱'))
   } else if (value.length < 4 || value.length > 50) {
-    callback(new Error("长度必须在 4-50 个字符之间"));
+    callback(new Error('长度必须在 4-50 个字符之间'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
 // 验证密码字符类型
 const validatePasswordCharacters = (rule, value, callback) => {
-  if (value === "") {
-    callback(new Error("请输入密码"));
+  if (value === '') {
+    callback(new Error('请输入密码'))
   } else if (!/^[a-zA-Z0-9@]+$/.test(value)) {
-    callback(new Error("密码只能包含英文、数字和@符号"));
+    callback(new Error('密码只能包含英文、数字和@符号'))
   } else if (value.length < 6 || value.length > 20) {
-    callback(new Error("密码的长度必须在 6-20 个字符之间"));
+    callback(new Error('密码的长度必须在 6-20 个字符之间'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
 // 验证验证码
 const validateCheckCode = (rule, value, callback) => {
   if (!value) {
-    callback(new Error("请输入验证码"));
+    callback(new Error('请输入验证码'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
 const rules = ref({
-  username: [{ validator: validateUsername, trigger: ["blur", "change"] }],
-  password: [{ validator: validatePasswordCharacters, trigger: ["blur", "change"] }],
-  checkCode: [{ validator: validateCheckCode, trigger: ["blur", "change"] }],
-});
+  username: [{ validator: validateUsername, trigger: ['blur', 'change'] }],
+  password: [{ validator: validatePasswordCharacters, trigger: ['blur', 'change'] }],
+  checkCode: [{ validator: validateCheckCode, trigger: ['blur', 'change'] }],
+})
 
 // 登录按钮
 const loginBtn = async () => {
   if (loginLoading.value) {
-    return;
+    return
   }
 
-  loginLoading.value = true;
+  loginLoading.value = true
 
   try {
-    await formDataRef.value.validate();
+    await formDataRef.value.validate()
   } catch {
-    ElMessage.error("请填写完整信息");
-    loginLoading.value = false;
-    return;
+    ElMessage.error('请填写完整信息')
+    loginLoading.value = false
+    return
   }
 
   try {
-    const res = await login(formData.value);
-    ElMessage.success("登录成功");
+    const res = await login(formData.value)
+    ElMessage.success('登录成功')
     // 将 jwt 存储到 localStorage
-    SetJwt(res.data);
+    SetJwt(res.data)
     // 等待 info() 获取用户信息完成后再跳转，避免 Header 组件挂载时 user 为空
-    const userInfoRes = await info();
-    userStore.user = userInfoRes.data;
-    router.push({ name: "Home" });
+    const userInfoRes = await info()
+    userStore.user = userInfoRes.data
+    router.push({ name: 'Home' })
   } catch {
     // 登录失败后刷新验证码，避免继续使用旧验证码
-    await changeCheckCode();
+    await changeCheckCode()
   } finally {
-    loginLoading.value = false;
+    loginLoading.value = false
   }
-};
+}
 
-const checkCodeInfo = ref({});
+const checkCodeInfo = ref({})
 // 刷新验证码
 const changeCheckCode = async () => {
   await checkCode().then((res) => {
-    checkCodeInfo.value = res.data;
-    formData.value.checkCodeKey = res.data.checkCodeKey;
-  });
-};
+    checkCodeInfo.value = res.data
+    formData.value.checkCodeKey = res.data.checkCodeKey
+  })
+}
 
 // 测试模式自动填充（仅开发环境生效）
 const autoFillTestAccount = () => {
   if (import.meta.env.VITE_TEST_MODE === 'true') {
-    formData.value.username = import.meta.env.VITE_TEST_USERNAME || 'test';
-    formData.value.password = import.meta.env.VITE_TEST_PASSWORD || '123456';
+    formData.value.username = import.meta.env.VITE_TEST_USERNAME || 'test'
+    formData.value.password = import.meta.env.VITE_TEST_PASSWORD || '123456'
   }
-};
+}
 
 // 页面加载完成后刷新验证码
 onMounted(() => {
-  changeCheckCode();
-  autoFillTestAccount();
-});
+  changeCheckCode()
+  autoFillTestAccount()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -318,11 +306,11 @@ html.dark {
 
 // 表单
 .login-form {
-  :deep(.el-form-item) {
+  ::v-deep(.el-form-item) {
     margin-bottom: 0;
   }
 
-  :deep(.el-form-item__error) {
+  ::v-deep(.el-form-item__error) {
     padding-top: 4px;
   }
 }
@@ -343,7 +331,7 @@ html.dark {
 
 // 输入框样式
 .login-input {
-  :deep(.el-input__wrapper) {
+  ::v-deep(.el-input__wrapper) {
     background: var(--input-bg);
     border: 2px solid var(--input-border);
     border-radius: 8px;
@@ -362,7 +350,7 @@ html.dark {
     }
   }
 
-  :deep(.el-input__inner) {
+  ::v-deep(.el-input__inner) {
     height: 44px;
     font-size: 15px;
     color: var(--text-primary);
@@ -372,7 +360,7 @@ html.dark {
     }
   }
 
-  :deep(.el-input__prefix) {
+  ::v-deep(.el-input__prefix) {
     color: var(--text-muted);
     margin-right: 8px;
   }
@@ -415,16 +403,16 @@ html.dark {
 }
 
 .remember-checkbox {
-  :deep(.el-checkbox__label) {
+  ::v-deep(.el-checkbox__label) {
     font-size: 14px;
     color: var(--text-secondary);
   }
 
-  :deep(.el-checkbox__input.is-checked + .el-checkbox__label) {
+  ::v-deep(.el-checkbox__input.is-checked + .el-checkbox__label) {
     color: var(--text-secondary);
   }
 
-  :deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
+  ::v-deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
     background-color: var(--btn-bg);
     border-color: var(--btn-bg);
   }

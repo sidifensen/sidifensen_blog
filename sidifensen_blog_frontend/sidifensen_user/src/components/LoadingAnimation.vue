@@ -6,32 +6,31 @@
 </template>
 
 <script setup>
-import { defineProps } from "vue";
+import { defineProps } from 'vue'
 
 // 定义组件props
 const props = defineProps({
   // 加载文本，默认为'加载中...'
   text: {
     type: String,
-    default: "加载中...",
+    default: '加载中...',
   },
   // 加载动画颜色
   color: {
     type: String,
-    default: "#409eff",
+    default: '#409eff',
   },
   // 加载动画大小
   size: {
     type: String,
-    default: "medium", // small, medium, large
+    default: 'medium', // small, medium, large
   },
   // 最小高度
   minHeight: {
     type: String,
-    default: "300px",
+    default: '300px',
   },
-
-});
+})
 </script>
 
 <style lang="scss" scoped>
@@ -43,14 +42,14 @@ const props = defineProps({
   justify-content: center;
   height: 100%;
   width: 100%;
-  min-height: v-bind("minHeight"); //最小高度
+  min-height: v-bind('minHeight'); //最小高度
   // 旋转动画
   .spinner {
     // 根据size属性设置不同的大小
     width: v-bind('size === "small" ? "30px" : size === "medium" ? "50px" : "70px"');
     height: v-bind('size === "small" ? "30px" : size === "medium" ? "50px" : "70px"');
     border: 5px solid #f3f3f3;
-    border-top: 5px solid v-bind("color");
+    border-top: 5px solid v-bind('color');
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 15px;

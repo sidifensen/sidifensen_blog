@@ -1,4 +1,4 @@
-import request from "@/utils/Request";
+import request from '@/utils/Request'
 
 /**
  * 管理员获取所有友链列表
@@ -6,10 +6,10 @@ import request from "@/utils/Request";
  */
 export function adminGetLinkList(params) {
   return request({
-    url: "/link/admin/list",
-    method: "get",
+    url: '/link/admin/list',
+    method: 'get',
     params,
-  });
+  })
 }
 
 /**
@@ -19,10 +19,10 @@ export function adminGetLinkList(params) {
  */
 export function adminSearchLink(searchData) {
   return request({
-    url: "/link/admin/search",
-    method: "post",
+    url: '/link/admin/search',
+    method: 'post',
     data: searchData,
-  });
+  })
 }
 
 /**
@@ -33,13 +33,13 @@ export function adminSearchLink(searchData) {
  */
 export function adminExamineLink(linkId, examineStatus) {
   return request({
-    url: "/link/admin/examine",
-    method: "put",
+    url: '/link/admin/examine',
+    method: 'put',
     data: {
       linkId,
       examineStatus,
     },
-  });
+  })
 }
 
 /**
@@ -52,12 +52,12 @@ export function adminBatchExamineLink(linkIds, examineStatus) {
   const linkAuditDtos = linkIds.map((linkId) => ({
     linkId,
     examineStatus,
-  }));
+  }))
   return request({
-    url: "/link/admin/examine/batch",
-    method: "put",
+    url: '/link/admin/examine/batch',
+    method: 'put',
     data: linkAuditDtos,
-  });
+  })
 }
 
 /**
@@ -68,8 +68,8 @@ export function adminBatchExamineLink(linkIds, examineStatus) {
 export function adminDeleteLink(linkId) {
   return request({
     url: `/link/admin/${linkId}`,
-    method: "delete",
-  });
+    method: 'delete',
+  })
 }
 
 /**
@@ -79,10 +79,10 @@ export function adminDeleteLink(linkId) {
  */
 export function adminBatchDeleteLink(linkIds) {
   return request({
-    url: "/link/admin/delete/batch",
-    method: "delete",
+    url: '/link/admin/delete/batch',
+    method: 'delete',
     data: linkIds,
-  });
+  })
 }
 
 /**
@@ -92,8 +92,8 @@ export function adminBatchDeleteLink(linkIds) {
  */
 export function adminUpdateLink(linkData) {
   return request({
-    url: "/link/admin/update",
-    method: "put",
+    url: '/link/admin/update',
+    method: 'put',
     data: linkData,
-  });
+  })
 }

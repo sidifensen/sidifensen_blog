@@ -5,12 +5,7 @@
       <p class="register-subtitle">加入我们，开始创作之旅</p>
     </div>
 
-    <el-form
-      :model="formData"
-      :rules="rules"
-      ref="formDataRef"
-      class="register-form"
-    >
+    <el-form :model="formData" :rules="rules" ref="formDataRef" class="register-form">
       <!-- 用户名 -->
       <div class="form-item-wrap">
         <label class="form-label">用户名</label>
@@ -101,150 +96,139 @@
               :disabled="!isEmailValid || waitTime > 0"
               @click="sendEmailBtn"
             >
-              {{ waitTime > 0 ? `${waitTime}s` : "获取验证码" }}
+              {{ waitTime > 0 ? `${waitTime}s` : '获取验证码' }}
             </el-button>
           </div>
         </el-form-item>
       </div>
 
-      <el-button
-        class="login-btn"
-        type="primary"
-        @click="registerBtn"
-      >
-        立即注册
-      </el-button>
+      <el-button class="login-btn" type="primary" @click="registerBtn"> 立即注册 </el-button>
     </el-form>
 
     <!-- 登录链接 -->
     <div class="login-link-wrap">
       <span class="login-text">已有账号？</span>
-      <el-button
-        type="primary"
-        link
-        class="login-link"
-        @click="router.push('/login')"
-      >
+      <el-button type="primary" link class="login-link" @click="router.push('/login')">
         立即登录
       </el-button>
     </div>
   </div>
 </template>
 <script setup>
-import { computed, ref } from "vue";
-import { useRouter } from "vue-router";
-import { EditPen, Lock, Message, User } from "@element-plus/icons-vue";
-import { ElMessage } from "element-plus";
-import { register, sendEmail } from "@/api/user";
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { EditPen, Lock, Message, User } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import { register, sendEmail } from '@/api/user'
 
 // 邮件发送等待时间
-const waitTime = ref(0);
-const formDataRef = ref();
-const router = useRouter();
+const waitTime = ref(0)
+const formDataRef = ref()
+const router = useRouter()
 // 提交表单
 const formData = ref({
-  username: "",
-  password: "",
-  repeatPassword: "",
-  email: "",
-  emailCheckCode: "",
-});
+  username: '',
+  password: '',
+  repeatPassword: '',
+  email: '',
+  emailCheckCode: '',
+})
 
 // 验证用户名
 const validateUsername = (rule, value, callback) => {
-  if (value === "") {
-    callback(new Error("请输入用户名"));
+  if (value === '') {
+    callback(new Error('请输入用户名'))
   } else if (!/^[a-zA-Z0-9]+$/.test(value)) {
-    callback(new Error("用户名只能是英文和数字"));
+    callback(new Error('用户名只能是英文和数字'))
   } else if (value.length < 4 || value.length > 20) {
-    callback(new Error("用户名的长度必须在 4-20 个字符之间"));
+    callback(new Error('用户名的长度必须在 4-20 个字符之间'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
 // 验证密码字符类型
 const validatePasswordCharacters = (rule, value, callback) => {
-  if (value === "") {
-    callback(new Error("请输入密码"));
+  if (value === '') {
+    callback(new Error('请输入密码'))
   } else if (!/^[a-zA-Z0-9@]+$/.test(value)) {
-    callback(new Error("密码只能包含英文、数字和@符号"));
+    callback(new Error('密码只能包含英文、数字和@符号'))
   } else if (value.length < 6 || value.length > 20) {
-    callback(new Error("密码的长度必须在 6-20 个字符之间"));
+    callback(new Error('密码的长度必须在 6-20 个字符之间'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
 // 验证重复密码
 const validatePassword = (rule, value, callback) => {
-  if (value === "") {
-    callback(new Error("请再次输入密码"));
+  if (value === '') {
+    callback(new Error('请再次输入密码'))
   } else if (value !== formData.value.password) {
-    callback(new Error("两次输入的密码不一致"));
+    callback(new Error('两次输入的密码不一致'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
-const EmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const EmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 
 // 验证邮箱格式
 const validateEmailFormat = (rule, value, callback) => {
   if (!value) {
-    callback(new Error("请输入邮箱"));
+    callback(new Error('请输入邮箱'))
   } else if (!EmailRegex.test(value)) {
-    callback(new Error("请输入合法的邮箱"));
+    callback(new Error('请输入合法的邮箱'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
 // 验证邮箱验证码
 const validateEmailCheckCode = (rule, value, callback) => {
   if (!value) {
-    callback(new Error("请输入获取的验证码"));
+    callback(new Error('请输入获取的验证码'))
   } else if (!/^\d{6}$/.test(value)) {
-    callback(new Error("验证码必须是6位数字"));
+    callback(new Error('验证码必须是6位数字'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
 // 判断邮箱是否正确
 const isEmailValid = computed(() => {
   // 确保邮箱不为空且符合正则表达式
-  return formData.value.email && EmailRegex.test(formData.value.email);
-});
+  return formData.value.email && EmailRegex.test(formData.value.email)
+})
 
 const rules = {
-  username: [{ validator: validateUsername, trigger: ["blur", "change"] }],
-  password: [{ validator: validatePasswordCharacters, trigger: ["blur", "change"] }],
-  repeatPassword: [{ validator: validatePassword, trigger: ["blur", "change"] }],
-  email: [{ validator: validateEmailFormat, trigger: ["blur", "change"] }],
-  emailCheckCode: [{ validator: validateEmailCheckCode, trigger: ["blur", "change"] }],
-};
+  username: [{ validator: validateUsername, trigger: ['blur', 'change'] }],
+  password: [{ validator: validatePasswordCharacters, trigger: ['blur', 'change'] }],
+  repeatPassword: [{ validator: validatePassword, trigger: ['blur', 'change'] }],
+  email: [{ validator: validateEmailFormat, trigger: ['blur', 'change'] }],
+  emailCheckCode: [{ validator: validateEmailCheckCode, trigger: ['blur', 'change'] }],
+}
 
 // 发送注册邮箱验证码
 function sendEmailBtn() {
   if (isEmailValid.value) {
     const EmailDto = ref({
       email: formData.value.email,
-      type: "register",
-    });
-    waitTime.value = 60;
+      type: 'register',
+    })
+    waitTime.value = 60
     sendEmail(EmailDto.value).then(() => {
-      ElMessage.success(`验证码已发送到邮箱：${formData.value.email}，请注意查收`);
+      ElMessage.success(`验证码已发送到邮箱：${formData.value.email}，请注意查收`)
       const interval = setInterval(() => {
         if (waitTime.value === 0) {
-          clearInterval(interval);
+          clearInterval(interval)
         } else {
-          waitTime.value--;
+          waitTime.value--
         }
-      }, 1000);
-    });
+      }, 1000)
+    })
   } else {
-    ElMessage.warning("请输入正确的邮箱");
+    ElMessage.warning('请输入正确的邮箱')
   }
 }
 
@@ -253,16 +237,16 @@ function registerBtn() {
   formDataRef.value.validate((valid) => {
     if (valid) {
       // 去掉repeatPassword字段，后端不需要
-      const RegisterDto = { ...formData.value };
-      delete RegisterDto.repeatPassword;
+      const RegisterDto = { ...formData.value }
+      delete RegisterDto.repeatPassword
       register(RegisterDto).then(() => {
-        ElMessage.success("注册成功，欢迎进入社区");
-        router.push("/login");
-      });
+        ElMessage.success('注册成功，欢迎进入社区')
+        router.push('/login')
+      })
     } else {
-      ElMessage.warning("请完整填写注册内容");
+      ElMessage.warning('请完整填写注册内容')
     }
-  });
+  })
 }
 </script>
 
@@ -322,11 +306,11 @@ html.dark {
 
 // 表单
 .register-form {
-  :deep(.el-form-item) {
+  ::v-deep(.el-form-item) {
     margin-bottom: 0;
   }
 
-  :deep(.el-form-item__error) {
+  ::v-deep(.el-form-item__error) {
     padding-top: 4px;
   }
 }
@@ -347,7 +331,7 @@ html.dark {
 
 // 输入框样式 - 复用登录页
 .login-input {
-  :deep(.el-input__wrapper) {
+  ::v-deep(.el-input__wrapper) {
     background: var(--input-bg);
     border: 2px solid var(--input-border);
     border-radius: 8px;
@@ -366,7 +350,7 @@ html.dark {
     }
   }
 
-  :deep(.el-input__inner) {
+  ::v-deep(.el-input__inner) {
     height: 42px;
     font-size: 15px;
     color: var(--text-primary);
@@ -376,7 +360,7 @@ html.dark {
     }
   }
 
-  :deep(.el-input__prefix) {
+  ::v-deep(.el-input__prefix) {
     color: var(--text-muted);
     margin-right: 8px;
   }

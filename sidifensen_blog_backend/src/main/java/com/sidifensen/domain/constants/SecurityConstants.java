@@ -87,6 +87,9 @@ public class SecurityConstants {
 
             // 私信
             "/ws/message",
+
+            // actuator 监控端点
+            "/actuator/**",
     };
 
 }

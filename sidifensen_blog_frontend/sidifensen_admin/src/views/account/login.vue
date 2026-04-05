@@ -4,21 +4,32 @@
     <div class="login-brand">
       <div class="brand-content">
         <div class="brand-logo">
-          <svg viewBox="0 0 80 80" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg
+            viewBox="0 0 80 80"
+            width="64"
+            height="64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <!-- 翻开的书本 -->
-            <path d="M10 22 Q40 12 40 12 Q40 12 70 22 L70 58 Q40 48 40 48 Q40 48 10 58 Z" fill="#334155" stroke="#42b983" stroke-width="2"/>
+            <path
+              d="M10 22 Q40 12 40 12 Q40 12 70 22 L70 58 Q40 48 40 48 Q40 48 10 58 Z"
+              fill="#334155"
+              stroke="#42b983"
+              stroke-width="2"
+            />
             <!-- 书脊 -->
-            <path d="M40 12 L40 48" stroke="#42b983" stroke-width="2"/>
+            <path d="M40 12 L40 48" stroke="#42b983" stroke-width="2" />
             <!-- 左侧书页线条 -->
-            <line x1="18" y1="30" x2="36" y2="26" stroke="#475569" stroke-width="1.5"/>
-            <line x1="18" y1="38" x2="36" y2="34" stroke="#475569" stroke-width="1.5"/>
-            <line x1="18" y1="46" x2="36" y2="42" stroke="#475569" stroke-width="1.5"/>
+            <line x1="18" y1="30" x2="36" y2="26" stroke="#475569" stroke-width="1.5" />
+            <line x1="18" y1="38" x2="36" y2="34" stroke="#475569" stroke-width="1.5" />
+            <line x1="18" y1="46" x2="36" y2="42" stroke="#475569" stroke-width="1.5" />
             <!-- 右侧书页线条 -->
-            <line x1="44" y1="26" x2="62" y2="30" stroke="#475569" stroke-width="1.5"/>
-            <line x1="44" y1="34" x2="62" y2="38" stroke="#475569" stroke-width="1.5"/>
-            <line x1="44" y1="42" x2="62" y2="46" stroke="#475569" stroke-width="1.5"/>
+            <line x1="44" y1="26" x2="62" y2="30" stroke="#475569" stroke-width="1.5" />
+            <line x1="44" y1="34" x2="62" y2="38" stroke="#475569" stroke-width="1.5" />
+            <line x1="44" y1="42" x2="62" y2="46" stroke="#475569" stroke-width="1.5" />
             <!-- 书签 -->
-            <polygon points="52,18 56,18 56,28 54,24 52,28" fill="#42b983"/>
+            <polygon points="52,18 56,18 56,28 54,24 52,28" fill="#42b983" />
           </svg>
         </div>
         <h1 class="brand-title">Sidifensen Blog</h1>
@@ -34,12 +45,24 @@
         <el-form ref="loginFormRef" :model="loginForm" :rules="rules" class="login-form">
           <el-form-item prop="username">
             <label class="form-label">用户名</label>
-            <el-input v-model="loginForm.username" placeholder="请输入用户名" :prefix-icon="User" size="large" />
+            <el-input
+              v-model="loginForm.username"
+              placeholder="请输入用户名"
+              :prefix-icon="User"
+              size="large"
+            />
           </el-form-item>
 
           <el-form-item prop="password">
             <label class="form-label">密码</label>
-            <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" :prefix-icon="Lock" size="large" show-password />
+            <el-input
+              v-model="loginForm.password"
+              type="password"
+              placeholder="请输入密码"
+              :prefix-icon="Lock"
+              size="large"
+              show-password
+            />
           </el-form-item>
 
           <div class="form-remember">
@@ -47,7 +70,13 @@
           </div>
 
           <el-form-item>
-            <el-button type="primary" size="large" class="login-button" :loading="loading" @click="handleLogin">
+            <el-button
+              type="primary"
+              size="large"
+              class="login-button"
+              :loading="loading"
+              @click="handleLogin"
+            >
               {{ loading ? '登录中...' : '登录' }}
             </el-button>
           </el-form-item>
@@ -60,71 +89,71 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { User, Lock } from "@element-plus/icons-vue";
-import { login, info } from "@/api/user";
-import { SetJwt } from "@/utils/Auth";
-import { useRouter } from "vue-router";
-import { useUserStore } from "@/stores/userStore";
-const userStore = useUserStore();
+import { ref, onMounted } from 'vue'
+import { User, Lock } from '@element-plus/icons-vue'
+import { login, info } from '@/api/user'
+import { SetJwt } from '@/utils/Auth'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/userStore'
+const userStore = useUserStore()
 
-const router = useRouter();
+const router = useRouter()
 const loginForm = ref({
-  username: "",
-  password: "",
+  username: '',
+  password: '',
   rememberMe: false,
-});
+})
 
-const loading = ref(false);
+const loading = ref(false)
 
 const rules = {
-  username: [{ required: true, message: "请输入用户名/邮箱", trigger: "blur" }],
-  password: [{ required: true, message: "请输入密码", trigger: "blur" }],
-};
+  username: [{ required: true, message: '请输入用户名/邮箱', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+}
 
 // 登录
-const loginFormRef = ref(null);
+const loginFormRef = ref(null)
 
 // 测试模式自动填充（仅开发环境生效）
 const autoFillTestAccount = () => {
   if (import.meta.env.VITE_TEST_MODE === 'true') {
-    loginForm.value.username = import.meta.env.VITE_TEST_USERNAME || 'test';
-    loginForm.value.password = import.meta.env.VITE_TEST_PASSWORD || '123456';
+    loginForm.value.username = import.meta.env.VITE_TEST_USERNAME || 'test'
+    loginForm.value.password = import.meta.env.VITE_TEST_PASSWORD || '123456'
   }
-};
+}
 
 onMounted(() => {
-  autoFillTestAccount();
-});
+  autoFillTestAccount()
+})
 
 const handleLogin = async () => {
   if (loading.value) {
-    return;
+    return
   }
 
   try {
-    await loginFormRef.value.validate();
+    await loginFormRef.value.validate()
   } catch {
-    ElMessage.error("请填写完整信息");
-    return;
+    ElMessage.error('请填写完整信息')
+    return
   }
 
-  loading.value = true;
+  loading.value = true
 
   try {
-    const res = await login(loginForm.value);
+    const res = await login(loginForm.value)
     // 登录成功后先持久化 token，再并行加载用户信息和菜单数据
-    SetJwt(res.data);
+    SetJwt(res.data)
 
-    const [userInfoRes] = await Promise.all([info(), userStore.loadMenusAndRoutes()]);
-    userStore.setUser(userInfoRes.data);
+    const [userInfoRes] = await Promise.all([info(), userStore.loadMenusAndRoutes()])
+    userStore.setUser(userInfoRes.data)
 
-    await router.push("/home");
-    ElMessage.success("登录成功");
+    await router.push('/home')
+    ElMessage.success('登录成功')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>

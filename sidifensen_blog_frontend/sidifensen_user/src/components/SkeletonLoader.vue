@@ -1,11 +1,6 @@
 <template>
   <div class="skeleton-loader">
-    <div
-      v-for="i in displayCount"
-      :key="i"
-      class="skeleton-item"
-      :class="`skeleton-${type}`"
-    >
+    <div v-for="i in displayCount" :key="i" class="skeleton-item" :class="`skeleton-${type}`">
       <!-- article 类型：图片 + 标题 + 描述 + 日期 -->
       <template v-if="type === 'article'">
         <el-skeleton-item variant="image" class="skeleton-image" />
@@ -43,26 +38,26 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { ElSkeleton, ElSkeletonItem } from "element-plus";
+import { computed } from 'vue'
+import { ElSkeleton, ElSkeletonItem } from 'element-plus'
 
 // 定义组件props
 const props = defineProps({
   // 骨架屏类型：article-文章、card-卡片、list-列表项、profile-用户资料
   type: {
     type: String,
-    default: "card",
-    validator: (value) => ["article", "card", "list", "profile"].includes(value),
+    default: 'card',
+    validator: (value) => ['article', 'card', 'list', 'profile'].includes(value),
   },
   // 骨架屏数量，默认为1
   count: {
     type: Number,
     default: 1,
   },
-});
+})
 
 // 计算显示数量，确保至少为1
-const displayCount = computed(() => Math.max(1, props.count));
+const displayCount = computed(() => Math.max(1, props.count))
 </script>
 
 <style lang="scss" scoped>

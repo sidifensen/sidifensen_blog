@@ -1,4 +1,4 @@
-import request from "@/utils/Request";
+import request from '@/utils/Request'
 
 /**
  * 获取管理端首页统计数据
@@ -6,10 +6,10 @@ import request from "@/utils/Request";
  */
 export function getDashboardStatistics(trendDays = 7) {
   return request({
-    url: "/dashboard/statistics",
-    method: "get",
+    url: '/dashboard/statistics',
+    method: 'get',
     params: { trendDays },
-  });
+  })
 }
 
 /**
@@ -17,9 +17,9 @@ export function getDashboardStatistics(trendDays = 7) {
  */
 export function refreshDashboardCache() {
   return request({
-    url: "/dashboard/refresh",
-    method: "post",
-  });
+    url: '/dashboard/refresh',
+    method: 'post',
+  })
 }
 
 /**
@@ -27,9 +27,9 @@ export function refreshDashboardCache() {
  */
 export function getWeeklyTrend() {
   return request({
-    url: "/dashboard/weekly-trend",
-    method: "get",
-  });
+    url: '/dashboard/weekly-trend',
+    method: 'get',
+  })
 }
 
 /**
@@ -37,9 +37,9 @@ export function getWeeklyTrend() {
  */
 export function getUserDistribution() {
   return request({
-    url: "/dashboard/user-distribution",
-    method: "get",
-  });
+    url: '/dashboard/user-distribution',
+    method: 'get',
+  })
 }
 
 /**
@@ -47,9 +47,9 @@ export function getUserDistribution() {
  */
 export function getContentActivity() {
   return request({
-    url: "/dashboard/content-activity",
-    method: "get",
-  });
+    url: '/dashboard/content-activity',
+    method: 'get',
+  })
 }
 
 /**
@@ -57,9 +57,9 @@ export function getContentActivity() {
  */
 export function getExamineCount() {
   return request({
-    url: "/dashboard/examine-count",
-    method: "get",
-  });
+    url: '/dashboard/examine-count',
+    method: 'get',
+  })
 }
 
 /**
@@ -67,9 +67,9 @@ export function getExamineCount() {
  */
 export function getVipStatistics() {
   return request({
-    url: "/dashboard/vip-statistics",
-    method: "get",
-  });
+    url: '/dashboard/vip-statistics',
+    method: 'get',
+  })
 }
 
 /**
@@ -78,10 +78,10 @@ export function getVipStatistics() {
  */
 export function getVisitorTrend(days = 7) {
   return request({
-    url: "/dashboard/visitor-trend",
-    method: "get",
+    url: '/dashboard/visitor-trend',
+    method: 'get',
     params: { days },
-  });
+  })
 }
 
 /**
@@ -89,7 +89,7 @@ export function getVisitorTrend(days = 7) {
  */
 export function getInteractionTrend() {
   return request({
-    url: "/dashboard/interaction-trend",
-    method: "get",
-  });
+    url: '/dashboard/interaction-trend',
+    method: 'get',
+  })
 }

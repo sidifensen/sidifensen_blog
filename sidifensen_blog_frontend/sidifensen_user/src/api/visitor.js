@@ -1,4 +1,4 @@
-import request from "@/utils/Request";
+import request from '@/utils/Request'
 
 /**
  * 获取今日访问量（实时）
@@ -6,7 +6,7 @@ import request from "@/utils/Request";
  */
 export function getTodayVisitorCount() {
   return request({
-    url: "/visitorLog/today/count",
-    method: "get",
-  });
+    url: '/visitorLog/today/count',
+    method: 'get',
+  })
 }

@@ -12,11 +12,7 @@
 
       <!-- 链接列表 -->
       <div class="project-links">
-        <a
-          href="https://gitee.com/sidifensen/sidifensen_blog"
-          target="_blank"
-          class="project-link"
-        >
+        <a href="https://gitee.com/sidifensen/sidifensen_blog" target="_blank" class="project-link">
           <div class="link-icon gitee-icon">
             <!-- Gitee SVG -->
             <svg viewBox="0 0 1024 1024" width="20" height="20">
@@ -59,7 +55,7 @@
 </template>
 
 <script setup>
-import { Star, ArrowRight } from "@element-plus/icons-vue";
+import { Star, ArrowRight } from '@element-plus/icons-vue'
 </script>
 
 <style lang="scss" scoped>

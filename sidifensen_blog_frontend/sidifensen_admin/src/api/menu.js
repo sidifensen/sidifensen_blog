@@ -1,71 +1,71 @@
-import request from "@/utils/Request";
+import request from '@/utils/Request'
 
 // 获取登录用户的菜单
 export function getMenuList() {
   return request({
-    url: "/menu/list",
-    method: "get",
-  });
+    url: '/menu/list',
+    method: 'get',
+  })
 }
 
 // 获取所有菜单
 export function getAllMenuList() {
   return request({
-    url: "/menu/listAll",
-    method: "get",
-  });
+    url: '/menu/listAll',
+    method: 'get',
+  })
 }
 
 // 分页获取菜单
 export function getMenuPage(params) {
   return request({
-    url: "/menu/page",
-    method: "get",
+    url: '/menu/page',
+    method: 'get',
     params,
-  });
+  })
 }
 
 // 新增菜单
 export function addMenu(data) {
   return request({
-    url: "/menu/add",
-    method: "post",
+    url: '/menu/add',
+    method: 'post',
     data,
-  });
+  })
 }
 // 更新菜单
 export function updateMenu(data) {
   return request({
-    url: "/menu/update",
-    method: "put",
+    url: '/menu/update',
+    method: 'put',
     data,
-  });
+  })
 }
 
 // 删除菜单
 export function deleteMenu(menuId) {
   return request({
     url: `/menu/${menuId}`,
-    method: "delete",
-  });
+    method: 'delete',
+  })
 }
 
 // 查询菜单
 export function queryMenu(name) {
   return request({
-    url: "/menu/search",
-    method: "get",
+    url: '/menu/search',
+    method: 'get',
     params: {
       name,
     },
-  });
+  })
 }
 
 // 分页查询菜单
 export function queryMenuPage(params) {
   return request({
-    url: "/menu/page/search",
-    method: "get",
+    url: '/menu/page/search',
+    method: 'get',
     params,
-  });
+  })
 }

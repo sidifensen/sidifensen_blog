@@ -2,28 +2,34 @@
   <Teleport to="body">
     <div v-if="isVisible" class="article-catalog is-fixed" :style="{ left: catalogLeft + 'px' }">
       <div class="catalog-header">
-      <el-icon>
-        <Document />
-      </el-icon>
-      <span>目录</span>
-    </div>
-
-    <!-- 目录列表 -->
-    <div class="catalog-list" v-if="catalog.length > 0">
-      <div v-for="(item, index) in catalog" :key="index" class="catalog-item" :class="[`level-${item.level}`, { active: currentHeading === item.text }]" @click="scrollToHeading(item.text)">
-        {{ item.text }}
+        <el-icon>
+          <Document />
+        </el-icon>
+        <span>目录</span>
       </div>
-    </div>
 
-    <!-- 无目录提示 -->
-    <el-empty v-else description="暂无目录" :image-size="100" />
+      <!-- 目录列表 -->
+      <div class="catalog-list" v-if="catalog.length > 0">
+        <div
+          v-for="(item, index) in catalog"
+          :key="index"
+          class="catalog-item"
+          :class="[`level-${item.level}`, { active: currentHeading === item.text }]"
+          @click="scrollToHeading(item.text)"
+        >
+          {{ item.text }}
+        </div>
+      </div>
+
+      <!-- 无目录提示 -->
+      <el-empty v-else description="暂无目录" :image-size="100" />
     </div>
   </Teleport>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
-import { Document } from "@element-plus/icons-vue";
+import { ref, onMounted, onUnmounted } from 'vue'
+import { Document } from '@element-plus/icons-vue'
 
 // Props 定义
 const props = defineProps({
@@ -31,89 +37,93 @@ const props = defineProps({
     type: String,
     required: true,
   },
-});
+})
 
 // 目录数据
-const catalog = ref([]);
-const currentHeading = ref("");
-const catalogLeft = ref(0);
-const isVisible = ref(false);
+const catalog = ref([])
+const currentHeading = ref('')
+const catalogLeft = ref(0)
+const isVisible = ref(false)
 
 // 解析文章内容中的标题（HTML格式）
 const parseHeadings = () => {
   if (!props.content) {
-    catalog.value = [];
-    return;
+    catalog.value = []
+    return
   }
 
   // 创建DOMParser实例用于解析HTML字符串
-  const parser = new DOMParser();
+  const parser = new DOMParser()
   // 将HTML字符串解析为DOM文档对象
-  const doc = parser.parseFromString(props.content, "text/html");
+  const doc = parser.parseFromString(props.content, 'text/html')
   // 获取所有标题元素(h1-h6)
-  const headings = doc.querySelectorAll("h1, h2, h3, h4, h5, h6");
+  const headings = doc.querySelectorAll('h1, h2, h3, h4, h5, h6')
 
   catalog.value = Array.from(headings).map((heading) => ({
     level: parseInt(heading.tagName.substring(1)), // 提取标题级别(1-6)
     text: heading.textContent.trim(), // 获取标题文本内容
-  }));
-};
+  }))
+}
 
 // 滚动到指定标题
 const scrollToHeading = (headingText) => {
-  const headings = document.querySelectorAll(".article-body h1, .article-body h2, .article-body h3, .article-body h4, .article-body h5, .article-body h6");
+  const headings = document.querySelectorAll(
+    '.article-body h1, .article-body h2, .article-body h3, .article-body h4, .article-body h5, .article-body h6',
+  )
 
   for (const heading of headings) {
     if (heading.textContent.trim() === headingText) {
-      heading.scrollIntoView({ behavior: "smooth", block: "start" });
-      break;
+      heading.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      break
     }
   }
-};
+}
 
 // 监听滚动，高亮当前标题
 const handleScroll = () => {
-  const headings = document.querySelectorAll(".article-body h1, .article-body h2, .article-body h3, .article-body h4, .article-body h5, .article-body h6");
-  const scrollPosition = window.scrollY;
+  const headings = document.querySelectorAll(
+    '.article-body h1, .article-body h2, .article-body h3, .article-body h4, .article-body h5, .article-body h6',
+  )
+  const scrollPosition = window.scrollY
 
   // 计算目录位置：紧贴在文章内容右侧
-  const articleContent = document.querySelector(".article-content");
+  const articleContent = document.querySelector('.article-content')
   if (articleContent) {
-    const contentRect = articleContent.getBoundingClientRect();
-    catalogLeft.value = contentRect.right + 20; // 文章内容右边界 + 20px 间距
+    const contentRect = articleContent.getBoundingClientRect()
+    catalogLeft.value = contentRect.right + 20 // 文章内容右边界 + 20px 间距
   }
 
   for (const heading of headings) {
-    const position = heading.offsetTop;
+    const position = heading.offsetTop
 
     if (scrollPosition >= position - 100) {
-      currentHeading.value = heading.textContent.trim();
+      currentHeading.value = heading.textContent.trim()
     }
   }
-};
+}
 
 // 生命周期钩子
 onMounted(() => {
-  parseHeadings();
+  parseHeadings()
   // 初始化目录位置
-  updateCatalogPosition();
+  updateCatalogPosition()
   // 位置计算完成后再显示目录，避免初始位置错误
-  isVisible.value = true;
-  window.addEventListener("scroll", handleScroll);
-});
+  isVisible.value = true
+  window.addEventListener('scroll', handleScroll)
+})
 
 // 更新目录位置
 const updateCatalogPosition = () => {
-  const articleContent = document.querySelector(".article-content");
+  const articleContent = document.querySelector('.article-content')
   if (articleContent) {
-    const contentRect = articleContent.getBoundingClientRect();
-    catalogLeft.value = contentRect.right + 20;
+    const contentRect = articleContent.getBoundingClientRect()
+    catalogLeft.value = contentRect.right + 20
   }
-};
+}
 
 onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
-});
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <style lang="scss" scoped>

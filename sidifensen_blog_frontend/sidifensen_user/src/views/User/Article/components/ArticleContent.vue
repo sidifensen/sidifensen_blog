@@ -26,7 +26,9 @@
               <h1 class="article-title">{{ article.title }}</h1>
               <span v-if="isVipArticle" class="vip-article-badge">VIP 文章</span>
             </div>
-            <p v-if="isVipArticle" class="title-tip">当前文章属于 VIP 可见内容，只有有效会员和作者本人可以查看。</p>
+            <p v-if="isVipArticle" class="title-tip">
+              当前文章属于 VIP 可见内容，只有有效会员和作者本人可以查看。
+            </p>
           </div>
 
           <!-- 移动端作者信息 -->
@@ -39,8 +41,12 @@
               <div class="basic-info">
                 <div class="basic-info-content">
                   <span class="reprint-type">
-                    <el-tag :type="article.reprintType === 0 ? 'success' : 'warning'" size="small" effect="light">
-                      {{ article.reprintType === 0 ? "原创" : "转载" }}
+                    <el-tag
+                      :type="article.reprintType === 0 ? 'success' : 'warning'"
+                      size="small"
+                      effect="light"
+                    >
+                      {{ article.reprintType === 0 ? '原创' : '转载' }}
                     </el-tag>
                   </span>
                   <span class="publish-time">
@@ -52,7 +58,9 @@
                 </div>
                 <!-- 移动端编辑按钮 - 与发布时间在同一行 -->
                 <div class="edit-actions mobile-edit" v-if="isCurrentUser">
-                  <el-button link type="info" size="small" :icon="Edit" @click="handleEditArticle"> 编辑文章 </el-button>
+                  <el-button link type="info" size="small" :icon="Edit" @click="handleEditArticle">
+                    编辑文章
+                  </el-button>
                 </div>
               </div>
               <div class="stats-info">
@@ -75,7 +83,9 @@
               </div>
               <!-- 编辑按钮 - 只有当前用户是文章作者时才显示（桌面端） -->
               <div class="edit-actions desktop-edit" v-if="isCurrentUser">
-                <el-button link type="info" size="small" :icon="Edit" @click="handleEditArticle"> 编辑文章 </el-button>
+                <el-button link type="info" size="small" :icon="Edit" @click="handleEditArticle">
+                  编辑文章
+                </el-button>
               </div>
             </div>
 
@@ -84,7 +94,14 @@
               <div class="article-tags">
                 <span>文章标签：</span>
                 <div class="tags-container">
-                  <el-tag v-for="tag in tagList" :key="tag" size="small" effect="light" class="tag-clickable" @click="handleTagClick(tag)">
+                  <el-tag
+                    v-for="tag in tagList"
+                    :key="tag"
+                    size="small"
+                    effect="light"
+                    class="tag-clickable"
+                    @click="handleTagClick(tag)"
+                  >
                     {{ tag }}
                   </el-tag>
                 </div>
@@ -96,7 +113,15 @@
               <div class="article-columns">
                 <span>文章专栏：</span>
                 <div class="columns-container">
-                  <el-tag v-for="column in article.columns || []" :key="column.id" type="success" size="small" effect="light" class="column-clickable" @click="handleColumnClick(column)">
+                  <el-tag
+                    v-for="column in article.columns || []"
+                    :key="column.id"
+                    type="success"
+                    size="small"
+                    effect="light"
+                    class="column-clickable"
+                    @click="handleColumnClick(column)"
+                  >
                     {{ column.name }}
                   </el-tag>
                 </div>
@@ -118,17 +143,17 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { useRouter } from "vue-router";
-import { ElMessage } from "element-plus";
-import { Clock, View, Star, Edit } from "@element-plus/icons-vue";
-import { useUserStore } from "@/stores/userStore";
-import { formatCompactNumber } from "@/utils/formatNumber";
-import MobileAuthorInfo from "./MobileAuthorInfo.vue";
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { Clock, View, Star, Edit } from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/userStore'
+import { formatCompactNumber } from '@/utils/formatNumber'
+import MobileAuthorInfo from './MobileAuthorInfo.vue'
 
 // 路由
-const router = useRouter();
-const userStore = useUserStore();
+const router = useRouter()
+const userStore = useUserStore()
 
 // Props 定义
 const props = defineProps({
@@ -148,96 +173,96 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-});
+})
 
 // 渲染富文本内容
 const renderContent = computed(() => {
   if (!props.article?.content) {
-    return "";
+    return ''
   }
-  return props.article.content;
-});
+  return props.article.content
+})
 
 // 处理标签列表
 const tagList = computed(() => {
-  if (!props.article?.tag) return [];
-  return props.article.tag.split(",").filter((tag) => tag.trim() !== "");
-});
+  if (!props.article?.tag) return []
+  return props.article.tag.split(',').filter((tag) => tag.trim() !== '')
+})
 
 // 标记当前文章是否为 VIP 可见文章
-const isVipArticle = computed(() => props.article?.visibleRange === 3);
+const isVipArticle = computed(() => props.article?.visibleRange === 3)
 
 // 判断当前用户是否为文章作者
 const isCurrentUser = computed(() => {
-  if (!userStore.user?.id || !props.article?.userId) return false;
-  return userStore.user.id === props.article.userId;
-});
+  if (!userStore.user?.id || !props.article?.userId) return false
+  return userStore.user.id === props.article.userId
+})
 
 // 点击标签跳转到搜索页面
 const handleTagClick = (tag) => {
-  if (!tag || !tag.trim()) return;
+  if (!tag || !tag.trim()) return
 
   // 跳转到搜索页面，并传递标签参数
   router.push({
-    path: "/search",
+    path: '/search',
     query: {
       keyword: tag.trim(),
-      type: "tag",
+      type: 'tag',
     },
-  });
-};
+  })
+}
 
 // 点击专栏跳转到专栏详情页
 const handleColumnClick = (column) => {
   if (!column?.id || !column?.userId) {
-    ElMessage.warning("专栏信息异常");
-    return;
+    ElMessage.warning('专栏信息异常')
+    return
   }
 
   // 跳转到专栏详情页
   router.push({
     path: `/user/${column.userId}/column/${column.id}`,
-  });
-};
+  })
+}
 
 // 复制代码块内容
 const copyCodeBlock = async (codeElement) => {
   try {
     // 获取代码文本内容
-    const codeText = codeElement.textContent || codeElement.innerText;
+    const codeText = codeElement.textContent || codeElement.innerText
 
     // 使用 Clipboard API 复制文本
-    await navigator.clipboard.writeText(codeText);
+    await navigator.clipboard.writeText(codeText)
 
     // 显示成功提示
-    ElMessage.success("代码已复制到剪贴板");
+    ElMessage.success('代码已复制到剪贴板')
   } catch (error) {
     // 静默处理
   }
-};
+}
 
 // 处理代码块点击事件
 const handleCodeBlockClick = (event) => {
-  const target = event.target;
+  const target = event.target
 
   // 如果点击的是代码块本身，复制内容
-  if (target.tagName === "PRE" || target.closest("pre")) {
-    const codeElement = target.tagName === "PRE" ? target : target.closest("pre");
-    copyCodeBlock(codeElement);
+  if (target.tagName === 'PRE' || target.closest('pre')) {
+    const codeElement = target.tagName === 'PRE' ? target : target.closest('pre')
+    copyCodeBlock(codeElement)
   }
-};
+}
 
 // 编辑文章
 const handleEditArticle = () => {
   if (!props.article?.id) {
-    ElMessage.warning("文章信息异常");
-    return;
+    ElMessage.warning('文章信息异常')
+    return
   }
 
   // 使用完整的页面跳转，确保页面完全重新加载
-  const editorUrl = `/editor?articleId=${props.article.id}`;
-  window.location.href = editorUrl;
-};
+  const editorUrl = `/editor?articleId=${props.article.id}`
+  window.location.href = editorUrl
+}
 </script>
 
 <style lang="scss" scoped>
@@ -446,23 +471,23 @@ const handleEditArticle = () => {
       font-size: 16px;
       color: var(--el-text-color-primary);
 
-      :deep(h1, h2, h3, h4, h5, h6) {
+      ::v-deep(h1, h2, h3, h4, h5, h6) {
         margin-top: 24px;
         margin-bottom: 16px;
         font-weight: 600;
         line-height: 1.25;
       }
 
-      :deep(p) {
+      ::v-deep(p) {
         margin-bottom: 16px;
       }
 
-      :deep(img) {
+      ::v-deep(img) {
         width: 100%;
         border-radius: 4px;
       }
 
-      :deep(pre) {
+      ::v-deep(pre) {
         position: relative;
         padding: 16px;
         overflow: auto;
@@ -479,7 +504,7 @@ const handleEditArticle = () => {
 
         // 复制按钮样式
         &::before {
-          content: "复制";
+          content: '复制';
           position: absolute;
           top: 8px;
           right: 8px;
@@ -504,7 +529,7 @@ const handleEditArticle = () => {
         }
       }
 
-      :deep(code) {
+      ::v-deep(code) {
         padding: 0.2em 0.4em;
         font-size: 85%;
         background-color: var(--el-fill-color-light) !important;
@@ -512,7 +537,7 @@ const handleEditArticle = () => {
       }
 
       // 链接样式
-      :deep(a) {
+      ::v-deep(a) {
         color: #409eff;
         text-decoration: none;
 
@@ -522,7 +547,7 @@ const handleEditArticle = () => {
       }
 
       // 引用
-      :deep(blockquote) {
+      ::v-deep(blockquote) {
         margin: 0;
         padding: 1px 1em;
         background-color: var(--el-fill-color-light) !important;
@@ -534,7 +559,7 @@ const handleEditArticle = () => {
       }
 
       // 表格样式
-      :deep(table) {
+      ::v-deep(table) {
         min-width: 100% !important;
         max-width: 100% !important;
         border-collapse: collapse;
@@ -551,19 +576,19 @@ const handleEditArticle = () => {
         }
       }
 
-      :deep(th) {
+      ::v-deep(th) {
         padding: 5px;
         border: 1px solid var(--el-border-color);
         background: var(--el-fill-color-light) !important;
       }
 
-      :deep(td) {
+      ::v-deep(td) {
         padding: 5px;
         border: 1px solid var(--el-border-color);
       }
 
       // 任务列表样式
-      :deep(li[data-type="taskItem"]) {
+      ::v-deep(li[data-type='taskItem']) {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -575,7 +600,7 @@ const handleEditArticle = () => {
           display: flex;
           align-items: center;
 
-          input[type="checkbox"] {
+          input[type='checkbox'] {
             margin: 0;
             width: 16px;
             height: 16px;
@@ -596,14 +621,14 @@ const handleEditArticle = () => {
       }
 
       // 任务列表容器样式
-      :deep(ul:has(li[data-type="taskItem"])) {
+      ::v-deep(ul:has(li[data-type='taskItem'])) {
         padding-left: 0;
         margin: 16px 0;
       }
 
       // 无序列表和有序列表
-      :deep(ul),
-      :deep(ol) {
+      ::v-deep(ul),
+      ::v-deep(ol) {
         padding-left: 15px;
       }
     }
@@ -714,7 +739,7 @@ const handleEditArticle = () => {
         font-size: 15px;
 
         // 移动端表格样式优化
-        :deep(table) {
+        ::v-deep(table) {
           min-width: 100%;
           font-size: 14px;
 
@@ -737,7 +762,7 @@ const handleEditArticle = () => {
           }
         }
 
-        :deep(td, th) {
+        ::v-deep(td, th) {
           min-width: 80px;
           padding: 6px 8px;
           font-size: 14px;
@@ -745,7 +770,7 @@ const handleEditArticle = () => {
           word-break: break-word;
         }
 
-        :deep(th) {
+        ::v-deep(th) {
           font-size: 14px;
           font-weight: 600;
         }

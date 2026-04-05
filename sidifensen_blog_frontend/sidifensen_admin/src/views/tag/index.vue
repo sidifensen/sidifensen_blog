@@ -5,9 +5,24 @@
       <div class="card-header">
         <h2 class="card-title">标签管理</h2>
         <div class="card-actions">
-          <el-input v-model="searchKeyword" placeholder="搜索分类或标签" :prefix-icon="Search" size="small" class="search-input" clearable />
+          <el-input
+            v-model="searchKeyword"
+            placeholder="搜索分类或标签"
+            :prefix-icon="Search"
+            size="small"
+            class="search-input"
+            clearable
+          />
           <el-button type="primary" plain round @click="handleAdd" :icon="Plus">新增标签</el-button>
-          <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedTags.length === 0" :loading="batchDeleteLoading">批量删除 ({{ selectedTags.length }})</el-button>
+          <el-button
+            type="danger"
+            plain
+            round
+            @click="handleBatchDelete"
+            :disabled="selectedTags.length === 0"
+            :loading="batchDeleteLoading"
+            >批量删除 ({{ selectedTags.length }})</el-button
+          >
         </div>
       </div>
 
@@ -22,7 +37,10 @@
             <div v-for="(category, index) in filteredCategories" :key="index" class="category-item">
               <div class="category-header" @click="toggleCategory(category.name)">
                 <div class="category-left">
-                  <el-icon class="expand-icon" :class="{ expanded: expandedCategories.includes(category.name) }">
+                  <el-icon
+                    class="expand-icon"
+                    :class="{ expanded: expandedCategories.includes(category.name) }"
+                  >
                     <ArrowRight />
                   </el-icon>
                   <span class="category-name">{{ category.name }}</span>
@@ -31,10 +49,29 @@
                 <div class="category-actions" @click.stop>
                   <div class="sort-control">
                     <span class="sort-label">排序:</span>
-                    <el-input-number v-model="category.sort" :min="0" :max="maxSortValue" size="small" @change="handleSortChange(category)" class="sort-input" />
+                    <el-input-number
+                      v-model="category.sort"
+                      :min="0"
+                      :max="maxSortValue"
+                      size="small"
+                      @change="handleSortChange(category)"
+                      class="sort-input"
+                    />
                   </div>
-                  <el-button type="primary" size="small" @click="handleAddToCategory(category.name)" :icon="Plus">新增标签</el-button>
-                  <el-button type="danger" size="small" @click="handleDeleteCategory(category.name)" :icon="Delete">删除分类</el-button>
+                  <el-button
+                    type="primary"
+                    size="small"
+                    @click="handleAddToCategory(category.name)"
+                    :icon="Plus"
+                    >新增标签</el-button
+                  >
+                  <el-button
+                    type="danger"
+                    size="small"
+                    @click="handleDeleteCategory(category.name)"
+                    :icon="Delete"
+                    >删除分类</el-button
+                  >
                 </div>
               </div>
 
@@ -46,9 +83,20 @@
                   </div>
                   <div v-else class="tags-grid">
                     <div v-for="(tag, tagIndex) in category.tags" :key="tagIndex" class="tag-item">
-                      <el-checkbox v-model="tag.checked" @change="handleTagCheck(category.name, tag)" class="tag-checkbox" />
+                      <el-checkbox
+                        v-model="tag.checked"
+                        @change="handleTagCheck(category.name, tag)"
+                        class="tag-checkbox"
+                      />
                       <span class="tag-name">{{ tag.name }}</span>
-                      <el-button type="danger" size="small" :icon="Delete" circle @click="handleDeleteTag(category.name, tag)" class="delete-icon" />
+                      <el-button
+                        type="danger"
+                        size="small"
+                        :icon="Delete"
+                        circle
+                        @click="handleDeleteTag(category.name, tag)"
+                        class="delete-icon"
+                      />
                     </div>
                   </div>
                 </div>
@@ -65,11 +113,18 @@
             <el-empty description="暂无标签数据" />
           </div>
           <div v-else>
-            <el-card v-for="(category, index) in filteredCategories" :key="index" class="category-card">
+            <el-card
+              v-for="(category, index) in filteredCategories"
+              :key="index"
+              class="category-card"
+            >
               <div class="category-card-content">
                 <div class="category-header-mobile" @click="toggleCategory(category.name)">
                   <div class="category-info">
-                    <el-icon class="expand-icon" :class="{ expanded: expandedCategories.includes(category.name) }">
+                    <el-icon
+                      class="expand-icon"
+                      :class="{ expanded: expandedCategories.includes(category.name) }"
+                    >
                       <ArrowRight />
                     </el-icon>
                     <span class="category-name">{{ category.name }}</span>
@@ -80,25 +135,60 @@
                 <div class="category-actions-mobile" @click.stop>
                   <div class="sort-control-mobile">
                     <span class="sort-label">排序:</span>
-                    <el-input-number v-model="category.sort" :min="0" :max="maxSortValue" size="small" @change="handleSortChange(category)" class="sort-input" />
+                    <el-input-number
+                      v-model="category.sort"
+                      :min="0"
+                      :max="maxSortValue"
+                      size="small"
+                      @change="handleSortChange(category)"
+                      class="sort-input"
+                    />
                   </div>
                   <div class="button-group-mobile">
-                    <el-button type="primary" size="small" @click="handleAddToCategory(category.name)" :icon="Plus">新增</el-button>
-                    <el-button type="danger" size="small" @click="handleDeleteCategory(category.name)" :icon="Delete">删除</el-button>
+                    <el-button
+                      type="primary"
+                      size="small"
+                      @click="handleAddToCategory(category.name)"
+                      :icon="Plus"
+                      >新增</el-button
+                    >
+                    <el-button
+                      type="danger"
+                      size="small"
+                      @click="handleDeleteCategory(category.name)"
+                      :icon="Delete"
+                      >删除</el-button
+                    >
                   </div>
                 </div>
 
                 <!-- 移动端标签列表 -->
                 <transition name="slide-fade">
-                  <div v-if="expandedCategories.includes(category.name)" class="tags-container-mobile">
+                  <div
+                    v-if="expandedCategories.includes(category.name)"
+                    class="tags-container-mobile"
+                  >
                     <div v-if="category.tags.length === 0" class="empty-tags">
                       <span>该分类下暂无标签</span>
                     </div>
                     <div v-else class="tags-list-mobile">
-                      <div v-for="(tag, tagIndex) in category.tags" :key="tagIndex" class="tag-item-mobile">
-                        <el-checkbox v-model="tag.checked" @change="handleTagCheck(category.name, tag)" />
+                      <div
+                        v-for="(tag, tagIndex) in category.tags"
+                        :key="tagIndex"
+                        class="tag-item-mobile"
+                      >
+                        <el-checkbox
+                          v-model="tag.checked"
+                          @change="handleTagCheck(category.name, tag)"
+                        />
                         <span class="tag-name">{{ tag.name }}</span>
-                        <el-button type="danger" size="small" :icon="Delete" circle @click="handleDeleteTag(category.name, tag)" />
+                        <el-button
+                          type="danger"
+                          size="small"
+                          :icon="Delete"
+                          circle
+                          @click="handleDeleteTag(category.name, tag)"
+                        />
                       </div>
                     </div>
                   </div>
@@ -111,17 +201,35 @@
     </div>
 
     <!-- 新增/编辑标签对话框 -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" :before-close="handleDialogClose" width="500px" class="tag-dialog">
+    <el-dialog
+      v-model="dialogVisible"
+      :title="dialogTitle"
+      :before-close="handleDialogClose"
+      width="500px"
+      class="tag-dialog"
+    >
       <el-form ref="tagFormRef" :model="tagForm" :rules="rules" label-width="80px">
         <el-form-item prop="category" label="分类名">
-          <el-select v-model="tagForm.category" placeholder="请选择或输入分类名" filterable allow-create default-first-option style="width: 100%">
+          <el-select
+            v-model="tagForm.category"
+            placeholder="请选择或输入分类名"
+            filterable
+            allow-create
+            default-first-option
+            style="width: 100%"
+          >
             <el-option v-for="cat in categoryNames" :key="cat" :label="cat" :value="cat" />
           </el-select>
           <div class="form-tip">可以选择现有分类，也可以输入新建分类</div>
         </el-form-item>
 
         <el-form-item prop="name" label="标签名">
-          <el-input v-model="tagForm.name" placeholder="请输入标签名" maxlength="50" show-word-limit />
+          <el-input
+            v-model="tagForm.name"
+            placeholder="请输入标签名"
+            maxlength="50"
+            show-word-limit
+          />
         </el-form-item>
       </el-form>
 
@@ -136,97 +244,97 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
-import { Search, Plus, Delete, ArrowRight } from "@element-plus/icons-vue";
-import { getTagList, addTag, deleteTags, updateCategorySort } from "@/api/tag";
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { Search, Plus, Delete, ArrowRight } from '@element-plus/icons-vue'
+import { getTagList, addTag, deleteTags, updateCategorySort } from '@/api/tag'
 
 // 标签数据
-const tagData = ref({}); // 原始数据 Map<String, List<String>>
-const categories = ref([]); // 转换后的分类数组
-const loading = ref(false);
-const searchKeyword = ref("");
+const tagData = ref({}) // 原始数据 Map<String, List<String>>
+const categories = ref([]) // 转换后的分类数组
+const loading = ref(false)
+const searchKeyword = ref('')
 
 // 展开的分类
-const expandedCategories = ref([]);
+const expandedCategories = ref([])
 
 // 选中的标签
-const selectedTags = ref([]);
+const selectedTags = ref([])
 
 // 对话框
-const dialogVisible = ref(false);
-const dialogTitle = ref("新增标签");
-const submitLoading = ref(false);
-const tagFormRef = ref(null);
+const dialogVisible = ref(false)
+const dialogTitle = ref('新增标签')
+const submitLoading = ref(false)
+const tagFormRef = ref(null)
 
 // 标签表单
 const tagForm = reactive({
-  category: "",
-  name: "",
-});
+  category: '',
+  name: '',
+})
 
 // 批量操作加载状态
-const batchDeleteLoading = ref(false);
+const batchDeleteLoading = ref(false)
 
 // 移动端检测
-const isMobileView = ref(false);
+const isMobileView = ref(false)
 
 // 表单验证规则
 const rules = {
-  category: [{ required: true, message: "请输入分类名", trigger: "change" }],
-  name: [{ required: true, message: "请输入标签名", trigger: "blur" }],
-};
+  category: [{ required: true, message: '请输入分类名', trigger: 'change' }],
+  name: [{ required: true, message: '请输入标签名', trigger: 'blur' }],
+}
 
 // 计算所有分类名
 const categoryNames = computed(() => {
-  return categories.value.map((cat) => cat.name);
-});
+  return categories.value.map((cat) => cat.name)
+})
 
 // 计算最大排序值
 const maxSortValue = computed(() => {
-  if (categories.value.length === 0) return 0;
-  return Math.max(...categories.value.map((cat) => cat.sort || 0));
-});
+  if (categories.value.length === 0) return 0
+  return Math.max(...categories.value.map((cat) => cat.sort || 0))
+})
 
 // 过滤后的分类列表
 const filteredCategories = computed(() => {
   if (!searchKeyword.value) {
-    return categories.value;
+    return categories.value
   }
-  const keyword = searchKeyword.value.toLowerCase();
+  const keyword = searchKeyword.value.toLowerCase()
   return categories.value
     .map((category) => {
       // 检查分类名是否匹配
-      const categoryMatch = category.name.toLowerCase().includes(keyword);
+      const categoryMatch = category.name.toLowerCase().includes(keyword)
       // 过滤标签
-      const filteredTags = category.tags.filter((tag) => tag.name.toLowerCase().includes(keyword));
+      const filteredTags = category.tags.filter((tag) => tag.name.toLowerCase().includes(keyword))
 
       // 如果分类名匹配，返回该分类的所有标签
       if (categoryMatch) {
-        return category;
+        return category
       }
       // 如果有标签匹配，返回包含匹配标签的分类
       if (filteredTags.length > 0) {
         return {
           ...category,
           tags: filteredTags,
-        };
+        }
       }
-      return null;
+      return null
     })
-    .filter((category) => category !== null);
-});
+    .filter((category) => category !== null)
+})
 
 // 监听窗口大小变化
 const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768;
-};
+  isMobileView.value = window.innerWidth <= 768
+}
 
 // 获取标签列表
 const getTagsList = async () => {
-  loading.value = true;
+  loading.value = true
   try {
-    const res = await getTagList();
-    tagData.value = res.data;
+    const res = await getTagList()
+    tagData.value = res.data
 
     // 转换数据结构 - 后端现在返回 Map<String, List<Tag>>，已经按 sort 排序
     // 不再使用 .sort()，因为后端已经按照 sort 排序返回
@@ -239,27 +347,27 @@ const getTagsList = async () => {
         category: tag.category, // 分类名称
         checked: false, // 选中状态
       })),
-    }));
+    }))
 
     // 默认展开所有分类
-    expandedCategories.value = categoryNames.value;
+    expandedCategories.value = categoryNames.value
   } catch (error) {
-    ElMessage.error("获取标签列表失败");
-    console.error("获取标签列表失败:", error);
+    ElMessage.error('获取标签列表失败')
+    console.error('获取标签列表失败:', error)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 切换分类展开/收起
 const toggleCategory = (categoryName) => {
-  const index = expandedCategories.value.indexOf(categoryName);
+  const index = expandedCategories.value.indexOf(categoryName)
   if (index > -1) {
-    expandedCategories.value.splice(index, 1);
+    expandedCategories.value.splice(index, 1)
   } else {
-    expandedCategories.value.push(categoryName);
+    expandedCategories.value.push(categoryName)
   }
-};
+}
 
 // 处理标签选中
 const handleTagCheck = (categoryName, tag) => {
@@ -268,136 +376,140 @@ const handleTagCheck = (categoryName, tag) => {
       id: tag.id,
       category: categoryName,
       name: tag.name,
-    });
+    })
   } else {
-    const index = selectedTags.value.findIndex((t) => t.id === tag.id);
+    const index = selectedTags.value.findIndex((t) => t.id === tag.id)
     if (index > -1) {
-      selectedTags.value.splice(index, 1);
+      selectedTags.value.splice(index, 1)
     }
   }
-};
+}
 
 // 新增标签
 const handleAdd = () => {
-  dialogTitle.value = "新增标签";
-  tagForm.category = "";
-  tagForm.name = "";
-  dialogVisible.value = true;
-};
+  dialogTitle.value = '新增标签'
+  tagForm.category = ''
+  tagForm.name = ''
+  dialogVisible.value = true
+}
 
 // 新增到指定分类
 const handleAddToCategory = (categoryName) => {
-  dialogTitle.value = `新增标签到【${categoryName}】`;
-  tagForm.category = categoryName;
-  tagForm.name = "";
-  dialogVisible.value = true;
-};
+  dialogTitle.value = `新增标签到【${categoryName}】`
+  tagForm.category = categoryName
+  tagForm.name = ''
+  dialogVisible.value = true
+}
 
 // 提交表单
 const handleSubmit = async () => {
   try {
-    await tagFormRef.value.validate();
-    submitLoading.value = true;
+    await tagFormRef.value.validate()
+    submitLoading.value = true
 
     const addData = {
       category: tagForm.category,
       name: tagForm.name,
-    };
+    }
 
-    await addTag(addData);
-    ElMessage.success("添加成功");
-    dialogVisible.value = false;
-    await getTagsList();
+    await addTag(addData)
+    ElMessage.success('添加成功')
+    dialogVisible.value = false
+    await getTagsList()
   } catch (error) {
     if (error !== false) {
-      ElMessage.error("添加失败");
-      console.error("添加失败:", error);
+      ElMessage.error('添加失败')
+      console.error('添加失败:', error)
     }
   } finally {
-    submitLoading.value = false;
+    submitLoading.value = false
   }
-};
+}
 
 // 删除单个标签
 const handleDeleteTag = (categoryName, tag) => {
-  ElMessageBox.confirm(`确定要删除标签【${tag.name}】吗？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm(`确定要删除标签【${tag.name}】吗？`, '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
       try {
-        await deleteTags([tag.id]);
-        ElMessage.success("删除成功");
-        await getTagsList();
+        await deleteTags([tag.id])
+        ElMessage.success('删除成功')
+        await getTagsList()
       } catch (error) {
-        ElMessage.error("删除失败");
-        console.error("删除失败:", error);
+        ElMessage.error('删除失败')
+        console.error('删除失败:', error)
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 批量删除标签
 const handleBatchDelete = () => {
-  ElMessageBox.confirm(`确定要删除选中的 ${selectedTags.value.length} 个标签吗？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm(`确定要删除选中的 ${selectedTags.value.length} 个标签吗？`, '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      batchDeleteLoading.value = true;
+      batchDeleteLoading.value = true
       try {
-        const tagIds = selectedTags.value.map((tag) => tag.id);
-        await deleteTags(tagIds);
-        ElMessage.success("批量删除成功");
-        selectedTags.value = [];
-        await getTagsList();
+        const tagIds = selectedTags.value.map((tag) => tag.id)
+        await deleteTags(tagIds)
+        ElMessage.success('批量删除成功')
+        selectedTags.value = []
+        await getTagsList()
       } catch (error) {
-        ElMessage.error("批量删除失败");
-        console.error("批量删除失败:", error);
+        ElMessage.error('批量删除失败')
+        console.error('批量删除失败:', error)
       } finally {
-        batchDeleteLoading.value = false;
+        batchDeleteLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 删除整个分类
 const handleDeleteCategory = (categoryName) => {
-  const category = categories.value.find((cat) => cat.name === categoryName);
-  if (!category) return;
+  const category = categories.value.find((cat) => cat.name === categoryName)
+  if (!category) return
 
-  ElMessageBox.confirm(`确定要删除分类【${categoryName}】及其下的所有 ${category.tags.length} 个标签吗？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
+  ElMessageBox.confirm(
+    `确定要删除分类【${categoryName}】及其下的所有 ${category.tags.length} 个标签吗？`,
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    },
+  )
     .then(async () => {
       try {
-        const tagIds = category.tags.map((tag) => tag.id);
-        await deleteTags(tagIds);
-        ElMessage.success("删除分类成功");
-        await getTagsList();
+        const tagIds = category.tags.map((tag) => tag.id)
+        await deleteTags(tagIds)
+        ElMessage.success('删除分类成功')
+        await getTagsList()
       } catch (error) {
-        ElMessage.error("删除分类失败");
-        console.error("删除分类失败:", error);
+        ElMessage.error('删除分类失败')
+        console.error('删除分类失败:', error)
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 关闭对话框
 const handleDialogClose = () => {
-  tagFormRef.value?.resetFields();
-  dialogVisible.value = false;
-};
+  tagFormRef.value?.resetFields()
+  dialogVisible.value = false
+}
 
 // 处理分类排序变化
 const handleSortChange = async (category) => {
@@ -405,30 +517,30 @@ const handleSortChange = async (category) => {
     const sortData = {
       category: category.name,
       newSort: category.sort,
-    };
-    await updateCategorySort(sortData);
-    ElMessage.success(`分类【${category.name}】排序更新成功`);
+    }
+    await updateCategorySort(sortData)
+    ElMessage.success(`分类【${category.name}】排序更新成功`)
     // 重新获取标签列表以刷新排序
-    await getTagsList();
+    await getTagsList()
   } catch (error) {
-    ElMessage.error("更新排序失败");
-    console.error("更新排序失败:", error);
+    ElMessage.error('更新排序失败')
+    console.error('更新排序失败:', error)
     // 失败时恢复数据
-    await getTagsList();
+    await getTagsList()
   }
-};
+}
 
 // 初始化
 onMounted(() => {
-  getTagsList();
-  handleResize();
-  window.addEventListener("resize", handleResize);
-});
+  getTagsList()
+  handleResize()
+  window.addEventListener('resize', handleResize)
+})
 
 // 组件卸载时移除监听
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -468,7 +580,7 @@ onUnmounted(() => {
         align-items: center;
 
         &::before {
-          content: "";
+          content: '';
           display: inline-block;
           width: 4px;
           height: 20px;
@@ -877,7 +989,13 @@ onUnmounted(() => {
 
 // 响应式设计
 @media screen and (max-width: 1200px) {
-  .management-container .card .desktop-view .tag-categories .category-item .tags-container .tags-grid {
+  .management-container
+    .card
+    .desktop-view
+    .tag-categories
+    .category-item
+    .tags-container
+    .tags-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
 }

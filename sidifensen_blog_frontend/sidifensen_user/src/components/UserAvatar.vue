@@ -1,36 +1,21 @@
 <template>
-  <div
-    class="user-avatar"
-    :class="{ 'user-avatar--clickable': clickable }"
-    @click="handleClick"
-  >
-    <ElAvatar
-      :src="src"
-      :size="avatarSize"
-      class="user-avatar__image"
-    >
+  <div class="user-avatar" :class="{ 'user-avatar--clickable': clickable }" @click="handleClick">
+    <ElAvatar :src="src" :size="avatarSize" class="user-avatar__image">
       <slot>{{ fallbackText }}</slot>
     </ElAvatar>
 
     <!-- 在线状态指示器 -->
-    <span
-      v-if="isOnline"
-      class="user-avatar__online"
-    />
+    <span v-if="isOnline" class="user-avatar__online" />
 
     <!-- VIP 徽章 -->
-    <VipBadge
-      v-if="showVipBadge"
-      :type="vipType"
-      class="user-avatar__vip"
-    />
+    <VipBadge v-if="showVipBadge" :type="vipType" class="user-avatar__vip" />
   </div>
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { useRouter } from "vue-router";
-import VipBadge from "@/components/VipBadge.vue";
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import VipBadge from '@/components/VipBadge.vue'
 
 // 用户头像组件
 // props:
@@ -44,7 +29,7 @@ import VipBadge from "@/components/VipBadge.vue";
 const props = defineProps({
   src: {
     type: String,
-    default: "",
+    default: '',
   },
   size: {
     type: [Number, String],
@@ -60,8 +45,8 @@ const props = defineProps({
   },
   vipType: {
     type: String,
-    default: "simple",
-    validator: (v) => ["simple", "card", "header"].includes(v),
+    default: 'simple',
+    validator: (v) => ['simple', 'card', 'header'].includes(v),
   },
   clickable: {
     type: Boolean,
@@ -71,37 +56,37 @@ const props = defineProps({
     type: Number,
     default: null,
   },
-});
+})
 
-const emit = defineEmits(["click"]);
+const emit = defineEmits(['click'])
 
-const router = useRouter();
+const router = useRouter()
 
 // 计算头像尺寸
 const avatarSize = computed(() => {
-  if (typeof props.size === "number") {
-    return props.size;
+  if (typeof props.size === 'number') {
+    return props.size
   }
   const sizeMap = {
     small: 32,
     default: 40,
     large: 56,
-  };
-  return sizeMap[props.size] || 40;
-});
+  }
+  return sizeMap[props.size] || 40
+})
 
 // 备用文本（当无头像时显示）
 const fallbackText = computed(() => {
-  return "";
-});
+  return ''
+})
 
 // 点击处理
 const handleClick = () => {
   if (props.clickable && props.userId) {
-    router.push(`/user/${props.userId}`);
+    router.push(`/user/${props.userId}`)
   }
-  emit("click", props.userId);
-};
+  emit('click', props.userId)
+}
 </script>
 
 <style lang="scss" scoped>

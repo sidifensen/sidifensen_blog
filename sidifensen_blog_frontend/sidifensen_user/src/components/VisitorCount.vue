@@ -11,29 +11,29 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { View } from "@element-plus/icons-vue";
-import { getTodayVisitorCount } from "@/api/visitor";
+import { ref, onMounted } from 'vue'
+import { View } from '@element-plus/icons-vue'
+import { getTodayVisitorCount } from '@/api/visitor'
 
 // 响应式数据
-const visitorCount = ref(0);
+const visitorCount = ref(0)
 
 // 获取今日访问量
 const fetchVisitorCount = async () => {
   try {
-    const res = await getTodayVisitorCount();
-    visitorCount.value = res.data || 0;
+    const res = await getTodayVisitorCount()
+    visitorCount.value = res.data || 0
   } catch (error) {
     // 静默处理
     // 失败时显示 0
-    visitorCount.value = 0;
+    visitorCount.value = 0
   }
-};
+}
 
 // 组件挂载时获取数据
 onMounted(() => {
-  fetchVisitorCount();
-});
+  fetchVisitorCount()
+})
 </script>
 
 <style lang="scss" scoped>

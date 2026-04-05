@@ -1,15 +1,15 @@
-import request from "@/utils/Request";
+import request from '@/utils/Request'
 
 /**
  * 查询所有访客日志（按时间倒序）
  */
 export const getVisitorLogList = (params) => {
   return request({
-    url: "/visitorLog/admin/list",
-    method: "get",
+    url: '/visitorLog/admin/list',
+    method: 'get',
     params,
-  });
-};
+  })
+}
 
 /**
  * 搜索访客日志
@@ -17,11 +17,11 @@ export const getVisitorLogList = (params) => {
  */
 export const searchVisitorLog = (queryDto) => {
   return request({
-    url: "/visitorLog/admin/search",
-    method: "post",
+    url: '/visitorLog/admin/search',
+    method: 'post',
     data: queryDto,
-  });
-};
+  })
+}
 
 /**
  * 批量删除访客日志
@@ -29,21 +29,21 @@ export const searchVisitorLog = (queryDto) => {
  */
 export const deleteVisitorLogs = (ids) => {
   return request({
-    url: "/visitorLog/admin/batch",
-    method: "delete",
+    url: '/visitorLog/admin/batch',
+    method: 'delete',
     data: ids,
-  });
-};
+  })
+}
 
 /**
  * 获取访客统计数据
  */
 export const getVisitorStatistics = () => {
   return request({
-    url: "/visitorLog/statistics",
-    method: "get",
-  });
-};
+    url: '/visitorLog/statistics',
+    method: 'get',
+  })
+}
 
 /**
  * 获取访客趋势
@@ -51,28 +51,28 @@ export const getVisitorStatistics = () => {
  */
 export const getVisitorTrend = (days = 7) => {
   return request({
-    url: "/visitorLog/trend",
-    method: "get",
+    url: '/visitorLog/trend',
+    method: 'get',
     params: { days },
-  });
-};
+  })
+}
 
 /**
  * 获取今日访问量
  */
 export const getTodayVisitorCount = () => {
   return request({
-    url: "/visitorLog/today/count",
-    method: "get",
-  });
-};
+    url: '/visitorLog/today/count',
+    method: 'get',
+  })
+}
 
 /**
  * 获取总访问量
  */
 export const getTotalVisitorCount = () => {
   return request({
-    url: "/visitorLog/total/count",
-    method: "get",
-  });
-};
+    url: '/visitorLog/total/count',
+    method: 'get',
+  })
+}

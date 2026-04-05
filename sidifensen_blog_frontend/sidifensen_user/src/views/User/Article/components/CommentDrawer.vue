@@ -1,5 +1,18 @@
 <template>
-  <el-drawer v-model="drawerVisible" :title="`评论 ${commentTotal}`" direction="rtl" width="420px" :z-index="2000" :modal="true" :show-close="true" :close-on-click-modal="true" :close-on-press-escape="true" :append-to-body="true" :lock-scroll="false" class="comment-drawer">
+  <el-drawer
+    v-model="drawerVisible"
+    :title="`评论 ${commentTotal}`"
+    direction="rtl"
+    width="420px"
+    :z-index="2000"
+    :modal="true"
+    :show-close="true"
+    :close-on-click-modal="true"
+    :close-on-press-escape="true"
+    :append-to-body="true"
+    :lock-scroll="false"
+    class="comment-drawer"
+  >
     <!-- 抽屉头部自定义 -->
     <template #header="{ titleId, titleClass }">
       <div class="drawer-header">
@@ -66,8 +79,14 @@
 
         <!-- 加载更多 -->
         <div v-if="hasMore && !loading && commentList.length > 0" class="load-more">
-          <el-button :loading="loadingMore" @click="loadMoreComments" text type="primary" size="small">
-            {{ loadingMore ? "加载中..." : "加载更多" }}
+          <el-button
+            :loading="loadingMore"
+            @click="loadMoreComments"
+            text
+            type="primary"
+            size="small"
+          >
+            {{ loadingMore ? '加载中...' : '加载更多' }}
           </el-button>
         </div>
       </div>
@@ -76,14 +95,14 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
-import { useRouter } from "vue-router";
-import { ElMessage } from "element-plus";
-import { ChatDotRound } from "@element-plus/icons-vue";
-import { getCommentList } from "@/api/comment";
-import { useUserStore } from "@/stores/userStore";
-import CommentForm from "./CommentForm.vue";
-import CommentItem from "./CommentItem.vue";
+import { ref, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { ChatDotRound } from '@element-plus/icons-vue'
+import { getCommentList } from '@/api/comment'
+import { useUserStore } from '@/stores/userStore'
+import CommentForm from './CommentForm.vue'
+import CommentItem from './CommentItem.vue'
 
 // Props
 const props = defineProps({
@@ -100,139 +119,139 @@ const props = defineProps({
   },
   articleTitle: {
     type: String,
-    default: "",
+    default: '',
   },
-});
+})
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(['update:modelValue'])
 
-const loading = ref(false); // 初始加载状态
-const loadingMore = ref(false); // 加载更多状态
-const commentList = ref([]); // 评论列表
-const currentPage = ref(1); // 当前页码
-const pageSize = ref(10); // 每页数量
-const commentTotal = ref(0); // 评论总数
-const hasMore = ref(true); // 是否还有更多数据
+const loading = ref(false) // 初始加载状态
+const loadingMore = ref(false) // 加载更多状态
+const commentList = ref([]) // 评论列表
+const currentPage = ref(1) // 当前页码
+const pageSize = ref(10) // 每页数量
+const commentTotal = ref(0) // 评论总数
+const hasMore = ref(true) // 是否还有更多数据
 
 // 路由和状态管理
-const router = useRouter();
-const userStore = useUserStore();
+const router = useRouter()
+const userStore = useUserStore()
 
 // 计算属性
 const drawerVisible = computed({
   get: () => props.modelValue, // 从父组件接收的显示状态
-  set: (value) => emit("update:modelValue", value), // 更新父组件的显示状态
-});
+  set: (value) => emit('update:modelValue', value), // 更新父组件的显示状态
+})
 
 // 监听抽屉开关，初次打开时加载数据
 watch(
   () => props.modelValue,
   (newVisible) => {
     if (newVisible && commentList.value.length === 0) {
-      fetchCommentList(true);
+      fetchCommentList(true)
     }
   },
-  { immediate: true }
-);
+  { immediate: true },
+)
 
 // 获取评论列表
 const fetchCommentList = async (reset = false) => {
   try {
     if (reset) {
-      loading.value = true;
-      currentPage.value = 1;
-      commentList.value = [];
-      hasMore.value = true;
+      loading.value = true
+      currentPage.value = 1
+      commentList.value = []
+      hasMore.value = true
     } else {
-      loadingMore.value = true;
+      loadingMore.value = true
     }
 
-    const res = await getCommentList(props.articleId, currentPage.value, pageSize.value);
-    const newComments = res.data.data || [];
-    commentTotal.value = res.data.total || 0;
+    const res = await getCommentList(props.articleId, currentPage.value, pageSize.value)
+    const newComments = res.data.data || []
+    commentTotal.value = res.data.total || 0
 
     if (reset) {
-      commentList.value = newComments;
+      commentList.value = newComments
     } else {
-      commentList.value = [...commentList.value, ...newComments];
+      commentList.value = [...commentList.value, ...newComments]
     }
 
     // 判断是否还有更多数据
-    hasMore.value = commentList.value.length < commentTotal.value;
+    hasMore.value = commentList.value.length < commentTotal.value
 
     // 更新页码
     if (hasMore.value && newComments.length > 0) {
-      currentPage.value++;
+      currentPage.value++
     }
   } catch (error) {
     // 静默处理
   } finally {
-    loading.value = false;
-    loadingMore.value = false;
+    loading.value = false
+    loadingMore.value = false
   }
-};
+}
 
 // 加载更多评论
 const loadMoreComments = () => {
   if (!hasMore.value || loadingMore.value) {
-    return;
+    return
   }
-  fetchCommentList(false);
-};
+  fetchCommentList(false)
+}
 
 // 处理评论添加
 const handleCommentAdded = (newComment) => {
   // 重新加载评论列表以获取最新数据
-  fetchCommentList(true);
-  ElMessage.success("评论发表成功");
-};
+  fetchCommentList(true)
+  ElMessage.success('评论发表成功')
+}
 
 // 处理回复添加
 const handleReplyAdded = (commentId, newReply) => {
   // 找到对应的父评论并更新其回复数
-  const comment = commentList.value.find((c) => c.id === commentId);
+  const comment = commentList.value.find((c) => c.id === commentId)
   if (comment) {
     // 检查回复是否已存在，避免重复添加
-    let replyAdded = false;
+    let replyAdded = false
 
     if (comment.children) {
-      const existingReply = comment.children.find((reply) => reply.id === newReply.id);
+      const existingReply = comment.children.find((reply) => reply.id === newReply.id)
       if (!existingReply) {
         // 将新回复添加到父评论的子回复列表中
-        comment.children.push(newReply);
-        replyAdded = true;
+        comment.children.push(newReply)
+        replyAdded = true
       }
     } else {
       // 如果回复列表未加载，创建children数组并添加回复
-      comment.children = [newReply];
-      replyAdded = true;
+      comment.children = [newReply]
+      replyAdded = true
     }
 
     // 只有确实添加了新回复才更新计数
     if (replyAdded) {
-      comment.replyCount = (comment.replyCount || 0) + 1;
+      comment.replyCount = (comment.replyCount || 0) + 1
       // 更新总评论数
-      commentTotal.value++;
+      commentTotal.value++
     }
   }
-  ElMessage.success("回复发表成功");
-};
+  ElMessage.success('回复发表成功')
+}
 
 // 处理评论删除
 const handleCommentDeleted = (commentId) => {
   // 从列表中移除删除的评论
-  const index = commentList.value.findIndex((c) => c.id === commentId);
+  const index = commentList.value.findIndex((c) => c.id === commentId)
   if (index !== -1) {
-    commentList.value.splice(index, 1);
-    commentTotal.value = Math.max(0, commentTotal.value - 1);
+    commentList.value.splice(index, 1)
+    commentTotal.value = Math.max(0, commentTotal.value - 1)
   }
-  ElMessage.success("评论删除成功");
-};
+  ElMessage.success('评论删除成功')
+}
 
 // 跳转到登录页
 const goToLogin = () => {
-  router.push("/login");
-};
+  router.push('/login')
+}
 </script>
 
 <!-- 全局样式覆盖 Element Plus Drawer 头部间距 -->
@@ -270,20 +289,20 @@ const goToLogin = () => {
 <style lang="scss" scoped>
 // 评论抽屉样式
 .comment-drawer {
-  :deep(.el-drawer) {
+  ::v-deep(.el-drawer) {
     background: var(--el-bg-color-page);
     border-left: 1px solid var(--el-border-color-light);
     box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1);
   }
 
-  :deep(.el-drawer__header) {
+  ::v-deep(.el-drawer__header) {
     padding: 20px 24px 16px 24px !important;
     margin-bottom: 0 !important;
     border-bottom: 1px solid var(--el-border-color-light) !important;
     background: var(--el-bg-color) !important;
   }
 
-  :deep(.el-drawer__close-btn) {
+  ::v-deep(.el-drawer__close-btn) {
     color: var(--el-text-color-regular);
     font-size: 18px;
 
@@ -292,7 +311,7 @@ const goToLogin = () => {
     }
   }
 
-  :deep(.el-drawer__body) {
+  ::v-deep(.el-drawer__body) {
     padding: 0 !important;
     display: flex;
     flex-direction: column;
@@ -417,7 +436,7 @@ const goToLogin = () => {
 }
 
 // 紧凑模式下的评论样式调整
-:deep(.comment-item) {
+::v-deep(.comment-item) {
   .comment-main {
     .comment-avatar {
       .el-avatar {

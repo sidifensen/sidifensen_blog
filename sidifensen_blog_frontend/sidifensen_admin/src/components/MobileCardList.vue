@@ -1,9 +1,7 @@
 <template>
   <div class="mobile-card-list" :class="{ 'has-selection': showSelection }">
     <!-- 选择提示 -->
-    <div v-if="showSelection" class="selection-hint">
-      已选择 {{ selectedCount }} 项
-    </div>
+    <div v-if="showSelection" class="selection-hint">已选择 {{ selectedCount }} 项</div>
 
     <!-- 卡片列表 -->
     <div class="card-list">
@@ -16,10 +14,7 @@
         <div class="card-content">
           <!-- 选择器 -->
           <div v-if="showSelection" class="card-selector">
-            <el-checkbox
-              :model-value="isSelected(item)"
-              @change="handleSelect(item)"
-            />
+            <el-checkbox :model-value="isSelected(item)" @change="handleSelect(item)" />
           </div>
 
           <!-- 封面 -->
@@ -40,16 +35,8 @@
             <!-- 头部（ID和状态） -->
             <div class="card-header">
               <span class="item-id">#{{ item.id }}</span>
-              <StatusBadge
-                v-if="showStatus"
-                :value="item.status"
-                type="status"
-              />
-              <StatusBadge
-                v-if="showExamineStatus"
-                :value="item.examineStatus"
-                type="examine"
-              />
+              <StatusBadge v-if="showStatus" :value="item.status" type="status" />
+              <StatusBadge v-if="showExamineStatus" :value="item.examineStatus" type="examine" />
             </div>
 
             <!-- 名称/标题 -->
@@ -77,12 +64,7 @@
 
             <!-- 操作按钮 -->
             <div v-if="showActions" class="card-actions">
-              <el-button
-                v-if="hasViewAction"
-                type="info"
-                size="small"
-                @click="$emit('view', item)"
-              >
+              <el-button v-if="hasViewAction" type="info" size="small" @click="$emit('view', item)">
                 查看
               </el-button>
               <el-button
@@ -131,106 +113,99 @@
 </template>
 
 <script setup>
-import StatusBadge from "./StatusBadge.vue";
+import StatusBadge from './StatusBadge.vue'
 
 // Props
 const props = defineProps({
   // 数据
   data: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   // 选中项（用于多选）
   selectedItems: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   // 显示控制
   showSelection: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showCover: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showName: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showTitle: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showDescription: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showUser: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showStatus: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showExamineStatus: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showMeta: {
     type: Boolean,
-    default: true
+    default: true,
   },
   showActions: {
     type: Boolean,
-    default: true
+    default: true,
   },
   // 操作按钮
   hasViewAction: {
     type: Boolean,
-    default: false
+    default: false,
   },
   hasEditAction: {
     type: Boolean,
-    default: false
+    default: false,
   },
   hasDeleteAction: {
     type: Boolean,
-    default: true
+    default: true,
   },
   hasAuditAction: {
     type: Boolean,
-    default: false
+    default: false,
   },
   hasRejectAction: {
     type: Boolean,
-    default: false
-  }
-});
+    default: false,
+  },
+})
 
 // Emits
-const emit = defineEmits([
-  "select",
-  "view",
-  "edit",
-  "delete",
-  "audit",
-  "reject"
-]);
+const emit = defineEmits(['select', 'view', 'edit', 'delete', 'audit', 'reject'])
 
 // 选中数量
-const selectedCount = props.selectedItems.length;
+const selectedCount = props.selectedItems.length
 
 // 是否选中
 const isSelected = (item) => {
-  return props.selectedItems.some((selected) => selected.id === item.id);
-};
+  return props.selectedItems.some((selected) => selected.id === item.id)
+}
 
 // 选择处理
 const handleSelect = (item) => {
-  emit("select", item);
-};
+  emit('select', item)
+}
 </script>
 
 <style lang="scss" scoped>

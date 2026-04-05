@@ -1,18 +1,18 @@
-import request from "@/utils/Request";
+import request from '@/utils/Request'
 
 /**
  * 获取聊天记录
  */
 export function getChatHistory(targetUserId, pageNum, pageSize) {
   return request({
-    url: "/message/history",
-    method: "get",
+    url: '/message/history',
+    method: 'get',
     params: {
       targetUserId,
       pageNum,
       pageSize,
     },
-  });
+  })
 }
 
 /**
@@ -21,8 +21,8 @@ export function getChatHistory(targetUserId, pageNum, pageSize) {
 export function revokeMessage(messageId) {
   return request({
     url: `/message/revoke/${messageId}`,
-    method: "put",
-  });
+    method: 'put',
+  })
 }
 
 /**
@@ -31,8 +31,8 @@ export function revokeMessage(messageId) {
 export function deleteMessage(messageId) {
   return request({
     url: `/message/${messageId}`,
-    method: "delete",
-  });
+    method: 'delete',
+  })
 }
 
 /**
@@ -40,7 +40,7 @@ export function deleteMessage(messageId) {
  */
 export function getUnreadCount() {
   return request({
-    url: "/message/unread/count",
-    method: "get",
-  });
+    url: '/message/unread/count',
+    method: 'get',
+  })
 }

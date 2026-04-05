@@ -1,35 +1,35 @@
-import { defineStore } from "pinia";
-import { ref, watch } from "vue";
+import { defineStore } from 'pinia'
+import { ref, watch } from 'vue'
 
- export const useDarkStore = defineStore(
-  "dark",
+export const useDarkStore = defineStore(
+  'dark',
   () => {
-    const isDark = ref(false);
+    const isDark = ref(false)
 
     const toggleDark = () => {
-      isDark.value = !isDark.value;
-      updateHtmlClass();
-    };
+      isDark.value = !isDark.value
+      updateHtmlClass()
+    }
 
     const updateHtmlClass = () => {
-      const html = document.querySelector("html");
+      const html = document.querySelector('html')
       if (html) {
         if (!isDark.value) {
-          html.classList.remove("dark");
-          html.classList.add("light");
+          html.classList.remove('dark')
+          html.classList.add('light')
         } else {
-          html.classList.remove("light");
-          html.classList.add("dark");
+          html.classList.remove('light')
+          html.classList.add('dark')
         }
       }
-    };
+    }
 
     // 初始化时更新 html 类名
     const initDarkMode = () => {
-      updateHtmlClass();
-    };
+      updateHtmlClass()
+    }
 
-    return { isDark, toggleDark, initDarkMode };
+    return { isDark, toggleDark, initDarkMode }
   },
   {
     persist: {
@@ -38,8 +38,8 @@ import { ref, watch } from "vue";
         {
           key: 'darkMode',
           storage: localStorage,
-        }
-      ]
-    }
-  }
-);
+        },
+      ],
+    },
+  },
+)

@@ -39,7 +39,7 @@ spring:
 
   # RabbitMQ 配置（测试环境禁用）
   rabbitmq:
-    host: none
+    host: localhost
     port: 12345
     username: test
     password: test

@@ -10,19 +10,10 @@
       @selection-change="handleSelectionChange"
     >
       <!-- 多选列 -->
-      <el-table-column
-        v-if="showSelection"
-        type="selection"
-        width="30"
-      />
+      <el-table-column v-if="showSelection" type="selection" width="30" />
 
       <!-- 封面列 -->
-      <el-table-column
-        v-if="showCover"
-        prop="coverUrl"
-        label="封面"
-        :width="coverWidth"
-      >
+      <el-table-column v-if="showCover" prop="coverUrl" label="封面" :width="coverWidth">
         <template #default="{ row }">
           <div class="cover-container">
             <el-image
@@ -39,20 +30,10 @@
       </el-table-column>
 
       <!-- ID列 -->
-      <el-table-column
-        v-if="showId"
-        prop="id"
-        label="ID"
-        :width="idWidth"
-      />
+      <el-table-column v-if="showId" prop="id" label="ID" :width="idWidth" />
 
       <!-- 名称列 -->
-      <el-table-column
-        v-if="showName"
-        prop="name"
-        label="名称"
-        :min-width="nameMinWidth"
-      >
+      <el-table-column v-if="showName" prop="name" label="名称" :min-width="nameMinWidth">
         <template #default="{ row }">
           <el-tooltip :content="row.name" placement="top-start">
             <div class="name-text">{{ row.name }}</div>
@@ -61,12 +42,7 @@
       </el-table-column>
 
       <!-- 标题列（用于文章等） -->
-      <el-table-column
-        v-if="showTitle"
-        prop="title"
-        label="标题"
-        :min-width="titleMinWidth"
-      >
+      <el-table-column v-if="showTitle" prop="title" label="标题" :min-width="titleMinWidth">
         <template #default="{ row }">
           <el-tooltip :content="row.title" placement="top-start">
             <div class="title-text">{{ row.title }}</div>
@@ -75,25 +51,12 @@
       </el-table-column>
 
       <!-- 用户名列 -->
-      <el-table-column
-        v-if="showUser"
-        prop="userName"
-        label="用户"
-        :width="userWidth"
-      />
+      <el-table-column v-if="showUser" prop="userName" label="用户" :width="userWidth" />
 
       <!-- 状态列 -->
-      <el-table-column
-        v-if="showStatus"
-        prop="status"
-        label="状态"
-        :width="statusWidth"
-      >
+      <el-table-column v-if="showStatus" prop="status" label="状态" :width="statusWidth">
         <template #default="{ row }">
-          <StatusBadge
-            :value="row.status"
-            type="status"
-          />
+          <StatusBadge :value="row.status" type="status" />
         </template>
       </el-table-column>
 
@@ -105,10 +68,7 @@
         :width="examineStatusWidth"
       >
         <template #default="{ row }">
-          <StatusBadge
-            :value="row.examineStatus"
-            type="examine"
-          />
+          <StatusBadge :value="row.examineStatus" type="examine" />
         </template>
       </el-table-column>
 
@@ -131,12 +91,7 @@
       />
 
       <!-- 操作列 -->
-      <el-table-column
-        v-if="showActions"
-        :label="actionsLabel"
-        :width="actionsWidth"
-        fixed="right"
-      >
+      <el-table-column v-if="showActions" :label="actionsLabel" :width="actionsWidth" fixed="right">
         <template #default="{ row }">
           <TableActions
             :show-view="hasViewAction"
@@ -160,148 +115,141 @@
 </template>
 
 <script setup>
-import StatusBadge from "./StatusBadge.vue";
-import TableActions from "./TableActions.vue";
+import StatusBadge from './StatusBadge.vue'
+import TableActions from './TableActions.vue'
 
 // Props
 const props = defineProps({
   // 数据
   data: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   // 加载状态
   loading: {
     type: Boolean,
-    default: false
+    default: false,
   },
   // 列显示控制
   showSelection: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showCover: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showId: {
     type: Boolean,
-    default: true
+    default: true,
   },
   showName: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showTitle: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showUser: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showStatus: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showExamineStatus: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showCreateTime: {
     type: Boolean,
-    default: true
+    default: true,
   },
   showUpdateTime: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showActions: {
     type: Boolean,
-    default: true
+    default: true,
   },
   // 列宽度
   coverWidth: {
     type: [Number, String],
-    default: 120
+    default: 120,
   },
   idWidth: {
     type: [Number, String],
-    default: 60
+    default: 60,
   },
   nameMinWidth: {
     type: [Number, String],
-    default: 150
+    default: 150,
   },
   titleMinWidth: {
     type: [Number, String],
-    default: 180
+    default: 180,
   },
   userWidth: {
     type: [Number, String],
-    default: 120
+    default: 120,
   },
   statusWidth: {
     type: [Number, String],
-    default: 80
+    default: 80,
   },
   examineStatusWidth: {
     type: [Number, String],
-    default: 80
+    default: 80,
   },
   createTimeWidth: {
     type: [Number, String],
-    default: 110
+    default: 110,
   },
   updateTimeWidth: {
     type: [Number, String],
-    default: 110
+    default: 110,
   },
   actionsWidth: {
     type: [Number, String],
-    default: 200
+    default: 200,
   },
   actionsLabel: {
     type: String,
-    default: "操作"
+    default: '操作',
   },
   // 操作按钮控制
   hasViewAction: {
     type: Boolean,
-    default: false
+    default: false,
   },
   hasEditAction: {
     type: Boolean,
-    default: false
+    default: false,
   },
   hasDeleteAction: {
     type: Boolean,
-    default: true
+    default: true,
   },
   hasAuditAction: {
     type: Boolean,
-    default: false
+    default: false,
   },
   hasRejectAction: {
     type: Boolean,
-    default: false
-  }
-});
+    default: false,
+  },
+})
 
 // Emits
-const emit = defineEmits([
-  "selection-change",
-  "view",
-  "edit",
-  "delete",
-  "audit",
-  "reject"
-]);
+const emit = defineEmits(['selection-change', 'view', 'edit', 'delete', 'audit', 'reject'])
 
 // 选择变化
 const handleSelectionChange = (selection) => {
-  emit("selection-change", selection);
-};
+  emit('selection-change', selection)
+}
 </script>
 
 <style lang="scss" scoped>

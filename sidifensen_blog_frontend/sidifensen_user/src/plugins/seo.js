@@ -32,8 +32,6 @@ export function useSeoMeta({ title, description, keywords, image, url }) {
       { name: 'twitter:description', content: description || defaultDescription },
       ...(image ? [{ name: 'twitter:image', content: image }] : []),
     ],
-    link: [
-      ...(url ? [{ rel: 'canonical', href: url }] : []),
-    ],
+    link: url ? [{ rel: 'canonical', href: url }] : [],
   })
 }

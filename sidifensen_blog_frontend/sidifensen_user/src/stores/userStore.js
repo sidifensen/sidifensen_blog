@@ -1,19 +1,19 @@
-import { ref, computed } from "vue";
-import { defineStore } from "pinia";
-import { RemoveJwt } from "@/utils/Auth";
+import { ref, computed } from 'vue'
+import { defineStore } from 'pinia'
+import { RemoveJwt } from '@/utils/Auth'
 
 export const useUserStore = defineStore(
-  "user",
+  'user',
   () => {
-    const user = ref({});
-    const isLoggedIn = computed(() => !!user.value && !!user.value.id);
+    const user = ref({})
+    const isLoggedIn = computed(() => !!user.value && !!user.value.id)
     const clearUser = () => {
-      RemoveJwt();
-      user.value = null;
+      RemoveJwt()
+      user.value = null
     }
-    return { user, isLoggedIn, clearUser };
+    return { user, isLoggedIn, clearUser }
   },
   {
     persist: true,
-  }
-);
+  },
+)

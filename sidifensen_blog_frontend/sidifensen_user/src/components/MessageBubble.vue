@@ -1,6 +1,11 @@
 <template>
   <div class="message-bubble" :class="{ 'is-mine': isMine }">
-    <el-avatar :size="40" :src="message.fromUserAvatar" class="bubble-avatar" @click="handleAvatarClick" />
+    <el-avatar
+      :size="40"
+      :src="message.fromUserAvatar"
+      class="bubble-avatar"
+      @click="handleAvatarClick"
+    />
     <div class="bubble-content">
       <div class="bubble-header">
         <span class="bubble-nickname">{{ message.fromUserNickname }}</span>
@@ -37,8 +42,8 @@
 </template>
 
 <script setup>
-import { Picture } from "@element-plus/icons-vue";
-import { getFriendlyTime } from "@/utils/formatTime";
+import { Picture } from '@element-plus/icons-vue'
+import { getFriendlyTime } from '@/utils/formatTime'
 
 /**
  * 消息气泡组件
@@ -54,12 +59,12 @@ const props = defineProps({
     default: () => ({
       id: 0,
       fromUserId: 0,
-      fromUserAvatar: "",
-      fromUserNickname: "",
-      content: "",
-      imageUrl: "",
+      fromUserAvatar: '',
+      fromUserNickname: '',
+      content: '',
+      imageUrl: '',
       messageType: 1, // 1文本 2图片
-      createTime: "",
+      createTime: '',
       isRead: 0,
     }),
   },
@@ -70,13 +75,13 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-});
+})
 
-const emit = defineEmits(["avatar-click"]);
+const emit = defineEmits(['avatar-click'])
 
 const handleAvatarClick = () => {
-  emit("avatar-click", props.message.fromUserId);
-};
+  emit('avatar-click', props.message.fromUserId)
+}
 </script>
 
 <style lang="scss" scoped>

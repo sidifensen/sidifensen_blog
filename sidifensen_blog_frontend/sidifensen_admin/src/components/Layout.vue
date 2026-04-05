@@ -1,13 +1,66 @@
 <template>
   <el-container class="layout-container">
-      <!-- 侧边栏 -->
-      <el-aside class="sidebar">
-        <div class="logo-container">
-          <div class="logo-icon"></div>
-          <h3 class="logo-text">管理员后台</h3>
-        </div>
-        <!-- pc端菜单 -->
-        <el-menu :default-active="activeMenu" class="el-menu-pc" background-color="#1e293b" text-color="#cbd5e1" active-text-color="#4ade80" :router="true">
+    <!-- 侧边栏 -->
+    <el-aside class="sidebar">
+      <div class="logo-container">
+        <div class="logo-icon"></div>
+        <h3 class="logo-text">管理员后台</h3>
+      </div>
+      <!-- pc端菜单 -->
+      <el-menu
+        :default-active="activeMenu"
+        class="el-menu-pc"
+        background-color="#1e293b"
+        text-color="#cbd5e1"
+        active-text-color="#4ade80"
+        :router="true"
+      >
+        <template v-for="menu in menus" :key="menu.id">
+          <el-sub-menu v-if="menu.children && menu.children.length > 0" :index="menu.path">
+            <template #title>
+              <el-icon :size="18"><component :is="menu.icon || 'Menu'" /></el-icon>
+              <span>{{ menu.name }}</span>
+            </template>
+            <template v-for="child in menu.children" :key="child.id">
+              <el-sub-menu v-if="child.children && child.children.length > 0" :index="child.path">
+                <template #title>
+                  <el-icon :size="18"><component :is="child.icon || 'Menu'" /></el-icon>
+                  <span>{{ child.name }}</span>
+                </template>
+                <template v-for="grandchild in child.children" :key="grandchild.id">
+                  <el-menu-item :index="grandchild.path">
+                    <el-icon :size="16"><component :is="grandchild.icon || 'Menu'" /></el-icon>
+                    <span>{{ grandchild.name }}</span>
+                  </el-menu-item>
+                </template>
+              </el-sub-menu>
+              <el-menu-item v-else :index="child.path">
+                <el-icon :size="18"><component :is="child.icon || 'Menu'" /></el-icon>
+                <span>{{ child.name }}</span>
+              </el-menu-item>
+            </template>
+          </el-sub-menu>
+          <el-menu-item v-else :index="menu.path">
+            <el-icon :size="18"><component :is="menu.icon || 'Menu'" /></el-icon>
+            <span>{{ menu.name }}</span>
+          </el-menu-item>
+        </template>
+      </el-menu>
+    </el-aside>
+
+    <!-- 移动端菜单 -->
+    <transition name="slide-fade">
+      <div v-show="isMobileMenuVisible" class="mobile-menu-overlay" @click="closeMobileMenu">
+        <el-menu
+          :default-active="activeMenu"
+          class="el-menu-mobile"
+          background-color="#1e293b"
+          text-color="#cbd5e1"
+          active-text-color="#4ade80"
+          :router="true"
+          @click.stop
+          @select="closeMobileMenu"
+        >
           <template v-for="menu in menus" :key="menu.id">
             <el-sub-menu v-if="menu.children && menu.children.length > 0" :index="menu.path">
               <template #title>
@@ -17,7 +70,7 @@
               <template v-for="child in menu.children" :key="child.id">
                 <el-sub-menu v-if="child.children && child.children.length > 0" :index="child.path">
                   <template #title>
-                    <el-icon :size="18"><component :is="child.icon || 'Menu'" /></el-icon>
+                    <el-icon :size="16"><component :is="child.icon || 'Menu'" /></el-icon>
                     <span>{{ child.name }}</span>
                   </template>
                   <template v-for="grandchild in child.children" :key="grandchild.id">
@@ -28,7 +81,7 @@
                   </template>
                 </el-sub-menu>
                 <el-menu-item v-else :index="child.path">
-                  <el-icon :size="18"><component :is="child.icon || 'Menu'" /></el-icon>
+                  <el-icon :size="16"><component :is="child.icon || 'Menu'" /></el-icon>
                   <span>{{ child.name }}</span>
                 </el-menu-item>
               </template>
@@ -39,311 +92,310 @@
             </el-menu-item>
           </template>
         </el-menu>
-      </el-aside>
+      </div>
+    </transition>
 
-      <!-- 移动端菜单 -->
-      <transition name="slide-fade">
-        <div v-show="isMobileMenuVisible" class="mobile-menu-overlay" @click="closeMobileMenu">
-          <el-menu :default-active="activeMenu" class="el-menu-mobile" background-color="#1e293b" text-color="#cbd5e1" active-text-color="#4ade80" :router="true" @click.stop @select="closeMobileMenu">
-            <template v-for="menu in menus" :key="menu.id">
-              <el-sub-menu v-if="menu.children && menu.children.length > 0" :index="menu.path">
-                <template #title>
-                  <el-icon :size="18"><component :is="menu.icon || 'Menu'" /></el-icon>
-                  <span>{{ menu.name }}</span>
-                </template>
-                <template v-for="child in menu.children" :key="child.id">
-                  <el-sub-menu v-if="child.children && child.children.length > 0" :index="child.path">
-                    <template #title>
-                      <el-icon :size="16"><component :is="child.icon || 'Menu'" /></el-icon>
-                      <span>{{ child.name }}</span>
-                    </template>
-                    <template v-for="grandchild in child.children" :key="grandchild.id">
-                      <el-menu-item :index="grandchild.path">
-                        <el-icon :size="16"><component :is="grandchild.icon || 'Menu'" /></el-icon>
-                        <span>{{ grandchild.name }}</span>
-                      </el-menu-item>
-                    </template>
-                  </el-sub-menu>
-                  <el-menu-item v-else :index="child.path">
-                    <el-icon :size="16"><component :is="child.icon || 'Menu'" /></el-icon>
-                    <span>{{ child.name }}</span>
-                  </el-menu-item>
-                </template>
-              </el-sub-menu>
-              <el-menu-item v-else :index="menu.path">
-                <el-icon :size="18"><component :is="menu.icon || 'Menu'" /></el-icon>
-                <span>{{ menu.name }}</span>
-              </el-menu-item>
-            </template>
-          </el-menu>
+    <!-- 主内容区域 -->
+    <el-container class="main-content">
+      <!-- 顶部导航栏 -->
+      <el-header class="header">
+        <!-- 移动端菜单按钮 -->
+        <div class="mobile-menu-button" @click="toggleMobileMenu">
+          <svg-icon name="menu" width="35px" height="35px" cursor="pointer" />
         </div>
-      </transition>
-
-      <!-- 主内容区域 -->
-      <el-container class="main-content">
-        <!-- 顶部导航栏 -->
-        <el-header class="header">
-          <!-- 移动端菜单按钮 -->
-          <div class="mobile-menu-button" @click="toggleMobileMenu">
-            <svg-icon name="menu" width="35px" height="35px" cursor="pointer" />
-          </div>
-          <div class="header-right">
-            <Dark />
-            <!-- 消息通知 -->
-            <div class="message-container" @click.stop="toggleMessageDropdown">
-              <el-badge :value="unreadCount" :hidden="unreadCount === 0" class="message-badge-container">
-                <el-icon class="message-icon"><Bell /></el-icon>
-              </el-badge>
-              <!-- 自定义消息下拉框 -->
-              <div v-if="isMessageDropdownVisible" class="custom-message-dropdown" ref="messageDropdownRef">
-                <div class="message-header">
-                  <span class="message-title">消息通知</span>
-                  <el-button v-if="hasUnreadMessages" size="small" plain type="success" @click="markAllAsRead">全部标为已读</el-button>
-                  <el-button size="small" plain type="danger" @click="deleteAllMessages">全部删除</el-button>
+        <div class="header-right">
+          <Dark />
+          <!-- 消息通知 -->
+          <div class="message-container" @click.stop="toggleMessageDropdown">
+            <el-badge
+              :value="unreadCount"
+              :hidden="unreadCount === 0"
+              class="message-badge-container"
+            >
+              <el-icon class="message-icon"><Bell /></el-icon>
+            </el-badge>
+            <!-- 自定义消息下拉框 -->
+            <div
+              v-if="isMessageDropdownVisible"
+              class="custom-message-dropdown"
+              ref="messageDropdownRef"
+            >
+              <div class="message-header">
+                <span class="message-title">消息通知</span>
+                <el-button
+                  v-if="hasUnreadMessages"
+                  size="small"
+                  plain
+                  type="success"
+                  @click="markAllAsRead"
+                  >全部标为已读</el-button
+                >
+                <el-button size="small" plain type="danger" @click="deleteAllMessages"
+                  >全部删除</el-button
+                >
+              </div>
+              <div class="message-list" ref="messageListRef">
+                <div v-if="messages.length === 0" class="no-message">
+                  <el-icon><Message /></el-icon>
+                  <span>暂无消息</span>
                 </div>
-                <div class="message-list" ref="messageListRef">
-                  <div v-if="messages.length === 0" class="no-message">
-                    <el-icon><Message /></el-icon>
-                    <span>暂无消息</span>
+                <div
+                  v-for="message in messages"
+                  :key="message.id"
+                  :data-id="message.id"
+                  class="message-item"
+                  :class="{ unread: !message.isRead }"
+                >
+                  <div class="message-content">
+                    <h4 class="message-title">{{ message.title }}</h4>
+                    <p class="message-desc">{{ message.content }}</p>
+                    <p class="message-time">{{ formatTime(message.createTime) }}</p>
                   </div>
-                  <div v-for="message in messages" :key="message.id" :data-id="message.id" class="message-item" :class="{ unread: !message.isRead }">
-                    <div class="message-content">
-                      <h4 class="message-title">{{ message.title }}</h4>
-                      <p class="message-desc">{{ message.content }}</p>
-                      <p class="message-time">{{ formatTime(message.createTime) }}</p>
-                    </div>
-                    <div class="message-actions">
-                      <el-button v-if="!message.isRead" class="read-button" @click.stop="markAsRead(message.id)">
-                        <el-icon><Check /></el-icon> 已读
-                      </el-button>
-                      <el-button class="delete-button" @click.stop="deleteMessage(message.id)">
-                        <el-icon><Delete /></el-icon> 删除
-                      </el-button>
-                    </div>
+                  <div class="message-actions">
+                    <el-button
+                      v-if="!message.isRead"
+                      class="read-button"
+                      @click.stop="markAsRead(message.id)"
+                    >
+                      <el-icon><Check /></el-icon> 已读
+                    </el-button>
+                    <el-button class="delete-button" @click.stop="deleteMessage(message.id)">
+                      <el-icon><Delete /></el-icon> 删除
+                    </el-button>
                   </div>
                 </div>
               </div>
             </div>
-            <el-dropdown trigger="hover">
-              <span class="user-info">
-                <el-icon><User /></el-icon>
-                <span>{{ user.username }}</span>
-              </span>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
           </div>
-        </el-header>
-        <!-- 内容区域 -->
-        <el-main class="content">
-          <RouterView />
-        </el-main>
-      </el-container>
+          <el-dropdown trigger="hover">
+            <span class="user-info">
+              <el-icon><User /></el-icon>
+              <span>{{ user.username }}</span>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
+      </el-header>
+      <!-- 内容区域 -->
+      <el-main class="content">
+        <RouterView />
+      </el-main>
     </el-container>
+  </el-container>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useUserStore } from "@/stores/userStore";
-import { ElMessage } from "element-plus";
-import Dark from "./Dark.vue";
-import { getMessagesCount, getMessageList, readAdminMessages, deleteAdminMessages } from "@/api/message";
-import { Bell, Message, Delete, User, Check } from "@element-plus/icons-vue";
-import { formatTime } from "@/utils/FormatTime";
-import { onUnmounted } from "vue";
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/userStore'
+import { ElMessage } from 'element-plus'
+import Dark from './Dark.vue'
+import {
+  getMessagesCount,
+  getMessageList,
+  readAdminMessages,
+  deleteAdminMessages,
+} from '@/api/message'
+import { Bell, Message, Delete, User, Check } from '@element-plus/icons-vue'
+import { formatTime } from '@/utils/FormatTime'
+import { onUnmounted } from 'vue'
 
-const userStore = useUserStore();
-const router = useRouter();
+const userStore = useUserStore()
+const router = useRouter()
 
 // 消息相关状态
-const unreadCount = ref(0);
-const messages = ref([]);
-const hasUnreadMessages = computed(() => messages.value.some((msg) => !msg.isRead));
-const messageListRef = ref(null);
-const isMessageDropdownVisible = ref(false);
-const messageDropdownRef = ref(null);
+const unreadCount = ref(0)
+const messages = ref([])
+const hasUnreadMessages = computed(() => messages.value.some((msg) => !msg.isRead))
+const messageListRef = ref(null)
+const isMessageDropdownVisible = ref(false)
+const messageDropdownRef = ref(null)
 
 // 获取未读消息数量
 const fetchUnreadCount = async () => {
   try {
-    const res = await getMessagesCount();
-    unreadCount.value = Number(res.data);
+    const res = await getMessagesCount()
+    unreadCount.value = Number(res.data)
   } catch (error) {
-    ElMessage.error("获取消息数量失败");
-    console.error("获取消息数量失败:", error);
+    ElMessage.error('获取消息数量失败')
+    console.error('获取消息数量失败:', error)
   }
-};
+}
 
 // 获取消息列表
 const fetchMessages = async () => {
   try {
-    const res = await getMessageList();
+    const res = await getMessageList()
     messages.value = res.data.map((msg) => {
       // 解析content字段（JSON字符串）
-      let contentObj = {};
+      let contentObj = {}
       try {
-        contentObj = JSON.parse(msg.content);
+        contentObj = JSON.parse(msg.content)
       } catch (e) {
-        console.error("解析消息内容失败:", e);
+        console.error('解析消息内容失败:', e)
       }
       return {
         ...msg,
         isRead: msg.isRead === 1,
         content: contentObj.text || msg.content,
-      };
-    });
+      }
+    })
   } catch (error) {
-    ElMessage.error("获取消息列表失败");
-    console.error("获取消息列表失败:", error);
-    messages.value = [];
+    ElMessage.error('获取消息列表失败')
+    console.error('获取消息列表失败:', error)
+    messages.value = []
   }
-};
+}
 
 // 切换消息下拉框显示状态
 const toggleMessageDropdown = async () => {
-  isMessageDropdownVisible.value = !isMessageDropdownVisible.value;
+  isMessageDropdownVisible.value = !isMessageDropdownVisible.value
   if (isMessageDropdownVisible.value) {
-    await fetchMessages();
+    await fetchMessages()
     // 监听点击事件，点击外部关闭下拉框
     setTimeout(() => {
-      document.addEventListener("click", closeMessageDropdown);
-    }, 0);
+      document.addEventListener('click', closeMessageDropdown)
+    }, 0)
   } else {
-    document.removeEventListener("click", closeMessageDropdown);
+    document.removeEventListener('click', closeMessageDropdown)
   }
-};
+}
 
 // 关闭消息下拉框
 const closeMessageDropdown = (e) => {
-  if (messageDropdownRef.value && !messageDropdownRef.value.contains(e.target) && !e.target.closest(".message-badge-container")) {
-    isMessageDropdownVisible.value = false;
-    document.removeEventListener("click", closeMessageDropdown);
+  if (
+    messageDropdownRef.value &&
+    !messageDropdownRef.value.contains(e.target) &&
+    !e.target.closest('.message-badge-container')
+  ) {
+    isMessageDropdownVisible.value = false
+    document.removeEventListener('click', closeMessageDropdown)
   }
-};
+}
 
 // 清理事件监听器
 onUnmounted(() => {
-  document.removeEventListener("click", closeMessageDropdown);
-});
+  document.removeEventListener('click', closeMessageDropdown)
+})
 
 // 标记单条消息为已读
 const markAsRead = async (messageId) => {
   try {
     // 确保messageId是整型
-    const numericMessageId = parseInt(messageId, 10);
-    await readAdminMessages([numericMessageId]);
+    const numericMessageId = parseInt(messageId, 10)
+    await readAdminMessages([numericMessageId])
     // 刷新消息列表
-    await fetchMessages();
+    await fetchMessages()
     // 更新未读数量
-    await fetchUnreadCount();
-    ElMessage.success("消息已标记为已读");
+    await fetchUnreadCount()
+    ElMessage.success('消息已标记为已读')
   } catch (error) {
-    ElMessage.error("标记消息为已读失败");
-    console.error("标记消息为已读失败:", error);
+    ElMessage.error('标记消息为已读失败')
+    console.error('标记消息为已读失败:', error)
   }
-};
+}
 
 // 标记所有消息为已读
 const markAllAsRead = async () => {
-  const unreadMessageIds = messages.value.filter((msg) => !msg.isRead).map(({ id }) => id);
+  const unreadMessageIds = messages.value.filter((msg) => !msg.isRead).map(({ id }) => id)
   if (unreadMessageIds.length === 0) {
-    ElMessage.success("所有消息均已读");
-    return;
+    ElMessage.success('所有消息均已读')
+    return
   }
   try {
-    await readAdminMessages(unreadMessageIds);
+    await readAdminMessages(unreadMessageIds)
     // 刷新消息列表
-    await fetchMessages();
+    await fetchMessages()
     // 更新未读数量
-    await fetchUnreadCount();
-    ElMessage.success("已标记所有消息为已读");
+    await fetchUnreadCount()
+    ElMessage.success('已标记所有消息为已读')
   } catch (error) {
-    ElMessage.error("标记消息为已读失败");
-    console.error("标记消息为已读失败:", error);
+    ElMessage.error('标记消息为已读失败')
+    console.error('标记消息为已读失败:', error)
   }
-};
+}
 
 // 删除消息
 const deleteMessage = async (messageId) => {
   try {
-    const numericMessageId = Number(messageId);
-    await deleteAdminMessages([numericMessageId]);
+    const numericMessageId = Number(messageId)
+    await deleteAdminMessages([numericMessageId])
     // 刷新消息列表
-    await fetchMessages();
+    await fetchMessages()
     // 更新未读数量
-    await fetchUnreadCount();
-    ElMessage.success("消息删除成功");
+    await fetchUnreadCount()
+    ElMessage.success('消息删除成功')
   } catch (error) {
-    ElMessage.error("消息删除失败");
-    console.error("消息删除失败:", error);
+    ElMessage.error('消息删除失败')
+    console.error('消息删除失败:', error)
   }
-};
+}
 
 // 删除所有消息
 const deleteAllMessages = async () => {
   if (messages.value.length === 0) {
-    ElMessage.success("暂无消息可删除");
-    return;
+    ElMessage.success('暂无消息可删除')
+    return
   }
   try {
-    const allMessageIds = messages.value.map(({ id }) => id);
-    await deleteAdminMessages(allMessageIds);
+    const allMessageIds = messages.value.map(({ id }) => id)
+    await deleteAdminMessages(allMessageIds)
     // 刷新消息列表
-    await fetchMessages();
+    await fetchMessages()
     // 更新未读数量
-    await fetchUnreadCount();
-    ElMessage.success("已删除所有消息");
+    await fetchUnreadCount()
+    ElMessage.success('已删除所有消息')
   } catch (error) {
-    ElMessage.error("删除所有消息失败");
-    console.error("删除所有消息失败:", error);
+    ElMessage.error('删除所有消息失败')
+    console.error('删除所有消息失败:', error)
   }
-};
+}
 
 // 页面加载时获取消息数量
 onMounted(() => {
-  fetchUnreadCount();
+  fetchUnreadCount()
   // 可以添加一个定时器，定期刷新消息数量
-  const intervalId = setInterval(fetchUnreadCount, 60000); // 每分钟刷新一次
+  const intervalId = setInterval(fetchUnreadCount, 60000) // 每分钟刷新一次
   // 清理定时器
-  onUnmounted(() => clearInterval(intervalId));
-});
+  onUnmounted(() => clearInterval(intervalId))
+})
 
 const menus = computed(() => {
-  return userStore.menus;
-});
+  return userStore.menus
+})
 
 // 移动端菜单是否可见
-const isMobileMenuVisible = ref(false);
+const isMobileMenuVisible = ref(false)
 // 切换移动端菜单
 const toggleMobileMenu = () => {
-  isMobileMenuVisible.value = !isMobileMenuVisible.value;
-};
+  isMobileMenuVisible.value = !isMobileMenuVisible.value
+}
 
 // 关闭移动端菜单
 const closeMobileMenu = () => {
-  isMobileMenuVisible.value = false;
-};
+  isMobileMenuVisible.value = false
+}
 
 // 当前激活的菜单
 const activeMenu = computed(() => {
-  return router.currentRoute.value.path;
-});
+  return router.currentRoute.value.path
+})
 
 // 用户信息
 const user = computed(() => {
-  return userStore.user;
-});
+  return userStore.user
+})
 
 // 退出登录
 const handleLogout = () => {
-  userStore.clearUser();
-  router.push("/login");
-  ElMessage.success("退出登录成功");
-};
+  userStore.clearUser()
+  router.push('/login')
+  ElMessage.success('退出登录成功')
+}
 </script>
 
 <style lang="scss" scoped>
@@ -380,7 +432,7 @@ const handleLogout = () => {
 
         // 白色圆环
         &::after {
-          content: "";
+          content: '';
           position: absolute;
           top: 50%;
           left: 50%;
@@ -625,7 +677,7 @@ const handleLogout = () => {
                 }
                 // 未读消息指示点
                 &.unread::before {
-                  content: "";
+                  content: '';
                   position: absolute;
                   left: 10px;
                   top: 50%;

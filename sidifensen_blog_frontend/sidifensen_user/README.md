@@ -1,98 +1,68 @@
 # sidifensen_blog_frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+基于 Vue 3 + Vite 构建的个人博客前端项目，使用 [Vite+](https://vite.plus) 作为统一开发工具链。
 
-## Recommended IDE Setup
+## 常用命令
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+### npm 脚本命令
 
-## Customize configuration
+| 命令               | 说明                                            |
+| ------------------ | ----------------------------------------------- |
+| `npm run dev`      | 开发环境启动（等同于 `vp dev`）                 |
+| `npm run build`    | 编译生产构建（等同于 `vp build`）               |
+| `npm run check`    | 格式检查 + lint + 类型检查（等同于 `vp check`） |
+| `npm run test`     | 运行测试（监视模式，等同于 `vp test`）          |
+| `npm run test:run` | 单次运行测试                                    |
+| `npm run preview`  | 预览生产构建（等同于 `vp preview`）             |
 
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+### 安装依赖
 
 ```sh
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+## Vite+ 工具命令
 
-```sh
-npm run dev
-```
+Vite+ 是项目的统一工具链，整合了 Vite、Vitest、Oxlint、Oxfmt、Rolldown 等工具。
 
-### Compile and Minify for Production
+### 开发命令
 
-```sh
-npm run build
-```
+| 命令          | 说明                             |
+| ------------- | -------------------------------- |
+| `vp dev`      | 启动 Vite 开发服务器，支持热更新 |
+| `vp build`    | 使用 Rolldown 构建生产版本       |
+| `vp preview`  | 预览生产构建结果                 |
+| `vp check`    | 运行格式检查、lint 和类型检查    |
+| `vp test`     | 通过 Vitest 运行测试（监视模式） |
+| `vp test run` | 单次运行测试                     |
+| `vp fmt`      | 格式化代码                       |
+| `vp lint`     | 检查代码规范                     |
 
-## Electron 桌面应用
+### 包管理命令
 
-### 开发模式
+| 命令              | 说明                         |
+| ----------------- | ---------------------------- |
+| `vp install`      | 安装依赖（自动检测包管理器） |
+| `vp add <pkg>`    | 添加依赖包                   |
+| `vp remove <pkg>` | 移除依赖包                   |
+| `vp update`       | 更新依赖到最新版本           |
+| `vp list`         | 列出已安装的包               |
 
-```sh
-npm run electron:dev
-```
+### 其他命令
 
-### 打包 Windows exe
+| 命令            | 说明                 |
+| --------------- | -------------------- |
+| `vp create`     | 创建新项目           |
+| `vp migrate`    | 迁移现有项目到 Vite+ |
+| `vp run <task>` | 执行 monorepo 任务   |
+| `vp exec <cmd>` | 执行本地 bin 命令    |
+| `vp upgrade`    | 更新 Vite+ 自身      |
+| `vp help`       | 查看所有可用命令     |
 
-```sh
-npm run electron:build
-```
+## 推荐 IDE 配置
 
-打包产物位于 `dist-electron/` 目录。
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (禁用 Vetur)。
 
-### 打包全平台（Windows/macOS/Linux）
+## 项目配置
 
-```sh
-npm run electron:build:all
-```
-
-## Capacitor 原生应用（Android）
-
-### 首次添加 Android 项目
-
-```sh
-npx cap add android
-```
-
-### 构建并同步
-
-```sh
-npm run build:capacitor
-npx cap sync android
-```
-
-### 打开 Android Studio
-
-```sh
-npx cap open android
-```
-
-### 在 Android Studio 中构建 APK
-
-```sh
-# 进入 android 目录
-cd android
-
-# Debug 版本（开发测试用）
-./gradlew assembleDebug
-
-# Release 版本（正式发布用）
-./gradlew assembleRelease
-```
-
-### APK 输出位置
-
-| 版本 | 路径 |
-|------|------|
-| Debug | `android/app/build/outputs/apk/debug/app-debug.apk` |
-| Release | `android/app/build/outputs/apk/release/app-release.apk` |
-
-### 删除 Android 项目
-
-```sh
-rm -rf android/
-```
+Vite+ 配置位于 `vite.config.ts`，详情见 [Vite 配置参考](https://vite.dev/config/)。

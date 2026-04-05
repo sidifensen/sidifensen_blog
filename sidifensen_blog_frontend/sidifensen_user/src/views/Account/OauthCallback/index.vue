@@ -14,67 +14,67 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { CircleCheckFilled, CircleCloseFilled, Loading } from "@element-plus/icons-vue";
-import { exchangeOauthTicket, info } from "@/api/user";
-import { SetJwt } from "@/utils/Auth";
-import { useUserStore } from "@/stores/userStore";
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { CircleCheckFilled, CircleCloseFilled, Loading } from '@element-plus/icons-vue'
+import { exchangeOauthTicket, info } from '@/api/user'
+import { SetJwt } from '@/utils/Auth'
+import { useUserStore } from '@/stores/userStore'
 
-const route = useRoute();
-const router = useRouter();
-const userStore = useUserStore();
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 
-const status = ref("loading");
+const status = ref('loading')
 
 const title = computed(() => {
-  if (status.value === "success") {
-    return "登录成功";
+  if (status.value === 'success') {
+    return '登录成功'
   }
-  if (status.value === "error") {
-    return "登录失败";
+  if (status.value === 'error') {
+    return '登录失败'
   }
-  return "正在完成登录";
-});
+  return '正在完成登录'
+})
 
 const description = computed(() => {
-  if (status.value === "success") {
-    return "正在跳转到首页，请稍候。";
+  if (status.value === 'success') {
+    return '正在跳转到首页，请稍候。'
   }
-  if (status.value === "error") {
-    return "OAuth 登录票据无效或已过期，请重新发起第三方登录。";
+  if (status.value === 'error') {
+    return 'OAuth 登录票据无效或已过期，请重新发起第三方登录。'
   }
-  return "正在校验 OAuth 票据并同步你的登录状态。";
-});
+  return '正在校验 OAuth 票据并同步你的登录状态。'
+})
 
 const goToLogin = () => {
-  router.replace("/login");
-};
+  router.replace('/login')
+}
 
 const handleOauthCallback = async () => {
-  const ticket = route.query.ticket;
-  if (typeof ticket !== "string" || !ticket) {
-    status.value = "error";
-    return;
+  const ticket = route.query.ticket
+  if (typeof ticket !== 'string' || !ticket) {
+    status.value = 'error'
+    return
   }
 
   try {
-    const exchangeRes = await exchangeOauthTicket({ ticket });
-    SetJwt(exchangeRes.data);
+    const exchangeRes = await exchangeOauthTicket({ ticket })
+    SetJwt(exchangeRes.data)
 
-    const userRes = await info();
-    userStore.user = userRes.data;
-    status.value = "success";
+    const userRes = await info()
+    userStore.user = userRes.data
+    status.value = 'success'
 
-    await router.replace({ name: "Home" });
+    await router.replace({ name: 'Home' })
   } catch (error) {
-    status.value = "error";
+    status.value = 'error'
   }
-};
+}
 
 onMounted(() => {
-  handleOauthCallback();
-});
+  handleOauthCallback()
+})
 </script>
 
 <style lang="scss" scoped>

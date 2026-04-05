@@ -1,13 +1,13 @@
-import request from "@/utils/Request";
+import request from '@/utils/Request'
 
 /**
  * 获取会话列表
  */
 export function getConversationList() {
   return request({
-    url: "/conversation/list",
-    method: "get",
-  });
+    url: '/conversation/list',
+    method: 'get',
+  })
 }
 
 /**
@@ -16,8 +16,8 @@ export function getConversationList() {
 export function deleteConversation(targetUserId) {
   return request({
     url: `/conversation/${targetUserId}`,
-    method: "delete",
-  });
+    method: 'delete',
+  })
 }
 
 /**
@@ -26,6 +26,6 @@ export function deleteConversation(targetUserId) {
 export function clearUnreadCount(targetUserId) {
   return request({
     url: `/conversation/read/${targetUserId}`,
-    method: "put",
-  });
+    method: 'put',
+  })
 }

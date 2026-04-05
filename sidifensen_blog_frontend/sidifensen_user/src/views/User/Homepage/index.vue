@@ -80,7 +80,11 @@
                 <FollowList v-else-if="activeTab === 'follow'" key="follow" />
 
                 <!-- 历史列表 -->
-                <HistoryList v-else-if="activeTab === 'history'" key="history" ref="historyListRef" />
+                <HistoryList
+                  v-else-if="activeTab === 'history'"
+                  key="history"
+                  ref="historyListRef"
+                />
               </transition>
             </div>
           </div>
@@ -120,419 +124,429 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { Trophy, View, User, ArrowUp } from "@element-plus/icons-vue";
-import { getUserInfoById } from "@/api/user";
-import { toggleFollow, isFollowing } from "@/api/follow";
-import { getUserArticleList, getUserArticleStatisticsById } from "@/api/article";
-import { getUserColumnList } from "@/api/column";
-import { getFavoriteListByUserId, getArticleListByFavoriteId, updateFavorite } from "@/api/favorite";
-import { useUserStore } from "@/stores/userStore";
-import UserProfileCard from "./components/UserProfileCard.vue";
-import ArticleList from "./components/ArticleList.vue";
-import ColumnList from "./components/ColumnList.vue";
-import FavoriteList from "./components/FavoriteList.vue";
-import FollowList from "./components/FollowList.vue";
-import HistoryList from "./components/HistoryList.vue";
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { Trophy, View, User, ArrowUp } from '@element-plus/icons-vue'
+import { getUserInfoById } from '@/api/user'
+import { toggleFollow, isFollowing } from '@/api/follow'
+import { getUserArticleList, getUserArticleStatisticsById } from '@/api/article'
+import { getUserColumnList } from '@/api/column'
+import { getFavoriteListByUserId, getArticleListByFavoriteId, updateFavorite } from '@/api/favorite'
+import { useUserStore } from '@/stores/userStore'
+import UserProfileCard from './components/UserProfileCard.vue'
+import ArticleList from './components/ArticleList.vue'
+import ColumnList from './components/ColumnList.vue'
+import FavoriteList from './components/FavoriteList.vue'
+import FollowList from './components/FollowList.vue'
+import HistoryList from './components/HistoryList.vue'
 
 // 路由和状态管理
-const route = useRoute();
-const router = useRouter();
-const userStore = useUserStore();
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 
 // 响应式数据
-const userLoading = ref(false);
-const articleLoading = ref(false);
-const columnLoading = ref(false);
-const favoriteLoading = ref(false);
-const loadingMore = ref(false);
-const followLoading = ref(false);
-const userInfo = ref(null);
-const articleList = ref([]);
-const columnList = ref([]);
-const favoriteList = ref([]);
-const total = ref(0);
-const columnTotal = ref(0);
-const totalViews = ref(0);
-const articleStatistics = ref(null);
-const activeTab = ref("article");
-const sortType = ref("time");
-const visibilityType = ref("all");
-const isFollowed = ref(false);
-const hasMore = ref(true);
-const columnHasMore = ref(true);
-const currentPage = ref(1);
-const columnCurrentPage = ref(1);
-const showBackToTop = ref(false);
-const parallaxBg = ref(null);
+const userLoading = ref(false)
+const articleLoading = ref(false)
+const columnLoading = ref(false)
+const favoriteLoading = ref(false)
+const loadingMore = ref(false)
+const followLoading = ref(false)
+const userInfo = ref(null)
+const articleList = ref([])
+const columnList = ref([])
+const favoriteList = ref([])
+const total = ref(0)
+const columnTotal = ref(0)
+const totalViews = ref(0)
+const articleStatistics = ref(null)
+const activeTab = ref('article')
+const sortType = ref('time')
+const visibilityType = ref('all')
+const isFollowed = ref(false)
+const hasMore = ref(true)
+const columnHasMore = ref(true)
+const currentPage = ref(1)
+const columnCurrentPage = ref(1)
+const showBackToTop = ref(false)
+const parallaxBg = ref(null)
 
 // 每页数据量
-const pageSize = ref(10);
+const pageSize = ref(10)
 
 // 历史组件引用
-const historyListRef = ref(null);
+const historyListRef = ref(null)
 
 // 计算属性
 const isCurrentUser = computed(() => {
-  return userStore.user?.id === parseInt(route.params.userId);
-});
+  return userStore.user?.id === parseInt(route.params.userId)
+})
 
 // 获取用户信息
 const fetchUserInfo = async () => {
   try {
-    userLoading.value = true;
-    const userId = route.params.userId;
-    const res = await getUserInfoById(userId);
-    userInfo.value = res.data;
+    userLoading.value = true
+    const userId = route.params.userId
+    const res = await getUserInfoById(userId)
+    userInfo.value = res.data
 
     if (!isCurrentUser.value && userStore.user) {
-      await checkUserFollowStatus();
+      await checkUserFollowStatus()
     }
   } catch (error) {
     // 静默处理
-    ElMessage.error("获取用户信息失败");
+    ElMessage.error('获取用户信息失败')
   } finally {
-    userLoading.value = false;
+    userLoading.value = false
   }
-};
+}
 
 // 获取文章统计信息
 const fetchArticleStatistics = async () => {
   try {
-    const userId = route.params.userId;
-    const res = await getUserArticleStatisticsById(userId);
-    articleStatistics.value = res.data;
+    const userId = route.params.userId
+    const res = await getUserArticleStatisticsById(userId)
+    articleStatistics.value = res.data
     if (articleStatistics.value && articleStatistics.value.totalReadCount !== undefined) {
-      totalViews.value = articleStatistics.value.totalReadCount;
+      totalViews.value = articleStatistics.value.totalReadCount
     }
   } catch (error) {
     // 静默处理
-    ElMessage.error("获取文章统计信息失败");
+    ElMessage.error('获取文章统计信息失败')
   }
-};
+}
 
 // 获取文章列表
 const fetchArticleList = async (reset = false) => {
   if (!hasMore.value || articleLoading.value || loadingMore.value) {
-    return;
+    return
   }
 
   try {
     if (reset) {
-      articleLoading.value = true;
+      articleLoading.value = true
     } else {
-      loadingMore.value = true;
+      loadingMore.value = true
     }
 
-    const userId = route.params.userId;
-    const articleStatusDto = { userId: parseInt(userId) };
-    articleStatusDto.orderBy = sortType.value === "time" ? 0 : 1;
+    const userId = route.params.userId
+    const articleStatusDto = { userId: parseInt(userId) }
+    articleStatusDto.orderBy = sortType.value === 'time' ? 0 : 1
 
     if (isCurrentUser.value) {
-      if (visibilityType.value === "all") {
-        articleStatusDto.visibleRange = 0;
-        articleStatusDto.examineStatus = 1;
-      } else if (visibilityType.value === "private") {
-        articleStatusDto.visibleRange = 1;
-      } else if (visibilityType.value === "pending") {
-        articleStatusDto.examineStatusList = [0, 2];
+      if (visibilityType.value === 'all') {
+        articleStatusDto.visibleRange = 0
+        articleStatusDto.examineStatus = 1
+      } else if (visibilityType.value === 'private') {
+        articleStatusDto.visibleRange = 1
+      } else if (visibilityType.value === 'pending') {
+        articleStatusDto.examineStatusList = [0, 2]
       }
     }
 
-    const res = await getUserArticleList(currentPage.value, pageSize.value, articleStatusDto);
-    const newArticles = res.data.data || [];
-    total.value = res.data.total || 0;
+    const res = await getUserArticleList(currentPage.value, pageSize.value, articleStatusDto)
+    const newArticles = res.data.data || []
+    total.value = res.data.total || 0
 
     if (reset) {
-      articleList.value = newArticles;
+      articleList.value = newArticles
     } else {
-      articleList.value = [...articleList.value, ...newArticles];
+      articleList.value = [...articleList.value, ...newArticles]
     }
 
-    hasMore.value = articleList.value.length < total.value;
+    hasMore.value = articleList.value.length < total.value
 
     if (hasMore.value && newArticles.length > 0) {
-      currentPage.value++;
+      currentPage.value++
     }
 
     if (articleStatistics.value && articleStatistics.value.totalReadCount !== undefined) {
-      totalViews.value = articleStatistics.value.totalReadCount;
+      totalViews.value = articleStatistics.value.totalReadCount
     }
   } catch (error) {
     // 静默处理
   } finally {
-    articleLoading.value = false;
-    loadingMore.value = false;
+    articleLoading.value = false
+    loadingMore.value = false
   }
-};
+}
 
 // 获取专栏列表
 const fetchColumnList = async (reset = false) => {
   if (!columnHasMore.value || columnLoading.value || loadingMore.value) {
-    return;
+    return
   }
 
   try {
     if (reset) {
-      columnLoading.value = true;
+      columnLoading.value = true
     } else {
-      loadingMore.value = true;
+      loadingMore.value = true
     }
 
-    const userId = route.params.userId;
-    const res = await getUserColumnList(columnCurrentPage.value, pageSize.value, parseInt(userId));
-    const newColumns = res.data.data || [];
-    columnTotal.value = res.data.total || 0;
+    const userId = route.params.userId
+    const res = await getUserColumnList(columnCurrentPage.value, pageSize.value, parseInt(userId))
+    const newColumns = res.data.data || []
+    columnTotal.value = res.data.total || 0
 
     if (reset) {
-      columnList.value = newColumns;
+      columnList.value = newColumns
     } else {
-      columnList.value = [...columnList.value, ...newColumns];
+      columnList.value = [...columnList.value, ...newColumns]
     }
 
-    columnHasMore.value = columnList.value.length < columnTotal.value;
+    columnHasMore.value = columnList.value.length < columnTotal.value
 
     if (columnHasMore.value && newColumns.length > 0) {
-      columnCurrentPage.value++;
+      columnCurrentPage.value++
     }
   } catch (error) {
     // 静默处理
   } finally {
-    columnLoading.value = false;
-    loadingMore.value = false;
+    columnLoading.value = false
+    loadingMore.value = false
   }
-};
+}
 
 // 获取收藏夹列表
 const fetchFavoriteList = async () => {
   try {
-    favoriteLoading.value = true;
-    const userId = route.params.userId;
-    const res = await getFavoriteListByUserId(parseInt(userId));
+    favoriteLoading.value = true
+    const userId = route.params.userId
+    const res = await getFavoriteListByUserId(parseInt(userId))
     favoriteList.value = (res.data || []).map((favorite) => ({
       ...favorite,
       expanded: false,
       loading: false,
       articles: [],
-    }));
+    }))
   } catch (error) {
     // 静默处理
   } finally {
-    favoriteLoading.value = false;
+    favoriteLoading.value = false
   }
-};
+}
 
 // 获取收藏夹中的文章列表
 const fetchFavoriteArticleList = async (favorite) => {
   try {
-    favorite.loading = true;
-    const res = await getArticleListByFavoriteId(favorite.id);
-    favorite.articles = res.data || [];
+    favorite.loading = true
+    const res = await getArticleListByFavoriteId(favorite.id)
+    favorite.articles = res.data || []
   } catch (error) {
     // 静默处理
   } finally {
-    favorite.loading = false;
+    favorite.loading = false
   }
-};
+}
 
 // 切换收藏夹展开状态
 const toggleFavorite = async (favorite) => {
-  favorite.expanded = !favorite.expanded;
+  favorite.expanded = !favorite.expanded
   if (favorite.expanded && favorite.articles.length === 0) {
-    await fetchFavoriteArticleList(favorite);
+    await fetchFavoriteArticleList(favorite)
   }
-};
+}
 
 // 处理更新收藏夹
 const handleUpdateFavorite = async (formData) => {
   try {
-    await updateFavorite(formData);
-    const favoriteIndex = favoriteList.value.findIndex((f) => f.id === formData.id);
+    await updateFavorite(formData)
+    const favoriteIndex = favoriteList.value.findIndex((f) => f.id === formData.id)
     if (favoriteIndex !== -1) {
-      favoriteList.value[favoriteIndex].name = formData.name;
-      favoriteList.value[favoriteIndex].showStatus = formData.showStatus;
+      favoriteList.value[favoriteIndex].name = formData.name
+      favoriteList.value[favoriteIndex].showStatus = formData.showStatus
     }
-    ElMessage.success("收藏夹更新成功");
+    ElMessage.success('收藏夹更新成功')
   } catch (error) {
     // 静默处理
-    ElMessage.error("更新收藏夹失败");
-    throw error;
+    ElMessage.error('更新收藏夹失败')
+    throw error
   }
-};
+}
 
 // 切换文章筛选标签
 const handleTabChange = (tabName) => {
-  activeTab.value = tabName;
+  activeTab.value = tabName
 
-  if (tabName === "article" && articleList.value.length === 0) {
-    currentPage.value = 1;
-    hasMore.value = true;
-    fetchArticleList(true);
-  } else if (tabName === "column" && columnList.value.length === 0) {
-    columnCurrentPage.value = 1;
-    columnHasMore.value = true;
-    fetchColumnList(true);
-  } else if (tabName === "favorite" && favoriteList.value.length === 0) {
-    fetchFavoriteList();
+  if (tabName === 'article' && articleList.value.length === 0) {
+    currentPage.value = 1
+    hasMore.value = true
+    fetchArticleList(true)
+  } else if (tabName === 'column' && columnList.value.length === 0) {
+    columnCurrentPage.value = 1
+    columnHasMore.value = true
+    fetchColumnList(true)
+  } else if (tabName === 'favorite' && favoriteList.value.length === 0) {
+    fetchFavoriteList()
   }
-};
+}
 
 // 处理排序条件变化
 const handleSortChange = (value) => {
-  sortType.value = value;
-  currentPage.value = 1;
-  articleList.value = [];
-  hasMore.value = true;
-  fetchArticleList(true);
-};
+  sortType.value = value
+  currentPage.value = 1
+  articleList.value = []
+  hasMore.value = true
+  fetchArticleList(true)
+}
 
 // 处理可见范围变化
 const handleVisibilityChange = (value) => {
-  visibilityType.value = value;
-  currentPage.value = 1;
-  articleList.value = [];
-  hasMore.value = true;
-  fetchArticleList(true);
-};
+  visibilityType.value = value
+  currentPage.value = 1
+  articleList.value = []
+  hasMore.value = true
+  fetchArticleList(true)
+}
 
 // 检查用户关注状态
 const checkUserFollowStatus = async () => {
   try {
-    const followerId = userStore.user.id;
-    const followedId = parseInt(route.params.userId);
-    const res = await isFollowing(followerId, followedId);
-    isFollowed.value = res.data;
+    const followerId = userStore.user.id
+    const followedId = parseInt(route.params.userId)
+    const res = await isFollowing(followerId, followedId)
+    isFollowed.value = res.data
   } catch (error) {
     // 静默处理
-    isFollowed.value = false;
+    isFollowed.value = false
   }
-};
+}
 
 // 关注用户
 const handleFollow = async () => {
   if (!userStore.user) {
-    ElMessage.warning("请先登录");
-    router.push("/login");
-    return;
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
   }
 
   try {
-    followLoading.value = true;
-    const followedId = parseInt(route.params.userId);
-    const wasFollowed = isFollowed.value;
+    followLoading.value = true
+    const followedId = parseInt(route.params.userId)
+    const wasFollowed = isFollowed.value
 
-    await toggleFollow(followedId);
-    isFollowed.value = !wasFollowed;
+    await toggleFollow(followedId)
+    isFollowed.value = !wasFollowed
 
-    ElMessage.success(isFollowed.value ? "关注成功" : "取消关注成功");
+    ElMessage.success(isFollowed.value ? '关注成功' : '取消关注成功')
 
     if (userInfo.value) {
       userInfo.value.fansCount = isFollowed.value
         ? (userInfo.value.fansCount || 0) + 1
-        : Math.max((userInfo.value.fansCount || 0) - 1, 0);
+        : Math.max((userInfo.value.fansCount || 0) - 1, 0)
     }
   } catch (error) {
     // 静默处理
   } finally {
-    followLoading.value = false;
+    followLoading.value = false
   }
-};
+}
 
 // 私信用户
 const handleMessage = () => {
   if (!userStore.user) {
-    ElMessage.warning("请先登录");
-    router.push("/login");
-    return;
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
   }
-  router.push(`/message/chat/${route.params.userId}`);
-};
+  router.push(`/message/chat/${route.params.userId}`)
+}
 
 // 返回顶部
 const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-};
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 
 // 跳转至文章详情页
 const goToArticle = (articleId) => {
-  const userId = route.params.userId;
-  router.push(`/user/${userId}/article/${articleId}`);
-};
+  const userId = route.params.userId
+  router.push(`/user/${userId}/article/${articleId}`)
+}
 
 // 跳转至专栏详情页
 const goToColumn = (columnId) => {
-  const userId = route.params.userId;
-  router.push(`/user/${userId}/column/${columnId}`);
-};
+  const userId = route.params.userId
+  router.push(`/user/${userId}/column/${columnId}`)
+}
 
 // 处理页面滚动事件
 const handlePageScroll = () => {
-  showBackToTop.value = window.scrollY > 200;
+  showBackToTop.value = window.scrollY > 200
 
   // 视差背景效果
   if (parallaxBg.value) {
-    const scrollY = window.scrollY;
-    parallaxBg.value.style.transform = `translateY(${scrollY * 0.3}px)`;
+    const scrollY = window.scrollY
+    parallaxBg.value.style.transform = `translateY(${scrollY * 0.3}px)`
   }
 
-  if (activeTab.value === "favorite" || activeTab.value === "follow") {
-    return;
+  if (activeTab.value === 'favorite' || activeTab.value === 'follow') {
+    return
   }
 
-  const scrollHeight = document.documentElement.scrollHeight;
-  const scrollTop = window.scrollY || document.documentElement.scrollTop;
-  const clientHeight = window.innerHeight;
+  const scrollHeight = document.documentElement.scrollHeight
+  const scrollTop = window.scrollY || document.documentElement.scrollTop
+  const clientHeight = window.innerHeight
 
   if (scrollTop + clientHeight >= scrollHeight - 100) {
-    if (activeTab.value === "article" && !articleLoading.value && !loadingMore.value && hasMore.value) {
-      fetchArticleList();
-    } else if (activeTab.value === "column" && !columnLoading.value && !loadingMore.value && columnHasMore.value) {
-      fetchColumnList();
-    } else if (activeTab.value === "history" && historyListRef.value) {
-      historyListRef.value.loadMore();
+    if (
+      activeTab.value === 'article' &&
+      !articleLoading.value &&
+      !loadingMore.value &&
+      hasMore.value
+    ) {
+      fetchArticleList()
+    } else if (
+      activeTab.value === 'column' &&
+      !columnLoading.value &&
+      !loadingMore.value &&
+      columnHasMore.value
+    ) {
+      fetchColumnList()
+    } else if (activeTab.value === 'history' && historyListRef.value) {
+      historyListRef.value.loadMore()
     }
   }
-};
+}
 
 // 监听路由参数变化
 watch(
   () => route.params.userId,
   (newUserId) => {
     if (newUserId) {
-      currentPage.value = 1;
-      columnCurrentPage.value = 1;
-      articleList.value = [];
-      columnList.value = [];
-      favoriteList.value = [];
-      hasMore.value = true;
-      columnHasMore.value = true;
+      currentPage.value = 1
+      columnCurrentPage.value = 1
+      articleList.value = []
+      columnList.value = []
+      favoriteList.value = []
+      hasMore.value = true
+      columnHasMore.value = true
 
-      if (activeTab.value === "history" && userStore.user?.id !== parseInt(newUserId)) {
-        activeTab.value = "article";
-      } else if (activeTab.value !== "history") {
-        activeTab.value = "article";
+      if (activeTab.value === 'history' && userStore.user?.id !== parseInt(newUserId)) {
+        activeTab.value = 'article'
+      } else if (activeTab.value !== 'history') {
+        activeTab.value = 'article'
       }
 
-      isFollowed.value = false;
+      isFollowed.value = false
 
-      fetchUserInfo();
-      fetchArticleStatistics();
-      fetchArticleList(true);
+      fetchUserInfo()
+      fetchArticleStatistics()
+      fetchArticleList(true)
     }
   },
-  { immediate: true }
-);
+  { immediate: true },
+)
 
 // 组件挂载
 onMounted(() => {
-  window.addEventListener("scroll", handlePageScroll);
-});
+  window.addEventListener('scroll', handlePageScroll)
+})
 
 // 组件卸载
 onUnmounted(() => {
-  window.removeEventListener("scroll", handlePageScroll);
-});
+  window.removeEventListener('scroll', handlePageScroll)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -561,7 +575,7 @@ onUnmounted(() => {
     will-change: transform;
 
     &::before {
-      content: "";
+      content: '';
       position: absolute;
       top: 0;
       left: 0;
@@ -575,7 +589,7 @@ onUnmounted(() => {
     }
 
     &::after {
-      content: "";
+      content: '';
       position: absolute;
       top: 0;
       left: 0;
@@ -656,18 +670,18 @@ onUnmounted(() => {
           0 2px 6px var(--tab-shadow-light);
       }
 
-      :deep(.el-tabs__header) {
+      ::v-deep(.el-tabs__header) {
         margin: 0;
         padding: 0;
       }
 
-      :deep(.el-tabs__nav-wrap) {
+      ::v-deep(.el-tabs__nav-wrap) {
         &::after {
           display: none;
         }
       }
 
-      :deep(.el-tabs__item) {
+      ::v-deep(.el-tabs__item) {
         font-size: 15px;
         font-weight: 500;
         padding: 10px 20px !important;
@@ -680,7 +694,11 @@ onUnmounted(() => {
         }
 
         &.is-active {
-          background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-light-3) 100%);
+          background: linear-gradient(
+            135deg,
+            var(--el-color-primary) 0%,
+            var(--el-color-primary-light-3) 100%
+          );
           color: var(--el-color-white, #fff);
           box-shadow: 0 4px 16px var(--tab-active-shadow);
         }
@@ -702,8 +720,16 @@ onUnmounted(() => {
     --sidebar-border: rgba(var(--el-border-color-rgb, 226, 232, 240), 0.6);
     --sidebar-shadow: rgba(0, 0, 0, 0.06);
     --sidebar-shadow-light: rgba(0, 0, 0, 0.04);
-    --achievement-bg: linear-gradient(135deg, rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.06) 0%, rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.02) 100%);
-    --achievement-bg-hover: linear-gradient(135deg, rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.12) 0%, rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.04) 100%);
+    --achievement-bg: linear-gradient(
+      135deg,
+      rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.06) 0%,
+      rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.02) 100%
+    );
+    --achievement-bg-hover: linear-gradient(
+      135deg,
+      rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.12) 0%,
+      rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.04) 100%
+    );
     --achievement-border: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.1);
 
     // 黑夜模式适配
@@ -712,8 +738,16 @@ onUnmounted(() => {
       --sidebar-border: rgba(var(--el-border-color-rgb, 51, 65, 85), 0.6);
       --sidebar-shadow: rgba(0, 0, 0, 0.2);
       --sidebar-shadow-light: rgba(0, 0, 0, 0.1);
-      --achievement-bg: linear-gradient(135deg, rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.1) 0%, rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.03) 100%);
-      --achievement-bg-hover: linear-gradient(135deg, rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.15) 0%, rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.05) 100%);
+      --achievement-bg: linear-gradient(
+        135deg,
+        rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.1) 0%,
+        rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.03) 100%
+      );
+      --achievement-bg-hover: linear-gradient(
+        135deg,
+        rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.15) 0%,
+        rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.05) 100%
+      );
       --achievement-border: rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.15);
     }
 
@@ -746,7 +780,7 @@ onUnmounted(() => {
         position: relative;
 
         &::after {
-          content: "";
+          content: '';
           position: absolute;
           bottom: -2px;
           left: 0;
@@ -812,7 +846,9 @@ onUnmounted(() => {
 // 标签页切换过渡动画
 .tab-fade-enter-active,
 .tab-fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .tab-fade-enter-from {
@@ -893,7 +929,11 @@ onUnmounted(() => {
   z-index: 100;
 
   &:hover {
-    background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-light-3) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--el-color-primary) 0%,
+      var(--el-color-primary-light-3) 100%
+    );
     color: white;
     transform: translateY(-4px) scale(1.05);
     box-shadow: 0 8px 24px rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.4);

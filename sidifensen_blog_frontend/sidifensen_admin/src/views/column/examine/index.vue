@@ -4,14 +4,39 @@
       <div class="card-header">
         <h2 class="card-title">专栏审核</h2>
         <div class="card-actions">
-          <el-select v-model="searchExamineStatus" placeholder="审核状态" filterable clearable size="small" class="search-input" @change="handleSearch">
+          <el-select
+            v-model="searchExamineStatus"
+            placeholder="审核状态"
+            filterable
+            clearable
+            size="small"
+            class="search-input"
+            @change="handleSearch"
+          >
             <el-option label="全部" value="" />
             <el-option label="待审核" value="0" />
             <el-option label="审核通过" value="1" />
             <el-option label="审核不通过" value="2" />
           </el-select>
-          <el-select v-model="searchUserId" placeholder="输入用户名搜索" filterable remote reserve-keyword :remote-method="searchUsers" :loading="userLoading" clearable size="small" class="search-input" @change="handleSearch">
-            <el-option v-for="user in filteredUserList" :key="user.id" :label="user.nickname || user.username" :value="user.id" />
+          <el-select
+            v-model="searchUserId"
+            placeholder="输入用户名搜索"
+            filterable
+            remote
+            reserve-keyword
+            :remote-method="searchUsers"
+            :loading="userLoading"
+            clearable
+            size="small"
+            class="search-input"
+            @change="handleSearch"
+          >
+            <el-option
+              v-for="user in filteredUserList"
+              :key="user.id"
+              :label="user.nickname || user.username"
+              :value="user.id"
+            />
           </el-select>
         </div>
       </div>
@@ -19,13 +44,40 @@
       <!-- 时间筛选区域 -->
       <div class="card-time-filters">
         <div class="time-filter-group">
-          <el-date-picker v-model="searchStartTime" type="datetime" placeholder="开始时间" size="small" class="time-input" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" clearable @change="handleSearch" />
-          <el-date-picker v-model="searchEndTime" type="datetime" placeholder="结束时间" size="small" class="time-input" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" clearable @change="handleSearch" />
+          <el-date-picker
+            v-model="searchStartTime"
+            type="datetime"
+            placeholder="开始时间"
+            size="small"
+            class="time-input"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            clearable
+            @change="handleSearch"
+          />
+          <el-date-picker
+            v-model="searchEndTime"
+            type="datetime"
+            placeholder="结束时间"
+            size="small"
+            class="time-input"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            clearable
+            @change="handleSearch"
+          />
         </div>
       </div>
 
       <div class="card-second">
-        <el-input v-model="searchKeyword" placeholder="搜索专栏名称或描述" class="search-input" size="small" clearable @input="handleSearch">
+        <el-input
+          v-model="searchKeyword"
+          placeholder="搜索专栏名称或描述"
+          class="search-input"
+          size="small"
+          clearable
+          @input="handleSearch"
+        >
           <template #prefix>
             <el-icon><Search /></el-icon>
           </template>
@@ -33,19 +85,60 @@
       </div>
 
       <div class="card-third">
-        <el-button type="primary" plain round @click="handleBatchAudit" :disabled="selectedColumns.length === 0" :loading="batchAuditLoading"> 批量审核 </el-button>
-        <el-button type="warning" plain round @click="handleBatchReject" :disabled="selectedColumns.length === 0" :loading="batchRejectLoading"> 批量拒绝 </el-button>
-        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedColumns.length === 0" :loading="batchDeleteLoading"> 批量删除 </el-button>
+        <el-button
+          type="primary"
+          plain
+          round
+          @click="handleBatchAudit"
+          :disabled="selectedColumns.length === 0"
+          :loading="batchAuditLoading"
+        >
+          批量审核
+        </el-button>
+        <el-button
+          type="warning"
+          plain
+          round
+          @click="handleBatchReject"
+          :disabled="selectedColumns.length === 0"
+          :loading="batchRejectLoading"
+        >
+          批量拒绝
+        </el-button>
+        <el-button
+          type="danger"
+          plain
+          round
+          @click="handleBatchDelete"
+          :disabled="selectedColumns.length === 0"
+          :loading="batchDeleteLoading"
+        >
+          批量删除
+        </el-button>
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table v-loading="loading" :data="paginatedColumnList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
+        <el-table
+          v-loading="loading"
+          :data="paginatedColumnList"
+          class="table"
+          @selection-change="handleSelectionChange"
+          :row-style="{ height: 'auto' }"
+          :cell-style="{ padding: '8px 0' }"
+        >
           <el-table-column type="selection" width="30" />
           <el-table-column prop="coverUrl" label="封面" width="120">
             <template #default="{ row }">
               <div class="column-cover-container">
-                <el-image v-if="row.coverUrl" :src="row.coverUrl" class="column-cover" :preview-src-list="[row.coverUrl]" fit="cover" preview-teleported />
+                <el-image
+                  v-if="row.coverUrl"
+                  :src="row.coverUrl"
+                  class="column-cover"
+                  :preview-src-list="[row.coverUrl]"
+                  fit="cover"
+                  preview-teleported
+                />
                 <div v-else class="no-cover">暂无封面</div>
               </div>
             </template>
@@ -53,30 +146,52 @@
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="name" label="专栏名称" min-width="200">
             <template #default="{ row }">
-              <el-tooltip :content="row.name" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
+              <el-tooltip
+                :content="row.name"
+                placement="top-start"
+                :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"
+              >
                 <div class="column-name">{{ row.name }}</div>
               </el-tooltip>
             </template>
           </el-table-column>
           <el-table-column prop="description" label="专栏描述" min-width="300">
             <template #default="{ row }">
-              <el-tooltip :content="row.description" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
-                <div class="column-description">{{ row.description || "暂无描述" }}</div>
+              <el-tooltip
+                :content="row.description"
+                placement="top-start"
+                :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"
+              >
+                <div class="column-description">{{ row.description || '暂无描述' }}</div>
               </el-tooltip>
             </template>
           </el-table-column>
           <el-table-column prop="nickname" label="作者昵称" width="120" />
           <el-table-column prop="showStatus" label="展示状态" width="80">
             <template #default="{ row }">
-              <div class="column-status" :class="row.showStatus === 0 ? 'status-public' : 'status-private'">
-                {{ row.showStatus === 0 ? "公开" : "私密" }}
+              <div
+                class="column-status"
+                :class="row.showStatus === 0 ? 'status-public' : 'status-private'"
+              >
+                {{ row.showStatus === 0 ? '公开' : '私密' }}
               </div>
             </template>
           </el-table-column>
           <el-table-column prop="examineStatus" label="审核状态" width="80">
             <template #default="{ row }">
-              <div class="column-status" :class="row.examineStatus === 0 ? 'status-unaudited' : row.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-                {{ row.examineStatus === 0 ? "待审核" : row.examineStatus === 1 ? "已审核" : "未通过" }}
+              <div
+                class="column-status"
+                :class="
+                  row.examineStatus === 0
+                    ? 'status-unaudited'
+                    : row.examineStatus === 1
+                      ? 'status-audited'
+                      : 'status-rejected'
+                "
+              >
+                {{
+                  row.examineStatus === 0 ? '待审核' : row.examineStatus === 1 ? '已审核' : '未通过'
+                }}
               </div>
             </template>
           </el-table-column>
@@ -86,11 +201,46 @@
           <el-table-column label="操作" width="400">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button type="info" @click="handleViewColumn(row)" :icon="View" class="view-button" size="small">查看</el-button>
-                <el-button type="success" @click="handleEditColumn(row)" :icon="Edit" class="edit-button" size="small">修改</el-button>
-                <el-button type="primary" @click="handleAuditColumn(row.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
-                <el-button type="warning" @click="handleRejectColumn(row.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
-                <el-button type="danger" @click="handleDeleteColumn(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
+                <el-button
+                  type="info"
+                  @click="handleViewColumn(row)"
+                  :icon="View"
+                  class="view-button"
+                  size="small"
+                  >查看</el-button
+                >
+                <el-button
+                  type="success"
+                  @click="handleEditColumn(row)"
+                  :icon="Edit"
+                  class="edit-button"
+                  size="small"
+                  >修改</el-button
+                >
+                <el-button
+                  type="primary"
+                  @click="handleAuditColumn(row.id)"
+                  :icon="Check"
+                  class="examine-button"
+                  size="small"
+                  >审核</el-button
+                >
+                <el-button
+                  type="warning"
+                  @click="handleRejectColumn(row.id)"
+                  :icon="Close"
+                  class="reject-button"
+                  size="small"
+                  >拒绝</el-button
+                >
+                <el-button
+                  type="danger"
+                  @click="handleDeleteColumn(row.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                  size="small"
+                  >删除</el-button
+                >
               </div>
             </template>
           </el-table-column>
@@ -100,19 +250,50 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="column-cards">
-          <el-card v-for="column in paginatedColumnList" :key="column.id" class="column-card" :class="{ 'is-selected': isColumnSelected(column.id) }">
+          <el-card
+            v-for="column in paginatedColumnList"
+            :key="column.id"
+            class="column-card"
+            :class="{ 'is-selected': isColumnSelected(column.id) }"
+          >
             <div class="column-card-content">
               <div class="column-header-section">
                 <div class="column-cover-mobile">
-                  <el-checkbox :model-value="isColumnSelected(column.id)" @change="handleMobileSelect(column)" class="mobile-checkbox" />
-                  <el-image v-if="column.coverUrl" :src="column.coverUrl" class="column-cover-img" :preview-src-list="[column.coverUrl]" fit="cover" preview-teleported />
+                  <el-checkbox
+                    :model-value="isColumnSelected(column.id)"
+                    @change="handleMobileSelect(column)"
+                    class="mobile-checkbox"
+                  />
+                  <el-image
+                    v-if="column.coverUrl"
+                    :src="column.coverUrl"
+                    class="column-cover-img"
+                    :preview-src-list="[column.coverUrl]"
+                    fit="cover"
+                    preview-teleported
+                  />
                   <div v-else class="no-cover-mobile">暂无封面</div>
                 </div>
                 <div class="column-info">
                   <div class="column-header">
                     <div class="column-id">#{{ column.id }}</div>
-                    <div class="column-status" :class="column.examineStatus === 0 ? 'status-unaudited' : column.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-                      {{ column.examineStatus === 0 ? "待审核" : column.examineStatus === 1 ? "已审核" : "未通过" }}
+                    <div
+                      class="column-status"
+                      :class="
+                        column.examineStatus === 0
+                          ? 'status-unaudited'
+                          : column.examineStatus === 1
+                            ? 'status-audited'
+                            : 'status-rejected'
+                      "
+                    >
+                      {{
+                        column.examineStatus === 0
+                          ? '待审核'
+                          : column.examineStatus === 1
+                            ? '已审核'
+                            : '未通过'
+                      }}
                     </div>
                   </div>
                   <div class="column-name-mobile">{{ column.name }}</div>
@@ -134,7 +315,7 @@
                     <div class="meta-item">
                       <span class="label">展示状态:</span>
                       <span :class="column.showStatus === 0 ? 'status-public' : 'status-private'">
-                        {{ column.showStatus === 0 ? "公开" : "私密" }}
+                        {{ column.showStatus === 0 ? '公开' : '私密' }}
                       </span>
                     </div>
                   </div>
@@ -159,11 +340,46 @@
                 </div>
               </div>
               <div class="column-actions">
-                <el-button type="info" @click="handleViewColumn(column)" :icon="View" class="view-button" size="small">查看</el-button>
-                <el-button type="success" @click="handleEditColumn(column)" :icon="Edit" class="edit-button" size="small">修改</el-button>
-                <el-button type="primary" @click="handleAuditColumn(column.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
-                <el-button type="warning" @click="handleRejectColumn(column.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
-                <el-button type="danger" @click="handleDeleteColumn(column.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
+                <el-button
+                  type="info"
+                  @click="handleViewColumn(column)"
+                  :icon="View"
+                  class="view-button"
+                  size="small"
+                  >查看</el-button
+                >
+                <el-button
+                  type="success"
+                  @click="handleEditColumn(column)"
+                  :icon="Edit"
+                  class="edit-button"
+                  size="small"
+                  >修改</el-button
+                >
+                <el-button
+                  type="primary"
+                  @click="handleAuditColumn(column.id)"
+                  :icon="Check"
+                  class="examine-button"
+                  size="small"
+                  >审核</el-button
+                >
+                <el-button
+                  type="warning"
+                  @click="handleRejectColumn(column.id)"
+                  :icon="Close"
+                  class="reject-button"
+                  size="small"
+                  >拒绝</el-button
+                >
+                <el-button
+                  type="danger"
+                  @click="handleDeleteColumn(column.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                  size="small"
+                  >删除</el-button
+                >
               </div>
             </div>
           </el-card>
@@ -171,11 +387,27 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <Pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
 
     <!-- 专栏详情对话框 -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="70%" class="column-detail-dialog" :close-on-click-modal="false" :close-on-press-escape="true" draggable align-center @close="handleDialogClose">
+    <el-dialog
+      v-model="dialogVisible"
+      :title="dialogTitle"
+      width="70%"
+      class="column-detail-dialog"
+      :close-on-click-modal="false"
+      :close-on-press-escape="true"
+      draggable
+      align-center
+      @close="handleDialogClose"
+    >
       <div v-if="currentColumn" class="column-detail" v-loading="detailLoading">
         <!-- 专栏基本信息 -->
         <div class="column-info-section">
@@ -184,7 +416,7 @@
             <div class="column-detail-info">
               <div class="column-title-section">
                 <h2 class="column-title-detail">专栏详情</h2>
-                <div class="column-id-detail">#{{ currentColumn?.id || "N/A" }}</div>
+                <div class="column-id-detail">#{{ currentColumn?.id || 'N/A' }}</div>
               </div>
 
               <!-- 专栏封面 -->
@@ -203,7 +435,7 @@
 
               <div class="column-name-detail">
                 <h4>专栏名称</h4>
-                <div class="name-text">{{ currentColumn?.name || "暂无名称" }}</div>
+                <div class="name-text">{{ currentColumn?.name || '暂无名称' }}</div>
               </div>
 
               <div class="column-description-detail" v-if="currentColumn?.description">
@@ -215,14 +447,34 @@
               <div class="column-badges-detail">
                 <div class="badge-group">
                   <span class="badge-label">展示状态:</span>
-                  <div class="column-status" :class="(currentColumn?.showStatus || 0) === 0 ? 'status-public' : 'status-private'">
-                    {{ (currentColumn?.showStatus || 0) === 0 ? "公开" : "私密" }}
+                  <div
+                    class="column-status"
+                    :class="
+                      (currentColumn?.showStatus || 0) === 0 ? 'status-public' : 'status-private'
+                    "
+                  >
+                    {{ (currentColumn?.showStatus || 0) === 0 ? '公开' : '私密' }}
                   </div>
                 </div>
                 <div class="badge-group">
                   <span class="badge-label">审核状态:</span>
-                  <div class="column-status" :class="(currentColumn?.examineStatus || 0) === 0 ? 'status-unaudited' : (currentColumn?.examineStatus || 0) === 1 ? 'status-audited' : 'status-rejected'">
-                    {{ (currentColumn?.examineStatus || 0) === 0 ? "待审核" : (currentColumn?.examineStatus || 0) === 1 ? "已审核" : "未通过" }}
+                  <div
+                    class="column-status"
+                    :class="
+                      (currentColumn?.examineStatus || 0) === 0
+                        ? 'status-unaudited'
+                        : (currentColumn?.examineStatus || 0) === 1
+                          ? 'status-audited'
+                          : 'status-rejected'
+                    "
+                  >
+                    {{
+                      (currentColumn?.examineStatus || 0) === 0
+                        ? '待审核'
+                        : (currentColumn?.examineStatus || 0) === 1
+                          ? '已审核'
+                          : '未通过'
+                    }}
                   </div>
                 </div>
               </div>
@@ -245,20 +497,27 @@
               <div class="stat-item time-stat-item">
                 <el-icon class="stat-icon"><Clock /></el-icon>
                 <span class="stat-label">创建时间:</span>
-                <span class="stat-value">{{ currentColumn?.createTime || "未知" }}</span>
+                <span class="stat-value">{{ currentColumn?.createTime || '未知' }}</span>
               </div>
             </div>
           </div>
         </div>
 
         <!-- 专栏文章列表 -->
-        <div class="column-articles-section" v-if="currentColumn?.articles && currentColumn.articles.length > 0">
+        <div
+          class="column-articles-section"
+          v-if="currentColumn?.articles && currentColumn.articles.length > 0"
+        >
           <h3 class="articles-title">
             <el-icon class="title-icon"><Document /></el-icon>
             专栏文章列表 ({{ currentColumn.articles.length }} 篇)
           </h3>
           <div class="articles-list">
-            <div v-for="(article, index) in currentColumn.articles" :key="article.id" class="article-item">
+            <div
+              v-for="(article, index) in currentColumn.articles"
+              :key="article.id"
+              class="article-item"
+            >
               <div class="article-index">{{ index + 1 }}</div>
               <div class="article-cover-mini" v-if="article.coverUrl">
                 <el-image :src="article.coverUrl" class="cover-img" fit="cover">
@@ -302,8 +561,23 @@
                     <span>{{ article.createTime }}</span>
                   </div>
                   <div class="meta-item">
-                    <span class="article-status" :class="article.examineStatus === 0 ? 'status-unaudited' : article.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-                      {{ article.examineStatus === 0 ? "待审核" : article.examineStatus === 1 ? "已审核" : "未通过" }}
+                    <span
+                      class="article-status"
+                      :class="
+                        article.examineStatus === 0
+                          ? 'status-unaudited'
+                          : article.examineStatus === 1
+                            ? 'status-audited'
+                            : 'status-rejected'
+                      "
+                    >
+                      {{
+                        article.examineStatus === 0
+                          ? '待审核'
+                          : article.examineStatus === 1
+                            ? '已审核'
+                            : '未通过'
+                      }}
                     </span>
                   </div>
                 </div>
@@ -313,7 +587,14 @@
         </div>
 
         <!-- 无文章提示 -->
-        <div v-else-if="currentColumn && Array.isArray(currentColumn.articles) && currentColumn.articles.length === 0" class="no-articles">
+        <div
+          v-else-if="
+            currentColumn &&
+            Array.isArray(currentColumn.articles) &&
+            currentColumn.articles.length === 0
+          "
+          class="no-articles"
+        >
           <el-empty description="该专栏暂无文章" />
         </div>
 
@@ -331,20 +612,57 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="dialogVisible = false" :icon="Close">关闭</el-button>
-          <el-button type="primary" @click="handleAuditColumn(currentColumn?.id)" :icon="Check" :disabled="!currentColumn || (currentColumn?.examineStatus || 0) === 1"> 审核通过 </el-button>
-          <el-button type="warning" @click="handleRejectColumn(currentColumn?.id)" :icon="Close" :disabled="!currentColumn || (currentColumn?.examineStatus || 0) === 2"> 审核拒绝 </el-button>
+          <el-button
+            type="primary"
+            @click="handleAuditColumn(currentColumn?.id)"
+            :icon="Check"
+            :disabled="!currentColumn || (currentColumn?.examineStatus || 0) === 1"
+          >
+            审核通过
+          </el-button>
+          <el-button
+            type="warning"
+            @click="handleRejectColumn(currentColumn?.id)"
+            :icon="Close"
+            :disabled="!currentColumn || (currentColumn?.examineStatus || 0) === 2"
+          >
+            审核拒绝
+          </el-button>
         </div>
       </template>
     </el-dialog>
 
     <!-- 修改专栏对话框 -->
-    <el-dialog v-model="editDialogVisible" title="修改专栏" width="50%" class="edit-column-dialog" :close-on-click-modal="false" :close-on-press-escape="true" draggable align-center @close="handleCancelEdit">
+    <el-dialog
+      v-model="editDialogVisible"
+      title="修改专栏"
+      width="50%"
+      class="edit-column-dialog"
+      :close-on-click-modal="false"
+      :close-on-press-escape="true"
+      draggable
+      align-center
+      @close="handleCancelEdit"
+    >
       <el-form :model="editForm" label-width="80px" class="edit-form">
         <el-form-item label="专栏名称" required>
-          <el-input v-model="editForm.name" placeholder="请输入专栏名称" maxlength="30" show-word-limit clearable />
+          <el-input
+            v-model="editForm.name"
+            placeholder="请输入专栏名称"
+            maxlength="30"
+            show-word-limit
+            clearable
+          />
         </el-form-item>
         <el-form-item label="专栏描述">
-          <el-input v-model="editForm.description" type="textarea" placeholder="请输入专栏描述" :rows="4" maxlength="200" show-word-limit />
+          <el-input
+            v-model="editForm.description"
+            type="textarea"
+            placeholder="请输入专栏描述"
+            :rows="4"
+            maxlength="200"
+            show-word-limit
+          />
         </el-form-item>
         <el-form-item label="展示状态">
           <el-radio-group v-model="editForm.showStatus">
@@ -365,67 +683,96 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from "vue";
-import { Delete, Close, Check, View, Search, Picture, User, Star, Clock, Document, Edit, ChatDotRound } from "@element-plus/icons-vue";
-import { useUserSearch } from "@/utils/userSearch";
-import { adminGetColumnList, adminSearchColumn, adminExamineColumn, adminBatchExamineColumn, adminDeleteColumn, adminBatchDeleteColumn, adminUpdateColumn, adminGetColumnDetail } from "@/api/column";
-import Pagination from "@/components/Pagination.vue";
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import {
+  Delete,
+  Close,
+  Check,
+  View,
+  Search,
+  Picture,
+  User,
+  Star,
+  Clock,
+  Document,
+  Edit,
+  ChatDotRound,
+} from '@element-plus/icons-vue'
+import { useUserSearch } from '@/utils/userSearch'
+import {
+  adminGetColumnList,
+  adminSearchColumn,
+  adminExamineColumn,
+  adminBatchExamineColumn,
+  adminDeleteColumn,
+  adminBatchDeleteColumn,
+  adminUpdateColumn,
+  adminGetColumnDetail,
+} from '@/api/column'
+import Pagination from '@/components/Pagination.vue'
 
 // 专栏列表数据
-const columnList = ref([]);
-const paginatedColumnList = ref([]);
-const loading = ref(false);
-const currentPage = ref(1);
-const pageSize = ref(10);
-const total = ref(0);
-const dialogVisible = ref(false);
-const dialogTitle = ref("专栏详情");
-const currentColumn = ref(null);
-const detailLoading = ref(false);
+const columnList = ref([])
+const paginatedColumnList = ref([])
+const loading = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+const dialogVisible = ref(false)
+const dialogTitle = ref('专栏详情')
+const currentColumn = ref(null)
+const detailLoading = ref(false)
 
 // 用户搜索
-const { filteredUserList, userLoading, searchUsers } = useUserSearch();
+const { filteredUserList, userLoading, searchUsers } = useUserSearch()
 
 // 搜索条件
-const searchExamineStatus = ref("");
-const searchKeyword = ref("");
-const searchStartTime = ref("");
-const searchEndTime = ref("");
-const searchUserId = ref("");
+const searchExamineStatus = ref('')
+const searchKeyword = ref('')
+const searchStartTime = ref('')
+const searchEndTime = ref('')
+const searchUserId = ref('')
 
 // 选中的专栏
-const selectedColumns = ref([]);
+const selectedColumns = ref([])
 
 // 批量操作加载状态
-const batchAuditLoading = ref(false);
-const batchRejectLoading = ref(false);
-const batchDeleteLoading = ref(false);
+const batchAuditLoading = ref(false)
+const batchRejectLoading = ref(false)
+const batchDeleteLoading = ref(false)
 
 // 移动端检测
-const isMobileView = ref(false);
+const isMobileView = ref(false)
 
 // 修改专栏相关变量
-const editDialogVisible = ref(false);
+const editDialogVisible = ref(false)
 const editForm = ref({
   id: null,
-  name: "",
-  description: "",
+  name: '',
+  description: '',
   showStatus: 0,
-});
-const editLoading = ref(false);
+})
+const editLoading = ref(false)
 
 // 监听窗口大小变化
 const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768;
-};
+  isMobileView.value = window.innerWidth <= 768
+}
 
 // 获取专栏列表
 const getColumns = async () => {
-  currentPage.value = 1;
-  await fetchColumns();
-};
+  currentPage.value = 1
+  await fetchColumns()
+}
 
-const hasSearchConditions = () => !!(searchExamineStatus.value || searchKeyword.value || searchStartTime.value || searchEndTime.value || searchUserId.value);
+const hasSearchConditions = () =>
+  !!(
+    searchExamineStatus.value ||
+    searchKeyword.value ||
+    searchStartTime.value ||
+    searchEndTime.value ||
+    searchUserId.value
+  )
 
 const buildSearchPayload = () => ({
   pageNum: currentPage.value,
@@ -435,295 +782,295 @@ const buildSearchPayload = () => ({
   keyword: searchKeyword.value || undefined,
   createTimeStart: searchStartTime.value || undefined,
   createTimeEnd: searchEndTime.value || undefined,
-});
+})
 
 const applyPageData = (pageData) => {
-  columnList.value = pageData?.data || [];
-  paginatedColumnList.value = columnList.value;
-  total.value = Number(pageData?.total || 0);
-  selectedColumns.value = [];
-};
+  columnList.value = pageData?.data || []
+  paginatedColumnList.value = columnList.value
+  total.value = Number(pageData?.total || 0)
+  selectedColumns.value = []
+}
 
 const fetchColumns = async () => {
-  loading.value = true;
+  loading.value = true
   try {
-    let pageData = null;
+    let pageData = null
     if (hasSearchConditions()) {
-      const res = await adminSearchColumn(buildSearchPayload());
-      pageData = res.data;
+      const res = await adminSearchColumn(buildSearchPayload())
+      pageData = res.data
     } else {
       const res = await adminGetColumnList({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
-      });
-      pageData = res.data;
+      })
+      pageData = res.data
     }
-    applyPageData(pageData);
+    applyPageData(pageData)
   } catch (error) {
-    ElMessage.error(hasSearchConditions() ? "搜索专栏失败" : "获取专栏列表失败");
+    ElMessage.error(hasSearchConditions() ? '搜索专栏失败' : '获取专栏列表失败')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 更新分页数据
 const updatePaginatedColumnList = () => {
-  paginatedColumnList.value = columnList.value;
-};
+  paginatedColumnList.value = columnList.value
+}
 
 // 处理分页大小变化
 const handleSizeChange = async (size) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  await fetchColumns();
-};
+  pageSize.value = size
+  currentPage.value = 1
+  await fetchColumns()
+}
 
 // 处理当前页码变化
 const handleCurrentChange = async (current) => {
-  currentPage.value = current;
-  await fetchColumns();
-};
+  currentPage.value = current
+  await fetchColumns()
+}
 
 // 处理搜索
 const handleSearch = async () => {
-  currentPage.value = 1;
-  await fetchColumns();
-};
+  currentPage.value = 1
+  await fetchColumns()
+}
 
 // 智能刷新列表
 const refreshColumnList = async (deletedCount = 0) => {
   if (deletedCount > 0 && currentPage.value > 1 && columnList.value.length <= deletedCount) {
-    currentPage.value -= 1;
+    currentPage.value -= 1
   }
-  await fetchColumns();
-};
+  await fetchColumns()
+}
 
 // 表格多选
 const handleSelectionChange = (columns) => {
-  selectedColumns.value = columns;
-};
+  selectedColumns.value = columns
+}
 
 // 检查专栏是否被选中
 const isColumnSelected = (columnId) => {
-  return selectedColumns.value.some((column) => column.id === columnId);
-};
+  return selectedColumns.value.some((column) => column.id === columnId)
+}
 
 // 移动端选择处理
 const handleMobileSelect = (column) => {
-  const index = selectedColumns.value.findIndex((item) => item.id === column.id);
+  const index = selectedColumns.value.findIndex((item) => item.id === column.id)
   if (index > -1) {
     // 已选中，取消选中
-    selectedColumns.value.splice(index, 1);
+    selectedColumns.value.splice(index, 1)
   } else {
     // 未选中，添加到选中列表
-    selectedColumns.value.push(column);
+    selectedColumns.value.push(column)
   }
-};
+}
 
 // 对话框关闭处理
 const handleDialogClose = () => {
-  currentColumn.value = null;
-  detailLoading.value = false;
-};
+  currentColumn.value = null
+  detailLoading.value = false
+}
 
 // 查看专栏详情
 const handleViewColumn = async (column) => {
-  currentColumn.value = column;
-  dialogTitle.value = "专栏详情";
-  dialogVisible.value = true;
-  detailLoading.value = true;
+  currentColumn.value = column
+  dialogTitle.value = '专栏详情'
+  dialogVisible.value = true
+  detailLoading.value = true
 
   try {
-    const res = await adminGetColumnDetail(column.id);
-    currentColumn.value = res.data;
+    const res = await adminGetColumnDetail(column.id)
+    currentColumn.value = res.data
   } catch (error) {
-    ElMessage.error("获取专栏详情失败");
-    console.error("获取专栏详情失败:", error);
+    ElMessage.error('获取专栏详情失败')
+    console.error('获取专栏详情失败:', error)
   } finally {
-    detailLoading.value = false;
+    detailLoading.value = false
   }
-};
+}
 
 // 修改专栏
 const handleEditColumn = (column) => {
   editForm.value = {
     id: column.id,
     name: column.name,
-    description: column.description || "",
+    description: column.description || '',
     showStatus: column.showStatus,
-  };
-  editDialogVisible.value = true;
-};
+  }
+  editDialogVisible.value = true
+}
 
 // 保存专栏修改
 const handleSaveEdit = async () => {
   if (!editForm.value.name.trim()) {
-    ElMessage.warning("专栏名称不能为空");
-    return;
+    ElMessage.warning('专栏名称不能为空')
+    return
   }
 
-  editLoading.value = true;
+  editLoading.value = true
   try {
-    await adminUpdateColumn(editForm.value);
-    ElMessage.success("修改成功");
-    editDialogVisible.value = false;
-    await refreshColumnList();
+    await adminUpdateColumn(editForm.value)
+    ElMessage.success('修改成功')
+    editDialogVisible.value = false
+    await refreshColumnList()
   } catch (error) {
-    ElMessage.error("修改失败");
+    ElMessage.error('修改失败')
   } finally {
-    editLoading.value = false;
+    editLoading.value = false
   }
-};
+}
 
 // 取消修改
 const handleCancelEdit = () => {
-  editDialogVisible.value = false;
+  editDialogVisible.value = false
   editForm.value = {
     id: null,
-    name: "",
-    description: "",
+    name: '',
+    description: '',
     showStatus: 0,
-  };
-};
+  }
+}
 
 // 处理单个专栏审核
 const handleAuditColumn = async (columnId) => {
   try {
-    await adminExamineColumn(columnId, 1);
-    ElMessage.success("审核成功");
-    await refreshColumnList();
+    await adminExamineColumn(columnId, 1)
+    ElMessage.success('审核成功')
+    await refreshColumnList()
     if (dialogVisible.value) {
-      dialogVisible.value = false;
+      dialogVisible.value = false
     }
   } catch (error) {
-    ElMessage.error("审核失败");
+    ElMessage.error('审核失败')
   }
-};
+}
 
 // 处理批量审核
 const handleBatchAudit = () => {
-  ElMessageBox.confirm(`确定要审核通过选中的 ${selectedColumns.value.length} 个专栏吗？`, "确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "info",
+  ElMessageBox.confirm(`确定要审核通过选中的 ${selectedColumns.value.length} 个专栏吗？`, '确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'info',
   })
     .then(async () => {
-      batchAuditLoading.value = true;
+      batchAuditLoading.value = true
       try {
-        const columnIds = selectedColumns.value.map((column) => column.id);
-        await adminBatchExamineColumn(columnIds, 1);
-        ElMessage.success("批量审核成功");
-        await refreshColumnList();
+        const columnIds = selectedColumns.value.map((column) => column.id)
+        await adminBatchExamineColumn(columnIds, 1)
+        ElMessage.success('批量审核成功')
+        await refreshColumnList()
       } catch (error) {
-        ElMessage.error("批量审核失败");
+        ElMessage.error('批量审核失败')
       } finally {
-        batchAuditLoading.value = false;
+        batchAuditLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("审核已取消");
-    });
-};
+      ElMessage.info('审核已取消')
+    })
+}
 
 // 处理单个专栏拒绝
 const handleRejectColumn = async (columnId) => {
   try {
-    await adminExamineColumn(columnId, 2);
-    ElMessage.success("拒绝成功");
-    await refreshColumnList();
+    await adminExamineColumn(columnId, 2)
+    ElMessage.success('拒绝成功')
+    await refreshColumnList()
     if (dialogVisible.value) {
-      dialogVisible.value = false;
+      dialogVisible.value = false
     }
   } catch (error) {
-    ElMessage.error("拒绝失败");
+    ElMessage.error('拒绝失败')
   }
-};
+}
 
 // 处理批量拒绝
 const handleBatchReject = () => {
-  ElMessageBox.confirm(`确定要拒绝选中的 ${selectedColumns.value.length} 个专栏吗？`, "确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm(`确定要拒绝选中的 ${selectedColumns.value.length} 个专栏吗？`, '确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      batchRejectLoading.value = true;
+      batchRejectLoading.value = true
       try {
-        const columnIds = selectedColumns.value.map((column) => column.id);
-        await adminBatchExamineColumn(columnIds, 2);
-        ElMessage.success("批量拒绝成功");
-        await refreshColumnList();
+        const columnIds = selectedColumns.value.map((column) => column.id)
+        await adminBatchExamineColumn(columnIds, 2)
+        ElMessage.success('批量拒绝成功')
+        await refreshColumnList()
       } catch (error) {
-        ElMessage.error("批量拒绝失败");
+        ElMessage.error('批量拒绝失败')
       } finally {
-        batchRejectLoading.value = false;
+        batchRejectLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("拒绝已取消");
-    });
-};
+      ElMessage.info('拒绝已取消')
+    })
+}
 
 // 处理删除单个专栏
 const handleDeleteColumn = (columnId) => {
-  ElMessageBox.confirm("确定要删除该专栏吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要删除该专栏吗？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
       try {
-        await adminDeleteColumn(columnId);
-        ElMessage.success("删除成功");
-        await refreshColumnList();
+        await adminDeleteColumn(columnId)
+        ElMessage.success('删除成功')
+        await refreshColumnList()
         if (dialogVisible.value) {
-          dialogVisible.value = false;
+          dialogVisible.value = false
         }
       } catch (error) {
-        ElMessage.error("删除失败");
+        ElMessage.error('删除失败')
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 处理批量删除
 const handleBatchDelete = () => {
-  ElMessageBox.confirm(`确定要删除选中的 ${selectedColumns.value.length} 个专栏吗？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm(`确定要删除选中的 ${selectedColumns.value.length} 个专栏吗？`, '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      batchDeleteLoading.value = true;
+      batchDeleteLoading.value = true
       try {
-        const columnIds = selectedColumns.value.map((column) => column.id);
-        await adminBatchDeleteColumn(columnIds);
-        ElMessage.success("批量删除成功");
-        await refreshColumnList();
+        const columnIds = selectedColumns.value.map((column) => column.id)
+        await adminBatchDeleteColumn(columnIds)
+        ElMessage.success('批量删除成功')
+        await refreshColumnList()
       } catch (error) {
-        ElMessage.error("批量删除失败");
+        ElMessage.error('批量删除失败')
       } finally {
-        batchDeleteLoading.value = false;
+        batchDeleteLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 初始化
 onMounted(() => {
-  getColumns();
-  handleResize();
-  window.addEventListener("resize", handleResize);
-});
+  getColumns()
+  handleResize()
+  window.addEventListener('resize', handleResize)
+})
 
 // 组件卸载时移除监听
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -763,7 +1110,7 @@ onUnmounted(() => {
         align-items: center;
 
         &::before {
-          content: "";
+          content: '';
           display: inline-block;
           width: 4px;
           height: 20px;
@@ -2101,7 +2448,7 @@ onUnmounted(() => {
 
       // 添加左侧装饰线
       &::before {
-        content: "";
+        content: '';
         position: absolute;
         left: 0;
         top: 0;

@@ -1,68 +1,68 @@
-import "@/assets/scss/base.scss";
-import { createApp } from "vue";
-import { createPinia } from "pinia";
+import '@/assets/scss/base.scss'
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 
-import App from "./App.vue";
+import App from './App.vue'
 
-const app = createApp(App);
-import router from "./router";
-app.use(router);
+const app = createApp(App)
+import router from './router'
+app.use(router)
 
 // 引入并配置disable-devtool
 // 只在生产环境启用禁用开发者工具功能
-import { setupDisableDevtool } from "@/utils/disableDevtool";
+import { setupDisableDevtool } from '@/utils/disableDevtool'
 if (import.meta.env.PROD) {
   // setupDisableDevtool();
 }
 
 // 注册svg全局组件
-import SvgIcon from "@/components/SvgIcon.vue";
-import "virtual:svg-icons-register";
+import SvgIcon from '@/components/SvgIcon.vue'
+import 'virtual:svg-icons-register'
 // 注册svg全局组件
-app.component("svg-icon", SvgIcon);
+app.component('svg-icon', SvgIcon)
 
 // 夜间模式
-import "element-plus/theme-chalk/dark/css-vars.css";
+import 'element-plus/theme-chalk/dark/css-vars.css'
 
 // pinia持久化插件
-import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
-const pinia = createPinia();
-pinia.use(piniaPluginPersistedstate);
-app.use(pinia);
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
+app.use(pinia)
 
-import ElementPlus from "element-plus";
+import ElementPlus from 'element-plus'
 
 // 导入中文语言包
-import zhCn from "element-plus/dist/locale/zh-cn.mjs";
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 app.use(ElementPlus, {
   locale: zhCn,
-});
+})
 
-import * as ElementPlusIconsVue from "@element-plus/icons-vue";
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-  app.component(key, component);
+  app.component(key, component)
 }
 
 // G2 图表中文 locale 配置
-import { register, Chart } from "@antv/g2";
-register("locale.zh-CN", {
+import { register, Chart } from '@antv/g2'
+register('locale.zh-CN', {
   legend: {
-    open: "收起",
-    close: "展开",
+    open: '收起',
+    close: '展开',
   },
   tooltip: {
     showTitle: true,
-    confirm: "确认",
-    confirmButton: "关闭",
+    confirm: '确认',
+    confirmButton: '关闭',
   },
   axis: {
-    unit: "单位",
+    unit: '单位',
   },
-});
+})
 
 // 引入 darkStore
-import { useDarkStore } from "./stores/darkStore";
-const darkStore = useDarkStore();
-darkStore.initDarkMode();
+import { useDarkStore } from './stores/darkStore'
+const darkStore = useDarkStore()
+darkStore.initDarkMode()
 
-app.mount("#app");
+app.mount('#app')

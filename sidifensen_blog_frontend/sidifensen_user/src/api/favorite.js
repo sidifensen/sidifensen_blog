@@ -1,4 +1,4 @@
-import request from "@/utils/Request";
+import request from '@/utils/Request'
 
 /**
  * 获取当前用户的收藏夹列表
@@ -6,10 +6,10 @@ import request from "@/utils/Request";
  */
 export const getFavoriteList = () => {
   return request({
-    url: "/favorite/list",
-    method: "get",
-  });
-};
+    url: '/favorite/list',
+    method: 'get',
+  })
+}
 
 /**
  * 根据文章ID获取当前用户的收藏夹列表，并标识该文章在各收藏夹中的收藏状态
@@ -18,13 +18,13 @@ export const getFavoriteList = () => {
  */
 export const getFavoriteListByArticle = (articleId) => {
   return request({
-    url: "/favorite/listByArticle",
-    method: "get",
+    url: '/favorite/listByArticle',
+    method: 'get',
     params: {
       articleId,
     },
-  });
-};
+  })
+}
 
 /**
  * 新增收藏夹
@@ -35,11 +35,11 @@ export const getFavoriteListByArticle = (articleId) => {
  */
 export const addFavorite = (data) => {
   return request({
-    url: "/favorite/add",
-    method: "post",
+    url: '/favorite/add',
+    method: 'post',
     data,
-  });
-};
+  })
+}
 
 /**
  * 更新收藏夹
@@ -51,11 +51,11 @@ export const addFavorite = (data) => {
  */
 export const updateFavorite = (data) => {
   return request({
-    url: "/favorite/update",
-    method: "put",
+    url: '/favorite/update',
+    method: 'put',
     data,
-  });
-};
+  })
+}
 
 /**
  * 将文章添加到收藏夹
@@ -65,14 +65,14 @@ export const updateFavorite = (data) => {
  */
 export const addArticleToFavorite = (articleId, favoriteId) => {
   return request({
-    url: "/favorite/addArticle",
-    method: "post",
+    url: '/favorite/addArticle',
+    method: 'post',
     params: {
       articleId,
       favoriteId,
     },
-  });
-};
+  })
+}
 
 /**
  * 从收藏夹中移除文章
@@ -82,14 +82,14 @@ export const addArticleToFavorite = (articleId, favoriteId) => {
  */
 export const removeArticleFromFavorite = (articleId, favoriteId) => {
   return request({
-    url: "/favorite/removeArticle",
-    method: "delete",
+    url: '/favorite/removeArticle',
+    method: 'delete',
     params: {
       articleId,
       favoriteId,
     },
-  });
-};
+  })
+}
 
 /**
  * 根据用户ID获取收藏夹列表
@@ -98,13 +98,13 @@ export const removeArticleFromFavorite = (articleId, favoriteId) => {
  */
 export const getFavoriteListByUserId = (userId) => {
   return request({
-    url: "/favorite/listByUser",
-    method: "get",
+    url: '/favorite/listByUser',
+    method: 'get',
     params: {
       userId,
     },
-  });
-};
+  })
+}
 
 /**
  * 根据收藏夹ID获取收藏夹中的文章列表
@@ -113,10 +113,10 @@ export const getFavoriteListByUserId = (userId) => {
  */
 export const getArticleListByFavoriteId = (favoriteId) => {
   return request({
-    url: "/favorite/articles",
-    method: "get",
+    url: '/favorite/articles',
+    method: 'get',
     params: {
       favoriteId,
     },
-  });
-};
+  })
+}

@@ -7,7 +7,9 @@
           <div class="hero-copy">
             <p class="hero-kicker">会员中心</p>
             <h1 class="hero-title">开通 VIP，解锁会员文章与更高 AI 配额</h1>
-            <p class="hero-description">VIP 用户可以查看会员文章，可用 AI 配额提升到 {{ vipInfo.aiDailyQuota || 100 }} 次/天。</p>
+            <p class="hero-description">
+              VIP 用户可以查看会员文章，可用 AI 配额提升到 {{ vipInfo.aiDailyQuota || 100 }} 次/天。
+            </p>
           </div>
           <div class="hero-status">
             <div class="status-card">
@@ -17,7 +19,9 @@
             </div>
             <div class="status-card">
               <span class="status-label">AI 配额</span>
-              <strong class="status-value">{{ vipInfo.aiRemainingQuota ?? 0 }}/{{ vipInfo.aiDailyQuota ?? 0 }}</strong>
+              <strong class="status-value"
+                >{{ vipInfo.aiRemainingQuota ?? 0 }}/{{ vipInfo.aiDailyQuota ?? 0 }}</strong
+              >
               <span class="status-meta">今日剩余 / 每日总量</span>
             </div>
           </div>
@@ -42,7 +46,9 @@
                 <div class="entry-copy">
                   <span class="entry-kicker">会员专区</span>
                   <strong class="entry-title">开通后直接进入会员专区查看 VIP 文章</strong>
-                  <p class="entry-description">这里是会员文章的专属入口，集中查看所有范围为 VIP 可见的内容。</p>
+                  <p class="entry-description">
+                    这里是会员文章的专属入口，集中查看所有范围为 VIP 可见的内容。
+                  </p>
                 </div>
                 <button class="entry-button" @click="goToVipArticles">前往会员专区</button>
               </div>
@@ -63,9 +69,15 @@
                     <span class="price-unit">¥</span>
                     <span class="price-value">{{ plan.priceYuan }}</span>
                   </div>
-                  <p class="plan-description">{{ plan.description || "适合稳定阅读和持续创作使用。" }}</p>
-                  <button class="plan-button" :disabled="submitting && selectedPlanCode === plan.code" @click.stop="handleCreateOrder(plan)">
-                    {{ submitting && selectedPlanCode === plan.code ? "跳转中..." : "立即开通" }}
+                  <p class="plan-description">
+                    {{ plan.description || '适合稳定阅读和持续创作使用。' }}
+                  </p>
+                  <button
+                    class="plan-button"
+                    :disabled="submitting && selectedPlanCode === plan.code"
+                    @click.stop="handleCreateOrder(plan)"
+                  >
+                    {{ submitting && selectedPlanCode === plan.code ? '跳转中...' : '立即开通' }}
                   </button>
                 </article>
               </div>
@@ -88,9 +100,15 @@
                   </div>
                   <div class="order-side">
                     <span class="order-price">¥{{ order.priceYuan }}</span>
-                    <span class="order-status" :class="`status-${(order.status || '').toLowerCase()}`">{{ orderStatusText(order.status) }}</span>
+                    <span
+                      class="order-status"
+                      :class="`status-${(order.status || '').toLowerCase()}`"
+                      >{{ orderStatusText(order.status) }}</span
+                    >
                     <div v-if="order.status === 'PAYING'" class="order-actions">
-                      <button class="order-cancel-btn" @click="handleCancelOrder(order)">取消订单</button>
+                      <button class="order-cancel-btn" @click="handleCancelOrder(order)">
+                        取消订单
+                      </button>
                       <button class="order-pay-btn" @click="handleRepayOrder(order)">去支付</button>
                     </div>
                   </div>
@@ -145,268 +163,272 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { info } from "@/api/user";
-import { createVipOrder, getVipMe, getVipOrderList, getVipPlans, repayVipOrder } from "@/api/vip";
-import { useUserStore } from "@/stores/userStore";
-import { GetJwt } from "@/utils/Auth";
-import VipPaymentResultModal from "@/components/VipPaymentResultModal.vue";
-import CancelOrderDialog from "@/components/CancelOrderDialog.vue";
-import { formatVipExpireDate, formatDate } from "@/utils/formatTime";
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { info } from '@/api/user'
+import { createVipOrder, getVipMe, getVipOrderList, getVipPlans, repayVipOrder } from '@/api/vip'
+import { useUserStore } from '@/stores/userStore'
+import { GetJwt } from '@/utils/Auth'
+import VipPaymentResultModal from '@/components/VipPaymentResultModal.vue'
+import CancelOrderDialog from '@/components/CancelOrderDialog.vue'
+import { formatVipExpireDate, formatDate } from '@/utils/formatTime'
 
 // 路由与全局状态
-const router = useRouter();
-const route = useRoute();
-const userStore = useUserStore();
+const router = useRouter()
+const route = useRoute()
+const userStore = useUserStore()
 
 // 页面核心状态
-const plans = ref([]);
-const orders = ref([]);
-const vipInfo = ref({});
-const submitting = ref(false);
-const selectedPlanCode = ref("");
+const plans = ref([])
+const orders = ref([])
+const vipInfo = ref({})
+const submitting = ref(false)
+const selectedPlanCode = ref('')
 
 // 支付结果弹窗控制
-const paymentResultVisible = ref(false);
-const currentOrderNo = ref("");
+const paymentResultVisible = ref(false)
+const currentOrderNo = ref('')
 
 // 取消订单弹窗控制
-const cancelDialogVisible = ref(false);
-const cancelOrderNo = ref("");
+const cancelDialogVisible = ref(false)
+const cancelOrderNo = ref('')
 
 // 会员状态展示文案
 const statusText = computed(() => {
   if (vipInfo.value?.isVip) {
-    return "有效会员";
+    return '有效会员'
   }
-  if (vipInfo.value?.vipStatus === "EXPIRED") {
-    return "已过期";
+  if (vipInfo.value?.vipStatus === 'EXPIRED') {
+    return '已过期'
   }
-  return "未开通";
-});
+  return '未开通'
+})
 
 // 会员到期时间展示文案
 const expireText = computed(() => {
   if (!vipInfo.value?.vipExpireTime) {
-    return "开通后立即生效";
+    return '开通后立即生效'
   }
-  return `到期时间 ${formatVipExpireDate(vipInfo.value.vipExpireTime)}`;
-});
+  return `到期时间 ${formatVipExpireDate(vipInfo.value.vipExpireTime)}`
+})
 
 // 根据 UA 粗略区分 PC 和 H5 支付入口
 const detectClientType = () => {
-  return /Android|iPhone|iPad|Mobile/i.test(window.navigator.userAgent) ? "H5" : "PC";
-};
+  return /Android|iPhone|iPad|Mobile/i.test(window.navigator.userAgent) ? 'H5' : 'PC'
+}
 
 // 支付宝 PC 场景返回表单时，前端需要主动插入并提交
 const submitPaymentForm = (formHtml, targetName) => {
   // 1. 创建隐藏的容器元素，用于承载支付表单
-  const wrapper = document.createElement("div");
-  wrapper.style.display = "none";
+  const wrapper = document.createElement('div')
+  wrapper.style.display = 'none'
   // 2. 将后端返回的表单 HTML 插入容器
-  wrapper.innerHTML = formHtml;
+  wrapper.innerHTML = formHtml
   // 3. 将容器添加到页面 DOM 中
-  document.body.appendChild(wrapper);
+  document.body.appendChild(wrapper)
   // 4. 从容器中查找 form 元素
-  const form = wrapper.querySelector("form");
+  const form = wrapper.querySelector('form')
   // 5. 表单不存在则提示错误
   if (!form) {
-    ElMessage.error("支付跳转失败，请稍后重试");
-    return;
+    ElMessage.error('支付跳转失败，请稍后重试')
+    return
   }
   // 6. 设置表单提交目标为新标签页
-  form.setAttribute("target", targetName);
+  form.setAttribute('target', targetName)
   // 7. 自动提交表单，跳转到支付宝支付页面
-  form.submit();
+  form.submit()
 
   // 8. 清理临时 DOM
   setTimeout(() => {
-    document.body.removeChild(wrapper);
-  }, 1000);
-};
+    document.body.removeChild(wrapper)
+  }, 1000)
+}
 
 // 支付成功后刷新站点用户态，保证 VIP 标识和额度即时生效
 const refreshUserInfo = async () => {
-  const response = await info();
-  userStore.user = response.data;
-};
+  const response = await info()
+  userStore.user = response.data
+}
 
 // 刷新订单列表
 const refreshOrderList = async () => {
-  const response = await getVipOrderList(1, 10);
-  orders.value = response.data?.data || [];
-};
+  const response = await getVipOrderList(1, 10)
+  orders.value = response.data?.data || []
+}
 
 // 关闭支付结果弹窗
 const closePaymentResultModal = () => {
-  paymentResultVisible.value = false;
+  paymentResultVisible.value = false
   // 使用 String() 确保类型正确
-  currentOrderNo.value = "";
+  currentOrderNo.value = ''
   // 关闭后刷新订单列表
-  refreshOrderList();
-};
+  refreshOrderList()
+}
 
 // 支付成功后的回调
 const handlePaymentSuccess = async () => {
-  await refreshUserInfo();
-  await refreshOrderList();
-};
+  await refreshUserInfo()
+  await refreshOrderList()
+}
 
 // 会员中心初始化时并行拉取套餐、会员信息和订单记录
 const fetchVipData = async () => {
-  const [plansRes, vipRes, orderRes] = await Promise.all([getVipPlans(), getVipMe(), getVipOrderList(1, 10)]);
-  plans.value = plansRes.data || [];
-  vipInfo.value = vipRes.data || {};
-  orders.value = orderRes.data.data || [];
+  const [plansRes, vipRes, orderRes] = await Promise.all([
+    getVipPlans(),
+    getVipMe(),
+    getVipOrderList(1, 10),
+  ])
+  plans.value = plansRes.data || []
+  vipInfo.value = vipRes.data || {}
+  orders.value = orderRes.data.data || []
   if (!selectedPlanCode.value && plans.value.length) {
-    selectedPlanCode.value = plans.value[0].code;
+    selectedPlanCode.value = plans.value[0].code
   }
-};
+}
 
 // 创建订单后按后端返回的 formHtml / payUrl 决定跳转方式
 const handleCreateOrder = async (plan) => {
   // 1. 检测客户端类型（PC/移动端）
-  const clientType = detectClientType();
+  const clientType = detectClientType()
   try {
     // 2. 设置提交状态，防止重复点击
-    submitting.value = true;
+    submitting.value = true
     // 3. 记录当前选择的套餐编码
-    selectedPlanCode.value = plan.code;
+    selectedPlanCode.value = plan.code
     // 4. 调用后端 API 创建订单
     const response = await createVipOrder({
       planCode: plan.code,
       clientType,
-    });
-    const payload = response.data;
+    })
+    const payload = response.data
     // 5. 创建订单成功后，先打开结果弹窗（无论 PC 还是 H5）
-    currentOrderNo.value = payload.orderNo;
-    paymentResultVisible.value = true;
+    currentOrderNo.value = payload.orderNo
+    paymentResultVisible.value = true
 
     // 6. 情况 1: 返回表单 HTML，自动提交支付（PC 端支付宝）
     if (payload.formHtml) {
       // 生成唯一的窗口名称
-      const targetName = `alipay_${Date.now()}`;
+      const targetName = `alipay_${Date.now()}`
       // 先打开一个空白标签页（用于接收表单提交）
-      const paymentWindow = window.open("about:blank", targetName);
+      const paymentWindow = window.open('about:blank', targetName)
       if (!paymentWindow) {
-        ElMessage.error("浏览器拦截了支付窗口，请允许弹窗后重试");
-        return;
+        ElMessage.error('浏览器拦截了支付窗口，请允许弹窗后重试')
+        return
       }
       // 将表单提交到新打开的标签页
-      submitPaymentForm(payload.formHtml, targetName);
-      return;
+      submitPaymentForm(payload.formHtml, targetName)
+      return
     }
     // 7. 情况 2: 返回支付链接，直接跳转（微信支付/移动端）
     if (payload.payUrl) {
       // 移动端在新标签页打开支付
-      window.open(payload.payUrl, "_blank");
-      return;
+      window.open(payload.payUrl, '_blank')
+      return
     }
     // 8. 异常情况：既无表单也无支付链接
-    ElMessage.error("支付参数异常，请稍后重试");
+    ElMessage.error('支付参数异常，请稍后重试')
   } catch (error) {
     // 9. 异常处理：关闭弹窗，提示错误信息
-    closePaymentResultModal();
-    ElMessage.error(error?.msg || "创建订单失败");
+    closePaymentResultModal()
+    ElMessage.error(error?.msg || '创建订单失败')
   } finally {
     // 10. 无论成功失败，都重置提交状态
-    submitting.value = false;
+    submitting.value = false
   }
-};
+}
 
 const goToVipArticles = () => {
-  router.push("/vip/articles");
-};
+  router.push('/vip/articles')
+}
 
 // 未登录用户先跳登录，登录后再回到会员中心
 onMounted(async () => {
   // 优先检查 localStorage 中是否有 jwt token
-  const jwt = GetJwt();
+  const jwt = GetJwt()
   if (!userStore.user?.id) {
     // 如果有 jwt 但 userStore.user 为空（可能是新标签页 Pinia 尚未恢复数据）
     // 先尝试获取用户信息，而不是直接跳转登录
     if (jwt) {
       try {
-        const response = await info();
-        userStore.user = response.data;
+        const response = await info()
+        userStore.user = response.data
       } catch (error) {
         // 获取用户信息失败（401 等），说明 token 已过期或无效，跳转登录
-        router.push(`/login?redirect=${encodeURIComponent(route.fullPath)}`);
-        return;
+        router.push(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
+        return
       }
     } else {
       // 没有 jwt token，直接跳转登录
-      router.push(`/login?redirect=${encodeURIComponent(route.fullPath)}`);
-      return;
+      router.push(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
+      return
     }
   }
   try {
-    await fetchVipData();
-    await refreshUserInfo();
+    await fetchVipData()
+    await refreshUserInfo()
 
     // 检查是否有支付宝回调的订单号参数，有则自动打开弹窗
-    const orderNoFromQuery = route.query.orderNo || route.query.out_trade_no;
+    const orderNoFromQuery = route.query.orderNo || route.query.out_trade_no
     if (orderNoFromQuery) {
       // 使用 String() 确保类型正确
-      currentOrderNo.value = String(orderNoFromQuery);
-      paymentResultVisible.value = true;
+      currentOrderNo.value = String(orderNoFromQuery)
+      paymentResultVisible.value = true
     }
   } catch (error) {
-    ElMessage.error(error?.msg || "加载会员中心失败");
+    ElMessage.error(error?.msg || '加载会员中心失败')
   }
-});
+})
 
 // 订单状态中文映射
 const orderStatusText = (status) => {
-  const map = { PAID: "已支付", PAYING: "待支付", CLOSED: "已关闭", FAILED: "失败" };
-  return map[status] || status || "未知";
-};
+  const map = { PAID: '已支付', PAYING: '待支付', CLOSED: '已关闭', FAILED: '失败' }
+  return map[status] || status || '未知'
+}
 
 // 处理待支付订单的再次支付
 const handleRepayOrder = async (order) => {
   try {
-    const response = await repayVipOrder(order.orderNo);
-    const payload = response.data;
+    const response = await repayVipOrder(order.orderNo)
+    const payload = response.data
 
     // 打开支付结果弹窗
-    currentOrderNo.value = payload.orderNo;
-    paymentResultVisible.value = true;
+    currentOrderNo.value = payload.orderNo
+    paymentResultVisible.value = true
 
     // PC 端表单提交
     if (payload.formHtml) {
-      const targetName = `alipay_${Date.now()}`;
-      const paymentWindow = window.open("about:blank", targetName);
+      const targetName = `alipay_${Date.now()}`
+      const paymentWindow = window.open('about:blank', targetName)
       if (!paymentWindow) {
-        ElMessage.error("浏览器拦截了支付窗口，请允许弹窗后重试");
-        return;
+        ElMessage.error('浏览器拦截了支付窗口，请允许弹窗后重试')
+        return
       }
-      submitPaymentForm(payload.formHtml, targetName);
-      return;
+      submitPaymentForm(payload.formHtml, targetName)
+      return
     }
     // H5 端直接跳转
     if (payload.payUrl) {
-      window.open(payload.payUrl, "_blank");
-      return;
+      window.open(payload.payUrl, '_blank')
+      return
     }
-    ElMessage.error("支付参数异常，请稍后重试");
+    ElMessage.error('支付参数异常，请稍后重试')
   } catch (error) {
-    ElMessage.error(error?.msg || "支付失败");
+    ElMessage.error(error?.msg || '支付失败')
   }
-};
+}
 
 // 处理待支付订单的取消
 const handleCancelOrder = (order) => {
-  cancelOrderNo.value = order.orderNo;
-  cancelDialogVisible.value = true;
-};
+  cancelOrderNo.value = order.orderNo
+  cancelDialogVisible.value = true
+}
 
 // 取消订单确认后的回调
 const handleCancelConfirmed = async () => {
-  ElMessage.success('订单已取消');
+  ElMessage.success('订单已取消')
   // 刷新订单列表
-  await refreshOrderList();
-};
+  await refreshOrderList()
+}
 </script>
 
 <style lang="scss" scoped>
@@ -433,7 +455,9 @@ const handleCancelConfirmed = async () => {
 
     // 顶部会员状态区
     .vip-hero {
-      background: radial-gradient(circle at top right, rgba(185, 139, 47, 0.18), transparent 30%), var(--bg-hero);
+      background:
+        radial-gradient(circle at top right, rgba(185, 139, 47, 0.18), transparent 30%),
+        var(--bg-hero);
       border-radius: 28px;
       padding: 36px;
       color: var(--text-light);
@@ -606,7 +630,10 @@ const handleCancelConfirmed = async () => {
               border: 1px solid var(--border);
               border-radius: 18px;
               cursor: pointer;
-              transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+              transition:
+                border-color 0.2s ease,
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
 
               &.active {
                 border-color: var(--accent);

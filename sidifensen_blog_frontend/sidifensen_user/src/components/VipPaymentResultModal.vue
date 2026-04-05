@@ -6,13 +6,27 @@
         <!-- 结果图标 -->
         <div class="result-icon" :class="iconClass">
           <svg v-if="orderStatus === 'PAID'" viewBox="0 0 24 24" width="48" height="48">
-            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            <path
+              fill="currentColor"
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+            />
           </svg>
-          <svg v-else-if="orderStatus === 'CLOSED' || orderStatus === 'FAILED'" viewBox="0 0 24 24" width="48" height="48">
-            <path fill="currentColor" d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/>
+          <svg
+            v-else-if="orderStatus === 'CLOSED' || orderStatus === 'FAILED'"
+            viewBox="0 0 24 24"
+            width="48"
+            height="48"
+          >
+            <path
+              fill="currentColor"
+              d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"
+            />
           </svg>
           <svg v-else viewBox="0 0 24 24" width="48" height="48">
-            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            <path
+              fill="currentColor"
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+            />
           </svg>
         </div>
 
@@ -37,10 +51,13 @@
         <!-- 订单号信息 -->
         <div class="result-order">
           <span class="order-label">订单号</span>
-          <span class="order-value">{{ orderNo || "--" }}</span>
+          <span class="order-value">{{ orderNo || '--' }}</span>
           <button v-if="orderNo" class="copy-button" @click="copyOrderNo">
             <svg viewBox="0 0 24 24" width="16" height="16">
-              <path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+              <path
+                fill="currentColor"
+                d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+              />
             </svg>
           </button>
         </div>
@@ -70,9 +87,9 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { getVipOrder } from "@/api/vip";
-import CancelOrderDialog from "./CancelOrderDialog.vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { getVipOrder } from '@/api/vip'
+import CancelOrderDialog from './CancelOrderDialog.vue'
 
 // Props
 const props = defineProps({
@@ -82,239 +99,239 @@ const props = defineProps({
   },
   orderNo: {
     type: String,
-    default: "",
+    default: '',
   },
-});
+})
 
 // 订单过期时间（从后端获取）
-const orderExpiredTime = ref(null);
+const orderExpiredTime = ref(null)
 
 // Emits
-const emit = defineEmits(["update:visible", "refresh", "close"]);
+const emit = defineEmits(['update:visible', 'refresh', 'close'])
 
 // 订单状态
-const orderStatus = ref("PAYING");
-const pollingTimer = ref(null);
-const copyTooltip = ref(false);
-const closeInterval = ref(null);
+const orderStatus = ref('PAYING')
+const pollingTimer = ref(null)
+const copyTooltip = ref(false)
+const closeInterval = ref(null)
 
 // 关闭倒计时配置（3 秒）
-const CLOSE_COUNTDOWN_SECONDS = 3;
-const closeCountdownSeconds = ref(CLOSE_COUNTDOWN_SECONDS);
+const CLOSE_COUNTDOWN_SECONDS = 3
+const closeCountdownSeconds = ref(CLOSE_COUNTDOWN_SECONDS)
 // 订单剩余倒计时（秒）
-const countdownSeconds = ref(0);
-const countdownTimer = ref(null);
+const countdownSeconds = ref(0)
+const countdownTimer = ref(null)
 
 // 倒计时文案
 const countdownText = computed(() => {
-  const minutes = Math.floor(countdownSeconds.value / 60);
-  const seconds = countdownSeconds.value % 60;
-  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-});
+  const minutes = Math.floor(countdownSeconds.value / 60)
+  const seconds = countdownSeconds.value % 60
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+})
 
 // 支付成功关闭倒计时文案
 const closeCountdownText = computed(() => {
-  return `${closeCountdownSeconds.value}秒后关闭`;
-});
+  return `${closeCountdownSeconds.value}秒后关闭`
+})
 
 // 根据订单状态切换标题
 const titleText = computed(() => {
-  if (orderStatus.value === "PAID") {
-    return "支付成功";
+  if (orderStatus.value === 'PAID') {
+    return '支付成功'
   }
-  if (orderStatus.value === "CLOSED" || orderStatus.value === "FAILED") {
-    return "支付未完成";
+  if (orderStatus.value === 'CLOSED' || orderStatus.value === 'FAILED') {
+    return '支付未完成'
   }
-  return "正在确认支付状态";
-});
+  return '正在确认支付状态'
+})
 
 // 根据订单状态切换说明文案
 const descriptionText = computed(() => {
-  if (orderStatus.value === "PAID") {
-    return "异步回调已经到账，会员状态和 AI 配额会同步刷新。";
+  if (orderStatus.value === 'PAID') {
+    return '异步回调已经到账，会员状态和 AI 配额会同步刷新。'
   }
-  if (orderStatus.value === "CLOSED" || orderStatus.value === "FAILED") {
-    return "订单已关闭或支付失败，可以回到会员中心重新发起支付。";
+  if (orderStatus.value === 'CLOSED' || orderStatus.value === 'FAILED') {
+    return '订单已关闭或支付失败，可以回到会员中心重新发起支付。'
   }
-  return "页面每 2 秒轮询一次订单状态，请在规定时间内完成支付。";
-});
+  return '页面每 2 秒轮询一次订单状态，请在规定时间内完成支付。'
+})
 
 // 图标样式
 const iconClass = computed(() => {
-  if (orderStatus.value === "PAID") {
-    return "icon-success";
+  if (orderStatus.value === 'PAID') {
+    return 'icon-success'
   }
-  if (orderStatus.value === "CLOSED" || orderStatus.value === "FAILED") {
-    return "icon-failed";
+  if (orderStatus.value === 'CLOSED' || orderStatus.value === 'FAILED') {
+    return 'icon-failed'
   }
-  return "icon-pending";
-});
+  return 'icon-pending'
+})
 
 // 轮询订单状态
 const pollOrder = async (attempt = 0) => {
   if (!props.orderNo) {
-    return;
+    return
   }
 
   try {
-    const response = await getVipOrder(props.orderNo);
-    const orderData = response.data;
-    orderStatus.value = orderData?.status || "PAYING";
+    const response = await getVipOrder(props.orderNo)
+    const orderData = response.data
+    orderStatus.value = orderData?.status || 'PAYING'
     // 同步订单过期时间
-    orderExpiredTime.value = orderData?.expiredTime;
+    orderExpiredTime.value = orderData?.expiredTime
 
     // 支付成功
-    if (orderStatus.value === "PAID") {
-      emit("refresh");
-      stopPolling();
-      stopCountdown();
+    if (orderStatus.value === 'PAID') {
+      emit('refresh')
+      stopPolling()
+      stopCountdown()
       // 重置关闭倒计时并从 3 开始倒数
-      closeCountdownSeconds.value = CLOSE_COUNTDOWN_SECONDS;
+      closeCountdownSeconds.value = CLOSE_COUNTDOWN_SECONDS
       // 启动关闭倒计时
       const closeInterval = window.setInterval(() => {
         if (closeCountdownSeconds.value > 1) {
-          closeCountdownSeconds.value--;
+          closeCountdownSeconds.value--
         } else {
-          window.clearInterval(closeInterval);
-          handleClose();
+          window.clearInterval(closeInterval)
+          handleClose()
         }
-      }, 1000);
-      return;
+      }, 1000)
+      return
     }
 
     // 订单关闭或失败
-    if (["CLOSED", "FAILED"].includes(orderStatus.value)) {
-      stopPolling();
-      stopCountdown();
-      return;
+    if (['CLOSED', 'FAILED'].includes(orderStatus.value)) {
+      stopPolling()
+      stopCountdown()
+      return
     }
 
     // 第一次获取订单时，启动倒计时
     if (attempt === 0 && orderExpiredTime.value) {
-      startCountdown();
+      startCountdown()
     }
 
     // 轮询次数超限 (450 次 × 2 秒 = 900 秒 = 15 分钟，与订单超时时间一致)
     if (attempt >= 450) {
-      stopPolling();
-      return;
+      stopPolling()
+      return
     }
 
     // 继续轮询
-    pollingTimer.value = window.setTimeout(() => pollOrder(attempt + 1), 2000);
+    pollingTimer.value = window.setTimeout(() => pollOrder(attempt + 1), 2000)
   } catch (error) {
-    stopPolling();
-    ElMessage.error(error?.msg || "获取订单状态失败");
+    stopPolling()
+    ElMessage.error(error?.msg || '获取订单状态失败')
   }
-};
+}
 
 // 停止轮询
 const stopPolling = () => {
   if (pollingTimer.value) {
-    window.clearTimeout(pollingTimer.value);
-    pollingTimer.value = null;
+    window.clearTimeout(pollingTimer.value)
+    pollingTimer.value = null
   }
-};
+}
 
 // 停止关闭定时器
 const stopCloseInterval = () => {
   if (closeInterval.value) {
-    window.clearInterval(closeInterval.value);
-    closeInterval.value = null;
+    window.clearInterval(closeInterval.value)
+    closeInterval.value = null
   }
-};
+}
 
 // 启动倒计时（基于订单实际过期时间）
 const startCountdown = () => {
-  stopCountdown();
+  stopCountdown()
 
   // 如果还没有获取到订单过期时间，等待轮询获取后再启动
   if (!orderExpiredTime.value) {
-    return;
+    return
   }
 
   // 如果订单已过期，直接返回
   if (new Date(orderExpiredTime.value) <= new Date()) {
-    orderStatus.value = 'CLOSED';
-    return;
+    orderStatus.value = 'CLOSED'
+    return
   }
 
   // 计算剩余时间（毫秒）
-  const remainingMs = new Date(orderExpiredTime.value).getTime() - Date.now();
+  const remainingMs = new Date(orderExpiredTime.value).getTime() - Date.now()
 
   // 如果剩余时间小于等于 0，说明订单已过期
   if (remainingMs <= 0) {
-    orderStatus.value = 'CLOSED';
-    return;
+    orderStatus.value = 'CLOSED'
+    return
   }
 
   // 将剩余时间转换为秒数
-  countdownSeconds.value = Math.floor(remainingMs / 1000);
+  countdownSeconds.value = Math.floor(remainingMs / 1000)
 
   countdownTimer.value = window.setInterval(() => {
     if (countdownSeconds.value > 0) {
-      countdownSeconds.value--;
+      countdownSeconds.value--
     } else {
-      stopCountdown();
+      stopCountdown()
     }
-  }, 1000);
-};
+  }, 1000)
+}
 
 // 停止倒计时
 const stopCountdown = () => {
   if (countdownTimer.value) {
-    window.clearInterval(countdownTimer.value);
-    countdownTimer.value = null;
+    window.clearInterval(countdownTimer.value)
+    countdownTimer.value = null
   }
-};
+}
 
 // 刷新订单状态
 const handleRefresh = async () => {
-  stopPolling();
-  await pollOrder();
-};
+  stopPolling()
+  await pollOrder()
+}
 
 // 复制订单号
 const copyOrderNo = async () => {
-  if (!props.orderNo) return;
+  if (!props.orderNo) return
 
   try {
-    await navigator.clipboard.writeText(props.orderNo);
-    copyTooltip.value = true;
-    ElMessage.success("订单号已复制");
+    await navigator.clipboard.writeText(props.orderNo)
+    copyTooltip.value = true
+    ElMessage.success('订单号已复制')
     setTimeout(() => {
-      copyTooltip.value = false;
-    }, 2000);
+      copyTooltip.value = false
+    }, 2000)
   } catch (error) {
-    ElMessage.error("复制失败");
+    ElMessage.error('复制失败')
   }
-};
+}
 
 // 取消订单弹窗控制
-const cancelDialogVisible = ref(false);
+const cancelDialogVisible = ref(false)
 
 // 打开取消订单弹窗
 const handleCancelOrder = () => {
-  cancelDialogVisible.value = true;
-};
+  cancelDialogVisible.value = true
+}
 
 // 取消订单确认后的回调
 const handleCancelConfirmed = () => {
-  ElMessage.success('订单已取消');
-  orderStatus.value = 'CLOSED';
-  stopPolling();
-  stopCountdown();
-  emit('refresh');
-};
+  ElMessage.success('订单已取消')
+  orderStatus.value = 'CLOSED'
+  stopPolling()
+  stopCountdown()
+  emit('refresh')
+}
 
 // 关闭弹窗
 const handleClose = () => {
-  stopPolling();
-  stopCountdown();
-  stopCloseInterval();
-  emit("update:visible", false);
-  emit("close");
-};
+  stopPolling()
+  stopCountdown()
+  stopCloseInterval()
+  emit('update:visible', false)
+  emit('close')
+}
 
 // 监听 visible 变化，打开时开始轮询
 watch(
@@ -323,23 +340,23 @@ watch(
     if (newVal && props.orderNo) {
       // 延迟一下开始轮询，确保弹窗动画完成
       setTimeout(() => {
-        pollOrder();
-      }, 300);
+        pollOrder()
+      }, 300)
     }
-  }
-);
+  },
+)
 
 onMounted(() => {
   if (props.visible && props.orderNo) {
-    pollOrder();
+    pollOrder()
   }
-});
+})
 
 onBeforeUnmount(() => {
-  stopPolling();
-  stopCountdown();
-  stopCloseInterval();
-});
+  stopPolling()
+  stopCountdown()
+  stopCloseInterval()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -377,7 +394,9 @@ onBeforeUnmount(() => {
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background-color 0.2s, color 0.2s;
+      transition:
+        background-color 0.2s,
+        color 0.2s;
 
       &:hover {
         background: #f1f5f9;
@@ -505,7 +524,9 @@ onBeforeUnmount(() => {
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          transition: background-color 0.2s, color 0.2s;
+          transition:
+            background-color 0.2s,
+            color 0.2s;
 
           &:hover {
             background: #dcfce7;

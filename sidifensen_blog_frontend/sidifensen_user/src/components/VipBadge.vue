@@ -4,12 +4,13 @@
     :class="[`vip-badge--${type}`, { 'vip-badge--glow': glow }]"
     :style="customStyle"
     @click="handleClick"
-  >VIP</span>
+    >VIP</span
+  >
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { useRouter } from "vue-router";
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 // VIP 标签组件
 // type: simple(简洁样式) | card(卡片样式) | header(头部样式)
@@ -19,8 +20,8 @@ import { useRouter } from "vue-router";
 const props = defineProps({
   type: {
     type: String,
-    default: "simple",
-    validator: (v) => ["simple", "card", "header"].includes(v),
+    default: 'simple',
+    validator: (v) => ['simple', 'card', 'header'].includes(v),
   },
   glow: {
     type: Boolean,
@@ -32,20 +33,20 @@ const props = defineProps({
   },
   padding: {
     type: String,
-    default: "0 8px",
+    default: '0 8px',
   },
-});
+})
 
-const router = useRouter();
+const router = useRouter()
 
 const customStyle = computed(() => ({
-  height: typeof props.height === "number" ? `${props.height}px` : props.height,
+  height: typeof props.height === 'number' ? `${props.height}px` : props.height,
   padding: props.padding,
-}));
+}))
 
 const handleClick = () => {
-  router.push("/vip");
-};
+  router.push('/vip')
+}
 </script>
 
 <style lang="scss" scoped>
@@ -82,7 +83,7 @@ const handleClick = () => {
   animation: vip-glow 2s ease-in-out infinite;
 
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     left: -100%;
@@ -106,7 +107,7 @@ const handleClick = () => {
   overflow: hidden;
 
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     left: -100%;

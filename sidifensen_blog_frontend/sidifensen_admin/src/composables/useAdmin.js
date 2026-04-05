@@ -1,28 +1,28 @@
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted } from 'vue'
 
 /**
  * 移动端视图检测 composable
  * @param {number} breakpoint - 移动端断点，默认 768
  */
 export function useMobileView(breakpoint = 768) {
-  const isMobileView = ref(false);
+  const isMobileView = ref(false)
 
   const handleResize = () => {
-    isMobileView.value = window.innerWidth <= breakpoint;
-  };
+    isMobileView.value = window.innerWidth <= breakpoint
+  }
 
   onMounted(() => {
-    handleResize();
-    window.addEventListener("resize", handleResize);
-  });
+    handleResize()
+    window.addEventListener('resize', handleResize)
+  })
 
   onUnmounted(() => {
-    window.removeEventListener("resize", handleResize);
-  });
+    window.removeEventListener('resize', handleResize)
+  })
 
   return {
-    isMobileView
-  };
+    isMobileView,
+  }
 }
 
 /**
@@ -31,32 +31,32 @@ export function useMobileView(breakpoint = 768) {
  * @param {number} delay - 防抖延迟，默认 500ms
  */
 export function useDebounceSearch(callback, delay = 500) {
-  let timer = null;
+  let timer = null
 
   const debounceSearch = () => {
     if (timer) {
-      clearTimeout(timer);
+      clearTimeout(timer)
     }
     timer = setTimeout(() => {
-      callback();
-    }, delay);
-  };
+      callback()
+    }, delay)
+  }
 
   const cancelSearch = () => {
     if (timer) {
-      clearTimeout(timer);
-      timer = null;
+      clearTimeout(timer)
+      timer = null
     }
-  };
+  }
 
   onUnmounted(() => {
-    cancelSearch();
-  });
+    cancelSearch()
+  })
 
   return {
     debounceSearch,
-    cancelSearch
-  };
+    cancelSearch,
+  }
 }
 
 /**
@@ -64,33 +64,33 @@ export function useDebounceSearch(callback, delay = 500) {
  * @param {Function} fetchFn - 数据获取函数
  */
 export function usePagination(fetchFn) {
-  const currentPage = ref(1);
-  const pageSize = ref(10);
-  const total = ref(0);
-  const loading = ref(false);
+  const currentPage = ref(1)
+  const pageSize = ref(10)
+  const total = ref(0)
+  const loading = ref(false)
 
   const handleSizeChange = async (size) => {
-    pageSize.value = size;
-    currentPage.value = 1;
-    await fetchFn();
-  };
+    pageSize.value = size
+    currentPage.value = 1
+    await fetchFn()
+  }
 
   const handleCurrentChange = async (current) => {
-    currentPage.value = current;
-    await fetchFn();
-  };
+    currentPage.value = current
+    await fetchFn()
+  }
 
   const resetPagination = () => {
-    currentPage.value = 1;
-  };
+    currentPage.value = 1
+  }
 
   const setLoading = (value) => {
-    loading.value = value;
-  };
+    loading.value = value
+  }
 
   const setTotal = (value) => {
-    total.value = value;
-  };
+    total.value = value
+  }
 
   return {
     currentPage,
@@ -101,72 +101,72 @@ export function usePagination(fetchFn) {
     handleCurrentChange,
     resetPagination,
     setLoading,
-    setTotal
-  };
+    setTotal,
+  }
 }
 
 /**
  * 批量选择 composable
  */
 export function useBatchSelection() {
-  const selectedItems = ref([]);
+  const selectedItems = ref([])
 
   const handleSelectionChange = (items) => {
-    selectedItems.value = items;
-  };
+    selectedItems.value = items
+  }
 
   const isSelected = (item) => {
-    return selectedItems.value.some((selected) => selected.id === item.id);
-  };
+    return selectedItems.value.some((selected) => selected.id === item.id)
+  }
 
   const handleSelect = (item) => {
-    const index = selectedItems.value.findIndex((selected) => selected.id === item.id);
+    const index = selectedItems.value.findIndex((selected) => selected.id === item.id)
     if (index > -1) {
-      selectedItems.value.splice(index, 1);
+      selectedItems.value.splice(index, 1)
     } else {
-      selectedItems.value.push(item);
+      selectedItems.value.push(item)
     }
-  };
+  }
 
   const clearSelection = () => {
-    selectedItems.value = [];
-  };
+    selectedItems.value = []
+  }
 
   return {
     selectedItems,
     handleSelectionChange,
     isSelected,
     handleSelect,
-    clearSelection
-  };
+    clearSelection,
+  }
 }
 
 /**
  * 确认删除 composable
  */
 export function useConfirmDelete() {
-  const handleDelete = (id, deleteFn, message = "确定要删除该项吗？") => {
-    ElMessageBox.confirm(message, "警告", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning"
+  const handleDelete = (id, deleteFn, message = '确定要删除该项吗？') => {
+    ElMessageBox.confirm(message, '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
     })
       .then(async () => {
         try {
-          await deleteFn(id);
-          ElMessage.success("删除成功");
+          await deleteFn(id)
+          ElMessage.success('删除成功')
         } catch (error) {
-          ElMessage.error("删除失败");
+          ElMessage.error('删除失败')
         }
       })
       .catch(() => {
-        ElMessage.info("删除已取消");
-      });
-  };
+        ElMessage.info('删除已取消')
+      })
+  }
 
   return {
-    handleDelete
-  };
+    handleDelete,
+  }
 }
 
 /**
@@ -175,34 +175,34 @@ export function useConfirmDelete() {
 export function useConfirmAction() {
   const confirmAction = (actionFn, options = {}) => {
     const {
-      title = "确认",
-      message = "确定要执行此操作吗？",
-      confirmText = "确定",
-      cancelText = "取消",
-      type = "warning",
-      successMessage = "操作成功",
-      errorMessage = "操作失败"
-    } = options;
+      title = '确认',
+      message = '确定要执行此操作吗？',
+      confirmText = '确定',
+      cancelText = '取消',
+      type = 'warning',
+      successMessage = '操作成功',
+      errorMessage = '操作失败',
+    } = options
 
     ElMessageBox.confirm(message, title, {
       confirmButtonText: confirmText,
       cancelButtonText: cancelText,
-      type
+      type,
     })
       .then(async () => {
         try {
-          await actionFn();
-          ElMessage.success(successMessage);
+          await actionFn()
+          ElMessage.success(successMessage)
         } catch (error) {
-          ElMessage.error(errorMessage);
+          ElMessage.error(errorMessage)
         }
       })
       .catch(() => {
-        ElMessage.info("已取消");
-      });
-  };
+        ElMessage.info('已取消')
+      })
+  }
 
   return {
-    confirmAction
-  };
+    confirmAction,
+  }
 }

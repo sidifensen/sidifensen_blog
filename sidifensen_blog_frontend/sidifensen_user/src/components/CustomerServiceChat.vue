@@ -1,17 +1,34 @@
 <template>
-  <el-dialog v-model="dialogVisible" title="" :width="dialogWidth" :close-on-click-modal="false" :show-close="false" draggable class="customer-service-dialog">
+  <el-dialog
+    v-model="dialogVisible"
+    title=""
+    :width="dialogWidth"
+    :close-on-click-modal="false"
+    :show-close="false"
+    draggable
+    class="customer-service-dialog"
+  >
     <!-- 自定义 header -->
     <template #header>
       <div class="dialog-header">
         <div class="header-logo">
           <div class="logo-icon">
             <!-- 机器人图标 -->
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="10" rx="2"/>
-              <circle cx="12" cy="5" r="2"/>
-              <path d="M12 7v4"/>
-              <line x1="8" y1="16" x2="8" y2="16"/>
-              <line x1="16" y1="16" x2="16" y2="16"/>
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="11" width="18" height="10" rx="2" />
+              <circle cx="12" cy="5" r="2" />
+              <path d="M12 7v4" />
+              <line x1="8" y1="16" x2="8" y2="16" />
+              <line x1="16" y1="16" x2="16" y2="16" />
             </svg>
           </div>
           <div class="header-info">
@@ -24,13 +41,29 @@
         </div>
         <div class="header-actions">
           <el-button text class="clear-btn" @click="clearChat" title="清空对话">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"
+              />
             </svg>
           </el-button>
           <el-button text class="close-btn" @click="dialogVisible = false" title="关闭">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M18 6L6 18M6 6l12 12"/>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M18 6L6 18M6 6l12 12" />
             </svg>
           </el-button>
         </div>
@@ -43,12 +76,21 @@
         <div class="welcome-avatar">
           <div class="avatar-icon">
             <!-- 机器人图标 -->
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="10" rx="2"/>
-              <circle cx="12" cy="5" r="2"/>
-              <path d="M12 7v4"/>
-              <line x1="8" y1="16" x2="8" y2="16"/>
-              <line x1="16" y1="16" x2="16" y2="16"/>
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="11" width="18" height="10" rx="2" />
+              <circle cx="12" cy="5" r="2" />
+              <path d="M12 7v4" />
+              <line x1="8" y1="16" x2="8" y2="16" />
+              <line x1="16" y1="16" x2="16" y2="16" />
             </svg>
           </div>
         </div>
@@ -58,16 +100,34 @@
 
       <!-- 消息列表 -->
       <div class="message-list" ref="messageListRef">
-        <div v-for="(msg, index) in messageList" :key="index" :class="['message-item', msg.role === 'user' ? 'user-message' : 'ai-message']">
+        <div
+          v-for="(msg, index) in messageList"
+          :key="index"
+          :class="['message-item', msg.role === 'user' ? 'user-message' : 'ai-message']"
+        >
           <div class="message-avatar">
-            <el-avatar v-if="msg.role === 'user'" :size="36" :src="userStore.user?.avatar" class="user-avatar" />
+            <el-avatar
+              v-if="msg.role === 'user'"
+              :size="36"
+              :src="userStore.user?.avatar"
+              class="user-avatar"
+            />
             <div v-else class="ai-avatar">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="10" rx="2"/>
-                <circle cx="12" cy="5" r="2"/>
-                <path d="M12 7v4"/>
-                <line x1="8" y1="16" x2="8" y2="16"/>
-                <line x1="16" y1="16" x2="16" y2="16"/>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="11" width="18" height="10" rx="2" />
+                <circle cx="12" cy="5" r="2" />
+                <path d="M12 7v4" />
+                <line x1="8" y1="16" x2="8" y2="16" />
+                <line x1="16" y1="16" x2="16" y2="16" />
               </svg>
             </div>
           </div>
@@ -83,12 +143,21 @@
         <!-- AI 正在输入提示 -->
         <div v-if="isAiTyping" class="typing-indicator">
           <div class="ai-avatar">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="10" rx="2"/>
-              <circle cx="12" cy="5" r="2"/>
-              <path d="M12 7v4"/>
-              <line x1="8" y1="16" x2="8" y2="16"/>
-              <line x1="16" y1="16" x2="16" y2="16"/>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="11" width="18" height="10" rx="2" />
+              <circle cx="12" cy="5" r="2" />
+              <path d="M12 7v4" />
+              <line x1="8" y1="16" x2="8" y2="16" />
+              <line x1="16" y1="16" x2="16" y2="16" />
             </svg>
           </div>
           <div class="typing-bubble">
@@ -113,10 +182,33 @@
             show-word-limit
             class="chat-input"
           />
-          <el-button class="send-button" @click="sendMessage" :loading="isSending" :disabled="!inputMessage.trim()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <el-button
+            class="send-button"
+            @click="sendMessage"
+            :loading="isSending"
+            :disabled="!inputMessage.trim()"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M22 2L11 13"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M22 2L15 22L11 13L2 9L22 2Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
             发送
           </el-button>
@@ -126,9 +218,16 @@
       <!-- 快捷问题 -->
       <div v-if="messageList.length === 0" class="quick-questions">
         <div class="quick-question-title">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01" />
           </svg>
           常见问题
         </div>
@@ -148,225 +247,225 @@
 </template>
 
 <script setup>
-import { ref, nextTick, watch, computed, onMounted, onUnmounted } from "vue";
-import { customerServiceChat } from "@/api/ai";
-import { useUserStore } from "@/stores/userStore";
+import { ref, nextTick, watch, computed, onMounted, onUnmounted } from 'vue'
+import { customerServiceChat } from '@/api/ai'
+import { useUserStore } from '@/stores/userStore'
 
-const userStore = useUserStore();
+const userStore = useUserStore()
 
 // 响应式对话框宽度
-const windowWidth = ref(window.innerWidth);
+const windowWidth = ref(window.innerWidth)
 const dialogWidth = computed(() => {
   // 手机端：留出左右各 16px 的边距
   if (windowWidth.value <= 768) {
-    return `${windowWidth.value - 32}px`;
+    return `${windowWidth.value - 32}px`
   }
   // 平板端
   if (windowWidth.value <= 992) {
-    return "600px";
+    return '600px'
   }
   // 桌面端
-  return "700px";
-});
+  return '700px'
+})
 
 // 监听窗口大小变化
 const handleResize = () => {
-  windowWidth.value = window.innerWidth;
-};
+  windowWidth.value = window.innerWidth
+}
 
 onMounted(() => {
-  window.addEventListener("resize", handleResize);
-});
+  window.addEventListener('resize', handleResize)
+})
 
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 
 // 生成唯一 ID 的函数
 const generateUniqueId = () => {
-  return `chat_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-};
+  return `chat_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+}
 
 // 对话框显示状态
-const dialogVisible = ref(false);
+const dialogVisible = ref(false)
 
 // 会话 ID（用于维持上下文）
-const chatId = ref(generateUniqueId());
+const chatId = ref(generateUniqueId())
 
 // 消息列表
-const messageList = ref([]);
+const messageList = ref([])
 
 // 输入内容
-const inputMessage = ref("");
+const inputMessage = ref('')
 
 // 发送状态
-const isSending = ref(false);
+const isSending = ref(false)
 
 // AI 正在输入状态
-const isAiTyping = ref(false);
+const isAiTyping = ref(false)
 
 // 消息列表引用
-const messageListRef = ref(null);
+const messageListRef = ref(null)
 
 // 快捷问题 - 常见问题列表
 const quickQuestions = ref([
-  "总结这个项目",
-  "我想申请友链",
-  "如何发布文章？",
-  "如何创建专栏？",
-  "如何修改个人资料？",
-  "如何给其他用户发私信？",
-  "如何查看我收到的通知？",
-  "如何查看我的文章数据？",
-  "如何管理我的收藏？",
-  "如何关注其他用户？",
-  "专栏和文章有什么区别？",
-  "标签有什么作用？",
-  "文章可以设置哪些可见性？",
-  "如何上传图片？",
-  "如何删除或编辑已发布的文章？",
-  "如何提高文章的阅读量？",
-  "文章为什么没有通过审核？",
-]);
+  '总结这个项目',
+  '我想申请友链',
+  '如何发布文章？',
+  '如何创建专栏？',
+  '如何修改个人资料？',
+  '如何给其他用户发私信？',
+  '如何查看我收到的通知？',
+  '如何查看我的文章数据？',
+  '如何管理我的收藏？',
+  '如何关注其他用户？',
+  '专栏和文章有什么区别？',
+  '标签有什么作用？',
+  '文章可以设置哪些可见性？',
+  '如何上传图片？',
+  '如何删除或编辑已发布的文章？',
+  '如何提高文章的阅读量？',
+  '文章为什么没有通过审核？',
+])
 
 // 处理键盘事件
 const handleKeydown = (event) => {
   // Shift + Enter 换行，Enter 发送
-  if (event.key === "Enter" && !event.shiftKey) {
-    event.preventDefault();
-    sendMessage();
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault()
+    sendMessage()
   }
-};
+}
 
 // 格式化时间
 const formatTime = () => {
-  const now = new Date();
-  return `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
-};
+  const now = new Date()
+  return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+}
 
 // 滚动到底部
 const scrollToBottom = () => {
   nextTick(() => {
     if (messageListRef.value) {
-      messageListRef.value.scrollTop = messageListRef.value.scrollHeight;
+      messageListRef.value.scrollTop = messageListRef.value.scrollHeight
     }
-  });
-};
+  })
+}
 
 // 发送消息
 const sendMessage = async () => {
-  const message = inputMessage.value.trim();
-  if (!message || isSending.value) return;
+  const message = inputMessage.value.trim()
+  if (!message || isSending.value) return
 
   // 添加用户消息到列表
   messageList.value.push({
-    role: "user",
+    role: 'user',
     content: message,
     time: formatTime(),
-  });
+  })
 
-  inputMessage.value = "";
-  isSending.value = true;
-  isAiTyping.value = true;
-  scrollToBottom();
+  inputMessage.value = ''
+  isSending.value = true
+  isAiTyping.value = true
+  scrollToBottom()
 
   try {
     // 调用流式 API
-    const response = await customerServiceChat(message, chatId.value);
+    const response = await customerServiceChat(message, chatId.value)
 
     if (!response.ok) {
-      throw new Error("网络请求失败");
+      throw new Error('网络请求失败')
     }
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
 
     // 创建 AI 消息对象
     const aiMessage = {
-      role: "ai",
-      content: "",
+      role: 'ai',
+      content: '',
       time: formatTime(),
-    };
+    }
 
     // 添加 AI 消息占位
-    messageList.value.push(aiMessage);
-    isAiTyping.value = false;
+    messageList.value.push(aiMessage)
+    isAiTyping.value = false
 
     // 获取消息在列表中的索引，确保引用正确
-    const messageIndex = messageList.value.length - 1;
-    scrollToBottom();
+    const messageIndex = messageList.value.length - 1
+    scrollToBottom()
 
     // 读取流式响应
     while (true) {
-      const { done, value } = await reader.read();
+      const { done, value } = await reader.read()
       if (done) {
-        break;
+        break
       }
 
-      const chunk = decoder.decode(value, { stream: true });
+      const chunk = decoder.decode(value, { stream: true })
 
       // 直接修改列表中的消息内容，触发 Vue 响应式更新
-      messageList.value[messageIndex].content += chunk;
+      messageList.value[messageIndex].content += chunk
 
       // 使用 nextTick 确保 DOM 更新后再滚动
-      await nextTick();
-      scrollToBottom();
+      await nextTick()
+      scrollToBottom()
     }
   } catch (error) {
-    ElMessage.error("发送消息失败，请稍后重试");
+    ElMessage.error('发送消息失败，请稍后重试')
     // 移除最后一条消息
-    if (messageList.value[messageList.value.length - 1].role === "ai") {
-      messageList.value.pop();
+    if (messageList.value[messageList.value.length - 1].role === 'ai') {
+      messageList.value.pop()
     }
   } finally {
-    isSending.value = false;
-    isAiTyping.value = false;
+    isSending.value = false
+    isAiTyping.value = false
   }
-};
+}
 
 // 选择快捷问题
 const selectQuickQuestion = (question) => {
-  inputMessage.value = question;
-  sendMessage();
-};
+  inputMessage.value = question
+  sendMessage()
+}
 
 // 清空对话
 const clearChat = () => {
-  ElMessageBox.confirm("确定要清空对话记录吗？", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要清空对话记录吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(() => {
-      messageList.value = [];
-      chatId.value = generateUniqueId(); // 重新生成会话 ID
-      ElMessage.success("对话已清空");
+      messageList.value = []
+      chatId.value = generateUniqueId() // 重新生成会话 ID
+      ElMessage.success('对话已清空')
     })
-    .catch(() => {});
-};
+    .catch(() => {})
+}
 
 // 打开对话框
 const open = () => {
-  dialogVisible.value = true;
-};
+  dialogVisible.value = true
+}
 
 // 切换对话框状态
 const toggle = () => {
-  dialogVisible.value = !dialogVisible.value;
-};
+  dialogVisible.value = !dialogVisible.value
+}
 
 // 暴露方法给父组件
 defineExpose({
   open,
   toggle,
-});
+})
 
 // 监听对话框关闭
 watch(dialogVisible, (newVal) => {
   if (newVal) {
-    scrollToBottom();
+    scrollToBottom()
   }
-});
+})
 </script>
 
 <style lang="scss" scoped>
@@ -440,7 +539,7 @@ watch(dialogVisible, (newVal) => {
         color: var(--el-text-color-primary);
       }
 
-      :deep(.svg-icon) {
+      ::v-deep(.svg-icon) {
         width: 20px;
         height: 20px;
       }
@@ -449,7 +548,8 @@ watch(dialogVisible, (newVal) => {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -731,7 +831,7 @@ watch(dialogVisible, (newVal) => {
         flex: 1;
         min-width: 0;
 
-        :deep(.el-textarea__inner) {
+        ::v-deep(.el-textarea__inner) {
           resize: none;
           font-family: inherit;
           line-height: 1.5;
@@ -765,7 +865,7 @@ watch(dialogVisible, (newVal) => {
           }
         }
 
-        :deep(.el-input__count) {
+        ::v-deep(.el-input__count) {
           bottom: 4px;
           right: 8px;
           line-height: 1;
@@ -923,7 +1023,7 @@ watch(dialogVisible, (newVal) => {
 }
 
 // 对话框响应式样式
-:deep(.customer-service-dialog) {
+::v-deep(.customer-service-dialog) {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);

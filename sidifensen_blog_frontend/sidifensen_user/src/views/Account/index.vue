@@ -5,7 +5,7 @@
       <div class="brand-content">
         <h1 class="brand-name">Sidifensen</h1>
         <p class="brand-tagline">
-          专业的技术内容平台<br>
+          专业的技术内容平台<br />
           连接开发者，分享知识价值
         </p>
         <div class="brand-stats">

@@ -64,94 +64,94 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { Bell } from "@element-plus/icons-vue";
-import { getAnnouncementPage, readAnnouncement, getReadAnnouncementIds } from "@/api/announcement";
-import { formatTimeAgo } from "@/utils/timeUtils";
+import { ref, onMounted } from 'vue'
+import { Bell } from '@element-plus/icons-vue'
+import { getAnnouncementPage, readAnnouncement, getReadAnnouncementIds } from '@/api/announcement'
+import { formatTimeAgo } from '@/utils/timeUtils'
 
-const announcementList = ref([]);
-const readIds = ref([]);
-const loading = ref(false);
-const loadingMore = ref(false);
-const currentPage = ref(1);
-const pageSize = ref(20);
-const total = ref(0);
-const hasMore = ref(true);
+const announcementList = ref([])
+const readIds = ref([])
+const loading = ref(false)
+const loadingMore = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
+const hasMore = ref(true)
 
-const isRead = (id) => readIds.value.includes(id);
+const isRead = (id) => readIds.value.includes(id)
 
 const formatTime = (time) => {
-  if (!time) return '';
-  return formatTimeAgo(time);
-};
+  if (!time) return ''
+  return formatTimeAgo(time)
+}
 
 // 加载已读ID列表
 const fetchReadIds = async () => {
   try {
-    const res = await getReadAnnouncementIds();
-    readIds.value = res.data || [];
+    const res = await getReadAnnouncementIds()
+    readIds.value = res.data || []
   } catch (error) {
-    readIds.value = [];
+    readIds.value = []
   }
-};
+}
 
 // 加载公告列表
 const fetchAnnouncements = async (reset = false) => {
   if (reset) {
-    loading.value = true;
-    currentPage.value = 1;
-    announcementList.value = [];
-    hasMore.value = true;
+    loading.value = true
+    currentPage.value = 1
+    announcementList.value = []
+    hasMore.value = true
   } else {
-    loadingMore.value = true;
+    loadingMore.value = true
   }
 
   try {
-    const res = await getAnnouncementPage(currentPage.value, pageSize.value);
-    const data = res.data || {};
-    const list = data.data || [];
+    const res = await getAnnouncementPage(currentPage.value, pageSize.value)
+    const data = res.data || {}
+    const list = data.data || []
 
     if (reset) {
-      announcementList.value = list;
+      announcementList.value = list
     } else {
-      announcementList.value = [...announcementList.value, ...list];
+      announcementList.value = [...announcementList.value, ...list]
     }
 
-    total.value = data.total || 0;
-    hasMore.value = announcementList.value.length < total.value;
+    total.value = data.total || 0
+    hasMore.value = announcementList.value.length < total.value
   } catch (error) {
-    ElMessage.error("获取公告列表失败");
+    ElMessage.error('获取公告列表失败')
   } finally {
-    loading.value = false;
-    loadingMore.value = false;
+    loading.value = false
+    loadingMore.value = false
   }
-};
+}
 
 // 点击公告卡片：标记已读
 const handleCardClick = async (item) => {
-  if (isRead(item.id)) return;
+  if (isRead(item.id)) return
 
   try {
-    await readAnnouncement(item.id);
+    await readAnnouncement(item.id)
     if (!readIds.value.includes(item.id)) {
-      readIds.value.push(item.id);
+      readIds.value.push(item.id)
     }
   } catch (error) {
     // 静默处理
   }
-};
+}
 
 // 翻页
 const handlePageChange = (page) => {
-  currentPage.value = page;
-  fetchAnnouncements(true);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+  currentPage.value = page
+  fetchAnnouncements(true)
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 
 onMounted(async () => {
-  await fetchAnnouncements(true);
-  await fetchReadIds();
-});
+  await fetchAnnouncements(true)
+  await fetchReadIds()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -210,7 +210,7 @@ onMounted(async () => {
 
         .header-copy__title {
           margin: 0;
-          font-family: "Helvetica Neue", Arial, sans-serif;
+          font-family: 'Helvetica Neue', Arial, sans-serif;
           font-size: 34px;
           color: var(--text-title);
         }
@@ -250,7 +250,9 @@ onMounted(async () => {
             border-radius: 18px;
             box-shadow: var(--shadow);
             cursor: pointer;
-            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+            transition:
+              box-shadow 0.2s ease,
+              border-color 0.2s ease;
 
             &:hover {
               border-color: var(--border-strong);
@@ -386,7 +388,7 @@ onMounted(async () => {
         border-radius: 18px;
         box-shadow: var(--shadow);
 
-        :deep(.el-pagination) {
+        ::v-deep(.el-pagination) {
           .el-pager li {
             border-radius: 8px;
             min-width: 36px;

@@ -5,15 +5,21 @@
         <button
           :class="['trend-days__btn', days === 7 ? 'is-active' : '']"
           @click="handleDaysChange(7)"
-        >7 天</button>
+        >
+          7 天
+        </button>
         <button
           :class="['trend-days__btn', days === 14 ? 'is-active' : '']"
           @click="handleDaysChange(14)"
-        >14 天</button>
+        >
+          14 天
+        </button>
         <button
           :class="['trend-days__btn', days === 30 ? 'is-active' : '']"
           @click="handleDaysChange(30)"
-        >30 天</button>
+        >
+          30 天
+        </button>
       </div>
     </template>
     <div class="trend-chart-container">
@@ -23,23 +29,23 @@
 </template>
 
 <script setup>
-import { TrendCharts } from "@element-plus/icons-vue"
-import DetailCard from "@/components/cards/DetailCard.vue"
-import VisitorTrendChart from "@/components/charts/VisitorTrendChart.vue"
+import { TrendCharts } from '@element-plus/icons-vue'
+import DetailCard from '@/components/cards/DetailCard.vue'
+import VisitorTrendChart from '@/components/charts/VisitorTrendChart.vue'
 
 const props = defineProps({
   data: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   loading: {
     type: Boolean,
-    default: false
+    default: false,
   },
   days: {
     type: Number,
-    default: 7
-  }
+    default: 7,
+  },
 })
 
 const emit = defineEmits(['update:days', 'days-change'])
@@ -83,7 +89,9 @@ $toggle-active-text-dark: #1a1a1a;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
 
     &:hover {
       background: var(--toggle-hover-bg, #{$toggle-hover-bg-light});

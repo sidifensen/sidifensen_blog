@@ -5,7 +5,13 @@
     </el-header>
     <el-container class="menu">
       <el-aside class="sidebar">
-        <el-menu class="pc-menu" :default-active="activeIndex" router @select="handleSelect" :default-openeds="['/creation/manage']">
+        <el-menu
+          class="pc-menu"
+          :default-active="activeIndex"
+          router
+          @select="handleSelect"
+          :default-openeds="['/creation/manage']"
+        >
           <div class="create">
             <a href="/editor" target="_blank">
               <div class="create-button">
@@ -39,28 +45,28 @@
   </el-container>
 </template>
 <script setup>
-import CreationHeader from "@/components/CreationHeader.vue";
-import { ref, computed, watch } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import { Plus, House, Files, HomeFilled } from "@element-plus/icons-vue";
+import CreationHeader from '@/components/CreationHeader.vue'
+import { ref, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { Plus, House, Files, HomeFilled } from '@element-plus/icons-vue'
 
-const router = useRouter();
-const route = useRoute();
-const activeIndex = ref("/creation");
+const router = useRouter()
+const route = useRoute()
+const activeIndex = ref('/creation')
 
 // 计算属性自动同步当前路由
 const computedActiveIndex = computed(() => {
-  return route.path;
-});
+  return route.path
+})
 
 // 监听computed属性变化，更新activeIndex
 watch(
   computedActiveIndex,
   (newPath) => {
-    activeIndex.value = newPath;
+    activeIndex.value = newPath
   },
-  { immediate: true }
-);
+  { immediate: true },
+)
 </script>
 <style lang="scss" scoped>
 .layout-container {

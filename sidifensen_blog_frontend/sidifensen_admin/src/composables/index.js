@@ -4,5 +4,5 @@ export {
   usePagination,
   useBatchSelection,
   useConfirmDelete,
-  useConfirmAction
-} from "./useAdmin";
+  useConfirmAction,
+} from './useAdmin'

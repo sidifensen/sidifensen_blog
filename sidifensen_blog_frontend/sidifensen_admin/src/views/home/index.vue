@@ -60,28 +60,16 @@
           :total-user-count="userCount"
           :loading="statisticsLoading"
         />
-        <ArticleStatusCard
-          :data="articleStatistics"
-          :loading="statisticsLoading"
-        />
+        <ArticleStatusCard :data="articleStatistics" :loading="statisticsLoading" />
         <VisitorTrendCard
           :data="visitorTrend"
           :loading="trendLoading"
           v-model:days="trendDays"
           @days-change="handleDaysChange"
         />
-        <InteractionTrendCard
-          :data="interactionTrend"
-          :loading="interactionTrendLoading"
-        />
-        <UserGrowthCard
-          :data="weeklyTrend"
-          :loading="weeklyTrendLoading"
-        />
-        <VipStatisticsCard
-          :data="vipStatisticsData"
-          :loading="vipStatisticsLoading"
-        />
+        <InteractionTrendCard :data="interactionTrend" :loading="interactionTrendLoading" />
+        <UserGrowthCard :data="weeklyTrend" :loading="weeklyTrendLoading" />
+        <VipStatisticsCard :data="vipStatisticsData" :loading="vipStatisticsLoading" />
       </div>
     </div>
 
@@ -91,22 +79,37 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { User, Document, ChatLineRound, View, Monitor, Picture, Refresh } from "@element-plus/icons-vue";
-import { getDashboardStatistics, getExamineCount, getVipStatistics, getWeeklyTrend, getInteractionTrend, getVisitorTrend } from "@/api/dashboard";
+import { ref, computed, onMounted } from 'vue'
+import {
+  User,
+  Document,
+  ChatLineRound,
+  View,
+  Monitor,
+  Picture,
+  Refresh,
+} from '@element-plus/icons-vue'
+import {
+  getDashboardStatistics,
+  getExamineCount,
+  getVipStatistics,
+  getWeeklyTrend,
+  getInteractionTrend,
+  getVisitorTrend,
+} from '@/api/dashboard'
 
 // 公共组件
-import PageHeader from "@/components/PageHeader.vue";
-import StatCard from "@/components/StatCard.vue";
-import QuickActions from "@/components/QuickActions.vue";
+import PageHeader from '@/components/PageHeader.vue'
+import StatCard from '@/components/StatCard.vue'
+import QuickActions from '@/components/QuickActions.vue'
 
 // 图表卡片组件
-import UserActivityCard from "@/components/cards/UserActivityCard.vue";
-import ArticleStatusCard from "@/components/cards/ArticleStatusCard.vue";
-import VisitorTrendCard from "@/components/cards/VisitorTrendCard.vue";
-import InteractionTrendCard from "@/components/cards/InteractionTrendCard.vue";
-import UserGrowthCard from "@/components/cards/UserGrowthCard.vue";
-import VipStatisticsCard from "@/components/cards/VipStatisticsCard.vue";
+import UserActivityCard from '@/components/cards/UserActivityCard.vue'
+import ArticleStatusCard from '@/components/cards/ArticleStatusCard.vue'
+import VisitorTrendCard from '@/components/cards/VisitorTrendCard.vue'
+import InteractionTrendCard from '@/components/cards/InteractionTrendCard.vue'
+import UserGrowthCard from '@/components/cards/UserGrowthCard.vue'
+import VipStatisticsCard from '@/components/cards/VipStatisticsCard.vue'
 
 // 快速操作配置
 const quickActions = computed(() => [
@@ -116,7 +119,7 @@ const quickActions = computed(() => [
     description: '审核待发布文章',
     icon: Document,
     type: 'article',
-    badge: examineCountData.value.articleCount
+    badge: examineCountData.value.articleCount,
   },
   {
     path: '/comment/examine',
@@ -124,7 +127,7 @@ const quickActions = computed(() => [
     description: '管理用户评论',
     icon: ChatLineRound,
     type: 'comment',
-    badge: examineCountData.value.commentCount
+    badge: examineCountData.value.commentCount,
   },
   {
     path: '/system/user',
@@ -132,7 +135,7 @@ const quickActions = computed(() => [
     description: '管理系统用户',
     icon: User,
     type: 'user',
-    badge: 0
+    badge: 0,
   },
   {
     path: '/photo/examine',
@@ -140,147 +143,145 @@ const quickActions = computed(() => [
     description: '审核上传图片',
     icon: Picture,
     type: 'photo',
-    badge: examineCountData.value.photoCount
-  }
+    badge: examineCountData.value.photoCount,
+  },
 ])
 
 // 响应式数据
-const loading = ref(false);
-const statisticsLoading = ref(true);
-const userCount = ref(0);
-const todayActiveUserCount = ref(0);
-const articleStatistics = ref(null);
-const totalVisits = ref(0);
-const todayVisits = ref(0);
-const trendDays = ref(7);
-const visitorTrend = ref([]);
-const trendLoading = ref(false);
+const loading = ref(false)
+const statisticsLoading = ref(true)
+const userCount = ref(0)
+const todayActiveUserCount = ref(0)
+const articleStatistics = ref(null)
+const totalVisits = ref(0)
+const todayVisits = ref(0)
+const trendDays = ref(7)
+const visitorTrend = ref([])
+const trendLoading = ref(false)
 const examineCountData = ref({
   articleCount: 0,
   commentCount: 0,
-  photoCount: 0
-});
+  photoCount: 0,
+})
 const vipStatisticsData = ref({
   totalVipCount: 0,
   newVipCount: 0,
   newVipCount30Days: 0,
   normalUserCount: 0,
-  vipPercentage: 0
-});
-const vipStatisticsLoading = ref(false);
-const weeklyTrend = ref([]);
-const weeklyTrendLoading = ref(false);
-const interactionTrend = ref([]);
-const interactionTrendLoading = ref(false);
+  vipPercentage: 0,
+})
+const vipStatisticsLoading = ref(false)
+const weeklyTrend = ref([])
+const weeklyTrendLoading = ref(false)
+const interactionTrend = ref([])
+const interactionTrendLoading = ref(false)
 
 // 获取所有统计数据
 const fetchAllStatistics = async () => {
   try {
-    statisticsLoading.value = true;
-    const res = await getDashboardStatistics(7);
-    const data = res.data;
+    statisticsLoading.value = true
+    const res = await getDashboardStatistics(7)
+    const data = res.data
 
-    userCount.value = data.userTotalCount || 0;
-    todayActiveUserCount.value = data.todayActiveUserCount || 0;
-    articleStatistics.value = data.articleStatistics || null;
-    totalVisits.value = data.totalVisits || 0;
-    todayVisits.value = data.todayVisits || 0;
-    visitorTrend.value = data.visitorTrend || [];
-
+    userCount.value = data.userTotalCount || 0
+    todayActiveUserCount.value = data.todayActiveUserCount || 0
+    articleStatistics.value = data.articleStatistics || null
+    totalVisits.value = data.totalVisits || 0
+    todayVisits.value = data.todayVisits || 0
+    visitorTrend.value = data.visitorTrend || []
   } catch (error) {
-    ElMessage.error("获取统计数据失败");
-    console.error("获取统计数据失败:", error);
+    ElMessage.error('获取统计数据失败')
+    console.error('获取统计数据失败:', error)
   } finally {
-    statisticsLoading.value = false;
+    statisticsLoading.value = false
   }
-};
+}
 
 // 获取访客趋势数据
 const fetchVisitorTrend = async () => {
   try {
-    trendLoading.value = true;
-    const res = await getVisitorTrend(trendDays.value);
-    visitorTrend.value = res.data || [];
+    trendLoading.value = true
+    const res = await getVisitorTrend(trendDays.value)
+    visitorTrend.value = res.data || []
   } catch (error) {
-    ElMessage.error("获取访客趋势失败");
-    console.error("获取访客趋势失败:", error);
+    ElMessage.error('获取访客趋势失败')
+    console.error('获取访客趋势失败:', error)
   } finally {
-    trendLoading.value = false;
+    trendLoading.value = false
   }
-};
+}
 
 // 获取待审核数量
 const fetchExamineCount = async () => {
   try {
-    const res = await getExamineCount();
-    examineCountData.value = res.data || { articleCount: 0, commentCount: 0, photoCount: 0 };
+    const res = await getExamineCount()
+    examineCountData.value = res.data || { articleCount: 0, commentCount: 0, photoCount: 0 }
   } catch (error) {
-    console.error('获取待审核数量失败:', error);
+    console.error('获取待审核数量失败:', error)
   }
-};
+}
 
 // 获取互动趋势数据
 const fetchInteractionTrend = async () => {
   try {
-    interactionTrendLoading.value = true;
-    const res = await getInteractionTrend();
-    interactionTrend.value = res.data || [];
+    interactionTrendLoading.value = true
+    const res = await getInteractionTrend()
+    interactionTrend.value = res.data || []
   } catch (error) {
-    console.error('获取互动趋势数据失败:', error);
+    console.error('获取互动趋势数据失败:', error)
   } finally {
-    interactionTrendLoading.value = false;
+    interactionTrendLoading.value = false
   }
-};
+}
 
 // 获取周趋势数据
 const fetchWeeklyTrend = async () => {
   try {
-    weeklyTrendLoading.value = true;
-    const res = await getWeeklyTrend();
-    weeklyTrend.value = res.data || [];
+    weeklyTrendLoading.value = true
+    const res = await getWeeklyTrend()
+    weeklyTrend.value = res.data || []
   } catch (error) {
-    console.error('获取周趋势数据失败:', error);
+    console.error('获取周趋势数据失败:', error)
   } finally {
-    weeklyTrendLoading.value = false;
+    weeklyTrendLoading.value = false
   }
-};
+}
 
 // 获取 VIP 统计数据
 const fetchVipStatistics = async () => {
   try {
-    vipStatisticsLoading.value = true;
-    const res = await getVipStatistics();
-    vipStatisticsData.value = res.data || { totalVipCount: 0, newVipCount: 0 };
+    vipStatisticsLoading.value = true
+    const res = await getVipStatistics()
+    vipStatisticsData.value = res.data || { totalVipCount: 0, newVipCount: 0 }
   } catch (error) {
-    console.error('获取VIP统计数据失败:', error);
+    console.error('获取VIP统计数据失败:', error)
   } finally {
-    vipStatisticsLoading.value = false;
+    vipStatisticsLoading.value = false
   }
-};
-
+}
 
 // 切换天数
 const handleDaysChange = () => {
-  fetchVisitorTrend();
-};
+  fetchVisitorTrend()
+}
 
 // 刷新数据
 const refreshData = () => {
-  loading.value = true;
+  loading.value = true
   fetchAllStatistics().finally(() => {
-    loading.value = false;
-    ElMessage.success("数据已刷新");
-  });
-};
+    loading.value = false
+    ElMessage.success('数据已刷新')
+  })
+}
 
 // 生命周期
 onMounted(async () => {
-  await fetchAllStatistics();
-  await fetchExamineCount();
-  await fetchInteractionTrend();
-  await fetchWeeklyTrend();
-  await fetchVipStatistics();
-});
+  await fetchAllStatistics()
+  await fetchExamineCount()
+  await fetchInteractionTrend()
+  await fetchWeeklyTrend()
+  await fetchVipStatistics()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -350,8 +351,7 @@ onMounted(async () => {
   padding: 24px;
   background:
     radial-gradient(circle at top right, var(--page-glow), transparent 28%),
-    linear-gradient(180deg, var(--page-overlay-top), var(--page-overlay-bottom)),
-    var(--bg-page);
+    linear-gradient(180deg, var(--page-overlay-top), var(--page-overlay-bottom)), var(--bg-page);
 
   /* 统计卡片区域 */
   .stats-section {

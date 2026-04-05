@@ -5,7 +5,14 @@
       <div class="card-header">
         <h2 class="card-title">用户文章管理</h2>
         <div class="card-actions">
-          <el-input v-model="searchUserKeyword" placeholder="搜索用户名" class="search-input" size="small" clearable @input="handleUserSearch">
+          <el-input
+            v-model="searchUserKeyword"
+            placeholder="搜索用户名"
+            class="search-input"
+            size="small"
+            clearable
+            @input="handleUserSearch"
+          >
             <template #prefix>
               <el-icon><Search /></el-icon>
             </template>
@@ -41,7 +48,15 @@
                   </div>
                 </div>
                 <div class="user-actions">
-                  <el-button type="primary" size="default" @click="handleViewUserArticles(user)" :icon="Document" class="view-articles-btn"> 查看文章 </el-button>
+                  <el-button
+                    type="primary"
+                    size="default"
+                    @click="handleViewUserArticles(user)"
+                    :icon="Document"
+                    class="view-articles-btn"
+                  >
+                    查看文章
+                  </el-button>
                 </div>
               </div>
             </div>
@@ -55,8 +70,18 @@
       <div class="card-header">
         <h2 class="card-title">{{ currentUser?.nickname || currentUser?.username }}的文章</h2>
         <div class="card-actions">
-          <el-button @click="handleBackToUsers" :icon="ArrowLeft" size="small">返回用户列表</el-button>
-          <el-select v-model="searchExamineStatus" placeholder="审核状态" filterable clearable size="small" class="search-input" @change="handleSearch">
+          <el-button @click="handleBackToUsers" :icon="ArrowLeft" size="small"
+            >返回用户列表</el-button
+          >
+          <el-select
+            v-model="searchExamineStatus"
+            placeholder="审核状态"
+            filterable
+            clearable
+            size="small"
+            class="search-input"
+            @change="handleSearch"
+          >
             <el-option label="待审核" value="0" />
             <el-option label="审核通过" value="1" />
             <el-option label="审核不通过" value="2" />
@@ -66,24 +91,87 @@
       </div>
 
       <div class="card-second">
-        <el-date-picker v-model="searchCreateTimeStart" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间开始" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
-        <el-date-picker v-model="searchCreateTimeEnd" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间结束" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
+        <el-date-picker
+          v-model="searchCreateTimeStart"
+          type="datetime"
+          format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          placeholder="创建时间开始"
+          :prefix-icon="Calendar"
+          size="small"
+          class="search-input"
+          clearable
+          @change="handleSearch"
+        />
+        <el-date-picker
+          v-model="searchCreateTimeEnd"
+          type="datetime"
+          format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          placeholder="创建时间结束"
+          :prefix-icon="Calendar"
+          size="small"
+          class="search-input"
+          clearable
+          @change="handleSearch"
+        />
       </div>
 
       <div class="card-third">
-        <el-button type="primary" plain round @click="handleBatchAudit" :disabled="selectedArticles.length === 0" :loading="batchAuditLoading"> 批量审核 </el-button>
-        <el-button type="warning" plain round @click="handleBatchReject" :disabled="selectedArticles.length === 0" :loading="batchRejectLoading"> 批量拒绝 </el-button>
-        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedArticles.length === 0" :loading="batchDeleteLoading"> 批量删除 </el-button>
+        <el-button
+          type="primary"
+          plain
+          round
+          @click="handleBatchAudit"
+          :disabled="selectedArticles.length === 0"
+          :loading="batchAuditLoading"
+        >
+          批量审核
+        </el-button>
+        <el-button
+          type="warning"
+          plain
+          round
+          @click="handleBatchReject"
+          :disabled="selectedArticles.length === 0"
+          :loading="batchRejectLoading"
+        >
+          批量拒绝
+        </el-button>
+        <el-button
+          type="danger"
+          plain
+          round
+          @click="handleBatchDelete"
+          :disabled="selectedArticles.length === 0"
+          :loading="batchDeleteLoading"
+        >
+          批量删除
+        </el-button>
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table v-loading="loading" :data="paginatedArticleList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
+        <el-table
+          v-loading="loading"
+          :data="paginatedArticleList"
+          class="table"
+          @selection-change="handleSelectionChange"
+          :row-style="{ height: 'auto' }"
+          :cell-style="{ padding: '8px 0' }"
+        >
           <el-table-column type="selection" width="30" />
           <el-table-column prop="coverUrl" label="封面" width="120">
             <template #default="{ row }">
               <div class="article-cover-container">
-                <el-image v-if="row.coverUrl" :src="row.coverUrl" class="article-cover" :preview-src-list="[row.coverUrl]" fit="cover" preview-teleported />
+                <el-image
+                  v-if="row.coverUrl"
+                  :src="row.coverUrl"
+                  class="article-cover"
+                  :preview-src-list="[row.coverUrl]"
+                  fit="cover"
+                  preview-teleported
+                />
                 <div v-else class="no-cover">暂无封面</div>
               </div>
             </template>
@@ -107,7 +195,7 @@
           <el-table-column prop="reprintType" label="类型" width="60">
             <template #default="{ row }">
               <el-tag :type="row.reprintType === 0 ? 'success' : 'warning'" size="small">
-                {{ row.reprintType === 0 ? "原创" : "转载" }}
+                {{ row.reprintType === 0 ? '原创' : '转载' }}
               </el-tag>
             </template>
           </el-table-column>
@@ -127,8 +215,19 @@
           </el-table-column>
           <el-table-column prop="examineStatus" label="审核状态" width="80">
             <template #default="{ row }">
-              <div class="article-status" :class="row.examineStatus === 0 ? 'status-unaudited' : row.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-                {{ row.examineStatus === 0 ? "待审核" : row.examineStatus === 1 ? "已审核" : "未通过" }}
+              <div
+                class="article-status"
+                :class="
+                  row.examineStatus === 0
+                    ? 'status-unaudited'
+                    : row.examineStatus === 1
+                      ? 'status-audited'
+                      : 'status-rejected'
+                "
+              >
+                {{
+                  row.examineStatus === 0 ? '待审核' : row.examineStatus === 1 ? '已审核' : '未通过'
+                }}
               </div>
             </template>
           </el-table-column>
@@ -141,11 +240,46 @@
           <el-table-column label="操作" width="390">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button type="info" @click="handleViewArticle(row.id)" :icon="View" class="view-button" size="small">查看</el-button>
-                <el-button type="success" @click="handleEditArticle(row)" :icon="Edit" class="edit-button" size="small">修改</el-button>
-                <el-button type="primary" @click="handleAuditArticle(row.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
-                <el-button type="warning" @click="handleRejectArticle(row.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
-                <el-button type="danger" @click="handleDeleteArticle(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
+                <el-button
+                  type="info"
+                  @click="handleViewArticle(row.id)"
+                  :icon="View"
+                  class="view-button"
+                  size="small"
+                  >查看</el-button
+                >
+                <el-button
+                  type="success"
+                  @click="handleEditArticle(row)"
+                  :icon="Edit"
+                  class="edit-button"
+                  size="small"
+                  >修改</el-button
+                >
+                <el-button
+                  type="primary"
+                  @click="handleAuditArticle(row.id)"
+                  :icon="Check"
+                  class="examine-button"
+                  size="small"
+                  >审核</el-button
+                >
+                <el-button
+                  type="warning"
+                  @click="handleRejectArticle(row.id)"
+                  :icon="Close"
+                  class="reject-button"
+                  size="small"
+                  >拒绝</el-button
+                >
+                <el-button
+                  type="danger"
+                  @click="handleDeleteArticle(row.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                  size="small"
+                  >删除</el-button
+                >
               </div>
             </template>
           </el-table-column>
@@ -155,23 +289,56 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="article-cards">
-          <el-card v-for="article in paginatedArticleList" :key="article.id" class="article-card" :class="{ 'is-selected': isArticleSelected(article.id) }">
+          <el-card
+            v-for="article in paginatedArticleList"
+            :key="article.id"
+            class="article-card"
+            :class="{ 'is-selected': isArticleSelected(article.id) }"
+          >
             <div class="article-card-content">
               <div class="article-header-section">
                 <div class="article-cover-mobile">
-                  <el-checkbox :model-value="isArticleSelected(article.id)" @change="handleMobileSelect(article)" class="mobile-checkbox" />
-                  <el-image v-if="article.coverUrl" :src="article.coverUrl" class="article-cover-img" :preview-src-list="[article.coverUrl]" fit="cover" preview-teleported />
+                  <el-checkbox
+                    :model-value="isArticleSelected(article.id)"
+                    @change="handleMobileSelect(article)"
+                    class="mobile-checkbox"
+                  />
+                  <el-image
+                    v-if="article.coverUrl"
+                    :src="article.coverUrl"
+                    class="article-cover-img"
+                    :preview-src-list="[article.coverUrl]"
+                    fit="cover"
+                    preview-teleported
+                  />
                   <div v-else class="no-cover-mobile">暂无封面</div>
                 </div>
                 <div class="article-info">
                   <div class="article-header">
                     <div class="article-id">#{{ article.id }}</div>
-                    <div class="article-status" :class="article.examineStatus === 0 ? 'status-unaudited' : article.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-                      {{ article.examineStatus === 0 ? "待审核" : article.examineStatus === 1 ? "已审核" : "未通过" }}
+                    <div
+                      class="article-status"
+                      :class="
+                        article.examineStatus === 0
+                          ? 'status-unaudited'
+                          : article.examineStatus === 1
+                            ? 'status-audited'
+                            : 'status-rejected'
+                      "
+                    >
+                      {{
+                        article.examineStatus === 0
+                          ? '待审核'
+                          : article.examineStatus === 1
+                            ? '已审核'
+                            : '未通过'
+                      }}
                     </div>
                   </div>
                   <div class="article-title-mobile">{{ article.title }}</div>
-                  <div class="article-description-mobile" v-if="article.description">{{ article.description }}</div>
+                  <div class="article-description-mobile" v-if="article.description">
+                    {{ article.description }}
+                  </div>
                   <div class="article-badges-mobile">
                     <el-tag v-if="article.tag" size="small" type="info">{{ article.tag }}</el-tag>
                   </div>
@@ -179,7 +346,7 @@
                   <!-- 状态标签单独一行 -->
                   <div class="article-status-row">
                     <el-tag :type="article.reprintType === 0 ? 'success' : 'warning'" size="small">
-                      {{ article.reprintType === 0 ? "原创" : "转载" }}
+                      {{ article.reprintType === 0 ? '原创' : '转载' }}
                     </el-tag>
                     <el-tag :type="getVisibleRangeType(article.visibleRange)" size="small">
                       {{ getVisibleRangeText(article.visibleRange) }}
@@ -224,11 +391,46 @@
                 </div>
               </div>
               <div class="article-actions">
-                <el-button type="info" @click="handleViewArticle(article.id)" :icon="View" class="view-button" size="small">查看</el-button>
-                <el-button type="success" @click="handleEditArticle(article)" :icon="Edit" class="edit-button" size="small">修改</el-button>
-                <el-button type="primary" @click="handleAuditArticle(article.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
-                <el-button type="warning" @click="handleRejectArticle(article.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
-                <el-button type="danger" @click="handleDeleteArticle(article.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
+                <el-button
+                  type="info"
+                  @click="handleViewArticle(article.id)"
+                  :icon="View"
+                  class="view-button"
+                  size="small"
+                  >查看</el-button
+                >
+                <el-button
+                  type="success"
+                  @click="handleEditArticle(article)"
+                  :icon="Edit"
+                  class="edit-button"
+                  size="small"
+                  >修改</el-button
+                >
+                <el-button
+                  type="primary"
+                  @click="handleAuditArticle(article.id)"
+                  :icon="Check"
+                  class="examine-button"
+                  size="small"
+                  >审核</el-button
+                >
+                <el-button
+                  type="warning"
+                  @click="handleRejectArticle(article.id)"
+                  :icon="Close"
+                  class="reject-button"
+                  size="small"
+                  >拒绝</el-button
+                >
+                <el-button
+                  type="danger"
+                  @click="handleDeleteArticle(article.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                  size="small"
+                  >删除</el-button
+                >
               </div>
             </div>
           </el-card>
@@ -236,11 +438,27 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <Pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
 
     <!-- 文章详情对话框 -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="90%" class="article-detail-dialog" :close-on-click-modal="false" :close-on-press-escape="true" draggable align-center @close="handleDialogClose">
+    <el-dialog
+      v-model="dialogVisible"
+      :title="dialogTitle"
+      width="90%"
+      class="article-detail-dialog"
+      :close-on-click-modal="false"
+      :close-on-press-escape="true"
+      draggable
+      align-center
+      @close="handleDialogClose"
+    >
       <div v-if="currentArticle" class="article-detail" v-loading="detailLoading">
         <!-- 文章基本信息 -->
         <div class="article-info-section">
@@ -248,16 +466,23 @@
             <!-- 左侧：文章信息 -->
             <div class="article-detail-info">
               <div class="article-title-section">
-                <h2 class="article-title-detail">{{ currentArticle?.title || "无标题" }}</h2>
-                <div class="article-id-detail">#{{ currentArticle?.id || "N/A" }}</div>
+                <h2 class="article-title-detail">{{ currentArticle?.title || '无标题' }}</h2>
+                <div class="article-id-detail">#{{ currentArticle?.id || 'N/A' }}</div>
               </div>
 
               <div class="article-author-section">
                 <el-icon class="author-icon"><User /></el-icon>
-                <span class="author-name-detail">{{ currentUser?.nickname || currentUser?.username || "未知作者" }}</span>
+                <span class="author-name-detail">{{
+                  currentUser?.nickname || currentUser?.username || '未知作者'
+                }}</span>
               </div>
 
-              <div class="article-description-detail" v-if="currentArticle && currentArticle.description && currentArticle.description.trim()">
+              <div
+                class="article-description-detail"
+                v-if="
+                  currentArticle && currentArticle.description && currentArticle.description.trim()
+                "
+              >
                 <el-icon class="desc-icon"><Document /></el-icon>
                 <span>{{ currentArticle.description }}</span>
               </div>
@@ -270,14 +495,26 @@
               <div class="article-badges-detail">
                 <div class="badge-group">
                   <span class="badge-label">文章标签:</span>
-                  <el-tag v-if="currentArticle && currentArticle.tag" type="info" size="small">{{ currentArticle.tag }}</el-tag>
+                  <el-tag v-if="currentArticle && currentArticle.tag" type="info" size="small">{{
+                    currentArticle.tag
+                  }}</el-tag>
                   <span v-else class="no-data">无标签</span>
                 </div>
 
                 <div class="badge-group">
                   <span class="badge-label">所属专栏:</span>
-                  <template v-if="currentArticle && currentArticle.columns && currentArticle.columns.length > 0">
-                    <el-tag v-for="column in currentArticle.columns" :key="column.id" type="primary" size="small" class="column-tag">
+                  <template
+                    v-if="
+                      currentArticle && currentArticle.columns && currentArticle.columns.length > 0
+                    "
+                  >
+                    <el-tag
+                      v-for="column in currentArticle.columns"
+                      :key="column.id"
+                      type="primary"
+                      size="small"
+                      class="column-tag"
+                    >
                       {{ column.name }}
                     </el-tag>
                   </template>
@@ -286,10 +523,16 @@
 
                 <div class="badge-group">
                   <span class="badge-label">文章状态:</span>
-                  <el-tag :type="(currentArticle?.reprintType || 0) === 0 ? 'success' : 'warning'" size="small">
-                    {{ (currentArticle?.reprintType || 0) === 0 ? "原创" : "转载" }}
+                  <el-tag
+                    :type="(currentArticle?.reprintType || 0) === 0 ? 'success' : 'warning'"
+                    size="small"
+                  >
+                    {{ (currentArticle?.reprintType || 0) === 0 ? '原创' : '转载' }}
                   </el-tag>
-                  <el-tag :type="getVisibleRangeType(currentArticle?.visibleRange || 0)" size="small">
+                  <el-tag
+                    :type="getVisibleRangeType(currentArticle?.visibleRange || 0)"
+                    size="small"
+                  >
                     {{ getVisibleRangeText(currentArticle?.visibleRange || 0) }}
                   </el-tag>
                   <el-tag :type="getEditStatusType(currentArticle?.editStatus || 0)" size="small">
@@ -298,9 +541,17 @@
                 </div>
 
                 <!-- 转载链接 -->
-                <div v-if="(currentArticle?.reprintType || 0) === 1 && currentArticle?.reprintUrl" class="badge-group reprint-url-group">
+                <div
+                  v-if="(currentArticle?.reprintType || 0) === 1 && currentArticle?.reprintUrl"
+                  class="badge-group reprint-url-group"
+                >
                   <span class="badge-label">转载链接:</span>
-                  <a :href="currentArticle.reprintUrl" target="_blank" rel="noopener noreferrer" class="reprint-url-link">
+                  <a
+                    :href="currentArticle.reprintUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="reprint-url-link"
+                  >
                     {{ currentArticle.reprintUrl }}
                     <el-icon class="external-link-icon"><Top /></el-icon>
                   </a>
@@ -308,8 +559,23 @@
 
                 <div class="badge-group">
                   <span class="badge-label">审核状态:</span>
-                  <div class="article-status" :class="(currentArticle?.examineStatus || 0) === 0 ? 'status-unaudited' : (currentArticle?.examineStatus || 0) === 1 ? 'status-audited' : 'status-rejected'">
-                    {{ (currentArticle?.examineStatus || 0) === 0 ? "待审核" : (currentArticle?.examineStatus || 0) === 1 ? "已审核" : "未通过" }}
+                  <div
+                    class="article-status"
+                    :class="
+                      (currentArticle?.examineStatus || 0) === 0
+                        ? 'status-unaudited'
+                        : (currentArticle?.examineStatus || 0) === 1
+                          ? 'status-audited'
+                          : 'status-rejected'
+                    "
+                  >
+                    {{
+                      (currentArticle?.examineStatus || 0) === 0
+                        ? '待审核'
+                        : (currentArticle?.examineStatus || 0) === 1
+                          ? '已审核'
+                          : '未通过'
+                    }}
                   </div>
                 </div>
               </div>
@@ -317,7 +583,14 @@
 
             <!-- 右侧：文章封面 -->
             <div class="article-cover-detail">
-              <el-image v-if="currentArticle && currentArticle.coverUrl" :src="currentArticle.coverUrl" class="detail-cover-img" :preview-src-list="[currentArticle.coverUrl]" fit="cover" preview-teleported />
+              <el-image
+                v-if="currentArticle && currentArticle.coverUrl"
+                :src="currentArticle.coverUrl"
+                class="detail-cover-img"
+                :preview-src-list="[currentArticle.coverUrl]"
+                fit="cover"
+                preview-teleported
+              />
               <div v-else class="no-cover-detail">
                 <el-icon class="cover-icon"><Picture /></el-icon>
                 <span>暂无封面</span>
@@ -351,12 +624,12 @@
               <div class="stat-item time-stat-item">
                 <el-icon class="stat-icon"><Clock /></el-icon>
                 <span class="stat-label">创建:</span>
-                <span class="stat-value">{{ currentArticle?.createTime || "未知" }}</span>
+                <span class="stat-value">{{ currentArticle?.createTime || '未知' }}</span>
               </div>
               <div class="stat-item time-stat-item">
                 <el-icon class="stat-icon"><Refresh /></el-icon>
                 <span class="stat-label">更新:</span>
-                <span class="stat-value">{{ currentArticle?.updateTime || "未知" }}</span>
+                <span class="stat-value">{{ currentArticle?.updateTime || '未知' }}</span>
               </div>
             </div>
           </div>
@@ -380,25 +653,73 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="dialogVisible = false" :icon="Close">关闭</el-button>
-          <el-button type="primary" @click="handleAuditArticle(currentArticle?.id)" :icon="Check" :disabled="!currentArticle || (currentArticle?.examineStatus || 0) === 1"> 审核通过 </el-button>
-          <el-button type="warning" @click="handleRejectArticle(currentArticle?.id)" :icon="Close" :disabled="!currentArticle || (currentArticle?.examineStatus || 0) === 2"> 审核拒绝 </el-button>
+          <el-button
+            type="primary"
+            @click="handleAuditArticle(currentArticle?.id)"
+            :icon="Check"
+            :disabled="!currentArticle || (currentArticle?.examineStatus || 0) === 1"
+          >
+            审核通过
+          </el-button>
+          <el-button
+            type="warning"
+            @click="handleRejectArticle(currentArticle?.id)"
+            :icon="Close"
+            :disabled="!currentArticle || (currentArticle?.examineStatus || 0) === 2"
+          >
+            审核拒绝
+          </el-button>
         </div>
       </template>
     </el-dialog>
 
     <!-- 修改文章对话框 -->
-    <el-dialog v-model="editDialogVisible" title="修改文章" width="600px" class="edit-article-dialog" :close-on-click-modal="false" :close-on-press-escape="true" @close="handleEditDialogClose">
-      <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-width="100px" v-loading="editLoading">
+    <el-dialog
+      v-model="editDialogVisible"
+      title="修改文章"
+      width="600px"
+      class="edit-article-dialog"
+      :close-on-click-modal="false"
+      :close-on-press-escape="true"
+      @close="handleEditDialogClose"
+    >
+      <el-form
+        ref="editFormRef"
+        :model="editForm"
+        :rules="editRules"
+        label-width="100px"
+        v-loading="editLoading"
+      >
         <el-form-item label="文章标题" prop="title">
-          <el-input v-model="editForm.title" placeholder="请输入文章标题" maxlength="50" show-word-limit clearable />
+          <el-input
+            v-model="editForm.title"
+            placeholder="请输入文章标题"
+            maxlength="50"
+            show-word-limit
+            clearable
+          />
         </el-form-item>
 
         <el-form-item label="文章描述" prop="description">
-          <el-input v-model="editForm.description" type="textarea" :rows="3" placeholder="请输入文章描述" maxlength="255" show-word-limit clearable />
+          <el-input
+            v-model="editForm.description"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入文章描述"
+            maxlength="255"
+            show-word-limit
+            clearable
+          />
         </el-form-item>
 
         <el-form-item label="文章标签" prop="tag">
-          <el-input v-model="editForm.tag" placeholder="请输入文章标签" clearable maxlength="255" show-word-limit />
+          <el-input
+            v-model="editForm.tag"
+            placeholder="请输入文章标签"
+            clearable
+            maxlength="255"
+            show-word-limit
+          />
         </el-form-item>
 
         <el-form-item label="文章类型" prop="reprintType">
@@ -422,7 +743,11 @@
         </el-form-item>
 
         <el-form-item label="可见范围" prop="visibleRange">
-          <el-select v-model="editForm.visibleRange" placeholder="请选择可见范围" style="width: 100%">
+          <el-select
+            v-model="editForm.visibleRange"
+            placeholder="请选择可见范围"
+            style="width: 100%"
+          >
             <el-option label="全部可见" :value="0" />
             <el-option label="仅我可见" :value="1" />
             <el-option label="粉丝可见" :value="2" />
@@ -442,7 +767,14 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="editDialogVisible = false" :icon="Close">取消</el-button>
-          <el-button type="primary" @click="handleUpdateArticle" :loading="editLoading" :icon="Check"> 确认修改 </el-button>
+          <el-button
+            type="primary"
+            @click="handleUpdateArticle"
+            :loading="editLoading"
+            :icon="Check"
+          >
+            确认修改
+          </el-button>
         </div>
       </template>
     </el-dialog>
@@ -450,134 +782,166 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from "vue";
-import { Delete, Close, Check, View, Calendar, Picture, User, Document, Star, ChatDotRound, Collection, Clock, Refresh, Search, ArrowLeft, Top, Edit } from "@element-plus/icons-vue";
-import { ElMessage, ElMessageBox } from "element-plus";
-import { getUserList, getUserListWithArticleCount } from "@/api/user";
-import { adminGetArticlesByUserId, adminDeleteArticle, adminDeleteBatchArticle, adminExamineArticle, adminExamineBatchArticle, adminSearchArticle, adminGetArticle, adminUpdateArticle } from "@/api/article";
-import Pagination from "@/components/Pagination.vue";
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import {
+  Delete,
+  Close,
+  Check,
+  View,
+  Calendar,
+  Picture,
+  User,
+  Document,
+  Star,
+  ChatDotRound,
+  Collection,
+  Clock,
+  Refresh,
+  Search,
+  ArrowLeft,
+  Top,
+  Edit,
+} from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getUserList, getUserListWithArticleCount } from '@/api/user'
+import {
+  adminGetArticlesByUserId,
+  adminDeleteArticle,
+  adminDeleteBatchArticle,
+  adminExamineArticle,
+  adminExamineBatchArticle,
+  adminSearchArticle,
+  adminGetArticle,
+  adminUpdateArticle,
+} from '@/api/article'
+import Pagination from '@/components/Pagination.vue'
 
 // 视图状态
-const showArticles = ref(false);
-const currentUser = ref(null);
+const showArticles = ref(false)
+const currentUser = ref(null)
 
 // 用户列表数据
-const userList = ref([]);
-const userLoading = ref(false);
-const searchUserKeyword = ref("");
+const userList = ref([])
+const userLoading = ref(false)
+const searchUserKeyword = ref('')
 
 // 过滤后的用户列表
 const filteredUserList = computed(() => {
-  if (!searchUserKeyword.value) return userList.value;
-  const keyword = searchUserKeyword.value.toLowerCase();
-  return userList.value.filter((user) => user.username.toLowerCase().includes(keyword) || user.nickname?.toLowerCase().includes(keyword));
-});
+  if (!searchUserKeyword.value) return userList.value
+  const keyword = searchUserKeyword.value.toLowerCase()
+  return userList.value.filter(
+    (user) =>
+      user.username.toLowerCase().includes(keyword) ||
+      user.nickname?.toLowerCase().includes(keyword),
+  )
+})
 
 // 文章列表数据
-const articleList = ref([]);
-const paginatedArticleList = ref([]);
-const loading = ref(false);
-const currentPage = ref(1);
-const pageSize = ref(10);
-const total = ref(0);
-const dialogVisible = ref(false);
-const dialogTitle = ref("文章详情");
-const currentArticle = ref(null);
-const detailLoading = ref(false);
+const articleList = ref([])
+const paginatedArticleList = ref([])
+const loading = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+const dialogVisible = ref(false)
+const dialogTitle = ref('文章详情')
+const currentArticle = ref(null)
+const detailLoading = ref(false)
 
 // 搜索条件
-const searchExamineStatus = ref("");
-const searchCreateTimeStart = ref(null);
-const searchCreateTimeEnd = ref(null);
+const searchExamineStatus = ref('')
+const searchCreateTimeStart = ref(null)
+const searchCreateTimeEnd = ref(null)
 
 // 选中的文章
-const selectedArticles = ref([]);
+const selectedArticles = ref([])
 
 // 批量操作加载状态
-const batchAuditLoading = ref(false);
-const batchRejectLoading = ref(false);
-const batchDeleteLoading = ref(false);
+const batchAuditLoading = ref(false)
+const batchRejectLoading = ref(false)
+const batchDeleteLoading = ref(false)
 
 // 修改文章相关状态
-const editDialogVisible = ref(false);
-const editLoading = ref(false);
-const editFormRef = ref(null);
+const editDialogVisible = ref(false)
+const editLoading = ref(false)
+const editFormRef = ref(null)
 const editForm = ref({
   id: null,
-  title: "",
-  description: "",
-  tag: "",
+  title: '',
+  description: '',
+  tag: '',
   reprintType: 0,
-  reprintUrl: "",
+  reprintUrl: '',
   visibleRange: 0,
   editStatus: 0,
-});
+})
 
 // 表单验证规则
 const editRules = {
   title: [
-    { required: true, message: "请输入文章标题", trigger: "blur" },
-    { min: 1, max: 50, message: "标题长度应在1-50个字符之间", trigger: "blur" },
+    { required: true, message: '请输入文章标题', trigger: 'blur' },
+    { min: 1, max: 50, message: '标题长度应在1-50个字符之间', trigger: 'blur' },
   ],
-  description: [{ max: 255, message: "描述长度不能超过255个字符", trigger: "blur" }],
-  tag: [{ max: 255, message: "标签长度不能超过255个字符", trigger: "blur" }],
-};
+  description: [{ max: 255, message: '描述长度不能超过255个字符', trigger: 'blur' }],
+  tag: [{ max: 255, message: '标签长度不能超过255个字符', trigger: 'blur' }],
+}
 
 // 移动端检测
-const isMobileView = ref(false);
+const isMobileView = ref(false)
 
 // 监听窗口大小变化
 const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768;
-};
+  isMobileView.value = window.innerWidth <= 768
+}
 
 // 获取用户列表
 const getUsers = async () => {
-  userLoading.value = true;
+  userLoading.value = true
   try {
-    const res = await getUserListWithArticleCount();
-    userList.value = res.data;
+    const res = await getUserListWithArticleCount()
+    userList.value = res.data
   } catch (error) {
-    ElMessage.error("获取用户列表失败");
+    ElMessage.error('获取用户列表失败')
   } finally {
-    userLoading.value = false;
+    userLoading.value = false
   }
-};
+}
 
 // 处理用户搜索
 const handleUserSearch = () => {
   // 搜索逻辑已在computed中处理
-};
+}
 
 // 查看用户文章
 const handleViewUserArticles = async (user) => {
-  currentUser.value = user;
-  showArticles.value = true;
-  await getUserArticles(user.id);
-};
+  currentUser.value = user
+  showArticles.value = true
+  await getUserArticles(user.id)
+}
 
 // 返回用户列表
 const handleBackToUsers = () => {
-  showArticles.value = false;
-  currentUser.value = null;
-  articleList.value = [];
-  paginatedArticleList.value = [];
-  currentPage.value = 1;
-  total.value = 0;
+  showArticles.value = false
+  currentUser.value = null
+  articleList.value = []
+  paginatedArticleList.value = []
+  currentPage.value = 1
+  total.value = 0
   // 重置搜索条件
-  searchExamineStatus.value = "";
-  searchCreateTimeStart.value = null;
-  searchCreateTimeEnd.value = null;
-  selectedArticles.value = [];
-};
+  searchExamineStatus.value = ''
+  searchCreateTimeStart.value = null
+  searchCreateTimeEnd.value = null
+  selectedArticles.value = []
+}
 
 // 获取用户文章列表
 const getUserArticles = async (userId) => {
-  currentPage.value = 1;
-  await fetchUserArticles(userId);
-};
+  currentPage.value = 1
+  await fetchUserArticles(userId)
+}
 
-const hasSearchConditions = () => !!(searchExamineStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value);
+const hasSearchConditions = () =>
+  !!(searchExamineStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value)
 
 const buildSearchPayload = () => ({
   pageNum: currentPage.value,
@@ -586,345 +950,345 @@ const buildSearchPayload = () => ({
   examineStatus: searchExamineStatus.value || undefined,
   createTimeStart: searchCreateTimeStart.value || undefined,
   createTimeEnd: searchCreateTimeEnd.value || undefined,
-});
+})
 
 const applyPageData = (pageData) => {
-  articleList.value = pageData?.data || [];
-  paginatedArticleList.value = articleList.value;
-  total.value = Number(pageData?.total || 0);
-  selectedArticles.value = [];
-};
+  articleList.value = pageData?.data || []
+  paginatedArticleList.value = articleList.value
+  total.value = Number(pageData?.total || 0)
+  selectedArticles.value = []
+}
 
 const fetchUserArticles = async (userId = currentUser.value?.id) => {
-  if (!userId) return;
-  loading.value = true;
+  if (!userId) return
+  loading.value = true
   try {
-    let pageData = null;
+    let pageData = null
     if (hasSearchConditions()) {
-      const res = await adminSearchArticle(buildSearchPayload());
-      pageData = res.data;
+      const res = await adminSearchArticle(buildSearchPayload())
+      pageData = res.data
     } else {
       const res = await adminGetArticlesByUserId(userId, {
         pageNum: currentPage.value,
         pageSize: pageSize.value,
-      });
-      pageData = res.data;
+      })
+      pageData = res.data
     }
-    applyPageData(pageData);
+    applyPageData(pageData)
   } catch (error) {
-    ElMessage.error(hasSearchConditions() ? "搜索文章失败" : "获取用户文章列表失败");
+    ElMessage.error(hasSearchConditions() ? '搜索文章失败' : '获取用户文章列表失败')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 更新分页数据
 const updatePaginatedArticleList = () => {
-  paginatedArticleList.value = articleList.value;
-};
+  paginatedArticleList.value = articleList.value
+}
 
 // 处理分页大小变化
 const handleSizeChange = async (size) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  await fetchUserArticles();
-};
+  pageSize.value = size
+  currentPage.value = 1
+  await fetchUserArticles()
+}
 
 // 处理当前页码变化
 const handleCurrentChange = async (current) => {
-  currentPage.value = current;
-  await fetchUserArticles();
-};
+  currentPage.value = current
+  await fetchUserArticles()
+}
 
 // 处理搜索
 const handleSearch = async () => {
-  if (!currentUser.value) return;
-  currentPage.value = 1;
-  await fetchUserArticles();
-};
+  if (!currentUser.value) return
+  currentPage.value = 1
+  await fetchUserArticles()
+}
 
 // 智能刷新列表
 const refreshArticleList = async (deletedCount = 0) => {
-  if (!currentUser.value) return;
+  if (!currentUser.value) return
   if (deletedCount > 0 && currentPage.value > 1 && articleList.value.length <= deletedCount) {
-    currentPage.value -= 1;
+    currentPage.value -= 1
   }
-  await fetchUserArticles();
-};
+  await fetchUserArticles()
+}
 
 // 表格多选
 const handleSelectionChange = (articles) => {
-  selectedArticles.value = articles;
-};
+  selectedArticles.value = articles
+}
 
 // 检查文章是否被选中
 const isArticleSelected = (articleId) => {
-  return selectedArticles.value.some((article) => article.id === articleId);
-};
+  return selectedArticles.value.some((article) => article.id === articleId)
+}
 
 // 移动端选择处理
 const handleMobileSelect = (article) => {
-  const index = selectedArticles.value.findIndex((item) => item.id === article.id);
+  const index = selectedArticles.value.findIndex((item) => item.id === article.id)
   if (index > -1) {
     // 已选中，取消选中
-    selectedArticles.value.splice(index, 1);
+    selectedArticles.value.splice(index, 1)
   } else {
     // 未选中，添加到选中列表
-    selectedArticles.value.push(article);
+    selectedArticles.value.push(article)
   }
-};
+}
 
 // 对话框关闭处理
 const handleDialogClose = () => {
-  currentArticle.value = null;
-  detailLoading.value = false;
-};
+  currentArticle.value = null
+  detailLoading.value = false
+}
 
 // 查看文章详情
 const handleViewArticle = async (articleId) => {
   try {
-    detailLoading.value = true;
-    currentArticle.value = null;
-    dialogTitle.value = "文章详情";
+    detailLoading.value = true
+    currentArticle.value = null
+    dialogTitle.value = '文章详情'
 
-    const res = await adminGetArticle(articleId);
+    const res = await adminGetArticle(articleId)
 
     if (res && res.data) {
-      currentArticle.value = res.data;
-      dialogVisible.value = true;
+      currentArticle.value = res.data
+      dialogVisible.value = true
     } else {
-      throw new Error("文章数据为空或格式错误");
+      throw new Error('文章数据为空或格式错误')
     }
   } catch (error) {
-    ElMessage.error("获取文章详情失败: " + (error.message || "未知错误"));
-    dialogVisible.value = false;
+    ElMessage.error('获取文章详情失败: ' + (error.message || '未知错误'))
+    dialogVisible.value = false
   } finally {
-    detailLoading.value = false;
+    detailLoading.value = false
   }
-};
+}
 
 // 处理单个文章审核
 const handleAuditArticle = async (articleId) => {
   try {
-    await adminExamineArticle({ articleId: articleId, examineStatus: 1 });
-    ElMessage.success("审核成功");
-    await refreshArticleList();
+    await adminExamineArticle({ articleId: articleId, examineStatus: 1 })
+    ElMessage.success('审核成功')
+    await refreshArticleList()
     if (dialogVisible.value) {
-      dialogVisible.value = false;
+      dialogVisible.value = false
     }
   } catch (error) {
-    ElMessage.error("审核失败");
+    ElMessage.error('审核失败')
   }
-};
+}
 
 // 处理批量审核
 const handleBatchAudit = () => {
-  ElMessageBox.confirm(`确定要审核通过选中的 ${selectedArticles.value.length} 篇文章吗？`, "确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "info",
+  ElMessageBox.confirm(`确定要审核通过选中的 ${selectedArticles.value.length} 篇文章吗？`, '确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'info',
   })
     .then(async () => {
-      batchAuditLoading.value = true;
+      batchAuditLoading.value = true
       try {
         const data = selectedArticles.value.map((article) => ({
           articleId: article.id,
           examineStatus: 1,
-        }));
-        await adminExamineBatchArticle(data);
-        ElMessage.success("批量审核成功");
-        await refreshArticleList();
+        }))
+        await adminExamineBatchArticle(data)
+        ElMessage.success('批量审核成功')
+        await refreshArticleList()
       } catch (error) {
-        ElMessage.error("批量审核失败");
+        ElMessage.error('批量审核失败')
       } finally {
-        batchAuditLoading.value = false;
+        batchAuditLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("审核已取消");
-    });
-};
+      ElMessage.info('审核已取消')
+    })
+}
 
 // 处理单个文章拒绝
 const handleRejectArticle = async (articleId) => {
   try {
-    await adminExamineArticle({ articleId: articleId, examineStatus: 2 });
-    ElMessage.success("拒绝成功");
-    await refreshArticleList();
+    await adminExamineArticle({ articleId: articleId, examineStatus: 2 })
+    ElMessage.success('拒绝成功')
+    await refreshArticleList()
     if (dialogVisible.value) {
-      dialogVisible.value = false;
+      dialogVisible.value = false
     }
   } catch (error) {
-    ElMessage.error("拒绝失败");
+    ElMessage.error('拒绝失败')
   }
-};
+}
 
 // 处理批量拒绝
 const handleBatchReject = () => {
-  ElMessageBox.confirm(`确定要拒绝选中的 ${selectedArticles.value.length} 篇文章吗？`, "确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm(`确定要拒绝选中的 ${selectedArticles.value.length} 篇文章吗？`, '确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      batchRejectLoading.value = true;
+      batchRejectLoading.value = true
       try {
         const data = selectedArticles.value.map((article) => ({
           articleId: article.id,
           examineStatus: 2,
-        }));
-        await adminExamineBatchArticle(data);
-        ElMessage.success("批量拒绝成功");
-        await refreshArticleList();
+        }))
+        await adminExamineBatchArticle(data)
+        ElMessage.success('批量拒绝成功')
+        await refreshArticleList()
       } catch (error) {
-        ElMessage.error("批量拒绝失败");
+        ElMessage.error('批量拒绝失败')
       } finally {
-        batchRejectLoading.value = false;
+        batchRejectLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("拒绝已取消");
-    });
-};
+      ElMessage.info('拒绝已取消')
+    })
+}
 
 // 处理删除单个文章
 const handleDeleteArticle = (articleId) => {
-  ElMessageBox.confirm("确定要删除该文章吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要删除该文章吗？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
       try {
-        await adminDeleteArticle(articleId);
-        ElMessage.success("删除成功");
-        await refreshArticleList();
+        await adminDeleteArticle(articleId)
+        ElMessage.success('删除成功')
+        await refreshArticleList()
         if (dialogVisible.value) {
-          dialogVisible.value = false;
+          dialogVisible.value = false
         }
       } catch (error) {
-        ElMessage.error("删除失败");
+        ElMessage.error('删除失败')
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 处理批量删除
 const handleBatchDelete = () => {
-  ElMessageBox.confirm(`确定要删除选中的 ${selectedArticles.value.length} 篇文章吗？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm(`确定要删除选中的 ${selectedArticles.value.length} 篇文章吗？`, '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      batchDeleteLoading.value = true;
+      batchDeleteLoading.value = true
       try {
-        const articleIds = selectedArticles.value.map((article) => article.id);
-        await adminDeleteBatchArticle(articleIds);
-        ElMessage.success("批量删除成功");
-        await refreshArticleList();
+        const articleIds = selectedArticles.value.map((article) => article.id)
+        await adminDeleteBatchArticle(articleIds)
+        ElMessage.success('批量删除成功')
+        await refreshArticleList()
       } catch (error) {
-        ElMessage.error("批量删除失败");
+        ElMessage.error('批量删除失败')
       } finally {
-        batchDeleteLoading.value = false;
+        batchDeleteLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 获取可见范围文本
 const getVisibleRangeText = (visibleRange) => {
   const texts = {
-    0: "全部可见",
-    1: "仅我可见",
-    2: "粉丝可见",
-    3: "VIP可见",
-  };
-  return texts[visibleRange] || "未知";
-};
+    0: '全部可见',
+    1: '仅我可见',
+    2: '粉丝可见',
+    3: 'VIP可见',
+  }
+  return texts[visibleRange] || '未知'
+}
 
 // 获取可见范围标签类型
 const getVisibleRangeType = (visibleRange) => {
   const types = {
-    0: "success",
-    1: "info",
-    2: "warning",
-    3: "danger",
-  };
-  return types[visibleRange] || "info";
-};
+    0: 'success',
+    1: 'info',
+    2: 'warning',
+    3: 'danger',
+  }
+  return types[visibleRange] || 'info'
+}
 
 // 获取编辑状态文本
 const getEditStatusText = (editStatus) => {
   const texts = {
-    0: "已发布",
-    1: "草稿箱",
-    2: "回收站",
-  };
-  return texts[editStatus] || "未知";
-};
+    0: '已发布',
+    1: '草稿箱',
+    2: '回收站',
+  }
+  return texts[editStatus] || '未知'
+}
 
 // 获取编辑状态标签类型
 const getEditStatusType = (editStatus) => {
   const types = {
-    0: "success",
-    1: "warning",
-    2: "danger",
-  };
-  return types[editStatus] || "info";
-};
+    0: 'success',
+    1: 'warning',
+    2: 'danger',
+  }
+  return types[editStatus] || 'info'
+}
 
 // 处理修改文章
 const handleEditArticle = async (article) => {
   try {
     editForm.value = {
       id: article.id,
-      title: article.title || "",
-      description: article.description || "",
-      tag: article.tag || "",
+      title: article.title || '',
+      description: article.description || '',
+      tag: article.tag || '',
       reprintType: article.reprintType || 0,
-      reprintUrl: article.reprintUrl || "",
+      reprintUrl: article.reprintUrl || '',
       visibleRange: article.visibleRange || 0,
       editStatus: article.editStatus || 0,
-    };
-    editDialogVisible.value = true;
+    }
+    editDialogVisible.value = true
   } catch (error) {
-    console.error("修改文章出错:", error);
-    ElMessage.error("修改文章失败");
+    console.error('修改文章出错:', error)
+    ElMessage.error('修改文章失败')
   }
-};
+}
 
 // 修改对话框关闭处理
 const handleEditDialogClose = () => {
   if (editFormRef.value) {
-    editFormRef.value.resetFields();
+    editFormRef.value.resetFields()
   }
   editForm.value = {
     id: null,
-    title: "",
-    description: "",
-    tag: "",
+    title: '',
+    description: '',
+    tag: '',
     reprintType: 0,
-    reprintUrl: "",
+    reprintUrl: '',
     visibleRange: 0,
     editStatus: 0,
-  };
-};
+  }
+}
 
 // 处理更新文章
 const handleUpdateArticle = async () => {
-  if (!editFormRef.value) return;
+  if (!editFormRef.value) return
 
   try {
     // 表单验证
-    const valid = await editFormRef.value.validate();
-    if (!valid) return;
+    const valid = await editFormRef.value.validate()
+    if (!valid) return
 
-    editLoading.value = true;
+    editLoading.value = true
 
     // 准备更新数据
     const updateData = {
@@ -936,32 +1300,32 @@ const handleUpdateArticle = async () => {
       reprintUrl: editForm.value.reprintUrl,
       visibleRange: editForm.value.visibleRange,
       editStatus: editForm.value.editStatus,
-    };
+    }
 
-    await adminUpdateArticle(updateData);
-    ElMessage.success("修改文章成功");
-    editDialogVisible.value = false;
+    await adminUpdateArticle(updateData)
+    ElMessage.success('修改文章成功')
+    editDialogVisible.value = false
 
     // 刷新列表
-    await refreshArticleList();
+    await refreshArticleList()
   } catch (error) {
-    ElMessage.error("修改文章失败：" + (error.message || "未知错误"));
+    ElMessage.error('修改文章失败：' + (error.message || '未知错误'))
   } finally {
-    editLoading.value = false;
+    editLoading.value = false
   }
-};
+}
 
 // 初始化
 onMounted(() => {
-  getUsers();
-  handleResize();
-  window.addEventListener("resize", handleResize);
-});
+  getUsers()
+  handleResize()
+  window.addEventListener('resize', handleResize)
+})
 
 // 组件卸载时移除监听
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -1001,7 +1365,7 @@ onUnmounted(() => {
         align-items: center;
 
         &::before {
-          content: "";
+          content: '';
           display: inline-block;
           width: 4px;
           height: 20px;
@@ -2044,7 +2408,7 @@ onUnmounted(() => {
       gap: 8px;
 
       &::before {
-        content: "";
+        content: '';
         width: 4px;
         height: 20px;
         background: linear-gradient(135deg, #667eea, #764ba2);

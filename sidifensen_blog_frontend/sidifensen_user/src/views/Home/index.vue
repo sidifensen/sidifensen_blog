@@ -1,6 +1,5 @@
 <template>
   <div class="home-container">
-
     <!-- Hero 区域 -->
     <section class="hero" ref="heroRef" @mousemove="handleMouseMove" @mouseleave="handleMouseLeave">
       <!-- 粒子背景层 -->
@@ -24,8 +23,12 @@
         </div>
 
         <h1 class="hero-title">
-          <span class="title-line" @mouseenter="onTitleHover(true)" @mouseleave="onTitleHover(false)">
-            探索技术的<br>
+          <span
+            class="title-line"
+            @mouseenter="onTitleHover(true)"
+            @mouseleave="onTitleHover(false)"
+          >
+            探索技术的<br />
             <span class="underline-wrap">
               <span class="gradient">无限可能</span>
               <span class="underline"></span>
@@ -41,9 +44,7 @@
         </div>
 
         <div class="hero-cta">
-          <button class="btn btn-primary btn-lg" @click="navigateTo('/article')">
-            开始探索
-          </button>
+          <button class="btn btn-primary btn-lg" @click="navigateTo('/article')">开始探索</button>
         </div>
 
         <div class="hero-nav">
@@ -66,8 +67,15 @@
         <h2 class="section-title">最新文章</h2>
         <router-link to="/article" class="section-link">
           查看全部
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
         </router-link>
       </div>
@@ -103,14 +111,22 @@
           <!-- 项目链接 -->
           <SidebarCard title="项目链接" icon="📦">
             <div class="project-links">
-              <a href="https://github.com/sidifensen//sidifensen_blog" target="_blank" class="project-link">
+              <a
+                href="https://github.com/sidifensen//sidifensen_blog"
+                target="_blank"
+                class="project-link"
+              >
                 <svg-icon name="github" width="20px" height="20px" class="github-icon" />
                 <div class="project-link-info">
                   <div class="project-link-name">GitHub</div>
                   <div class="project-link-desc">开源项目仓库</div>
                 </div>
               </a>
-              <a href="https://gitee.com/sidifensen/sidifensen_blog" target="_blank" class="project-link">
+              <a
+                href="https://gitee.com/sidifensen/sidifensen_blog"
+                target="_blank"
+                class="project-link"
+              >
                 <svg-icon name="gitee" width="20px" height="20px" class="gitee-icon" />
                 <div class="project-link-info">
                   <div class="project-link-name">Gitee</div>
@@ -145,19 +161,40 @@
             <img src="/icons/favicon.ico" alt="logo" class="logo-img" />
             <span class="logo-text">sidifensen</span>
           </div>
-          <p class="footer-desc">分享技术、经验和见解，用代码改变世界。探索无限可能，与开发者共同成长。</p>
+          <p class="footer-desc">
+            分享技术、经验和见解，用代码改变世界。探索无限可能，与开发者共同成长。
+          </p>
           <!-- 社交链接 -->
           <div class="footer-social">
-            <a href="https://github.com/sidifensen" target="_blank" class="social-link" title="GitHub">
+            <a
+              href="https://github.com/sidifensen"
+              target="_blank"
+              class="social-link"
+              title="GitHub"
+            >
               <svg-icon name="github" width="18px" height="18px" />
             </a>
-            <a href="https://gitee.com/sidifensen" target="_blank" class="social-link" title="Gitee">
+            <a
+              href="https://gitee.com/sidifensen"
+              target="_blank"
+              class="social-link"
+              title="Gitee"
+            >
               <svg-icon name="gitee" width="18px" height="18px" />
             </a>
             <a href="mailto:contact@sidifensen.com" class="social-link" title="邮箱">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="4" width="20" height="16" rx="2"/>
-                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
               </svg>
             </a>
           </div>
@@ -178,8 +215,12 @@
           <div class="footer-column">
             <h4>资源链接</h4>
             <ul>
-              <li><a href="https://github.com/sidifensen/sidifensen_blog" target="_blank">开源仓库</a></li>
-              <li><a href="https://gitee.com/sidifensen/sidifensen_blog" target="_blank">国内镜像</a></li>
+              <li>
+                <a href="https://github.com/sidifensen/sidifensen_blog" target="_blank">开源仓库</a>
+              </li>
+              <li>
+                <a href="https://gitee.com/sidifensen/sidifensen_blog" target="_blank">国内镜像</a>
+              </li>
               <li><router-link to="/about">关于我们</router-link></li>
               <li><router-link to="/contact">联系方式</router-link></li>
             </ul>
@@ -202,7 +243,12 @@
           <span class="copyright">© {{ currentYear }} sidifensen. All rights reserved.</span>
         </div>
         <div class="footer-bottom-right">
-          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="icp-link">
+          <a
+            href="https://beian.miit.gov.cn/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="icp-link"
+          >
             <span class="icp-icon">粤</span>
             ICP 备 2024324512 号
           </a>
@@ -213,43 +259,43 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { Loading, Picture } from "@element-plus/icons-vue";
-import { ElMessage } from "element-plus";
-import { getAllArticleList, getHotTags } from "@/api/article";
-import { formatCompactNumber } from "@/utils/formatNumber";
-import { useUserStore } from "@/stores/userStore";
-import { getCommunityStats } from "@/api/user";
-import Header from "@/components/Header.vue";
-import ArticleCard from "@/components/ArticleCard.vue";
-import SidebarCard from "@/components/SidebarCard.vue";
-import TagCloud from "@/components/TagCloud.vue";
-import StatsCard from "@/components/StatsCard.vue";
-import EmptyState from "@/components/EmptyState.vue";
-import SkeletonLoader from "@/components/SkeletonLoader.vue";
-import { useSeoMeta } from "@/plugins/seo";
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { Loading, Picture } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import { getAllArticleList, getHotTags } from '@/api/article'
+import { formatCompactNumber } from '@/utils/formatNumber'
+import { useUserStore } from '@/stores/userStore'
+import { getCommunityStats } from '@/api/user'
+import Header from '@/components/Header.vue'
+import ArticleCard from '@/components/ArticleCard.vue'
+import SidebarCard from '@/components/SidebarCard.vue'
+import TagCloud from '@/components/TagCloud.vue'
+import StatsCard from '@/components/StatsCard.vue'
+import EmptyState from '@/components/EmptyState.vue'
+import SkeletonLoader from '@/components/SkeletonLoader.vue'
+import { useSeoMeta } from '@/plugins/seo'
 
 // SEO - 首页
 useSeoMeta({
-  title: "首页",
-  description: "探索技术的无限可能，斯蒂芬森社区是一个分享技术文章、生活感悟和创意作品的多元化平台",
-  keywords: "技术博客,程序员,前端,后端,全栈,编程,开发者社区,斯蒂芬森"
-});
+  title: '首页',
+  description: '探索技术的无限可能，斯蒂芬森社区是一个分享技术文章、生活感悟和创意作品的多元化平台',
+  keywords: '技术博客,程序员,前端,后端,全栈,编程,开发者社区,斯蒂芬森',
+})
 
 // 路由和用户状态
-const router = useRouter();
-const userStore = useUserStore();
+const router = useRouter()
+const userStore = useUserStore()
 
 // 响应式数据
-const articles = ref([]);
-const articleLoading = ref(false);
-const currentYear = ref(new Date().getFullYear());
-const contentSection = ref(null);
-const articlesSectionRef = ref(null);
-const hotTags = ref([]); // 热门标签
-const heroRef = ref(null);
-const heroGlow = ref(null);
+const articles = ref([])
+const articleLoading = ref(false)
+const currentYear = ref(new Date().getFullYear())
+const contentSection = ref(null)
+const articlesSectionRef = ref(null)
+const hotTags = ref([]) // 热门标签
+const heroRef = ref(null)
+const heroGlow = ref(null)
 
 // 社区统计数据
 const stats = ref({
@@ -257,15 +303,15 @@ const stats = ref({
   userCount: 0,
   viewCount: 0,
   authorCount: 0,
-});
+})
 
 // 用于 StatsCard 组件的统计数据格式
 const statsList = ref([
-  { value: 0, label: "文章总数" },
-  { value: 0, label: "注册用户" },
-  { value: 0, label: "总阅读量" },
-  { value: 0, label: "活跃作者" },
-]);
+  { value: 0, label: '文章总数' },
+  { value: 0, label: '注册用户' },
+  { value: 0, label: '总阅读量' },
+  { value: 0, label: '活跃作者' },
+])
 
 // 动画显示的数字（用于本地显示）
 const animatedStats = ref({
@@ -273,27 +319,27 @@ const animatedStats = ref({
   userCount: 0,
   viewCount: 0,
   authorCount: 0,
-});
+})
 
 // 打字机效果
-const typedSubtitle = ref("");
-let subtitleIndex = 0;
-let charIndex = 0;
-let isDeleting = false;
+const typedSubtitle = ref('')
+let subtitleIndex = 0
+let charIndex = 0
+let isDeleting = false
 
 // 快速导航项
 const quickNavItems = ref([
-  { title: "技术文章", path: "/article", icon: "📚" },
-  { title: "相册空间", path: "/album", icon: "📷" },
-  { title: "友情链接", path: "/link", icon: "🔗" },
-]);
+  { title: '技术文章', path: '/article', icon: '📚' },
+  { title: '相册空间', path: '/album', icon: '📷' },
+  { title: '友情链接', path: '/link', icon: '🔗' },
+])
 
 // 粒子样式 - 响应式引用，mounted 时生成一次真正的随机值
-const particleStyles = ref([]);
+const particleStyles = ref([])
 
 // 星星数据 - 每个星星有独立的状态、位置和定时器
-const stars = ref([]);
-let starTimers = [];
+const stars = ref([])
+let starTimers = []
 
 const generateParticleStyles = () => {
   particleStyles.value = Array.from({ length: 30 }, () => ({
@@ -302,127 +348,130 @@ const generateParticleStyles = () => {
     animationDuration: `${15 + Math.random() * 10}s`,
     width: `${2 + Math.random() * 3}px`,
     height: `${2 + Math.random() * 3}px`,
-  }));
+  }))
 
   // 生成星星 - JS 控制闪烁和位置切换
-const createStar = () => ({
-  style: {
-    left: `${Math.random() * 100}%`,
-    top: `${12 + Math.random() * 16}%`,
-    width: `${1 + Math.random() * 2}px`,
-    height: `${1 + Math.random() * 2}px`,
-    opacity: 0,
-  },
-});
+  const createStar = () => ({
+    style: {
+      left: `${Math.random() * 100}%`,
+      top: `${12 + Math.random() * 16}%`,
+      width: `${1 + Math.random() * 2}px`,
+      height: `${1 + Math.random() * 2}px`,
+      opacity: 0,
+    },
+  })
 
-stars.value = Array.from({ length: 12 }, createStar);
+  stars.value = Array.from({ length: 12 }, createStar)
 
-// 启动星星闪烁定时器
-starTimers.forEach(clearInterval);
-starTimers = [];
+  // 启动星星闪烁定时器
+  starTimers.forEach(clearInterval)
+  starTimers = []
 
-stars.value.forEach((star, index) => {
-  const flashStar = () => {
-    // 随机闪烁次数（1-4次）
-    const flashCount = 1 + Math.floor(Math.random() * 4);
-    let currentFlash = 0;
+  stars.value.forEach((star, index) => {
+    const flashStar = () => {
+      // 随机闪烁次数（1-4次）
+      const flashCount = 1 + Math.floor(Math.random() * 4)
+      let currentFlash = 0
 
-    const doFlash = () => {
-      currentFlash++;
-      // 亮起 - 每次亮度都随机
-      star.style.opacity = 0.5 + Math.random() * 0.5;
-      star.style.transform = 'scale(1)';
+      const doFlash = () => {
+        currentFlash++
+        // 亮起 - 每次亮度都随机
+        star.style.opacity = 0.5 + Math.random() * 0.5
+        star.style.transform = 'scale(1)'
 
-      // 亮持续时间（2-4秒）
-      const lightDuration = 2000 + Math.random() * 2000;
-      setTimeout(() => {
-        // 熄灭
-        star.style.opacity = 0;
-        star.style.transform = 'scale(0.8)';
+        // 亮持续时间（2-4秒）
+        const lightDuration = 2000 + Math.random() * 2000
+        setTimeout(() => {
+          // 熄灭
+          star.style.opacity = 0
+          star.style.transform = 'scale(0.8)'
 
-        // 如果还没到次数，等待后再次亮起
-        if (currentFlash < flashCount) {
-          const offDuration = 1500 + Math.random() * 2000;
-          starTimers[index] = setTimeout(doFlash, offDuration);
-        } else {
-          // 次数用完了，消失并换位置重新生成
-          starTimers[index] = setTimeout(() => {
-            star.style.left = `${Math.random() * 100}%`;
-            star.style.top = `${12 + Math.random() * 16}%`;
-            flashStar(); // 重新开始
-          }, 10000 + Math.random() * 10000); // 10-20秒后再出现
-        }
-      }, lightDuration);
-    };
+          // 如果还没到次数，等待后再次亮起
+          if (currentFlash < flashCount) {
+            const offDuration = 1500 + Math.random() * 2000
+            starTimers[index] = setTimeout(doFlash, offDuration)
+          } else {
+            // 次数用完了，消失并换位置重新生成
+            starTimers[index] = setTimeout(
+              () => {
+                star.style.left = `${Math.random() * 100}%`
+                star.style.top = `${12 + Math.random() * 16}%`
+                flashStar() // 重新开始
+              },
+              10000 + Math.random() * 10000,
+            ) // 10-20秒后再出现
+          }
+        }, lightDuration)
+      }
 
-    doFlash();
-  };
+      doFlash()
+    }
 
-  // 初始延迟启动
-  starTimers[index] = setTimeout(flashStar, Math.random() * 5000);
-});
-};
+    // 初始延迟启动
+    starTimers[index] = setTimeout(flashStar, Math.random() * 5000)
+  })
+}
 
 const subtitles = [
-  "在这里，发现知识 · 分享经验 · 连接开发者",
-  "探索代码的无限可能",
-  "与开发者共同成长",
-  "记录技术旅程的点点滴滴",
-];
+  '在这里，发现知识 · 分享经验 · 连接开发者',
+  '探索代码的无限可能',
+  '与开发者共同成长',
+  '记录技术旅程的点点滴滴',
+]
 
 // 打字机速度
-const TYPE_SPEED = 100;
-const DELETE_SPEED = 50;
-const PAUSE_AFTER_TYPE = 2000;
-const PAUSE_AFTER_DELETE = 500;
+const TYPE_SPEED = 100
+const DELETE_SPEED = 50
+const PAUSE_AFTER_TYPE = 2000
+const PAUSE_AFTER_DELETE = 500
 
 // 打字机逻辑
 const typeSubtitle = () => {
-  const current = subtitles[subtitleIndex];
+  const current = subtitles[subtitleIndex]
   if (!isDeleting) {
     if (charIndex < current.length) {
-      typedSubtitle.value = current.substring(0, charIndex + 1);
-      charIndex++;
-      setTimeout(typeSubtitle, TYPE_SPEED);
+      typedSubtitle.value = current.substring(0, charIndex + 1)
+      charIndex++
+      setTimeout(typeSubtitle, TYPE_SPEED)
     } else {
-      isDeleting = true;
-      setTimeout(typeSubtitle, PAUSE_AFTER_TYPE);
+      isDeleting = true
+      setTimeout(typeSubtitle, PAUSE_AFTER_TYPE)
     }
   } else {
     if (charIndex > 0) {
-      typedSubtitle.value = current.substring(0, charIndex - 1);
-      charIndex--;
-      setTimeout(typeSubtitle, DELETE_SPEED);
+      typedSubtitle.value = current.substring(0, charIndex - 1)
+      charIndex--
+      setTimeout(typeSubtitle, DELETE_SPEED)
     } else {
-      isDeleting = false;
-      subtitleIndex = (subtitleIndex + 1) % subtitles.length;
-      charIndex = 0;
-      setTimeout(typeSubtitle, PAUSE_AFTER_DELETE);
+      isDeleting = false
+      subtitleIndex = (subtitleIndex + 1) % subtitles.length
+      charIndex = 0
+      setTimeout(typeSubtitle, PAUSE_AFTER_DELETE)
     }
   }
-};
+}
 
 // 鼠标跟随光效
 const handleMouseMove = (e) => {
-  if (!heroRef.value || !heroGlow.value) return;
+  if (!heroRef.value || !heroGlow.value) return
 
-  const rect = heroRef.value.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
+  const rect = heroRef.value.getBoundingClientRect()
+  const x = e.clientX - rect.left
+  const y = e.clientY - rect.top
 
   heroGlow.value.style.background = `radial-gradient(
     300px circle at ${x}px ${y}px,
     rgba(0, 102, 255, 0.12),
     transparent 40%
-  )`;
-  heroGlow.value.style.opacity = '1';
-};
+  )`
+  heroGlow.value.style.opacity = '1'
+}
 
 const handleMouseLeave = () => {
   if (heroGlow.value) {
-    heroGlow.value.style.opacity = '0';
+    heroGlow.value.style.opacity = '0'
   }
-};
+}
 
 // 滚动入场动画
 const observeElements = () => {
@@ -430,168 +479,164 @@ const observeElements = () => {
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          entry.target.classList.add("visible");
-          observer.unobserve(entry.target);
+          entry.target.classList.add('visible')
+          observer.unobserve(entry.target)
         }
-      });
+      })
     },
-    { threshold: 0.1 }
-  );
+    { threshold: 0.1 },
+  )
 
   // 观察每个文章卡片
-  const articleCards = document.querySelectorAll('.article-card:not(.skeleton)');
+  const articleCards = document.querySelectorAll('.article-card:not(.skeleton)')
   articleCards.forEach((card, index) => {
-    card.style.transitionDelay = `${index * 80}ms`;
-    observer.observe(card);
-  });
-};
+    card.style.transitionDelay = `${index * 80}ms`
+    observer.observe(card)
+  })
+}
 
 // 获取文章列表
 const fetchArticleList = async () => {
   try {
-    articleLoading.value = true;
-    const res = await getAllArticleList(1, 9);
-    articles.value = res.data?.data || [];
+    articleLoading.value = true
+    const res = await getAllArticleList(1, 9)
+    articles.value = res.data?.data || []
   } catch (error) {
-    ElMessage.error("获取文章列表失败");
+    ElMessage.error('获取文章列表失败')
   } finally {
-    articleLoading.value = false;
+    articleLoading.value = false
   }
-};
+}
 
 // 格式化日期
 const formatDate = (dateString) => {
-  if (!dateString) return "";
-  return new Date(dateString).toLocaleDateString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-};
+  if (!dateString) return ''
+  return new Date(dateString).toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+}
 
 // 格式化数字
-const formatNumber = (num) => formatCompactNumber(num);
+const formatNumber = (num) => formatCompactNumber(num)
 
 // 判断新文章（3 天内）
 const isNewArticle = (article) => {
-  const diffDays = (Date.now() - new Date(article.createTime)) / (1000 * 60 * 60 * 24);
-  return diffDays <= 3;
-};
+  const diffDays = (Date.now() - new Date(article.createTime)) / (1000 * 60 * 60 * 24)
+  return diffDays <= 3
+}
 
 // 路由跳转
-const getArticleDetailRoute = (article) => `/user/${article.userId}/article/${article.id}`;
-const goToArticle = (article) => router.push(getArticleDetailRoute(article));
-const navigateTo = (path) => router.push(path);
+const getArticleDetailRoute = (article) => `/user/${article.userId}/article/${article.id}`
+const goToArticle = (article) => router.push(getArticleDetailRoute(article))
+const navigateTo = (path) => router.push(path)
 
 // 跳转到标签搜索
 const navigateToTag = (tagName) => {
   router.push({
-    path: "/search",
+    path: '/search',
     query: {
       keyword: tagName,
-      type: "tag",
+      type: 'tag',
     },
-  });
-};
+  })
+}
 
 // 登录注册处理
 const handleLogin = () => {
   if (userStore.isLoggedIn) {
-    router.push("/account");
+    router.push('/account')
   } else {
-    router.push("/login");
+    router.push('/login')
   }
-};
+}
 
 const handleRegister = () => {
   if (userStore.isLoggedIn) {
-    router.push("/account");
+    router.push('/account')
   } else {
-    router.push("/register");
+    router.push('/register')
   }
-};
+}
 
 // 加载热门标签
 const loadHotTags = async () => {
   try {
-    const res = await getHotTags(10);
-    hotTags.value = res.data || [];
+    const res = await getHotTags(10)
+    hotTags.value = res.data || []
   } catch (error) {
     // 静默处理
   }
-};
+}
 
 // 获取社区统计数据
 const loadCommunityStats = async () => {
   try {
-    const res = await getCommunityStats();
-    const data = res.data || {};
+    const res = await getCommunityStats()
+    const data = res.data || {}
     stats.value = {
       articleCount: data.articleCount || 0,
       userCount: data.userCount || 0,
       viewCount: data.viewCount || 0,
       authorCount: data.authorCount || 0,
-    };
+    }
     // 更新 statsList（用于 StatsCard 组件）
     statsList.value = [
-      { value: data.articleCount || 0, label: "文章总数" },
-      { value: data.userCount || 0, label: "注册用户" },
-      { value: data.viewCount || 0, label: "总阅读量" },
-      { value: data.authorCount || 0, label: "活跃作者" },
-    ];
+      { value: data.articleCount || 0, label: '文章总数' },
+      { value: data.userCount || 0, label: '注册用户' },
+      { value: data.viewCount || 0, label: '总阅读量' },
+      { value: data.authorCount || 0, label: '活跃作者' },
+    ]
     // 数据加载完成后，开始数字动画
     setTimeout(() => {
-      animateNumber("articleCount", stats.value.articleCount);
-      animateNumber("userCount", stats.value.userCount);
-      animateNumber("viewCount", stats.value.viewCount);
-      animateNumber("authorCount", stats.value.authorCount);
-    }, 500);
+      animateNumber('articleCount', stats.value.articleCount)
+      animateNumber('userCount', stats.value.userCount)
+      animateNumber('viewCount', stats.value.viewCount)
+      animateNumber('authorCount', stats.value.authorCount)
+    }, 500)
   } catch (error) {
     // 静默处理
   }
-};
+}
 
 // 数字动画 - 从 0 逐渐增加到目标值，显示整数
 const animateNumber = (key, target) => {
   if (target <= 0) {
-    animatedStats.value[key] = 0;
-    return;
+    animatedStats.value[key] = 0
+    return
   }
 
-  const duration = 2000; // 动画持续时间 2 秒
-  const frameRate = 16; // 约 60fps
-  const totalFrames = duration / frameRate;
-  const increment = target / totalFrames;
-  let current = 0;
-  let frame = 0;
+  const duration = 2000 // 动画持续时间 2 秒
+  const frameRate = 16 // 约 60fps
+  const totalFrames = duration / frameRate
+  const increment = target / totalFrames
+  let current = 0
+  let frame = 0
 
   const timer = setInterval(() => {
-    frame++;
-    current += increment;
+    frame++
+    current += increment
 
     if (frame >= totalFrames) {
-      current = target;
-      clearInterval(timer);
+      current = target
+      clearInterval(timer)
     }
 
     // 使用 Math.floor 确保显示整数，不显示小数点
-    animatedStats.value[key] = Math.floor(current);
-  }, frameRate);
-};
+    animatedStats.value[key] = Math.floor(current)
+  }, frameRate)
+}
 
 onMounted(async () => {
-  generateParticleStyles();
-  await Promise.all([
-    fetchArticleList(),
-    loadHotTags(),
-    loadCommunityStats()
-  ]);
+  generateParticleStyles()
+  await Promise.all([fetchArticleList(), loadHotTags(), loadCommunityStats()])
   // 数据加载完成后，等待 DOM 更新再观察元素
   setTimeout(() => {
-    observeElements();
-  }, 100);
-  setTimeout(typeSubtitle, 1000);
-});
+    observeElements()
+  }, 100)
+  setTimeout(typeSubtitle, 1000)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -740,12 +785,18 @@ html.dark {
     position: absolute;
     border-radius: 50%;
     background: rgba(255, 255, 255, 1);
-    box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.8), 0 0 12px 4px rgba(200, 220, 255, 0.4);
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    box-shadow:
+      0 0 6px 2px rgba(255, 255, 255, 0.8),
+      0 0 12px 4px rgba(200, 220, 255, 0.4);
+    transition:
+      opacity 0.3s ease,
+      transform 0.3s ease;
 
     html.dark & {
       background: rgba(220, 235, 255, 1);
-      box-shadow: 0 0 8px 2px rgba(200, 220, 255, 0.9), 0 0 16px 6px rgba(150, 180, 255, 0.5);
+      box-shadow:
+        0 0 8px 2px rgba(200, 220, 255, 0.9),
+        0 0 16px 6px rgba(150, 180, 255, 0.5);
     }
   }
 
@@ -1623,7 +1674,8 @@ html.dark {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -1634,7 +1686,8 @@ html.dark {
 }
 
 @keyframes cursorBlink {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -1661,7 +1714,8 @@ html.dark {
 }
 
 @keyframes skeleton-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

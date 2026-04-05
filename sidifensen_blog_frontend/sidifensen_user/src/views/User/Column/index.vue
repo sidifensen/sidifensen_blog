@@ -9,7 +9,10 @@
             <el-skeleton :loading="!authorInfo" animated>
               <template #template>
                 <div class="author-skeleton">
-                  <el-skeleton-item variant="circle" style="width: 80px; height: 80px; margin: 0 auto 16px" />
+                  <el-skeleton-item
+                    variant="circle"
+                    style="width: 80px; height: 80px; margin: 0 auto 16px"
+                  />
                   <el-skeleton-item variant="h3" style="width: 60%; margin: 0 auto 8px" />
                   <el-skeleton-item variant="text" style="width: 80%; margin: 0 auto 4px" />
                   <el-skeleton-item variant="text" style="width: 70%; margin: 0 auto" />
@@ -18,9 +21,16 @@
 
               <template #default>
                 <div class="author-info" v-if="authorInfo">
-                  <el-avatar :size="80" :src="authorInfo.avatar" class="author-avatar" @click="goToAuthorPage" />
+                  <el-avatar
+                    :size="80"
+                    :src="authorInfo.avatar"
+                    class="author-avatar"
+                    @click="goToAuthorPage"
+                  />
                   <h3 class="author-name" @click="goToAuthorPage">{{ authorInfo.nickname }}</h3>
-                  <p class="author-intro">{{ authorInfo.introduction || "这个人很懒，什么都没写~" }}</p>
+                  <p class="author-intro">
+                    {{ authorInfo.introduction || '这个人很懒，什么都没写~' }}
+                  </p>
 
                   <!-- 作者统计信息 -->
                   <div class="author-stats">
@@ -40,7 +50,16 @@
 
                   <!-- 操作按钮 -->
                   <div class="author-actions" v-if="!isCurrentUser">
-                    <el-button :type="isFollowed ? 'default' : 'primary'" :icon="isFollowed ? null : Plus" @click="handleFollow" :loading="followLoading" block :class="{ 'followed-btn': isFollowed }" @mouseenter="handleFollowButtonHover(true)" @mouseleave="handleFollowButtonHover(false)">
+                    <el-button
+                      :type="isFollowed ? 'default' : 'primary'"
+                      :icon="isFollowed ? null : Plus"
+                      @click="handleFollow"
+                      :loading="followLoading"
+                      block
+                      :class="{ 'followed-btn': isFollowed }"
+                      @mouseenter="handleFollowButtonHover(true)"
+                      @mouseleave="handleFollowButtonHover(false)"
+                    >
                       {{ followButtonText }}
                     </el-button>
                     <el-button :icon="Message" @click="handleMessage" block> 私信 </el-button>
@@ -54,7 +73,12 @@
           <div class="sidebar-card" v-if="otherColumns.length > 0">
             <h4 class="card-title">作者其他专栏</h4>
             <div class="other-columns">
-              <div v-for="column in otherColumns" :key="column.id" class="other-column-item" @click="goToColumn(column.id)">
+              <div
+                v-for="column in otherColumns"
+                :key="column.id"
+                class="other-column-item"
+                @click="goToColumn(column.id)"
+              >
                 <el-image :src="column.coverUrl || ''" class="other-column-cover">
                   <template #error>
                     <div class="error">
@@ -78,7 +102,10 @@
             <el-skeleton :loading="columnLoading" animated>
               <template #template>
                 <div class="column-skeleton">
-                  <el-skeleton-item variant="image" style="width: 150px; height: 100px; border-radius: 8px" />
+                  <el-skeleton-item
+                    variant="image"
+                    style="width: 150px; height: 100px; border-radius: 8px"
+                  />
                   <div class="skeleton-info">
                     <el-skeleton-item variant="h1" style="width: 300px; margin-bottom: 12px" />
                     <el-skeleton-item variant="text" style="width: 400px; margin-bottom: 8px" />
@@ -104,10 +131,14 @@
                     <h1 class="column-title">{{ columnInfo.name }}</h1>
                     <div class="column-description-container">
                       <p class="column-description" :class="{ expanded: isDescExpanded }">
-                        {{ columnInfo.description || "暂无描述" }}
+                        {{ columnInfo.description || '暂无描述' }}
                       </p>
-                      <button v-if="columnInfo.description && columnInfo.description.length > 80" class="desc-expand-btn" @click="toggleDescExpand">
-                        {{ isDescExpanded ? "收起" : "展开" }}
+                      <button
+                        v-if="columnInfo.description && columnInfo.description.length > 80"
+                        class="desc-expand-btn"
+                        @click="toggleDescExpand"
+                      >
+                        {{ isDescExpanded ? '收起' : '展开' }}
                         <el-icon>
                           <ArrowDown v-if="!isDescExpanded" />
                           <ArrowUp v-else />
@@ -156,7 +187,10 @@
                   <template #template>
                     <div class="article-skeleton">
                       <div class="skeleton-index"></div>
-                      <el-skeleton-item variant="image" style="width: 100px; height: 75px; border-radius: 6px" />
+                      <el-skeleton-item
+                        variant="image"
+                        style="width: 100px; height: 75px; border-radius: 6px"
+                      />
                       <div class="skeleton-content">
                         <el-skeleton-item variant="h3" style="width: 70%; margin-bottom: 8px" />
                         <el-skeleton-item variant="text" style="width: 100%; margin-bottom: 4px" />
@@ -172,7 +206,12 @@
               </div>
 
               <div v-else class="article-list">
-                <div v-for="(article, index) in articleList" :key="article.id" class="article-item" @click="goToArticle(article.id)">
+                <div
+                  v-for="(article, index) in articleList"
+                  :key="article.id"
+                  class="article-item"
+                  @click="goToArticle(article.id)"
+                >
                   <!-- 序号 -->
                   <div class="article-index">{{ index + 1 }}</div>
 
@@ -267,216 +306,230 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { Plus, Message, ArrowDown, ArrowUp, Picture, Document, View, Calendar, Star, TrendCharts, Reading } from "@element-plus/icons-vue";
-import { getColumnDetail, getUserColumnList } from "@/api/column";
-import { getUserInfoById } from "@/api/user";
-import { toggleFollow, isFollowing } from "@/api/follow";
-import { useUserStore } from "@/stores/userStore";
-import { formatCompactNumber } from "@/utils/formatNumber";
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  Plus,
+  Message,
+  ArrowDown,
+  ArrowUp,
+  Picture,
+  Document,
+  View,
+  Calendar,
+  Star,
+  TrendCharts,
+  Reading,
+} from '@element-plus/icons-vue'
+import { getColumnDetail, getUserColumnList } from '@/api/column'
+import { getUserInfoById } from '@/api/user'
+import { toggleFollow, isFollowing } from '@/api/follow'
+import { useUserStore } from '@/stores/userStore'
+import { formatCompactNumber } from '@/utils/formatNumber'
 
 // 路由和状态管理
-const route = useRoute();
-const router = useRouter();
-const userStore = useUserStore();
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 
 // 响应式数据
-const columnLoading = ref(false); // 专栏信息加载状态
-const articleLoading = ref(false); // 文章列表加载状态
-const followLoading = ref(false); // 关注操作加载状态
+const columnLoading = ref(false) // 专栏信息加载状态
+const articleLoading = ref(false) // 文章列表加载状态
+const followLoading = ref(false) // 关注操作加载状态
 
-const columnInfo = ref(null); // 专栏信息
-const authorInfo = ref(null); // 作者信息
-const articleList = ref([]); // 文章列表
-const originalArticleList = ref([]); // 原始文章列表（用于恢复按顺序排序）
-const otherColumns = ref([]); // 作者其他专栏
+const columnInfo = ref(null) // 专栏信息
+const authorInfo = ref(null) // 作者信息
+const articleList = ref([]) // 文章列表
+const originalArticleList = ref([]) // 原始文章列表（用于恢复按顺序排序）
+const otherColumns = ref([]) // 作者其他专栏
 
-const sortType = ref("sort"); // 排序类型：sort-按顺序，time-按时间
+const sortType = ref('sort') // 排序类型：sort-按顺序，time-按时间
 
-const isDescExpanded = ref(false); // 专栏描述是否展开
-const showBackToTop = ref(false); // 是否显示返回顶部按钮
-const isFollowed = ref(false); // 是否已关注作者
-const isHoveringFollowButton = ref(false); // 关注按钮悬停状态
+const isDescExpanded = ref(false) // 专栏描述是否展开
+const showBackToTop = ref(false) // 是否显示返回顶部按钮
+const isFollowed = ref(false) // 是否已关注作者
+const isHoveringFollowButton = ref(false) // 关注按钮悬停状态
 
 // 计算属性
 const isCurrentUser = computed(() => {
-  return userStore.user?.id === parseInt(route.params.userId);
-});
+  return userStore.user?.id === parseInt(route.params.userId)
+})
 
 // 计算关注按钮显示的文字
 const followButtonText = computed(() => {
   if (!isFollowed.value) {
-    return "关注";
+    return '关注'
   }
-  return isHoveringFollowButton.value ? "取消关注" : "已关注";
-});
+  return isHoveringFollowButton.value ? '取消关注' : '已关注'
+})
 
 // 使用统一的数字格式化工具函数
 const formatNumber = (num) => {
-  return formatCompactNumber(num);
-};
+  return formatCompactNumber(num)
+}
 
 // 切换专栏描述展开/收起
 const toggleDescExpand = () => {
-  isDescExpanded.value = !isDescExpanded.value;
-};
+  isDescExpanded.value = !isDescExpanded.value
+}
 
 // 获取专栏详情信息
 const fetchColumnDetail = async () => {
   try {
-    columnLoading.value = true;
-    const columnId = route.params.columnId;
-    const res = await getColumnDetail(columnId);
-    columnInfo.value = res.data;
+    columnLoading.value = true
+    const columnId = route.params.columnId
+    const res = await getColumnDetail(columnId)
+    columnInfo.value = res.data
     // 保存原始顺序的文章列表
-    originalArticleList.value = res.data.articles || [];
+    originalArticleList.value = res.data.articles || []
     // 初始显示也是按原始顺序
-    articleList.value = [...originalArticleList.value];
+    articleList.value = [...originalArticleList.value]
   } catch (error) {
     // 静默处理
   } finally {
-    columnLoading.value = false;
+    columnLoading.value = false
   }
-};
+}
 
 // 获取作者信息
 const fetchAuthorInfo = async () => {
   try {
-    const userId = route.params.userId;
-    const res = await getUserInfoById(userId);
-    authorInfo.value = res.data;
+    const userId = route.params.userId
+    const res = await getUserInfoById(userId)
+    authorInfo.value = res.data
 
     // 如果不是当前用户且已登录，检查关注状态
     if (!isCurrentUser.value && userStore.user) {
-      await checkUserFollowStatus();
+      await checkUserFollowStatus()
     }
   } catch (error) {
     // 静默处理
   }
-};
+}
 
 // 获取作者其他专栏
 const fetchOtherColumns = async () => {
   try {
-    const userId = route.params.userId;
-    const currentColumnId = route.params.columnId;
-    const res = await getUserColumnList(1, 5, userId);
-    const columns = res.data.data;
+    const userId = route.params.userId
+    const currentColumnId = route.params.columnId
+    const res = await getUserColumnList(1, 5, userId)
+    const columns = res.data.data
     // 过滤掉当前专栏
-    otherColumns.value = columns.filter((column) => column.id !== parseInt(currentColumnId));
+    otherColumns.value = columns.filter((column) => column.id !== parseInt(currentColumnId))
   } catch (error) {
     // 静默处理
-    otherColumns.value = []; // 设置默认值
+    otherColumns.value = [] // 设置默认值
   }
-};
+}
 
 // 处理排序变化
 const handleSortChange = (value) => {
-  sortType.value = value;
+  sortType.value = value
   // 根据排序类型重新排序文章列表
-  if (value === "time") {
+  if (value === 'time') {
     // 按时间排序（降序）
-    articleList.value = [...articleList.value].sort((a, b) => new Date(b.createTime) - new Date(a.createTime));
+    articleList.value = [...articleList.value].sort(
+      (a, b) => new Date(b.createTime) - new Date(a.createTime),
+    )
   } else {
     // 按顺序排序（恢复原始顺序）
-    articleList.value = [...originalArticleList.value];
+    articleList.value = [...originalArticleList.value]
   }
-};
+}
 
 // 处理滚动事件
 const handleScroll = () => {
-  const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-  showBackToTop.value = scrollTop > 300;
-};
+  const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+  showBackToTop.value = scrollTop > 300
+}
 
 // 返回顶部
 const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-};
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 
 // 跳转到文章详情页
 const goToArticle = (articleId) => {
-  const userId = route.params.userId;
-  router.push(`/user/${userId}/article/${articleId}`);
-};
+  const userId = route.params.userId
+  router.push(`/user/${userId}/article/${articleId}`)
+}
 
 // 跳转到作者主页
 const goToAuthorPage = () => {
-  const userId = route.params.userId;
-  router.push(`/user/${userId}`);
-};
+  const userId = route.params.userId
+  router.push(`/user/${userId}`)
+}
 
 // 跳转到其他专栏
 const goToColumn = (columnId) => {
-  const userId = route.params.userId;
-  router.push(`/user/${userId}/column/${columnId}`);
-};
+  const userId = route.params.userId
+  router.push(`/user/${userId}/column/${columnId}`)
+}
 
 // 检查用户关注状态
 const checkUserFollowStatus = async () => {
   try {
-    const followerId = userStore.user.id;
-    const followedId = parseInt(route.params.userId);
-    const res = await isFollowing(followerId, followedId);
-    isFollowed.value = res.data; // 后端返回 Boolean 值
+    const followerId = userStore.user.id
+    const followedId = parseInt(route.params.userId)
+    const res = await isFollowing(followerId, followedId)
+    isFollowed.value = res.data // 后端返回 Boolean 值
   } catch (error) {
     // 静默处理
-    isFollowed.value = false;
+    isFollowed.value = false
   }
-};
+}
 
 // 关注/取消关注作者
 const handleFollow = async () => {
   if (!userStore.user) {
-    ElMessage.warning("请先登录");
-    router.push("/login");
-    return;
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
   }
 
   try {
-    followLoading.value = true;
-    const followedId = parseInt(route.params.userId);
-    const wasFollowed = isFollowed.value;
+    followLoading.value = true
+    const followedId = parseInt(route.params.userId)
+    const wasFollowed = isFollowed.value
 
     // 调用切换关注状态接口
-    await toggleFollow(followedId);
+    await toggleFollow(followedId)
 
     // 切换状态
-    isFollowed.value = !wasFollowed;
+    isFollowed.value = !wasFollowed
 
     // 显示操作结果
-    ElMessage.success(isFollowed.value ? "关注成功" : "取消关注成功");
+    ElMessage.success(isFollowed.value ? '关注成功' : '取消关注成功')
 
     // 更新作者粉丝数
     if (authorInfo.value) {
       if (isFollowed.value) {
-        authorInfo.value.fansCount = (authorInfo.value.fansCount || 0) + 1;
+        authorInfo.value.fansCount = (authorInfo.value.fansCount || 0) + 1
       } else {
-        authorInfo.value.fansCount = Math.max((authorInfo.value.fansCount || 0) - 1, 0);
+        authorInfo.value.fansCount = Math.max((authorInfo.value.fansCount || 0) - 1, 0)
       }
     }
   } catch (error) {
     // 静默处理
   } finally {
-    followLoading.value = false;
+    followLoading.value = false
   }
-};
+}
 
 // 发送私信
 const handleMessage = () => {
   if (!userStore.user) {
-    ElMessage.warning("请先登录");
-    router.push("/login");
-    return;
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
   }
-  ElMessage.info("私信功能开发中");
-};
+  ElMessage.info('私信功能开发中')
+}
 
 // 处理关注按钮悬停状态
 const handleFollowButtonHover = (isHovering) => {
-  isHoveringFollowButton.value = isHovering;
-};
+  isHoveringFollowButton.value = isHovering
+}
 
 // 监听路由参数变化
 watch(
@@ -484,36 +537,36 @@ watch(
   ([newUserId, newColumnId]) => {
     if (newUserId && newColumnId) {
       // 重置数据
-      columnInfo.value = null;
-      authorInfo.value = null;
-      articleList.value = [];
-      originalArticleList.value = []; // 重置原始文章列表
-      otherColumns.value = [];
-      isDescExpanded.value = false;
-      showBackToTop.value = false;
-      isFollowed.value = false; // 重置关注状态
-      sortType.value = "sort"; // 重置排序类型为默认值
+      columnInfo.value = null
+      authorInfo.value = null
+      articleList.value = []
+      originalArticleList.value = [] // 重置原始文章列表
+      otherColumns.value = []
+      isDescExpanded.value = false
+      showBackToTop.value = false
+      isFollowed.value = false // 重置关注状态
+      sortType.value = 'sort' // 重置排序类型为默认值
 
       // 获取数据
-      fetchColumnDetail();
-      fetchAuthorInfo();
-      fetchOtherColumns();
+      fetchColumnDetail()
+      fetchAuthorInfo()
+      fetchOtherColumns()
     }
   },
-  { immediate: true }
-);
+  { immediate: true },
+)
 
 // 组件挂载
 onMounted(() => {
   // 监听页面滚动
-  window.addEventListener("scroll", handleScroll);
+  window.addEventListener('scroll', handleScroll)
   // 数据获取由watch监听器处理，这里不需要重复调用
-});
+})
 
 // 组件卸载时移除滚动监听
 onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
-});
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -631,12 +684,12 @@ onUnmounted(() => {
           display: flex;
           flex-direction: column;
           gap: 8px;
-          :deep(.el-button) {
+          ::v-deep(.el-button) {
             margin-left: 0;
           }
 
           // 已关注按钮样式
-          :deep(.followed-btn) {
+          ::v-deep(.followed-btn) {
             border-color: var(--el-color-success);
             color: var(--el-color-success);
 

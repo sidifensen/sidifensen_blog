@@ -39,6 +39,7 @@ public class SecurityConfiguration {
         // 设置认证管理器
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(SecurityConstants.Optional_Auth_Urls).permitAll() // 可选认证接口允许访问
+                .requestMatchers("/actuator/**").permitAll() // actuator 端点无需认证
                 .anyRequest().authenticated());
         http.csrf(AbstractHttpConfigurer::disable);
         // 配置跨域

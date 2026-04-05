@@ -1,4 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  日志配置说明：
+
+  1. 日志级别规范：
+     - ERROR: 只记录业务异常和系统错误，禁止记录普通业务流程
+     - WARN:  记录潜在问题，如参数校验失败、业务边界情况
+     - INFO:  只记录关键业务节点（不记录每个请求）
+     - DEBUG: 开发环境记录调试信息
+
+  2. 日志规范：
+     - 必须包含上下文参数（userId、orderId等）
+     - 禁止记录敏感信息（密码、token、身份证号等）
+     - 禁止记录大文本内容（长文章内容等）
+     - 异常日志必须包含堆栈信息
+
+  3. 日志格式：
+     - 时间 | 线程 | 级别 | 日志名 | 消息
+     - 示例: 2026-04-04 10:00:00.000 [http-nio-5000-exec-1] ERROR c.s.service.ArticleService - 创建文章失败, userId=1, title=xxx
+
+  4. 文件输出：
+     - 日志目录: ${LOG_HOME}/sidifensen-blog.log
+     - 错误日志: ${LOG_HOME}/sidifensen-blog-error.log
+     - 保留天数: 30天
+     - 单文件大小: 100MB
+-->
 <configuration debug="false" scan="false" packagingData="false">
 
     <!-- 禁用状态监听器来屏蔽初始化日志 -->
@@ -32,6 +57,20 @@
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <!-- 格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符 -->
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- JSON格式日志（用于ELK/Loki日志收集） -->
+    <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/sidifensen-blog.json.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/sidifensen-blog.%d{yyyy-MM-dd}.%i.json.log</fileNamePattern>
+            <maxHistory>7</maxHistory>
+            <maxFileSize>100MB</maxFileSize>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>{"time":"%d{yyyy-MM-dd HH:mm:ss.SSS}","thread":"%thread","level":"%level","logger":"%logger","message":"%msg","context":"%mdc"}%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>

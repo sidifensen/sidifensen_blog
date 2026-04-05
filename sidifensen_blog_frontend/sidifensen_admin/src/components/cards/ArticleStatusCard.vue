@@ -7,19 +7,19 @@
 </template>
 
 <script setup>
-import { Document } from "@element-plus/icons-vue"
-import DetailCard from "@/components/cards/DetailCard.vue"
-import ArticleDonutChart from "@/components/charts/ArticleDonutChart.vue"
+import { Document } from '@element-plus/icons-vue'
+import DetailCard from '@/components/cards/DetailCard.vue'
+import ArticleDonutChart from '@/components/charts/ArticleDonutChart.vue'
 
 defineProps({
   data: {
     type: Object,
-    default: () => ({})
+    default: () => ({}),
   },
   loading: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 </script>
 

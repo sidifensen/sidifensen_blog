@@ -1,5 +1,11 @@
 <template>
-  <el-dialog v-model="dialogVisible" title="申请友链" :width="dialogWidth" :before-close="handleClose" class="link-apply-dialog">
+  <el-dialog
+    v-model="dialogVisible"
+    title="申请友链"
+    :width="dialogWidth"
+    :before-close="handleClose"
+    class="link-apply-dialog"
+  >
     <div class="link-apply-dialog__panel">
       <div class="link-apply-dialog__hero">
         <div class="link-apply-dialog__hero-mark">
@@ -13,12 +19,24 @@
       </div>
 
       <div class="link-apply-dialog__content">
-        <el-form ref="linkFormRef" :model="linkForm" :rules="linkFormRules" label-width="0" class="link-apply-form">
+        <el-form
+          ref="linkFormRef"
+          :model="linkForm"
+          :rules="linkFormRules"
+          label-width="0"
+          class="link-apply-form"
+        >
           <div class="link-apply-form__grid">
             <div class="link-apply-form__field">
               <span class="link-apply-form__label">网站名称</span>
               <el-form-item prop="name">
-                <el-input v-model="linkForm.name" placeholder="请输入网站名称" maxlength="20" show-word-limit clearable>
+                <el-input
+                  v-model="linkForm.name"
+                  placeholder="请输入网站名称"
+                  maxlength="20"
+                  show-word-limit
+                  clearable
+                >
                   <template #prefix>
                     <el-icon><House /></el-icon>
                   </template>
@@ -41,7 +59,13 @@
           <div class="link-apply-form__field">
             <span class="link-apply-form__label">网站地址</span>
             <el-form-item prop="url">
-              <el-input v-model="linkForm.url" placeholder="请输入完整的网站地址，如 https://example.com" maxlength="100" show-word-limit clearable>
+              <el-input
+                v-model="linkForm.url"
+                placeholder="请输入完整的网站地址，如 https://example.com"
+                maxlength="100"
+                show-word-limit
+                clearable
+              >
                 <template #prefix>
                   <el-icon><Link /></el-icon>
                 </template>
@@ -52,7 +76,11 @@
           <div class="link-apply-form__field">
             <span class="link-apply-form__label">网站封面</span>
             <el-form-item prop="coverUrl">
-              <el-input v-model="linkForm.coverUrl" placeholder="请输入网站封面图片地址，可选" clearable>
+              <el-input
+                v-model="linkForm.coverUrl"
+                placeholder="请输入网站封面图片地址，可选"
+                clearable
+              >
                 <template #prefix>
                   <el-icon><Picture /></el-icon>
                 </template>
@@ -60,7 +88,13 @@
             </el-form-item>
 
             <div v-if="linkForm.coverUrl" class="cover-preview">
-              <el-image :src="linkForm.coverUrl" fit="cover" class="preview-image" :preview-src-list="imagePreviewList" :preview-teleported="true">
+              <el-image
+                :src="linkForm.coverUrl"
+                fit="cover"
+                class="preview-image"
+                :preview-src-list="imagePreviewList"
+                :preview-teleported="true"
+              >
                 <template #placeholder>
                   <div class="image-placeholder">
                     <el-icon><Loading /></el-icon>
@@ -80,7 +114,15 @@
           <div class="link-apply-form__field">
             <span class="link-apply-form__label">网站描述</span>
             <el-form-item prop="description">
-              <el-input v-model="linkForm.description" type="textarea" :rows="4" placeholder="请简要描述网站内容、方向或更新特点" maxlength="50" show-word-limit resize="none" />
+              <el-input
+                v-model="linkForm.description"
+                type="textarea"
+                :rows="4"
+                placeholder="请简要描述网站内容、方向或更新特点"
+                maxlength="50"
+                show-word-limit
+                resize="none"
+              />
             </el-form-item>
           </div>
         </el-form>
@@ -106,7 +148,7 @@
           <el-button @click="handleClose">取消</el-button>
           <el-button type="primary" @click="handleSubmit" :loading="submitLoading">
             <el-icon v-if="!submitLoading"><Check /></el-icon>
-            {{ submitLoading ? "提交中..." : "提交申请" }}
+            {{ submitLoading ? '提交中...' : '提交申请' }}
           </el-button>
         </div>
       </div>
@@ -115,9 +157,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, computed, onMounted, onUnmounted } from "vue";
-import { Link, House, Picture, Message, InfoFilled, Check, Loading } from "@element-plus/icons-vue";
-import { applyLink } from "@/api/link";
+import { ref, reactive, watch, computed, onMounted, onUnmounted } from 'vue'
+import { Link, House, Picture, Message, InfoFilled, Check, Loading } from '@element-plus/icons-vue'
+import { applyLink } from '@/api/link'
 
 // 定义组件属性
 const props = defineProps({
@@ -129,169 +171,169 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
-});
+})
 
 // 定义组件事件
-const emit = defineEmits(["update:modelValue", "success"]);
+const emit = defineEmits(['update:modelValue', 'success'])
 
 // 响应式数据
-const dialogVisible = ref(false);
-const submitLoading = ref(false);
-const linkFormRef = ref(null);
-const isMobile = ref(false);
+const dialogVisible = ref(false)
+const submitLoading = ref(false)
+const linkFormRef = ref(null)
+const isMobile = ref(false)
 
 // 申请表单数据
 const linkForm = reactive({
-  name: "",
-  url: "",
-  coverUrl: "",
-  description: "",
-  email: "",
-});
+  name: '',
+  url: '',
+  coverUrl: '',
+  description: '',
+  email: '',
+})
 
 // 计算属性 - 图片预览列表
 const imagePreviewList = computed(() => {
   // 只有当图片URL有效且不为空时才添加到预览列表
   if (linkForm.coverUrl && linkForm.coverUrl.trim()) {
-    return [linkForm.coverUrl];
+    return [linkForm.coverUrl]
   }
-  return [];
-});
+  return []
+})
 
 // 计算属性 - 对话框宽度
 const dialogWidth = computed(() => {
-  return isMobile.value ? "94%" : "680px";
-});
+  return isMobile.value ? '94%' : '680px'
+})
 
 // 表单验证规则
 const linkFormRules = {
   name: [
-    { required: true, message: "请输入网站名称", trigger: "blur" },
-    { min: 1, max: 20, message: "网站名称长度在1到20个字符", trigger: "blur" },
+    { required: true, message: '请输入网站名称', trigger: 'blur' },
+    { min: 1, max: 20, message: '网站名称长度在1到20个字符', trigger: 'blur' },
   ],
   url: [
-    { required: true, message: "请输入网站地址", trigger: "blur" },
-    { max: 200, message: "网站地址不能超过200个字符", trigger: "blur" },
+    { required: true, message: '请输入网站地址', trigger: 'blur' },
+    { max: 200, message: '网站地址不能超过200个字符', trigger: 'blur' },
     {
       pattern: /^https?:\/\/.+/,
-      message: "请输入有效的网站地址 (以http://或https://开头)",
-      trigger: "blur",
+      message: '请输入有效的网站地址 (以http://或https://开头)',
+      trigger: 'blur',
     },
   ],
   description: [
-    { required: true, message: "请输入网站描述", trigger: "blur" },
-    { min: 1, max: 50, message: "网站描述长度在1到50个字符", trigger: "blur" },
+    { required: true, message: '请输入网站描述', trigger: 'blur' },
+    { min: 1, max: 50, message: '网站描述长度在1到50个字符', trigger: 'blur' },
   ],
   email: [
-    { required: true, message: "请输入邮箱地址", trigger: "blur" },
+    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
     {
-      type: "email",
-      message: "请输入有效的邮箱地址",
-      trigger: "blur",
+      type: 'email',
+      message: '请输入有效的邮箱地址',
+      trigger: 'blur',
     },
   ],
-};
+}
 
 // 监听父组件传入的visible值
 watch(
   () => props.modelValue,
   (newVal) => {
-    dialogVisible.value = newVal;
+    dialogVisible.value = newVal
   },
-  { immediate: true }
-);
+  { immediate: true },
+)
 
 // 监听对话框显示状态
 watch(dialogVisible, (newVal) => {
-  emit("update:modelValue", newVal);
+  emit('update:modelValue', newVal)
   if (!newVal) {
-    resetForm();
+    resetForm()
   } else {
     // 对话框打开时，如果有初始数据，填充表单
     if (props.initialData && Object.keys(props.initialData).length > 0) {
-      fillFormWithInitialData();
+      fillFormWithInitialData()
     }
   }
-});
+})
 
 // 监听初始数据变化
 watch(
   () => props.initialData,
   (newData) => {
     if (newData && Object.keys(newData).length > 0 && dialogVisible.value) {
-      fillFormWithInitialData();
+      fillFormWithInitialData()
     }
   },
-  { deep: true }
-);
+  { deep: true },
+)
 
 // 使用初始数据填充表单
 const fillFormWithInitialData = () => {
   if (props.initialData) {
-    linkForm.name = props.initialData.name || "";
-    linkForm.url = props.initialData.url || "";
-    linkForm.coverUrl = props.initialData.coverUrl || "";
-    linkForm.description = props.initialData.description || "";
-    linkForm.email = props.initialData.email || "";
+    linkForm.name = props.initialData.name || ''
+    linkForm.url = props.initialData.url || ''
+    linkForm.coverUrl = props.initialData.coverUrl || ''
+    linkForm.description = props.initialData.description || ''
+    linkForm.email = props.initialData.email || ''
   }
-};
+}
 
 // 重置表单
 const resetForm = () => {
   if (linkFormRef.value) {
-    linkFormRef.value.resetFields();
+    linkFormRef.value.resetFields()
   }
   Object.keys(linkForm).forEach((key) => {
-    linkForm[key] = "";
-  });
-};
+    linkForm[key] = ''
+  })
+}
 
 // 关闭对话框
 const handleClose = () => {
-  dialogVisible.value = false;
-};
+  dialogVisible.value = false
+}
 
 // 检测设备类型
 const checkDevice = () => {
-  isMobile.value = window.innerWidth <= 768;
-};
+  isMobile.value = window.innerWidth <= 768
+}
 
 // 提交申请
 const handleSubmit = async () => {
-  if (!linkFormRef.value) return;
+  if (!linkFormRef.value) return
 
   try {
     // 表单验证
-    await linkFormRef.value.validate();
+    await linkFormRef.value.validate()
 
-    submitLoading.value = true;
+    submitLoading.value = true
 
     // 提交申请
-    await applyLink(linkForm);
+    await applyLink(linkForm)
 
-    ElMessage.success("友链申请提交成功，我们会尽快审核！");
-    emit("success");
-    handleClose();
+    ElMessage.success('友链申请提交成功，我们会尽快审核！')
+    emit('success')
+    handleClose()
   } catch (error) {
     if (error.message) {
-      ElMessage.error("申请提交失败：" + error.message);
+      ElMessage.error('申请提交失败：' + error.message)
     } else {
       // 静默处理
     }
   } finally {
-    submitLoading.value = false;
+    submitLoading.value = false
   }
-};
+}
 
 // 组件挂载和卸载
 onMounted(() => {
-  checkDevice();
-  window.addEventListener("resize", checkDevice);
-});
+  checkDevice()
+  window.addEventListener('resize', checkDevice)
+})
 
 onUnmounted(() => {
-  window.removeEventListener("resize", checkDevice);
-});
+  window.removeEventListener('resize', checkDevice)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -305,14 +347,14 @@ onUnmounted(() => {
   --dialog-border-soft: #ebf0f4;
   --dialog-shadow: 0 18px 38px rgba(15, 23, 42, 0.12);
 
-  :deep(.el-dialog) {
+  ::v-deep(.el-dialog) {
     overflow: hidden;
     border-radius: 24px;
     background: var(--dialog-panel);
     box-shadow: var(--dialog-shadow);
   }
 
-  :deep(.el-dialog__header) {
+  ::v-deep(.el-dialog__header) {
     margin-right: 0;
     padding: 24px 28px 0;
 
@@ -323,11 +365,11 @@ onUnmounted(() => {
     }
   }
 
-  :deep(.el-dialog__body) {
+  ::v-deep(.el-dialog__body) {
     padding: 18px 28px 12px;
   }
 
-  :deep(.el-dialog__footer) {
+  ::v-deep(.el-dialog__footer) {
     padding: 0 28px 28px;
   }
 
@@ -410,11 +452,11 @@ onUnmounted(() => {
         color: var(--dialog-text-primary);
       }
 
-      :deep(.el-form-item) {
+      ::v-deep(.el-form-item) {
         margin-bottom: 0;
       }
 
-      :deep(.el-input__wrapper) {
+      ::v-deep(.el-input__wrapper) {
         border-radius: 12px;
         background: var(--dialog-panel);
         border: 1px solid var(--dialog-border);
@@ -430,7 +472,7 @@ onUnmounted(() => {
         }
       }
 
-      :deep(.el-textarea__inner) {
+      ::v-deep(.el-textarea__inner) {
         border-radius: 12px;
         background: var(--dialog-panel);
         border: 1px solid var(--dialog-border);
@@ -529,7 +571,7 @@ onUnmounted(() => {
       display: flex;
       gap: 10px;
 
-      :deep(.el-button + .el-button) {
+      ::v-deep(.el-button + .el-button) {
         margin-left: 0;
       }
 
@@ -556,15 +598,15 @@ html.dark {
 
 @media (max-width: 768px) {
   .link-apply-dialog {
-    :deep(.el-dialog__header) {
+    ::v-deep(.el-dialog__header) {
       padding: 20px 20px 0;
     }
 
-    :deep(.el-dialog__body) {
+    ::v-deep(.el-dialog__body) {
       padding: 16px 20px 10px;
     }
 
-    :deep(.el-dialog__footer) {
+    ::v-deep(.el-dialog__footer) {
       padding: 0 20px 20px;
     }
 

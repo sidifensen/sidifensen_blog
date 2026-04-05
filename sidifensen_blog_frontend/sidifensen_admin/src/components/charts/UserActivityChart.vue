@@ -6,143 +6,143 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from "vue";
-import { Chart } from "@antv/g2";
-import { useDarkStore } from "@/stores/darkStore";
-import { storeToRefs } from "pinia";
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { Chart } from '@antv/g2'
+import { useDarkStore } from '@/stores/darkStore'
+import { storeToRefs } from 'pinia'
 
 const props = defineProps({
   activeUserCount: {
     type: Number,
-    default: 0
+    default: 0,
   },
   totalUserCount: {
     type: Number,
-    default: 0
+    default: 0,
   },
   loading: {
     type: Boolean,
-    default: false
-  }
-});
+    default: false,
+  },
+})
 
-const darkStore = useDarkStore();
-const { isDark } = storeToRefs(darkStore);
+const darkStore = useDarkStore()
+const { isDark } = storeToRefs(darkStore)
 
-const chartRef = ref(null);
-let chartInstance = null;
+const chartRef = ref(null)
+let chartInstance = null
 
 const renderChart = () => {
-  if (!chartRef.value) return;
+  if (!chartRef.value) return
 
   if (chartInstance) {
-    chartInstance.destroy();
-    chartInstance = null;
+    chartInstance.destroy()
+    chartInstance = null
   }
 
-  const activeCount = props.activeUserCount || 0;
-  const inactiveCount = (props.totalUserCount || 0) - activeCount;
-  const total = props.totalUserCount || 0;
+  const activeCount = props.activeUserCount || 0
+  const inactiveCount = (props.totalUserCount || 0) - activeCount
+  const total = props.totalUserCount || 0
 
   const data = [
-    { item: "活跃用户", count: activeCount },
-    { item: "非活跃用户", count: inactiveCount }
-  ].filter((d) => d.count >= 0);
+    { item: '活跃用户', count: activeCount },
+    { item: '非活跃用户', count: inactiveCount },
+  ].filter((d) => d.count >= 0)
 
   chartInstance = new Chart({
     container: chartRef.value,
-    autoFit: true
-  });
+    autoFit: true,
+  })
 
   chartInstance.options({
-    type: "interval",
+    type: 'interval',
     data,
-    coordinate: { type: "theta", innerRadius: 0.6, outerRadius: 0.95 },
-    transform: [{ type: "stackY" }],
+    coordinate: { type: 'theta', innerRadius: 0.6, outerRadius: 0.95 },
+    transform: [{ type: 'stackY' }],
     encode: {
-      y: "count",
-      color: "item"
+      y: 'count',
+      color: 'item',
     },
-    theme: isDark.value ? "classicDark" : "light",
+    theme: isDark.value ? 'classicDark' : 'light',
     legend: {
       color: {
-        position: "bottom",
-        itemLabelFill: isDark.value ? "#e2e8f0" : "#475569"
-      }
+        position: 'bottom',
+        itemLabelFill: isDark.value ? '#e2e8f0' : '#475569',
+      },
     },
     labels: [
       {
-        text: "item",
-        position: "outside",
+        text: 'item',
+        position: 'outside',
         fontSize: 12,
-        fill: isDark.value ? "#e2e8f0" : "#475569"
+        fill: isDark.value ? '#e2e8f0' : '#475569',
       },
       {
         text: (d) => {
-          const percent = total > 0 ? ((d.count / total) * 100).toFixed(1) : 0;
-          return `${percent}%`;
+          const percent = total > 0 ? ((d.count / total) * 100).toFixed(1) : 0
+          return `${percent}%`
         },
-        position: "inside",
+        position: 'inside',
         fontSize: 14,
-        fontWeight: "bold",
-        fill: "#fff"
-      }
+        fontWeight: 'bold',
+        fill: '#fff',
+      },
     ],
     interaction: {
-      elementHoverScale: true
+      elementHoverScale: true,
     },
     tooltip: {
-      title: "item",
+      title: 'item',
       items: [
         (datum) => ({
-          name: "用户数",
-          value: datum.count
+          name: '用户数',
+          value: datum.count,
         }),
         (datum) => ({
-          name: "占比",
-          value: `${total > 0 ? ((datum.count / total) * 100).toFixed(2) : 0}%`
-        })
-      ]
+          name: '占比',
+          value: `${total > 0 ? ((datum.count / total) * 100).toFixed(2) : 0}%`,
+        }),
+      ],
     },
     scale: {
       color: {
-        range: ["#3b82f6", "#94a3b8"]
-      }
+        range: ['#3b82f6', '#94a3b8'],
+      },
     },
-    animate: { enter: { type: "waveIn", duration: 800 } }
-  });
+    animate: { enter: { type: 'waveIn', duration: 800 } },
+  })
 
-  chartInstance.render();
-};
+  chartInstance.render()
+}
 
 const destroyChart = () => {
   if (chartInstance) {
-    chartInstance.destroy();
-    chartInstance = null;
+    chartInstance.destroy()
+    chartInstance = null
   }
-};
+}
 
 onMounted(() => {
-  renderChart();
-});
+  renderChart()
+})
 
 onBeforeUnmount(() => {
-  destroyChart();
-});
+  destroyChart()
+})
 
 watch(
   () => props.loading,
   async () => {
     if (!props.loading) {
-      await new Promise((resolve) => setTimeout(resolve, 0));
-      renderChart();
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      renderChart()
     }
-  }
-);
+  },
+)
 
 watch(isDark, () => {
-  renderChart();
-});
+  renderChart()
+})
 </script>
 
 <style lang="scss" scoped>

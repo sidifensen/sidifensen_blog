@@ -5,37 +5,96 @@
       <div class="card-header">
         <h2 class="card-title">访客日志管理</h2>
         <div class="card-actions">
-          <el-select v-model="searchForm.device" placeholder="设备类型" filterable clearable size="small" class="search-input" @change="handleSearch">
+          <el-select
+            v-model="searchForm.device"
+            placeholder="设备类型"
+            filterable
+            clearable
+            size="small"
+            class="search-input"
+            @change="handleSearch"
+          >
             <el-option label="全部" value="" />
             <el-option label="PC" value="PC" />
             <el-option label="Mobile" value="Mobile" />
           </el-select>
-          <el-input v-model.number="searchForm.userId" placeholder="用户ID" :prefix-icon="Search" size="small" class="search-input" clearable @input="handleSearch" />
-          <el-input v-model="searchForm.ip" placeholder="访客IP地址" :prefix-icon="Search" size="small" class="search-input" clearable @input="handleSearch" />
+          <el-input
+            v-model.number="searchForm.userId"
+            placeholder="用户ID"
+            :prefix-icon="Search"
+            size="small"
+            class="search-input"
+            clearable
+            @input="handleSearch"
+          />
+          <el-input
+            v-model="searchForm.ip"
+            placeholder="访客IP地址"
+            :prefix-icon="Search"
+            size="small"
+            class="search-input"
+            clearable
+            @input="handleSearch"
+          />
         </div>
       </div>
 
       <!-- 时间筛选区域 -->
       <div class="card-time-filters">
         <div class="time-filter-group">
-          <el-date-picker v-model="searchForm.visitTimeStart" type="datetime" placeholder="访问开始时间" size="small" class="time-input" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" clearable @change="handleSearch" />
-          <el-date-picker v-model="searchForm.visitTimeEnd" type="datetime" placeholder="访问结束时间" size="small" class="time-input" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" clearable @change="handleSearch" />
+          <el-date-picker
+            v-model="searchForm.visitTimeStart"
+            type="datetime"
+            placeholder="访问开始时间"
+            size="small"
+            class="time-input"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            clearable
+            @change="handleSearch"
+          />
+          <el-date-picker
+            v-model="searchForm.visitTimeEnd"
+            type="datetime"
+            placeholder="访问结束时间"
+            size="small"
+            class="time-input"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            clearable
+            @change="handleSearch"
+          />
         </div>
       </div>
 
       <!-- 批量操作按钮区域 -->
       <div class="card-third">
-        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedLogs.length === 0" :loading="batchDeleteLoading">批量删除</el-button>
+        <el-button
+          type="danger"
+          plain
+          round
+          @click="handleBatchDelete"
+          :disabled="selectedLogs.length === 0"
+          :loading="batchDeleteLoading"
+          >批量删除</el-button
+        >
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table v-loading="loading" :data="logList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
+        <el-table
+          v-loading="loading"
+          :data="logList"
+          class="table"
+          @selection-change="handleSelectionChange"
+          :row-style="{ height: 'auto' }"
+          :cell-style="{ padding: '8px 0' }"
+        >
           <el-table-column type="selection" width="30" />
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="userId" label="用户ID" width="80">
             <template #default="{ row }">
-              <span>{{ row.userId || "-" }}</span>
+              <span>{{ row.userId || '-' }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="username" label="用户名" width="170">
@@ -56,7 +115,12 @@
           </el-table-column>
           <el-table-column prop="address" label="地理位置" min-width="150">
             <template #default="{ row }">
-              <el-tooltip v-if="row.address" :content="row.address" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
+              <el-tooltip
+                v-if="row.address"
+                :content="row.address"
+                placement="top-start"
+                :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"
+              >
                 <div class="log-address">{{ row.address }}</div>
               </el-tooltip>
               <span v-else>-</span>
@@ -73,7 +137,14 @@
           <el-table-column label="操作" width="100">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button type="danger" @click="handleDelete(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
+                <el-button
+                  type="danger"
+                  @click="handleDelete(row.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                  size="small"
+                  >删除</el-button
+                >
               </div>
             </template>
           </el-table-column>
@@ -83,12 +154,21 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="log-cards">
-          <el-card v-for="log in logList" :key="log.id" class="log-card" :class="{ 'is-selected': isLogSelected(log.id) }">
+          <el-card
+            v-for="log in logList"
+            :key="log.id"
+            class="log-card"
+            :class="{ 'is-selected': isLogSelected(log.id) }"
+          >
             <div class="log-card-content">
               <div class="log-header-section">
                 <div class="log-info">
                   <div class="log-header">
-                    <el-checkbox :model-value="isLogSelected(log.id)" @change="handleMobileSelect(log)" class="mobile-checkbox" />
+                    <el-checkbox
+                      :model-value="isLogSelected(log.id)"
+                      @change="handleMobileSelect(log)"
+                      class="mobile-checkbox"
+                    />
                     <div class="log-id">#{{ log.id }}</div>
                     <div class="device-type" :class="getDeviceTypeClass(log.device)">
                       {{ log.device }}
@@ -98,7 +178,10 @@
                   <!-- 用户信息 -->
                   <div class="log-user-mobile">
                     <span class="user-label">用户:</span>
-                    <span class="user-value">{{ log.username || "游客" }} {{ log.userId ? `(ID: ${log.userId})` : "" }}</span>
+                    <span class="user-value"
+                      >{{ log.username || '游客' }}
+                      {{ log.userId ? `(ID: ${log.userId})` : '' }}</span
+                    >
                   </div>
 
                   <!-- IP地址 -->
@@ -125,7 +208,14 @@
                 </div>
               </div>
               <div class="log-actions">
-                <el-button type="danger" @click="handleDelete(log.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
+                <el-button
+                  type="danger"
+                  @click="handleDelete(log.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                  size="small"
+                  >删除</el-button
+                >
               </div>
             </div>
           </el-card>
@@ -133,83 +223,89 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <Pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from "vue";
-import { Search, Delete } from "@element-plus/icons-vue";
-import { getVisitorLogList, searchVisitorLog, deleteVisitorLogs } from "@/api/visitorLog";
-import Pagination from "@/components/Pagination.vue";
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { Search, Delete } from '@element-plus/icons-vue'
+import { getVisitorLogList, searchVisitorLog, deleteVisitorLogs } from '@/api/visitorLog'
+import Pagination from '@/components/Pagination.vue'
 
 // 访客日志列表数据
-const logList = ref([]);
-const loading = ref(false);
-const currentPage = ref(1);
-const pageSize = ref(10);
-const total = ref(0);
+const logList = ref([])
+const loading = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
 // 搜索表单
 const searchForm = reactive({
   userId: null,
-  ip: "",
-  device: "",
+  ip: '',
+  device: '',
   visitTimeStart: null,
   visitTimeEnd: null,
-});
+})
 
 // 选中的日志
-const selectedLogs = ref([]);
+const selectedLogs = ref([])
 
 // 批量操作加载状态
-const batchDeleteLoading = ref(false);
+const batchDeleteLoading = ref(false)
 
 // 移动端检测
-const isMobileView = ref(false);
+const isMobileView = ref(false)
 
 // 监听窗口大小变化
 const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768;
-};
+  isMobileView.value = window.innerWidth <= 768
+}
 
 // 获取设备类型样式类
 const getDeviceTypeClass = (device) => {
-  if (device === "PC") return "device-pc";
-  if (device === "Mobile") return "device-mobile";
-  return "";
-};
+  if (device === 'PC') return 'device-pc'
+  if (device === 'Mobile') return 'device-mobile'
+  return ''
+}
 
 // 获取访客日志列表
 const fetchVisitorLogs = async () => {
-  loading.value = true;
+  loading.value = true
   try {
-    let pageData = null;
+    let pageData = null
     if (hasSearchConditions()) {
-      const res = await searchVisitorLog(buildSearchPayload());
-      pageData = res.data;
+      const res = await searchVisitorLog(buildSearchPayload())
+      pageData = res.data
     } else {
       const res = await getVisitorLogList({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
-      });
-      pageData = res.data;
+      })
+      pageData = res.data
     }
-    applyPageData(pageData);
+    applyPageData(pageData)
   } catch (error) {
-    ElMessage.error(hasSearchConditions() ? "搜索失败" : "获取访客日志列表失败");
-    console.error(hasSearchConditions() ? "搜索失败:" : "获取访客日志列表失败:", error);
+    ElMessage.error(hasSearchConditions() ? '搜索失败' : '获取访客日志列表失败')
+    console.error(hasSearchConditions() ? '搜索失败:' : '获取访客日志列表失败:', error)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 获取访客日志列表并重置分页
 const getVisitorLogs = async () => {
-  currentPage.value = 1;
-  await fetchVisitorLogs();
-};
+  currentPage.value = 1
+  await fetchVisitorLogs()
+}
 
 // 判断是否存在搜索条件
 const hasSearchConditions = () => {
@@ -219,150 +315,150 @@ const hasSearchConditions = () => {
     searchForm.device ||
     searchForm.visitTimeStart ||
     searchForm.visitTimeEnd
-  );
-};
+  )
+}
 
 // 构建搜索参数
 const buildSearchPayload = () => {
   const searchData = {
     pageNum: currentPage.value,
     pageSize: pageSize.value,
-  };
+  }
 
   if (searchForm.userId) {
-    searchData.userId = Number(searchForm.userId);
+    searchData.userId = Number(searchForm.userId)
   }
   if (searchForm.ip) {
-    searchData.ip = searchForm.ip.trim();
+    searchData.ip = searchForm.ip.trim()
   }
   if (searchForm.device) {
-    searchData.device = searchForm.device;
+    searchData.device = searchForm.device
   }
   if (searchForm.visitTimeStart) {
-    searchData.visitTimeStart = searchForm.visitTimeStart;
+    searchData.visitTimeStart = searchForm.visitTimeStart
   }
   if (searchForm.visitTimeEnd) {
-    searchData.visitTimeEnd = searchForm.visitTimeEnd;
+    searchData.visitTimeEnd = searchForm.visitTimeEnd
   }
 
-  return searchData;
-};
+  return searchData
+}
 
 // 应用分页响应
 const applyPageData = (pageData) => {
-  logList.value = pageData?.data || [];
-  total.value = Number(pageData?.total || 0);
-  selectedLogs.value = [];
-};
+  logList.value = pageData?.data || []
+  total.value = Number(pageData?.total || 0)
+  selectedLogs.value = []
+}
 
 // 处理分页大小变化
 const handleSizeChange = async (size) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  await fetchVisitorLogs();
-};
+  pageSize.value = size
+  currentPage.value = 1
+  await fetchVisitorLogs()
+}
 
 // 处理当前页码变化
 const handleCurrentChange = async (current) => {
-  currentPage.value = current;
-  await fetchVisitorLogs();
-};
+  currentPage.value = current
+  await fetchVisitorLogs()
+}
 
 // 处理搜索
 const handleSearch = async () => {
-  currentPage.value = 1;
-  await fetchVisitorLogs();
-};
+  currentPage.value = 1
+  await fetchVisitorLogs()
+}
 
 // 智能刷新列表
 const refreshLogList = async (deletedCount = 0) => {
   if (deletedCount > 0 && currentPage.value > 1 && logList.value.length <= deletedCount) {
-    currentPage.value -= 1;
+    currentPage.value -= 1
   }
-  await fetchVisitorLogs();
-};
+  await fetchVisitorLogs()
+}
 
 // 表格多选
 const handleSelectionChange = (logs) => {
-  selectedLogs.value = logs;
-};
+  selectedLogs.value = logs
+}
 
 // 检查日志是否被选中
 const isLogSelected = (logId) => {
-  return selectedLogs.value.some((log) => log.id === logId);
-};
+  return selectedLogs.value.some((log) => log.id === logId)
+}
 
 // 移动端选择处理
 const handleMobileSelect = (log) => {
-  const index = selectedLogs.value.findIndex((item) => item.id === log.id);
+  const index = selectedLogs.value.findIndex((item) => item.id === log.id)
   if (index > -1) {
     // 已选中，取消选中
-    selectedLogs.value.splice(index, 1);
+    selectedLogs.value.splice(index, 1)
   } else {
     // 未选中，添加到选中列表
-    selectedLogs.value.push(log);
+    selectedLogs.value.push(log)
   }
-};
+}
 
 // 删除单个日志
 const handleDelete = (id) => {
-  ElMessageBox.confirm("确定要删除该访客日志吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要删除该访客日志吗？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
       try {
-        await deleteVisitorLogs([id]);
-        ElMessage.success("删除成功");
-        await refreshLogList(1);
+        await deleteVisitorLogs([id])
+        ElMessage.success('删除成功')
+        await refreshLogList(1)
       } catch (error) {
-        ElMessage.error("删除失败");
-        console.error("删除失败:", error);
+        ElMessage.error('删除失败')
+        console.error('删除失败:', error)
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 批量删除
 const handleBatchDelete = () => {
-  ElMessageBox.confirm(`确定要删除选中的 ${selectedLogs.value.length} 条访客日志吗？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm(`确定要删除选中的 ${selectedLogs.value.length} 条访客日志吗？`, '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      batchDeleteLoading.value = true;
+      batchDeleteLoading.value = true
       try {
-        const logIds = selectedLogs.value.map((log) => log.id);
-        await deleteVisitorLogs(logIds);
-        ElMessage.success("批量删除成功");
-        await refreshLogList(logIds.length);
+        const logIds = selectedLogs.value.map((log) => log.id)
+        await deleteVisitorLogs(logIds)
+        ElMessage.success('批量删除成功')
+        await refreshLogList(logIds.length)
       } catch (error) {
-        ElMessage.error("批量删除失败");
-        console.error("批量删除失败:", error);
+        ElMessage.error('批量删除失败')
+        console.error('批量删除失败:', error)
       } finally {
-        batchDeleteLoading.value = false;
+        batchDeleteLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 初始化
 onMounted(() => {
-  getVisitorLogs();
-  handleResize();
-  window.addEventListener("resize", handleResize);
-});
+  getVisitorLogs()
+  handleResize()
+  window.addEventListener('resize', handleResize)
+})
 
 // 组件卸载时移除监听
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -402,7 +498,7 @@ onUnmounted(() => {
         align-items: center;
 
         &::before {
-          content: "";
+          content: '';
           display: inline-block;
           width: 4px;
           height: 20px;
@@ -849,7 +945,6 @@ onUnmounted(() => {
       }
     }
   }
-
 }
 
 // 响应式设计
@@ -916,7 +1011,6 @@ onUnmounted(() => {
       margin-top: 0;
       max-height: calc(100vh - 240px);
     }
-
   }
 }
 </style>

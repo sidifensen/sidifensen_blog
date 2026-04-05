@@ -72,108 +72,114 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from "vue";
-import Pagination from "./Pagination.vue";
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import Pagination from './Pagination.vue'
 
 // Props
 const props = defineProps({
   title: {
     type: String,
-    default: "管理页面"
+    default: '管理页面',
   },
   titleColor: {
     type: String,
-    default: "#42b983"
+    default: '#42b983',
   },
   showTimeFilter: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showPagination: {
     type: Boolean,
-    default: true
+    default: true,
   },
   // 分页相关
   modelCurrentPage: {
     type: Number,
-    default: 1
+    default: 1,
   },
   modelPageSize: {
     type: Number,
-    default: 10
+    default: 10,
   },
   total: {
     type: Number,
-    default: 0
-  }
-});
+    default: 0,
+  },
+})
 
 // Emits
 const emit = defineEmits([
-  "update:modelCurrentPage",
-  "update:modelPageSize",
-  "search",
-  "time-change",
-  "resize"
-]);
+  'update:modelCurrentPage',
+  'update:modelPageSize',
+  'search',
+  'time-change',
+  'resize',
+])
 
 // 响应式
-const isMobileView = ref(false);
+const isMobileView = ref(false)
 
 // 分页
-const currentPage = ref(props.modelCurrentPage);
-const pageSize = ref(props.modelPageSize);
-const startTime = ref("");
-const endTime = ref("");
+const currentPage = ref(props.modelCurrentPage)
+const pageSize = ref(props.modelPageSize)
+const startTime = ref('')
+const endTime = ref('')
 
 // 监听 props 变化
-watch(() => props.modelCurrentPage, (val) => {
-  currentPage.value = val;
-});
+watch(
+  () => props.modelCurrentPage,
+  (val) => {
+    currentPage.value = val
+  },
+)
 
-watch(() => props.modelPageSize, (val) => {
-  pageSize.value = val;
-});
+watch(
+  () => props.modelPageSize,
+  (val) => {
+    pageSize.value = val
+  },
+)
 
 // 监听分页变化
 watch(currentPage, (val) => {
-  emit("update:modelCurrentPage", val);
-});
+  emit('update:modelCurrentPage', val)
+})
 
 watch(pageSize, (val) => {
-  emit("update:modelPageSize", val);
-});
+  emit('update:modelPageSize', val)
+})
 
 // 窗口大小变化处理
 const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768;
-  emit("resize", isMobileView.value);
-};
+  isMobileView.value = window.innerWidth <= 768
+  emit('resize', isMobileView.value)
+}
 
 // 分页处理
 const handleSizeChange = (size) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  emit("search");
-};
+  pageSize.value = size
+  currentPage.value = 1
+  emit('search')
+}
 
 const handleCurrentChange = (current) => {
-  currentPage.value = current;
-  emit("search");
-};
+  currentPage.value = current
+  emit('search')
+}
 
 // 时间筛选变化
 const handleTimeChange = () => {
-  emit("time-change", {
+  emit('time-change', {
     startTime: startTime.value,
-    endTime: endTime.value
-  });
-};
+    endTime: endTime.value,
+  })
+}
 
 // 公开方法
 const resetPagination = () => {
-  currentPage.value = 1;
-};
+  currentPage.value = 1
+}
 
 // 暴露给父组件
 defineExpose({
@@ -182,19 +188,19 @@ defineExpose({
   getPageSize: () => pageSize.value,
   getTimeRange: () => ({
     startTime: startTime.value,
-    endTime: endTime.value
-  })
-});
+    endTime: endTime.value,
+  }),
+})
 
 // 初始化
 onMounted(() => {
-  handleResize();
-  window.addEventListener("resize", handleResize);
-});
+  handleResize()
+  window.addEventListener('resize', handleResize)
+})
 
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -234,7 +240,7 @@ onUnmounted(() => {
         align-items: center;
 
         &::before {
-          content: "";
+          content: '';
           display: inline-block;
           width: 4px;
           height: 20px;

@@ -5,51 +5,122 @@
       <div class="card-header">
         <h2 class="card-title">黑名单管理</h2>
         <div class="card-actions">
-          <el-select v-model="searchForm.type" placeholder="黑名单类型" filterable clearable size="small" class="search-input" @change="handleSearch">
+          <el-select
+            v-model="searchForm.type"
+            placeholder="黑名单类型"
+            filterable
+            clearable
+            size="small"
+            class="search-input"
+            @change="handleSearch"
+          >
             <el-option label="全部" value="" />
             <el-option label="用户" :value="0" />
             <el-option label="IP地址" :value="1" />
           </el-select>
-          <el-input v-model.number="searchForm.userId" placeholder="用户ID" :prefix-icon="Search" size="small" class="search-input" clearable @input="handleSearch" />
+          <el-input
+            v-model.number="searchForm.userId"
+            placeholder="用户ID"
+            :prefix-icon="Search"
+            size="small"
+            class="search-input"
+            clearable
+            @input="handleSearch"
+          />
         </div>
       </div>
 
       <!-- 时间筛选区域 -->
       <div class="card-time-filters">
         <div class="time-filter-group">
-          <el-date-picker v-model="searchForm.banTimeStart" type="datetime" placeholder="拉黑开始时间" size="small" class="time-input" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" clearable @change="handleSearch" />
-          <el-date-picker v-model="searchForm.banTimeEnd" type="datetime" placeholder="拉黑结束时间" size="small" class="time-input" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" clearable @change="handleSearch" />
+          <el-date-picker
+            v-model="searchForm.banTimeStart"
+            type="datetime"
+            placeholder="拉黑开始时间"
+            size="small"
+            class="time-input"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            clearable
+            @change="handleSearch"
+          />
+          <el-date-picker
+            v-model="searchForm.banTimeEnd"
+            type="datetime"
+            placeholder="拉黑结束时间"
+            size="small"
+            class="time-input"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            clearable
+            @change="handleSearch"
+          />
         </div>
       </div>
 
       <div class="card-time-filters">
         <div class="time-filter-group">
-          <el-date-picker v-model="searchForm.expireTimeStart" type="datetime" placeholder="到期开始时间" size="small" class="time-input" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" clearable @change="handleSearch" />
-          <el-date-picker v-model="searchForm.expireTimeEnd" type="datetime" placeholder="到期结束时间" size="small" class="time-input" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" clearable @change="handleSearch" />
+          <el-date-picker
+            v-model="searchForm.expireTimeStart"
+            type="datetime"
+            placeholder="到期开始时间"
+            size="small"
+            class="time-input"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            clearable
+            @change="handleSearch"
+          />
+          <el-date-picker
+            v-model="searchForm.expireTimeEnd"
+            type="datetime"
+            placeholder="到期结束时间"
+            size="small"
+            class="time-input"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            clearable
+            @change="handleSearch"
+          />
         </div>
       </div>
 
       <!-- 批量操作按钮区域 -->
       <div class="card-third">
         <el-button type="primary" plain round @click="handleAdd" :icon="Plus">新增黑名单</el-button>
-        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedBlacklists.length === 0" :loading="batchDeleteLoading">批量删除</el-button>
+        <el-button
+          type="danger"
+          plain
+          round
+          @click="handleBatchDelete"
+          :disabled="selectedBlacklists.length === 0"
+          :loading="batchDeleteLoading"
+          >批量删除</el-button
+        >
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table v-loading="loading" :data="paginatedBlacklistList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
+        <el-table
+          v-loading="loading"
+          :data="paginatedBlacklistList"
+          class="table"
+          @selection-change="handleSelectionChange"
+          :row-style="{ height: 'auto' }"
+          :cell-style="{ padding: '8px 0' }"
+        >
           <el-table-column type="selection" width="30" />
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="type" label="类型" width="100">
             <template #default="{ row }">
               <div class="blacklist-type" :class="row.type === 0 ? 'type-user' : 'type-ip'">
-                {{ row.type === 0 ? "用户" : "IP地址" }}
+                {{ row.type === 0 ? '用户' : 'IP地址' }}
               </div>
             </template>
           </el-table-column>
           <el-table-column prop="userId" label="用户ID" width="100">
             <template #default="{ row }">
-              <span>{{ row.userId || "-" }}</span>
+              <span>{{ row.userId || '-' }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="ip" label="IP地址" width="150">
@@ -62,7 +133,11 @@
           </el-table-column>
           <el-table-column prop="reason" label="拉黑原因" min-width="200">
             <template #default="{ row }">
-              <el-tooltip :content="row.reason" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
+              <el-tooltip
+                :content="row.reason"
+                placement="top-start"
+                :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"
+              >
                 <div class="blacklist-reason">{{ row.reason }}</div>
               </el-tooltip>
             </template>
@@ -77,16 +152,33 @@
           </el-table-column>
           <el-table-column prop="status" label="状态" width="80">
             <template #default="{ row }">
-              <div class="blacklist-status" :class="isExpired(row.expireTime) ? 'status-expired' : 'status-active'">
-                {{ isExpired(row.expireTime) ? "已过期" : "生效中" }}
+              <div
+                class="blacklist-status"
+                :class="isExpired(row.expireTime) ? 'status-expired' : 'status-active'"
+              >
+                {{ isExpired(row.expireTime) ? '已过期' : '生效中' }}
               </div>
             </template>
           </el-table-column>
           <el-table-column label="操作" width="200">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button type="primary" @click="handleEdit(row)" :icon="Edit" class="edit-button" size="small">编辑</el-button>
-                <el-button type="danger" @click="handleDelete(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
+                <el-button
+                  type="primary"
+                  @click="handleEdit(row)"
+                  :icon="Edit"
+                  class="edit-button"
+                  size="small"
+                  >编辑</el-button
+                >
+                <el-button
+                  type="danger"
+                  @click="handleDelete(row.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                  size="small"
+                  >删除</el-button
+                >
               </div>
             </template>
           </el-table-column>
@@ -96,18 +188,33 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="blacklist-cards">
-          <el-card v-for="blacklist in paginatedBlacklistList" :key="blacklist.id" class="blacklist-card" :class="{ 'is-selected': isBlacklistSelected(blacklist.id) }">
+          <el-card
+            v-for="blacklist in paginatedBlacklistList"
+            :key="blacklist.id"
+            class="blacklist-card"
+            :class="{ 'is-selected': isBlacklistSelected(blacklist.id) }"
+          >
             <div class="blacklist-card-content">
               <div class="blacklist-header-section">
                 <div class="blacklist-info">
                   <div class="blacklist-header">
-                    <el-checkbox :model-value="isBlacklistSelected(blacklist.id)" @change="handleMobileSelect(blacklist)" class="mobile-checkbox" />
+                    <el-checkbox
+                      :model-value="isBlacklistSelected(blacklist.id)"
+                      @change="handleMobileSelect(blacklist)"
+                      class="mobile-checkbox"
+                    />
                     <div class="blacklist-id">#{{ blacklist.id }}</div>
-                    <div class="blacklist-type" :class="blacklist.type === 0 ? 'type-user' : 'type-ip'">
-                      {{ blacklist.type === 0 ? "用户" : "IP地址" }}
+                    <div
+                      class="blacklist-type"
+                      :class="blacklist.type === 0 ? 'type-user' : 'type-ip'"
+                    >
+                      {{ blacklist.type === 0 ? '用户' : 'IP地址' }}
                     </div>
-                    <div class="blacklist-status" :class="isExpired(blacklist.expireTime) ? 'status-expired' : 'status-active'">
-                      {{ isExpired(blacklist.expireTime) ? "已过期" : "生效中" }}
+                    <div
+                      class="blacklist-status"
+                      :class="isExpired(blacklist.expireTime) ? 'status-expired' : 'status-active'"
+                    >
+                      {{ isExpired(blacklist.expireTime) ? '已过期' : '生效中' }}
                     </div>
                   </div>
 
@@ -136,7 +243,10 @@
                         <span class="label">拉黑:</span>
                         <span>{{ blacklist.banTime }}</span>
                       </div>
-                      <div class="meta-item time-item" :class="{ 'expired-time': isExpired(blacklist.expireTime) }">
+                      <div
+                        class="meta-item time-item"
+                        :class="{ 'expired-time': isExpired(blacklist.expireTime) }"
+                      >
                         <span class="label">到期:</span>
                         <span>{{ blacklist.expireTime }}</span>
                       </div>
@@ -145,8 +255,22 @@
                 </div>
               </div>
               <div class="blacklist-actions">
-                <el-button type="primary" @click="handleEdit(blacklist)" :icon="Edit" class="edit-button" size="small">编辑</el-button>
-                <el-button type="danger" @click="handleDelete(blacklist.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
+                <el-button
+                  type="primary"
+                  @click="handleEdit(blacklist)"
+                  :icon="Edit"
+                  class="edit-button"
+                  size="small"
+                  >编辑</el-button
+                >
+                <el-button
+                  type="danger"
+                  @click="handleDelete(blacklist.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                  size="small"
+                  >删除</el-button
+                >
               </div>
             </div>
           </el-card>
@@ -154,23 +278,53 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <Pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
 
     <!-- 新增/编辑黑名单对话框 -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" :before-close="handleDialogClose" width="600px" class="blacklist-dialog">
+    <el-dialog
+      v-model="dialogVisible"
+      :title="dialogTitle"
+      :before-close="handleDialogClose"
+      width="600px"
+      class="blacklist-dialog"
+    >
       <el-form ref="blacklistFormRef" :model="blacklistForm" :rules="rules" label-width="90px">
         <el-form-item v-if="!isEdit" prop="userIds" label="用户ID">
-          <el-input v-model="blacklistForm.userIds" placeholder="请输入用户ID，多个用逗号分隔，如：3,4,5" />
+          <el-input
+            v-model="blacklistForm.userIds"
+            placeholder="请输入用户ID，多个用逗号分隔，如：3,4,5"
+          />
           <div class="form-tip">支持批量添加，多个用户ID用逗号分隔，如：3,4,5</div>
         </el-form-item>
 
         <el-form-item prop="reason" label="拉黑原因">
-          <el-input v-model="blacklistForm.reason" type="textarea" :rows="3" placeholder="请输入拉黑原因" maxlength="500" show-word-limit />
+          <el-input
+            v-model="blacklistForm.reason"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入拉黑原因"
+            maxlength="500"
+            show-word-limit
+          />
         </el-form-item>
 
         <el-form-item prop="expireTime" label="到期时间">
-          <el-date-picker v-model="blacklistForm.expireTime" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="选择到期时间" style="width: 100%" :disabled-date="disabledDate" />
+          <el-date-picker
+            v-model="blacklistForm.expireTime"
+            type="datetime"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            placeholder="选择到期时间"
+            style="width: 100%"
+            :disabled-date="disabledDate"
+          />
           <div class="form-tip">选择黑名单到期时间，过期后自动失效</div>
         </el-form-item>
 
@@ -197,233 +351,245 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
-import { Search, Plus, Delete, Edit } from "@element-plus/icons-vue";
-import { getBlacklistList, addBlacklist, searchBlacklist, updateBlacklist, deleteBlacklist } from "@/api/blacklist";
-import Pagination from "@/components/Pagination.vue";
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { Search, Plus, Delete, Edit } from '@element-plus/icons-vue'
+import {
+  getBlacklistList,
+  addBlacklist,
+  searchBlacklist,
+  updateBlacklist,
+  deleteBlacklist,
+} from '@/api/blacklist'
+import Pagination from '@/components/Pagination.vue'
 
 // 黑名单列表数据
-const blacklistList = ref([]);
-const paginatedBlacklistList = ref([]);
-const loading = ref(false);
-const currentPage = ref(1);
-const pageSize = ref(10);
-const total = ref(0);
+const blacklistList = ref([])
+const paginatedBlacklistList = ref([])
+const loading = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
 // 对话框
-const dialogVisible = ref(false);
-const dialogTitle = ref("批量新增黑名单");
-const isEdit = ref(false);
-const submitLoading = ref(false);
-const blacklistFormRef = ref(null);
+const dialogVisible = ref(false)
+const dialogTitle = ref('批量新增黑名单')
+const isEdit = ref(false)
+const submitLoading = ref(false)
+const blacklistFormRef = ref(null)
 
 // 搜索表单
 const searchForm = reactive({
-  type: "",
+  type: '',
   userId: null,
   banTimeStart: null,
   banTimeEnd: null,
   expireTimeStart: null,
   expireTimeEnd: null,
-});
+})
 
 // 黑名单表单
 const blacklistForm = reactive({
   id: null,
-  userIds: "",
-  reason: "",
-  expireTime: "",
-});
+  userIds: '',
+  reason: '',
+  expireTime: '',
+})
 
 // 选中的黑名单
-const selectedBlacklists = ref([]);
+const selectedBlacklists = ref([])
 
 // 批量操作加载状态
-const batchDeleteLoading = ref(false);
+const batchDeleteLoading = ref(false)
 
 // 移动端检测
-const isMobileView = ref(false);
+const isMobileView = ref(false)
 
 // 表单验证规则
 const rules = {
-  userIds: [{ required: true, message: "请输入用户ID", trigger: "change" }],
-  reason: [{ required: true, message: "请输入拉黑原因", trigger: "blur" }],
-  expireTime: [{ required: true, message: "请选择到期时间", trigger: "change" }],
-};
+  userIds: [{ required: true, message: '请输入用户ID', trigger: 'change' }],
+  reason: [{ required: true, message: '请输入拉黑原因', trigger: 'blur' }],
+  expireTime: [{ required: true, message: '请选择到期时间', trigger: 'change' }],
+}
 
 // 监听窗口大小变化
 const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768;
-};
+  isMobileView.value = window.innerWidth <= 768
+}
 
 // 判断是否过期
 const isExpired = (expireTime) => {
-  if (!expireTime) return false;
-  return new Date(expireTime) < new Date();
-};
+  if (!expireTime) return false
+  return new Date(expireTime) < new Date()
+}
 
 // 禁用过去的日期
 const disabledDate = (time) => {
-  return time.getTime() < Date.now() - 24 * 60 * 60 * 1000;
-};
+  return time.getTime() < Date.now() - 24 * 60 * 60 * 1000
+}
 
 // 快捷设置到期时间
 const setExpireTime = (hours) => {
-  const now = new Date();
-  const expireDate = new Date(now.getTime() + hours * 60 * 60 * 1000);
-  const year = expireDate.getFullYear();
-  const month = String(expireDate.getMonth() + 1).padStart(2, "0");
-  const day = String(expireDate.getDate()).padStart(2, "0");
-  const hour = String(expireDate.getHours()).padStart(2, "0");
-  const minute = String(expireDate.getMinutes()).padStart(2, "0");
-  const second = String(expireDate.getSeconds()).padStart(2, "0");
-  blacklistForm.expireTime = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
-};
+  const now = new Date()
+  const expireDate = new Date(now.getTime() + hours * 60 * 60 * 1000)
+  const year = expireDate.getFullYear()
+  const month = String(expireDate.getMonth() + 1).padStart(2, '0')
+  const day = String(expireDate.getDate()).padStart(2, '0')
+  const hour = String(expireDate.getHours()).padStart(2, '0')
+  const minute = String(expireDate.getMinutes()).padStart(2, '0')
+  const second = String(expireDate.getSeconds()).padStart(2, '0')
+  blacklistForm.expireTime = `${year}-${month}-${day} ${hour}:${minute}:${second}`
+}
 
 // 获取黑名单列表
 const getBlacklists = async () => {
-  currentPage.value = 1;
-  await fetchBlacklists();
-};
+  currentPage.value = 1
+  await fetchBlacklists()
+}
 
-const hasSearchConditions = () => searchForm.type !== "" || searchForm.userId || searchForm.banTimeStart || searchForm.banTimeEnd || searchForm.expireTimeStart || searchForm.expireTimeEnd;
+const hasSearchConditions = () =>
+  searchForm.type !== '' ||
+  searchForm.userId ||
+  searchForm.banTimeStart ||
+  searchForm.banTimeEnd ||
+  searchForm.expireTimeStart ||
+  searchForm.expireTimeEnd
 
 const buildSearchPayload = () => {
   const searchData = {
     pageNum: currentPage.value,
     pageSize: pageSize.value,
-  };
-  if (searchForm.type !== "" && searchForm.type !== null && searchForm.type !== undefined) {
-    searchData.type = searchForm.type;
+  }
+  if (searchForm.type !== '' && searchForm.type !== null && searchForm.type !== undefined) {
+    searchData.type = searchForm.type
   }
   if (searchForm.userId) {
-    searchData.userId = parseInt(searchForm.userId);
+    searchData.userId = parseInt(searchForm.userId)
   }
   if (searchForm.banTimeStart) {
-    searchData.banTimeStart = searchForm.banTimeStart;
+    searchData.banTimeStart = searchForm.banTimeStart
   }
   if (searchForm.banTimeEnd) {
-    searchData.banTimeEnd = searchForm.banTimeEnd;
+    searchData.banTimeEnd = searchForm.banTimeEnd
   }
   if (searchForm.expireTimeStart) {
-    searchData.expireTimeStart = searchForm.expireTimeStart;
+    searchData.expireTimeStart = searchForm.expireTimeStart
   }
   if (searchForm.expireTimeEnd) {
-    searchData.expireTimeEnd = searchForm.expireTimeEnd;
+    searchData.expireTimeEnd = searchForm.expireTimeEnd
   }
-  return searchData;
-};
+  return searchData
+}
 
 const applyPageData = (pageData) => {
-  blacklistList.value = pageData?.data || [];
-  paginatedBlacklistList.value = blacklistList.value;
-  total.value = Number(pageData?.total || 0);
-  selectedBlacklists.value = [];
-};
+  blacklistList.value = pageData?.data || []
+  paginatedBlacklistList.value = blacklistList.value
+  total.value = Number(pageData?.total || 0)
+  selectedBlacklists.value = []
+}
 
 const fetchBlacklists = async () => {
-  loading.value = true;
+  loading.value = true
   try {
-    let pageData = null;
+    let pageData = null
     if (hasSearchConditions()) {
-      const res = await searchBlacklist(buildSearchPayload());
-      pageData = res.data;
+      const res = await searchBlacklist(buildSearchPayload())
+      pageData = res.data
     } else {
       const res = await getBlacklistList({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
-      });
-      pageData = res.data;
+      })
+      pageData = res.data
     }
-    applyPageData(pageData);
+    applyPageData(pageData)
   } catch (error) {
-    ElMessage.error(hasSearchConditions() ? "搜索失败" : "获取黑名单列表失败");
+    ElMessage.error(hasSearchConditions() ? '搜索失败' : '获取黑名单列表失败')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 更新分页数据
 const updatePaginatedBlacklistList = () => {
-  paginatedBlacklistList.value = blacklistList.value;
-};
+  paginatedBlacklistList.value = blacklistList.value
+}
 
 // 处理分页大小变化
 const handleSizeChange = async (size) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  await fetchBlacklists();
-};
+  pageSize.value = size
+  currentPage.value = 1
+  await fetchBlacklists()
+}
 
 // 处理当前页码变化
 const handleCurrentChange = async (current) => {
-  currentPage.value = current;
-  await fetchBlacklists();
-};
+  currentPage.value = current
+  await fetchBlacklists()
+}
 
 // 处理搜索
 const handleSearch = async () => {
-  currentPage.value = 1;
-  await fetchBlacklists();
-};
+  currentPage.value = 1
+  await fetchBlacklists()
+}
 
 // 智能刷新列表
 const refreshBlacklistList = async (deletedCount = 0) => {
   if (deletedCount > 0 && currentPage.value > 1 && blacklistList.value.length <= deletedCount) {
-    currentPage.value -= 1;
+    currentPage.value -= 1
   }
-  await fetchBlacklists();
-};
+  await fetchBlacklists()
+}
 
 // 表格多选
 const handleSelectionChange = (blacklists) => {
-  selectedBlacklists.value = blacklists;
-};
+  selectedBlacklists.value = blacklists
+}
 
 // 检查黑名单是否被选中
 const isBlacklistSelected = (blacklistId) => {
-  return selectedBlacklists.value.some((blacklist) => blacklist.id === blacklistId);
-};
+  return selectedBlacklists.value.some((blacklist) => blacklist.id === blacklistId)
+}
 
 // 移动端选择处理
 const handleMobileSelect = (blacklist) => {
-  const index = selectedBlacklists.value.findIndex((item) => item.id === blacklist.id);
+  const index = selectedBlacklists.value.findIndex((item) => item.id === blacklist.id)
   if (index > -1) {
     // 已选中，取消选中
-    selectedBlacklists.value.splice(index, 1);
+    selectedBlacklists.value.splice(index, 1)
   } else {
     // 未选中，添加到选中列表
-    selectedBlacklists.value.push(blacklist);
+    selectedBlacklists.value.push(blacklist)
   }
-};
+}
 
 // 新增黑名单
 const handleAdd = () => {
-  isEdit.value = false;
-  dialogTitle.value = "批量新增黑名单";
-  blacklistForm.id = null;
-  blacklistForm.userIds = "";
-  blacklistForm.reason = "";
-  blacklistForm.expireTime = "";
-  dialogVisible.value = true;
-};
+  isEdit.value = false
+  dialogTitle.value = '批量新增黑名单'
+  blacklistForm.id = null
+  blacklistForm.userIds = ''
+  blacklistForm.reason = ''
+  blacklistForm.expireTime = ''
+  dialogVisible.value = true
+}
 
 // 编辑黑名单
 const handleEdit = (row) => {
-  isEdit.value = true;
-  dialogTitle.value = "编辑黑名单";
-  blacklistForm.id = row.id;
-  blacklistForm.userIds = row.userId ? String(row.userId) : "";
-  blacklistForm.reason = row.reason;
-  blacklistForm.expireTime = row.expireTime;
-  dialogVisible.value = true;
-};
+  isEdit.value = true
+  dialogTitle.value = '编辑黑名单'
+  blacklistForm.id = row.id
+  blacklistForm.userIds = row.userId ? String(row.userId) : ''
+  blacklistForm.reason = row.reason
+  blacklistForm.expireTime = row.expireTime
+  dialogVisible.value = true
+}
 
 // 提交表单
 const handleSubmit = async () => {
   try {
-    await blacklistFormRef.value.validate();
-    submitLoading.value = true;
+    await blacklistFormRef.value.validate()
+    submitLoading.value = true
 
     if (isEdit.value) {
       // 编辑黑名单
@@ -431,103 +597,107 @@ const handleSubmit = async () => {
         id: blacklistForm.id,
         reason: blacklistForm.reason,
         expireTime: blacklistForm.expireTime,
-      };
-      await updateBlacklist(updateData);
-      ElMessage.success("修改成功");
+      }
+      await updateBlacklist(updateData)
+      ElMessage.success('修改成功')
     } else {
       // 批量新增黑名单
       const userIdsArray = blacklistForm.userIds
-        .split(",")
+        .split(',')
         .map((id) => id.trim())
-        .filter((id) => id !== "")
-        .map((id) => parseInt(id));
+        .filter((id) => id !== '')
+        .map((id) => parseInt(id))
 
       const addData = {
         userIds: userIdsArray,
         reason: blacklistForm.reason,
         expireTime: blacklistForm.expireTime,
-      };
-      await addBlacklist(addData);
-      ElMessage.success("添加成功");
+      }
+      await addBlacklist(addData)
+      ElMessage.success('添加成功')
     }
 
-    dialogVisible.value = false;
-    await refreshBlacklistList();
+    dialogVisible.value = false
+    await refreshBlacklistList()
   } catch (error) {
     if (error !== false) {
-      ElMessage.error(isEdit.value ? "修改失败" : "添加失败");
-      console.error("操作失败:", error);
+      ElMessage.error(isEdit.value ? '修改失败' : '添加失败')
+      console.error('操作失败:', error)
     }
   } finally {
-    submitLoading.value = false;
+    submitLoading.value = false
   }
-};
+}
 
 // 删除单个黑名单
 const handleDelete = (id) => {
-  ElMessageBox.confirm("确定要删除该黑名单记录吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要删除该黑名单记录吗？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
       try {
-        await deleteBlacklist([id]);
-        ElMessage.success("删除成功");
-        await refreshBlacklistList();
+        await deleteBlacklist([id])
+        ElMessage.success('删除成功')
+        await refreshBlacklistList()
       } catch (error) {
-        ElMessage.error("删除失败");
-        console.error("删除失败:", error);
+        ElMessage.error('删除失败')
+        console.error('删除失败:', error)
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 批量删除
 const handleBatchDelete = () => {
-  ElMessageBox.confirm(`确定要删除选中的 ${selectedBlacklists.value.length} 条黑名单记录吗？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
+  ElMessageBox.confirm(
+    `确定要删除选中的 ${selectedBlacklists.value.length} 条黑名单记录吗？`,
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    },
+  )
     .then(async () => {
-      batchDeleteLoading.value = true;
+      batchDeleteLoading.value = true
       try {
-        const blacklistIds = selectedBlacklists.value.map((blacklist) => blacklist.id);
-        await deleteBlacklist(blacklistIds);
-        ElMessage.success("批量删除成功");
-        await refreshBlacklistList();
+        const blacklistIds = selectedBlacklists.value.map((blacklist) => blacklist.id)
+        await deleteBlacklist(blacklistIds)
+        ElMessage.success('批量删除成功')
+        await refreshBlacklistList()
       } catch (error) {
-        ElMessage.error("批量删除失败");
-        console.error("批量删除失败:", error);
+        ElMessage.error('批量删除失败')
+        console.error('批量删除失败:', error)
       } finally {
-        batchDeleteLoading.value = false;
+        batchDeleteLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 关闭对话框
 const handleDialogClose = () => {
-  blacklistFormRef.value?.resetFields();
-  dialogVisible.value = false;
-};
+  blacklistFormRef.value?.resetFields()
+  dialogVisible.value = false
+}
 
 // 初始化
 onMounted(() => {
-  getBlacklists();
-  handleResize();
-  window.addEventListener("resize", handleResize);
-});
+  getBlacklists()
+  handleResize()
+  window.addEventListener('resize', handleResize)
+})
 
 // 组件卸载时移除监听
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -567,7 +737,7 @@ onUnmounted(() => {
         align-items: center;
 
         &::before {
-          content: "";
+          content: '';
           display: inline-block;
           width: 4px;
           height: 20px;
@@ -1062,7 +1232,6 @@ onUnmounted(() => {
       }
     }
   }
-
 }
 
 // 表单提示
@@ -1137,7 +1306,6 @@ onUnmounted(() => {
       margin-top: 0;
       max-height: calc(100vh - 240px);
     }
-
   }
 
   // 移动端对话框样式调整

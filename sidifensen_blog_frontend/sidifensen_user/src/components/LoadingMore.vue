@@ -11,7 +11,7 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  text: '加载更多...'
+  text: '加载更多...',
 })
 </script>
 

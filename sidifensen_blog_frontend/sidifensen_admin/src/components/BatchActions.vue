@@ -48,67 +48,63 @@
 </template>
 
 <script setup>
-import { Check, Close, Delete } from "@element-plus/icons-vue";
+import { Check, Close, Delete } from '@element-plus/icons-vue'
 
 // Props
 const props = defineProps({
   // 选中数量
   selectedCount: {
     type: Number,
-    default: 0
+    default: 0,
   },
   // 显示控制
   showBatchAudit: {
     type: Boolean,
-    default: true
+    default: true,
   },
   showBatchReject: {
     type: Boolean,
-    default: true
+    default: true,
   },
   showBatchDelete: {
     type: Boolean,
-    default: true
+    default: true,
   },
   // 加载状态
   batchAuditLoading: {
     type: Boolean,
-    default: false
+    default: false,
   },
   batchRejectLoading: {
     type: Boolean,
-    default: false
+    default: false,
   },
   batchDeleteLoading: {
     type: Boolean,
-    default: false
-  }
-});
+    default: false,
+  },
+})
 
 // Emits
-const emit = defineEmits([
-  "batch-audit",
-  "batch-reject",
-  "batch-delete"
-]);
+const emit = defineEmits(['batch-audit', 'batch-reject', 'batch-delete'])
 
 // 处理批量审核
 const handleBatchAudit = () => {
-  if (props.selectedCount === 0) return;
-  emit("batch-audit");
-};
+  if (props.selectedCount === 0) return
+  emit('batch-audit')
+}
 
 // 处理批量拒绝
 const handleBatchReject = () => {
-  if (props.selectedCount === 0) return;
-  emit("batch-reject");
-};
+  if (props.selectedCount === 0) return
+  emit('batch-reject')
+}
 
 // 处理批量删除
 const handleBatchDelete = () => {
-  if (props.selectedCount === 0) return;
-  emit("batch-delete");
-};
+  if (props.selectedCount === 0) return
+  emit('batch-delete')
+}
 </script>
 
 <style lang="scss" scoped>

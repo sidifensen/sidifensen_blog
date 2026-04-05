@@ -5,18 +5,18 @@
 </template>
 
 <script setup>
-import { DataAnalysis } from "@element-plus/icons-vue"
-import DetailCard from "@/components/cards/DetailCard.vue"
-import VipStatisticsChart from "@/components/charts/VipStatisticsChart.vue"
+import { DataAnalysis } from '@element-plus/icons-vue'
+import DetailCard from '@/components/cards/DetailCard.vue'
+import VipStatisticsChart from '@/components/charts/VipStatisticsChart.vue'
 
 defineProps({
   data: {
     type: Object,
-    default: () => ({})
+    default: () => ({}),
   },
   loading: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 </script>

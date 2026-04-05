@@ -30,13 +30,13 @@ defineProps({
   },
   icon: {
     type: String,
-    default: "",
+    default: '',
   },
   description: {
     type: String,
-    default: "",
+    default: '',
   },
-});
+})
 </script>
 
 <style lang="scss" scoped>

@@ -4,19 +4,73 @@
       <div class="card-header">
         <h2 class="card-title">相册管理</h2>
         <div class="card-actions">
-          <el-input v-model="searchAlbumName" placeholder="搜索相册名称" :prefix-icon="Search" size="small" class="search-input" clearable />
-          <el-select v-model="searchStatus" placeholder="相册状态" filterable clearable size="small" class="search-input" @change="handleSearch">
+          <el-input
+            v-model="searchAlbumName"
+            placeholder="搜索相册名称"
+            :prefix-icon="Search"
+            size="small"
+            class="search-input"
+            clearable
+          />
+          <el-select
+            v-model="searchStatus"
+            placeholder="相册状态"
+            filterable
+            clearable
+            size="small"
+            class="search-input"
+            @change="handleSearch"
+          >
             <el-option label="正常" value="0" />
             <el-option label="禁用" value="1" />
           </el-select>
-          <el-select v-model="searchUserId" placeholder="输入用户名搜索" filterable remote reserve-keyword :remote-method="searchUsers" :loading="userLoading" clearable size="small" class="search-input" @change="handleSearch">
-            <el-option v-for="user in filteredUserList" :key="user.id" :label="user.username" :value="user.id" />
+          <el-select
+            v-model="searchUserId"
+            placeholder="输入用户名搜索"
+            filterable
+            remote
+            reserve-keyword
+            :remote-method="searchUsers"
+            :loading="userLoading"
+            clearable
+            size="small"
+            class="search-input"
+            @change="handleSearch"
+          >
+            <el-option
+              v-for="user in filteredUserList"
+              :key="user.id"
+              :label="user.username"
+              :value="user.id"
+            />
           </el-select>
         </div>
       </div>
       <div class="card-second">
-        <el-date-picker v-model="searchCreateTimeStart" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间开始" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
-        <el-date-picker v-model="searchCreateTimeEnd" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间结束" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
+        <el-date-picker
+          v-model="searchCreateTimeStart"
+          type="datetime"
+          format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          placeholder="创建时间开始"
+          :prefix-icon="Calendar"
+          size="small"
+          class="search-input"
+          clearable
+          @change="handleSearch"
+        />
+        <el-date-picker
+          v-model="searchCreateTimeEnd"
+          type="datetime"
+          format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          placeholder="创建时间结束"
+          :prefix-icon="Calendar"
+          size="small"
+          class="search-input"
+          clearable
+          @change="handleSearch"
+        />
       </div>
 
       <!-- 桌面端表格视图 -->
@@ -26,7 +80,13 @@
           <el-table-column prop="coverUrl" label="相册封面" width="200">
             <template #default="{ row }">
               <div style="display: flex; align-items: center">
-                <el-image preview-teleported :src="row.coverUrl" style="width: 200px; height: 100px" :preview-src-list="[row.coverUrl]" fit="cover" />
+                <el-image
+                  preview-teleported
+                  :src="row.coverUrl"
+                  style="width: 200px; height: 100px"
+                  :preview-src-list="[row.coverUrl]"
+                  fit="cover"
+                />
               </div>
             </template>
           </el-table-column>
@@ -54,9 +114,32 @@
           <el-table-column label="操作" width="230">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button type="info" size="small" @click="handleAlbumDetail(row.id)" :icon="InfoFilled" class="detail-button">详情</el-button>
-                <el-button type="primary" size="small" @click="handleEditAlbum(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
-                <el-button type="danger" size="small" @click="handleDeleteAlbum(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
+                <el-button
+                  type="info"
+                  size="small"
+                  @click="handleAlbumDetail(row.id)"
+                  :icon="InfoFilled"
+                  class="detail-button"
+                  >详情</el-button
+                >
+                <el-button
+                  type="primary"
+                  size="small"
+                  @click="handleEditAlbum(row)"
+                  :icon="Edit"
+                  class="edit-button"
+                >
+                  编辑
+                </el-button>
+                <el-button
+                  type="danger"
+                  size="small"
+                  @click="handleDeleteAlbum(row.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                >
+                  删除
+                </el-button>
               </div>
             </template>
           </el-table-column>
@@ -66,9 +149,21 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="album-cards" v-loading="loading">
-          <div v-for="album in paginatedAlbumList" :key="album.id" class="album-card animate-fade-in">
+          <div
+            v-for="album in paginatedAlbumList"
+            :key="album.id"
+            class="album-card animate-fade-in"
+          >
             <div class="album-cover-section">
-              <el-image preview-teleported :src="album.coverUrl" :preview-src-list="[album.coverUrl]" fit="cover" class="album-cover" lazy loading="lazy" />
+              <el-image
+                preview-teleported
+                :src="album.coverUrl"
+                :preview-src-list="[album.coverUrl]"
+                fit="cover"
+                class="album-cover"
+                lazy
+                loading="lazy"
+              />
             </div>
             <div class="album-info">
               <div class="album-header">
@@ -97,13 +192,39 @@
                   :inactive-value="1"
                   inline-prompt
                   :loading="switchLoading"
-                  :before-change="() => handleStatusChange(album.id, album.showStatus === 0 ? 1 : 0)"
+                  :before-change="
+                    () => handleStatusChange(album.id, album.showStatus === 0 ? 1 : 0)
+                  "
                 />
               </div>
               <div class="album-actions">
-                <el-button text bg type="info" size="small" @click="handleAlbumDetail(album.id)" :icon="InfoFilled">详情</el-button>
-                <el-button text bg type="primary" size="small" @click="handleEditAlbum(album)" :icon="Edit">编辑</el-button>
-                <el-button text bg type="danger" size="small" @click="handleDeleteAlbum(album.id)" :icon="Delete">删除</el-button>
+                <el-button
+                  text
+                  bg
+                  type="info"
+                  size="small"
+                  @click="handleAlbumDetail(album.id)"
+                  :icon="InfoFilled"
+                  >详情</el-button
+                >
+                <el-button
+                  text
+                  bg
+                  type="primary"
+                  size="small"
+                  @click="handleEditAlbum(album)"
+                  :icon="Edit"
+                  >编辑</el-button
+                >
+                <el-button
+                  text
+                  bg
+                  type="danger"
+                  size="small"
+                  @click="handleDeleteAlbum(album.id)"
+                  :icon="Delete"
+                  >删除</el-button
+                >
               </div>
             </div>
           </div>
@@ -111,7 +232,13 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <Pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
 
     <!-- 编辑相册对话框 -->
@@ -119,7 +246,8 @@
       <el-form ref="albumFormRef" :model="albumForm" :rules="rules" class="editForm">
         <el-form-item prop="name" label="相册名称">
           <el-input v-model="albumForm.name" placeholder="请输入相册名称" />
-        </el-form-item> </el-form>
+        </el-form-item>
+      </el-form>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>
@@ -129,23 +257,51 @@
     </el-dialog>
 
     <!-- 相册详情 -->
-    <el-dialog v-model="albumDetailDialogVisible" title="相册详情" class="album-detail" :before-close="handleDetailDialogClose" width="80%" :close-on-click-modal="false">
+    <el-dialog
+      v-model="albumDetailDialogVisible"
+      title="相册详情"
+      class="album-detail"
+      :before-close="handleDetailDialogClose"
+      width="80%"
+      :close-on-click-modal="false"
+    >
       <el-card v-if="albumDetail" class="album-detail-card animate-fade-in">
         <div class="album-detail-header">
           <div class="album-cover-container">
-            <el-image :src="albumDetail.coverUrl" fit="cover" style="width: 100%; height: 180px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1)" />
+            <el-image
+              :src="albumDetail.coverUrl"
+              fit="cover"
+              style="
+                width: 100%;
+                height: 180px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+              "
+            />
           </div>
           <div class="album-info">
             <h3 class="album-title">{{ albumDetail.name }}</h3>
             <div class="album-meta">
               <div class="meta-item"><span class="label">相册ID：</span>{{ albumDetail.id }}</div>
-              <div class="meta-item"><span class="label">创建者：</span>{{ albumDetail.userName }}</div>
-              <div class="meta-item"><span class="label">创建时间：</span>{{ albumDetail.createTime }}</div>
-              <div class="meta-item"><span class="label">更新时间：</span>{{ albumDetail.updateTime }}</div>
               <div class="meta-item">
-                <span class="label">状态：</span><span :class="albumDetail.showStatus === 0 ? 'status-normal' : 'status-disabled'">{{ albumDetail.showStatus === 0 ? "正常" : "禁用" }}</span>
+                <span class="label">创建者：</span>{{ albumDetail.userName }}
               </div>
-              <div class="meta-item"><span class="label">图片数量：</span>{{ albumDetail.photos?.length || 0 }}</div>
+              <div class="meta-item">
+                <span class="label">创建时间：</span>{{ albumDetail.createTime }}
+              </div>
+              <div class="meta-item">
+                <span class="label">更新时间：</span>{{ albumDetail.updateTime }}
+              </div>
+              <div class="meta-item">
+                <span class="label">状态：</span
+                ><span
+                  :class="albumDetail.showStatus === 0 ? 'status-normal' : 'status-disabled'"
+                  >{{ albumDetail.showStatus === 0 ? '正常' : '禁用' }}</span
+                >
+              </div>
+              <div class="meta-item">
+                <span class="label">图片数量：</span>{{ albumDetail.photos?.length || 0 }}
+              </div>
             </div>
           </div>
         </div>
@@ -157,30 +313,108 @@
             <span class="selected-count">{{ selectedPhotos.length }} 已选择</span>
           </div>
           <div class="action-right">
-            <el-button type="primary" size="small" @click="handleBatchAudit" :disabled="selectedPhotos.length === 0" :loading="batchAuditLoading"> 批量审核 </el-button>
-            <el-button type="warning" size="small" @click="handleBatchReject" :disabled="selectedPhotos.length === 0" :loading="batchRejectLoading"> 批量拒绝 </el-button>
-            <el-button type="danger" size="small" @click="handleBatchDelete" :disabled="selectedPhotos.length === 0" :loading="batchDeleteLoading"> 批量删除 </el-button>
+            <el-button
+              type="primary"
+              size="small"
+              @click="handleBatchAudit"
+              :disabled="selectedPhotos.length === 0"
+              :loading="batchAuditLoading"
+            >
+              批量审核
+            </el-button>
+            <el-button
+              type="warning"
+              size="small"
+              @click="handleBatchReject"
+              :disabled="selectedPhotos.length === 0"
+              :loading="batchRejectLoading"
+            >
+              批量拒绝
+            </el-button>
+            <el-button
+              type="danger"
+              size="small"
+              @click="handleBatchDelete"
+              :disabled="selectedPhotos.length === 0"
+              :loading="batchDeleteLoading"
+            >
+              批量删除
+            </el-button>
           </div>
         </div>
 
-        <div class="album-photos-container" v-if="albumDetail.photos && albumDetail.photos.length > 0">
+        <div
+          class="album-photos-container"
+          v-if="albumDetail.photos && albumDetail.photos.length > 0"
+        >
           <h4 class="photos-title">相册图片</h4>
           <div class="photos-grid">
-            <div v-for="photo in albumDetail.photos" :key="photo.id" class="photo-item animate-fade-in" :class="{ 'photo-item-selected': isPhotoSelected(photo.id) }">
+            <div
+              v-for="photo in albumDetail.photos"
+              :key="photo.id"
+              class="photo-item animate-fade-in"
+              :class="{ 'photo-item-selected': isPhotoSelected(photo.id) }"
+            >
               <div class="photo-selector">
-                <el-checkbox v-model="selectedPhotos" :value="photo.id" @change="handlePhotoSelect(photo.id, $event)" />
+                <el-checkbox
+                  v-model="selectedPhotos"
+                  :value="photo.id"
+                  @change="handlePhotoSelect(photo.id, $event)"
+                />
               </div>
-              <el-image preview-teleported :src="photo.url" :preview-src-list="albumDetail.photos.map((p) => p.url)" fit="cover" class="photo-image" :class="{ 'photo-image-unaudited': photo.examineStatus === 0 }" lazy loading="lazy" />
+              <el-image
+                preview-teleported
+                :src="photo.url"
+                :preview-src-list="albumDetail.photos.map((p) => p.url)"
+                fit="cover"
+                class="photo-image"
+                :class="{ 'photo-image-unaudited': photo.examineStatus === 0 }"
+                lazy
+                loading="lazy"
+              />
               <div class="photo-info">
                 <div class="photo-id">ID: {{ photo.id }}</div>
-                <div class="photo-status" :class="photo.examineStatus === 0 ? 'status-unaudited' : photo.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-                  {{ photo.examineStatus === 0 ? "未审核" : photo.examineStatus === 1 ? "已审核" : "未通过" }}
+                <div
+                  class="photo-status"
+                  :class="
+                    photo.examineStatus === 0
+                      ? 'status-unaudited'
+                      : photo.examineStatus === 1
+                        ? 'status-audited'
+                        : 'status-rejected'
+                  "
+                >
+                  {{
+                    photo.examineStatus === 0
+                      ? '未审核'
+                      : photo.examineStatus === 1
+                        ? '已审核'
+                        : '未通过'
+                  }}
                 </div>
                 <div class="photo-time">{{ photo.createTime }}</div>
                 <div class="photo-actions">
-                  <el-button text bg type="primary" size="small" @click="handleAuditPhoto(photo.id)" v-if="photo.examineStatus === 0">审核</el-button>
-                  <el-button text bg type="warning" size="small" @click="handleRejectPhoto(photo.id)" v-if="photo.examineStatus === 0">拒绝</el-button>
-                  <el-button text bg type="danger" size="small" @click="handleDeletePhoto(photo.id)">删除</el-button>
+                  <el-button
+                    text
+                    bg
+                    type="primary"
+                    size="small"
+                    @click="handleAuditPhoto(photo.id)"
+                    v-if="photo.examineStatus === 0"
+                    >审核</el-button
+                  >
+                  <el-button
+                    text
+                    bg
+                    type="warning"
+                    size="small"
+                    @click="handleRejectPhoto(photo.id)"
+                    v-if="photo.examineStatus === 0"
+                    >拒绝</el-button
+                  >
+                  <el-button text bg type="danger" size="small" @click="handleDeletePhoto(photo.id)"
+                    >删除</el-button
+                  >
                 </div>
               </div>
             </div>
@@ -194,112 +428,130 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, computed } from "vue";
-import { Search, Plus, InfoFilled, Edit, Delete, Avatar } from "@element-plus/icons-vue";
-import { adminList, adminUpdateAlbum, adminDeleteAlbum, adminSearchAlbum, adminGetAlbumDetail } from "@/api/album";
-import { useUserSearch } from "@/utils/userSearch";
-import { adminDeletePhoto, adminDeleteBatchPhoto, adminAuditPhoto, adminAuditBatchPhoto } from "@/api/photo";
-import Pagination from "@/components/Pagination.vue";
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+import { Search, Plus, InfoFilled, Edit, Delete, Avatar } from '@element-plus/icons-vue'
+import {
+  adminList,
+  adminUpdateAlbum,
+  adminDeleteAlbum,
+  adminSearchAlbum,
+  adminGetAlbumDetail,
+} from '@/api/album'
+import { useUserSearch } from '@/utils/userSearch'
+import {
+  adminDeletePhoto,
+  adminDeleteBatchPhoto,
+  adminAuditPhoto,
+  adminAuditBatchPhoto,
+} from '@/api/photo'
+import Pagination from '@/components/Pagination.vue'
 
 // 相册列表数据
-const albumList = ref([]);
+const albumList = ref([])
 // 分页后的相册列表
-const paginatedAlbumList = ref([]);
+const paginatedAlbumList = ref([])
 // 加载状态
-const loading = ref(false);
+const loading = ref(false)
 // 当前页码
-const currentPage = ref(1);
+const currentPage = ref(1)
 // 每页条数
-const pageSize = ref(10);
+const pageSize = ref(10)
 // 总条数
-const total = ref(0);
+const total = ref(0)
 // 对话框可见性
-const dialogVisible = ref(false);
+const dialogVisible = ref(false)
 // 对话框标题
-const dialogTitle = ref("编辑相册");
+const dialogTitle = ref('编辑相册')
 
 // 表单引用
-const albumFormRef = ref(null);
+const albumFormRef = ref(null)
 // 表单数据
 const albumForm = ref({
   id: null,
-  name: "",
-  coverUrl: "",
+  name: '',
+  coverUrl: '',
   showStatus: 0,
-});
+})
 
 // 表单验证规则
 const rules = {
-  name: [{ required: true, message: "请输入相册名称", trigger: "blur" }],
-};
+  name: [{ required: true, message: '请输入相册名称', trigger: 'blur' }],
+}
 
 // 用户搜索
-const { filteredUserList, userLoading, searchUsers } = useUserSearch();
+const { filteredUserList, userLoading, searchUsers } = useUserSearch()
 
 // 移动端检测
-const isMobileView = ref(false);
+const isMobileView = ref(false)
 
 // 监听窗口大小变化
 const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768;
-};
+  isMobileView.value = window.innerWidth <= 768
+}
 
 // 获取相册列表
 const getAlbums = async () => {
-  currentPage.value = 1;
-  await fetchAlbums();
-};
+  currentPage.value = 1
+  await fetchAlbums()
+}
 
 // 初始化
 onMounted(() => {
-  getAlbums();
-  handleResize();
-  window.addEventListener("resize", handleResize);
-});
+  getAlbums()
+  handleResize()
+  window.addEventListener('resize', handleResize)
+})
 
 // 组件卸载时移除监听
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 
-const switchLoading = ref(false);
+const switchLoading = ref(false)
 // 处理状态变更
 const handleStatusChange = async (id, status) => {
   return new Promise((resolve, reject) => {
-    switchLoading.value = true;
+    switchLoading.value = true
     adminUpdateAlbum({ id, showStatus: status })
       .then(() => {
-        ElMessage.success("状态更新成功");
+        ElMessage.success('状态更新成功')
         // 手动更新本地数据状态
-        const album = albumList.value.find((item) => item.id === id);
+        const album = albumList.value.find((item) => item.id === id)
         if (album) {
-          album.showStatus = status;
+          album.showStatus = status
         }
-        resolve();
+        resolve()
       })
       .catch((error) => {
-        ElMessage.error("状态更新失败");
-        reject(error);
+        ElMessage.error('状态更新失败')
+        reject(error)
       })
       .finally(() => {
-        switchLoading.value = false;
-      });
-  });
-};
+        switchLoading.value = false
+      })
+  })
+}
 
 // 搜索相册名称
-const searchAlbumName = ref("");
+const searchAlbumName = ref('')
 // 搜索用户名称
-const searchUserId = ref("");
+const searchUserId = ref('')
 // 搜索相册状态
-const searchStatus = ref("");
+const searchStatus = ref('')
 
 // 搜索创建时间开始
-const searchCreateTimeStart = ref(null);
+const searchCreateTimeStart = ref(null)
 // 搜索创建时间结束
-const searchCreateTimeEnd = ref(null);
+const searchCreateTimeEnd = ref(null)
 
-const hasSearchConditions = () => !!(searchAlbumName.value || searchUserId.value || searchStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value);
+const hasSearchConditions = () =>
+  !!(
+    searchAlbumName.value ||
+    searchUserId.value ||
+    searchStatus.value ||
+    searchCreateTimeStart.value ||
+    searchCreateTimeEnd.value
+  )
 
 const buildSearchPayload = () => ({
   pageNum: currentPage.value,
@@ -309,361 +561,364 @@ const buildSearchPayload = () => ({
   showStatus: searchStatus.value || undefined,
   createTimeStart: searchCreateTimeStart.value || undefined,
   createTimeEnd: searchCreateTimeEnd.value || undefined,
-});
+})
 
 const applyPageData = (pageData) => {
-  albumList.value = pageData?.data || [];
-  paginatedAlbumList.value = albumList.value;
-  total.value = Number(pageData?.total || 0);
-};
+  albumList.value = pageData?.data || []
+  paginatedAlbumList.value = albumList.value
+  total.value = Number(pageData?.total || 0)
+}
 
 const fetchAlbums = async () => {
-  loading.value = true;
+  loading.value = true
   try {
-    let pageData = null;
+    let pageData = null
     if (hasSearchConditions()) {
-      const res = await adminSearchAlbum(buildSearchPayload());
-      pageData = res.data;
+      const res = await adminSearchAlbum(buildSearchPayload())
+      pageData = res.data
     } else {
       const res = await adminList({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
-      });
-      pageData = res.data;
+      })
+      pageData = res.data
     }
-    applyPageData(pageData);
+    applyPageData(pageData)
   } catch (error) {
-    ElMessage.error(hasSearchConditions() ? "搜索相册失败" : "获取相册列表失败");
+    ElMessage.error(hasSearchConditions() ? '搜索相册失败' : '获取相册列表失败')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 更新分页数据
 const updatePaginatedAlbumList = () => {
-  paginatedAlbumList.value = albumList.value;
-};
+  paginatedAlbumList.value = albumList.value
+}
 
 // 处理分页大小变化
 const handleSizeChange = async (size) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  await fetchAlbums();
-};
+  pageSize.value = size
+  currentPage.value = 1
+  await fetchAlbums()
+}
 
 // 处理当前页码变化
 const handleCurrentChange = async (current) => {
-  currentPage.value = current;
-  await fetchAlbums();
-};
+  currentPage.value = current
+  await fetchAlbums()
+}
 
 // 处理搜索
 const handleSearch = async () => {
-  currentPage.value = 1;
-  await fetchAlbums();
-};
+  currentPage.value = 1
+  await fetchAlbums()
+}
 
 // 监听搜索输入变化 - 统一防抖处理
-const searchTimeout = ref(null);
+const searchTimeout = ref(null)
 const debounceSearch = () => {
   if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value);
+    clearTimeout(searchTimeout.value)
   }
   searchTimeout.value = setTimeout(() => {
-    handleSearch();
-  }, 500);
-};
-watch(searchAlbumName, debounceSearch);
+    handleSearch()
+  }, 500)
+}
+watch(searchAlbumName, debounceSearch)
 // watch(searchStatus, debounceSearch);
 // watch(searchCreateTimeStart, debounceSearch);
 // watch(searchCreateTimeEnd, debounceSearch);
 
 // 处理编辑相册
 const handleEditAlbum = (row) => {
-  dialogTitle.value = "编辑相册";
+  dialogTitle.value = '编辑相册'
   // 深拷贝行数据
-  albumForm.value = { ...row };
-  dialogVisible.value = true;
-};
+  albumForm.value = { ...row }
+  dialogVisible.value = true
+}
 
 // 处理删除相册
 const handleDeleteAlbum = (id) => {
-  ElMessageBox.confirm("确定要删除该相册吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要删除该相册吗？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      loading.value = true;
+      loading.value = true
       try {
-        await adminDeleteAlbum(id);
-        ElMessage.success("删除成功");
-        getAlbums();
+        await adminDeleteAlbum(id)
+        ElMessage.success('删除成功')
+        getAlbums()
       } catch (error) {
-        ElMessage.error("删除失败");
+        ElMessage.error('删除失败')
       } finally {
-        loading.value = false;
+        loading.value = false
       }
     })
     .catch(() => {
       // 取消删除
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 处理表单提交
 const handleSubmit = () => {
   albumFormRef.value.validate(async (valid) => {
     if (!valid) {
-      return;
+      return
     }
     try {
       // 编辑相册
-      await adminUpdateAlbum(albumForm.value);
-      ElMessage.success("编辑相册成功");
-      dialogVisible.value = false;
-      getAlbums();
+      await adminUpdateAlbum(albumForm.value)
+      ElMessage.success('编辑相册成功')
+      dialogVisible.value = false
+      getAlbums()
     } catch (error) {
-      ElMessage.error("编辑相册失败");
-      handleDialogClose();
+      ElMessage.error('编辑相册失败')
+      handleDialogClose()
     }
-  });
-};
+  })
+}
 
 // 处理对话框关闭
 const handleDialogClose = () => {
-  albumFormRef.value.resetFields();
-  dialogVisible.value = false;
-};
+  albumFormRef.value.resetFields()
+  dialogVisible.value = false
+}
 
 // 详情弹窗
-const albumDetailDialogVisible = ref(false);
+const albumDetailDialogVisible = ref(false)
 // 相册详情
-const albumDetail = ref(null);
+const albumDetail = ref(null)
 // 选中的图片ID集合
-const selectedPhotos = ref([]);
+const selectedPhotos = ref([])
 // 全选状态
 const selectAll = computed({
   get() {
-    return albumDetail.value?.photos?.length > 0 && selectedPhotos.value.length === albumDetail.value.photos.length;
+    return (
+      albumDetail.value?.photos?.length > 0 &&
+      selectedPhotos.value.length === albumDetail.value.photos.length
+    )
   },
   set(value) {
     if (value) {
-      selectedPhotos.value = albumDetail.value.photos.map((photo) => photo.id);
+      selectedPhotos.value = albumDetail.value.photos.map((photo) => photo.id)
     } else {
-      selectedPhotos.value = [];
+      selectedPhotos.value = []
     }
   },
-});
+})
 
 // 批量删除加载状态
-const batchDeleteLoading = ref(false);
+const batchDeleteLoading = ref(false)
 // 批量审核加载状态
-const batchAuditLoading = ref(false);
+const batchAuditLoading = ref(false)
 // 批量拒绝加载状态
-const batchRejectLoading = ref(false);
+const batchRejectLoading = ref(false)
 
 // 检查图片是否被选中
 const isPhotoSelected = (photoId) => {
-  return selectedPhotos.value.includes(photoId);
-};
+  return selectedPhotos.value.includes(photoId)
+}
 
 // 处理单个图片选择
 const handlePhotoSelect = (photoId, selected) => {
   if (selected) {
     if (!selectedPhotos.value.includes(photoId)) {
-      selectedPhotos.value.push(photoId);
+      selectedPhotos.value.push(photoId)
     }
   } else {
-    selectedPhotos.value = selectedPhotos.value.filter((id) => id !== photoId);
+    selectedPhotos.value = selectedPhotos.value.filter((id) => id !== photoId)
   }
-};
+}
 
 // 处理全选
 const handleSelectAll = (value) => {
-  selectAll.value = value;
-};
+  selectAll.value = value
+}
 
 // 相册详情
 const handleAlbumDetail = async (id) => {
-  loading.value = true;
+  loading.value = true
   try {
-    const res = await adminGetAlbumDetail(id);
-    albumDetail.value = res.data;
-    albumDetailDialogVisible.value = true;
+    const res = await adminGetAlbumDetail(id)
+    albumDetail.value = res.data
+    albumDetailDialogVisible.value = true
     // 重置选中状态
-    selectedPhotos.value = [];
+    selectedPhotos.value = []
   } catch (error) {
-    ElMessage.error("获取相册详情失败");
+    ElMessage.error('获取相册详情失败')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 处理单个图片审核
 const handleAuditPhoto = (photoId) => {
-  ElMessageBox.confirm("确定要审核通过该图片吗？", "确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "info",
+  ElMessageBox.confirm('确定要审核通过该图片吗？', '确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'info',
   })
     .then(async () => {
       try {
-        await adminAuditPhoto({ photoId: photoId, examineStatus: 1 });
-        ElMessage.success("审核成功");
+        await adminAuditPhoto({ photoId: photoId, examineStatus: 1 })
+        ElMessage.success('审核成功')
         // 更新本地数据
         if (albumDetail.value) {
-          const photo = albumDetail.value.photos.find((photo) => photo.id === photoId);
+          const photo = albumDetail.value.photos.find((photo) => photo.id === photoId)
           if (photo) {
-            photo.examineStatus = 1;
+            photo.examineStatus = 1
           }
         }
       } catch (error) {
-        ElMessage.error("审核失败");
+        ElMessage.error('审核失败')
       }
     })
     .catch(() => {
-      ElMessage.info("审核已取消");
-    });
-};
+      ElMessage.info('审核已取消')
+    })
+}
 
 // 处理批量审核
 const handleBatchAudit = () => {
-  ElMessageBox.confirm(`确定要审核通过选中的 ${selectedPhotos.value.length} 张图片吗？`, "确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "info",
+  ElMessageBox.confirm(`确定要审核通过选中的 ${selectedPhotos.value.length} 张图片吗？`, '确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'info',
   })
     .then(async () => {
-      batchAuditLoading.value = true;
+      batchAuditLoading.value = true
       try {
         const data = selectedPhotos.value.map((id) => ({
           photoId: id,
           examineStatus: 1,
-        }));
-        await adminAuditBatchPhoto(data);
-        ElMessage.success("批量审核成功");
+        }))
+        await adminAuditBatchPhoto(data)
+        ElMessage.success('批量审核成功')
         // 更新本地数据
         if (albumDetail.value) {
           albumDetail.value.photos.forEach((photo) => {
             if (selectedPhotos.value.includes(photo.id)) {
-              photo.examineStatus = 1;
+              photo.examineStatus = 1
             }
-          });
-          selectedPhotos.value = [];
+          })
+          selectedPhotos.value = []
         }
       } catch (error) {
-        ElMessage.error("批量审核失败");
+        ElMessage.error('批量审核失败')
       } finally {
-        batchAuditLoading.value = false;
+        batchAuditLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("审核已取消");
-    });
-};
+      ElMessage.info('审核已取消')
+    })
+}
 
 // 处理单个图片拒绝
 const handleRejectPhoto = (photoId) => {
-  ElMessageBox.confirm("确定要拒绝该图片吗？", "确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要拒绝该图片吗？', '确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
       try {
-        await adminAuditPhoto({ photoId: photoId, examineStatus: 2 });
-        ElMessage.success("拒绝成功");
-        handleAlbumDetail(albumDetail.value.id);
+        await adminAuditPhoto({ photoId: photoId, examineStatus: 2 })
+        ElMessage.success('拒绝成功')
+        handleAlbumDetail(albumDetail.value.id)
       } catch (error) {
-        ElMessage.error("拒绝失败");
+        ElMessage.error('拒绝失败')
       }
     })
     .catch(() => {
-      ElMessage.info("拒绝已取消");
-    });
-};
+      ElMessage.info('拒绝已取消')
+    })
+}
 
 // 处理批量拒绝
 const handleBatchReject = () => {
-  ElMessageBox.confirm(`确定要拒绝选中的 ${selectedPhotos.value.length} 张图片吗？`, "确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm(`确定要拒绝选中的 ${selectedPhotos.value.length} 张图片吗？`, '确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      batchRejectLoading.value = true;
+      batchRejectLoading.value = true
       try {
         // 构造符合后端接口要求的数组格式
         const data = selectedPhotos.value.map((id) => ({
           photoId: id,
           examineStatus: 2,
-        }));
-        await adminAuditBatchPhoto(data);
-        ElMessage.success("批量拒绝成功");
-        handleAlbumDetail(albumDetail.value.id);
+        }))
+        await adminAuditBatchPhoto(data)
+        ElMessage.success('批量拒绝成功')
+        handleAlbumDetail(albumDetail.value.id)
       } catch (error) {
-        ElMessage.error("批量拒绝失败");
+        ElMessage.error('批量拒绝失败')
       } finally {
-        batchRejectLoading.value = false;
+        batchRejectLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("拒绝已取消");
-    });
-};
+      ElMessage.info('拒绝已取消')
+    })
+}
 
 // 处理删除单个图片
 const handleDeletePhoto = (photoId) => {
-  ElMessageBox.confirm("确定要删除该图片吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要删除该图片吗？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
       try {
-        await adminDeletePhoto(photoId);
-        ElMessage.success("删除成功");
-        handleAlbumDetail(albumDetail.value.id);
+        await adminDeletePhoto(photoId)
+        ElMessage.success('删除成功')
+        handleAlbumDetail(albumDetail.value.id)
       } catch (error) {
-        ElMessage.error("删除失败");
+        ElMessage.error('删除失败')
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 处理批量删除
 const handleBatchDelete = () => {
-  ElMessageBox.confirm(`确定要删除选中的 ${selectedPhotos.value.length} 张图片吗？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm(`确定要删除选中的 ${selectedPhotos.value.length} 张图片吗？`, '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      batchDeleteLoading.value = true;
+      batchDeleteLoading.value = true
       try {
-        await adminDeleteBatchPhoto(selectedPhotos.value);
-        ElMessage.success("批量删除成功");
-        handleAlbumDetail(albumDetail.value.id);
+        await adminDeleteBatchPhoto(selectedPhotos.value)
+        ElMessage.success('批量删除成功')
+        handleAlbumDetail(albumDetail.value.id)
       } catch (error) {
-        ElMessage.error("批量删除失败");
+        ElMessage.error('批量删除失败')
       } finally {
-        batchDeleteLoading.value = false;
+        batchDeleteLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 处理详情对话框关闭
 const handleDetailDialogClose = () => {
-  albumDetailDialogVisible.value = false;
-  albumDetail.value = null;
-  selectedPhotos.value = [];
-};
+  albumDetailDialogVisible.value = false
+  albumDetail.value = null
+  selectedPhotos.value = []
+}
 </script>
 
 <style lang="scss" scoped>
@@ -700,7 +955,7 @@ const handleDetailDialogClose = () => {
         align-items: center;
 
         &::before {
-          content: "";
+          content: '';
           display: inline-block;
           width: 4px;
           height: 20px;
@@ -970,7 +1225,6 @@ const handleDetailDialogClose = () => {
       }
     }
   }
-
 }
 
 :deep(.el-dialog) {
@@ -1053,7 +1307,6 @@ const handleDetailDialogClose = () => {
         margin-top: 0;
         max-height: calc(100vh - 240px);
       }
-
     }
   }
 
@@ -1218,7 +1471,9 @@ const handleDetailDialogClose = () => {
   }
 
   &.photo-item-selected {
-    box-shadow: 0 0 0 2px #42b983, 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow:
+      0 0 0 2px #42b983,
+      0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   .photo-selector {
@@ -1243,7 +1498,7 @@ const handleDetailDialogClose = () => {
     position: relative;
 
     &::after {
-      content: "未审核";
+      content: '未审核';
       position: absolute;
       top: 0;
       left: 0;

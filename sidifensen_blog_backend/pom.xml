@@ -202,7 +202,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipTests>true</skipTests>
+                    <!-- 单元测试默认启用，如需跳过可使用 -DskipTests=false -->
+                    <skipTests>false</skipTests>
+                    <!-- 测试报告输出到 target/surefire-reports -->
+                    <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+                    <!-- 每个测试类在新JVM中运行，避免状态污染 -->
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
                 </configuration>
             </plugin>
         </plugins>

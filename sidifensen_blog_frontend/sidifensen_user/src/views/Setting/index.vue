@@ -35,7 +35,14 @@
               <div class="setting-main__overview-card profile-card">
                 <div class="profile-card__main">
                   <div class="profile-card__avatar">
-                    <el-upload class="avatar-uploader" :action="''" :http-request="handleAvatarUpload" :show-file-list="false" :before-upload="beforeAvatarUpload" accept="image/*">
+                    <el-upload
+                      class="avatar-uploader"
+                      :action="''"
+                      :http-request="handleAvatarUpload"
+                      :show-file-list="false"
+                      :before-upload="beforeAvatarUpload"
+                      accept="image/*"
+                    >
                       <img v-if="userInfo.avatar" :src="userInfo.avatar" class="avatar-preview" />
                       <div v-else class="avatar-placeholder">
                         <el-icon class="avatar-placeholder__icon">
@@ -47,7 +54,7 @@
                   </div>
 
                   <div class="profile-card__info">
-                    <h3>{{ userInfo.nickname || "未设置昵称" }}</h3>
+                    <h3>{{ userInfo.nickname || '未设置昵称' }}</h3>
                     <p>{{ introductionPreview }}</p>
                     <div class="profile-card__meta">
                       <span>{{ maskedEmail }}</span>
@@ -94,7 +101,7 @@
                     </div>
                     <div class="section-card__row-content">
                       <div v-if="!editingField.nickname" class="display-mode">
-                        <span class="display-value">{{ userInfo.nickname || "未设置" }}</span>
+                        <span class="display-value">{{ userInfo.nickname || '未设置' }}</span>
                         <el-button class="inline-action" text @click="startEdit('nickname')">
                           修改
                           <el-icon><Edit /></el-icon>
@@ -102,7 +109,15 @@
                       </div>
                       <div v-else class="edit-mode">
                         <div class="edit-surface">
-                          <el-input v-model="editingData.nickname" placeholder="请输入昵称" maxlength="20" show-word-limit clearable @keydown.enter.prevent="saveField('nickname')" @keydown.esc.stop.prevent="cancelEdit('nickname')">
+                          <el-input
+                            v-model="editingData.nickname"
+                            placeholder="请输入昵称"
+                            maxlength="20"
+                            show-word-limit
+                            clearable
+                            @keydown.enter.prevent="saveField('nickname')"
+                            @keydown.esc.stop.prevent="cancelEdit('nickname')"
+                          >
                             <template #prefix>
                               <el-icon>
                                 <User />
@@ -113,7 +128,12 @@
                         <div class="edit-toolbar">
                           <span class="edit-toolbar__hint">回车保存，Esc 取消</span>
                           <div class="edit-actions">
-                            <el-button type="primary" :loading="saveLoading.nickname" @click="saveField('nickname')">保存更改</el-button>
+                            <el-button
+                              type="primary"
+                              :loading="saveLoading.nickname"
+                              @click="saveField('nickname')"
+                              >保存更改</el-button
+                            >
                             <el-button text @click="cancelEdit('nickname')">取消</el-button>
                           </div>
                         </div>
@@ -144,7 +164,12 @@
                         <div class="edit-toolbar">
                           <span class="edit-toolbar__hint">修改后会同步展示在个人主页</span>
                           <div class="edit-actions">
-                            <el-button type="primary" :loading="saveLoading.sex" @click="saveField('sex')">保存更改</el-button>
+                            <el-button
+                              type="primary"
+                              :loading="saveLoading.sex"
+                              @click="saveField('sex')"
+                              >保存更改</el-button
+                            >
                             <el-button text @click="cancelEdit('sex')">取消</el-button>
                           </div>
                         </div>
@@ -158,7 +183,10 @@
                       <p>一句话说明你在这里关注什么、擅长什么。</p>
                     </div>
                     <div class="section-card__row-content">
-                      <div v-if="!editingField.introduction" class="display-mode display-mode--multiline">
+                      <div
+                        v-if="!editingField.introduction"
+                        class="display-mode display-mode--multiline"
+                      >
                         <span class="display-value">{{ introductionPreview }}</span>
                         <el-button class="inline-action" text @click="startEdit('introduction')">
                           修改
@@ -167,12 +195,30 @@
                       </div>
                       <div v-else class="edit-mode">
                         <div class="edit-surface edit-surface--textarea">
-                          <el-input v-model="editingData.introduction" type="textarea" placeholder="请输入个人简介" :autosize="{ minRows: 4, maxRows: 8 }" maxlength="200" show-word-limit resize="none" @keydown.ctrl.enter.prevent="saveField('introduction')" @keydown.esc.stop.prevent="cancelEdit('introduction')" />
+                          <el-input
+                            v-model="editingData.introduction"
+                            type="textarea"
+                            placeholder="请输入个人简介"
+                            :autosize="{ minRows: 4, maxRows: 8 }"
+                            maxlength="200"
+                            show-word-limit
+                            resize="none"
+                            @keydown.ctrl.enter.prevent="saveField('introduction')"
+                            @keydown.esc.stop.prevent="cancelEdit('introduction')"
+                          />
                         </div>
                         <div class="edit-toolbar">
-                          <span class="edit-toolbar__hint">{{ editingData.introduction?.length || 0 }}/200，Ctrl + Enter 保存</span>
+                          <span class="edit-toolbar__hint"
+                            >{{ editingData.introduction?.length || 0 }}/200，Ctrl + Enter
+                            保存</span
+                          >
                           <div class="edit-actions">
-                            <el-button type="primary" :loading="saveLoading.introduction" @click="saveField('introduction')">保存更改</el-button>
+                            <el-button
+                              type="primary"
+                              :loading="saveLoading.introduction"
+                              @click="saveField('introduction')"
+                              >保存更改</el-button
+                            >
                             <el-button text @click="cancelEdit('introduction')">取消</el-button>
                           </div>
                         </div>
@@ -198,7 +244,7 @@
                     </div>
                     <div class="section-card__row-content">
                       <div class="display-mode">
-                        <span class="display-value">{{ userInfo.email || "未设置" }}</span>
+                        <span class="display-value">{{ userInfo.email || '未设置' }}</span>
                         <el-button class="inline-action" text @click="openEmailDialog">
                           修改邮箱
                           <el-icon><Edit /></el-icon>
@@ -292,12 +338,24 @@
       </el-skeleton>
     </div>
 
-    <el-dialog v-model="passwordDialogVisible" title="修改密码" class="setting-dialog" :close-on-click-modal="false" @close="resetPasswordDialog">
+    <el-dialog
+      v-model="passwordDialogVisible"
+      title="修改密码"
+      class="setting-dialog"
+      :close-on-click-modal="false"
+      @close="resetPasswordDialog"
+    >
       <div class="setting-dialog__panel">
         <div class="setting-dialog__hero">
           <span class="setting-dialog__eyebrow">Security</span>
-          <h3>{{ passwordStep === 0 ? "验证身份" : "设置新密码" }}</h3>
-          <p>{{ passwordStep === 0 ? "先验证当前绑定邮箱，再继续修改密码。" : "使用新的登录密码，建议包含字母和数字。" }}</p>
+          <h3>{{ passwordStep === 0 ? '验证身份' : '设置新密码' }}</h3>
+          <p>
+            {{
+              passwordStep === 0
+                ? '先验证当前绑定邮箱，再继续修改密码。'
+                : '使用新的登录密码，建议包含字母和数字。'
+            }}
+          </p>
         </div>
 
         <div class="setting-dialog__steps">
@@ -308,11 +366,22 @@
         </div>
 
         <div class="setting-dialog__body">
-          <el-form v-if="passwordStep === 0" ref="emailFormRef" :model="passwordForm" :rules="passwordRules" label-width="0">
+          <el-form
+            v-if="passwordStep === 0"
+            ref="emailFormRef"
+            :model="passwordForm"
+            :rules="passwordRules"
+            label-width="0"
+          >
             <div class="setting-dialog__group">
               <span class="setting-dialog__group-label">当前邮箱</span>
               <el-form-item prop="email">
-                <el-input v-model="passwordForm.email" type="email" placeholder="邮箱" :disabled="true">
+                <el-input
+                  v-model="passwordForm.email"
+                  type="email"
+                  placeholder="邮箱"
+                  :disabled="true"
+                >
                   <template #prefix>
                     <el-icon><Message /></el-icon>
                   </template>
@@ -324,20 +393,30 @@
               <span class="setting-dialog__group-label">验证码</span>
               <el-form-item prop="emailCheckCode">
                 <div class="check-code-panel">
-                  <el-input v-model="passwordForm.emailCheckCode" maxlength="6" placeholder="请输入验证码">
+                  <el-input
+                    v-model="passwordForm.emailCheckCode"
+                    maxlength="6"
+                    placeholder="请输入验证码"
+                  >
                     <template #prefix>
                       <el-icon><EditPen /></el-icon>
                     </template>
                   </el-input>
                   <el-button type="success" :disabled="waitTime > 0" @click="sendEmailCode">
-                    {{ waitTime > 0 ? `请稍后 ${waitTime} 秒` : "获取验证码" }}
+                    {{ waitTime > 0 ? `请稍后 ${waitTime} 秒` : '获取验证码' }}
                   </el-button>
                 </div>
               </el-form-item>
             </div>
           </el-form>
 
-          <el-form v-if="passwordStep === 1" ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" label-width="0">
+          <el-form
+            v-if="passwordStep === 1"
+            ref="passwordFormRef"
+            :model="passwordForm"
+            :rules="passwordRules"
+            label-width="0"
+          >
             <div class="setting-dialog__group">
               <span class="setting-dialog__group-label">新密码</span>
               <el-form-item prop="password">
@@ -352,7 +431,11 @@
             <div class="setting-dialog__group">
               <span class="setting-dialog__group-label">确认密码</span>
               <el-form-item prop="repeatPassword">
-                <el-input v-model="passwordForm.repeatPassword" placeholder="确认新密码" show-password>
+                <el-input
+                  v-model="passwordForm.repeatPassword"
+                  placeholder="确认新密码"
+                  show-password
+                >
                   <template #prefix>
                     <el-icon><Lock /></el-icon>
                   </template>
@@ -366,18 +449,43 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="passwordDialogVisible = false">取消</el-button>
-          <el-button v-if="passwordStep === 0" type="primary" :loading="verifyLoading" :disabled="!hasRequestedPasswordCode" @click="verifyEmail">下一步</el-button>
-          <el-button v-if="passwordStep === 1" type="primary" :loading="resetLoading" @click="resetPasswordSubmit">确认修改</el-button>
+          <el-button
+            v-if="passwordStep === 0"
+            type="primary"
+            :loading="verifyLoading"
+            :disabled="!hasRequestedPasswordCode"
+            @click="verifyEmail"
+            >下一步</el-button
+          >
+          <el-button
+            v-if="passwordStep === 1"
+            type="primary"
+            :loading="resetLoading"
+            @click="resetPasswordSubmit"
+            >确认修改</el-button
+          >
         </div>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="emailDialogVisible" title="修改邮箱" class="setting-dialog" :close-on-click-modal="false" @close="resetEmailDialog">
+    <el-dialog
+      v-model="emailDialogVisible"
+      title="修改邮箱"
+      class="setting-dialog"
+      :close-on-click-modal="false"
+      @close="resetEmailDialog"
+    >
       <div class="setting-dialog__panel">
         <div class="setting-dialog__hero">
           <span class="setting-dialog__eyebrow">Account</span>
-          <h3>{{ emailStep === 0 ? "验证原邮箱" : "绑定新邮箱" }}</h3>
-          <p>{{ emailStep === 0 ? "为保证账号安全，需要先确认当前邮箱可用。" : "新邮箱将用于通知提醒、验证码和密码找回。" }}</p>
+          <h3>{{ emailStep === 0 ? '验证原邮箱' : '绑定新邮箱' }}</h3>
+          <p>
+            {{
+              emailStep === 0
+                ? '为保证账号安全，需要先确认当前邮箱可用。'
+                : '新邮箱将用于通知提醒、验证码和密码找回。'
+            }}
+          </p>
         </div>
 
         <div class="setting-dialog__steps">
@@ -388,11 +496,22 @@
         </div>
 
         <div class="setting-dialog__body">
-          <el-form v-if="emailStep === 0" ref="oldEmailFormRef" :model="emailForm" :rules="oldEmailRules" label-width="0">
+          <el-form
+            v-if="emailStep === 0"
+            ref="oldEmailFormRef"
+            :model="emailForm"
+            :rules="oldEmailRules"
+            label-width="0"
+          >
             <div class="setting-dialog__group">
               <span class="setting-dialog__group-label">原邮箱</span>
               <el-form-item prop="email">
-                <el-input v-model="emailForm.email" type="email" placeholder="原邮箱" :disabled="true">
+                <el-input
+                  v-model="emailForm.email"
+                  type="email"
+                  placeholder="原邮箱"
+                  :disabled="true"
+                >
                   <template #prefix>
                     <el-icon><Message /></el-icon>
                   </template>
@@ -404,20 +523,30 @@
               <span class="setting-dialog__group-label">验证码</span>
               <el-form-item prop="emailCheckCode">
                 <div class="check-code-panel">
-                  <el-input v-model="emailForm.emailCheckCode" maxlength="6" placeholder="请输入验证码">
+                  <el-input
+                    v-model="emailForm.emailCheckCode"
+                    maxlength="6"
+                    placeholder="请输入验证码"
+                  >
                     <template #prefix>
                       <el-icon><EditPen /></el-icon>
                     </template>
                   </el-input>
                   <el-button type="success" :disabled="emailWaitTime > 0" @click="sendOldEmailCode">
-                    {{ emailWaitTime > 0 ? `请稍后 ${emailWaitTime} 秒` : "获取验证码" }}
+                    {{ emailWaitTime > 0 ? `请稍后 ${emailWaitTime} 秒` : '获取验证码' }}
                   </el-button>
                 </div>
               </el-form-item>
             </div>
           </el-form>
 
-          <el-form v-if="emailStep === 1" ref="newEmailFormRef" :model="emailForm" :rules="newEmailRules" label-width="0">
+          <el-form
+            v-if="emailStep === 1"
+            ref="newEmailFormRef"
+            :model="emailForm"
+            :rules="newEmailRules"
+            label-width="0"
+          >
             <div class="setting-dialog__group">
               <span class="setting-dialog__group-label">新邮箱</span>
               <el-form-item prop="newEmail">
@@ -435,8 +564,21 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="emailDialogVisible = false">取消</el-button>
-          <el-button v-if="emailStep === 0" type="primary" :loading="emailVerifyLoading" :disabled="!hasRequestedEmailCode" @click="verifyOldEmail">下一步</el-button>
-          <el-button v-if="emailStep === 1" type="primary" :loading="emailUpdateLoading" @click="updateEmailSubmit">确认修改</el-button>
+          <el-button
+            v-if="emailStep === 0"
+            type="primary"
+            :loading="emailVerifyLoading"
+            :disabled="!hasRequestedEmailCode"
+            @click="verifyOldEmail"
+            >下一步</el-button
+          >
+          <el-button
+            v-if="emailStep === 1"
+            type="primary"
+            :loading="emailUpdateLoading"
+            @click="updateEmailSubmit"
+            >确认修改</el-button
+          >
         </div>
       </template>
     </el-dialog>
@@ -444,132 +586,153 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
-import { Edit, EditPen, Lock, Message, Plus, User } from "@element-plus/icons-vue";
-import { info, resetPassword, sendEmail, updateEmail, updateUserInfo, verifyResetEmail, verifyResetPassword, updateCommentEmailSetting, updateSystemEmailSetting } from "@/api/user";
-import { uploadAvatar } from "@/api/photo";
-import { compressImage, validateAvatarImageFile } from "@/utils/PhotoUtils";
-import { useUserStore } from "@/stores/userStore";
+import { computed, onMounted, reactive, ref } from 'vue'
+import { Edit, EditPen, Lock, Message, Plus, User } from '@element-plus/icons-vue'
+import {
+  info,
+  resetPassword,
+  sendEmail,
+  updateEmail,
+  updateUserInfo,
+  verifyResetEmail,
+  verifyResetPassword,
+  updateCommentEmailSetting,
+  updateSystemEmailSetting,
+} from '@/api/user'
+import { uploadAvatar } from '@/api/photo'
+import { compressImage, validateAvatarImageFile } from '@/utils/PhotoUtils'
+import { useUserStore } from '@/stores/userStore'
 
-const userStore = useUserStore();
+const userStore = useUserStore()
 
-const userLoading = ref(false);
-const userInfo = ref(null);
+const userLoading = ref(false)
+const userInfo = ref(null)
 
 // 私信邮件通知开关
-const isReceivePrivateMessageEmail = ref(0);
+const isReceivePrivateMessageEmail = ref(0)
 
 // 评论邮件通知开关
-const isReceiveCommentEmail = ref(0);
+const isReceiveCommentEmail = ref(0)
 
 // 系统邮件通知开关
-const isReceiveSystemEmail = ref(0);
+const isReceiveSystemEmail = ref(0)
 
 const editingField = reactive({
   nickname: false,
   sex: false,
   introduction: false,
-});
+})
 
 const editingData = reactive({
-  nickname: "",
+  nickname: '',
   sex: 0,
-  introduction: "",
-});
+  introduction: '',
+})
 
 const saveLoading = reactive({
   nickname: false,
   sex: false,
   introduction: false,
-});
+})
 
 const sexLabel = computed(() => {
   if (!userInfo.value) {
-    return "未设置";
+    return '未设置'
   }
 
-  return userInfo.value.sex === 0 ? "男" : userInfo.value.sex === 1 ? "女" : "未设置";
-});
+  return userInfo.value.sex === 0 ? '男' : userInfo.value.sex === 1 ? '女' : '未设置'
+})
 
 const introductionPreview = computed(() => {
-  return userInfo.value?.introduction || "这个人很懒，什么都没写。";
-});
+  return userInfo.value?.introduction || '这个人很懒，什么都没写。'
+})
 
 const maskedEmail = computed(() => {
-  const email = userInfo.value?.email;
+  const email = userInfo.value?.email
   if (!email) {
-    return "未设置邮箱";
+    return '未设置邮箱'
   }
 
-  const [name, domain] = email.split("@");
+  const [name, domain] = email.split('@')
   if (!name || !domain) {
-    return email;
+    return email
   }
 
   if (name.length <= 2) {
-    return `${name[0] || ""}***@${domain}`;
+    return `${name[0] || ''}***@${domain}`
   }
 
-  return `${name.slice(0, 2)}***@${domain}`;
-});
+  return `${name.slice(0, 2)}***@${domain}`
+})
 
 const profileCompletion = computed(() => {
   if (!userInfo.value) {
-    return 0;
+    return 0
   }
 
-  const fields = [userInfo.value.avatar, userInfo.value.nickname, userInfo.value.email, userInfo.value.introduction];
-  const completedCount = fields.filter((item) => (typeof item === "string" ? item.trim() !== "" : Boolean(item))).length;
-  return Math.round((completedCount / fields.length) * 100);
-});
+  const fields = [
+    userInfo.value.avatar,
+    userInfo.value.nickname,
+    userInfo.value.email,
+    userInfo.value.introduction,
+  ]
+  const completedCount = fields.filter((item) =>
+    typeof item === 'string' ? item.trim() !== '' : Boolean(item),
+  ).length
+  return Math.round((completedCount / fields.length) * 100)
+})
 
 const fetchUserInfo = async () => {
   try {
-    userLoading.value = true;
-    const res = await info();
-    userInfo.value = res.data;
+    userLoading.value = true
+    const res = await info()
+    userInfo.value = res.data
     // 初始化私信邮件通知开关状态
-    isReceivePrivateMessageEmail.value = res.data.isReceivePrivateMessageEmail || 0;
+    isReceivePrivateMessageEmail.value = res.data.isReceivePrivateMessageEmail || 0
     // 初始化评论邮件通知开关状态
-    isReceiveCommentEmail.value = res.data.isReceiveCommentEmail || 0;
+    isReceiveCommentEmail.value = res.data.isReceiveCommentEmail || 0
     // 初始化系统邮件通知开关状态
-    isReceiveSystemEmail.value = res.data.isReceiveSystemEmail || 0;
+    isReceiveSystemEmail.value = res.data.isReceiveSystemEmail || 0
   } catch (error) {
     // 静默处理
   } finally {
-    userLoading.value = false;
+    userLoading.value = false
   }
-};
+}
 
 const startEdit = (field) => {
-  editingData[field] = userInfo.value[field] ?? "";
-  editingField[field] = true;
-};
+  editingData[field] = userInfo.value[field] ?? ''
+  editingField[field] = true
+}
 
 const cancelEdit = (field) => {
-  editingField[field] = false;
-  editingData[field] = "";
-};
+  editingField[field] = false
+  editingData[field] = ''
+}
 
 const saveField = async (field) => {
-  if (field === "nickname") {
-    if (!editingData.nickname || editingData.nickname.trim() === "") {
-      ElMessage.warning("昵称不能为空");
-      return;
+  if (field === 'nickname') {
+    if (!editingData.nickname || editingData.nickname.trim() === '') {
+      ElMessage.warning('昵称不能为空')
+      return
     }
     if (editingData.nickname.length < 4 || editingData.nickname.length > 20) {
-      ElMessage.warning("昵称长度在 4 到 20 个字符");
-      return;
+      ElMessage.warning('昵称长度在 4 到 20 个字符')
+      return
     }
   }
 
-  if (field === "introduction" && editingData.introduction && editingData.introduction.length > 200) {
-    ElMessage.warning("简介长度不能超过 200 个字符");
-    return;
+  if (
+    field === 'introduction' &&
+    editingData.introduction &&
+    editingData.introduction.length > 200
+  ) {
+    ElMessage.warning('简介长度不能超过 200 个字符')
+    return
   }
 
   try {
-    saveLoading[field] = true;
+    saveLoading[field] = true
 
     const updateData = {
       nickname: userInfo.value.nickname,
@@ -577,390 +740,394 @@ const saveField = async (field) => {
       introduction: userInfo.value.introduction,
       avatar: userInfo.value.avatar,
       [field]: editingData[field],
-    };
+    }
 
-    await updateUserInfo(updateData);
-    userInfo.value[field] = editingData[field];
+    await updateUserInfo(updateData)
+    userInfo.value[field] = editingData[field]
 
-    const res = await info();
-    userStore.user = res.data;
+    const res = await info()
+    userStore.user = res.data
 
-    editingField[field] = false;
-    ElMessage.success("修改成功");
+    editingField[field] = false
+    ElMessage.success('修改成功')
   } catch (error) {
     // 静默处理
   } finally {
-    saveLoading[field] = false;
+    saveLoading[field] = false
   }
-};
+}
 
 const beforeAvatarUpload = (file) => {
-  const validation = validateAvatarImageFile(file);
+  const validation = validateAvatarImageFile(file)
   if (!validation) {
-    return false;
+    return false
   }
-  return true;
-};
+  return true
+}
 
 const handleAvatarUpload = async (options) => {
-  const { file } = options;
+  const { file } = options
   try {
-    const compressedFile = await compressImage(file, 0.8, 800, 800);
-    ElMessage.info("头像上传中...");
-    await uploadAvatar(compressedFile);
+    const compressedFile = await compressImage(file, 0.8, 800, 800)
+    ElMessage.info('头像上传中...')
+    await uploadAvatar(compressedFile)
 
-    options.onSuccess && options.onSuccess();
-    ElMessage.success("头像上传成功，正在审核中，审核通过后将自动更新");
+    if (options.onSuccess) {
+      options.onSuccess()
+    }
+    ElMessage.success('头像上传成功，正在审核中，审核通过后将自动更新')
   } catch (error) {
     // 静默处理
-    ElMessage.error("头像上传失败，请重试");
-    options.onError && options.onError();
+    ElMessage.error('头像上传失败，请重试')
+    if (options.onError) {
+      options.onError()
+    }
   }
-};
+}
 
-const passwordDialogVisible = ref(false);
-const passwordStep = ref(0);
-const waitTime = ref(0);
-const hasRequestedPasswordCode = ref(false);
-const verifyLoading = ref(false);
-const resetLoading = ref(false);
+const passwordDialogVisible = ref(false)
+const passwordStep = ref(0)
+const waitTime = ref(0)
+const hasRequestedPasswordCode = ref(false)
+const verifyLoading = ref(false)
+const resetLoading = ref(false)
 
 const passwordForm = reactive({
-  email: "",
-  emailCheckCode: "",
-  password: "",
-  repeatPassword: "",
-});
+  email: '',
+  emailCheckCode: '',
+  password: '',
+  repeatPassword: '',
+})
 
-const emailFormRef = ref(null);
-const passwordFormRef = ref(null);
+const emailFormRef = ref(null)
+const passwordFormRef = ref(null)
 
-const EmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const EmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 
 const validateEmailFormat = (rule, value, callback) => {
   if (!value) {
-    callback(new Error("请输入邮箱"));
+    callback(new Error('请输入邮箱'))
   } else if (!EmailRegex.test(value)) {
-    callback(new Error("请输入合法的邮箱"));
+    callback(new Error('请输入合法的邮箱'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
 const validateEmailCheckCode = (rule, value, callback) => {
   if (!value) {
-    callback(new Error("请输入获取的验证码"));
+    callback(new Error('请输入获取的验证码'))
   } else if (!/^\d{6}$/.test(value)) {
-    callback(new Error("验证码必须是6位数字"));
+    callback(new Error('验证码必须是6位数字'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
 const validatePasswordCharacters = (rule, value, callback) => {
-  if (value === "") {
-    callback(new Error("请输入密码"));
+  if (value === '') {
+    callback(new Error('请输入密码'))
   } else if (!/^[a-zA-Z0-9@]+$/.test(value)) {
-    callback(new Error("密码只能包含英文、数字和@符号"));
+    callback(new Error('密码只能包含英文、数字和@符号'))
   } else if (value.length < 6 || value.length > 20) {
-    callback(new Error("密码的长度必须在 6-20 个字符之间"));
+    callback(new Error('密码的长度必须在 6-20 个字符之间'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
 const validateRepeatPassword = (rule, value, callback) => {
-  if (value === "") {
-    callback(new Error("请再次输入密码"));
+  if (value === '') {
+    callback(new Error('请再次输入密码'))
   } else if (value !== passwordForm.password) {
-    callback(new Error("两次输入的密码不一致"));
+    callback(new Error('两次输入的密码不一致'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
 const passwordRules = {
-  email: [{ validator: validateEmailFormat, trigger: ["blur", "change"] }],
-  emailCheckCode: [{ validator: validateEmailCheckCode, trigger: ["blur", "change"] }],
-  password: [{ validator: validatePasswordCharacters, trigger: ["blur", "change"] }],
-  repeatPassword: [{ validator: validateRepeatPassword, trigger: ["blur", "change"] }],
-};
+  email: [{ validator: validateEmailFormat, trigger: ['blur', 'change'] }],
+  emailCheckCode: [{ validator: validateEmailCheckCode, trigger: ['blur', 'change'] }],
+  password: [{ validator: validatePasswordCharacters, trigger: ['blur', 'change'] }],
+  repeatPassword: [{ validator: validateRepeatPassword, trigger: ['blur', 'change'] }],
+}
 
 const openPasswordDialog = () => {
-  passwordDialogVisible.value = true;
-  passwordStep.value = 0;
-  passwordForm.email = userInfo.value.email;
-  passwordForm.emailCheckCode = "";
-  passwordForm.password = "";
-  passwordForm.repeatPassword = "";
-  waitTime.value = 0;
-  hasRequestedPasswordCode.value = false;
-};
+  passwordDialogVisible.value = true
+  passwordStep.value = 0
+  passwordForm.email = userInfo.value.email
+  passwordForm.emailCheckCode = ''
+  passwordForm.password = ''
+  passwordForm.repeatPassword = ''
+  waitTime.value = 0
+  hasRequestedPasswordCode.value = false
+}
 
 const resetPasswordDialog = () => {
-  passwordStep.value = 0;
-  passwordForm.email = "";
-  passwordForm.emailCheckCode = "";
-  passwordForm.password = "";
-  passwordForm.repeatPassword = "";
-  waitTime.value = 0;
-  hasRequestedPasswordCode.value = false;
-};
+  passwordStep.value = 0
+  passwordForm.email = ''
+  passwordForm.emailCheckCode = ''
+  passwordForm.password = ''
+  passwordForm.repeatPassword = ''
+  waitTime.value = 0
+  hasRequestedPasswordCode.value = false
+}
 
 const sendEmailCode = async () => {
   try {
     const emailDto = {
       email: passwordForm.email,
-      type: "resetPassword",
-    };
-    await sendEmail(emailDto);
-    ElMessage.success(`验证码已发送到邮箱：${passwordForm.email}，请注意查收`);
-    hasRequestedPasswordCode.value = true;
-    waitTime.value = 60;
+      type: 'resetPassword',
+    }
+    await sendEmail(emailDto)
+    ElMessage.success(`验证码已发送到邮箱：${passwordForm.email}，请注意查收`)
+    hasRequestedPasswordCode.value = true
+    waitTime.value = 60
     const interval = setInterval(() => {
       if (waitTime.value === 0) {
-        clearInterval(interval);
+        clearInterval(interval)
       } else {
-        waitTime.value--;
+        waitTime.value--
       }
-    }, 1000);
+    }, 1000)
   } catch (error) {
     // 静默处理
   }
-};
+}
 
 const verifyEmail = async () => {
   if (!emailFormRef.value) {
-    return;
+    return
   }
 
   try {
-    await emailFormRef.value.validate();
-    verifyLoading.value = true;
+    await emailFormRef.value.validate()
+    verifyLoading.value = true
 
     const verifyResetDto = {
       email: passwordForm.email,
       emailCheckCode: passwordForm.emailCheckCode,
-    };
+    }
 
-    await verifyResetPassword(verifyResetDto);
-    passwordStep.value = 1;
-    ElMessage.success("邮箱验证成功");
+    await verifyResetPassword(verifyResetDto)
+    passwordStep.value = 1
+    ElMessage.success('邮箱验证成功')
   } catch (error) {
     if (error !== false) {
-      ElMessage.error("验证失败，请检查验证码是否正确");
+      ElMessage.error('验证失败，请检查验证码是否正确')
     }
   } finally {
-    verifyLoading.value = false;
+    verifyLoading.value = false
   }
-};
+}
 
 const resetPasswordSubmit = async () => {
   if (!passwordFormRef.value) {
-    return;
+    return
   }
 
   try {
-    await passwordFormRef.value.validate();
-    resetLoading.value = true;
+    await passwordFormRef.value.validate()
+    resetLoading.value = true
 
     const resetData = {
       email: passwordForm.email,
       emailCheckCode: passwordForm.emailCheckCode,
       password: passwordForm.password,
-    };
+    }
 
-    await resetPassword(resetData);
-    ElMessage.success("密码修改成功");
+    await resetPassword(resetData)
+    ElMessage.success('密码修改成功')
 
-    passwordDialogVisible.value = false;
-    resetPasswordDialog();
+    passwordDialogVisible.value = false
+    resetPasswordDialog()
   } catch (error) {
     if (error !== false) {
-      ElMessage.error("密码修改失败，请检查验证码是否正确");
+      ElMessage.error('密码修改失败，请检查验证码是否正确')
     }
   } finally {
-    resetLoading.value = false;
+    resetLoading.value = false
   }
-};
+}
 
-const emailDialogVisible = ref(false);
-const emailStep = ref(0);
-const emailWaitTime = ref(0);
-const hasRequestedEmailCode = ref(false);
-const emailVerifyLoading = ref(false);
-const emailUpdateLoading = ref(false);
+const emailDialogVisible = ref(false)
+const emailStep = ref(0)
+const emailWaitTime = ref(0)
+const hasRequestedEmailCode = ref(false)
+const emailVerifyLoading = ref(false)
+const emailUpdateLoading = ref(false)
 
 const emailForm = reactive({
-  email: "",
-  newEmail: "",
-  emailCheckCode: "",
-});
+  email: '',
+  newEmail: '',
+  emailCheckCode: '',
+})
 
-const oldEmailFormRef = ref(null);
-const newEmailFormRef = ref(null);
+const oldEmailFormRef = ref(null)
+const newEmailFormRef = ref(null)
 
 const validateNewEmailFormat = (rule, value, callback) => {
   if (!value) {
-    callback(new Error("请输入新邮箱"));
+    callback(new Error('请输入新邮箱'))
   } else if (!EmailRegex.test(value)) {
-    callback(new Error("请输入合法的邮箱"));
+    callback(new Error('请输入合法的邮箱'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
 const oldEmailRules = {
-  email: [{ required: true, message: "原邮箱不能为空", trigger: "blur" }],
-  emailCheckCode: [{ validator: validateEmailCheckCode, trigger: ["blur", "change"] }],
-};
+  email: [{ required: true, message: '原邮箱不能为空', trigger: 'blur' }],
+  emailCheckCode: [{ validator: validateEmailCheckCode, trigger: ['blur', 'change'] }],
+}
 
 const newEmailRules = {
-  newEmail: [{ validator: validateNewEmailFormat, trigger: ["blur", "change"] }],
-};
+  newEmail: [{ validator: validateNewEmailFormat, trigger: ['blur', 'change'] }],
+}
 
 const openEmailDialog = () => {
-  emailDialogVisible.value = true;
-  emailStep.value = 0;
-  emailForm.email = userInfo.value.email;
-  emailForm.newEmail = "";
-  emailForm.emailCheckCode = "";
-  emailWaitTime.value = 0;
-  hasRequestedEmailCode.value = false;
-};
+  emailDialogVisible.value = true
+  emailStep.value = 0
+  emailForm.email = userInfo.value.email
+  emailForm.newEmail = ''
+  emailForm.emailCheckCode = ''
+  emailWaitTime.value = 0
+  hasRequestedEmailCode.value = false
+}
 
 const resetEmailDialog = () => {
-  emailStep.value = 0;
-  emailForm.email = "";
-  emailForm.newEmail = "";
-  emailForm.emailCheckCode = "";
-  emailWaitTime.value = 0;
-  hasRequestedEmailCode.value = false;
-};
+  emailStep.value = 0
+  emailForm.email = ''
+  emailForm.newEmail = ''
+  emailForm.emailCheckCode = ''
+  emailWaitTime.value = 0
+  hasRequestedEmailCode.value = false
+}
 
 const sendOldEmailCode = async () => {
   try {
     const emailDto = {
       email: emailForm.email,
-      type: "resetEmail",
-    };
-    await sendEmail(emailDto);
-    ElMessage.success(`验证码已发送到原邮箱：${emailForm.email}，请注意查收`);
-    hasRequestedEmailCode.value = true;
-    emailWaitTime.value = 60;
+      type: 'resetEmail',
+    }
+    await sendEmail(emailDto)
+    ElMessage.success(`验证码已发送到原邮箱：${emailForm.email}，请注意查收`)
+    hasRequestedEmailCode.value = true
+    emailWaitTime.value = 60
     const interval = setInterval(() => {
       if (emailWaitTime.value === 0) {
-        clearInterval(interval);
+        clearInterval(interval)
       } else {
-        emailWaitTime.value--;
+        emailWaitTime.value--
       }
-    }, 1000);
+    }, 1000)
   } catch (error) {
     // 静默处理
   }
-};
+}
 
 const verifyOldEmail = async () => {
   if (!oldEmailFormRef.value) {
-    return;
+    return
   }
 
   try {
-    await oldEmailFormRef.value.validate();
-    emailVerifyLoading.value = true;
+    await oldEmailFormRef.value.validate()
+    emailVerifyLoading.value = true
 
     const verifyData = {
       email: emailForm.email,
       emailCheckCode: emailForm.emailCheckCode,
-    };
+    }
 
-    await verifyResetEmail(verifyData);
-    ElMessage.success("原邮箱验证成功");
-    emailStep.value = 1;
+    await verifyResetEmail(verifyData)
+    ElMessage.success('原邮箱验证成功')
+    emailStep.value = 1
   } catch (error) {
     if (error !== false) {
-      ElMessage.error("验证失败，请检查验证码是否正确");
+      ElMessage.error('验证失败，请检查验证码是否正确')
     }
   } finally {
-    emailVerifyLoading.value = false;
+    emailVerifyLoading.value = false
   }
-};
+}
 
 const updateEmailSubmit = async () => {
   if (!newEmailFormRef.value) {
-    return;
+    return
   }
 
   try {
-    await newEmailFormRef.value.validate();
-    emailUpdateLoading.value = true;
+    await newEmailFormRef.value.validate()
+    emailUpdateLoading.value = true
 
     const updateData = {
       email: emailForm.email,
       newEmail: emailForm.newEmail,
       emailCheckCode: emailForm.emailCheckCode,
-    };
+    }
 
-    await updateEmail(updateData);
-    ElMessage.success("邮箱修改成功");
+    await updateEmail(updateData)
+    ElMessage.success('邮箱修改成功')
 
-    userInfo.value.email = emailForm.newEmail;
+    userInfo.value.email = emailForm.newEmail
 
-    const res = await info();
-    userStore.user = res.data;
+    const res = await info()
+    userStore.user = res.data
 
-    emailDialogVisible.value = false;
-    resetEmailDialog();
+    emailDialogVisible.value = false
+    resetEmailDialog()
   } catch (error) {
     if (error !== false) {
-      ElMessage.error("邮箱修改失败");
+      ElMessage.error('邮箱修改失败')
     }
   } finally {
-    emailUpdateLoading.value = false;
+    emailUpdateLoading.value = false
   }
-};
+}
 
 // 处理私信邮件通知开关变化
 const handlePrivateMessageEmailChange = async (value) => {
   try {
     await updateUserInfo({
       isReceivePrivateMessageEmail: value,
-    });
-    ElMessage.success(value === 1 ? "已开启私信邮件通知" : "已关闭私信邮件通知");
+    })
+    ElMessage.success(value === 1 ? '已开启私信邮件通知' : '已关闭私信邮件通知')
   } catch (error) {
-    ElMessage.error("设置失败");
+    ElMessage.error('设置失败')
     // 恢复状态
-    isReceivePrivateMessageEmail.value = value === 1 ? 0 : 1;
+    isReceivePrivateMessageEmail.value = value === 1 ? 0 : 1
   }
-};
+}
 
 // 处理评论邮件通知开关变化
 const handleCommentEmailChange = async (value) => {
   try {
-    await updateCommentEmailSetting(value);
-    ElMessage.success(value === 1 ? "已开启评论邮件通知" : "已关闭评论邮件通知");
+    await updateCommentEmailSetting(value)
+    ElMessage.success(value === 1 ? '已开启评论邮件通知' : '已关闭评论邮件通知')
   } catch (error) {
-    ElMessage.error("设置失败");
+    ElMessage.error('设置失败')
     // 恢复状态
-    isReceiveCommentEmail.value = value === 1 ? 0 : 1;
+    isReceiveCommentEmail.value = value === 1 ? 0 : 1
   }
-};
+}
 
 // 处理系统邮件通知开关变化
 const handleSystemEmailChange = async (value) => {
   try {
-    await updateSystemEmailSetting(value);
-    ElMessage.success(value === 1 ? "已开启系统邮件通知" : "已关闭系统邮件通知");
+    await updateSystemEmailSetting(value)
+    ElMessage.success(value === 1 ? '已开启系统邮件通知' : '已关闭系统邮件通知')
   } catch (error) {
-    ElMessage.error("设置失败");
+    ElMessage.error('设置失败')
     // 恢复状态
-    isReceiveSystemEmail.value = value === 1 ? 0 : 1;
+    isReceiveSystemEmail.value = value === 1 ? 0 : 1
   }
-};
+}
 
 onMounted(() => {
-  fetchUserInfo();
-});
+  fetchUserInfo()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -1090,14 +1257,16 @@ onMounted(() => {
               flex-shrink: 0;
 
               .avatar-uploader {
-                :deep(.el-upload) {
+                ::v-deep(.el-upload) {
                   width: 88px;
                   height: 88px;
                   border-radius: 24px;
                   border: 1px dashed var(--setting-border);
                   background: var(--setting-panel-soft);
                   overflow: hidden;
-                  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+                  transition:
+                    border-color 0.2s ease,
+                    box-shadow 0.2s ease;
 
                   &:hover {
                     border-color: var(--el-color-primary);
@@ -1300,13 +1469,13 @@ onMounted(() => {
                       font-weight: 500;
                       transition: color 0.2s ease;
 
-                      :deep(span) {
+                      ::v-deep(span) {
                         display: inline-flex;
                         align-items: center;
                         gap: 6px;
                       }
 
-                      :deep(.el-icon) {
+                      ::v-deep(.el-icon) {
                         font-size: 13px;
                       }
 
@@ -1327,7 +1496,9 @@ onMounted(() => {
                       border: 1px solid var(--setting-border);
                       border-radius: 16px;
                       background: var(--setting-panel-soft);
-                      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+                      transition:
+                        border-color 0.2s ease,
+                        box-shadow 0.2s ease;
 
                       &:focus-within {
                         border-color: var(--el-color-primary-light-5);
@@ -1337,7 +1508,7 @@ onMounted(() => {
                       &.edit-surface--choice {
                         padding: 14px 16px;
 
-                        :deep(.el-radio-group) {
+                        ::v-deep(.el-radio-group) {
                           display: flex;
                           flex-wrap: wrap;
                           gap: 20px;
@@ -1348,13 +1519,13 @@ onMounted(() => {
                         padding-bottom: 8px;
                       }
 
-                      :deep(.el-input__wrapper) {
+                      ::v-deep(.el-input__wrapper) {
                         padding-inline: 0;
                         background: transparent;
                         box-shadow: none;
                       }
 
-                      :deep(.el-textarea__inner) {
+                      ::v-deep(.el-textarea__inner) {
                         padding: 0;
                         border: none;
                         background: transparent;
@@ -1380,11 +1551,11 @@ onMounted(() => {
                       align-items: center;
                       gap: 6px;
 
-                      :deep(.el-button + .el-button) {
+                      ::v-deep(.el-button + .el-button) {
                         margin-left: 0;
                       }
 
-                      :deep(.el-button--text) {
+                      ::v-deep(.el-button--text) {
                         padding-inline: 6px;
                         color: var(--setting-text-regular);
                       }
@@ -1527,7 +1698,7 @@ html.dark {
   }
 }
 
-:deep(.el-dialog) {
+::v-deep(.el-dialog) {
   width: 500px;
   margin: 15vh auto !important;
 
@@ -1571,7 +1742,7 @@ html.dark {
   }
 }
 
-:deep(.setting-dialog) {
+::v-deep(.setting-dialog) {
   .el-dialog__header {
     margin-right: 0;
     padding: 24px 24px 0;
@@ -1686,7 +1857,7 @@ html.dark {
   }
 }
 
-:deep(.el-steps) {
+::v-deep(.el-steps) {
   @media (max-width: 768px) {
     .el-step__title {
       font-size: 12px;
@@ -1694,7 +1865,7 @@ html.dark {
   }
 }
 
-:deep(.el-form) {
+::v-deep(.el-form) {
   @media (max-width: 768px) {
     .el-form-item {
       margin-bottom: 16px;
@@ -1702,14 +1873,14 @@ html.dark {
   }
 }
 
-:deep(.dialog-footer) {
+::v-deep(.dialog-footer) {
   .el-button {
     margin-left: 0 !important;
   }
 }
 
 /* 开关按钮样式 - 简洁现代设计 */
-:deep(.el-switch) {
+::v-deep(.el-switch) {
   --switch-bg-off: var(--setting-border, #e2e8f0);
   --switch-bg-on: #0ea5e9;
 
@@ -1718,7 +1889,9 @@ html.dark {
     height: 24px;
     background-color: var(--switch-bg-off);
     border-radius: 12px;
-    transition: background-color 0.25s ease, border-color 0.25s ease;
+    transition:
+      background-color 0.25s ease,
+      border-color 0.25s ease;
     border: 1px solid transparent;
     padding: 2px;
     box-sizing: border-box;
@@ -1764,7 +1937,7 @@ html.dark {
 
 /* 黑夜模式适配 */
 html.dark {
-  :deep(.el-switch) {
+  ::v-deep(.el-switch) {
     --switch-bg-off: #334155;
     --switch-bg-on: #0ea5e9;
 

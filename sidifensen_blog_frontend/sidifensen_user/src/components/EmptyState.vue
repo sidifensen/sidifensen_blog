@@ -1,54 +1,50 @@
 <template>
   <div class="empty-state">
-    <el-empty
-      :image-size="imageSize"
-      :description="displayDescription"
-    >
+    <el-empty :image-size="imageSize" :description="displayDescription">
       <slot />
     </el-empty>
   </div>
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { ElEmpty } from "element-plus";
+import { computed } from 'vue'
+import { ElEmpty } from 'element-plus'
 
 // 定义组件props
 const props = defineProps({
   // 空状态类型
   type: {
     type: String,
-    default: "custom",
-    validator: (value) =>
-      ["article", "comment", "message", "search", "custom"].includes(value),
+    default: 'custom',
+    validator: (value) => ['article', 'comment', 'message', 'search', 'custom'].includes(value),
   },
   // 自定义描述文字
   description: {
     type: String,
-    default: "",
+    default: '',
   },
   // 图片大小
   imageSize: {
     type: Number,
     default: 100,
   },
-});
+})
 
 // 类型对应的默认描述
 const typeDescriptions = {
-  article: "暂无文章",
-  comment: "暂无评论",
-  message: "暂无消息",
-  search: "未找到搜索结果",
-};
+  article: '暂无文章',
+  comment: '暂无评论',
+  message: '暂无消息',
+  search: '未找到搜索结果',
+}
 
 // 显示的描述文字
 const displayDescription = computed(() => {
   if (props.description) {
-    return props.description;
+    return props.description
   }
-  return typeDescriptions[props.type] || "";
-});
+  return typeDescriptions[props.type] || ''
+})
 </script>
 
 <style lang="scss" scoped>
@@ -63,7 +59,7 @@ const displayDescription = computed(() => {
   padding: 40px 20px;
 
   // 覆盖 ElEmpty 样式
-  :deep(.el-empty__description) {
+  ::v-deep(.el-empty__description) {
     color: var(--empty-text-color);
     font-size: 14px;
   }

@@ -10,15 +10,15 @@
 </template>
 
 <script setup>
-import { useRouter } from "vue-router";
+import { useRouter } from 'vue-router'
 
 // 初始化路由
-const router = useRouter();
+const router = useRouter()
 
 // 返回首页函数
 const goToHome = () => {
-  router.push("/");
-};
+  router.push('/')
+}
 </script>
 
 <style lang="scss" scoped>

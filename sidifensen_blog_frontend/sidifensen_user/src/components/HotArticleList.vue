@@ -26,7 +26,9 @@
         <div class="hot-article-content">
           <div class="hot-article-title">{{ article.title }}</div>
           <div class="hot-article-meta">
-            <span><el-icon><View /></el-icon> {{ formatCompactNumber(article.readCount) }}</span>
+            <span
+              ><el-icon><View /></el-icon> {{ formatCompactNumber(article.readCount) }}</span
+            >
             <span class="hot-article-score">🔥 {{ formatCompactNumber(article.hotScore) }}</span>
           </div>
         </div>
@@ -36,17 +38,17 @@
 </template>
 
 <script setup>
-import { View } from "@element-plus/icons-vue";
-import { ElSkeleton, ElSkeletonItem, ElEmpty } from "element-plus";
-import { formatCompactNumber } from "@/utils/formatNumber";
+import { View } from '@element-plus/icons-vue'
+import { ElSkeleton, ElSkeletonItem, ElEmpty } from 'element-plus'
+import { formatCompactNumber } from '@/utils/formatNumber'
 
 /**
  * 热门文章列表组件
  * @displayName HotArticleList
  */
 defineOptions({
-  name: "HotArticleList",
-});
+  name: 'HotArticleList',
+})
 
 const props = defineProps({
   /**
@@ -69,19 +71,19 @@ const props = defineProps({
    */
   emptyText: {
     type: String,
-    default: "暂无热门文章",
+    default: '暂无热门文章',
   },
-});
+})
 
-const emit = defineEmits(["article-click"]);
+const emit = defineEmits(['article-click'])
 
 /**
  * 处理文章点击事件
  * @param {Object} article - 被点击的文章对象
  */
 const handleArticleClick = (article) => {
-  emit("article-click", article);
-};
+  emit('article-click', article)
+}
 </script>
 
 <style lang="scss" scoped>
@@ -152,7 +154,7 @@ const handleArticleClick = (article) => {
         border-radius: 4px;
         flex-shrink: 0;
         color: var(--text-muted);
-        font-feature-settings: "tnum";
+        font-feature-settings: 'tnum';
       }
 
       // 前三名特殊颜色标记
@@ -197,7 +199,7 @@ const handleArticleClick = (article) => {
           font-size: 10px;
           color: var(--text-muted);
           margin-top: 6px;
-          font-feature-settings: "tnum";
+          font-feature-settings: 'tnum';
 
           .hot-article-score {
             color: var(--fire-color) !important;

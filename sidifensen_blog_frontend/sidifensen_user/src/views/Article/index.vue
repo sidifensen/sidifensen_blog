@@ -1,358 +1,366 @@
 <template>
   <div class="article-page-body">
-  <div class="container">
-    <!-- 页面头部 -->
-    <div class="page-hero">
-      <div class="hero-content">
-        <div class="hero-copy">
-          <div class="hero-kicker">Article Square</div>
-          <h1>文章广场</h1>
-          <p>按发布时间浏览社区内容，持续发现值得读的技术文章。</p>
+    <div class="container">
+      <!-- 页面头部 -->
+      <div class="page-hero">
+        <div class="hero-content">
+          <div class="hero-copy">
+            <div class="hero-kicker">Article Square</div>
+            <h1>文章广场</h1>
+            <p>按发布时间浏览社区内容，持续发现值得读的技术文章。</p>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- 内容布局 -->
-    <div class="content-layout">
-      <!-- 主内容区 -->
-      <div class="main-content">
-        <div class="article-list" ref="articleListRef">
-          <!-- 加载中骨架屏 -->
-          <div v-if="articleLoading" class="article-list-loading">
-            <el-skeleton animated :count="4">
-              <template #template>
-                <div class="article-skeleton">
-                  <el-skeleton-item variant="image" style="width: 200px; height: 120px; border-radius: 4px" />
-                  <div class="skeleton-content">
-                    <el-skeleton-item variant="text" style="width: 80px; height: 16px" />
-                    <el-skeleton-item variant="text" style="width: 100%; height: 20px" />
-                    <el-skeleton-item variant="text" style="width: 90%; height: 16px" />
-                    <el-skeleton-item variant="text" style="width: 60%; height: 14px" />
+      <!-- 内容布局 -->
+      <div class="content-layout">
+        <!-- 主内容区 -->
+        <div class="main-content">
+          <div class="article-list" ref="articleListRef">
+            <!-- 加载中骨架屏 -->
+            <div v-if="articleLoading" class="article-list-loading">
+              <el-skeleton animated :count="4">
+                <template #template>
+                  <div class="article-skeleton">
+                    <el-skeleton-item
+                      variant="image"
+                      style="width: 200px; height: 120px; border-radius: 4px"
+                    />
+                    <div class="skeleton-content">
+                      <el-skeleton-item variant="text" style="width: 80px; height: 16px" />
+                      <el-skeleton-item variant="text" style="width: 100%; height: 20px" />
+                      <el-skeleton-item variant="text" style="width: 90%; height: 16px" />
+                      <el-skeleton-item variant="text" style="width: 60%; height: 14px" />
+                    </div>
                   </div>
-                </div>
-              </template>
-            </el-skeleton>
-          </div>
-
-          <!-- 空状态 -->
-          <div v-else-if="articleList.length === 0" class="empty-state">
-            <EmptyState type="article" />
-          </div>
-
-          <!-- 文章列表 -->
-          <template v-else>
-            <ArticleCard
-              v-for="(article, index) in articleList"
-              :key="article.id"
-              :article="article"
-              mode="simple"
-              :show-author="true"
-              :show-meta="true"
-              @click="goToArticle(article.id, article.userId)"
-            />
-          </template>
-
-          <!-- 加载更多指示器 -->
-          <LoadingMore :loading="loadingMore" />
-        </div>
-      </div>
-
-      <!-- 侧边栏 -->
-      <aside class="sidebar">
-        <!-- 热门文章 -->
-        <SidebarCard title="热门文章" icon="🔥" description="按阅读热度排序">
-          <HotArticleList
-            :articles="hotArticleList"
-            :loading="hotArticleLoading"
-            @article-click="(article) => goToArticle(article.id, article.userId)"
-          />
-        </SidebarCard>
-
-        <!-- 会员精选 -->
-        <SidebarCard title="会员精选" icon="⭐" description="高质量付费内容">
-          <template v-if="featuredArticleLoading">
-            <div class="featured-articles-loading">
-              <div v-for="index in 4" :key="index" class="featured-skeleton-item">
-                <div class="featured-skeleton-cover"></div>
-                <div class="featured-skeleton-content">
-                  <div class="skeleton-title"></div>
-                  <div class="skeleton-meta"></div>
-                </div>
-              </div>
+                </template>
+              </el-skeleton>
             </div>
-          </template>
-          <template v-else-if="featuredArticleList.length === 0">
-            <EmptyState type="article" description="暂无会员精选" :image-size="60" />
-          </template>
-          <template v-else>
-            <div class="featured-articles">
-              <div
-                v-for="article in featuredArticleList"
+
+            <!-- 空状态 -->
+            <div v-else-if="articleList.length === 0" class="empty-state">
+              <EmptyState type="article" />
+            </div>
+
+            <!-- 文章列表 -->
+            <template v-else>
+              <ArticleCard
+                v-for="(article, index) in articleList"
                 :key="article.id"
-                class="featured-article-item"
+                :article="article"
+                mode="simple"
+                :show-author="true"
+                :show-meta="true"
                 @click="goToArticle(article.id, article.userId)"
-              >
-                <div class="featured-article-cover">
-                  <el-image :src="article.coverUrl" class="cover-image">
-                    <template #placeholder>
-                      <div class="loading-text">加载中...</div>
-                    </template>
-                    <template #error>
-                      <div class="error">
-                        <el-icon><Picture /></el-icon>
-                      </div>
-                    </template>
-                  </el-image>
-                </div>
+              />
+            </template>
 
-                <div class="featured-article-content">
-                  <div class="featured-article-title">{{ article.title }}</div>
-                  <div class="featured-article-meta">
-                    <span><el-icon><View /></el-icon> {{ formatCount(article.readCount) }}</span>
-                    <span><svg-icon name="like" width="13px" height="13px" color="currentColor" /> {{ formatCount(article.likeCount) }}</span>
+            <!-- 加载更多指示器 -->
+            <LoadingMore :loading="loadingMore" />
+          </div>
+        </div>
+
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+          <!-- 热门文章 -->
+          <SidebarCard title="热门文章" icon="🔥" description="按阅读热度排序">
+            <HotArticleList
+              :articles="hotArticleList"
+              :loading="hotArticleLoading"
+              @article-click="(article) => goToArticle(article.id, article.userId)"
+            />
+          </SidebarCard>
+
+          <!-- 会员精选 -->
+          <SidebarCard title="会员精选" icon="⭐" description="高质量付费内容">
+            <template v-if="featuredArticleLoading">
+              <div class="featured-articles-loading">
+                <div v-for="index in 4" :key="index" class="featured-skeleton-item">
+                  <div class="featured-skeleton-cover"></div>
+                  <div class="featured-skeleton-content">
+                    <div class="skeleton-title"></div>
+                    <div class="skeleton-meta"></div>
                   </div>
                 </div>
               </div>
-            </div>
+            </template>
+            <template v-else-if="featuredArticleList.length === 0">
+              <EmptyState type="article" description="暂无会员精选" :image-size="60" />
+            </template>
+            <template v-else>
+              <div class="featured-articles">
+                <div
+                  v-for="article in featuredArticleList"
+                  :key="article.id"
+                  class="featured-article-item"
+                  @click="goToArticle(article.id, article.userId)"
+                >
+                  <div class="featured-article-cover">
+                    <el-image :src="article.coverUrl" class="cover-image">
+                      <template #placeholder>
+                        <div class="loading-text">加载中...</div>
+                      </template>
+                      <template #error>
+                        <div class="error">
+                          <el-icon><Picture /></el-icon>
+                        </div>
+                      </template>
+                    </el-image>
+                  </div>
 
-            <div class="featured-footer">
-              <button class="featured-link" @click="goToVipArticles">进入会员专区</button>
-            </div>
-          </template>
-        </SidebarCard>
-      </aside>
+                  <div class="featured-article-content">
+                    <div class="featured-article-title">{{ article.title }}</div>
+                    <div class="featured-article-meta">
+                      <span
+                        ><el-icon><View /></el-icon> {{ formatCount(article.readCount) }}</span
+                      >
+                      <span
+                        ><svg-icon name="like" width="13px" height="13px" color="currentColor" />
+                        {{ formatCount(article.likeCount) }}</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="featured-footer">
+                <button class="featured-link" @click="goToVipArticles">进入会员专区</button>
+              </div>
+            </template>
+          </SidebarCard>
+        </aside>
+      </div>
     </div>
-  </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, nextTick } from "vue";
-import { useRouter } from "vue-router";
-import { Star, Picture, View, User } from "@element-plus/icons-vue";
-import { getAllArticleList, getHotArticleList, getVipPreviewArticleList } from "@/api/article";
-import ArticleCard from "@/components/ArticleCard.vue";
-import SidebarCard from "@/components/SidebarCard.vue";
-import HotArticleList from "@/components/HotArticleList.vue";
-import EmptyState from "@/components/EmptyState.vue";
-import LoadingMore from "@/components/LoadingMore.vue";
-import { useSeoMeta } from "@/plugins/seo";
+import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
+import { Star, Picture, View, User } from '@element-plus/icons-vue'
+import { getAllArticleList, getHotArticleList, getVipPreviewArticleList } from '@/api/article'
+import ArticleCard from '@/components/ArticleCard.vue'
+import SidebarCard from '@/components/SidebarCard.vue'
+import HotArticleList from '@/components/HotArticleList.vue'
+import EmptyState from '@/components/EmptyState.vue'
+import LoadingMore from '@/components/LoadingMore.vue'
+import { useSeoMeta } from '@/plugins/seo'
 
 // SEO - 文章广场
 useSeoMeta({
-  title: "文章广场",
-  description: "按发布时间浏览社区内容，持续发现值得读的技术文章",
-  keywords: "技术文章,博客,编程,前端,后端,全栈,开发者"
-});
+  title: '文章广场',
+  description: '按发布时间浏览社区内容，持续发现值得读的技术文章',
+  keywords: '技术文章,博客,编程,前端,后端,全栈,开发者',
+})
 
 // 路由
-const router = useRouter();
+const router = useRouter()
 
 // 响应式数据
-const articleLoading = ref(false);
-const loadingMore = ref(false);
-const articleList = ref([]);
-const total = ref(0);
-const hasMore = ref(true);
-const currentPage = ref(1);
+const articleLoading = ref(false)
+const loadingMore = ref(false)
+const articleList = ref([])
+const total = ref(0)
+const hasMore = ref(true)
+const currentPage = ref(1)
 // 文章列表容器引用
-const articleListRef = ref(null);
+const articleListRef = ref(null)
 // 文章元素引用数组
-const articleRefs = ref([]);
+const articleRefs = ref([])
 
 // 热门文章相关数据
-const hotArticleLoading = ref(false);
-const hotArticleList = ref([]);
+const hotArticleLoading = ref(false)
+const hotArticleList = ref([])
 
 // 会员精选相关数据
-const featuredArticleLoading = ref(false);
-const featuredArticleList = ref([]);
+const featuredArticleLoading = ref(false)
+const featuredArticleList = ref([])
 
 // 每页数据量
-const pageSize = ref(10);
+const pageSize = ref(10)
 
 // 计算属性 - 是否还有更多数据
 const hasMoreData = computed(() => {
-  return articleList.value.length < total.value && !articleLoading.value && !loadingMore.value;
-});
+  return articleList.value.length < total.value && !articleLoading.value && !loadingMore.value
+})
 
 // 节流函数
 const throttle = (func, delay) => {
-  let lastCall = 0;
+  let lastCall = 0
   return function (...args) {
-    const now = Date.now();
+    const now = Date.now()
     if (now - lastCall >= delay) {
-      lastCall = now;
-      func.apply(this, args);
+      lastCall = now
+      func.apply(this, args)
     }
-  };
-};
+  }
+}
 
 // 检查是否需要自动加载（处理内容不足一屏或最后一篇文章下方有大片空白的情况）
 const checkAndAutoLoad = (forceThreshold = false, useNextTick = false) => {
   const check = () => {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const windowHeight = window.innerHeight;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+    const windowHeight = window.innerHeight
 
     // 使用最后一篇文章的实际位置来判断
-    let lastArticleTop = 0;
+    let lastArticleTop = 0
     if (articleRefs.value.length > 0) {
-      const lastArticle = articleRefs.value[articleRefs.value.length - 1];
+      const lastArticle = articleRefs.value[articleRefs.value.length - 1]
       if (lastArticle) {
-        const rect = lastArticle.getBoundingClientRect();
-        lastArticleTop = rect.top + scrollTop;
+        const rect = lastArticle.getBoundingClientRect()
+        lastArticleTop = rect.top + scrollTop
       } else {
-        lastArticleTop = document.documentElement.scrollHeight;
+        lastArticleTop = document.documentElement.scrollHeight
       }
     } else {
-      lastArticleTop = document.documentElement.scrollHeight;
+      lastArticleTop = document.documentElement.scrollHeight
     }
 
     // 用户可见区域的底部位置
-    const viewportBottom = scrollTop + windowHeight;
+    const viewportBottom = scrollTop + windowHeight
     // 最后一篇文章距离视口底部的距离（负值表示已经滚过）
-    const distanceToLastArticle = lastArticleTop - viewportBottom;
+    const distanceToLastArticle = lastArticleTop - viewportBottom
 
     if (!hasMoreData.value || loadingMore.value) {
-      return;
+      return
     }
 
     // forceThreshold 用于首次加载后的检查，使用更宽松的阈值
-    const threshold = forceThreshold ? windowHeight : 100;
+    const threshold = forceThreshold ? windowHeight : 100
 
     // 两种情况触发加载:
     // 1. 用户可见区域底部已经接近或超过最后一篇文章顶部（distanceToLastArticle <= threshold）
     // 2. 最后一篇文章已经在视口内或上方
     if (distanceToLastArticle <= threshold) {
-      fetchArticleList(false);
+      fetchArticleList(false)
     }
-  };
+  }
 
   if (useNextTick) {
-    nextTick(() => check());
+    nextTick(() => check())
   } else {
-    check();
+    check()
   }
-};
+}
 
 // 滚动加载更多
 const handleScroll = throttle(() => {
-  checkAndAutoLoad();
-}, 300);
+  checkAndAutoLoad()
+}, 300)
 
 // 获取文章列表
 const fetchArticleList = async (reset = false) => {
   if (!hasMore.value || articleLoading.value || loadingMore.value) {
-    return;
+    return
   }
 
   try {
     if (reset) {
-      articleLoading.value = true;
+      articleLoading.value = true
     } else {
-      loadingMore.value = true;
+      loadingMore.value = true
     }
 
-    const res = await getAllArticleList(currentPage.value, pageSize.value);
-    const newArticles = res.data.data || [];
-    total.value = res.data.total || 0;
+    const res = await getAllArticleList(currentPage.value, pageSize.value)
+    const newArticles = res.data.data || []
+    total.value = res.data.total || 0
 
     if (reset) {
-      articleList.value = newArticles;
+      articleList.value = newArticles
     } else {
-      articleList.value = [...articleList.value, ...newArticles];
+      articleList.value = [...articleList.value, ...newArticles]
     }
 
-    hasMore.value = articleList.value.length < total.value;
+    hasMore.value = articleList.value.length < total.value
 
     if (hasMore.value && newArticles.length > 0) {
-      currentPage.value++;
+      currentPage.value++
     }
   } catch (error) {
-    ElMessage.error("获取文章列表失败");
+    ElMessage.error('获取文章列表失败')
   } finally {
-    articleLoading.value = false;
-    loadingMore.value = false;
+    articleLoading.value = false
+    loadingMore.value = false
 
     // 加载完成后立即检查，如果内容仍不足则自动加载下一页
     // reset=true 时使用更宽松的阈值（一个视口高度），确保首屏内容充足
     // useNextTick=true 确保 DOM 完全渲染后再检查
-    checkAndAutoLoad(reset, true);
+    checkAndAutoLoad(reset, true)
   }
-};
+}
 
 // 跳转到文章详情页
 const goToArticle = (articleId, userId) => {
-  router.push(`/user/${userId}/article/${articleId}`);
-};
+  router.push(`/user/${userId}/article/${articleId}`)
+}
 
 // 跳转到会员专区
 const goToVipArticles = () => {
-  router.push("/vip/articles");
-};
+  router.push('/vip/articles')
+}
 
 // 格式化日期
 const formatDate = (dateString) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return dateString;
-  return date.toLocaleDateString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-};
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  if (Number.isNaN(date.getTime())) return dateString
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+}
 
 // 格式化数量
 const formatCount = (value) => {
-  const count = Number(value) || 0;
-  if (count < 1000) return `${count}`;
+  const count = Number(value) || 0
+  if (count < 1000) return `${count}`
   if (count < 1000000) {
-    const formatted = (count / 1000).toFixed(count >= 100000 ? 0 : 1);
-    return `${formatted.replace(/\.0$/, "")}K`;
+    const formatted = (count / 1000).toFixed(count >= 100000 ? 0 : 1)
+    return `${formatted.replace(/\.0$/, '')}K`
   }
-  const formatted = (count / 1000000).toFixed(count >= 10000000 ? 0 : 1);
-  return `${formatted.replace(/\.0$/, "")}M`;
-};
+  const formatted = (count / 1000000).toFixed(count >= 10000000 ? 0 : 1)
+  return `${formatted.replace(/\.0$/, '')}M`
+}
 
 // 获取热门文章列表
 const fetchHotArticleList = async () => {
   try {
-    hotArticleLoading.value = true;
-    const res = await getHotArticleList(1, 10);
-    hotArticleList.value = res.data.data || [];
+    hotArticleLoading.value = true
+    const res = await getHotArticleList(1, 10)
+    hotArticleList.value = res.data.data || []
   } catch (error) {
     // 静默处理
   } finally {
-    hotArticleLoading.value = false;
+    hotArticleLoading.value = false
   }
-};
+}
 
 // 获取会员精选列表
 const fetchFeaturedArticleList = async () => {
   try {
-    featuredArticleLoading.value = true;
-    const res = await getVipPreviewArticleList(1, 4);
-    featuredArticleList.value = res.data.data || [];
+    featuredArticleLoading.value = true
+    const res = await getVipPreviewArticleList(1, 4)
+    featuredArticleList.value = res.data.data || []
   } catch (error) {
     // 静默处理
   } finally {
-    featuredArticleLoading.value = false;
+    featuredArticleLoading.value = false
   }
-};
+}
 
 // 组件挂载
 onMounted(() => {
-  fetchArticleList(true);
-  fetchHotArticleList();
-  fetchFeaturedArticleList();
-  window.addEventListener("scroll", handleScroll, { passive: true });
-});
+  fetchArticleList(true)
+  fetchHotArticleList()
+  fetchFeaturedArticleList()
+  window.addEventListener('scroll', handleScroll, { passive: true })
+})
 
 // 组件卸载
 onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
-});
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -449,7 +457,8 @@ onUnmounted(() => {
   padding: 0 24px;
   min-height: 100vh;
   background: var(--bg-page);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.6;
 
   // 手机端适配 - 防止页面溢出
@@ -587,8 +596,8 @@ onUnmounted(() => {
               padding: 0;
               border: none;
 
-              :deep(.el-skeleton-item) {
-                &[variant="image"] {
+              ::v-deep(.el-skeleton-item) {
+                &[variant='image'] {
                   width: 100% !important;
                   height: 200px !important;
                   border-radius: 0;
@@ -615,7 +624,7 @@ onUnmounted(() => {
             padding: 60px 0;
           }
 
-          :deep(.el-empty__description) {
+          ::v-deep(.el-empty__description) {
             color: var(--text-secondary);
           }
         }
@@ -860,7 +869,7 @@ onUnmounted(() => {
               gap: 20px;
               font-size: 11px;
               color: var(--text-muted);
-              font-feature-settings: "tnum";
+              font-feature-settings: 'tnum';
               font-weight: 300;
 
               // 手机端适配 - 元信息换行
@@ -1084,7 +1093,7 @@ onUnmounted(() => {
               border-radius: 4px;
               flex-shrink: 0;
               color: var(--text-secondary);
-              font-feature-settings: "tnum";
+              font-feature-settings: 'tnum';
             }
 
             // 前三名特殊样式
@@ -1140,7 +1149,7 @@ onUnmounted(() => {
                 font-size: 10px;
                 color: var(--text-muted);
                 margin-top: 6px;
-                font-feature-settings: "tnum";
+                font-feature-settings: 'tnum';
 
                 .hot-article-score {
                   color: var(--fire-color) !important;
@@ -1251,7 +1260,7 @@ onUnmounted(() => {
                 font-size: 10px;
                 color: var(--text-muted);
                 margin-top: 4px;
-                font-feature-settings: "tnum";
+                font-feature-settings: 'tnum';
               }
             }
           }

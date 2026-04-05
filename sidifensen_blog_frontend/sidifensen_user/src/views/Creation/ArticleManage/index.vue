@@ -3,38 +3,93 @@
     <div class="main-content">
       <!-- 顶部筛选按钮区域 -->
       <div class="filter-buttons">
-        <el-button :type="activeFilterType === 'all' ? 'primary' : 'default'" @click="handleFilterClick('all')" class="filter-btn"> 全部({{ formatDisplayNumber(totalCount) }}) </el-button>
-        <el-button :type="activeFilterType === 'published' ? 'primary' : 'default'" @click="handleFilterClick('published')" class="filter-btn"> 已发布({{ formatDisplayNumber(publishedCount) }}) </el-button>
-        <el-button :type="activeFilterType === 'reviewing' ? 'primary' : 'default'" @click="handleFilterClick('reviewing')" class="filter-btn"> 审核中({{ formatDisplayNumber(reviewingCount) }}) </el-button>
-        <el-button :type="activeFilterType === 'draft' ? 'primary' : 'default'" @click="handleFilterClick('draft')" class="filter-btn"> 草稿箱({{ formatDisplayNumber(draftCount) }}) </el-button>
-        <el-button :type="activeFilterType === 'garbage' ? 'primary' : 'default'" @click="handleFilterClick('garbage')" class="filter-btn"> 回收站({{ formatDisplayNumber(garbageCount) }}) </el-button>
+        <el-button
+          :type="activeFilterType === 'all' ? 'primary' : 'default'"
+          @click="handleFilterClick('all')"
+          class="filter-btn"
+        >
+          全部({{ formatDisplayNumber(totalCount) }})
+        </el-button>
+        <el-button
+          :type="activeFilterType === 'published' ? 'primary' : 'default'"
+          @click="handleFilterClick('published')"
+          class="filter-btn"
+        >
+          已发布({{ formatDisplayNumber(publishedCount) }})
+        </el-button>
+        <el-button
+          :type="activeFilterType === 'reviewing' ? 'primary' : 'default'"
+          @click="handleFilterClick('reviewing')"
+          class="filter-btn"
+        >
+          审核中({{ formatDisplayNumber(reviewingCount) }})
+        </el-button>
+        <el-button
+          :type="activeFilterType === 'draft' ? 'primary' : 'default'"
+          @click="handleFilterClick('draft')"
+          class="filter-btn"
+        >
+          草稿箱({{ formatDisplayNumber(draftCount) }})
+        </el-button>
+        <el-button
+          :type="activeFilterType === 'garbage' ? 'primary' : 'default'"
+          @click="handleFilterClick('garbage')"
+          class="filter-btn"
+        >
+          回收站({{ formatDisplayNumber(garbageCount) }})
+        </el-button>
       </div>
 
       <!-- 高级筛选区域 -->
       <div class="advanced-filter">
         <div class="filter-row">
           <div class="filter-item">
-            <el-select v-model="selectedYear" placeholder="年份" @change="handleDateFilterChange" class="filter-select">
+            <el-select
+              v-model="selectedYear"
+              placeholder="年份"
+              @change="handleDateFilterChange"
+              class="filter-select"
+            >
               <template #prefix>
                 <span class="select-prefix">年份:</span>
               </template>
               <el-option label="不限" :value="null"></el-option>
-              <el-option v-for="year in availableYears" :key="year" :label="year + '年'" :value="year"></el-option>
+              <el-option
+                v-for="year in availableYears"
+                :key="year"
+                :label="year + '年'"
+                :value="year"
+              ></el-option>
             </el-select>
           </div>
 
           <div class="filter-item">
-            <el-select v-model="selectedMonth" placeholder="月份" @change="handleDateFilterChange" class="filter-select">
+            <el-select
+              v-model="selectedMonth"
+              placeholder="月份"
+              @change="handleDateFilterChange"
+              class="filter-select"
+            >
               <template #prefix>
                 <span class="select-prefix">月份:</span>
               </template>
               <el-option label="不限" :value="null"></el-option>
-              <el-option v-for="month in 12" :key="month" :label="month + '月'" :value="month"></el-option>
+              <el-option
+                v-for="month in 12"
+                :key="month"
+                :label="month + '月'"
+                :value="month"
+              ></el-option>
             </el-select>
           </div>
 
           <div class="filter-item">
-            <el-select v-model="filterParams.reprintType" placeholder="文章类型" @change="handleFilterChange" class="filter-select">
+            <el-select
+              v-model="filterParams.reprintType"
+              placeholder="文章类型"
+              @change="handleFilterChange"
+              class="filter-select"
+            >
               <template #prefix>
                 <span class="select-prefix">文章类型:</span>
               </template>
@@ -45,7 +100,12 @@
           </div>
 
           <div class="filter-item">
-            <el-select v-model="filterParams.visibleRange" placeholder="可见范围" @change="handleFilterChange" class="filter-select">
+            <el-select
+              v-model="filterParams.visibleRange"
+              placeholder="可见范围"
+              @change="handleFilterChange"
+              class="filter-select"
+            >
               <template #prefix>
                 <span class="select-prefix">可见范围:</span>
               </template>
@@ -58,7 +118,12 @@
           </div>
 
           <div class="filter-item">
-            <el-input v-model="searchKeyword" placeholder="请输入关键词" @keyup.enter="handleSearch" class="search-input">
+            <el-input
+              v-model="searchKeyword"
+              placeholder="请输入关键词"
+              @keyup.enter="handleSearch"
+              class="search-input"
+            >
               <template #prefix>
                 <el-icon>
                   <Search />
@@ -99,13 +164,24 @@
                 <div class="article-header">
                   <span class="article-title">{{ article.title }}</span>
                   <div class="article-badges">
-                    <span v-if="article.examineStatus !== 1" class="examine-status" :class="getExamineStatusClass(article.examineStatus)">
+                    <span
+                      v-if="article.examineStatus !== 1"
+                      class="examine-status"
+                      :class="getExamineStatusClass(article.examineStatus)"
+                    >
                       {{ getExamineStatusText(article.examineStatus) }}
                     </span>
-                    <span v-if="article.editStatus === 1" class="edit-status draft-status"> 草稿 </span>
-                    <span v-if="article.editStatus === 2" class="edit-status recycle-status"> 回收站 </span>
-                    <span class="type-badge" :class="article.reprintType === 0 ? 'original' : 'reprint'">
-                      {{ article.reprintType === 0 ? "原创" : "转载" }}
+                    <span v-if="article.editStatus === 1" class="edit-status draft-status">
+                      草稿
+                    </span>
+                    <span v-if="article.editStatus === 2" class="edit-status recycle-status">
+                      回收站
+                    </span>
+                    <span
+                      class="type-badge"
+                      :class="article.reprintType === 0 ? 'original' : 'reprint'"
+                    >
+                      {{ article.reprintType === 0 ? '原创' : '转载' }}
                     </span>
                     <span class="visible-badge" :class="`visible-${article.visibleRange}`">
                       {{ getVisibleRangeText(article.visibleRange) }}
@@ -141,13 +217,23 @@
                 </div>
                 <div class="article-actions">
                   <template v-if="article.editStatus !== 2">
-                    <el-button type="primary" text @click="handleEditArticle(article.id)">编辑</el-button>
-                    <el-button type="primary" text @click="handleViewArticle(article.id)">浏览</el-button>
-                    <el-button type="danger" text @click="handleDeleteToDraftArticle(article.id)">删除</el-button>
+                    <el-button type="primary" text @click="handleEditArticle(article.id)"
+                      >编辑</el-button
+                    >
+                    <el-button type="primary" text @click="handleViewArticle(article.id)"
+                      >浏览</el-button
+                    >
+                    <el-button type="danger" text @click="handleDeleteToDraftArticle(article.id)"
+                      >删除</el-button
+                    >
                   </template>
                   <template v-else>
-                    <el-button type="primary" text @click="handleRecyleToDraftArticle(article.id)">回收至草稿箱</el-button>
-                    <el-button type="danger" text @click="handleDeleteArticle(article.id)">彻底删除</el-button>
+                    <el-button type="primary" text @click="handleRecyleToDraftArticle(article.id)"
+                      >回收至草稿箱</el-button
+                    >
+                    <el-button type="danger" text @click="handleDeleteArticle(article.id)"
+                      >彻底删除</el-button
+                    >
                   </template>
                 </div>
               </div>
@@ -166,36 +252,50 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from "vue";
-import { useRouter } from "vue-router";
-import { deleteArticle, getArticleManageList, getUserArticleStatistics, updateArticle } from "@/api/article";
-import { Search, View, Message, Pointer, Edit, Delete, Star, ChatLineRound } from "@element-plus/icons-vue";
-import { useUserStore } from "@/stores/userStore";
-import { formatCompactNumber } from "@/utils/formatNumber";
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
+import {
+  deleteArticle,
+  getArticleManageList,
+  getUserArticleStatistics,
+  updateArticle,
+} from '@/api/article'
+import {
+  Search,
+  View,
+  Message,
+  Pointer,
+  Edit,
+  Delete,
+  Star,
+  ChatLineRound,
+} from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/userStore'
+import { formatCompactNumber } from '@/utils/formatNumber'
 
-const router = useRouter();
-const userStore = useUserStore();
+const router = useRouter()
+const userStore = useUserStore()
 
 // 文章列表数据
-const articles = ref([]);
+const articles = ref([])
 // 加载状态
-const loading = ref(false);
-const loadingMore = ref(false);
+const loading = ref(false)
+const loadingMore = ref(false)
 // 当前页码
-const currentPage = ref(1);
+const currentPage = ref(1)
 // 页面大小
-const pageSize = ref(20);
+const pageSize = ref(20)
 // 是否还有更多数据
-const hasMore = ref(true);
+const hasMore = ref(true)
 // 搜索关键词
-const searchKeyword = ref("");
+const searchKeyword = ref('')
 // 列表容器引用
-const listContainer = ref(null);
+const listContainer = ref(null)
 
 // 年份月份筛选
-const selectedYear = ref(null);
-const selectedMonth = ref(null);
-const availableYears = ref([]);
+const selectedYear = ref(null)
+const selectedMonth = ref(null)
+const availableYears = ref([])
 // 月份固定为1-12
 
 // 筛选参数
@@ -204,215 +304,215 @@ const filterParams = ref({
   examineStatus: -1, // -1:全部, 0:审核中, 1:已通过, 2:已驳回
   reprintType: -1, // -1:全部, 0:原创, 1:转载
   visibleRange: -1, // -1:全部, 0:全部可见, 1:仅我可见, 2:粉丝可见, 3:VIP可见
-});
+})
 
 // 当前激活的筛选类型
-const activeFilterType = ref("all");
+const activeFilterType = ref('all')
 
 // 获取审核状态文本
 const getExamineStatusText = (status) => {
   switch (status) {
     case 0:
-      return "审核中";
+      return '审核中'
     case 2:
-      return "未通过";
+      return '未通过'
     default:
-      return "";
+      return ''
   }
-};
+}
 
 // 获取审核状态对应的样式类
 const getExamineStatusClass = (status) => {
   switch (status) {
     case 0:
-      return "status-pending";
+      return 'status-pending'
     case 2:
-      return "status-rejected";
+      return 'status-rejected'
     default:
-      return "";
+      return ''
   }
-};
+}
 
 // 获取可见范围文本
 const getVisibleRangeText = (range) => {
   switch (range) {
     case 0:
-      return "全部可见";
+      return '全部可见'
     case 1:
-      return "仅我可见";
+      return '仅我可见'
     case 2:
-      return "粉丝可见";
+      return '粉丝可见'
     case 3:
-      return "VIP可见";
+      return 'VIP可见'
     default:
-      return "未知";
+      return '未知'
   }
-};
+}
 
 // 统计数据
-const totalCount = ref(0);
-const publishedCount = ref(0);
-const reviewingCount = ref(0);
-const draftCount = ref(0);
-const garbageCount = ref(0);
+const totalCount = ref(0)
+const publishedCount = ref(0)
+const reviewingCount = ref(0)
+const draftCount = ref(0)
+const garbageCount = ref(0)
 
 const formatDisplayNumber = (value) => {
-  return formatCompactNumber(value);
-};
+  return formatCompactNumber(value)
+}
 
 // 处理筛选按钮点击
 const handleFilterClick = (filterType) => {
-  activeFilterType.value = filterType;
+  activeFilterType.value = filterType
 
   // 重置筛选参数，保持默认值为-1
-  filterParams.value = {};
+  filterParams.value = {}
 
   // 清空搜索关键词
-  searchKeyword.value = "";
+  searchKeyword.value = ''
 
   // 重置日期筛选
-  selectedYear.value = null;
-  selectedMonth.value = null;
+  selectedYear.value = null
+  selectedMonth.value = null
 
   // 根据筛选类型设置参数
   switch (filterType) {
-    case "all":
+    case 'all':
       // 全部，保持默认参数
-      break;
-    case "published":
-      filterParams.value.editStatus = 0; //已发布
-      filterParams.value.examineStatus = 1; //审核通过
-      break;
-    case "draft":
-      filterParams.value.editStatus = 1; //草稿箱
-      break;
-    case "garbage":
-      filterParams.value.editStatus = 2; //回收站
-      break;
-    case "reviewing":
-      filterParams.value.editStatus = 0; //已发布
-      filterParams.value.examineStatus = 0; //审核中
-      break;
+      break
+    case 'published':
+      filterParams.value.editStatus = 0 //已发布
+      filterParams.value.examineStatus = 1 //审核通过
+      break
+    case 'draft':
+      filterParams.value.editStatus = 1 //草稿箱
+      break
+    case 'garbage':
+      filterParams.value.editStatus = 2 //回收站
+      break
+    case 'reviewing':
+      filterParams.value.editStatus = 0 //已发布
+      filterParams.value.examineStatus = 0 //审核中
+      break
   }
 
   // 重置页码和文章列表，重新加载数据
-  currentPage.value = 1;
-  articles.value = [];
-  hasMore.value = true;
-  loadArticles(true);
-};
+  currentPage.value = 1
+  articles.value = []
+  hasMore.value = true
+  loadArticles(true)
+}
 
 // 处理筛选条件变化
 const handleFilterChange = () => {
-  currentPage.value = 1;
-  articles.value = [];
-  hasMore.value = true;
-  loadArticles(true);
-};
+  currentPage.value = 1
+  articles.value = []
+  hasMore.value = true
+  loadArticles(true)
+}
 
 // 处理搜索
 const handleSearch = () => {
-  currentPage.value = 1;
-  articles.value = [];
-  hasMore.value = true;
-  loadArticles(true);
-};
+  currentPage.value = 1
+  articles.value = []
+  hasMore.value = true
+  loadArticles(true)
+}
 
 // 处理日期筛选变化
 const handleDateFilterChange = () => {
-  currentPage.value = 1;
-  articles.value = [];
-  hasMore.value = true;
-  loadArticles(true);
-};
+  currentPage.value = 1
+  articles.value = []
+  hasMore.value = true
+  loadArticles(true)
+}
 
 // 加载文章列表
 const loadArticles = async (reset = false) => {
   // 如果重置，先重置页码和状态
   if (reset) {
-    currentPage.value = 1;
-    hasMore.value = true;
+    currentPage.value = 1
+    hasMore.value = true
   }
 
   // 如果没有更多数据或者已经在加载中，则不再请求
   if (!hasMore.value || loading.value || loadingMore.value) {
-    return;
+    return
   }
 
   // 设置加载状态
   if (reset) {
-    loading.value = true;
+    loading.value = true
   } else {
-    loadingMore.value = true;
+    loadingMore.value = true
   }
 
   try {
     // 构建请求参数 - 只传递非-1的参数，这样后端会返回全部数据
-    const params = {};
+    const params = {}
 
     // 只有当值不为-1时才传递该参数
     if (filterParams.value.editStatus !== -1) {
-      params.editStatus = filterParams.value.editStatus;
+      params.editStatus = filterParams.value.editStatus
     }
     if (filterParams.value.examineStatus !== -1) {
-      params.examineStatus = filterParams.value.examineStatus;
+      params.examineStatus = filterParams.value.examineStatus
     }
     if (filterParams.value.reprintType !== -1) {
-      params.reprintType = filterParams.value.reprintType;
+      params.reprintType = filterParams.value.reprintType
     }
     if (filterParams.value.visibleRange !== -1) {
-      params.visibleRange = filterParams.value.visibleRange;
+      params.visibleRange = filterParams.value.visibleRange
     }
 
     // 搜索关键词不为空时才传递
     if (searchKeyword.value) {
-      params.keyword = searchKeyword.value;
+      params.keyword = searchKeyword.value
     }
 
     // 日期筛选参数
     if (selectedYear.value) {
-      params.year = selectedYear.value;
+      params.year = selectedYear.value
       if (selectedMonth.value) {
-        params.month = selectedMonth.value;
+        params.month = selectedMonth.value
       }
     }
     // 发送请求获取文章列表
-    const res = await getArticleManageList(currentPage.value, pageSize.value, params);
-    const newArticles = res.data ? res.data.data || [] : [];
-    const total = res.data ? res.data.total || 0 : 0;
+    const res = await getArticleManageList(currentPage.value, pageSize.value, params)
+    const newArticles = res.data ? res.data.data || [] : []
+    const total = res.data ? res.data.total || 0 : 0
 
     if (reset) {
       // 初次加载或筛选条件改变时
-      articles.value = newArticles;
+      articles.value = newArticles
       // 从文章数据中提取年月信息并更新筛选选项
-      updateDateFiltersFromArticles(newArticles);
+      updateDateFiltersFromArticles(newArticles)
     } else {
       // 无限滚动时加载下一页数据
-      articles.value = [...articles.value, ...newArticles];
+      articles.value = [...articles.value, ...newArticles]
       // 合并新数据后更新筛选选项
-      updateDateFiltersFromArticles(articles.value);
+      updateDateFiltersFromArticles(articles.value)
     }
 
     // 判断是否还有更多数据
-    hasMore.value = articles.value.length < total;
+    hasMore.value = articles.value.length < total
 
     // 更新页码
     if (hasMore.value && newArticles.length > 0) {
-      currentPage.value++;
+      currentPage.value++
     }
   } catch (error) {
-    ElMessage.error("加载文章列表失败");
+    ElMessage.error('加载文章列表失败')
   } finally {
     // 重置加载状态
-    loading.value = false;
-    loadingMore.value = false;
+    loading.value = false
+    loadingMore.value = false
   }
-};
+}
 
 // 处理编辑文章
 const handleEditArticle = (articleId) => {
-  router.push({ path: "/editor", query: { articleId } });
-};
+  router.push({ path: '/editor', query: { articleId } })
+}
 
 // 删除到回收站
 const handleDeleteToDraftArticle = async (articleId) => {
@@ -420,17 +520,17 @@ const handleDeleteToDraftArticle = async (articleId) => {
     const ArticleDto = {
       id: articleId,
       editStatus: 2,
-    };
+    }
 
-    await updateArticle(ArticleDto);
-    ElMessage.success("文章删除成功");
+    await updateArticle(ArticleDto)
+    ElMessage.success('文章删除成功')
 
     // 重新加载文章列表和统计数据
-    await Promise.all([loadArticles(true), loadStatistics()]);
+    await Promise.all([loadArticles(true), loadStatistics()])
   } catch (err) {
-    ElMessage.error("文章删除失败");
+    ElMessage.error('文章删除失败')
   }
-};
+}
 
 // 回收至回收站
 const handleRecyleToDraftArticle = async (articleId) => {
@@ -438,116 +538,116 @@ const handleRecyleToDraftArticle = async (articleId) => {
     const ArticleDto = {
       id: articleId,
       editStatus: 1,
-    };
+    }
 
-    await updateArticle(ArticleDto);
-    ElMessage.success("文章回收成功");
+    await updateArticle(ArticleDto)
+    ElMessage.success('文章回收成功')
 
     // 重新加载文章列表和统计数据
-    await Promise.all([loadArticles(true), loadStatistics()]);
+    await Promise.all([loadArticles(true), loadStatistics()])
   } catch (err) {
-    ElMessage.error("文章回收失败");
+    ElMessage.error('文章回收失败')
   }
-};
+}
 
 // 处理删除文章
 const handleDeleteArticle = async (articleId) => {
   try {
-    await ElMessageBox.confirm("确定要删除这篇文章吗？此操作不可恢复", "删除文章", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await ElMessageBox.confirm('确定要删除这篇文章吗？此操作不可恢复', '删除文章', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
 
-    await deleteArticle(articleId);
-    ElMessage.success("文章删除成功");
+    await deleteArticle(articleId)
+    ElMessage.success('文章删除成功')
 
     // 重新加载文章列表和统计数据
-    await Promise.all([loadArticles(true), loadStatistics()]);
+    await Promise.all([loadArticles(true), loadStatistics()])
   } catch (error) {
-    if (error !== "cancel") {
-      ElMessage.error("文章删除失败");
+    if (error !== 'cancel') {
+      ElMessage.error('文章删除失败')
     }
   }
-};
+}
 
 // 处理浏览文章
 const handleViewArticle = (articleId) => {
   // 获取当前用户ID，跳转到文章详情页
-  const currentUser = userStore.user;
+  const currentUser = userStore.user
   if (currentUser && currentUser.id) {
-    router.push(`/user/${currentUser.id}/article/${articleId}`);
+    router.push(`/user/${currentUser.id}/article/${articleId}`)
   } else {
-    ElMessage.error("获取用户信息失败，无法跳转");
+    ElMessage.error('获取用户信息失败，无法跳转')
   }
-};
+}
 
 // 处理滚动事件 - 自定义无限滚动
 const handleScroll = () => {
   // 如果没有列表容器或正在加载中或加载更多中或没有更多内容时,不用加载下一页了
   if (!listContainer.value || loading.value || loadingMore.value || !hasMore.value) {
-    return;
+    return
   }
 
-  const container = listContainer.value;
+  const container = listContainer.value
   // 当滚动到底部附近时加载更多
   if (container.scrollTop + container.clientHeight >= container.scrollHeight - 100) {
-    loadArticles();
+    loadArticles()
   }
-};
+}
 
 // 从文章列表中提取年份选项
 const updateDateFiltersFromArticles = (articleList) => {
   if (!articleList || articleList.length === 0) {
-    availableYears.value = [];
-    return;
+    availableYears.value = []
+    return
   }
   // 提取所有文章的年份并去重排序
   const years = [
     ...new Set(
       articleList.map((article) => {
-        const createTime = new Date(article.createTime);
-        return createTime.getFullYear();
-      })
+        const createTime = new Date(article.createTime)
+        return createTime.getFullYear()
+      }),
     ),
-  ].sort((a, b) => b - a);
-  availableYears.value = years;
-};
+  ].sort((a, b) => b - a)
+  availableYears.value = years
+}
 
 // 加载文章状态统计数据
 const loadStatistics = async () => {
   try {
-    const res = await getUserArticleStatistics();
-    const statistics = res.data || {};
+    const res = await getUserArticleStatistics()
+    const statistics = res.data || {}
 
     // 更新统计数据
-    totalCount.value = statistics.totalCount || 0;
-    publishedCount.value = statistics.publishedCount || 0;
-    reviewingCount.value = statistics.reviewingCount || 0;
-    draftCount.value = statistics.draftCount || 0;
-    garbageCount.value = statistics.garbageCount || 0;
+    totalCount.value = statistics.totalCount || 0
+    publishedCount.value = statistics.publishedCount || 0
+    reviewingCount.value = statistics.reviewingCount || 0
+    draftCount.value = statistics.draftCount || 0
+    garbageCount.value = statistics.garbageCount || 0
   } catch (error) {
     // 静默处理
     // 如果统计接口失败，使用默认值
-    totalCount.value = 0;
-    publishedCount.value = 0;
-    reviewingCount.value = 0;
-    draftCount.value = 0;
-    garbageCount.value = 0;
+    totalCount.value = 0
+    publishedCount.value = 0
+    reviewingCount.value = 0
+    draftCount.value = 0
+    garbageCount.value = 0
   }
-};
+}
 
 // 组件挂载时的处理
 onMounted(async () => {
   // 同时加载文章列表和统计数据
-  await Promise.all([loadArticles(true), loadStatistics()]);
-});
+  await Promise.all([loadArticles(true), loadStatistics()])
+})
 
 // 组件卸载时的处理
 onUnmounted(() => {
   // 清理资源
-  listContainer.value = null;
-});
+  listContainer.value = null
+})
 </script>
 
 <style lang="scss" scoped>
@@ -738,7 +838,7 @@ onUnmounted(() => {
                 background-clip: padding-box;
 
                 &::before {
-                  content: "";
+                  content: '';
                   position: absolute;
                   top: -2px;
                   left: -2px;
@@ -749,7 +849,7 @@ onUnmounted(() => {
                 }
 
                 &::after {
-                  content: "●";
+                  content: '●';
                   position: absolute;
                   top: 50%;
                   left: 6px;

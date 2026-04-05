@@ -20,93 +20,92 @@
       <LoadingAnimation v-if="loading" />
 
       <div v-else-if="albumList.length > 0" class="album-masonry">
-      <div
-        v-for="(album, index) in albumList"
-        :key="album.id"
-        class="masonry-item"
-        :style="{ animationDelay: `${index * 0.05}s` }"
-      >
-        <div class="item-inner">
-          <div class="image-container" @click="handleViewAlbum(album.id)">
-            <el-image
-              :src="album.coverUrl || ''"
-              class="album-cover"
-              fit="cover"
-              lazy
-            >
-              <template #placeholder>
-                <div class="placeholder">
-                  <el-icon class="spinner"><Loading /></el-icon>
-                </div>
-              </template>
-              <template #error>
-                <div class="error-state">
-                  <el-icon><Picture /></el-icon>
-                </div>
-              </template>
-            </el-image>
+        <div
+          v-for="(album, index) in albumList"
+          :key="album.id"
+          class="masonry-item"
+          :style="{ animationDelay: `${index * 0.05}s` }"
+        >
+          <div class="item-inner">
+            <div class="image-container" @click="handleViewAlbum(album.id)">
+              <el-image :src="album.coverUrl || ''" class="album-cover" fit="cover" lazy>
+                <template #placeholder>
+                  <div class="placeholder">
+                    <el-icon class="spinner"><Loading /></el-icon>
+                  </div>
+                </template>
+                <template #error>
+                  <div class="error-state">
+                    <el-icon><Picture /></el-icon>
+                  </div>
+                </template>
+              </el-image>
 
-            <!-- 悬停效果层 -->
-            <div class="hover-layer">
-              <div class="layer-content">
-                <div class="zoom-icon">
-                  <el-icon><ZoomIn /></el-icon>
+              <!-- 悬停效果层 -->
+              <div class="hover-layer">
+                <div class="layer-content">
+                  <div class="zoom-icon">
+                    <el-icon><ZoomIn /></el-icon>
+                  </div>
+                  <span class="view-text">查看相册</span>
                 </div>
-                <span class="view-text">查看相册</span>
               </div>
             </div>
-          </div>
 
-          <div class="item-footer">
-            <div class="album-title-text">{{ album.name }}</div>
-            <div class="album-meta">
-              <span class="create-date">{{ formatDate(album.createTime) }}</span>
-              <div class="actions">
-                <el-button
-                  class="btn-icon"
-                  type="danger"
-                  size="small"
-                  circle
-                  @click.stop="handleDeleteAlbum(album.id)"
-                >
-                  <el-icon><Delete /></el-icon>
-                </el-button>
+            <div class="item-footer">
+              <div class="album-title-text">{{ album.name }}</div>
+              <div class="album-meta">
+                <span class="create-date">{{ formatDate(album.createTime) }}</span>
+                <div class="actions">
+                  <el-button
+                    class="btn-icon"
+                    type="danger"
+                    size="small"
+                    circle
+                    @click.stop="handleDeleteAlbum(album.id)"
+                  >
+                    <el-icon><Delete /></el-icon>
+                  </el-button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <el-empty v-else description="暂无相册" :image-size="160" />
+      <el-empty v-else description="暂无相册" :image-size="160" />
 
-    <!-- 新建/编辑相册弹窗 -->
-    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑相册' : '新建相册'" class="album-dialog">
-      <el-form :model="albumForm" label-position="top">
-        <el-form-item label="相册名称">
-          <el-input v-model="albumForm.name" placeholder="请输入相册名称" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitAlbumForm">确定</el-button>
-        </span>
-      </template>
-    </el-dialog>
+      <!-- 新建/编辑相册弹窗 -->
+      <el-dialog
+        v-model="dialogVisible"
+        :title="isEdit ? '编辑相册' : '新建相册'"
+        class="album-dialog"
+      >
+        <el-form :model="albumForm" label-position="top">
+          <el-form-item label="相册名称">
+            <el-input v-model="albumForm.name" placeholder="请输入相册名称" />
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="dialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="submitAlbumForm">确定</el-button>
+          </span>
+        </template>
+      </el-dialog>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"
-import { useRouter } from "vue-router"
-import { useUserStore } from "@/stores/userStore"
-import { storeToRefs } from "pinia"
-import { ElMessage, ElMessageBox } from "element-plus"
-import { Plus, Picture, Loading, ZoomIn, Delete, ArrowLeft } from "@element-plus/icons-vue"
-import { listAlbum, createAlbum, updateAlbum, deleteAlbum } from "@/api/album"
-import LoadingAnimation from "@/components/LoadingAnimation.vue"
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/userStore'
+import { storeToRefs } from 'pinia'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus, Picture, Loading, ZoomIn, Delete, ArrowLeft } from '@element-plus/icons-vue'
+import { listAlbum, createAlbum, updateAlbum, deleteAlbum } from '@/api/album'
+import LoadingAnimation from '@/components/LoadingAnimation.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -116,11 +115,11 @@ const loading = ref(false)
 const albumList = ref([])
 const dialogVisible = ref(false)
 const isEdit = ref(false)
-const albumForm = ref({ id: null, name: "", coverUrl: "" })
+const albumForm = ref({ id: null, name: '', coverUrl: '' })
 
 // 格式化日期
 const formatDate = (dateString) => {
-  if (!dateString) return ""
+  if (!dateString) return ''
   const date = new Date(dateString)
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
@@ -132,7 +131,7 @@ const getAlbumList = async () => {
     const res = await listAlbum()
     albumList.value = res.data.sort((a, b) => a.id - b.id)
   } catch (error) {
-    ElMessage.error("获取相册列表失败")
+    ElMessage.error('获取相册列表失败')
   } finally {
     loading.value = false
   }
@@ -140,7 +139,7 @@ const getAlbumList = async () => {
 
 // 新建相册
 const handleCreateAlbum = () => {
-  albumForm.value = { id: null, name: "", coverUrl: "" }
+  albumForm.value = { id: null, name: '', coverUrl: '' }
   isEdit.value = false
   dialogVisible.value = true
 }
@@ -148,7 +147,7 @@ const handleCreateAlbum = () => {
 // 提交相册表单
 const submitAlbumForm = async () => {
   if (!albumForm.value.name) {
-    ElMessage.warning("请输入相册名称")
+    ElMessage.warning('请输入相册名称')
     return
   }
 
@@ -160,53 +159,53 @@ const submitAlbumForm = async () => {
         coverUrl: albumForm.value.coverUrl,
       }
       await updateAlbum(AlbumDto)
-      ElMessage.success("更新相册成功")
+      ElMessage.success('更新相册成功')
     } else {
       await createAlbum(albumForm.value)
-      ElMessage.success("创建相册成功")
+      ElMessage.success('创建相册成功')
     }
     dialogVisible.value = false
     getAlbumList()
   } catch (error) {
-    ElMessage.error("操作相册失败")
+    ElMessage.error('操作相册失败')
   }
 }
 
 // 查看相册
 const handleViewAlbum = (albumId) => {
-  router.push({ name: "AlbumDetail", params: { albumId } })
+  router.push({ name: 'AlbumDetail', params: { albumId } })
 }
 
 // 返回相册广场
 const goToAlbumSquare = () => {
-  router.push({ name: "AlbumSquare" })
+  router.push({ name: 'AlbumSquare' })
 }
 
 // 删除相册
 const handleDeleteAlbum = async (albumId) => {
-  ElMessageBox.confirm("确定要删除这个相册吗？此操作不可恢复", "删除相册", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要删除这个相册吗？此操作不可恢复', '删除相册', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
       try {
         await deleteAlbum(albumId)
-        ElMessage.success("删除相册成功")
+        ElMessage.success('删除相册成功')
         getAlbumList()
       } catch (error) {
-        ElMessage.error("删除相册失败")
+        ElMessage.error('删除相册失败')
       }
     })
     .catch(() => {
-      ElMessage.info("已取消删除")
+      ElMessage.info('已取消删除')
     })
 }
 
 onMounted(() => {
   if (!user.value) {
-    ElMessage.error("请先登录")
-    router.push("/login")
+    ElMessage.error('请先登录')
+    router.push('/login')
   } else {
     getAlbumList()
   }
@@ -280,7 +279,8 @@ onMounted(() => {
   padding: 0 24px;
   min-height: 100vh;
   background: var(--bg-page);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.6;
 
   // 手机端适配
@@ -563,32 +563,32 @@ onMounted(() => {
 
 /* 弹窗样式 */
 .album-dialog {
-  :deep(.el-dialog__header) {
+  ::v-deep(.el-dialog__header) {
     padding: 20px 24px;
     border-bottom: 1px solid var(--border-regular);
   }
 
-  :deep(.el-dialog__title) {
+  ::v-deep(.el-dialog__title) {
     font-size: 18px;
     font-weight: 600;
     color: var(--text-primary);
   }
 
-  :deep(.el-dialog__body) {
+  ::v-deep(.el-dialog__body) {
     padding: 24px;
   }
 
-  :deep(.el-form-item__label) {
+  ::v-deep(.el-form-item__label) {
     font-size: 14px;
     font-weight: 500;
     color: var(--text-primary);
   }
 
-  :deep(.el-input__wrapper) {
+  ::v-deep(.el-input__wrapper) {
     background: var(--bg-card);
   }
 
-  :deep(.el-dialog__footer) {
+  ::v-deep(.el-dialog__footer) {
     padding: 16px 24px;
     border-top: 1px solid var(--border-regular);
   }

@@ -5,7 +5,15 @@
       <div class="card-header">
         <h2 class="card-title">系统通知管理</h2>
         <div class="card-actions">
-          <el-select v-model="searchForm.isRead" placeholder="消息状态" filterable clearable size="small" class="search-input" @change="handleSearch">
+          <el-select
+            v-model="searchForm.isRead"
+            placeholder="消息状态"
+            filterable
+            clearable
+            size="small"
+            class="search-input"
+            @change="handleSearch"
+          >
             <el-option label="全部" value="" />
             <el-option label="未读" :value="0" />
             <el-option label="已读" :value="1" />
@@ -16,35 +24,85 @@
       <!-- 时间筛选区域 -->
       <div class="card-time-filters">
         <div class="time-filter-group">
-          <el-date-picker v-model="searchForm.startTime" type="datetime" placeholder="开始时间" size="small" class="time-input" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" clearable @change="handleSearch" />
-          <el-date-picker v-model="searchForm.endTime" type="datetime" placeholder="结束时间" size="small" class="time-input" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" clearable @change="handleSearch" />
+          <el-date-picker
+            v-model="searchForm.startTime"
+            type="datetime"
+            placeholder="开始时间"
+            size="small"
+            class="time-input"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            clearable
+            @change="handleSearch"
+          />
+          <el-date-picker
+            v-model="searchForm.endTime"
+            type="datetime"
+            placeholder="结束时间"
+            size="small"
+            class="time-input"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            clearable
+            @change="handleSearch"
+          />
         </div>
       </div>
 
       <!-- 批量操作按钮区域 -->
       <div class="card-third">
-        <el-button type="primary" plain round @click="handleBatchRead" :disabled="selectedMessages.length === 0" :loading="batchReadLoading">标记已读</el-button>
-        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedMessages.length === 0" :loading="batchDeleteLoading">批量删除</el-button>
+        <el-button
+          type="primary"
+          plain
+          round
+          @click="handleBatchRead"
+          :disabled="selectedMessages.length === 0"
+          :loading="batchReadLoading"
+          >标记已读</el-button
+        >
+        <el-button
+          type="danger"
+          plain
+          round
+          @click="handleBatchDelete"
+          :disabled="selectedMessages.length === 0"
+          :loading="batchDeleteLoading"
+          >批量删除</el-button
+        >
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table v-loading="loading" :data="paginatedMessageList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
+        <el-table
+          v-loading="loading"
+          :data="paginatedMessageList"
+          class="table"
+          @selection-change="handleSelectionChange"
+          :row-style="{ height: 'auto' }"
+          :cell-style="{ padding: '8px 0' }"
+        >
           <el-table-column type="selection" width="30" />
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="senderId" label="发送者ID" width="100" />
           <el-table-column prop="receiverId" label="接收者ID" width="100" />
           <el-table-column prop="content" label="消息内容" min-width="300">
             <template #default="{ row }">
-              <el-tooltip :content="getMessageContent(row)" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
+              <el-tooltip
+                :content="getMessageContent(row)"
+                placement="top-start"
+                :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"
+              >
                 <div class="message-content">{{ getMessageContent(row) }}</div>
               </el-tooltip>
             </template>
           </el-table-column>
           <el-table-column prop="isRead" label="状态" width="80">
             <template #default="{ row }">
-              <div class="message-status" :class="row.isRead === 0 ? 'status-unread' : 'status-read'">
-                {{ row.isRead === 0 ? "未读" : "已读" }}
+              <div
+                class="message-status"
+                :class="row.isRead === 0 ? 'status-unread' : 'status-read'"
+              >
+                {{ row.isRead === 0 ? '未读' : '已读' }}
               </div>
             </template>
           </el-table-column>
@@ -52,8 +110,23 @@
           <el-table-column label="操作" width="200">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button type="primary" @click="handleRead(row)" :icon="Check" class="read-button" size="small" :disabled="row.isRead === 1">已读</el-button>
-                <el-button type="danger" @click="handleDelete(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
+                <el-button
+                  type="primary"
+                  @click="handleRead(row)"
+                  :icon="Check"
+                  class="read-button"
+                  size="small"
+                  :disabled="row.isRead === 1"
+                  >已读</el-button
+                >
+                <el-button
+                  type="danger"
+                  @click="handleDelete(row.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                  size="small"
+                  >删除</el-button
+                >
               </div>
             </template>
           </el-table-column>
@@ -63,15 +136,27 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="message-cards">
-          <el-card v-for="message in paginatedMessageList" :key="message.id" class="message-card" :class="{ 'is-selected': isMessageSelected(message.id) }">
+          <el-card
+            v-for="message in paginatedMessageList"
+            :key="message.id"
+            class="message-card"
+            :class="{ 'is-selected': isMessageSelected(message.id) }"
+          >
             <div class="message-card-content">
               <div class="message-header-section">
                 <div class="message-info">
                   <div class="message-header">
-                    <el-checkbox :model-value="isMessageSelected(message.id)" @change="handleMobileSelect(message)" class="mobile-checkbox" />
+                    <el-checkbox
+                      :model-value="isMessageSelected(message.id)"
+                      @change="handleMobileSelect(message)"
+                      class="mobile-checkbox"
+                    />
                     <div class="message-id">#{{ message.id }}</div>
-                    <div class="message-status" :class="message.isRead === 0 ? 'status-unread' : 'status-read'">
-                      {{ message.isRead === 0 ? "未读" : "已读" }}
+                    <div
+                      class="message-status"
+                      :class="message.isRead === 0 ? 'status-unread' : 'status-read'"
+                    >
+                      {{ message.isRead === 0 ? '未读' : '已读' }}
                     </div>
                   </div>
 
@@ -79,7 +164,7 @@
                   <div class="message-meta-mobile">
                     <span class="meta-label">发送者:</span>
                     <span class="meta-value">{{ message.senderId }}</span>
-                    <span class="meta-label" style="margin-left: 8px;">接收者:</span>
+                    <span class="meta-label" style="margin-left: 8px">接收者:</span>
                     <span class="meta-value">{{ message.receiverId }}</span>
                   </div>
 
@@ -97,8 +182,23 @@
                 </div>
               </div>
               <div class="message-actions">
-                <el-button type="primary" @click="handleRead(message)" :icon="Check" class="read-button" size="small" :disabled="message.isRead === 1">已读</el-button>
-                <el-button type="danger" @click="handleDelete(message.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
+                <el-button
+                  type="primary"
+                  @click="handleRead(message)"
+                  :icon="Check"
+                  class="read-button"
+                  size="small"
+                  :disabled="message.isRead === 1"
+                  >已读</el-button
+                >
+                <el-button
+                  type="danger"
+                  @click="handleDelete(message.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                  size="small"
+                  >删除</el-button
+                >
               </div>
             </div>
           </el-card>
@@ -106,243 +206,254 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <Pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
-import { Check, Delete } from "@element-plus/icons-vue";
-import { getMessagePage, readAdminMessages, deleteAdminMessages } from "@/api/message";
-import Pagination from "@/components/Pagination.vue";
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { Check, Delete } from '@element-plus/icons-vue'
+import { getMessagePage, readAdminMessages, deleteAdminMessages } from '@/api/message'
+import Pagination from '@/components/Pagination.vue'
 
 // 系统通知列表数据
-const messageList = ref([]);
-const paginatedMessageList = ref([]);
-const loading = ref(false);
-const currentPage = ref(1);
-const pageSize = ref(10);
-const total = ref(0);
+const messageList = ref([])
+const paginatedMessageList = ref([])
+const loading = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
 // 搜索表单
 const searchForm = reactive({
-  isRead: "",
+  isRead: '',
   startTime: null,
   endTime: null,
-});
+})
 
 // 选中的消息
-const selectedMessages = ref([]);
+const selectedMessages = ref([])
 
 // 批量操作加载状态
-const batchReadLoading = ref(false);
-const batchDeleteLoading = ref(false);
+const batchReadLoading = ref(false)
+const batchDeleteLoading = ref(false)
 
 // 移动端检测
-const isMobileView = ref(false);
+const isMobileView = ref(false)
 
 // 监听窗口大小变化
 const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768;
-};
+  isMobileView.value = window.innerWidth <= 768
+}
 
 // 解析消息内容（兼容 JSON 和纯文本）
 const getMessageContent = (row) => {
-  if (!row.content) return "-";
+  if (!row.content) return '-'
   try {
-    const parsed = JSON.parse(row.content);
-    return parsed.text || row.content;
+    const parsed = JSON.parse(row.content)
+    return parsed.text || row.content
   } catch {
-    return row.content;
+    return row.content
   }
-};
+}
 
 // 是否有搜索条件
-const hasSearchConditions = () => searchForm.isRead !== "" || searchForm.startTime || searchForm.endTime;
+const hasSearchConditions = () =>
+  searchForm.isRead !== '' || searchForm.startTime || searchForm.endTime
 
 // 获取消息列表
 const getMessages = async () => {
-  currentPage.value = 1;
-  await fetchMessages();
-};
+  currentPage.value = 1
+  await fetchMessages()
+}
 
 const buildQueryParams = () => {
   return {
     pageNum: currentPage.value,
     pageSize: pageSize.value,
-    isRead: searchForm.isRead !== "" && searchForm.isRead !== null ? searchForm.isRead : undefined,
+    isRead: searchForm.isRead !== '' && searchForm.isRead !== null ? searchForm.isRead : undefined,
     startTime: searchForm.startTime || undefined,
     endTime: searchForm.endTime || undefined,
-  };
-};
+  }
+}
 
 const applyPageData = (pageData) => {
-  messageList.value = pageData?.data || [];
-  paginatedMessageList.value = messageList.value;
-  total.value = Number(pageData?.total || 0);
-  selectedMessages.value = [];
-};
+  messageList.value = pageData?.data || []
+  paginatedMessageList.value = messageList.value
+  total.value = Number(pageData?.total || 0)
+  selectedMessages.value = []
+}
 
 const fetchMessages = async () => {
-  loading.value = true;
+  loading.value = true
   try {
-    const params = buildQueryParams();
-    const res = await getMessagePage(params);
-    applyPageData(res.data);
+    const params = buildQueryParams()
+    const res = await getMessagePage(params)
+    applyPageData(res.data)
   } catch (error) {
-    ElMessage.error("获取系统通知列表失败");
+    ElMessage.error('获取系统通知列表失败')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 处理分页大小变化
 const handleSizeChange = async (size) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  await fetchMessages();
-};
+  pageSize.value = size
+  currentPage.value = 1
+  await fetchMessages()
+}
 
 // 处理当前页码变化
 const handleCurrentChange = async (current) => {
-  currentPage.value = current;
-  await fetchMessages();
-};
+  currentPage.value = current
+  await fetchMessages()
+}
 
 // 处理搜索
 const handleSearch = async () => {
-  currentPage.value = 1;
-  await fetchMessages();
-};
+  currentPage.value = 1
+  await fetchMessages()
+}
 
 // 表格多选
 const handleSelectionChange = (messages) => {
-  selectedMessages.value = messages;
-};
+  selectedMessages.value = messages
+}
 
 // 检查消息是否被选中
 const isMessageSelected = (messageId) => {
-  return selectedMessages.value.some((msg) => msg.id === messageId);
-};
+  return selectedMessages.value.some((msg) => msg.id === messageId)
+}
 
 // 移动端选择处理
 const handleMobileSelect = (message) => {
-  const index = selectedMessages.value.findIndex((item) => item.id === message.id);
+  const index = selectedMessages.value.findIndex((item) => item.id === message.id)
   if (index > -1) {
-    selectedMessages.value.splice(index, 1);
+    selectedMessages.value.splice(index, 1)
   } else {
-    selectedMessages.value.push(message);
+    selectedMessages.value.push(message)
   }
-};
+}
 
 // 标记单条消息已读
 const handleRead = async (row) => {
-  if (row.isRead === 1) return;
+  if (row.isRead === 1) return
   try {
-    await readAdminMessages([row.id]);
-    ElMessage.success("标记已读成功");
-    await fetchMessages();
+    await readAdminMessages([row.id])
+    ElMessage.success('标记已读成功')
+    await fetchMessages()
   } catch (error) {
-    ElMessage.error("标记已读失败");
+    ElMessage.error('标记已读失败')
   }
-};
+}
 
 // 批量标记已读
 const handleBatchRead = async () => {
-  if (selectedMessages.value.length === 0) return;
-  ElMessageBox.confirm(`确定要将选中的 ${selectedMessages.value.length} 条消息标记为已读吗？`, "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "info",
-  })
+  if (selectedMessages.value.length === 0) return
+  ElMessageBox.confirm(
+    `确定要将选中的 ${selectedMessages.value.length} 条消息标记为已读吗？`,
+    '提示',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'info',
+    },
+  )
     .then(async () => {
-      batchReadLoading.value = true;
+      batchReadLoading.value = true
       try {
-        const messageIds = selectedMessages.value.filter((m) => m.isRead === 0).map((m) => m.id);
+        const messageIds = selectedMessages.value.filter((m) => m.isRead === 0).map((m) => m.id)
         if (messageIds.length === 0) {
-          ElMessage.info("所选消息均已读");
-          return;
+          ElMessage.info('所选消息均已读')
+          return
         }
-        await readAdminMessages(messageIds);
-        ElMessage.success("批量标记已读成功");
-        await fetchMessages();
+        await readAdminMessages(messageIds)
+        ElMessage.success('批量标记已读成功')
+        await fetchMessages()
       } catch (error) {
-        ElMessage.error("批量标记已读失败");
+        ElMessage.error('批量标记已读失败')
       } finally {
-        batchReadLoading.value = false;
+        batchReadLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("操作已取消");
-    });
-};
+      ElMessage.info('操作已取消')
+    })
+}
 
 // 删除单条消息
 const handleDelete = (id) => {
-  ElMessageBox.confirm("确定要删除该消息吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要删除该消息吗？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
       try {
-        await deleteAdminMessages([id]);
-        ElMessage.success("删除成功");
-        await refreshMessageList();
+        await deleteAdminMessages([id])
+        ElMessage.success('删除成功')
+        await refreshMessageList()
       } catch (error) {
-        ElMessage.error("删除失败");
+        ElMessage.error('删除失败')
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 批量删除
 const handleBatchDelete = () => {
-  ElMessageBox.confirm(`确定要删除选中的 ${selectedMessages.value.length} 条消息吗？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm(`确定要删除选中的 ${selectedMessages.value.length} 条消息吗？`, '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      batchDeleteLoading.value = true;
+      batchDeleteLoading.value = true
       try {
-        const messageIds = selectedMessages.value.map((m) => m.id);
-        await deleteAdminMessages(messageIds);
-        ElMessage.success("批量删除成功");
-        await refreshMessageList();
+        const messageIds = selectedMessages.value.map((m) => m.id)
+        await deleteAdminMessages(messageIds)
+        ElMessage.success('批量删除成功')
+        await refreshMessageList()
       } catch (error) {
-        ElMessage.error("批量删除失败");
+        ElMessage.error('批量删除失败')
       } finally {
-        batchDeleteLoading.value = false;
+        batchDeleteLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 智能刷新列表
 const refreshMessageList = async (deletedCount = 0) => {
   if (deletedCount > 0 && currentPage.value > 1 && messageList.value.length <= deletedCount) {
-    currentPage.value -= 1;
+    currentPage.value -= 1
   }
-  await fetchMessages();
-};
+  await fetchMessages()
+}
 
 // 初始化
 onMounted(() => {
-  getMessages();
-  handleResize();
-  window.addEventListener("resize", handleResize);
-});
+  getMessages()
+  handleResize()
+  window.addEventListener('resize', handleResize)
+})
 
 // 组件卸载时移除监听
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -379,7 +490,7 @@ onUnmounted(() => {
         align-items: center;
 
         &::before {
-          content: "";
+          content: '';
           display: inline-block;
           width: 4px;
           height: 20px;

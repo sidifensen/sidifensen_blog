@@ -4,8 +4,22 @@
       <div class="card-header">
         <h2 class="card-title">角色管理</h2>
         <div class="card-actions">
-          <el-input v-model="searchQuery" placeholder="搜索角色名称" :prefix-icon="Search" size="small" class="search-input" />
-          <el-button type="primary" size="small" @click="handleAddRole" :icon="Plus" class="add-button"> 新增角色 </el-button>
+          <el-input
+            v-model="searchQuery"
+            placeholder="搜索角色名称"
+            :prefix-icon="Search"
+            size="small"
+            class="search-input"
+          />
+          <el-button
+            type="primary"
+            size="small"
+            @click="handleAddRole"
+            :icon="Plus"
+            class="add-button"
+          >
+            新增角色
+          </el-button>
         </div>
       </div>
 
@@ -38,10 +52,42 @@
           <el-table-column label="操作" width="340">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button type="primary" size="small" @click="handleEditRole(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
-                <el-button type="danger" size="small" @click="handleDeleteRole(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
-                <el-button size="small" type="warning" @click="handleAuthorizeUser(row)" :icon="User" class="user-button"> 分配用户 </el-button>
-                <el-button size="small" type="success" @click="handleAuthorizeMenu(row)" :icon="Key" class="menu-button"> 分配权限 </el-button>
+                <el-button
+                  type="primary"
+                  size="small"
+                  @click="handleEditRole(row)"
+                  :icon="Edit"
+                  class="edit-button"
+                >
+                  编辑
+                </el-button>
+                <el-button
+                  type="danger"
+                  size="small"
+                  @click="handleDeleteRole(row.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                >
+                  删除
+                </el-button>
+                <el-button
+                  size="small"
+                  type="warning"
+                  @click="handleAuthorizeUser(row)"
+                  :icon="User"
+                  class="user-button"
+                >
+                  分配用户
+                </el-button>
+                <el-button
+                  size="small"
+                  type="success"
+                  @click="handleAuthorizeMenu(row)"
+                  :icon="Key"
+                  class="menu-button"
+                >
+                  分配权限
+                </el-button>
               </div>
             </template>
           </el-table-column>
@@ -58,10 +104,19 @@
                 <div class="header-left">
                   <div class="role-id">#{{ role.id }}</div>
                   <el-tag :type="role.status === 0 ? 'success' : 'danger'">
-                    {{ role.status === 0 ? "正常" : "禁用" }}
+                    {{ role.status === 0 ? '正常' : '禁用' }}
                   </el-tag>
                 </div>
-                <el-switch v-model="role.status" size="small" active-color="#42b983" inactive-color="#cccccc" :active-value="0" :inactive-value="1" :loading="switchLoading" :before-change="() => handleStatusChange(role.id, role.status === 0 ? 1 : 0)" />
+                <el-switch
+                  v-model="role.status"
+                  size="small"
+                  active-color="#42b983"
+                  inactive-color="#cccccc"
+                  :active-value="0"
+                  :inactive-value="1"
+                  :loading="switchLoading"
+                  :before-change="() => handleStatusChange(role.id, role.status === 0 ? 1 : 0)"
+                />
               </div>
 
               <!-- 角色信息 -->
@@ -90,10 +145,38 @@
 
               <!-- 操作按钮 -->
               <div class="role-actions">
-                <el-button type="primary" size="small" @click="handleEditRole(role)" :icon="Edit" class="edit-button">编辑</el-button>
-                <el-button type="danger" size="small" @click="handleDeleteRole(role.id)" :icon="Delete" class="delete-button">删除</el-button>
-                <el-button size="small" type="warning" @click="handleAuthorizeUser(role)" :icon="User" class="user-button">分配用户</el-button>
-                <el-button size="small" type="success" @click="handleAuthorizeMenu(role)" :icon="Key" class="menu-button">分配权限</el-button>
+                <el-button
+                  type="primary"
+                  size="small"
+                  @click="handleEditRole(role)"
+                  :icon="Edit"
+                  class="edit-button"
+                  >编辑</el-button
+                >
+                <el-button
+                  type="danger"
+                  size="small"
+                  @click="handleDeleteRole(role.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                  >删除</el-button
+                >
+                <el-button
+                  size="small"
+                  type="warning"
+                  @click="handleAuthorizeUser(role)"
+                  :icon="User"
+                  class="user-button"
+                  >分配用户</el-button
+                >
+                <el-button
+                  size="small"
+                  type="success"
+                  @click="handleAuthorizeMenu(role)"
+                  :icon="Key"
+                  class="menu-button"
+                  >分配权限</el-button
+                >
               </div>
             </div>
           </el-card>
@@ -101,7 +184,13 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <Pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
 
     <!-- 新增/编辑角色对话框 -->
@@ -126,7 +215,12 @@
     </el-dialog>
 
     <!-- 分配用户弹窗对话框 -->
-    <el-dialog v-model="authorizeDialogVisible" title="角色分配用户" :before-close="handleAuthorizeDialogClose" class="authorize-dialog">
+    <el-dialog
+      v-model="authorizeDialogVisible"
+      title="角色分配用户"
+      :before-close="handleAuthorizeDialogClose"
+      class="authorize-dialog"
+    >
       <div v-loading="authorizeLoading" class="authorize-dialog-content">
         <p class="role-name">当前角色: {{ currentRole?.name }}</p>
         <template v-if="!authorizeLoading">
@@ -151,7 +245,12 @@
     </el-dialog>
 
     <!-- 分配权限弹窗对话框 -->
-    <el-dialog v-model="authorizeMenuDialogVisible" :title="'分配 ' + currentMenuRole?.name + ' 的菜单权限'" :before-close="handleAuthorizeMenuDialogClose" width="600px">
+    <el-dialog
+      v-model="authorizeMenuDialogVisible"
+      :title="'分配 ' + currentMenuRole?.name + ' 的菜单权限'"
+      :before-close="handleAuthorizeMenuDialogClose"
+      width="600px"
+    >
       <div class="authorize-menu-dialog-content">
         <!-- 操作按钮区域 -->
         <div class="menu-toolbar">
@@ -194,291 +293,295 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, computed, nextTick } from "vue";
-import { ElMessage, ElMessageBox } from "element-plus";
-import { Search, Plus, Edit, Delete, User, Key } from "@element-plus/icons-vue";
-import { getRoleList, getRolePage, addRole, updateRole, deleteRole, queryRolePage } from "@/api/role";
-import { addUser, getUsersByRole } from "@/api/user-role";
-import { getUserList } from "@/api/user";
-import { getAllMenuList } from "@/api/menu";
-import { getMenusByRole, assignMenus } from "@/api/role-menu";
-import Pagination from "@/components/Pagination.vue";
+import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search, Plus, Edit, Delete, User, Key } from '@element-plus/icons-vue'
+import {
+  getRoleList,
+  getRolePage,
+  addRole,
+  updateRole,
+  deleteRole,
+  queryRolePage,
+} from '@/api/role'
+import { addUser, getUsersByRole } from '@/api/user-role'
+import { getUserList } from '@/api/user'
+import { getAllMenuList } from '@/api/menu'
+import { getMenusByRole, assignMenus } from '@/api/role-menu'
+import Pagination from '@/components/Pagination.vue'
 
 // 搜索查询
-const searchQuery = ref("");
+const searchQuery = ref('')
 // 角色列表数据
-const roleList = ref([]);
+const roleList = ref([])
 // 分页后的角色列表
-const paginatedRoleList = ref([]);
+const paginatedRoleList = ref([])
 // 加载状态
-const loading = ref(false);
+const loading = ref(false)
 // 总条数
-const total = ref(0);
+const total = ref(0)
 // 对话框可见性
-const dialogVisible = ref(false);
+const dialogVisible = ref(false)
 // 对话框标题
-const dialogTitle = ref("新增角色");
+const dialogTitle = ref('新增角色')
 
 // 表单引用
-const roleFormRef = ref(null);
+const roleFormRef = ref(null)
 // 表单数据
 const roleForm = ref({
   id: null,
-  name: "",
-  role: "",
-  description: "",
+  name: '',
+  role: '',
+  description: '',
   status: 0,
-});
+})
 // 表单验证规则
 const rules = {
-  role: [{ required: true, message: "请输入角色标识", trigger: "blur" }],
-  name: [{ required: true, message: "请输入角色名称", trigger: "blur" }],
-  description: [{ required: true, message: "请输入角色描述", trigger: "blur" }],
-};
+  role: [{ required: true, message: '请输入角色标识', trigger: 'blur' }],
+  name: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
+  description: [{ required: true, message: '请输入角色描述', trigger: 'blur' }],
+}
 
 // 获取角色列表
 const getRoles = async () => {
-  currentPage.value = 1;
-  await fetchRoles();
-};
+  currentPage.value = 1
+  await fetchRoles()
+}
 
 // 初始化
 onMounted(() => {
-  getRoles();
-  handleResize();
-  window.addEventListener("resize", handleResize);
-});
+  getRoles()
+  handleResize()
+  window.addEventListener('resize', handleResize)
+})
 
 // 组件卸载时移除监听
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 
 // 当前页码
-const currentPage = ref(1);
+const currentPage = ref(1)
 // 每页条数
-const pageSize = ref(10);
+const pageSize = ref(10)
 
-const hasSearchConditions = () => !!searchQuery.value.trim();
+const hasSearchConditions = () => !!searchQuery.value.trim()
 
 const applyPageData = (pageData) => {
-  roleList.value = pageData?.data || [];
-  paginatedRoleList.value = roleList.value;
-  total.value = Number(pageData?.total || 0);
-};
+  roleList.value = pageData?.data || []
+  paginatedRoleList.value = roleList.value
+  total.value = Number(pageData?.total || 0)
+}
 
 const fetchRoles = async () => {
-  loading.value = true;
+  loading.value = true
   try {
-    let pageData = null;
+    let pageData = null
     if (hasSearchConditions()) {
       const res = await queryRolePage({
         name: searchQuery.value,
         pageNum: currentPage.value,
         pageSize: pageSize.value,
-      });
-      pageData = res.data;
+      })
+      pageData = res.data
     } else {
       const res = await getRolePage({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
-      });
-      pageData = res.data;
+      })
+      pageData = res.data
     }
-    applyPageData(pageData);
+    applyPageData(pageData)
   } catch (error) {
-    ElMessage.error(hasSearchConditions() ? "搜索角色失败" : "获取角色列表失败");
+    ElMessage.error(hasSearchConditions() ? '搜索角色失败' : '获取角色列表失败')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 更新分页数据
 const updatePaginatedRoleList = () => {
-  paginatedRoleList.value = roleList.value;
-};
+  paginatedRoleList.value = roleList.value
+}
 
 // 处理分页大小变化
 const handleSizeChange = async (size) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  await fetchRoles();
-};
+  pageSize.value = size
+  currentPage.value = 1
+  await fetchRoles()
+}
 
 // 处理当前页码变化
 const handleCurrentChange = async (current) => {
-  currentPage.value = current;
-  await fetchRoles();
-};
+  currentPage.value = current
+  await fetchRoles()
+}
 
 // 处理搜索
 const handleSearch = async () => {
-  currentPage.value = 1;
-  await fetchRoles();
-};
+  currentPage.value = 1
+  await fetchRoles()
+}
 
 // 监听搜索输入变化
-const searchTimeout = ref(null);
+const searchTimeout = ref(null)
 watch(searchQuery, (newVal) => {
   // 防抖处理
   if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value);
+    clearTimeout(searchTimeout.value)
   }
   searchTimeout.value = setTimeout(() => {
-    handleSearch();
-  }, 100);
-});
+    handleSearch()
+  }, 100)
+})
 
 // 处理添加角色
 const handleAddRole = () => {
-  dialogTitle.value = "新增角色";
+  dialogTitle.value = '新增角色'
   roleForm.value = {
     id: null,
-    role: "",
-    name: "",
-    description: "",
+    role: '',
+    name: '',
+    description: '',
     status: 0,
-  };
-  dialogVisible.value = true;
-};
+  }
+  dialogVisible.value = true
+}
 
 // 处理编辑角色
 const handleEditRole = (row) => {
-  dialogTitle.value = "编辑角色";
+  dialogTitle.value = '编辑角色'
   // 深拷贝行数据
-  roleForm.value = { ...row };
-  dialogVisible.value = true;
-};
+  roleForm.value = { ...row }
+  dialogVisible.value = true
+}
 
 // 处理删除角色
 const handleDeleteRole = (id) => {
-  ElMessageBox.confirm("确定要删除该角色吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要删除该角色吗？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      loading.value = true;
+      loading.value = true
       try {
-        await deleteRole(id);
-        ElMessage.success("删除成功");
-        getRoles();
+        await deleteRole(id)
+        ElMessage.success('删除成功')
+        getRoles()
       } catch (error) {
-        ElMessage.error("删除失败");
+        ElMessage.error('删除失败')
       } finally {
-        loading.value = false;
+        loading.value = false
       }
     })
     .catch(() => {
       // 取消删除
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
-const switchLoading = ref(false);
+const switchLoading = ref(false)
 // 处理状态变更
 const handleStatusChange = async (id, status) => {
   return new Promise((resolve, reject) => {
-    switchLoading.value = true;
+    switchLoading.value = true
     updateRole({ id, status })
       .then(() => {
-        ElMessage.success("状态更新成功");
+        ElMessage.success('状态更新成功')
         // 手动更新本地数据状态
-        const role = roleList.value.find((item) => item.id === id);
+        const role = roleList.value.find((item) => item.id === id)
         if (role) {
-          role.status = status;
+          role.status = status
         }
-        resolve();
+        resolve()
       })
       .catch((error) => {
-        ElMessage.error("状态更新失败");
-        reject(error);
+        ElMessage.error('状态更新失败')
+        reject(error)
       })
       .finally(() => {
-        switchLoading.value = false;
-      });
-  });
-};
+        switchLoading.value = false
+      })
+  })
+}
 
 // 处理表单提交
 const handleSubmit = () => {
   roleFormRef.value.validate(async (valid) => {
     if (!valid) {
-      return;
+      return
     }
     try {
       if (roleForm.value.id) {
         // 编辑角色
-        await updateRole(roleForm.value);
-        ElMessage.success("编辑角色成功");
+        await updateRole(roleForm.value)
+        ElMessage.success('编辑角色成功')
       } else {
         // 新增角色
-        await addRole(roleForm.value);
-        ElMessage.success("新增角色成功");
+        await addRole(roleForm.value)
+        ElMessage.success('新增角色成功')
       }
-      dialogVisible.value = false;
-      getRoles();
+      dialogVisible.value = false
+      getRoles()
     } catch (error) {
-      ElMessage.error(roleForm.value.id ? "编辑角色失败" : "新增角色失败");
-      handleDialogClose();
+      ElMessage.error(roleForm.value.id ? '编辑角色失败' : '新增角色失败')
+      handleDialogClose()
     }
-  });
-};
+  })
+}
 
 // 处理对话框关闭
 const handleDialogClose = () => {
-  roleFormRef.value.resetFields();
-  dialogVisible.value = false;
-};
+  roleFormRef.value.resetFields()
+  dialogVisible.value = false
+}
 
 // 授权角色弹窗
-const authorizeDialogVisible = ref(false);
-const authorizeLoading = ref(false);
+const authorizeDialogVisible = ref(false)
+const authorizeLoading = ref(false)
 // 当前角色
-const currentRole = ref(null);
+const currentRole = ref(null)
 // 选择的用户
-const selectedUser = ref([]);
+const selectedUser = ref([])
 // 所有用户
-const allUser = ref([]);
+const allUser = ref([])
 
 // 穿梭框数据格式
 const transferUserData = computed(() => {
   return allUser.value.map((user) => ({
     key: user.id,
     label: user.username,
-  }));
-});
+  }))
+})
 
 // 穿梭框筛选方法
 const filterMethod = (query, item) => {
-  return item.label.toLowerCase().includes(query.toLowerCase());
-};
+  return item.label.toLowerCase().includes(query.toLowerCase())
+}
 
 // 处理授权角色
 const handleAuthorizeUser = async (row) => {
-  currentRole.value = row;
-  selectedUser.value = [];
+  currentRole.value = row
+  selectedUser.value = []
 
   // 先打开弹窗并显示 loading
-  authorizeDialogVisible.value = true;
-  authorizeLoading.value = true;
+  authorizeDialogVisible.value = true
+  authorizeLoading.value = true
 
   try {
     // 并行加载用户列表和已分配用户
-    const [userRes, roleUsersRes] = await Promise.all([
-      getUserList(),
-      getUsersByRole(row.id),
-    ]);
+    const [userRes, roleUsersRes] = await Promise.all([getUserList(), getUsersByRole(row.id)])
 
-    allUser.value = userRes.data;
-    selectedUser.value = roleUsersRes.data.map((item) => item.id);
+    allUser.value = userRes.data
+    selectedUser.value = roleUsersRes.data.map((item) => item.id)
   } catch (error) {
-    ElMessage.error("获取用户列表失败");
-    authorizeDialogVisible.value = false;
+    ElMessage.error('获取用户列表失败')
+    authorizeDialogVisible.value = false
   } finally {
-    authorizeLoading.value = false;
+    authorizeLoading.value = false
   }
-};
+}
 
 // 处理授权提交
 const handleAuthorizeSubmit = async () => {
@@ -486,155 +589,155 @@ const handleAuthorizeSubmit = async () => {
     await addUser({
       roleId: currentRole.value.id,
       userIds: selectedUser.value,
-    });
-    ElMessage.success(`已为角色 ${currentRole.value.name} 分配用户`);
+    })
+    ElMessage.success(`已为角色 ${currentRole.value.name} 分配用户`)
   } catch (error) {
-    ElMessage.error(`为角色 ${currentRole.value.name} 分配用户失败`);
-    console.error("分配用户失败:", error);
+    ElMessage.error(`为角色 ${currentRole.value.name} 分配用户失败`)
+    console.error('分配用户失败:', error)
   } finally {
-    authorizeDialogVisible.value = false;
-    authorizeLoading.value = false;
-    selectedUser.value = [];
+    authorizeDialogVisible.value = false
+    authorizeLoading.value = false
+    selectedUser.value = []
   }
-};
+}
 
 // 处理授权对话框关闭
 const handleAuthorizeDialogClose = () => {
-  authorizeDialogVisible.value = false;
-  authorizeLoading.value = false;
-  selectedUser.value = [];
-};
+  authorizeDialogVisible.value = false
+  authorizeLoading.value = false
+  selectedUser.value = []
+}
 
 // 分配权限弹窗
-const authorizeMenuDialogVisible = ref(false);
+const authorizeMenuDialogVisible = ref(false)
 // 菜单树形控件引用
-const menuTreeRef = ref(null);
+const menuTreeRef = ref(null)
 // 当前角色
-const currentMenuRole = ref(null);
+const currentMenuRole = ref(null)
 // 菜单树形数据
-const menuTreeData = ref([]);
+const menuTreeData = ref([])
 // 菜单树形配置
 const menuTreeProps = {
-  children: "children",
-  label: "name",
-};
+  children: 'children',
+  label: 'name',
+}
 // 选中的菜单ID列表
-const selectedMenuIds = ref([]);
+const selectedMenuIds = ref([])
 // 默认展开的菜单ID列表
-const defaultExpandedKeys = ref([]);
+const defaultExpandedKeys = ref([])
 
 // 处理分配权限
 const handleAuthorizeMenu = async (row) => {
-  currentMenuRole.value = row;
-  selectedMenuIds.value = [];
-  defaultExpandedKeys.value = [];
+  currentMenuRole.value = row
+  selectedMenuIds.value = []
+  defaultExpandedKeys.value = []
 
   // 获取所有菜单
-  const res = await getAllMenuList();
-  menuTreeData.value = buildMenuTree(res.data);
+  const res = await getAllMenuList()
+  menuTreeData.value = buildMenuTree(res.data)
 
   // 默认展开所有节点
-  defaultExpandedKeys.value = res.data.map((menu) => menu.id);
+  defaultExpandedKeys.value = res.data.map((menu) => menu.id)
 
   // 获取当前角色已有的菜单权限
   try {
-    const menuRes = await getMenusByRole(row.id);
-    selectedMenuIds.value = menuRes.data || [];
+    const menuRes = await getMenusByRole(row.id)
+    selectedMenuIds.value = menuRes.data || []
   } catch (error) {
-    console.error("获取角色菜单权限失败:", error);
+    console.error('获取角色菜单权限失败:', error)
   }
 
   // 打开弹窗
-  authorizeMenuDialogVisible.value = true;
-};
+  authorizeMenuDialogVisible.value = true
+}
 
 // 构建菜单树形结构
 const buildMenuTree = (menus) => {
-  const menuMap = new Map();
-  const result = [];
+  const menuMap = new Map()
+  const result = []
 
   // 将菜单转换为 map 结构
   menus.forEach((menu) => {
-    menuMap.set(menu.id, { ...menu, children: [] });
-  });
+    menuMap.set(menu.id, { ...menu, children: [] })
+  })
 
   // 构建树形结构
   menus.forEach((menu) => {
-    const menuNode = menuMap.get(menu.id);
+    const menuNode = menuMap.get(menu.id)
     if (menu.parentId === 0) {
-      result.push(menuNode);
+      result.push(menuNode)
     } else {
-      const parentNode = menuMap.get(menu.parentId);
+      const parentNode = menuMap.get(menu.parentId)
       if (parentNode) {
-        parentNode.children.push(menuNode);
+        parentNode.children.push(menuNode)
       }
     }
-  });
+  })
 
-  return result;
-};
+  return result
+}
 
 // 处理展开/收起全部
 const handleExpandAll = (expand) => {
-  const tree = menuTreeRef.value;
+  const tree = menuTreeRef.value
   if (tree) {
-    const nodes = tree.store.nodesMap;
+    const nodes = tree.store.nodesMap
     Object.values(nodes).forEach((node) => {
-      node.expanded = expand;
-    });
+      node.expanded = expand
+    })
   }
-};
+}
 
 // 处理节点点击
 const handleNodeClick = (data) => {
   // 点击节点时不进行选中操作，仅展开/收起
-};
+}
 
 // 处理分配权限提交
 const handleAuthorizeMenuSubmit = async () => {
   try {
-    const checkedKeys = menuTreeRef.value?.getCheckedKeys() || [];
-    const halfCheckedKeys = menuTreeRef.value?.getHalfCheckedKeys() || [];
-    const allSelectedKeys = [...checkedKeys, ...halfCheckedKeys];
+    const checkedKeys = menuTreeRef.value?.getCheckedKeys() || []
+    const halfCheckedKeys = menuTreeRef.value?.getHalfCheckedKeys() || []
+    const allSelectedKeys = [...checkedKeys, ...halfCheckedKeys]
 
     await assignMenus({
       roleId: currentMenuRole.value.id,
       menuIds: allSelectedKeys,
-    });
-    ElMessage.success(`已为角色 ${currentMenuRole.value.name} 分配菜单权限`);
+    })
+    ElMessage.success(`已为角色 ${currentMenuRole.value.name} 分配菜单权限`)
   } catch (error) {
-    ElMessage.error(`为角色 ${currentMenuRole.value.name} 分配菜单权限失败`);
-    console.error("分配菜单权限失败:", error);
+    ElMessage.error(`为角色 ${currentMenuRole.value.name} 分配菜单权限失败`)
+    console.error('分配菜单权限失败:', error)
   } finally {
-    authorizeMenuDialogVisible.value = false;
+    authorizeMenuDialogVisible.value = false
   }
-};
+}
 
 // 处理分配权限对话框关闭
 const handleAuthorizeMenuDialogClose = () => {
-  authorizeMenuDialogVisible.value = false;
-  selectedMenuIds.value = [];
-  menuTreeData.value = [];
-};
+  authorizeMenuDialogVisible.value = false
+  selectedMenuIds.value = []
+  menuTreeData.value = []
+}
 
 // 监听弹窗打开状态，等树渲染完成后设置选中状态
 watch([authorizeMenuDialogVisible, menuTreeData], async ([isOpen, data]) => {
   if (isOpen && data.length > 0) {
-    await nextTick();
-    await nextTick(); // 确保树组件完全渲染
+    await nextTick()
+    await nextTick() // 确保树组件完全渲染
     if (menuTreeRef.value && selectedMenuIds.value.length > 0) {
-      menuTreeRef.value.setCheckedKeys(selectedMenuIds.value);
+      menuTreeRef.value.setCheckedKeys(selectedMenuIds.value)
     }
   }
-});
+})
 
 // 移动端检测
-const isMobileView = ref(false);
+const isMobileView = ref(false)
 
 // 监听窗口大小变化
 const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768;
-};
+  isMobileView.value = window.innerWidth <= 768
+}
 </script>
 
 <style lang="scss" scoped>
@@ -673,7 +776,7 @@ const handleResize = () => {
         align-items: center;
 
         &::before {
-          content: "";
+          content: '';
           display: inline-block;
           width: 4px;
           height: 20px;
@@ -908,7 +1011,7 @@ const handleResize = () => {
 
                 .role-text {
                   color: #42b983;
-                  font-family: "Courier New", monospace;
+                  font-family: 'Courier New', monospace;
                 }
 
                 .time-text {
@@ -981,7 +1084,6 @@ const handleResize = () => {
         }
       }
     }
-
   }
 
   :deep(.el-dialog) {
@@ -1147,14 +1249,15 @@ const handleResize = () => {
 
       .table {
         margin-top: 0;
-        max-height: calc(100vh - 180px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
+        max-height: calc(
+          100vh - 180px
+        ); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
         :deep(.el-table) {
           display: block;
           width: 100%;
           overflow-x: auto;
         }
       }
-
     }
   }
 }

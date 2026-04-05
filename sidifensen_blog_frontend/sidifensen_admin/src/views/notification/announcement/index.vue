@@ -6,13 +6,30 @@
         <h2 class="card-title">公告管理</h2>
         <div class="card-actions">
           <el-button @click="handleSend" class="send-btn">
-            <svg class="send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke-linecap="round"/>
-              <circle cx="12" cy="12" r="4"/>
+            <svg
+              class="send-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"
+                stroke-linecap="round"
+              />
+              <circle cx="12" cy="12" r="4" />
             </svg>
             发送公告
           </el-button>
-          <el-select v-model="searchForm.status" placeholder="状态筛选" filterable clearable size="small" class="search-input" @change="handleSearch">
+          <el-select
+            v-model="searchForm.status"
+            placeholder="状态筛选"
+            filterable
+            clearable
+            size="small"
+            class="search-input"
+            @change="handleSearch"
+          >
             <el-option label="全部" value="" />
             <el-option label="待发送" :value="0" />
             <el-option label="发送中" :value="1" />
@@ -24,18 +41,32 @@
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table v-loading="loading" :data="paginatedList" class="table" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
+        <el-table
+          v-loading="loading"
+          :data="paginatedList"
+          class="table"
+          :row-style="{ height: 'auto' }"
+          :cell-style="{ padding: '8px 0' }"
+        >
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="title" label="标题" min-width="200">
             <template #default="{ row }">
-              <el-tooltip :content="row.title" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
+              <el-tooltip
+                :content="row.title"
+                placement="top-start"
+                :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"
+              >
                 <div class="announcement-title">{{ row.title }}</div>
               </el-tooltip>
             </template>
           </el-table-column>
           <el-table-column prop="content" label="内容" min-width="250">
             <template #default="{ row }">
-              <el-tooltip :content="row.content" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
+              <el-tooltip
+                :content="row.content"
+                placement="top-start"
+                :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"
+              >
                 <div class="announcement-content">{{ row.content }}</div>
               </el-tooltip>
             </template>
@@ -43,7 +74,12 @@
           <el-table-column prop="sendMethod" label="发送方式" width="180">
             <template #default="{ row }">
               <div class="send-methods">
-                <span v-for="method in parseSendMethod(row.sendMethod)" :key="method" class="method-tag" :class="'method-' + method">
+                <span
+                  v-for="method in parseSendMethod(row.sendMethod)"
+                  :key="method"
+                  class="method-tag"
+                  :class="'method-' + method"
+                >
                   {{ methodLabel(method) }}
                 </span>
               </div>
@@ -66,9 +102,31 @@
           <el-table-column label="操作" width="180">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button type="primary" @click="handleEdit(row)" :icon="Edit" class="edit-button" size="small">编辑</el-button>
-                <el-button v-if="row.status === 0" type="warning" @click="handleCancel(row)" :icon="Close" class="cancel-button" size="small">取消</el-button>
-                <el-button type="danger" @click="handleDelete(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
+                <el-button
+                  type="primary"
+                  @click="handleEdit(row)"
+                  :icon="Edit"
+                  class="edit-button"
+                  size="small"
+                  >编辑</el-button
+                >
+                <el-button
+                  v-if="row.status === 0"
+                  type="warning"
+                  @click="handleCancel(row)"
+                  :icon="Close"
+                  class="cancel-button"
+                  size="small"
+                  >取消</el-button
+                >
+                <el-button
+                  type="danger"
+                  @click="handleDelete(row.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                  size="small"
+                  >删除</el-button
+                >
               </div>
             </template>
           </el-table-column>
@@ -90,7 +148,12 @@
               <div class="card-content-row">{{ item.content }}</div>
               <div class="card-meta-row">
                 <span class="send-methods">
-                  <span v-for="method in parseSendMethod(item.sendMethod)" :key="method" class="method-tag" :class="'method-' + method">
+                  <span
+                    v-for="method in parseSendMethod(item.sendMethod)"
+                    :key="method"
+                    class="method-tag"
+                    :class="'method-' + method"
+                  >
                     {{ methodLabel(method) }}
                   </span>
                 </span>
@@ -98,8 +161,16 @@
               </div>
               <div class="card-actions">
                 <el-button type="primary" @click="handleEdit(item)" size="small">编辑</el-button>
-                <el-button v-if="item.status === 0" type="warning" @click="handleCancel(item)" size="small">取消</el-button>
-                <el-button type="danger" @click="handleDelete(item.id)" size="small">删除</el-button>
+                <el-button
+                  v-if="item.status === 0"
+                  type="warning"
+                  @click="handleCancel(item)"
+                  size="small"
+                  >取消</el-button
+                >
+                <el-button type="danger" @click="handleDelete(item.id)" size="small"
+                  >删除</el-button
+                >
               </div>
             </div>
           </el-card>
@@ -107,12 +178,23 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <Pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
 
     <!-- 发送公告对话框 -->
     <el-dialog v-model="dialogVisible" title="发送公告" width="600px" class="announcement-dialog">
-      <el-form ref="announcementFormRef" :model="announcementForm" :rules="rules" label-width="100px">
+      <el-form
+        ref="announcementFormRef"
+        :model="announcementForm"
+        :rules="rules"
+        label-width="100px"
+      >
         <!-- 发送方式 -->
         <el-form-item label="发送方式" prop="sendMethod">
           <el-checkbox-group v-model="announcementForm.sendMethod">
@@ -124,31 +206,73 @@
 
         <!-- 标题 -->
         <el-form-item label="标题" prop="title">
-          <el-input v-model="announcementForm.title" placeholder="请输入公告标题" maxlength="100" show-word-limit />
+          <el-input
+            v-model="announcementForm.title"
+            placeholder="请输入公告标题"
+            maxlength="100"
+            show-word-limit
+          />
         </el-form-item>
 
         <!-- 内容 -->
         <el-form-item label="内容" prop="content">
-          <el-input v-model="announcementForm.content" type="textarea" :rows="4" placeholder="请输入公告内容" maxlength="2000" show-word-limit />
+          <el-input
+            v-model="announcementForm.content"
+            type="textarea"
+            :rows="4"
+            placeholder="请输入公告内容"
+            maxlength="2000"
+            show-word-limit
+          />
         </el-form-item>
 
         <!-- 指定用户选择（system 方式时显示） -->
-        <el-form-item v-if="announcementForm.sendMethod.includes('system') || announcementForm.sendMethod.includes('email')" label="发送对象">
+        <el-form-item
+          v-if="
+            announcementForm.sendMethod.includes('system') ||
+            announcementForm.sendMethod.includes('email')
+          "
+          label="发送对象"
+        >
           <el-radio-group v-model="announcementForm.targetType">
             <el-radio :value="1">全部用户</el-radio>
             <el-radio :value="2">指定用户</el-radio>
           </el-radio-group>
         </el-form-item>
 
-        <el-form-item v-if="announcementForm.targetType === 2 && (announcementForm.sendMethod.includes('system') || announcementForm.sendMethod.includes('email'))" label="选择用户">
-          <el-select v-model="announcementForm.targetUsers" multiple filterable placeholder="搜索或选择用户" style="width: 100%">
-            <el-option v-for="user in userList" :key="user.id" :label="user.nickname + ' (ID:' + user.id + ')'" :value="user.id" />
+        <el-form-item
+          v-if="
+            announcementForm.targetType === 2 &&
+            (announcementForm.sendMethod.includes('system') ||
+              announcementForm.sendMethod.includes('email'))
+          "
+          label="选择用户"
+        >
+          <el-select
+            v-model="announcementForm.targetUsers"
+            multiple
+            filterable
+            placeholder="搜索或选择用户"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="user in userList"
+              :key="user.id"
+              :label="user.nickname + ' (ID:' + user.id + ')'"
+              :value="user.id"
+            />
           </el-select>
           <div class="form-tip">支持多选，也可直接输入用户ID搜索</div>
         </el-form-item>
 
         <!-- website 方式时显示提示 -->
-        <div v-if="announcementForm.sendMethod.includes('website') && announcementForm.sendMethod.length === 1" class="website-tip">
+        <div
+          v-if="
+            announcementForm.sendMethod.includes('website') &&
+            announcementForm.sendMethod.length === 1
+          "
+          class="website-tip"
+        >
           <el-alert type="info" :closable="false">
             公告将发送给全部用户，无需选择发送对象
           </el-alert>
@@ -158,7 +282,9 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="handleDialogClose">取消</el-button>
-          <el-button type="primary" @click="handleSubmit" :loading="submitLoading">确认发送</el-button>
+          <el-button type="primary" @click="handleSubmit" :loading="submitLoading"
+            >确认发送</el-button
+          >
         </span>
       </template>
     </el-dialog>
@@ -166,186 +292,198 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
-import { Delete, Close, Edit } from "@element-plus/icons-vue";
-import { getAnnouncementPage, createAnnouncement, updateAnnouncement, cancelAnnouncement, deleteAnnouncement } from "@/api/announcement";
-import { getUserList } from "@/api/user";
-import Pagination from "@/components/Pagination.vue";
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { Delete, Close, Edit } from '@element-plus/icons-vue'
+import {
+  getAnnouncementPage,
+  createAnnouncement,
+  updateAnnouncement,
+  cancelAnnouncement,
+  deleteAnnouncement,
+} from '@/api/announcement'
+import { getUserList } from '@/api/user'
+import Pagination from '@/components/Pagination.vue'
 
 // 列表数据
-const list = ref([]);
-const paginatedList = ref([]);
-const loading = ref(false);
-const currentPage = ref(1);
-const pageSize = ref(10);
-const total = ref(0);
+const list = ref([])
+const paginatedList = ref([])
+const loading = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
 // 对话框
-const dialogVisible = ref(false);
-const submitLoading = ref(false);
-const announcementFormRef = ref(null);
-const isEdit = ref(false);
-const editingId = ref(null);
+const dialogVisible = ref(false)
+const submitLoading = ref(false)
+const announcementFormRef = ref(null)
+const isEdit = ref(false)
+const editingId = ref(null)
 
 // 搜索表单
 const searchForm = reactive({
-  status: "",
-});
+  status: '',
+})
 
 // 公告表单
 const announcementForm = reactive({
   sendMethod: [],
-  title: "",
-  content: "",
+  title: '',
+  content: '',
   targetType: 1,
   targetUsers: [],
-});
+})
 
 // 用户列表
-const userList = ref([]);
+const userList = ref([])
 
 // 移动端检测
-const isMobileView = ref(false);
+const isMobileView = ref(false)
 
 // 表单验证规则
 const rules = {
-  sendMethod: [{ required: true, validator: (rule, value, callback) => {
-    if (!value || value.length === 0) {
-      callback(new Error("请至少选择一个发送方式"));
-    } else {
-      callback();
-    }
-  }, trigger: "change" }],
-  title: [{ required: true, message: "请输入公告标题", trigger: "blur" }],
-  content: [{ required: true, message: "请输入公告内容", trigger: "blur" }],
-};
+  sendMethod: [
+    {
+      required: true,
+      validator: (rule, value, callback) => {
+        if (!value || value.length === 0) {
+          callback(new Error('请至少选择一个发送方式'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'change',
+    },
+  ],
+  title: [{ required: true, message: '请输入公告标题', trigger: 'blur' }],
+  content: [{ required: true, message: '请输入公告内容', trigger: 'blur' }],
+}
 
 // 监听窗口大小变化
 const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768;
-};
+  isMobileView.value = window.innerWidth <= 768
+}
 
 // 解析发送方式
 const parseSendMethod = (sendMethodStr) => {
   try {
-    return JSON.parse(sendMethodStr);
+    return JSON.parse(sendMethodStr)
   } catch {
-    return [];
+    return []
   }
-};
+}
 
 // 发送方式标签
 const methodLabel = (method) => {
-  const labels = { system: "系统通知", website: "公告", email: "邮件" };
-  return labels[method] || method;
-};
+  const labels = { system: '系统通知', website: '公告', email: '邮件' }
+  return labels[method] || method
+}
 
 // 状态标签
 const statusLabel = (status) => {
-  const labels = { 0: "待发送", 1: "发送中", 2: "已发送", 3: "发送失败" };
-  return labels[status] ?? status;
-};
+  const labels = { 0: '待发送', 1: '发送中', 2: '已发送', 3: '发送失败' }
+  return labels[status] ?? status
+}
 
 // 获取公告列表
 const getAnnouncements = async () => {
-  currentPage.value = 1;
-  await fetchAnnouncements();
-};
+  currentPage.value = 1
+  await fetchAnnouncements()
+}
 
 const buildQueryParams = () => {
   return {
     pageNum: currentPage.value,
     pageSize: pageSize.value,
-    status: searchForm.status !== "" && searchForm.status !== null ? searchForm.status : undefined,
-  };
-};
+    status: searchForm.status !== '' && searchForm.status !== null ? searchForm.status : undefined,
+  }
+}
 
 const applyPageData = (pageData) => {
-  list.value = pageData?.data || [];
-  paginatedList.value = list.value;
-  total.value = Number(pageData?.total || 0);
-};
+  list.value = pageData?.data || []
+  paginatedList.value = list.value
+  total.value = Number(pageData?.total || 0)
+}
 
 const fetchAnnouncements = async () => {
-  loading.value = true;
+  loading.value = true
   try {
-    const params = buildQueryParams();
-    const res = await getAnnouncementPage(params);
-    applyPageData(res.data);
+    const params = buildQueryParams()
+    const res = await getAnnouncementPage(params)
+    applyPageData(res.data)
   } catch (error) {
-    ElMessage.error("获取公告列表失败");
+    ElMessage.error('获取公告列表失败')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 获取用户列表（用于指定用户选择）
 const fetchUsers = async () => {
   try {
-    const res = await getUserList({ pageNum: 1, pageSize: 1000 });
-    userList.value = res.data?.data || [];
+    const res = await getUserList({ pageNum: 1, pageSize: 1000 })
+    userList.value = res.data?.data || []
   } catch (error) {
-    console.error("获取用户列表失败", error);
+    console.error('获取用户列表失败', error)
   }
-};
+}
 
 // 处理分页大小变化
 const handleSizeChange = async (size) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  await fetchAnnouncements();
-};
+  pageSize.value = size
+  currentPage.value = 1
+  await fetchAnnouncements()
+}
 
 // 处理当前页码变化
 const handleCurrentChange = async (current) => {
-  currentPage.value = current;
-  await fetchAnnouncements();
-};
+  currentPage.value = current
+  await fetchAnnouncements()
+}
 
 // 处理搜索
 const handleSearch = async () => {
-  currentPage.value = 1;
-  await fetchAnnouncements();
-};
+  currentPage.value = 1
+  await fetchAnnouncements()
+}
 
 // 打开发送对话框
 const handleSend = async () => {
-  isEdit.value = false;
-  editingId.value = null;
-  announcementForm.sendMethod = [];
-  announcementForm.title = "";
-  announcementForm.content = "";
-  announcementForm.targetType = 1;
-  announcementForm.targetUsers = [];
-  dialogVisible.value = true;
-  await fetchUsers();
-};
+  isEdit.value = false
+  editingId.value = null
+  announcementForm.sendMethod = []
+  announcementForm.title = ''
+  announcementForm.content = ''
+  announcementForm.targetType = 1
+  announcementForm.targetUsers = []
+  dialogVisible.value = true
+  await fetchUsers()
+}
 
 // 编辑公告
 const handleEdit = (row) => {
-  isEdit.value = true;
-  editingId.value = row.id;
-  announcementForm.sendMethod = parseSendMethod(row.sendMethod);
-  announcementForm.title = row.title;
-  announcementForm.content = row.content;
-  announcementForm.targetType = row.targetType || 1;
-  announcementForm.targetUsers = [];
-  dialogVisible.value = true;
-};
+  isEdit.value = true
+  editingId.value = row.id
+  announcementForm.sendMethod = parseSendMethod(row.sendMethod)
+  announcementForm.title = row.title
+  announcementForm.content = row.content
+  announcementForm.targetType = row.targetType || 1
+  announcementForm.targetUsers = []
+  dialogVisible.value = true
+}
 
 // 关闭对话框
 const handleDialogClose = () => {
-  announcementFormRef.value?.resetFields();
-  dialogVisible.value = false;
-  isEdit.value = false;
-  editingId.value = null;
-};
+  announcementFormRef.value?.resetFields()
+  dialogVisible.value = false
+  isEdit.value = false
+  editingId.value = null
+}
 
 // 提交表单
 const handleSubmit = async () => {
   try {
-    await announcementFormRef.value.validate();
-    submitLoading.value = true;
+    await announcementFormRef.value.validate()
+    submitLoading.value = true
 
     // 构建请求数据
     const data = {
@@ -354,77 +492,77 @@ const handleSubmit = async () => {
       sendMethod: JSON.stringify(announcementForm.sendMethod),
       targetType: announcementForm.targetType,
       targetUsers: JSON.stringify(announcementForm.targetUsers || []),
-    };
-    if (isEdit.value && editingId.value) {
-      data.id = editingId.value;
-      await updateAnnouncement(data);
-    } else {
-      await createAnnouncement(data);
     }
-    ElMessage.success(isEdit.value ? "编辑成功" : "发送成功");
-    dialogVisible.value = false;
-    await fetchAnnouncements();
+    if (isEdit.value && editingId.value) {
+      data.id = editingId.value
+      await updateAnnouncement(data)
+    } else {
+      await createAnnouncement(data)
+    }
+    ElMessage.success(isEdit.value ? '编辑成功' : '发送成功')
+    dialogVisible.value = false
+    await fetchAnnouncements()
   } catch (error) {
     if (error !== false) {
-      ElMessage.error(isEdit.value ? "编辑失败" : "发送失败");
+      ElMessage.error(isEdit.value ? '编辑失败' : '发送失败')
     }
   } finally {
-    submitLoading.value = false;
+    submitLoading.value = false
   }
-};
+}
 
 // 取消公告
 const handleCancel = (row) => {
-  ElMessageBox.confirm("确定要取消该公告吗？", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要取消该公告吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
       try {
-        await cancelAnnouncement(row.id);
-        ElMessage.success("取消成功");
-        await fetchAnnouncements();
+        await cancelAnnouncement(row.id)
+        ElMessage.success('取消成功')
+        await fetchAnnouncements()
       } catch (error) {
-        ElMessage.error("取消失败");
+        ElMessage.error('取消失败')
       }
     })
     .catch(() => {
-      ElMessage.info("操作已取消");
-    });
-};
+      ElMessage.info('操作已取消')
+    })
+}
 
 // 删除公告
 const handleDelete = (id) => {
-  ElMessageBox.confirm("确定要删除该公告吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要删除该公告吗？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
       try {
-        await deleteAnnouncement(id);
-        ElMessage.success("删除成功");
-        await fetchAnnouncements();
+        await deleteAnnouncement(id)
+        ElMessage.success('删除成功')
+        await fetchAnnouncements()
       } catch (error) {
-        ElMessage.error("删除失败");
+        ElMessage.error('删除失败')
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 初始化
 onMounted(() => {
-  getAnnouncements();
-  handleResize();
-  window.addEventListener("resize", handleResize);
-});
+  getAnnouncements()
+  handleResize()
+  window.addEventListener('resize', handleResize)
+})
 
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -456,7 +594,7 @@ onUnmounted(() => {
         align-items: center;
 
         &::before {
-          content: "";
+          content: '';
           display: inline-block;
           width: 4px;
           height: 20px;
@@ -486,7 +624,9 @@ onUnmounted(() => {
           color: #fff;
           font-weight: 500;
           font-size: 14px;
-          transition: background 0.2s, box-shadow 0.2s;
+          transition:
+            background 0.2s,
+            box-shadow 0.2s;
 
           &:hover {
             background: #66b1ff;
@@ -516,11 +656,18 @@ onUnmounted(() => {
       max-height: calc(100vh - 280px);
 
       :deep(.el-table__header-wrapper) {
-        th { font-weight: 600; color: #475569; }
+        th {
+          font-weight: 600;
+          color: #475569;
+        }
       }
 
       :deep(.el-table__body-wrapper) {
-        tr td { color: #64748b; padding: 12px 0; vertical-align: middle; }
+        tr td {
+          color: #64748b;
+          padding: 12px 0;
+          vertical-align: middle;
+        }
       }
 
       .announcement-title,
@@ -533,7 +680,9 @@ onUnmounted(() => {
         line-clamp: 2;
         -webkit-box-orient: vertical;
 
-        &:hover { color: #409eff; }
+        &:hover {
+          color: #409eff;
+        }
       }
 
       .send-methods {
@@ -548,9 +697,18 @@ onUnmounted(() => {
           font-size: 11px;
           font-weight: 500;
 
-          &.method-system { background: #e0f2fe; color: #0284c7; }
-          &.method-website { background: #dcfce7; color: #16a34a; }
-          &.method-email { background: #fef3c7; color: #d97706; }
+          &.method-system {
+            background: #e0f2fe;
+            color: #0284c7;
+          }
+          &.method-website {
+            background: #dcfce7;
+            color: #16a34a;
+          }
+          &.method-email {
+            background: #fef3c7;
+            color: #d97706;
+          }
         }
       }
 
@@ -561,10 +719,22 @@ onUnmounted(() => {
         font-size: 12px;
         font-weight: 500;
 
-        &.status-0 { background: #fef3c7; color: #d97706; }
-        &.status-1 { background: #dbeafe; color: #2563eb; }
-        &.status-2 { background: #dcfce7; color: #16a34a; }
-        &.status-3 { background: #fee2e2; color: #ef4444; }
+        &.status-0 {
+          background: #fef3c7;
+          color: #d97706;
+        }
+        &.status-1 {
+          background: #dbeafe;
+          color: #2563eb;
+        }
+        &.status-2 {
+          background: #dcfce7;
+          color: #16a34a;
+        }
+        &.status-3 {
+          background: #fee2e2;
+          color: #ef4444;
+        }
       }
 
       .table-actions {
@@ -573,7 +743,9 @@ onUnmounted(() => {
         justify-content: center;
         gap: 5px;
 
-        :deep(.el-button) { margin-left: 0; }
+        :deep(.el-button) {
+          margin-left: 0;
+        }
 
         .edit-button {
           background-color: #e0f2fe;
@@ -624,10 +796,20 @@ onUnmounted(() => {
             justify-content: space-between;
             align-items: center;
 
-            .card-id { font-size: 12px; color: #666; background: #f5f5f5; padding: 2px 6px; border-radius: 4px; }
+            .card-id {
+              font-size: 12px;
+              color: #666;
+              background: #f5f5f5;
+              padding: 2px 6px;
+              border-radius: 4px;
+            }
           }
 
-          .card-title-row { font-weight: 600; font-size: 14px; color: #333; }
+          .card-title-row {
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+          }
 
           .card-content-row {
             font-size: 13px;
@@ -654,7 +836,12 @@ onUnmounted(() => {
             padding-top: 8px;
             border-top: 1px solid #f0f0f0;
 
-            .el-button { flex: 1; font-size: 12px; padding: 6px 10px; margin-left: 0; }
+            .el-button {
+              flex: 1;
+              font-size: 12px;
+              padding: 6px 10px;
+              margin-left: 0;
+            }
           }
         }
       }
@@ -695,8 +882,12 @@ html.dark {
       gap: 12px;
       padding: 6px;
 
-      .card-title { font-size: 16px; }
-      .card-actions { width: 100%; }
+      .card-title {
+        font-size: 16px;
+      }
+      .card-actions {
+        width: 100%;
+      }
     }
   }
 }

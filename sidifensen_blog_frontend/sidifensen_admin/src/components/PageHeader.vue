@@ -23,15 +23,15 @@ defineProps({
    */
   title: {
     type: String,
-    required: true
+    required: true,
   },
   /**
    * 页面描述
    */
   description: {
     type: String,
-    default: ''
-  }
+    default: '',
+  },
 })
 </script>
 

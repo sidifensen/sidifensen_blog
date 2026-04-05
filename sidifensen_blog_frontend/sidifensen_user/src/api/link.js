@@ -1,4 +1,4 @@
-import request from "@/utils/Request";
+import request from '@/utils/Request'
 
 /**
  * 申请友链
@@ -7,10 +7,10 @@ import request from "@/utils/Request";
  */
 export function applyLink(data) {
   return request({
-    url: "/link/apply",
-    method: "post",
+    url: '/link/apply',
+    method: 'post',
     data,
-  });
+  })
 }
 
 /**
@@ -21,8 +21,8 @@ export function applyLink(data) {
 export function deleteLink(linkId) {
   return request({
     url: `/link/${linkId}`,
-    method: "delete",
-  });
+    method: 'delete',
+  })
 }
 
 /**
@@ -34,6 +34,6 @@ export function deleteLink(linkId) {
 export function getLinkList(pageNum, pageSize) {
   return request({
     url: `/link/list?pageNum=${pageNum}&pageSize=${pageSize}`,
-    method: "get",
-  });
+    method: 'get',
+  })
 }

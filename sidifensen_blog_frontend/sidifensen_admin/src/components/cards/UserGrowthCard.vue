@@ -7,19 +7,19 @@
 </template>
 
 <script setup>
-import { User } from "@element-plus/icons-vue"
-import DetailCard from "@/components/cards/DetailCard.vue"
-import UserGrowthChart from "@/components/charts/UserGrowthChart.vue"
+import { User } from '@element-plus/icons-vue'
+import DetailCard from '@/components/cards/DetailCard.vue'
+import UserGrowthChart from '@/components/charts/UserGrowthChart.vue'
 
 defineProps({
   data: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   loading: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 </script>
 

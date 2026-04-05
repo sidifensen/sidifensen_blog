@@ -26,12 +26,14 @@
           <span class="tag tag-new" v-else-if="isNew">✨ 新作</span>
         </div>
         <h3 class="article-title">{{ article.title }}</h3>
-        <p class="article-excerpt">{{ article.description || "暂无描述" }}</p>
+        <p class="article-excerpt">{{ article.description || '暂无描述' }}</p>
         <div class="article-meta" v-if="showMeta">
           <span class="article-date">{{ formatDate(article.createTime) }}</span>
           <div class="article-stats">
             <span class="stat">👁 {{ formatNumber(article.readCount || 0) }}</span>
-            <span class="stat"><span class="heart-icon">♡</span> {{ formatNumber(article.likeCount || 0) }}</span>
+            <span class="stat"
+              ><span class="heart-icon">♡</span> {{ formatNumber(article.likeCount || 0) }}</span
+            >
           </div>
         </div>
       </div>
@@ -157,9 +159,16 @@
 
         <div class="article-meta" v-if="showMeta">
           <span>{{ formatDate(article.createTime) }}</span>
-          <span><el-icon><View /></el-icon> {{ formatNumber(article.readCount || 0) }}</span>
-          <span><svg-icon name="like" width="13px" height="13px" color="currentColor" /> {{ formatNumber(article.likeCount || 0) }}</span>
-          <span><el-icon><Star /></el-icon> {{ formatNumber(article.collectCount || 0) }}</span>
+          <span
+            ><el-icon><View /></el-icon> {{ formatNumber(article.readCount || 0) }}</span
+          >
+          <span
+            ><svg-icon name="like" width="13px" height="13px" color="currentColor" />
+            {{ formatNumber(article.likeCount || 0) }}</span
+          >
+          <span
+            ><el-icon><Star /></el-icon> {{ formatNumber(article.collectCount || 0) }}</span
+          >
         </div>
       </div>
     </template>
@@ -167,10 +176,19 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { Picture, Loading, Clock, View, Star, Collection, ChatDotRound, User } from "@element-plus/icons-vue";
-import { formatCompactNumber } from "@/utils/formatNumber";
-import SvgIcon from "@/components/SvgIcon.vue";
+import { computed } from 'vue'
+import {
+  Picture,
+  Loading,
+  Clock,
+  View,
+  Star,
+  Collection,
+  ChatDotRound,
+  User,
+} from '@element-plus/icons-vue'
+import { formatCompactNumber } from '@/utils/formatNumber'
+import SvgIcon from '@/components/SvgIcon.vue'
 
 // Props 定义
 const props = defineProps({
@@ -180,12 +198,12 @@ const props = defineProps({
     required: true,
     default: () => ({
       id: 0,
-      title: "",
-      description: "",
-      coverUrl: "",
+      title: '',
+      description: '',
+      coverUrl: '',
       userId: 0,
-      nickname: "",
-      avatar: "",
+      nickname: '',
+      avatar: '',
       reprintType: 0,
       visibleRange: 1,
       examineStatus: 1,
@@ -193,15 +211,15 @@ const props = defineProps({
       likeCount: 0,
       collectCount: 0,
       commentCount: 0,
-      createTime: "",
-      tag: "",
+      createTime: '',
+      tag: '',
     }),
   },
   // 展示模式: grid | list | simple
   mode: {
     type: String,
-    default: "grid",
-    validator: (value) => ["grid", "list", "simple"].includes(value),
+    default: 'grid',
+    validator: (value) => ['grid', 'list', 'simple'].includes(value),
   },
   // 是否显示作者信息（仅 list/simple 模式）
   showAuthor: {
@@ -218,71 +236,71 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
-});
+})
 
 // Emits 定义
-const emit = defineEmits(["click"]);
+const emit = defineEmits(['click'])
 
 // 判断是否热门（阅读量 > 1000）
-const isHot = computed(() => (props.article.readCount || 0) > 1000);
+const isHot = computed(() => (props.article.readCount || 0) > 1000)
 
 // 判断是否新文章（3天内）
 const isNew = computed(() => {
-  if (!props.article.createTime) return false;
-  const diffDays = (Date.now() - new Date(props.article.createTime)) / (1000 * 60 * 60 * 24);
-  return diffDays <= 3;
-});
+  if (!props.article.createTime) return false
+  const diffDays = (Date.now() - new Date(props.article.createTime)) / (1000 * 60 * 60 * 24)
+  return diffDays <= 3
+})
 
 // 格式化日期
 const formatDate = (dateString) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return dateString;
-  return date.toLocaleDateString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-};
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  if (Number.isNaN(date.getTime())) return dateString
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+}
 
 // 格式化数字
-const formatNumber = (value) => formatCompactNumber(value);
+const formatNumber = (value) => formatCompactNumber(value)
 
 // 获取文章类型
 const getArticleType = (type) => {
   const typeMap = {
-    0: "原创",
-    1: "转载",
-  };
-  return typeMap[type] || "原创";
-};
+    0: '原创',
+    1: '转载',
+  }
+  return typeMap[type] || '原创'
+}
 
 // 获取可见范围标签
 const getVisibilityLabel = (visibleRange) => {
   const visibilityMap = {
-    1: "仅自己",
-    2: "粉丝",
-    3: "VIP",
-  };
-  return visibilityMap[visibleRange] || "";
-};
+    1: '仅自己',
+    2: '粉丝',
+    3: 'VIP',
+  }
+  return visibilityMap[visibleRange] || ''
+}
 
 // 获取审核状态
 const getExamineStatus = (status) => {
   const statusMap = {
-    0: "待审核",
-    1: "审核通过",
-    2: "审核未通过",
-  };
-  return statusMap[status] || "审核通过";
-};
+    0: '待审核',
+    1: '审核通过',
+    2: '审核未通过',
+  }
+  return statusMap[status] || '审核通过'
+}
 
 // 处理点击事件
 const handleClick = () => {
   if (props.clickable) {
-    emit("click", props.article);
+    emit('click', props.article)
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>
@@ -439,7 +457,9 @@ const handleClick = () => {
       &:hover {
         background: var(--article-hover-bg);
         border-color: var(--article-hover-border);
-        box-shadow: 0 8px 32px var(--article-hover-shadow), 0 2px 8px var(--article-hover-shadow-light);
+        box-shadow:
+          0 8px 32px var(--article-hover-shadow),
+          0 2px 8px var(--article-hover-shadow-light);
         transform: translateX(8px) scale(1.01);
 
         .article-cover {
@@ -454,13 +474,17 @@ const handleClick = () => {
 
     // 左侧装饰条
     &::before {
-      content: "";
+      content: '';
       position: absolute;
       top: 0;
       left: 0;
       width: 3px;
       height: 100%;
-      background: linear-gradient(180deg, var(--el-color-primary) 0%, var(--el-color-primary-light-3) 100%);
+      background: linear-gradient(
+        180deg,
+        var(--el-color-primary) 0%,
+        var(--el-color-primary-light-3) 100%
+      );
       opacity: 0;
       transition: opacity 0.3s ease;
     }
@@ -487,7 +511,11 @@ const handleClick = () => {
           align-items: center;
           width: 100%;
           height: 100%;
-          background: linear-gradient(135deg, var(--el-fill-color-light) 0%, var(--el-fill-color) 100%);
+          background: linear-gradient(
+            135deg,
+            var(--el-fill-color-light) 0%,
+            var(--el-fill-color) 100%
+          );
 
           .loading-icon {
             font-size: 32px;
@@ -502,7 +530,11 @@ const handleClick = () => {
           align-items: center;
           width: 100%;
           height: 100%;
-          background: linear-gradient(135deg, var(--el-fill-color-light) 0%, var(--el-fill-color) 100%);
+          background: linear-gradient(
+            135deg,
+            var(--el-fill-color-light) 0%,
+            var(--el-fill-color) 100%
+          );
 
           .el-icon {
             font-size: 40px;
@@ -598,7 +630,11 @@ const handleClick = () => {
     }
 
     .article-type {
-      background: linear-gradient(135deg, rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.15) 0%, rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.05) 100%);
+      background: linear-gradient(
+        135deg,
+        rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.15) 0%,
+        rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.05) 100%
+      );
       color: var(--el-color-primary);
       padding: 4px 10px;
       border-radius: 12px;
@@ -817,7 +853,7 @@ const handleClick = () => {
         gap: 20px;
         font-size: 11px;
         color: var(--text-muted);
-        font-feature-settings: "tnum";
+        font-feature-settings: 'tnum';
         font-weight: 300;
 
         span {
@@ -881,7 +917,8 @@ const handleClick = () => {
 
 // ===== 动画 =====
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.6;
     transform: scale(1);
   }
@@ -910,7 +947,11 @@ html.dark {
 
     &.mode-list {
       .article-type {
-        background: linear-gradient(135deg, rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.2) 0%, rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.08) 100%);
+        background: linear-gradient(
+          135deg,
+          rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.2) 0%,
+          rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.08) 100%
+        );
         border-color: rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.3);
       }
 

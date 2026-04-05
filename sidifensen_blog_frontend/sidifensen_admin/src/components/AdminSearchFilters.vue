@@ -55,68 +55,63 @@
 </template>
 
 <script setup>
-import { Search } from "@element-plus/icons-vue";
-import { useUserSearch } from "@/utils/userSearch";
+import { Search } from '@element-plus/icons-vue'
+import { useUserSearch } from '@/utils/userSearch'
 
 // Props
 const props = defineProps({
   // 是否显示审核状态下拉
   showExamineStatus: {
     type: Boolean,
-    default: true
+    default: true,
   },
   // 是否显示用户搜索下拉
   showUserSearch: {
     type: Boolean,
-    default: true
+    default: true,
   },
   // 是否显示关键词搜索
   showKeyword: {
     type: Boolean,
-    default: true
+    default: true,
   },
   // 关键词占位符
   keywordPlaceholder: {
     type: String,
-    default: "搜索关键词"
-  }
-});
+    default: '搜索关键词',
+  },
+})
 
 // Emits
-const emit = defineEmits([
-  "update:examineStatus",
-  "update:userId",
-  "update:keyword",
-  "change"
-]);
+const emit = defineEmits(['update:examineStatus', 'update:userId', 'update:keyword', 'change'])
 
 // 用户搜索
-const { filteredUserList, userLoading, searchUsers } = useUserSearch();
+const { filteredUserList, userLoading, searchUsers } = useUserSearch()
 
 // 内部状态
-const examineStatus = defineModel("examineStatus", { default: "" });
-const selectedUserId = defineModel("userId", { default: "" });
-const keyword = defineModel("keyword", { default: "" });
+const examineStatus = defineModel('examineStatus', { default: '' })
+const selectedUserId = defineModel('userId', { default: '' })
+const keyword = defineModel('keyword', { default: '' })
 
 // 变化处理
 const handleChange = () => {
-  emit("update:examineStatus", examineStatus.value);
-  emit("update:userId", selectedUserId.value);
-  emit("update:keyword", keyword.value);
-  emit("change");
-};
+  emit('update:examineStatus', examineStatus.value)
+  emit('update:userId', selectedUserId.value)
+  emit('update:keyword', keyword.value)
+  emit('change')
+}
 
 // 重置
 const reset = () => {
-  examineStatus.value = "";
-  selectedUserId.value = "";
-  keyword.value = "";
-};
+  examineStatus.value = ''
+  selectedUserId.value = ''
+  keyword.value = ''
+}
 
 // 暴露方法
 defineExpose({
-  reset
-});
+  reset,
+})
 </script>
 
 <style lang="scss" scoped>

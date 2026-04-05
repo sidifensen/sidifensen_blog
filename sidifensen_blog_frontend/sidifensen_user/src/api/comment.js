@@ -1,4 +1,4 @@
-import request from "@/utils/Request";
+import request from '@/utils/Request'
 
 /**
  * 发表评论
@@ -11,11 +11,11 @@ import request from "@/utils/Request";
  */
 export const addComment = (data) => {
   return request({
-    url: "/comment/add",
-    method: "post",
+    url: '/comment/add',
+    method: 'post',
     data,
-  });
-};
+  })
+}
 
 /**
  * 删除评论
@@ -25,9 +25,9 @@ export const addComment = (data) => {
 export const deleteComment = (commentId) => {
   return request({
     url: `/comment/${commentId}`,
-    method: "delete",
-  });
-};
+    method: 'delete',
+  })
+}
 
 /**
  * 获取文章评论列表
@@ -38,15 +38,15 @@ export const deleteComment = (commentId) => {
  */
 export const getCommentList = (articleId, pageNum, pageSize) => {
   return request({
-    url: "/comment/list",
-    method: "get",
+    url: '/comment/list',
+    method: 'get',
     params: {
       articleId,
       pageNum,
       pageSize,
     },
-  });
-};
+  })
+}
 
 /**
  * 获取评论的回复列表
@@ -57,15 +57,15 @@ export const getCommentList = (articleId, pageNum, pageSize) => {
  */
 export const getReplyList = (commentId, pageNum, pageSize) => {
   return request({
-    url: "/comment/reply/list",
-    method: "get",
+    url: '/comment/reply/list',
+    method: 'get',
     params: {
       commentId,
       pageNum,
       pageSize,
     },
-  });
-};
+  })
+}
 
 /**
  * 管理员审核评论
@@ -76,12 +76,12 @@ export const getReplyList = (commentId, pageNum, pageSize) => {
 export const auditComment = (commentId, examineStatus) => {
   return request({
     url: `/comment/admin/audit/${commentId}`,
-    method: "put",
+    method: 'put',
     params: {
       examineStatus,
     },
-  });
-};
+  })
+}
 
 /**
  * 管理员删除评论
@@ -91,9 +91,9 @@ export const auditComment = (commentId, examineStatus) => {
 export const adminDeleteComment = (commentId) => {
   return request({
     url: `/comment/admin/${commentId}`,
-    method: "delete",
-  });
-};
+    method: 'delete',
+  })
+}
 
 /**
  * 获取用户评论管理列表
@@ -107,12 +107,12 @@ export const adminDeleteComment = (commentId) => {
  */
 export const getUserCommentManageList = (pageNum, pageSize, commentFilterDto) => {
   return request({
-    url: "/comment/manage/list",
-    method: "post",
+    url: '/comment/manage/list',
+    method: 'post',
     params: {
       pageNum,
       pageSize,
     },
     data: commentFilterDto,
-  });
-};
+  })
+}

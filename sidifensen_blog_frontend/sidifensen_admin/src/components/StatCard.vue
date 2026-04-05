@@ -33,50 +33,50 @@ const props = defineProps({
    */
   label: {
     type: String,
-    required: true
+    required: true,
   },
   /**
    * 统计数值
    */
   value: {
     type: [Number, String],
-    default: 0
+    default: 0,
   },
   /**
    * 图标
    */
   icon: {
     type: [Object, String],
-    required: true
+    required: true,
   },
   /**
    * 卡片类型（用于样式区分）
    */
   type: {
     type: String,
-    default: 'default'
+    default: 'default',
   },
   /**
    * 加载状态
    */
   loading: {
     type: Boolean,
-    default: false
+    default: false,
   },
   /**
    * 趋势类型：positive（上涨）、negative（下跌）、neutral（持平）
    */
   trendType: {
     type: String,
-    default: 'neutral'
+    default: 'neutral',
   },
   /**
    * 趋势文本
    */
   trendText: {
     type: String,
-    default: ''
-  }
+    default: '',
+  },
 })
 
 const displayValue = computed(() => {
@@ -108,7 +108,7 @@ const trendIcon = computed(() => {
     box-shadow 0.2s ease;
 
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     left: 0;

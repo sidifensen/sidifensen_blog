@@ -27,8 +27,19 @@
         <div class="comment-actions">
           <!-- 点赞按钮 -->
           <div class="action-item like-action">
-            <el-button text size="small" :class="{ 'is-liked': comment.isLiked }" @click="handleLike">
-              <svg-icon name="like" width="13px" height="13px" margin-right="7px" :color="comment.isLiked ? '#409EFF' : '#909399'" />
+            <el-button
+              text
+              size="small"
+              :class="{ 'is-liked': comment.isLiked }"
+              @click="handleLike"
+            >
+              <svg-icon
+                name="like"
+                width="13px"
+                height="13px"
+                margin-right="7px"
+                :color="comment.isLiked ? '#409EFF' : '#909399'"
+              />
               <span>{{ formatCompactNumber(comment.likeCount || 0) }}</span>
             </el-button>
           </div>
@@ -53,7 +64,7 @@
           <div v-if="comment.replyCount > 0" class="action-item">
             <el-button text size="small" @click="toggleReplies">
               <el-icon><ArrowDown v-if="!showReplies" /><ArrowUp v-else /></el-icon>
-              <span>{{ showReplies ? "收起" : "查看" }}回复 ({{ comment.replyCount }})</span>
+              <span>{{ showReplies ? '收起' : '查看' }}回复 ({{ comment.replyCount }})</span>
             </el-button>
           </div>
         </div>
@@ -89,7 +100,7 @@
           <!-- 加载更多回复 -->
           <div v-if="hasMoreReplies" class="load-more-replies">
             <el-button text size="small" :loading="loadingReplies" @click="loadMoreReplies">
-              {{ loadingReplies ? "加载中..." : "加载更多回复" }}
+              {{ loadingReplies ? '加载中...' : '加载更多回复' }}
             </el-button>
           </div>
         </div>
@@ -99,16 +110,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { ElMessage, ElMessageBox } from "element-plus";
-import { ChatDotRound, Delete, ArrowDown, ArrowUp } from "@element-plus/icons-vue";
-import { getReplyList, deleteComment } from "@/api/comment";
-import { toggleLike } from "@/api/like";
-import { useUserStore } from "@/stores/userStore";
-import { formatTime } from "@/utils/formatTime";
-import { formatCompactNumber } from "@/utils/formatNumber";
-import CommentForm from "@/views/User/Article/components/CommentForm.vue";
-import SvgIcon from "@/components/SvgIcon.vue";
+import { ref, computed, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { ChatDotRound, Delete, ArrowDown, ArrowUp } from '@element-plus/icons-vue'
+import { getReplyList, deleteComment } from '@/api/comment'
+import { toggleLike } from '@/api/like'
+import { useUserStore } from '@/stores/userStore'
+import { formatTime } from '@/utils/formatTime'
+import { formatCompactNumber } from '@/utils/formatNumber'
+import CommentForm from '@/views/User/Article/components/CommentForm.vue'
+import SvgIcon from '@/components/SvgIcon.vue'
 
 // Props
 const props = defineProps({
@@ -122,208 +133,210 @@ const props = defineProps({
   },
   articleTitle: {
     type: String,
-    default: "",
+    default: '',
   },
   isReply: {
     type: Boolean,
     default: false,
   },
-});
+})
 
 // Emits
-const emit = defineEmits(["reply-added", "comment-deleted"]);
+const emit = defineEmits(['reply-added', 'comment-deleted'])
 
 // 响应式数据
-const showReplyForm = ref(false); // 是否显示回复表单
-const showReplies = ref(false); // 是否显示回复列表
-const replyList = ref([]); // 回复列表
-const loadingReplies = ref(false); // 加载回复状态
-const currentPage = ref(1); // 当前页码
-const pageSize = ref(5); // 每页回复数量
-const replyTotal = ref(0); // 回复总数
-const hasMoreReplies = ref(false); // 是否还有更多回复
+const showReplyForm = ref(false) // 是否显示回复表单
+const showReplies = ref(false) // 是否显示回复列表
+const replyList = ref([]) // 回复列表
+const loadingReplies = ref(false) // 加载回复状态
+const currentPage = ref(1) // 当前页码
+const pageSize = ref(5) // 每页回复数量
+const replyTotal = ref(0) // 回复总数
+const hasMoreReplies = ref(false) // 是否还有更多回复
 
 // 状态管理
-const userStore = useUserStore();
+const userStore = useUserStore()
 
 // 计算属性
 const canDelete = computed(() => {
-  return userStore.user && userStore.user.id === props.comment.userId;
-});
+  return userStore.user && userStore.user.id === props.comment.userId
+})
 
 // 初始化回复列表（如果有子回复）
 onMounted(() => {
   if (props.comment.children && props.comment.children.length > 0) {
-    replyList.value = props.comment.children;
-    hasMoreReplies.value = props.comment.replyCount > props.comment.children.length;
+    replyList.value = props.comment.children
+    hasMoreReplies.value = props.comment.replyCount > props.comment.children.length
     // 后端返回的children只是前2条数据，不是完整的第1页
     // 所以从第1页开始加载，但会过滤重复数据
-    currentPage.value = 1;
+    currentPage.value = 1
     // 默认显示初始的子评论
-    showReplies.value = true;
+    showReplies.value = true
   }
-});
+})
 
 // 切换回复表单显示
 const toggleReplyForm = () => {
   if (!userStore.user) {
-    ElMessage.warning("请先登录后再回复");
-    return;
+    ElMessage.warning('请先登录后再回复')
+    return
   }
-  showReplyForm.value = !showReplyForm.value;
-};
+  showReplyForm.value = !showReplyForm.value
+}
 
 // 隐藏回复表单
 const hideReplyForm = () => {
-  showReplyForm.value = false;
-};
+  showReplyForm.value = false
+}
 
 // 切换回复列表显示
 const toggleReplies = async () => {
-  showReplies.value = !showReplies.value;
+  showReplies.value = !showReplies.value
 
   // 如果是首次展开且没有加载过回复，则加载回复
   if (showReplies.value && replyList.value.length === 0) {
-    currentPage.value = 1; // 从第一页开始加载
-    await fetchReplies(true);
+    currentPage.value = 1 // 从第一页开始加载
+    await fetchReplies(true)
   }
-};
+}
 
 // 获取回复列表
 const fetchReplies = async (reset = false) => {
   try {
     if (reset) {
-      currentPage.value = 1;
-      replyList.value = [];
+      currentPage.value = 1
+      replyList.value = []
     }
 
-    loadingReplies.value = true;
-    const res = await getReplyList(props.comment.id, currentPage.value, pageSize.value);
-    const newReplies = res.data.data || [];
-    replyTotal.value = res.data.total || 0;
+    loadingReplies.value = true
+    const res = await getReplyList(props.comment.id, currentPage.value, pageSize.value)
+    const newReplies = res.data.data || []
+    replyTotal.value = res.data.total || 0
 
     if (reset) {
-      replyList.value = newReplies;
+      replyList.value = newReplies
     } else {
       // 过滤重复数据，避免重复添加
-      const filteredReplies = newReplies.filter((newReply) => !replyList.value.some((existingReply) => existingReply.id === newReply.id));
-      replyList.value = [...replyList.value, ...filteredReplies];
+      const filteredReplies = newReplies.filter(
+        (newReply) => !replyList.value.some((existingReply) => existingReply.id === newReply.id),
+      )
+      replyList.value = [...replyList.value, ...filteredReplies]
     }
 
     // 判断是否还有更多数据
-    hasMoreReplies.value = replyList.value.length < replyTotal.value;
+    hasMoreReplies.value = replyList.value.length < replyTotal.value
 
     // 更新页码
-    currentPage.value++;
+    currentPage.value++
   } catch (error) {
     // 静默处理
   } finally {
-    loadingReplies.value = false;
+    loadingReplies.value = false
   }
-};
+}
 
 // 加载更多回复
 const loadMoreReplies = () => {
   if (!hasMoreReplies.value || loadingReplies.value) {
-    return;
+    return
   }
-  fetchReplies(false);
-};
+  fetchReplies(false)
+}
 
 // 处理回复添加
 const handleReplyAdded = (newReply) => {
   // 隐藏回复表单
-  hideReplyForm();
+  hideReplyForm()
 
   // 如果是子评论的回复，直接向上传递给父组件处理
   if (props.isReply) {
     // 子评论的回复应该与子评论并列，所以传递父评论的ID
-    emit("reply-added", props.comment.parentId, newReply);
+    emit('reply-added', props.comment.parentId, newReply)
   } else {
     // 父评论的回复，添加到当前评论的回复列表中
-    const existingReply = replyList.value.find((reply) => reply.id === newReply.id);
+    const existingReply = replyList.value.find((reply) => reply.id === newReply.id)
     if (!existingReply) {
       // 添加新回复到列表
-      replyList.value.push(newReply);
+      replyList.value.push(newReply)
       // 注意：不在这里更新 replyCount，由 CommentDrawer 统一处理
     }
 
     // 显示回复列表
-    showReplies.value = true;
+    showReplies.value = true
 
     // 通知父组件
-    emit("reply-added", props.comment.id, newReply);
+    emit('reply-added', props.comment.id, newReply)
   }
-};
+}
 
 // 处理子回复添加
 const handleSubReplyAdded = (commentId, newReply) => {
   // 如果是当前评论的子回复，才添加到列表中
   if (commentId === props.comment.id) {
     // 检查回复是否已存在，避免重复添加
-    const existingReply = replyList.value.find((reply) => reply.id === newReply.id);
+    const existingReply = replyList.value.find((reply) => reply.id === newReply.id)
     if (!existingReply) {
       // 子回复添加到当前评论的回复列表中
-      replyList.value.push(newReply);
+      replyList.value.push(newReply)
       // 注意：不在这里更新 replyCount，由 CommentDrawer 统一处理
     }
   }
 
   // 通知父组件（继续向上传递事件）
-  emit("reply-added", commentId, newReply);
-};
+  emit('reply-added', commentId, newReply)
+}
 
 // 处理回复删除
 const handleReplyDeleted = (replyId) => {
   // 从回复列表中移除
-  const index = replyList.value.findIndex((r) => r.id === replyId);
+  const index = replyList.value.findIndex((r) => r.id === replyId)
   if (index !== -1) {
-    replyList.value.splice(index, 1);
-    props.comment.replyCount = Math.max(0, (props.comment.replyCount || 0) - 1);
+    replyList.value.splice(index, 1)
+    props.comment.replyCount = Math.max(0, (props.comment.replyCount || 0) - 1)
   }
-};
+}
 
 // 处理点赞
 const handleLike = async () => {
   if (!userStore.user) {
-    ElMessage.warning("请先登录后再点赞");
-    return;
+    ElMessage.warning('请先登录后再点赞')
+    return
   }
 
   try {
     if (props.comment.isLiked) {
       // 取消点赞
-      await toggleLike(1, props.comment.id); // 1表示评论类型
-      props.comment.isLiked = false;
-      props.comment.likeCount = Math.max(0, (props.comment.likeCount || 0) - 1);
+      await toggleLike(1, props.comment.id) // 1表示评论类型
+      props.comment.isLiked = false
+      props.comment.likeCount = Math.max(0, (props.comment.likeCount || 0) - 1)
     } else {
       // 点赞
-      await toggleLike(1, props.comment.id); // 1表示评论类型
-      props.comment.isLiked = true;
-      props.comment.likeCount = (props.comment.likeCount || 0) + 1;
+      await toggleLike(1, props.comment.id) // 1表示评论类型
+      props.comment.isLiked = true
+      props.comment.likeCount = (props.comment.likeCount || 0) + 1
     }
   } catch (error) {
     // 静默处理
   }
-};
+}
 
 // 处理删除评论
 const handleDelete = async () => {
   try {
-    await ElMessageBox.confirm("确定要删除这条评论吗？删除后无法恢复。", "确认删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await ElMessageBox.confirm('确定要删除这条评论吗？删除后无法恢复。', '确认删除', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
 
-    await deleteComment(props.comment.id);
-    emit("comment-deleted", props.comment.id);
+    await deleteComment(props.comment.id)
+    emit('comment-deleted', props.comment.id)
   } catch (error) {
-    if (error !== "cancel") {
+    if (error !== 'cancel') {
       // 静默处理
     }
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>

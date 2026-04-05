@@ -61,7 +61,7 @@
               :disabled="!isEmailValid || waitTime > 0"
               @click="sendEmailBtn"
             >
-              {{ waitTime > 0 ? `${waitTime}s` : "获取验证码" }}
+              {{ waitTime > 0 ? `${waitTime}s` : '获取验证码' }}
             </el-button>
           </div>
         </el-form-item>
@@ -117,9 +117,7 @@
         </el-form-item>
       </div>
 
-      <el-button class="login-btn" type="primary" @click="resetPasswordBtn">
-        重置密码
-      </el-button>
+      <el-button class="login-btn" type="primary" @click="resetPasswordBtn"> 重置密码 </el-button>
     </el-form>
 
     <!-- 步骤3: 成功 -->
@@ -139,113 +137,113 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
-import { useRouter } from "vue-router";
-import { EditPen, Lock, Message } from "@element-plus/icons-vue";
-import { ElMessage } from "element-plus";
-import { sendEmail, verifyResetPassword, resetPassword } from "@/api/user";
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { EditPen, Lock, Message } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import { sendEmail, verifyResetPassword, resetPassword } from '@/api/user'
 
-const router = useRouter();
+const router = useRouter()
 const formData = ref({
-  email: "",
-  emailCheckCode: "",
-  password: "",
-  repeatPassword: "",
-});
-const formDataRef = ref(null);
+  email: '',
+  emailCheckCode: '',
+  password: '',
+  repeatPassword: '',
+})
+const formDataRef = ref(null)
 
 // 发送邮箱验证码倒计时
-const waitTime = ref(0);
+const waitTime = ref(0)
 
 // 是否已请求过验证码
-const hasRequestedCode = ref(false);
+const hasRequestedCode = ref(false)
 
 // 邮箱正则表达式
-const EmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const EmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 
 // 判断邮箱是否正确
-const isEmailValid = computed(() => EmailRegex.test(formData.value.email));
+const isEmailValid = computed(() => EmailRegex.test(formData.value.email))
 
 // 验证邮箱格式
 const validateEmailFormat = (rule, value, callback) => {
   if (!value) {
-    callback(new Error("请输入邮箱"));
+    callback(new Error('请输入邮箱'))
   } else if (!EmailRegex.test(value)) {
-    callback(new Error("请输入合法的邮箱"));
+    callback(new Error('请输入合法的邮箱'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
 // 验证邮箱验证码
 const validateEmailCheckCode = (rule, value, callback) => {
   if (!value) {
-    callback(new Error("请输入获取的验证码"));
+    callback(new Error('请输入获取的验证码'))
   } else if (!/^\d{6}$/.test(value)) {
-    callback(new Error("验证码必须是6位数字"));
+    callback(new Error('验证码必须是6位数字'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
 // 验证密码字符类型
 const validatePasswordCharacters = (rule, value, callback) => {
-  if (value === "") {
-    callback(new Error("请输入密码"));
+  if (value === '') {
+    callback(new Error('请输入密码'))
   } else if (!/^[a-zA-Z0-9@]+$/.test(value)) {
-    callback(new Error("密码只能包含英文、数字和@符号"));
+    callback(new Error('密码只能包含英文、数字和@符号'))
   } else if (value.length < 6 || value.length > 20) {
-    callback(new Error("密码的长度必须在 6-20 个字符之间"));
+    callback(new Error('密码的长度必须在 6-20 个字符之间'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
 // 验证重复密码
 const validatePassword = (rule, value, callback) => {
-  if (value === "") {
-    callback(new Error("请再次输入密码"));
+  if (value === '') {
+    callback(new Error('请再次输入密码'))
   } else if (value !== formData.value.password) {
-    callback(new Error("两次输入的密码不一致"));
+    callback(new Error('两次输入的密码不一致'))
   } else {
-    callback();
+    callback()
   }
-};
+}
 
 // 表单验证规则
 const rules = {
-  password: [{ validator: validatePasswordCharacters, trigger: ["blur", "change"] }],
-  repeatPassword: [{ validator: validatePassword, trigger: ["blur", "change"] }],
-  email: [{ validator: validateEmailFormat, trigger: ["blur", "change"] }],
-  emailCheckCode: [{ validator: validateEmailCheckCode, trigger: ["blur", "change"] }],
-};
+  password: [{ validator: validatePasswordCharacters, trigger: ['blur', 'change'] }],
+  repeatPassword: [{ validator: validatePassword, trigger: ['blur', 'change'] }],
+  email: [{ validator: validateEmailFormat, trigger: ['blur', 'change'] }],
+  emailCheckCode: [{ validator: validateEmailCheckCode, trigger: ['blur', 'change'] }],
+}
 
 // 发送验证码
 function sendEmailBtn() {
   if (isEmailValid.value) {
     const EmailDto = ref({
       email: formData.value.email,
-      type: "resetPassword",
-    });
+      type: 'resetPassword',
+    })
     sendEmail(EmailDto.value).then(() => {
-      ElMessage.success(`验证码已发送到邮箱：${formData.value.email}，请注意查收`);
-      hasRequestedCode.value = true; // 标记已请求验证码
-      waitTime.value = 60;
+      ElMessage.success(`验证码已发送到邮箱：${formData.value.email}，请注意查收`)
+      hasRequestedCode.value = true // 标记已请求验证码
+      waitTime.value = 60
       const interval = setInterval(() => {
         if (waitTime.value === 0) {
-          clearInterval(interval);
+          clearInterval(interval)
         } else {
-          waitTime.value--;
+          waitTime.value--
         }
-      }, 1000);
-    });
+      }, 1000)
+    })
   } else {
-    ElMessage.warning("请输入正确的邮箱");
+    ElMessage.warning('请输入正确的邮箱')
   }
 }
 
 // 步骤
-const step = ref(0);
+const step = ref(0)
 
 // 验证重置密码
 const verifyResetBtn = () => {
@@ -253,39 +251,39 @@ const verifyResetBtn = () => {
     const VerifyResetDto = ref({
       email: formData.value.email,
       emailCheckCode: formData.value.emailCheckCode,
-    });
+    })
     verifyResetPassword(VerifyResetDto.value).then(() => {
-      step.value++;
-    });
+      step.value++
+    })
   }
-};
+}
 
 // 跳转倒计时
-const jumpTime = ref(3);
+const jumpTime = ref(3)
 
 // 重置密码
 const resetPasswordBtn = () => {
   formDataRef.value.validate((valid) => {
     if (!valid) {
-      ElMessage.error("请填写完整信息");
-      return;
+      ElMessage.error('请填写完整信息')
+      return
     } else {
       resetPassword(formData.value).then(() => {
-        step.value++;
+        step.value++
         const interval = setInterval(() => {
-          jumpTime.value--;
+          jumpTime.value--
           if (jumpTime.value === 0) {
-            clearInterval(interval);
+            clearInterval(interval)
           }
-        }, 1000);
+        }, 1000)
         setTimeout(() => {
-          step.value = 0; // 重置步骤
-          router.push("/login");
-        }, 3000);
-      });
+          step.value = 0 // 重置步骤
+          router.push('/login')
+        }, 3000)
+      })
     }
-  });
-};
+  })
+}
 </script>
 
 <style lang="scss" scoped>
@@ -413,11 +411,11 @@ html.dark {
 
 // 表单
 .reset-form {
-  :deep(.el-form-item) {
+  ::v-deep(.el-form-item) {
     margin-bottom: 0;
   }
 
-  :deep(.el-form-item__error) {
+  ::v-deep(.el-form-item__error) {
     padding-top: 4px;
   }
 }
@@ -438,7 +436,7 @@ html.dark {
 
 // 输入框样式 - 复用登录页样式
 .login-input {
-  :deep(.el-input__wrapper) {
+  ::v-deep(.el-input__wrapper) {
     background: var(--input-bg);
     border: 2px solid var(--input-border);
     border-radius: 8px;
@@ -457,7 +455,7 @@ html.dark {
     }
   }
 
-  :deep(.el-input__inner) {
+  ::v-deep(.el-input__inner) {
     height: 44px;
     font-size: 15px;
     color: var(--text-primary);
@@ -467,7 +465,7 @@ html.dark {
     }
   }
 
-  :deep(.el-input__prefix) {
+  ::v-deep(.el-input__prefix) {
     color: var(--text-muted);
     margin-right: 8px;
   }

@@ -4,17 +4,61 @@
       <div class="card-header">
         <h2 class="card-title">用户管理</h2>
         <div class="card-actions">
-          <el-input v-model="searchUsername" placeholder="搜索用户名称" :prefix-icon="Search" size="small" class="search-input" clearable />
-          <el-input v-model="searchEmail" placeholder="搜索用户邮箱" :prefix-icon="Search" size="small" class="search-input" clearable />
-          <el-select v-model="searchStatus" placeholder="用户状态" filterable clearable size="small" class="search-input" @change="handleSearch">
+          <el-input
+            v-model="searchUsername"
+            placeholder="搜索用户名称"
+            :prefix-icon="Search"
+            size="small"
+            class="search-input"
+            clearable
+          />
+          <el-input
+            v-model="searchEmail"
+            placeholder="搜索用户邮箱"
+            :prefix-icon="Search"
+            size="small"
+            class="search-input"
+            clearable
+          />
+          <el-select
+            v-model="searchStatus"
+            placeholder="用户状态"
+            filterable
+            clearable
+            size="small"
+            class="search-input"
+            @change="handleSearch"
+          >
             <el-option label="正常" value="0" />
             <el-option label="禁用" value="1" />
           </el-select>
         </div>
       </div>
       <div class="card-second">
-        <el-date-picker v-model="searchCreateTimeStart" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间开始" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
-        <el-date-picker v-model="searchCreateTimeEnd" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间结束" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
+        <el-date-picker
+          v-model="searchCreateTimeStart"
+          type="datetime"
+          format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          placeholder="创建时间开始"
+          :prefix-icon="Calendar"
+          size="small"
+          class="search-input"
+          clearable
+          @change="handleSearch"
+        />
+        <el-date-picker
+          v-model="searchCreateTimeEnd"
+          type="datetime"
+          format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          placeholder="创建时间结束"
+          :prefix-icon="Calendar"
+          size="small"
+          class="search-input"
+          clearable
+          @change="handleSearch"
+        />
       </div>
 
       <!-- 桌面端表格视图 -->
@@ -25,7 +69,13 @@
           <el-table-column prop="avatar" label="用户头像">
             <template #default="{ row }">
               <div style="display: flex; align-items: center">
-                <el-image preview-teleported :src="row.avatar" style="width: 40px; height: 40px" :preview-src-list="[row.avatar]" fit="fill" />
+                <el-image
+                  preview-teleported
+                  :src="row.avatar"
+                  style="width: 40px; height: 40px"
+                  :preview-src-list="[row.avatar]"
+                  fit="fill"
+                />
               </div>
             </template>
           </el-table-column>
@@ -52,7 +102,17 @@
           <el-table-column prop="loginType" label="登录方式" width="110">
             <template #default="{ row }">
               <el-tag>
-                {{ row.loginType === 0 ? "用户名/邮箱" : row.loginType === 1 ? "gitee" : row.loginType === 2 ? "github" : row.loginType === 3 ? "QQ" : "未知登录方式" }}
+                {{
+                  row.loginType === 0
+                    ? '用户名/邮箱'
+                    : row.loginType === 1
+                      ? 'gitee'
+                      : row.loginType === 2
+                        ? 'github'
+                        : row.loginType === 3
+                          ? 'QQ'
+                          : '未知登录方式'
+                }}
               </el-tag>
             </template>
           </el-table-column>
@@ -63,10 +123,41 @@
           <el-table-column label="操作" width="330">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button type="info" size="small" @click="handleDetailUser(row.id)" :icon="InfoFilled" class="detail-button">详情</el-button>
-                <el-button type="primary" size="small" @click="handleEditUser(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
-                <el-button type="danger" size="small" @click="handleDeleteUser(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
-                <el-button size="small" type="warning" @click="handleAuthorizeRole(row)" :icon="Avatar" class="role-button"> 添加角色 </el-button>
+                <el-button
+                  type="info"
+                  size="small"
+                  @click="handleDetailUser(row.id)"
+                  :icon="InfoFilled"
+                  class="detail-button"
+                  >详情</el-button
+                >
+                <el-button
+                  type="primary"
+                  size="small"
+                  @click="handleEditUser(row)"
+                  :icon="Edit"
+                  class="edit-button"
+                >
+                  编辑
+                </el-button>
+                <el-button
+                  type="danger"
+                  size="small"
+                  @click="handleDeleteUser(row.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                >
+                  删除
+                </el-button>
+                <el-button
+                  size="small"
+                  type="warning"
+                  @click="handleAuthorizeRole(row)"
+                  :icon="Avatar"
+                  class="role-button"
+                >
+                  添加角色
+                </el-button>
               </div>
             </template>
           </el-table-column>
@@ -89,9 +180,18 @@
                 </div>
                 <div class="header-right">
                   <el-tag :type="user.status === 0 ? 'success' : 'danger'">
-                    {{ user.status === 0 ? "正常" : "禁用" }}
+                    {{ user.status === 0 ? '正常' : '禁用' }}
                   </el-tag>
-                  <el-switch v-model="user.status" size="small" active-color="#42b983" inactive-color="#cccccc" :active-value="0" :inactive-value="1" :loading="switchLoading" :before-change="() => handleStatusChange(user.id, user.status === 0 ? 1 : 0)" />
+                  <el-switch
+                    v-model="user.status"
+                    size="small"
+                    active-color="#42b983"
+                    inactive-color="#cccccc"
+                    :active-value="0"
+                    :inactive-value="1"
+                    :loading="switchLoading"
+                    :before-change="() => handleStatusChange(user.id, user.status === 0 ? 1 : 0)"
+                  />
                 </div>
               </div>
 
@@ -108,12 +208,22 @@
                 <div class="info-row">
                   <span class="label">登录方式:</span>
                   <el-tag size="small">
-                    {{ user.loginType === 0 ? "用户名/邮箱" : user.loginType === 1 ? "gitee" : user.loginType === 2 ? "github" : user.loginType === 3 ? "QQ" : "未知" }}
+                    {{
+                      user.loginType === 0
+                        ? '用户名/邮箱'
+                        : user.loginType === 1
+                          ? 'gitee'
+                          : user.loginType === 2
+                            ? 'github'
+                            : user.loginType === 3
+                              ? 'QQ'
+                              : '未知'
+                    }}
                   </el-tag>
                 </div>
                 <div class="info-row">
                   <span class="label">登录地址:</span>
-                  <span class="value">{{ user.loginAddress || "-" }}</span>
+                  <span class="value">{{ user.loginAddress || '-' }}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">最近登录:</span>
@@ -127,10 +237,38 @@
 
               <!-- 操作按钮 -->
               <div class="user-actions">
-                <el-button type="info" size="small" @click="handleDetailUser(user.id)" :icon="InfoFilled" class="detail-button">详情</el-button>
-                <el-button type="primary" size="small" @click="handleEditUser(user)" :icon="Edit" class="edit-button">编辑</el-button>
-                <el-button type="danger" size="small" @click="handleDeleteUser(user.id)" :icon="Delete" class="delete-button">删除</el-button>
-                <el-button size="small" type="warning" @click="handleAuthorizeRole(user)" :icon="Avatar" class="role-button">添加角色</el-button>
+                <el-button
+                  type="info"
+                  size="small"
+                  @click="handleDetailUser(user.id)"
+                  :icon="InfoFilled"
+                  class="detail-button"
+                  >详情</el-button
+                >
+                <el-button
+                  type="primary"
+                  size="small"
+                  @click="handleEditUser(user)"
+                  :icon="Edit"
+                  class="edit-button"
+                  >编辑</el-button
+                >
+                <el-button
+                  type="danger"
+                  size="small"
+                  @click="handleDeleteUser(user.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                  >删除</el-button
+                >
+                <el-button
+                  size="small"
+                  type="warning"
+                  @click="handleAuthorizeRole(user)"
+                  :icon="Avatar"
+                  class="role-button"
+                  >添加角色</el-button
+                >
               </div>
             </div>
           </el-card>
@@ -138,7 +276,13 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <Pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
 
     <!-- 新增/编辑权限对话框 -->
@@ -151,7 +295,12 @@
           <el-input v-model="userForm.email" placeholder="请输入用户邮箱" />
         </el-form-item>
         <el-form-item prop="nickname" label="用户昵称">
-          <el-input v-model="userForm.nickname" placeholder="请输入用户昵称" maxlength="20" show-word-limit />
+          <el-input
+            v-model="userForm.nickname"
+            placeholder="请输入用户昵称"
+            maxlength="20"
+            show-word-limit
+          />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -163,14 +312,21 @@
     </el-dialog>
 
     <!-- 添加角色弹窗对话框 -->
-    <el-dialog v-model="authorizeDialogVisible" title="用户添加角色" :before-close="handleAuthorizeDialogClose" class="authorize-dialog">
+    <el-dialog
+      v-model="authorizeDialogVisible"
+      title="用户添加角色"
+      :before-close="handleAuthorizeDialogClose"
+      class="authorize-dialog"
+    >
       <div v-loading="authorizeLoading" class="authorize-dialog-content">
         <p class="role-name">当前用户: {{ currentUser?.username }}</p>
         <template v-if="!authorizeLoading">
           <el-form ref="authorizeFormRef" class="authorize-form">
             <el-form-item label="选择角色">
               <el-checkbox-group v-model="selectedRole" class="role-checkbox-group">
-                <el-checkbox v-for="role in allRole" :key="role.id" :label="role.id">{{ role.role }}</el-checkbox>
+                <el-checkbox v-for="role in allRole" :key="role.id" :label="role.id">{{
+                  role.role
+                }}</el-checkbox>
               </el-checkbox-group>
             </el-form-item>
           </el-form>
@@ -203,17 +359,21 @@
           </div>
           <div class="info-item">
             <span class="label">性别:</span>
-            <span class="value">{{ userDetail.sex === 0 ? "男" : userDetail.sex === 1 ? "女" : "未知" }}</span>
+            <span class="value">{{
+              userDetail.sex === 0 ? '男' : userDetail.sex === 1 ? '女' : '未知'
+            }}</span>
           </div>
           <div class="info-item">
             <span class="label">状态:</span>
             <span class="value">
-              <el-tag :type="userDetail.status === 0 ? 'success' : 'danger'">{{ userDetail.status === 0 ? "启用" : "禁用" }}</el-tag>
+              <el-tag :type="userDetail.status === 0 ? 'success' : 'danger'">{{
+                userDetail.status === 0 ? '启用' : '禁用'
+              }}</el-tag>
             </span>
           </div>
           <div class="info-item">
             <span class="label">简介:</span>
-            <span class="value">{{ userDetail.introduction || "暂无简介" }}</span>
+            <span class="value">{{ userDetail.introduction || '暂无简介' }}</span>
           </div>
         </div>
 
@@ -222,7 +382,17 @@
         <div class="info-grid">
           <div class="info-item">
             <span class="label">登录类型:</span>
-            <span class="value">{{ userDetail.loginType === 0 ? "用户名/邮箱" : userDetail.loginType === 1 ? "gitee" : userDetail.loginType === 2 ? "github" : userDetail.loginType === 3 ? "QQ" : "未知登录方式" }}</span>
+            <span class="value">{{
+              userDetail.loginType === 0
+                ? '用户名/邮箱'
+                : userDetail.loginType === 1
+                  ? 'gitee'
+                  : userDetail.loginType === 2
+                    ? 'github'
+                    : userDetail.loginType === 3
+                      ? 'QQ'
+                      : '未知登录方式'
+            }}</span>
           </div>
           <div class="info-item">
             <span class="label">登录IP:</span>
@@ -243,7 +413,17 @@
         <div class="info-grid">
           <div class="info-item">
             <span class="label">注册类型:</span>
-            <span class="value">{{ userDetail.registerType === 0 ? "用户名/邮箱" : userDetail.registerType === 1 ? "gitee" : userDetail.registerType === 2 ? "github" : userDetail.registerType === 3 ? "QQ" : "未知注册方式" }}</span>
+            <span class="value">{{
+              userDetail.registerType === 0
+                ? '用户名/邮箱'
+                : userDetail.registerType === 1
+                  ? 'gitee'
+                  : userDetail.registerType === 2
+                    ? 'github'
+                    : userDetail.registerType === 3
+                      ? 'QQ'
+                      : '未知注册方式'
+            }}</span>
           </div>
           <div class="info-item">
             <span class="label">注册IP:</span>
@@ -266,13 +446,23 @@
         <!-- 角色信息 -->
         <h3>角色信息</h3>
         <div v-if="userDetail.sysRoles && userDetail.sysRoles.length > 0" class="role-list">
-          <el-tag v-for="role in userDetail.sysRoles" :key="role.id" type="primary" style="margin-right: 10px; margin-bottom: 10px"> {{ role.name }} ({{ role.role }}) </el-tag>
+          <el-tag
+            v-for="role in userDetail.sysRoles"
+            :key="role.id"
+            type="primary"
+            style="margin-right: 10px; margin-bottom: 10px"
+          >
+            {{ role.name }} ({{ role.role }})
+          </el-tag>
         </div>
         <div v-else class="no-data">暂无角色信息</div>
 
         <!-- 权限信息 -->
         <h3>权限信息</h3>
-        <div v-if="userDetail.sysPermissions && userDetail.sysPermissions.length > 0" class="permission-container">
+        <div
+          v-if="userDetail.sysPermissions && userDetail.sysPermissions.length > 0"
+          class="permission-container"
+        >
           <el-table :data="userDetail.sysPermissions" size="small" class="permission-table">
             <el-table-column prop="id" label="权限ID" width="80" />
             <el-table-column prop="description" label="权限描述" width="180" />
@@ -286,8 +476,17 @@
 
         <!-- 菜单信息 -->
         <h3>菜单信息</h3>
-        <div v-if="userDetail.sysMenus && userDetail.sysMenus.length > 0" class="permission-container">
-          <el-table :data="userDetail.sysMenus" size="small" row-key="id" default-expand-all class="permission-table">
+        <div
+          v-if="userDetail.sysMenus && userDetail.sysMenus.length > 0"
+          class="permission-container"
+        >
+          <el-table
+            :data="userDetail.sysMenus"
+            size="small"
+            row-key="id"
+            default-expand-all
+            class="permission-table"
+          >
             <el-table-column prop="id" label="菜单ID" width="100" />
             <el-table-column prop="parentId" label="父菜单ID" width="100" />
             <el-table-column prop="name" label="菜单名称" width="180" />
@@ -307,7 +506,9 @@
             </el-table-column>
             <el-table-column prop="status" label="状态" width="80">
               <template #default="{ row }">
-                <el-tag :type="row.status === 0 ? 'success' : 'danger'">{{ row.status === 0 ? "启用" : "禁用" }}</el-tag>
+                <el-tag :type="row.status === 0 ? 'success' : 'danger'">{{
+                  row.status === 0 ? '启用' : '禁用'
+                }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column prop="createTime" label="创建时间" width="180" />
@@ -322,323 +523,334 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from "vue";
-import { Search, InfoFilled, Edit, Delete, Avatar, Calendar } from "@element-plus/icons-vue";
-import { getRoleList } from "@/api/role";
-import { getUserList, getUserPage, updateUser, deleteUser, queryUserPage, getUserDetail } from "@/api/user";
-import { getRolesByUser, addRole } from "@/api/user-role";
-import { formatMenu } from "@/utils/Menu";
-import Pagination from "@/components/Pagination.vue";
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { Search, InfoFilled, Edit, Delete, Avatar, Calendar } from '@element-plus/icons-vue'
+import { getRoleList } from '@/api/role'
+import {
+  getUserList,
+  getUserPage,
+  updateUser,
+  deleteUser,
+  queryUserPage,
+  getUserDetail,
+} from '@/api/user'
+import { getRolesByUser, addRole } from '@/api/user-role'
+import { formatMenu } from '@/utils/Menu'
+import Pagination from '@/components/Pagination.vue'
 
 // 用户列表数据
-const userList = ref([]);
+const userList = ref([])
 // 分页后的用户列表
-const paginatedUserList = ref([]);
+const paginatedUserList = ref([])
 // 加载状态
-const loading = ref(false);
+const loading = ref(false)
 // 当前页码
-const currentPage = ref(1);
+const currentPage = ref(1)
 // 每页条数
-const pageSize = ref(10);
+const pageSize = ref(10)
 // 总条数
-const total = ref(0);
+const total = ref(0)
 // 对话框可见性
-const dialogVisible = ref(false);
+const dialogVisible = ref(false)
 // 对话框标题
-const dialogTitle = ref("新增权限");
+const dialogTitle = ref('新增权限')
 
 // 表单引用
-const userFormRef = ref(null);
+const userFormRef = ref(null)
 // 表单数据
 const userForm = ref({
   id: null,
-  username: "",
-  nickname: "",
-  email: "",
-  avatar: "",
+  username: '',
+  nickname: '',
+  email: '',
+  avatar: '',
   status: 0,
-});
+})
 // 表单验证规则
 const rules = {
-  username: [{ required: true, message: "请输入用户名称", trigger: "blur" }],
-  email: [{ required: true, message: "请输入用户邮箱", trigger: "blur" }],
+  username: [{ required: true, message: '请输入用户名称', trigger: 'blur' }],
+  email: [{ required: true, message: '请输入用户邮箱', trigger: 'blur' }],
   nickname: [
-    { required: true, message: "请输入用户昵称", trigger: "blur" },
-    { min: 4, max: 20, message: "昵称长度必须在4-20个字符之间", trigger: "blur" },
+    { required: true, message: '请输入用户昵称', trigger: 'blur' },
+    { min: 4, max: 20, message: '昵称长度必须在4-20个字符之间', trigger: 'blur' },
   ],
-};
+}
 
 // 获取用户列表
 const getUsers = async () => {
-  currentPage.value = 1;
-  await fetchUsers();
-};
+  currentPage.value = 1
+  await fetchUsers()
+}
 
 // 初始化
 onMounted(() => {
-  getUsers();
-  handleResize();
-  window.addEventListener("resize", handleResize);
-});
+  getUsers()
+  handleResize()
+  window.addEventListener('resize', handleResize)
+})
 
 // 组件卸载时移除监听
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 
-const switchLoading = ref(false);
+const switchLoading = ref(false)
 // 处理状态变更
 const handleStatusChange = async (id, status) => {
   return new Promise((resolve, reject) => {
-    switchLoading.value = true;
+    switchLoading.value = true
     updateUser({ id, status })
       .then(() => {
-        ElMessage.success("状态更新成功");
+        ElMessage.success('状态更新成功')
         // 手动更新本地数据状态
-        const user = userList.value.find((item) => item.id === id);
+        const user = userList.value.find((item) => item.id === id)
         if (user) {
-          user.status = status;
+          user.status = status
         }
-        resolve();
+        resolve()
       })
       .catch((error) => {
-        ElMessage.error("状态更新失败");
-        reject(error);
+        ElMessage.error('状态更新失败')
+        reject(error)
       })
       .finally(() => {
-        switchLoading.value = false;
-      });
-  });
-};
+        switchLoading.value = false
+      })
+  })
+}
 
 // 搜索用户名称
-const searchUsername = ref("");
+const searchUsername = ref('')
 // 搜索用户邮箱
-const searchEmail = ref("");
+const searchEmail = ref('')
 // 搜索用户状态
-const searchStatus = ref("");
+const searchStatus = ref('')
 // 搜索创建时间开始
-const searchCreateTimeStart = ref(null);
+const searchCreateTimeStart = ref(null)
 // 搜索创建时间结束
-const searchCreateTimeEnd = ref(null);
+const searchCreateTimeEnd = ref(null)
 
-const hasSearchConditions = () => !!(searchUsername.value || searchEmail.value || searchStatus.value !== "" || searchCreateTimeStart.value || searchCreateTimeEnd.value);
+const hasSearchConditions = () =>
+  !!(
+    searchUsername.value ||
+    searchEmail.value ||
+    searchStatus.value !== '' ||
+    searchCreateTimeStart.value ||
+    searchCreateTimeEnd.value
+  )
 
 const buildSearchPayload = () => ({
   pageNum: currentPage.value,
   pageSize: pageSize.value,
   username: searchUsername.value || undefined,
   email: searchEmail.value || undefined,
-  status: searchStatus.value !== "" ? searchStatus.value : undefined,
+  status: searchStatus.value !== '' ? searchStatus.value : undefined,
   createTimeStart: searchCreateTimeStart.value || undefined,
   createTimeEnd: searchCreateTimeEnd.value || undefined,
-});
+})
 
 const applyPageData = (pageData) => {
-  userList.value = pageData?.data || [];
-  paginatedUserList.value = userList.value;
-  total.value = Number(pageData?.total || 0);
-};
+  userList.value = pageData?.data || []
+  paginatedUserList.value = userList.value
+  total.value = Number(pageData?.total || 0)
+}
 
 const fetchUsers = async () => {
-  loading.value = true;
+  loading.value = true
   try {
-    let pageData = null;
+    let pageData = null
     if (hasSearchConditions()) {
-      const res = await queryUserPage(buildSearchPayload());
-      pageData = res.data;
+      const res = await queryUserPage(buildSearchPayload())
+      pageData = res.data
     } else {
       const res = await getUserPage({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
-      });
-      pageData = res.data;
+      })
+      pageData = res.data
     }
-    applyPageData(pageData);
+    applyPageData(pageData)
   } catch (error) {
-    ElMessage.error(hasSearchConditions() ? "搜索用户失败" : "获取用户列表失败");
+    ElMessage.error(hasSearchConditions() ? '搜索用户失败' : '获取用户列表失败')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 更新分页数据
 const updatePaginatedUserList = () => {
-  paginatedUserList.value = userList.value;
-};
+  paginatedUserList.value = userList.value
+}
 
 // 处理分页大小变化
 const handleSizeChange = async (size) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  await fetchUsers();
-};
+  pageSize.value = size
+  currentPage.value = 1
+  await fetchUsers()
+}
 
 // 处理当前页码变化
 const handleCurrentChange = async (current) => {
-  currentPage.value = current;
-  await fetchUsers();
-};
+  currentPage.value = current
+  await fetchUsers()
+}
 
 // 处理搜索
 const handleSearch = async () => {
-  currentPage.value = 1;
-  await fetchUsers();
-};
+  currentPage.value = 1
+  await fetchUsers()
+}
 
 // 监听搜索输入变化
-const searchTimeout = ref(null);
+const searchTimeout = ref(null)
 watch(searchUsername, (newVal) => {
   // 防抖处理
   if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value);
+    clearTimeout(searchTimeout.value)
   }
   searchTimeout.value = setTimeout(() => {
-    handleSearch();
-  }, 500);
-});
+    handleSearch()
+  }, 500)
+})
 
 watch(searchEmail, (newVal) => {
   // 防抖处理
   if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value);
+    clearTimeout(searchTimeout.value)
   }
   searchTimeout.value = setTimeout(() => {
-    handleSearch();
-  }, 500);
-});
+    handleSearch()
+  }, 500)
+})
 
 watch(searchStatus, (newVal) => {
   // 防抖处理
   if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value);
+    clearTimeout(searchTimeout.value)
   }
   searchTimeout.value = setTimeout(() => {
-    handleSearch();
-  }, 500);
-});
+    handleSearch()
+  }, 500)
+})
 
 // 处理编辑用户
 const handleEditUser = (row) => {
-  dialogTitle.value = "编辑用户";
+  dialogTitle.value = '编辑用户'
   // 深拷贝行数据
-  userForm.value = { ...row };
-  dialogVisible.value = true;
-};
+  userForm.value = { ...row }
+  dialogVisible.value = true
+}
 
 // 处理删除用户
 const handleDeleteUser = (id) => {
-  ElMessageBox.confirm("确定要删除该用户吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要删除该用户吗？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      loading.value = true;
+      loading.value = true
       try {
-        await deleteUser(id);
-        ElMessage.success("删除成功");
-        getUsers();
+        await deleteUser(id)
+        ElMessage.success('删除成功')
+        getUsers()
       } catch (error) {
-        ElMessage.error("删除失败");
+        ElMessage.error('删除失败')
       } finally {
-        loading.value = false;
+        loading.value = false
       }
     })
     .catch(() => {
       // 取消删除
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 处理表单提交
 const handleSubmit = () => {
   userFormRef.value.validate(async (valid) => {
     if (!valid) {
-      return;
+      return
     }
     try {
       if (userForm.value.id) {
         // 编辑用户
-        await updateUser(userForm.value);
-        ElMessage.success("编辑用户成功");
+        await updateUser(userForm.value)
+        ElMessage.success('编辑用户成功')
       } else {
         // 新增用户
-        await addUser(userForm.value);
-        ElMessage.success("新增用户成功");
-        getUsers();
+        await addUser(userForm.value)
+        ElMessage.success('新增用户成功')
+        getUsers()
       }
-      dialogVisible.value = false;
-      getUsers();
+      dialogVisible.value = false
+      getUsers()
     } catch (error) {
-      ElMessage.error(userForm.value.id ? "编辑用户失败" : "新增用户失败");
-      handleDialogClose();
+      ElMessage.error(userForm.value.id ? '编辑用户失败' : '新增用户失败')
+      handleDialogClose()
     }
-  });
-};
+  })
+}
 
 // 处理对话框关闭
 const handleDialogClose = () => {
-  userFormRef.value.resetFields();
-  dialogVisible.value = false;
-};
+  userFormRef.value.resetFields()
+  dialogVisible.value = false
+}
 
 // 用户详情弹窗
-const userDetailDialogVisible = ref(false);
+const userDetailDialogVisible = ref(false)
 
 // 用户详情
-const userDetail = ref();
+const userDetail = ref()
 
 // 用户详情
 const handleDetailUser = async (id) => {
-  userDetailDialogVisible.value = true;
-  const res = await getUserDetail(id);
-  userDetail.value = res.data.data;
+  userDetailDialogVisible.value = true
+  const res = await getUserDetail(id)
+  userDetail.value = res.data.data
   // 检查菜单数据是否存在，避免空值调用formatMenu导致错误
   if (userDetail.value.sysMenus && userDetail.value.sysMenus.length > 0) {
-    userDetail.value.sysMenus = formatMenu(userDetail.value.sysMenus);
+    userDetail.value.sysMenus = formatMenu(userDetail.value.sysMenus)
   } else {
-    userDetail.value.sysMenus = [];
+    userDetail.value.sysMenus = []
   }
-};
+}
 
 // 授权角色弹窗
-const authorizeDialogVisible = ref(false);
+const authorizeDialogVisible = ref(false)
 // 当前用户
-const currentUser = ref(null);
+const currentUser = ref(null)
 
 // 选择的角色
-const selectedRole = ref([]);
+const selectedRole = ref([])
 // 所有角色
-const allRole = ref([]);
+const allRole = ref([])
 // 授权弹窗加载状态
-const authorizeLoading = ref(false);
+const authorizeLoading = ref(false)
 
 // 处理授权角色
 const handleAuthorizeRole = async (row) => {
-  currentUser.value = row;
-  selectedRole.value = [];
+  currentUser.value = row
+  selectedRole.value = []
 
   // 先打开弹窗并显示 loading
-  authorizeDialogVisible.value = true;
-  authorizeLoading.value = true;
+  authorizeDialogVisible.value = true
+  authorizeLoading.value = true
 
   try {
     // 并行加载角色列表和用户已有角色
-    const [roleRes, userRolesRes] = await Promise.all([
-      getRoleList(),
-      getRolesByUser(row.id),
-    ]);
+    const [roleRes, userRolesRes] = await Promise.all([getRoleList(), getRolesByUser(row.id)])
 
-    allRole.value = roleRes.data;
-    selectedRole.value = userRolesRes.data.map((item) => item.id);
+    allRole.value = roleRes.data
+    selectedRole.value = userRolesRes.data.map((item) => item.id)
   } catch (error) {
-    ElMessage.error("获取角色列表失败");
-    console.error("获取角色列表失败:", error);
+    ElMessage.error('获取角色列表失败')
+    console.error('获取角色列表失败:', error)
   } finally {
-    authorizeLoading.value = false;
+    authorizeLoading.value = false
   }
-};
+}
 
 // 处理授权提交
 const handleAuthorizeSubmit = async () => {
@@ -646,32 +858,32 @@ const handleAuthorizeSubmit = async () => {
     await addRole({
       userId: currentUser.value.id,
       roleIds: selectedRole.value,
-    });
-    ElMessage.success(`已为用户 ${currentUser.value.username} 分配角色`);
+    })
+    ElMessage.success(`已为用户 ${currentUser.value.username} 分配角色`)
   } catch (error) {
-    ElMessage.error(`为用户 ${currentUser.value.username} 分配角色失败`);
-    console.error("分配角色失败:", error);
+    ElMessage.error(`为用户 ${currentUser.value.username} 分配角色失败`)
+    console.error('分配角色失败:', error)
   } finally {
-    authorizeDialogVisible.value = false;
-    authorizeLoading.value = false;
-    selectedRole.value = [];
+    authorizeDialogVisible.value = false
+    authorizeLoading.value = false
+    selectedRole.value = []
   }
-};
+}
 
 // 处理授权对话框关闭
 const handleAuthorizeDialogClose = () => {
-  authorizeDialogVisible.value = false;
-  authorizeLoading.value = false;
-  selectedRole.value = [];
-};
+  authorizeDialogVisible.value = false
+  authorizeLoading.value = false
+  selectedRole.value = []
+}
 
 // 移动端检测
-const isMobileView = ref(false);
+const isMobileView = ref(false)
 
 // 监听窗口大小变化
 const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768;
-};
+  isMobileView.value = window.innerWidth <= 768
+}
 </script>
 
 <style lang="scss" scoped>
@@ -708,7 +920,7 @@ const handleResize = () => {
         align-items: center;
 
         &::before {
-          content: "";
+          content: '';
           display: inline-block;
           width: 4px;
           height: 20px;
@@ -1229,7 +1441,9 @@ const handleResize = () => {
 
       .table {
         margin-top: 0;
-        max-height: calc(100vh - 180px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
+        max-height: calc(
+          100vh - 180px
+        ); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
       }
     }
   }

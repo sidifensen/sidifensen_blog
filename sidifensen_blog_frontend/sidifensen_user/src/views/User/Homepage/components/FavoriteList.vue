@@ -41,15 +41,22 @@
                     <h5 class="folder-name">{{ favorite.name }}</h5>
                     <div class="folder-meta">
                       <span class="article-count">{{ favorite.articleCount || 0 }} 篇文章</span>
-                      <span class="visibility" :class="favorite.showStatus === 0 ? 'public' : 'private'">
-                        {{ favorite.showStatus === 0 ? "公开" : "私密" }}
+                      <span
+                        class="visibility"
+                        :class="favorite.showStatus === 0 ? 'public' : 'private'"
+                      >
+                        {{ favorite.showStatus === 0 ? '公开' : '私密' }}
                       </span>
                     </div>
                   </div>
                 </div>
                 <div class="folder-actions">
                   <!-- 管理收藏夹按钮（仅当前用户可见） -->
-                  <div v-if="isCurrentUser" class="manage-btn" @click="handleEditFavorite(favorite, $event)">
+                  <div
+                    v-if="isCurrentUser"
+                    class="manage-btn"
+                    @click="handleEditFavorite(favorite, $event)"
+                  >
                     <el-icon><Setting /></el-icon>
                   </div>
                   <div class="folder-expand">
@@ -79,13 +86,21 @@
                 </div>
 
                 <!-- 文章为空状态 -->
-                <div v-else-if="!favorite.articles || favorite.articles.length === 0" class="empty-articles">
+                <div
+                  v-else-if="!favorite.articles || favorite.articles.length === 0"
+                  class="empty-articles"
+                >
                   <el-empty description="收藏夹中暂无文章" :image-size="60" />
                 </div>
 
                 <!-- 文章列表 -->
                 <div v-else class="article-list">
-                  <div v-for="article in favorite.articles" :key="article.id" class="article-item" @click="handleArticleClick(article.id)">
+                  <div
+                    v-for="article in favorite.articles"
+                    :key="article.id"
+                    class="article-item"
+                    @click="handleArticleClick(article.id)"
+                  >
                     <!-- 文章封面 -->
                     <el-image :src="article.coverUrl || ''" class="article-cover">
                       <template #placeholder>
@@ -110,9 +125,15 @@
                           <span class="article-date">{{ article.createTime }}</span>
                         </div>
                         <div class="article-meta-stats">
-                          <span class="article-readCount">{{ formatCompactNumber(article.readCount) }} 阅读</span>
-                          <span class="article-likes">{{ formatCompactNumber(article.likeCount || 0) }} 点赞</span>
-                          <span class="article-comments">{{ formatCompactNumber(article.commentCount || 0) }} 评论</span>
+                          <span class="article-readCount"
+                            >{{ formatCompactNumber(article.readCount) }} 阅读</span
+                          >
+                          <span class="article-likes"
+                            >{{ formatCompactNumber(article.likeCount || 0) }} 点赞</span
+                          >
+                          <span class="article-comments"
+                            >{{ formatCompactNumber(article.commentCount || 0) }} 评论</span
+                          >
                         </div>
                       </div>
                     </div>
@@ -126,10 +147,28 @@
     </div>
 
     <!-- 编辑收藏夹对话框 -->
-    <el-dialog v-model="editDialogVisible" title="编辑收藏夹" :width="dialogWidth" :before-close="handleEditCancel" class="favorite-edit-dialog" :lock-scroll="false">
-      <el-form ref="editFormRef" :model="editForm" :rules="editRules" :label-width="100" label-position="left">
+    <el-dialog
+      v-model="editDialogVisible"
+      title="编辑收藏夹"
+      :width="dialogWidth"
+      :before-close="handleEditCancel"
+      class="favorite-edit-dialog"
+      :lock-scroll="false"
+    >
+      <el-form
+        ref="editFormRef"
+        :model="editForm"
+        :rules="editRules"
+        :label-width="100"
+        label-position="left"
+      >
         <el-form-item label="收藏夹名称" prop="name">
-          <el-input v-model="editForm.name" placeholder="请输入收藏夹名称" maxlength="20" show-word-limit />
+          <el-input
+            v-model="editForm.name"
+            placeholder="请输入收藏夹名称"
+            maxlength="20"
+            show-word-limit
+          />
         </el-form-item>
 
         <el-form-item label="展示状态" prop="showStatus">
@@ -151,7 +190,9 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="handleEditCancel">取消</el-button>
-          <el-button type="primary" :loading="editLoading" @click="handleEditSubmit"> 保存 </el-button>
+          <el-button type="primary" :loading="editLoading" @click="handleEditSubmit">
+            保存
+          </el-button>
         </div>
       </template>
     </el-dialog>
@@ -159,9 +200,9 @@
 </template>
 
 <script setup>
-import { Star, Collection, ArrowDown, Picture, Setting } from "@element-plus/icons-vue";
-import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
-import { formatCompactNumber } from "@/utils/formatNumber";
+import { Star, Collection, ArrowDown, Picture, Setting } from '@element-plus/icons-vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { formatCompactNumber } from '@/utils/formatNumber'
 
 // 定义 props
 const props = defineProps({
@@ -178,110 +219,110 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-});
+})
 
 // 定义 emits
-const emit = defineEmits(["toggle-favorite", "article-click", "update-favorite"]);
+const emit = defineEmits(['toggle-favorite', 'article-click', 'update-favorite'])
 
 // 窗口宽度响应式数据
-const windowWidth = ref(window.innerWidth);
+const windowWidth = ref(window.innerWidth)
 
 // 响应式对话框宽度
 const dialogWidth = computed(() => {
-  return windowWidth.value <= 768 ? "90%" : "400px";
-});
+  return windowWidth.value <= 768 ? '90%' : '400px'
+})
 
 // 监听窗口大小变化
 const handleResize = () => {
-  windowWidth.value = window.innerWidth;
-};
+  windowWidth.value = window.innerWidth
+}
 
 // 组件挂载时添加监听器
 onMounted(() => {
-  window.addEventListener("resize", handleResize);
-});
+  window.addEventListener('resize', handleResize)
+})
 
 // 组件卸载时移除监听器
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 
 // 编辑收藏夹对话框相关状态
-const editDialogVisible = ref(false);
-const editLoading = ref(false);
+const editDialogVisible = ref(false)
+const editLoading = ref(false)
 const editForm = reactive({
   id: null,
-  name: "",
+  name: '',
   showStatus: 0,
-});
+})
 
 // 表单校验规则
 const editRules = {
   name: [
-    { required: true, message: "收藏夹名称不能为空", trigger: "blur" },
-    { min: 1, max: 20, message: "收藏夹名称长度在 1 到 20 个字符", trigger: "blur" },
+    { required: true, message: '收藏夹名称不能为空', trigger: 'blur' },
+    { min: 1, max: 20, message: '收藏夹名称长度在 1 到 20 个字符', trigger: 'blur' },
   ],
-  showStatus: [{ required: true, message: "请选择展示状态", trigger: "change" }],
-};
+  showStatus: [{ required: true, message: '请选择展示状态', trigger: 'change' }],
+}
 
 // 处理收藏夹展开/收起事件
 const handleToggleFavorite = (favorite) => {
-  emit("toggle-favorite", favorite);
-};
+  emit('toggle-favorite', favorite)
+}
 
 // 处理文章点击事件
 const handleArticleClick = (articleId) => {
-  emit("article-click", articleId);
-};
+  emit('article-click', articleId)
+}
 
 // 处理编辑收藏夹
 const handleEditFavorite = (favorite, event) => {
   // 阻止事件冒泡，避免触发展开/收起
-  event.stopPropagation();
+  event.stopPropagation()
 
   // 设置表单数据
-  editForm.id = favorite.id;
-  editForm.name = favorite.name;
-  editForm.showStatus = favorite.showStatus;
+  editForm.id = favorite.id
+  editForm.name = favorite.name
+  editForm.showStatus = favorite.showStatus
 
   // 显示对话框
-  editDialogVisible.value = true;
-};
+  editDialogVisible.value = true
+}
 
 // 表单引用
-const editFormRef = ref();
+const editFormRef = ref()
 
 // 提交编辑表单
 const handleEditSubmit = async () => {
   // 表单验证
-  if (!editFormRef.value) return;
+  if (!editFormRef.value) return
 
   try {
-    await editFormRef.value.validate();
-    editLoading.value = true;
+    await editFormRef.value.validate()
+    editLoading.value = true
 
     // 发送更新事件到父组件
-    emit("update-favorite", { ...editForm });
+    emit('update-favorite', { ...editForm })
 
     // 关闭对话框
-    editDialogVisible.value = false;
+    editDialogVisible.value = false
 
-    ElMessage.success("收藏夹更新成功");
+    ElMessage.success('收藏夹更新成功')
   } catch (error) {
     // 静默处理
   } finally {
-    editLoading.value = false;
+    editLoading.value = false
   }
-};
+}
 
 // 取消编辑
 const handleEditCancel = () => {
-  editDialogVisible.value = false;
+  editDialogVisible.value = false
   // 重置表单
-  editForm.id = null;
-  editForm.name = "";
-  editForm.showStatus = 0;
-};
+  editForm.id = null
+  editForm.name = ''
+  editForm.showStatus = 0
+}
 </script>
 
 <style lang="scss" scoped>
@@ -678,7 +719,7 @@ $bg-color: #f5f7fa;
                       }
 
                       .article-meta-stats::before {
-                        content: "•";
+                        content: '•';
                         margin-right: 8px;
                         color: var(--el-text-color-placeholder);
                       }
@@ -701,7 +742,7 @@ $bg-color: #f5f7fa;
 }
 
 // 编辑对话框样式
-:deep(.el-dialog) {
+::v-deep(.el-dialog) {
   border-radius: 12px;
 
   .el-dialog__header {

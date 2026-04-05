@@ -1,12 +1,12 @@
-import request from "@/utils/Request";
+import request from '@/utils/Request'
 
 // 分页获取公告列表（管理端）
 export function getAnnouncementPage(params) {
   return request({
     url: '/announcement/admin/page',
     method: 'get',
-    params
-  });
+    params,
+  })
 }
 
 // 创建公告
@@ -14,8 +14,8 @@ export function createAnnouncement(data) {
   return request({
     url: '/announcement',
     method: 'post',
-    data
-  });
+    data,
+  })
 }
 
 // 更新公告
@@ -23,22 +23,22 @@ export function updateAnnouncement(data) {
   return request({
     url: '/announcement',
     method: 'put',
-    data
-  });
+    data,
+  })
 }
 
 // 取消待发送公告
 export function cancelAnnouncement(id) {
   return request({
     url: `/announcement/${id}/cancel`,
-    method: 'put'
-  });
+    method: 'put',
+  })
 }
 
 // 删除公告
 export function deleteAnnouncement(id) {
   return request({
     url: `/announcement/${id}`,
-    method: 'delete'
-  });
+    method: 'delete',
+  })
 }

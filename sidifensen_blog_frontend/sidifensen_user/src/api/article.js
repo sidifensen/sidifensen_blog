@@ -1,174 +1,174 @@
-import request from "@/utils/Request";
+import request from '@/utils/Request'
 
 // 新增文章
 export function addArticle(data) {
   return request({
-    url: "/article/add",
-    method: "post",
+    url: '/article/add',
+    method: 'post',
     data,
-  });
+  })
 }
 
 // 保存草稿
 export function saveDraft(data) {
   return request({
-    url: "/article/saveDraft",
-    method: "post",
+    url: '/article/saveDraft',
+    method: 'post',
     data,
-  });
+  })
 }
 
 // 获取文章详情
 export function getArticleDetail(articleId) {
   return request({
     url: `/article/get/${articleId}`,
-    method: "get",
-  });
+    method: 'get',
+  })
 }
 
 // 获取用户文章列表
 export function getUserArticleList(pageNum, pageSize, articleStatusDto) {
   return request({
     url: `/article/user/list?pageNum=${pageNum}&pageSize=${pageSize}`,
-    method: "post",
+    method: 'post',
     data: articleStatusDto,
-  });
+  })
 }
 
 // 获取用户文章列表 (文章管理)
 export function getArticleManageList(pageNum, pageSize, articleStatusDto) {
   return request({
     url: `/article/manage/list?pageNum=${pageNum}&pageSize=${pageSize}`,
-    method: "post",
+    method: 'post',
     data: articleStatusDto,
-  });
+  })
 }
 
 // 更新文章状态
 export function updateArticle(data) {
   return request({
-    url: "/article/update",
-    method: "put",
+    url: '/article/update',
+    method: 'put',
     data,
-  });
+  })
 }
 
 // 删除文章
 export function deleteArticle(articleId) {
   return request({
     url: `/article/delete/${articleId}`,
-    method: "delete",
-  });
+    method: 'delete',
+  })
 }
 
 // 获取用户文章状态统计
 export function getUserArticleStatistics() {
   return request({
-    url: "/article/user/statistics",
-    method: "get",
-  });
+    url: '/article/user/statistics',
+    method: 'get',
+  })
 }
 
 // 获取指定用户的文章统计
 export function getUserArticleStatisticsById(userId) {
   return request({
     url: `/article/user/${userId}/statistics`,
-    method: "get",
-  });
+    method: 'get',
+  })
 }
 
 // 获取所有文章列表
 export function getAllArticleList(pageNum, pageSize) {
   return request({
     url: `/article/listAll?pageNum=${pageNum}&pageSize=${pageSize}`,
-    method: "get",
-  });
+    method: 'get',
+  })
 }
 
 // 获取会员专区文章列表
 export function getVipArticleList(pageNum, pageSize) {
   return request({
     url: `/article/listVip?pageNum=${pageNum}&pageSize=${pageSize}`,
-    method: "get",
-  });
+    method: 'get',
+  })
 }
 
 // 获取会员精选预览列表
 export function getVipPreviewArticleList(pageNum, pageSize) {
   return request({
     url: `/article/listVipPreview?pageNum=${pageNum}&pageSize=${pageSize}`,
-    method: "get",
-  });
+    method: 'get',
+  })
 }
 
 // 增加文章阅读量
 export function increaseReadCount(articleId) {
   return request({
     url: `/article/incrReadCount/${articleId}`,
-    method: "post",
-  });
+    method: 'post',
+  })
 }
 
 // 获取创作中心统计数据
 export function getCreationStatistics() {
   return request({
-    url: "/article/creation/statistics",
-    method: "get",
-  });
+    url: '/article/creation/statistics',
+    method: 'get',
+  })
 }
 
 // 根据标题搜索文章
 export function searchArticleByTitle(title, pageNum, pageSize) {
   return request({
     url: `/article/search?title=${title}&pageNum=${pageNum}&pageSize=${pageSize}`,
-    method: "get",
-  });
+    method: 'get',
+  })
 }
 
 // 根据标签搜索文章
 export function searchArticleByTag(tag, pageNum, pageSize) {
   return request({
     url: `/article/search/tag?tag=${tag}&pageNum=${pageNum}&pageSize=${pageSize}`,
-    method: "get",
-  });
+    method: 'get',
+  })
 }
 
 // 根据作者搜索文章
 export function searchArticleByAuthor(author, pageNum, pageSize) {
   return request({
     url: `/article/search/author?author=${encodeURIComponent(author)}&pageNum=${pageNum}&pageSize=${pageSize}`,
-    method: "get",
-  });
+    method: 'get',
+  })
 }
 
 // 获取标题搜索建议（自动补全）
 export function getTitleSuggestions(keyword) {
   return request({
     url: `/article/search/suggestions/title?keyword=${encodeURIComponent(keyword)}`,
-    method: "get",
-  });
+    method: 'get',
+  })
 }
 
 // 获取标签搜索建议（自动补全）
 export function getTagSuggestions(keyword) {
   return request({
     url: `/article/search/suggestions/tag?keyword=${encodeURIComponent(keyword)}`,
-    method: "get",
-  });
+    method: 'get',
+  })
 }
 
 // 获取热门文章列表（近 7 天访问量排序）
 export function getHotArticleList(pageNum, pageSize) {
   return request({
     url: `/article/hot?pageNum=${pageNum}&pageSize=${pageSize}`,
-    method: "get",
-  });
+    method: 'get',
+  })
 }
 
 // 获取热门标签列表
 export function getHotTags(limit) {
   return request({
     url: `/tag/hot?limit=${limit || 10}`,
-    method: "get",
-  });
+    method: 'get',
+  })
 }

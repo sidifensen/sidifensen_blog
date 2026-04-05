@@ -17,7 +17,7 @@ body.el-popup-parent--hidden {
 }
 
 * {
-  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
   box-sizing: border-box;
 }
 // 超链接去掉下划线
@@ -90,7 +90,6 @@ a {
   width: 0px;
   background-color: var(--el-border-color-light);
 }
-
 
 /* 设置滚动条滑块颜色 */
 ::-webkit-scrollbar-thumb {

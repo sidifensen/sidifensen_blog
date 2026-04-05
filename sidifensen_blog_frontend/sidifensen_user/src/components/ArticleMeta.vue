@@ -3,8 +3,12 @@
     <!-- 第一行：文章类型、审核状态、发布时间 -->
     <div v-if="showType" class="meta-row primary-row">
       <span class="article-type">
-        <el-tag :type="article.reprintType === 0 ? 'success' : 'warning'" size="small" effect="light">
-          {{ article.reprintType === 0 ? "原创" : "转载" }}
+        <el-tag
+          :type="article.reprintType === 0 ? 'success' : 'warning'"
+          size="small"
+          effect="light"
+        >
+          {{ article.reprintType === 0 ? '原创' : '转载' }}
         </el-tag>
       </span>
       <span v-if="visibleRangeLabel" class="article-visibility">{{ visibleRangeLabel }}</span>
@@ -56,9 +60,9 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { Clock, View, Star, Collection, ChatDotRound } from "@element-plus/icons-vue";
-import { formatCompactNumber } from "@/utils/formatNumber";
+import { computed } from 'vue'
+import { Clock, View, Star, Collection, ChatDotRound } from '@element-plus/icons-vue'
+import { formatCompactNumber } from '@/utils/formatNumber'
 
 // Props 定义
 const props = defineProps({
@@ -82,33 +86,33 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-});
+})
 
 // 可见范围标签
 const visibleRangeLabel = computed(() => {
   const visibilityMap = {
-    1: "仅自己",
-    2: "粉丝",
-    3: "VIP",
-  };
-  return visibilityMap[props.article.visibleRange] || "";
-});
+    1: '仅自己',
+    2: '粉丝',
+    3: 'VIP',
+  }
+  return visibilityMap[props.article.visibleRange] || ''
+})
 
 // 审核状态标签
 const examineStatusLabel = computed(() => {
   const statusMap = {
-    0: "待审核",
-    1: "审核通过",
-    2: "审核未通过",
-  };
-  return statusMap[props.article.examineStatus] || "";
-});
+    0: '待审核',
+    1: '审核通过',
+    2: '审核未通过',
+  }
+  return statusMap[props.article.examineStatus] || ''
+})
 
 // 标签列表
 const tagList = computed(() => {
-  if (!props.article?.tag) return [];
-  return props.article.tag.split(",").filter((tag) => tag.trim() !== "");
-});
+  if (!props.article?.tag) return []
+  return props.article.tag.split(',').filter((tag) => tag.trim() !== '')
+})
 </script>
 
 <style lang="scss" scoped>

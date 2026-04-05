@@ -1,10 +1,20 @@
 <template>
-  <el-menu :default-active="activeIndex" router class="pc-menu" mode="horizontal" @select="handleSelect" :ellipsis="false" :class="{ hidden: !isVisible }">
+  <el-menu
+    :default-active="activeIndex"
+    router
+    class="pc-menu"
+    mode="horizontal"
+    @select="handleSelect"
+    :ellipsis="false"
+    :class="{ hidden: !isVisible }"
+  >
     <!-- 移动端菜单按钮 -->
     <div class="mobile-menu-button" @click="toggleMobileMenu">
       <svg-icon name="menu" width="40px" height="40px" />
     </div>
-    <router-link class="logo" to="/"><el-text size="large" class="logo-text">sidifensen</el-text></router-link>
+    <router-link class="logo" to="/"
+      ><el-text size="large" class="logo-text">sidifensen</el-text></router-link
+    >
     <el-menu-item index="/" class="menu-item">
       <el-icon><House /></el-icon>
       <span class="menu-text">首页</span>
@@ -34,12 +44,20 @@
         <el-icon size="29px" color="var(--el-text-color-primary)"><Search /></el-icon>
       </div>
       <div class="message-icon" @click="goToMessage" v-if="user">
-        <el-badge :value="messageStore.totalUnreadCount" :max="99" :hidden="messageStore.totalUnreadCount === 0">
+        <el-badge
+          :value="messageStore.totalUnreadCount"
+          :max="99"
+          :hidden="messageStore.totalUnreadCount === 0"
+        >
           <el-icon size="32px" color="var(--el-text-color-primary)"><ChatDotRound /></el-icon>
         </el-badge>
       </div>
       <div class="notification-icon" @click="goToNotification" v-if="user">
-        <el-badge :value="notificationUnreadCount" :max="99" :hidden="notificationUnreadCount === 0">
+        <el-badge
+          :value="notificationUnreadCount"
+          :max="99"
+          :hidden="notificationUnreadCount === 0"
+        >
           <el-icon size="31px" color="var(--el-text-color-primary)"><Bell /></el-icon>
         </el-badge>
       </div>
@@ -145,104 +163,113 @@
 </template>
 
 <script setup>
-import Dark from "./Dark.vue";
-import VipBadge from "./VipBadge.vue";
-import { useUserStore } from "@/stores/userStore.js";
-import { ref, watch, onMounted, onBeforeUnmount } from "vue";
-import { storeToRefs } from "pinia";
-import { useRouter } from "vue-router";
-import { info } from "@/api/user";
-import { UserFilled, User, Setting, SwitchButton, ChatDotRound, Bell, Star, Collection } from "@element-plus/icons-vue";
-import { useMessageStore } from "@/stores/messageStore";
-import { getUnreadCount } from "@/api/privateMessage";
-import { getUnreadNotificationCount } from "@/api/notification";
-import WebSocketClient from "@/utils/WebSocketClient";
+import Dark from './Dark.vue'
+import VipBadge from './VipBadge.vue'
+import { useUserStore } from '@/stores/userStore.js'
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
+import { info } from '@/api/user'
+import {
+  UserFilled,
+  User,
+  Setting,
+  SwitchButton,
+  ChatDotRound,
+  Bell,
+  Star,
+  Collection,
+} from '@element-plus/icons-vue'
+import { useMessageStore } from '@/stores/messageStore'
+import { getUnreadCount } from '@/api/privateMessage'
+import { getUnreadNotificationCount } from '@/api/notification'
+import WebSocketClient from '@/utils/WebSocketClient'
 
-const userStore = useUserStore();
-const messageStore = useMessageStore();
-const { user } = storeToRefs(userStore);
-const router = useRouter();
+const userStore = useUserStore()
+const messageStore = useMessageStore()
+const { user } = storeToRefs(userStore)
+const router = useRouter()
 
 // 当前激活的菜单索引
-const activeIndex = ref("/");
+const activeIndex = ref('/')
 
 // 通知未读数量
-const notificationUnreadCount = ref(0);
+const notificationUnreadCount = ref(0)
 
 // 监听路由变化，更新激活的菜单
 router.afterEach((to) => {
   // 如果路由路径以 "/album" 开头，则激活相册菜单
-  if (to.path.startsWith("/album")) {
-    activeIndex.value = "/album";
+  if (to.path.startsWith('/album')) {
+    activeIndex.value = '/album'
   } else {
-    activeIndex.value = to.path;
+    activeIndex.value = to.path
   }
-});
+})
 
 // 处理菜单选择事件
 const handleSelect = (index) => {
   // 对于创作中心路由，使用原生页面跳转以避免白屏问题
-  if (index === "/creation") {
-    window.location.href = "/creation";
+  if (index === '/creation') {
+    window.location.href = '/creation'
   } else {
     // 对于其他路由，使用普通的push方法
-    router.push(index);
+    router.push(index)
   }
-};
+}
 
 const handleSearch = () => {
-  router.push("/search");
-};
+  router.push('/search')
+}
 
 const goToMessage = () => {
-  router.push("/message");
-};
+  router.push('/message')
+}
 
 const goToNotification = () => {
-  const isCurrentlyOnNotificationPage = router.currentRoute.value.path === "/notification";
+  const isCurrentlyOnNotificationPage = router.currentRoute.value.path === '/notification'
 
   // 跳转到消息中心
-  router.push("/notification");
+  router.push('/notification')
 
   // 触发消息中心的刷新事件（如果当前在消息中心页面，则不延迟执行，如果不在消息中心页面，则延迟100ms确保路由跳转完成）
   setTimeout(
     () => {
-      window.dispatchEvent(new CustomEvent("refresh-notifications"));
+      window.dispatchEvent(new CustomEvent('refresh-notifications'))
     },
-    isCurrentlyOnNotificationPage ? 0 : 100
-  );
-};
+    isCurrentlyOnNotificationPage ? 0 : 100,
+  )
+}
 
 const handleLoginClick = () => {
   // 直接使用路径跳转，更可靠
-  router.push("/login");
-};
+  router.push('/login')
+}
 
 // 获取未读消息数
 const fetchUnreadCount = async () => {
   if (user.value) {
     try {
-      const res = await getUnreadCount();
-      messageStore.totalUnreadCount = res.data || 0;
+      const res = await getUnreadCount()
+      messageStore.totalUnreadCount = res.data || 0
     } catch (error) {
       // 静默处理
     }
   }
-};
+}
 
 // 获取未读通知数量
 const fetchNotificationUnreadCount = async () => {
   if (user.value) {
     try {
-      const res = await getUnreadNotificationCount();
-      const data = res.data;
+      const res = await getUnreadNotificationCount()
+      const data = res.data
       // 计算总未读数量
-      notificationUnreadCount.value = data.total || 0;
+      notificationUnreadCount.value = data.total || 0
     } catch (error) {
       // 静默处理
     }
   }
-};
+}
 
 // 新消息处理器（定义在组件级别，便于移除）
 const handleNewMessage = (data) => {
@@ -256,118 +283,118 @@ const handleNewMessage = (data) => {
     {
       nickname: data.fromUserNickname,
       avatar: data.fromUserAvatar,
-    }
-  );
-};
+    },
+  )
+}
 
 // 消息撤回处理器
 const handleMessageRevoked = (data) => {
   // 更新会话列表中的最后一条消息
-  messageStore.updateConversationLastMessage(data.fromUserId, data.content || "撤回了一条消息");
-};
+  messageStore.updateConversationLastMessage(data.fromUserId, data.content || '撤回了一条消息')
+}
 
 // 新通知处理器
 const handleNewNotification = (data) => {
   // 收到新通知时，重新获取准确的未读数量
-  fetchNotificationUnreadCount();
-};
+  fetchNotificationUnreadCount()
+}
 
 // 初始化 WebSocket 连接
 const initWebSocket = () => {
   if (!user.value) {
-    return;
+    return
   }
 
   // 如果 WebSocket 未连接，则建立连接
   if (!WebSocketClient.isConnected()) {
-    WebSocketClient.connect();
+    WebSocketClient.connect()
   }
 
   // 移除旧的监听器(避免重复注册)
-  WebSocketClient.off("NEW_MESSAGE", handleNewMessage);
-  WebSocketClient.off("MESSAGE_REVOKED", handleMessageRevoked);
-  WebSocketClient.off("NEW_NOTIFICATION", handleNewNotification);
+  WebSocketClient.off('NEW_MESSAGE', handleNewMessage)
+  WebSocketClient.off('MESSAGE_REVOKED', handleMessageRevoked)
+  WebSocketClient.off('NEW_NOTIFICATION', handleNewNotification)
   // 注册新消息监听器
-  WebSocketClient.on("NEW_MESSAGE", handleNewMessage);
-  WebSocketClient.on("MESSAGE_REVOKED", handleMessageRevoked);
-  WebSocketClient.on("NEW_NOTIFICATION", handleNewNotification);
+  WebSocketClient.on('NEW_MESSAGE', handleNewMessage)
+  WebSocketClient.on('MESSAGE_REVOKED', handleMessageRevoked)
+  WebSocketClient.on('NEW_NOTIFICATION', handleNewNotification)
 
   // 监听 WebSocket 重连,重新注册监听器
-  WebSocketClient.off("open", handleWebSocketOpen);
-  WebSocketClient.on("open", handleWebSocketOpen);
-};
+  WebSocketClient.off('open', handleWebSocketOpen)
+  WebSocketClient.on('open', handleWebSocketOpen)
+}
 
 // WebSocket 连接成功处理器
 const handleWebSocketOpen = () => {
   // 重连后重新注册监听器
-  WebSocketClient.off("NEW_MESSAGE", handleNewMessage);
-  WebSocketClient.off("MESSAGE_REVOKED", handleMessageRevoked);
-  WebSocketClient.off("NEW_NOTIFICATION", handleNewNotification);
-  WebSocketClient.on("NEW_MESSAGE", handleNewMessage);
-  WebSocketClient.on("MESSAGE_REVOKED", handleMessageRevoked);
-  WebSocketClient.on("NEW_NOTIFICATION", handleNewNotification);
-};
+  WebSocketClient.off('NEW_MESSAGE', handleNewMessage)
+  WebSocketClient.off('MESSAGE_REVOKED', handleMessageRevoked)
+  WebSocketClient.off('NEW_NOTIFICATION', handleNewNotification)
+  WebSocketClient.on('NEW_MESSAGE', handleNewMessage)
+  WebSocketClient.on('MESSAGE_REVOKED', handleMessageRevoked)
+  WebSocketClient.on('NEW_NOTIFICATION', handleNewNotification)
+}
 
 const getUserInfo = async () => {
-  const res = await info();
-  user.value = res.data;
-};
+  const res = await info()
+  user.value = res.data
+}
 
 const logout = () => {
-  userStore.clearUser();
-};
+  userStore.clearUser()
+}
 
 // 跳转到用户主页
 const goToUserHomepage = () => {
   if (user.value?.id) {
-    router.push(`/user/${user.value.id}`);
+    router.push(`/user/${user.value.id}`)
   }
-};
+}
 
 // 跳转到个人设置
 const goToSetting = () => {
-  router.push("/setting");
-};
+  router.push('/setting')
+}
 
 const goToVipCenter = () => {
-  router.push("/vip");
-};
+  router.push('/vip')
+}
 
 const goToVipArticles = () => {
-  router.push("/vip/articles");
-};
+  router.push('/vip/articles')
+}
 
 // 头部是否可见
-const isVisible = ref(true);
+const isVisible = ref(true)
 // 上次滚动位置
-const lastScrollY = ref(0);
+const lastScrollY = ref(0)
 
 const handleScroll = () => {
-  const currentScrollY = window.scrollY;
+  const currentScrollY = window.scrollY
   // 向下滚动隐藏头部，向上滚动显示头部
   // 如果当前滚动位置大于上次记录的位置，并且当前滚动位置超过100px，则隐藏
   if (currentScrollY > lastScrollY.value && currentScrollY > 100) {
-    isVisible.value = false;
+    isVisible.value = false
     // 如果当前滚动位置小于上次记录的位置（即向上滚动），则显示
   } else if (currentScrollY < lastScrollY.value) {
-    isVisible.value = true;
+    isVisible.value = true
   }
   // 更新上次记录的位置
-  lastScrollY.value = currentScrollY;
-};
+  lastScrollY.value = currentScrollY
+}
 
 // 移动端菜单是否可见
-const isMobileMenuVisible = ref(false);
+const isMobileMenuVisible = ref(false)
 // 切换移动端菜单
 const toggleMobileMenu = () => {
-  isMobileMenuVisible.value = !isMobileMenuVisible.value;
-};
+  isMobileMenuVisible.value = !isMobileMenuVisible.value
+}
 
 // 关闭移动端菜单
 const closeMobileMenu = (index) => {
-  isMobileMenuVisible.value = false;
-  handleSelect(index);
-};
+  isMobileMenuVisible.value = false
+  handleSelect(index)
+}
 
 // 监听用户登录状态变化，自动初始化 WebSocket
 watch(
@@ -375,50 +402,50 @@ watch(
   (newUser) => {
     if (newUser) {
       // 用户已登录，立即初始化 WebSocket
-      fetchUnreadCount();
-      fetchNotificationUnreadCount();
-      initWebSocket();
+      fetchUnreadCount()
+      fetchNotificationUnreadCount()
+      initWebSocket()
     } else {
       // 用户已登出，关闭 WebSocket
-      WebSocketClient.close();
+      WebSocketClient.close()
       // 移除监听器
-      WebSocketClient.off("NEW_MESSAGE", handleNewMessage);
-      WebSocketClient.off("MESSAGE_REVOKED", handleMessageRevoked);
-      WebSocketClient.off("NEW_NOTIFICATION", handleNewNotification);
-      WebSocketClient.off("open", handleWebSocketOpen);
+      WebSocketClient.off('NEW_MESSAGE', handleNewMessage)
+      WebSocketClient.off('MESSAGE_REVOKED', handleMessageRevoked)
+      WebSocketClient.off('NEW_NOTIFICATION', handleNewNotification)
+      WebSocketClient.off('open', handleWebSocketOpen)
       // 重置未读数量
-      notificationUnreadCount.value = 0;
+      notificationUnreadCount.value = 0
     }
   },
-  { immediate: true } // 立即执行一次，检查当前用户状态
-);
+  { immediate: true }, // 立即执行一次，检查当前用户状态
+)
 
 // 监听通知已读事件
 const handleNotificationRead = () => {
   // 当用户查看通知页面并标记已读后，刷新未读数量
-  fetchNotificationUnreadCount();
-};
+  fetchNotificationUnreadCount()
+}
 
 // 组件挂载时添加监听滚动事件
 onMounted(() => {
-  window.addEventListener("scroll", handleScroll);
-  window.addEventListener("notification-read", handleNotificationRead);
+  window.addEventListener('scroll', handleScroll)
+  window.addEventListener('notification-read', handleNotificationRead)
   // 如果 pinia 有 userid 再获取用户信息（添加错误处理，避免 info() 失败时覆盖已有数据）
   if (user.value) {
-    getUserInfo().catch(() => {});
+    getUserInfo().catch(() => {})
   }
-});
+})
 
 // 组件销毁时移除监听事件
 onBeforeUnmount(() => {
-  window.removeEventListener("scroll", handleScroll);
-  window.removeEventListener("notification-read", handleNotificationRead);
+  window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('notification-read', handleNotificationRead)
   // 移除 WebSocket 监听器
-  WebSocketClient.off("NEW_MESSAGE", handleNewMessage);
-  WebSocketClient.off("MESSAGE_REVOKED", handleMessageRevoked);
-  WebSocketClient.off("NEW_NOTIFICATION", handleNewNotification);
-  WebSocketClient.off("open", handleWebSocketOpen);
-});
+  WebSocketClient.off('NEW_MESSAGE', handleNewMessage)
+  WebSocketClient.off('MESSAGE_REVOKED', handleMessageRevoked)
+  WebSocketClient.off('NEW_NOTIFICATION', handleNewNotification)
+  WebSocketClient.off('open', handleWebSocketOpen)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -434,7 +461,10 @@ onBeforeUnmount(() => {
   left: 0;
   right: 0;
   z-index: 1000;
-  transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease;
   border: none;
   border-bottom: 1px solid var(--el-border-color);
 
@@ -518,7 +548,7 @@ onBeforeUnmount(() => {
       }
 
       // 调整徽章大小和位置
-      :deep(.el-badge__content) {
+      ::v-deep(.el-badge__content) {
         font-size: 11px;
         top: 4px;
         right: 6px;
@@ -541,7 +571,7 @@ onBeforeUnmount(() => {
       }
 
       // 调整徽章大小和位置
-      :deep(.el-badge__content) {
+      ::v-deep(.el-badge__content) {
         font-size: 11px;
         top: 4px;
         right: 6px;
@@ -556,7 +586,9 @@ onBeforeUnmount(() => {
 
       .user-avatar {
         cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
         border: 2px solid transparent;
 
         &:hover {
@@ -604,7 +636,9 @@ onBeforeUnmount(() => {
       font-weight: 500;
       border-radius: 16px;
       cursor: pointer;
-      transition: background-color 0.2s ease, transform 0.2s ease;
+      transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
 
       &:hover {
         background-color: var(--el-color-primary-light-3);
@@ -629,7 +663,7 @@ onBeforeUnmount(() => {
     }
 
     // 确保 SVG 图标垂直居中
-    :deep(svg) {
+    ::v-deep(svg) {
       display: block;
     }
   }

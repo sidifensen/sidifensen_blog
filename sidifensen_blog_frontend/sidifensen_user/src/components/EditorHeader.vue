@@ -39,46 +39,46 @@
 </template>
 
 <script setup>
-import Dark from "./Dark.vue";
-import { useUserStore } from "@/stores/userStore.js";
-import { ref, onMounted } from "vue";
-import { storeToRefs } from "pinia";
-import { info } from "@/api/user";
-import { UserFilled } from "@element-plus/icons-vue";
+import Dark from './Dark.vue'
+import { useUserStore } from '@/stores/userStore.js'
+import { ref, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { info } from '@/api/user'
+import { UserFilled } from '@element-plus/icons-vue'
 
-const userStore = useUserStore();
-const { user } = storeToRefs(userStore);
+const userStore = useUserStore()
+const { user } = storeToRefs(userStore)
 
 const getUserInfo = async () => {
-  const res = await info();
-  user.value = res.data;
-};
+  const res = await info()
+  user.value = res.data
+}
 
 const logout = () => {
-  userStore.clearUser();
-};
+  userStore.clearUser()
+}
 
 // 跳转到登录页面
 const handleLoginClick = () => {
-  window.location.href = "/login";
-};
+  window.location.href = '/login'
+}
 
 // 跳转到个人主页
 const goToProfile = () => {
-  location.href = `/user/${user.value.id}`;
-};
+  location.href = `/user/${user.value.id}`
+}
 
 // 跳转到个人设置页面
 const goToSettings = () => {
   // 直接使用 location.href
-  location.href = "/setting";
-};
+  location.href = '/setting'
+}
 
 onMounted(() => {
   if (user.value) {
-    getUserInfo();
+    getUserInfo()
   }
-});
+})
 </script>
 
 <style lang="scss" scoped>
@@ -109,7 +109,7 @@ onMounted(() => {
       position: relative;
       transition: all 0.3s ease;
       &::after {
-        content: "";
+        content: '';
         position: absolute;
         bottom: -5px;
         left: 0;

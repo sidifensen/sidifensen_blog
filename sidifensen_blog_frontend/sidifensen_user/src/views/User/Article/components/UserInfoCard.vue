@@ -16,7 +16,12 @@
         <div class="user-card-content" v-if="userInfo">
           <!-- 用户基本信息 -->
           <div class="user-basic-info">
-            <div class="avatar-container" @mousemove="handleMouseMove" @mouseleave="handleMouseLeave" @click="goToUserHomepage">
+            <div
+              class="avatar-container"
+              @mousemove="handleMouseMove"
+              @mouseleave="handleMouseLeave"
+              @click="goToUserHomepage"
+            >
               <div class="avatar-wrapper" ref="avatarWrapper">
                 <el-avatar :size="100" :src="userInfo.avatar" class="clickable-avatar" />
                 <div class="shine-effect" ref="shineEffect"></div>
@@ -46,7 +51,15 @@
 
           <!-- 操作按钮 -->
           <div class="user-actions" v-if="!isCurrentUser">
-            <el-button :type="isFollowed ? 'default' : 'primary'" :icon="isFollowed ? null : Plus" @click="handleFollow" :loading="followLoading" :class="{ 'followed-btn': isFollowed }" @mouseenter="handleFollowButtonHover(true)" @mouseleave="handleFollowButtonHover(false)">
+            <el-button
+              :type="isFollowed ? 'default' : 'primary'"
+              :icon="isFollowed ? null : Plus"
+              @click="handleFollow"
+              :loading="followLoading"
+              :class="{ 'followed-btn': isFollowed }"
+              @mouseenter="handleFollowButtonHover(true)"
+              @mouseleave="handleFollowButtonHover(false)"
+            >
               {{ followButtonText }}
             </el-button>
             <el-button :icon="Message" @click="handleMessage"> 私信 </el-button>
@@ -58,16 +71,16 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { Message, Plus } from "@element-plus/icons-vue";
-import { toggleFollow, isFollowing } from "@/api/follow";
-import { useUserStore } from "@/stores/userStore";
-import VipBadge from "@/components/VipBadge.vue";
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { Message, Plus } from '@element-plus/icons-vue'
+import { toggleFollow, isFollowing } from '@/api/follow'
+import { useUserStore } from '@/stores/userStore'
+import VipBadge from '@/components/VipBadge.vue'
 
 // 路由和状态管理
-const router = useRouter();
-const userStore = useUserStore();
+const router = useRouter()
+const userStore = useUserStore()
 
 // Props 定义
 const props = defineProps({
@@ -79,105 +92,105 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-});
+})
 
 // 头像3D效果相关
-const avatarWrapper = ref(null);
-const shineEffect = ref(null);
+const avatarWrapper = ref(null)
+const shineEffect = ref(null)
 
 // 关注状态
-const isFollowed = ref(false);
-const followLoading = ref(false);
-const isHoveringFollowButton = ref(false);
+const isFollowed = ref(false)
+const followLoading = ref(false)
+const isHoveringFollowButton = ref(false)
 
 // 计算属性
 const isCurrentUser = computed(() => {
-  return userStore.user?.id === props.userInfo?.id;
-});
+  return userStore.user?.id === props.userInfo?.id
+})
 
 // 计算关注按钮显示的文字
 const followButtonText = computed(() => {
   if (!isFollowed.value) {
-    return "关注";
+    return '关注'
   }
-  return isHoveringFollowButton.value ? "取消关注" : "已关注";
-});
+  return isHoveringFollowButton.value ? '取消关注' : '已关注'
+})
 
 // 检查用户关注状态
 const checkUserFollowStatus = async () => {
   if (!userStore.user || !props.userInfo || isCurrentUser.value) {
-    return;
+    return
   }
 
   try {
-    const followerId = userStore.user.id;
-    const followedId = props.userInfo.id;
-    const res = await isFollowing(followerId, followedId);
-    isFollowed.value = res.data;
+    const followerId = userStore.user.id
+    const followedId = props.userInfo.id
+    const res = await isFollowing(followerId, followedId)
+    isFollowed.value = res.data
   } catch (error) {
     // 静默处理
-    isFollowed.value = false;
+    isFollowed.value = false
   }
-};
+}
 
 // 关注用户
 const handleFollow = async () => {
   if (!userStore.user) {
-    ElMessage.warning("请先登录");
-    router.push("/login");
-    return;
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
   }
 
   try {
-    followLoading.value = true;
-    const followedId = props.userInfo.id;
-    const wasFollowed = isFollowed.value;
+    followLoading.value = true
+    const followedId = props.userInfo.id
+    const wasFollowed = isFollowed.value
 
     // 调用切换关注状态接口
-    await toggleFollow(followedId);
+    await toggleFollow(followedId)
 
     // 切换状态
-    isFollowed.value = !wasFollowed;
+    isFollowed.value = !wasFollowed
 
     // 显示操作结果
-    ElMessage.success(isFollowed.value ? "关注成功" : "取消关注成功");
+    ElMessage.success(isFollowed.value ? '关注成功' : '取消关注成功')
   } catch (error) {
     // 静默处理
   } finally {
-    followLoading.value = false;
+    followLoading.value = false
   }
-};
+}
 
 // 发送私信
 const handleMessage = () => {
   if (!userStore.user) {
-    ElMessage.warning("请先登录");
-    router.push("/login");
-    return;
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
   }
   // 跳转到聊天窗口
-  router.push(`/message/chat/${props.userInfo.id}`);
-};
+  router.push(`/message/chat/${props.userInfo.id}`)
+}
 
 // 处理关注按钮悬停状态
 const handleFollowButtonHover = (isHovering) => {
-  isHoveringFollowButton.value = isHovering;
-};
+  isHoveringFollowButton.value = isHovering
+}
 
 // 处理鼠标移动事件 - 3D效果和闪光
 const handleMouseMove = (event) => {
-  if (!avatarWrapper.value || !shineEffect.value) return;
+  if (!avatarWrapper.value || !shineEffect.value) return
 
-  const rect = event.currentTarget.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
+  const rect = event.currentTarget.getBoundingClientRect()
+  const x = event.clientX - rect.left
+  const y = event.clientY - rect.top
 
-  const centerX = rect.width / 2;
-  const centerY = rect.height / 2;
+  const centerX = rect.width / 2
+  const centerY = rect.height / 2
 
   // 计算旋转角度 (限制在-20到20度之间)
-  const rotateX = ((y - centerY) / centerY) * -20;
-  const rotateY = ((x - centerX) / centerX) * 20;
+  const rotateX = ((y - centerY) / centerY) * -20
+  const rotateY = ((x - centerX) / centerX) * 20
 
   // 应用3D变换
   avatarWrapper.value.style.transform = `
@@ -185,11 +198,11 @@ const handleMouseMove = (event) => {
     rotateX(${rotateX}deg) 
     rotateY(${rotateY}deg) 
     translateZ(20px)
-  `;
+  `
 
   // 计算闪光位置
-  const shineX = (x / rect.width) * 100;
-  const shineY = (y / rect.height) * 100;
+  const shineX = (x / rect.width) * 100
+  const shineY = (y / rect.height) * 100
 
   // 应用闪光效果
   shineEffect.value.style.background = `
@@ -197,47 +210,48 @@ const handleMouseMove = (event) => {
     rgba(255, 255, 255, 0.8) 0%, 
     rgba(255, 255, 255, 0.3) 30%, 
     transparent 60%)
-  `;
-  shineEffect.value.style.opacity = "1";
-};
+  `
+  shineEffect.value.style.opacity = '1'
+}
 
 // 处理鼠标离开事件 - 重置效果
 const handleMouseLeave = () => {
-  if (!avatarWrapper.value || !shineEffect.value) return;
+  if (!avatarWrapper.value || !shineEffect.value) return
 
   // 重置3D变换
-  avatarWrapper.value.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)";
+  avatarWrapper.value.style.transform =
+    'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)'
 
   // 隐藏闪光效果
-  shineEffect.value.style.opacity = "0";
-};
+  shineEffect.value.style.opacity = '0'
+}
 
 // 跳转到用户主页
 const goToUserHomepage = () => {
   if (props.userInfo?.id) {
-    router.push(`/user/${props.userInfo.id}`);
+    router.push(`/user/${props.userInfo.id}`)
   }
-};
+}
 
 // 监听用户信息变化
 watch(
   () => props.userInfo,
   (newUserInfo) => {
     if (newUserInfo && !isCurrentUser.value) {
-      checkUserFollowStatus();
+      checkUserFollowStatus()
     } else {
-      isFollowed.value = false;
+      isFollowed.value = false
     }
   },
-  { immediate: true }
-);
+  { immediate: true },
+)
 
 // 组件挂载
 onMounted(() => {
   if (props.userInfo && !isCurrentUser.value) {
-    checkUserFollowStatus();
+    checkUserFollowStatus()
   }
-});
+})
 </script>
 
 <style lang="scss" scoped>
@@ -260,19 +274,19 @@ onMounted(() => {
   // 用户卡片内容
   .user-card-content {
     // 基本信息区域
-      .user-basic-info {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+    .user-basic-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
       margin-bottom: 20px;
 
-        .nickname {
-          margin: 12px 0 8px;
-          font-size: 18px;
-          font-weight: 600;
-          color: var(--el-text-color-primary);
-        }
+      .nickname {
+        margin: 12px 0 8px;
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--el-text-color-primary);
+      }
 
       // 头像容器 - 3D效果区域
       .avatar-container {
@@ -315,7 +329,11 @@ onMounted(() => {
             opacity: 0;
             transition: opacity 0.3s ease;
             z-index: 2;
-            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 0%, transparent 60%);
+            background: radial-gradient(
+              circle at 50% 50%,
+              rgba(255, 255, 255, 0) 0%,
+              transparent 60%
+            );
             mix-blend-mode: overlay;
           }
 
@@ -384,7 +402,7 @@ onMounted(() => {
       }
 
       // 已关注按钮样式
-      :deep(.followed-btn) {
+      ::v-deep(.followed-btn) {
         border-color: var(--el-color-success);
         color: var(--el-color-success);
 

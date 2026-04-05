@@ -1,4 +1,4 @@
-import request from "@/utils/Request";
+import request from '@/utils/Request'
 
 /**
  * 获取用户通知列表
@@ -8,14 +8,14 @@ import request from "@/utils/Request";
  */
 export function getUserNotifications(type, pageNum, pageSize) {
   return request({
-    url: "/message/notifications",
-    method: "get",
+    url: '/message/notifications',
+    method: 'get',
     params: {
       type,
       pageNum,
       pageSize,
     },
-  });
+  })
 }
 
 /**
@@ -23,9 +23,9 @@ export function getUserNotifications(type, pageNum, pageSize) {
  */
 export function getUnreadNotificationCount() {
   return request({
-    url: "/message/notifications/unread/count",
-    method: "get",
-  });
+    url: '/message/notifications/unread/count',
+    method: 'get',
+  })
 }
 
 /**
@@ -34,10 +34,10 @@ export function getUnreadNotificationCount() {
  */
 export function markNotificationsAsRead(messageIds) {
   return request({
-    url: "/message/notifications/read",
-    method: "put",
+    url: '/message/notifications/read',
+    method: 'put',
     data: messageIds,
-  });
+  })
 }
 
 /**
@@ -46,8 +46,8 @@ export function markNotificationsAsRead(messageIds) {
  */
 export function deleteNotifications(messageIds) {
   return request({
-    url: "/message/notifications",
-    method: "delete",
+    url: '/message/notifications',
+    method: 'delete',
     data: messageIds,
-  });
+  })
 }

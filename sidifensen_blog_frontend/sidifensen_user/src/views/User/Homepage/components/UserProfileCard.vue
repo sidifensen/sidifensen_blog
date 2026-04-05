@@ -31,8 +31,14 @@
                         <VipBadge v-if="userInfo.isVip" type="card" height="28" padding="0 10px" />
                       </h2>
                       <div class="user-intro-container">
-                        <p class="user-intro" :class="{ expanded: isIntroExpanded }">{{ userInfo.introduction || "这个人很懒，什么都没写~" }}</p>
-                        <button v-if="userInfo.introduction && userInfo.introduction.length > 50" class="intro-expand-btn" @click="toggleIntroExpand">
+                        <p class="user-intro" :class="{ expanded: isIntroExpanded }">
+                          {{ userInfo.introduction || '这个人很懒，什么都没写~' }}
+                        </p>
+                        <button
+                          v-if="userInfo.introduction && userInfo.introduction.length > 50"
+                          class="intro-expand-btn"
+                          @click="toggleIntroExpand"
+                        >
                           <el-icon>
                             <ArrowDown v-if="!isIntroExpanded" />
                             <ArrowUp v-else />
@@ -66,7 +72,9 @@
                     >
                       {{ followButtonText }}
                     </el-button>
-                    <el-button :icon="Message" @click="handleMessage" class="action-btn message-btn">私信</el-button>
+                    <el-button :icon="Message" @click="handleMessage" class="action-btn message-btn"
+                      >私信</el-button
+                    >
                   </div>
                 </div>
 
@@ -92,10 +100,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
-import { Plus, Message, ArrowDown, ArrowUp, Location, Calendar } from "@element-plus/icons-vue";
-import CountTo from "@/components/CountTo.vue";
-import VipBadge from "@/components/VipBadge.vue";
+import { ref, computed, watch } from 'vue'
+import { Plus, Message, ArrowDown, ArrowUp, Location, Calendar } from '@element-plus/icons-vue'
+import CountTo from '@/components/CountTo.vue'
+import VipBadge from '@/components/VipBadge.vue'
 
 // 定义 props
 const props = defineProps({
@@ -123,61 +131,61 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-});
+})
 
 // 定义 emits
-const emit = defineEmits(["follow", "message"]);
+const emit = defineEmits(['follow', 'message'])
 
 // 个人介绍展开状态
-const isIntroExpanded = ref(false);
+const isIntroExpanded = ref(false)
 
 // 关注按钮文字状态
-const isHoveringFollowButton = ref(false);
+const isHoveringFollowButton = ref(false)
 
 // 统计数字（用于动画）
 const stats = computed(() => [
-  { label: "文章", value: props.userInfo?.articleCount || 0 },
-  { label: "粉丝", value: props.userInfo?.fansCount || 0 },
-  { label: "关注", value: props.userInfo?.followCount || 0 },
-  { label: "阅读量", value: props.totalViews || 0 },
-]);
+  { label: '文章', value: props.userInfo?.articleCount || 0 },
+  { label: '粉丝', value: props.userInfo?.fansCount || 0 },
+  { label: '关注', value: props.userInfo?.followCount || 0 },
+  { label: '阅读量', value: props.totalViews || 0 },
+])
 
 // 计算关注按钮显示的文字
 const followButtonText = computed(() => {
   if (!props.isFollowed) {
-    return "关注";
+    return '关注'
   }
-  return isHoveringFollowButton.value ? "取消关注" : "已关注";
-});
+  return isHoveringFollowButton.value ? '取消关注' : '已关注'
+})
 
 // 切换个人介绍展开状态
 const toggleIntroExpand = () => {
-  isIntroExpanded.value = !isIntroExpanded.value;
-};
+  isIntroExpanded.value = !isIntroExpanded.value
+}
 
 // 处理关注按钮悬停状态
 const handleFollowButtonHover = (isHovering) => {
-  isHoveringFollowButton.value = isHovering;
-};
+  isHoveringFollowButton.value = isHovering
+}
 
 // 处理关注事件
 const handleFollow = () => {
-  emit("follow");
-};
+  emit('follow')
+}
 
 // 处理私信事件
 const handleMessage = () => {
-  emit("message");
-};
+  emit('message')
+}
 
 // 监听 userInfo 变化，重置展开状态
 watch(
   () => props.userInfo,
   () => {
-    isIntroExpanded.value = false;
+    isIntroExpanded.value = false
   },
-  { immediate: true }
-);
+  { immediate: true },
+)
 </script>
 
 <style lang="scss" scoped>
@@ -224,7 +232,9 @@ watch(
     padding: 24px 28px;
     border: 1px solid var(--border-color);
     box-shadow: 0 8px 28px var(--shadow-color);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
 
     // 卡片加载完成后的动画
     &.card-loaded {
@@ -381,7 +391,10 @@ watch(
               font-size: 14px;
               font-weight: 500;
               border-radius: 10px;
-              transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+              transition:
+                background-color 0.2s ease,
+                border-color 0.2s ease,
+                color 0.2s ease;
               box-shadow: none !important;
 
               &.follow-btn {

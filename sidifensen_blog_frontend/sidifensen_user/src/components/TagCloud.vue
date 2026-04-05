@@ -4,7 +4,7 @@
       v-for="(tag, index) in displayTags"
       :key="index"
       class="tag-cloud-item"
-      :class="{ 'clickable': clickable }"
+      :class="{ clickable: clickable }"
       @click="handleTagClick(tag.name)"
     >
       {{ tag.name }}
@@ -13,8 +13,8 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { useRouter } from "vue-router";
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 // Props 定义
 const props = defineProps({
@@ -34,38 +34,38 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
-});
+})
 
 // Emits 定义
-const emit = defineEmits(["tag-click"]);
+const emit = defineEmits(['tag-click'])
 
 // 路由
-const router = useRouter();
+const router = useRouter()
 
 // 根据 max 计算实际显示的标签
 const displayTags = computed(() => {
   if (props.max > 0 && props.tags.length > props.max) {
-    return props.tags.slice(0, props.max);
+    return props.tags.slice(0, props.max)
   }
-  return props.tags;
-});
+  return props.tags
+})
 
 // 处理标签点击
 const handleTagClick = (tagName) => {
   // 触发事件
-  emit("tag-click", tagName);
+  emit('tag-click', tagName)
 
   // 如果可点击，跳转到搜索页面
   if (props.clickable) {
     router.push({
-      path: "/search",
+      path: '/search',
       query: {
         keyword: tagName,
-        type: "tag",
+        type: 'tag',
       },
-    });
+    })
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>

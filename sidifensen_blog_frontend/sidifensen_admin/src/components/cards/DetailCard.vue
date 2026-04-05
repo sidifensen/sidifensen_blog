@@ -30,15 +30,15 @@ defineProps({
    */
   title: {
     type: String,
-    required: true
+    required: true,
   },
   /**
    * 卡片图标（Element Plus 图标组件）
    */
   icon: {
     type: [Object, String],
-    required: true
-  }
+    required: true,
+  },
 })
 </script>
 

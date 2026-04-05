@@ -47,8 +47,16 @@
               <el-icon><DocumentRemove /></el-icon>
             </div>
             <h3>暂时还没有友链</h3>
-            <p>{{ isUserLoggedIn ? "如果你的网站适合长期展示，可以成为这里的第一条友链。" : "登录后可以提交你的网站，我们会在审核通过后展示。" }}</p>
-            <button v-if="isUserLoggedIn" class="btn-apply" @click="showApplyDialog">申请友链</button>
+            <p>
+              {{
+                isUserLoggedIn
+                  ? '如果你的网站适合长期展示，可以成为这里的第一条友链。'
+                  : '登录后可以提交你的网站，我们会在审核通过后展示。'
+              }}
+            </p>
+            <button v-if="isUserLoggedIn" class="btn-apply" @click="showApplyDialog">
+              申请友链
+            </button>
             <button v-else class="btn-login" @click="goToLogin">前往登录</button>
           </div>
 
@@ -83,7 +91,11 @@
                 <div class="item-footer">
                   <div class="link-header">
                     <div class="link-name">{{ link.name }}</div>
-                    <div v-if="isCurrentUserLink(link)" class="link-delete" @click.stop="handleDeleteLink(link)">
+                    <div
+                      v-if="isCurrentUserLink(link)"
+                      class="link-delete"
+                      @click.stop="handleDeleteLink(link)"
+                    >
                       <el-tooltip content="删除友链" placement="top">
                         <el-icon><Delete /></el-icon>
                       </el-tooltip>
@@ -117,165 +129,165 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from "vue";
-import { useRouter } from "vue-router";
-import { deleteLink, getLinkList } from "@/api/link";
-import LinkApplyDialog from "@/views/Link/LinkApplyDialog.vue";
-import { useUserStore } from "@/stores/userStore";
-import { useSeoMeta } from "@/plugins/seo";
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { deleteLink, getLinkList } from '@/api/link'
+import LinkApplyDialog from '@/views/Link/LinkApplyDialog.vue'
+import { useUserStore } from '@/stores/userStore'
+import { useSeoMeta } from '@/plugins/seo'
 
 // SEO - 友链
 useSeoMeta({
-  title: "友链",
-  description: "交换友链，结识志同道合的开发者朋友",
-  keywords: "友链,交换链接,开发者,博客,网站导航"
-});
+  title: '友链',
+  description: '交换友链，结识志同道合的开发者朋友',
+  keywords: '友链,交换链接,开发者,博客,网站导航',
+})
 
-const router = useRouter();
-const userStore = useUserStore();
+const router = useRouter()
+const userStore = useUserStore()
 
-const loading = ref(false);
-const loadingMore = ref(false);
-const applyDialogVisible = ref(false);
+const loading = ref(false)
+const loadingMore = ref(false)
+const applyDialogVisible = ref(false)
 
-const currentPage = ref(1);
-const pageSize = ref(24);
-const total = ref(0);
-const hasMore = ref(true);
+const currentPage = ref(1)
+const pageSize = ref(24)
+const total = ref(0)
+const hasMore = ref(true)
 
-const linkList = ref([]);
-const deletingLinkId = ref(null);
-const imageLoading = ref({});
+const linkList = ref([])
+const deletingLinkId = ref(null)
+const imageLoading = ref({})
 
 const onImageLoad = (linkId) => {
-  imageLoading.value[linkId] = false;
-};
+  imageLoading.value[linkId] = false
+}
 
 const onImageError = (linkId) => {
-  imageLoading.value[linkId] = false;
-};
+  imageLoading.value[linkId] = false
+}
 
 const isUserLoggedIn = computed(() => {
-  return userStore.user && userStore.user.id;
-});
+  return userStore.user && userStore.user.id
+})
 
 const totalDisplay = computed(() => {
-  return total.value || linkList.value.length;
-});
+  return total.value || linkList.value.length
+})
 
 const isCurrentUserLink = (link) => {
-  return userStore.user && userStore.user.id === link.userId;
-};
+  return userStore.user && userStore.user.id === link.userId
+}
 
 const fetchLinkList = async (reset = false) => {
   if (loadingMore.value || (!hasMore.value && !reset)) {
-    return;
+    return
   }
 
   try {
     if (reset) {
-      loading.value = true;
-      currentPage.value = 1;
-      hasMore.value = true;
+      loading.value = true
+      currentPage.value = 1
+      hasMore.value = true
     } else {
-      loadingMore.value = true;
+      loadingMore.value = true
     }
 
-    const res = await getLinkList(currentPage.value, pageSize.value);
-    const newLinks = res.data?.data || [];
-    const totalCount = res.data?.total || 0;
+    const res = await getLinkList(currentPage.value, pageSize.value)
+    const newLinks = res.data?.data || []
+    const totalCount = res.data?.total || 0
 
     if (reset) {
-      linkList.value = newLinks;
+      linkList.value = newLinks
     } else {
-      linkList.value = [...linkList.value, ...newLinks];
+      linkList.value = [...linkList.value, ...newLinks]
     }
 
-    total.value = totalCount;
-    hasMore.value = linkList.value.length < total.value;
+    total.value = totalCount
+    hasMore.value = linkList.value.length < total.value
 
     if (hasMore.value && newLinks.length > 0) {
-      currentPage.value++;
+      currentPage.value++
     }
   } catch (error) {
     // 静默处理
   } finally {
-    loading.value = false;
-    loadingMore.value = false;
+    loading.value = false
+    loadingMore.value = false
   }
-};
+}
 
 const handleScroll = () => {
   if (loading.value || loadingMore.value || !hasMore.value) {
-    return;
+    return
   }
 
-  const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+  const { scrollTop, scrollHeight, clientHeight } = document.documentElement
   if (scrollTop + clientHeight >= scrollHeight - 200) {
-    fetchLinkList();
+    fetchLinkList()
   }
-};
+}
 
 const showApplyDialog = () => {
-  applyDialogVisible.value = true;
-};
+  applyDialogVisible.value = true
+}
 
 const goToLogin = () => {
-  router.push("/login");
-};
+  router.push('/login')
+}
 
 const handleApplySuccess = () => {
-  fetchLinkList(true);
-};
+  fetchLinkList(true)
+}
 
 const visitLink = (link) => {
-  window.open(link.url, "_blank", "noopener,noreferrer");
-};
+  window.open(link.url, '_blank', 'noopener,noreferrer')
+}
 
 const formatUrl = (url) => {
   try {
-    const urlObj = new URL(url);
-    return urlObj.hostname;
+    const urlObj = new URL(url)
+    return urlObj.hostname
   } catch {
-    return url;
+    return url
   }
-};
+}
 
 const handleDeleteLink = async (link) => {
   try {
-    await ElMessageBox.confirm(`确定要删除友链 "${link.name}" 吗？此操作不可恢复。`, "确认删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-      confirmButtonClass: "el-button--danger",
+    await ElMessageBox.confirm(`确定要删除友链 "${link.name}" 吗？此操作不可恢复。`, '确认删除', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+      confirmButtonClass: 'el-button--danger',
       lockScroll: false,
-    });
+    })
 
-    deletingLinkId.value = link.id;
-    await deleteLink(link.id);
+    deletingLinkId.value = link.id
+    await deleteLink(link.id)
 
-    linkList.value = linkList.value.filter((item) => item.id !== link.id);
-    total.value = Math.max(0, total.value - 1);
-    hasMore.value = linkList.value.length < total.value;
+    linkList.value = linkList.value.filter((item) => item.id !== link.id)
+    total.value = Math.max(0, total.value - 1)
+    hasMore.value = linkList.value.length < total.value
 
-    ElMessage.success("友链删除成功");
+    ElMessage.success('友链删除成功')
   } catch (error) {
-    if (error !== "cancel") {
+    if (error !== 'cancel') {
       // 静默处理
     }
   } finally {
-    deletingLinkId.value = null;
+    deletingLinkId.value = null
   }
-};
+}
 
 onMounted(() => {
-  fetchLinkList(true);
-  window.addEventListener("scroll", handleScroll);
-});
+  fetchLinkList(true)
+  window.addEventListener('scroll', handleScroll)
+})
 
 onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
-});
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -350,7 +362,8 @@ onUnmounted(() => {
   padding: 0 24px;
   min-height: 100vh;
   background: var(--bg-page);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.6;
 
   // 手机端适配
@@ -668,8 +681,8 @@ onUnmounted(() => {
               }
             }
 
-              .item-footer {
-                padding: 16px;
+            .item-footer {
+              padding: 16px;
 
               .link-header {
                 display: flex;

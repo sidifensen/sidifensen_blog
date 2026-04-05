@@ -4,35 +4,121 @@
       <div class="card-header">
         <h2 class="card-title">图片审核</h2>
         <div class="card-actions">
-          <el-select v-model="searchExamineStatus" placeholder="审核状态" filterable clearable size="small" class="search-input" @change="handleSearch">
+          <el-select
+            v-model="searchExamineStatus"
+            placeholder="审核状态"
+            filterable
+            clearable
+            size="small"
+            class="search-input"
+            @change="handleSearch"
+          >
             <el-option label="待审核" value="0" />
             <el-option label="审核通过" value="1" />
             <el-option label="审核不通过" value="2" />
             <el-option label="全部" value="" />
           </el-select>
-          <el-select v-model="searchUserId" placeholder="输入用户名搜索" filterable remote reserve-keyword :remote-method="searchUsers" :loading="userLoading" clearable size="small" class="search-input" @change="handleSearch">
-            <el-option v-for="user in filteredUserList" :key="user.id" :label="user.username" :value="user.id" />
+          <el-select
+            v-model="searchUserId"
+            placeholder="输入用户名搜索"
+            filterable
+            remote
+            reserve-keyword
+            :remote-method="searchUsers"
+            :loading="userLoading"
+            clearable
+            size="small"
+            class="search-input"
+            @change="handleSearch"
+          >
+            <el-option
+              v-for="user in filteredUserList"
+              :key="user.id"
+              :label="user.username"
+              :value="user.id"
+            />
           </el-select>
         </div>
       </div>
       <div class="card-second">
-        <el-date-picker v-model="searchCreateTimeStart" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间开始" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
-        <el-date-picker v-model="searchCreateTimeEnd" type="datetime" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss" placeholder="创建时间结束" :prefix-icon="Calendar" size="small" class="search-input" clearable @change="handleSearch" />
+        <el-date-picker
+          v-model="searchCreateTimeStart"
+          type="datetime"
+          format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          placeholder="创建时间开始"
+          :prefix-icon="Calendar"
+          size="small"
+          class="search-input"
+          clearable
+          @change="handleSearch"
+        />
+        <el-date-picker
+          v-model="searchCreateTimeEnd"
+          type="datetime"
+          format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          placeholder="创建时间结束"
+          :prefix-icon="Calendar"
+          size="small"
+          class="search-input"
+          clearable
+          @change="handleSearch"
+        />
       </div>
       <div class="card-third">
-        <el-button type="primary" plain round @click="handleBatchAudit" :disabled="selectedPhotos.length === 0" :loading="batchAuditLoading"> 批量审核 </el-button>
-        <el-button type="warning" plain round @click="handleBatchReject" :disabled="selectedPhotos.length === 0" :loading="batchRejectLoading"> 批量拒绝 </el-button>
-        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedPhotos.length === 0" :loading="batchDeleteLoading"> 批量删除 </el-button>
+        <el-button
+          type="primary"
+          plain
+          round
+          @click="handleBatchAudit"
+          :disabled="selectedPhotos.length === 0"
+          :loading="batchAuditLoading"
+        >
+          批量审核
+        </el-button>
+        <el-button
+          type="warning"
+          plain
+          round
+          @click="handleBatchReject"
+          :disabled="selectedPhotos.length === 0"
+          :loading="batchRejectLoading"
+        >
+          批量拒绝
+        </el-button>
+        <el-button
+          type="danger"
+          plain
+          round
+          @click="handleBatchDelete"
+          :disabled="selectedPhotos.length === 0"
+          :loading="batchDeleteLoading"
+        >
+          批量删除
+        </el-button>
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table v-loading="loading" :data="paginatedPhotoList" class="table" style="height: 100%" @selection-change="handleSelectionChange">
+        <el-table
+          v-loading="loading"
+          :data="paginatedPhotoList"
+          class="table"
+          style="height: 100%"
+          @selection-change="handleSelectionChange"
+        >
           <el-table-column type="selection" width="30" />
           <el-table-column prop="url" label="图片" width="350">
             <template #default="{ row }">
               <div style="display: flex; align-items: center">
-                <el-image preview-teleported :src="row.url" style="width: 320px; height: 200px" :preview-src-list="[row.url]" fit="cover" />
+                <el-image
+                  preview-teleported
+                  :src="row.url"
+                  style="width: 320px; height: 200px"
+                  :preview-src-list="[row.url]"
+                  fit="cover"
+                />
               </div>
             </template>
           </el-table-column>
@@ -40,8 +126,19 @@
           <el-table-column prop="username" label="用户名" />
           <el-table-column prop="examineStatus" label="状态">
             <template #default="{ row }">
-              <div class="photo-status" :class="row.examineStatus === 0 ? 'status-unaudited' : row.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-                {{ row.examineStatus === 0 ? "待审核" : row.examineStatus === 1 ? "已审核" : "未通过" }}
+              <div
+                class="photo-status"
+                :class="
+                  row.examineStatus === 0
+                    ? 'status-unaudited'
+                    : row.examineStatus === 1
+                      ? 'status-audited'
+                      : 'status-rejected'
+                "
+              >
+                {{
+                  row.examineStatus === 0 ? '待审核' : row.examineStatus === 1 ? '已审核' : '未通过'
+                }}
               </div>
             </template>
           </el-table-column>
@@ -50,9 +147,29 @@
           <el-table-column label="操作" width="300">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button type="info" @click="handleAuditPhoto(row.id)" :icon="Check" class="examine-button">审核</el-button>
-                <el-button type="primary" @click="handleRejectPhoto(row.id)" :icon="Close" class="reject-button"> 拒绝 </el-button>
-                <el-button type="danger" @click="handleDeletePhoto(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
+                <el-button
+                  type="info"
+                  @click="handleAuditPhoto(row.id)"
+                  :icon="Check"
+                  class="examine-button"
+                  >审核</el-button
+                >
+                <el-button
+                  type="primary"
+                  @click="handleRejectPhoto(row.id)"
+                  :icon="Close"
+                  class="reject-button"
+                >
+                  拒绝
+                </el-button>
+                <el-button
+                  type="danger"
+                  @click="handleDeletePhoto(row.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                >
+                  删除
+                </el-button>
               </div>
             </template>
           </el-table-column>
@@ -62,19 +179,49 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="photo-cards">
-          <el-card v-for="photo in paginatedPhotoList" :key="photo.id" class="photo-card" :class="{ 'is-selected': isPhotoSelected(photo.id) }">
+          <el-card
+            v-for="photo in paginatedPhotoList"
+            :key="photo.id"
+            class="photo-card"
+            :class="{ 'is-selected': isPhotoSelected(photo.id) }"
+          >
             <div class="photo-card-content">
               <div class="photo-header-section">
                 <div class="photo-cover-container">
-                  <el-checkbox :model-value="isPhotoSelected(photo.id)" @change="handleMobileSelect(photo)" class="mobile-checkbox" />
-                  <el-image preview-teleported :src="photo.url" class="photo-cover" :preview-src-list="[photo.url]" fit="cover" />
+                  <el-checkbox
+                    :model-value="isPhotoSelected(photo.id)"
+                    @change="handleMobileSelect(photo)"
+                    class="mobile-checkbox"
+                  />
+                  <el-image
+                    preview-teleported
+                    :src="photo.url"
+                    class="photo-cover"
+                    :preview-src-list="[photo.url]"
+                    fit="cover"
+                  />
                 </div>
                 <div class="photo-info">
                   <div class="photo-header">
                     <div class="photo-id">#{{ photo.id }}</div>
                     <div class="photo-username">{{ photo.username }}</div>
-                    <div class="photo-status" :class="photo.examineStatus === 0 ? 'status-unaudited' : photo.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-                      {{ photo.examineStatus === 0 ? "待审核" : photo.examineStatus === 1 ? "已审核" : "未通过" }}
+                    <div
+                      class="photo-status"
+                      :class="
+                        photo.examineStatus === 0
+                          ? 'status-unaudited'
+                          : photo.examineStatus === 1
+                            ? 'status-audited'
+                            : 'status-rejected'
+                      "
+                    >
+                      {{
+                        photo.examineStatus === 0
+                          ? '待审核'
+                          : photo.examineStatus === 1
+                            ? '已审核'
+                            : '未通过'
+                      }}
                     </div>
                   </div>
                   <div class="photo-meta">
@@ -90,9 +237,27 @@
                 </div>
               </div>
               <div class="photo-actions">
-                <el-button type="info" @click="handleAuditPhoto(photo.id)" :icon="Check" class="examine-button">审核</el-button>
-                <el-button type="primary" @click="handleRejectPhoto(photo.id)" :icon="Close" class="reject-button">拒绝</el-button>
-                <el-button type="danger" @click="handleDeletePhoto(photo.id)" :icon="Delete" class="delete-button">删除</el-button>
+                <el-button
+                  type="info"
+                  @click="handleAuditPhoto(photo.id)"
+                  :icon="Check"
+                  class="examine-button"
+                  >审核</el-button
+                >
+                <el-button
+                  type="primary"
+                  @click="handleRejectPhoto(photo.id)"
+                  :icon="Close"
+                  class="reject-button"
+                  >拒绝</el-button
+                >
+                <el-button
+                  type="danger"
+                  @click="handleDeletePhoto(photo.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                  >删除</el-button
+                >
               </div>
             </div>
           </el-card>
@@ -100,70 +265,89 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <Pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, computed } from "vue";
-import { Delete, Close, Check } from "@element-plus/icons-vue";
-import { useUserSearch } from "@/utils/userSearch";
-import { adminDeletePhoto, adminDeleteBatchPhoto, adminAuditPhoto, adminAuditBatchPhoto, adminSearchPhoto, adminGetPhotoList } from "@/api/photo";
-import Pagination from "@/components/Pagination.vue";
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+import { Delete, Close, Check } from '@element-plus/icons-vue'
+import { useUserSearch } from '@/utils/userSearch'
+import {
+  adminDeletePhoto,
+  adminDeleteBatchPhoto,
+  adminAuditPhoto,
+  adminAuditBatchPhoto,
+  adminSearchPhoto,
+  adminGetPhotoList,
+} from '@/api/photo'
+import Pagination from '@/components/Pagination.vue'
 
 // 图片列表数据
-const photoList = ref([]);
+const photoList = ref([])
 // 分页后的图片列表
-const paginatedPhotoList = ref([]);
+const paginatedPhotoList = ref([])
 // 加载状态
-const loading = ref(false);
+const loading = ref(false)
 // 当前页码
-const currentPage = ref(1);
+const currentPage = ref(1)
 // 每页条数
-const pageSize = ref(10);
+const pageSize = ref(10)
 // 总条数
-const total = ref(0);
+const total = ref(0)
 
 // 用户搜索
-const { filteredUserList, userLoading, searchUsers } = useUserSearch();
+const { filteredUserList, userLoading, searchUsers } = useUserSearch()
 
 // 获取图片列表
 const getPhotos = async () => {
-  currentPage.value = 1;
-  await fetchPhotos();
-};
+  currentPage.value = 1
+  await fetchPhotos()
+}
 
 // 移动端检测
-const isMobileView = ref(false);
+const isMobileView = ref(false)
 
 // 监听窗口大小变化
 const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768;
-};
+  isMobileView.value = window.innerWidth <= 768
+}
 
 // 初始化
 onMounted(() => {
-  getPhotos();
-  handleResize();
-  window.addEventListener("resize", handleResize);
-});
+  getPhotos()
+  handleResize()
+  window.addEventListener('resize', handleResize)
+})
 
 // 组件卸载时移除监听
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 
 // 搜索用户名称
-const searchUserId = ref("");
+const searchUserId = ref('')
 // 搜索相册状态
-const searchExamineStatus = ref("");
+const searchExamineStatus = ref('')
 // 搜索创建时间开始
-const searchCreateTimeStart = ref(null);
+const searchCreateTimeStart = ref(null)
 // 搜索创建时间结束
-const searchCreateTimeEnd = ref(null);
+const searchCreateTimeEnd = ref(null)
 
-const hasSearchConditions = () => !!(searchUserId.value || searchExamineStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value);
+const hasSearchConditions = () =>
+  !!(
+    searchUserId.value ||
+    searchExamineStatus.value ||
+    searchCreateTimeStart.value ||
+    searchCreateTimeEnd.value
+  )
 
 const buildSearchPayload = () => ({
   pageNum: currentPage.value,
@@ -172,238 +356,238 @@ const buildSearchPayload = () => ({
   examineStatus: searchExamineStatus.value || undefined,
   createTimeStart: searchCreateTimeStart.value || undefined,
   createTimeEnd: searchCreateTimeEnd.value || undefined,
-});
+})
 
 const applyPageData = (pageData) => {
-  photoList.value = pageData?.data || [];
-  paginatedPhotoList.value = photoList.value;
-  total.value = Number(pageData?.total || 0);
-  selectedPhotos.value = [];
-};
+  photoList.value = pageData?.data || []
+  paginatedPhotoList.value = photoList.value
+  total.value = Number(pageData?.total || 0)
+  selectedPhotos.value = []
+}
 
 const fetchPhotos = async () => {
-  loading.value = true;
+  loading.value = true
   try {
-    let pageData = null;
+    let pageData = null
     if (hasSearchConditions()) {
-      const res = await adminSearchPhoto(buildSearchPayload());
-      pageData = res.data;
+      const res = await adminSearchPhoto(buildSearchPayload())
+      pageData = res.data
     } else {
       const res = await adminGetPhotoList({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
-      });
-      pageData = res.data;
+      })
+      pageData = res.data
     }
-    applyPageData(pageData);
+    applyPageData(pageData)
   } catch (error) {
-    ElMessage.error(hasSearchConditions() ? "搜索图片失败" : "获取图片列表失败");
+    ElMessage.error(hasSearchConditions() ? '搜索图片失败' : '获取图片列表失败')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 更新分页数据
 const updatePaginatedPhotoList = () => {
-  paginatedPhotoList.value = photoList.value;
-};
+  paginatedPhotoList.value = photoList.value
+}
 
 // 处理分页大小变化
 const handleSizeChange = async (size) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  await fetchPhotos();
-};
+  pageSize.value = size
+  currentPage.value = 1
+  await fetchPhotos()
+}
 
 // 处理当前页码变化
 const handleCurrentChange = async (current) => {
-  currentPage.value = current;
-  await fetchPhotos();
-};
+  currentPage.value = current
+  await fetchPhotos()
+}
 
 // 处理搜索
 const handleSearch = async () => {
-  currentPage.value = 1;
-  await fetchPhotos();
-};
+  currentPage.value = 1
+  await fetchPhotos()
+}
 
 // 选中的图片
-const selectedPhotos = ref([]);
+const selectedPhotos = ref([])
 // 表格多选
 const handleSelectionChange = async (photo) => {
-  selectedPhotos.value = photo;
-};
+  selectedPhotos.value = photo
+}
 
 // 检查图片是否被选中
 const isPhotoSelected = (photoId) => {
-  return selectedPhotos.value.some((photo) => photo.id === photoId);
-};
+  return selectedPhotos.value.some((photo) => photo.id === photoId)
+}
 
 // 移动端选择处理
 const handleMobileSelect = (photo) => {
-  const index = selectedPhotos.value.findIndex((item) => item.id === photo.id);
+  const index = selectedPhotos.value.findIndex((item) => item.id === photo.id)
   if (index > -1) {
     // 已选中，取消选中
-    selectedPhotos.value.splice(index, 1);
+    selectedPhotos.value.splice(index, 1)
   } else {
     // 未选中，添加到选中列表
-    selectedPhotos.value.push(photo);
+    selectedPhotos.value.push(photo)
   }
-};
+}
 // 批量审核加载状态
-const batchAuditLoading = ref(false);
+const batchAuditLoading = ref(false)
 // 批量拒绝加载状态
-const batchRejectLoading = ref(false);
+const batchRejectLoading = ref(false)
 // 批量删除加载状态
-const batchDeleteLoading = ref(false);
+const batchDeleteLoading = ref(false)
 
 // 处理单个图片审核
 const handleAuditPhoto = (photoId) => {
-  ElMessageBox.confirm("确定要审核通过该图片吗？", "确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "info",
+  ElMessageBox.confirm('确定要审核通过该图片吗？', '确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'info',
   })
     .then(async () => {
       try {
-        await adminAuditPhoto({ photoId: photoId, examineStatus: 1 });
-        ElMessage.success("审核成功");
-        await getPhotos();
+        await adminAuditPhoto({ photoId: photoId, examineStatus: 1 })
+        ElMessage.success('审核成功')
+        await getPhotos()
       } catch (error) {
-        ElMessage.error("审核失败");
+        ElMessage.error('审核失败')
       }
     })
     .catch(() => {
-      ElMessage.info("审核已取消");
-    });
-};
+      ElMessage.info('审核已取消')
+    })
+}
 
 // 处理批量审核
 const handleBatchAudit = () => {
-  ElMessageBox.confirm(`确定要审核通过选中的 ${selectedPhotos.value.length} 张图片吗？`, "确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "info",
+  ElMessageBox.confirm(`确定要审核通过选中的 ${selectedPhotos.value.length} 张图片吗？`, '确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'info',
   })
     .then(async () => {
-      batchAuditLoading.value = true;
+      batchAuditLoading.value = true
       try {
         const data = selectedPhotos.value
           .map((photo) => ({
             photoId: photo.id,
             examineStatus: 1,
           }))
-          .sort((a, b) => a.photoId - b.photoId); // 按照 photoId 升序排序
-        await adminAuditBatchPhoto(data);
-        ElMessage.success("批量审核成功");
-        await getPhotos();
+          .sort((a, b) => a.photoId - b.photoId) // 按照 photoId 升序排序
+        await adminAuditBatchPhoto(data)
+        ElMessage.success('批量审核成功')
+        await getPhotos()
       } catch (error) {
-        ElMessage.error("批量审核失败");
+        ElMessage.error('批量审核失败')
       } finally {
-        batchAuditLoading.value = false;
+        batchAuditLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("审核已取消");
-    });
-};
+      ElMessage.info('审核已取消')
+    })
+}
 
 // 处理单个图片拒绝
 const handleRejectPhoto = (photoId) => {
-  ElMessageBox.confirm("确定要拒绝该图片吗？", "确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要拒绝该图片吗？', '确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
       try {
-        await adminAuditPhoto({ photoId: photoId, examineStatus: 2 });
-        ElMessage.success("拒绝成功");
-        getPhotos();
+        await adminAuditPhoto({ photoId: photoId, examineStatus: 2 })
+        ElMessage.success('拒绝成功')
+        getPhotos()
       } catch (error) {
-        ElMessage.error("拒绝失败");
+        ElMessage.error('拒绝失败')
       }
     })
     .catch(() => {
-      ElMessage.info("拒绝已取消");
-    });
-};
+      ElMessage.info('拒绝已取消')
+    })
+}
 
 // 处理批量拒绝
 const handleBatchReject = () => {
-  ElMessageBox.confirm(`确定要拒绝选中的 ${selectedPhotos.value.length} 张图片吗？`, "确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm(`确定要拒绝选中的 ${selectedPhotos.value.length} 张图片吗？`, '确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      batchRejectLoading.value = true;
+      batchRejectLoading.value = true
       try {
         const data = selectedPhotos.value.map((photo) => ({
           photoId: photo.id,
           examineStatus: 2,
-        }));
-        await adminAuditBatchPhoto(data);
-        ElMessage.success("批量拒绝成功");
-        await getPhotos();
+        }))
+        await adminAuditBatchPhoto(data)
+        ElMessage.success('批量拒绝成功')
+        await getPhotos()
       } catch (error) {
-        ElMessage.error("批量拒绝失败");
+        ElMessage.error('批量拒绝失败')
       } finally {
-        batchRejectLoading.value = false;
+        batchRejectLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("拒绝已取消");
-    });
-};
+      ElMessage.info('拒绝已取消')
+    })
+}
 
 // 处理删除单个图片
 const handleDeletePhoto = (photoId) => {
-  ElMessageBox.confirm("确定要删除该图片吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要删除该图片吗？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
       try {
-        await adminDeletePhoto(photoId);
-        ElMessage.success("删除成功");
-        getPhotos();
+        await adminDeletePhoto(photoId)
+        ElMessage.success('删除成功')
+        getPhotos()
       } catch (error) {
-        ElMessage.error("删除失败");
+        ElMessage.error('删除失败')
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 处理批量删除
 const handleBatchDelete = () => {
-  ElMessageBox.confirm(`确定要删除选中的 ${selectedPhotos.value.length} 张图片吗？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm(`确定要删除选中的 ${selectedPhotos.value.length} 张图片吗？`, '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      batchDeleteLoading.value = true;
+      batchDeleteLoading.value = true
       try {
         const data = selectedPhotos.value.map((photo) => ({
           photoId: photo.id,
-        }));
-        await adminDeleteBatchPhoto(data);
-        ElMessage.success("批量删除成功");
-        await getPhotos();
+        }))
+        await adminDeleteBatchPhoto(data)
+        ElMessage.success('批量删除成功')
+        await getPhotos()
       } catch (error) {
-        ElMessage.error("批量删除失败");
+        ElMessage.error('批量删除失败')
       } finally {
-        batchDeleteLoading.value = false;
+        batchDeleteLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 </script>
 
 <style lang="scss" scoped>
@@ -440,7 +624,7 @@ const handleBatchDelete = () => {
         align-items: center;
 
         &::before {
-          content: "";
+          content: '';
           display: inline-block;
           width: 4px;
           height: 20px;
@@ -1044,7 +1228,9 @@ const handleBatchDelete = () => {
   }
 
   &.photo-item-selected {
-    box-shadow: 0 0 0 2px #42b983, 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow:
+      0 0 0 2px #42b983,
+      0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   .photo-selector {
@@ -1067,7 +1253,7 @@ const handleBatchDelete = () => {
     position: relative;
 
     &::after {
-      content: "未审核";
+      content: '未审核';
       position: absolute;
       top: 0;
       left: 0;

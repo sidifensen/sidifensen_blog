@@ -66,68 +66,68 @@
 </template>
 
 <script setup>
-import { View, Edit, Check, Close, Delete } from "@element-plus/icons-vue";
+import { View, Edit, Check, Close, Delete } from '@element-plus/icons-vue'
 
 // Props
 const props = defineProps({
   // 按钮显示控制
   showView: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showEdit: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showAudit: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showReject: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showDelete: {
     type: Boolean,
-    default: false
+    default: false,
   },
   // 按钮文本
   viewText: {
     type: String,
-    default: "查看"
+    default: '查看',
   },
   editText: {
     type: String,
-    default: "编辑"
+    default: '编辑',
   },
   auditText: {
     type: String,
-    default: "审核"
+    default: '审核',
   },
   rejectText: {
     type: String,
-    default: "拒绝"
+    default: '拒绝',
   },
   deleteText: {
     type: String,
-    default: "删除"
+    default: '删除',
   },
   // 禁用状态
   disabled: {
     type: Boolean,
-    default: false
-  }
-});
+    default: false,
+  },
+})
 
 // Emits
-const emit = defineEmits(["view", "edit", "audit", "reject", "delete", "action"]);
+const emit = defineEmits(['view', 'edit', 'audit', 'reject', 'delete', 'action'])
 
 // 处理按钮点击
 const handleAction = (action) => {
-  if (props.disabled) return;
-  emit(action);
-  emit("action", action);
-};
+  if (props.disabled) return
+  emit(action)
+  emit('action', action)
+}
 </script>
 
 <style lang="scss" scoped>

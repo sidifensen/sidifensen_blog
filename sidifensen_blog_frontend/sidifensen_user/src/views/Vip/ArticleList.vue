@@ -5,7 +5,9 @@
       <section class="page-head">
         <p class="head-kicker">会员专区</p>
         <h1 class="head-title">仅对有效 VIP 开放的文章内容</h1>
-        <p class="head-description">这里集中展示 VIP 可见 的已发布文章，充值vip会员后可直接访问。</p>
+        <p class="head-description">
+          这里集中展示 VIP 可见 的已发布文章，充值vip会员后可直接访问。
+        </p>
       </section>
 
       <!-- 会员文章列表区 -->
@@ -21,7 +23,12 @@
           <h2>会员专区暂时还没有文章</h2>
         </div>
         <div v-else class="article-list">
-          <article v-for="article in articleList" :key="article.id" class="article-card" @click="goToArticle(article)">
+          <article
+            v-for="article in articleList"
+            :key="article.id"
+            class="article-card"
+            @click="goToArticle(article)"
+          >
             <div class="article-cover">
               <img v-if="article.coverUrl" :src="article.coverUrl" :alt="article.title" />
               <div v-else class="cover-placeholder">VIP</div>
@@ -29,14 +36,14 @@
             <div class="article-content">
               <div class="content-top">
                 <span class="article-badge">会员文章</span>
-                <span class="article-author">{{ article.nickname || "匿名作者" }}</span>
+                <span class="article-author">{{ article.nickname || '匿名作者' }}</span>
               </div>
               <h2 class="article-title">{{ article.title }}</h2>
               <p class="article-description">{{ article.description }}</p>
               <div class="content-meta">
                 <span>{{ formatCompactNumber(article.readCount || 0) }} 阅读</span>
                 <span>{{ formatCompactNumber(article.commentCount || 0) }} 评论</span>
-                <span>{{ article.createTime || "--" }}</span>
+                <span>{{ article.createTime || '--' }}</span>
               </div>
             </div>
           </article>
@@ -48,55 +55,55 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
-import { getVipArticleList } from "@/api/article";
-import { formatCompactNumber } from "@/utils/formatNumber";
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { getVipArticleList } from '@/api/article'
+import { formatCompactNumber } from '@/utils/formatNumber'
 
-const router = useRouter();
+const router = useRouter()
 
 // 列表页状态
-const articleList = ref([]);
-const loading = ref(false);
-const accessDenied = ref("");
-const pageNum = ref(1);
-const pageSize = ref(10);
-const hasMore = ref(true);
+const articleList = ref([])
+const loading = ref(false)
+const accessDenied = ref('')
+const pageNum = ref(1)
+const pageSize = ref(10)
+const hasMore = ref(true)
 
 // 会员专区只做追加分页，避免重复请求
 const fetchArticleList = async () => {
   if (!hasMore.value || loading.value) {
-    return;
+    return
   }
   try {
-    loading.value = true;
-    const response = await getVipArticleList(pageNum.value, pageSize.value);
-    const records = response.data.data || [];
-    const total = response.data.total || 0;
-    articleList.value = [...articleList.value, ...records];
-    hasMore.value = articleList.value.length < total;
+    loading.value = true
+    const response = await getVipArticleList(pageNum.value, pageSize.value)
+    const records = response.data.data || []
+    const total = response.data.total || 0
+    articleList.value = [...articleList.value, ...records]
+    hasMore.value = articleList.value.length < total
     if (records.length > 0) {
-      pageNum.value += 1;
+      pageNum.value += 1
     }
   } catch (error) {
-    accessDenied.value = error?.msg || "暂无访问权限";
+    accessDenied.value = error?.msg || '暂无访问权限'
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 会员专区直接跳转到文章详情页
 const goToArticle = (article) => {
-  router.push(`/user/${article.userId}/article/${article.id}`);
-};
+  router.push(`/user/${article.userId}/article/${article.id}`)
+}
 
 const goToVipCenter = () => {
-  router.push("/vip");
-};
+  router.push('/vip')
+}
 
 onMounted(async () => {
-  await fetchArticleList();
-});
+  await fetchArticleList()
+})
 </script>
 
 <style lang="scss" scoped>

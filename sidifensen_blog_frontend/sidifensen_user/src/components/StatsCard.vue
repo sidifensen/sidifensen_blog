@@ -1,16 +1,9 @@
 <template>
   <div class="stats-card" :class="{ 'stats-card--compact': compact }">
-    <div
-      class="stats-list"
-      :style="{ gridTemplateColumns: `repeat(${columns}, 1fr)` }"
-    >
+    <div class="stats-list" :style="{ gridTemplateColumns: `repeat(${columns}, 1fr)` }">
       <div v-for="(stat, index) in stats" :key="index" class="stat-item">
         <div class="stat-value">
-          <CountTo
-            v-if="animated"
-            :end="stat.value"
-            :duration="2000"
-          />
+          <CountTo v-if="animated" :end="stat.value" :duration="2000" />
           <span v-else>{{ stat.value }}</span>
         </div>
         <div class="stat-label">{{ stat.label }}</div>
@@ -20,7 +13,7 @@
 </template>
 
 <script setup>
-import CountTo from "@/components/CountTo.vue";
+import CountTo from '@/components/CountTo.vue'
 
 // 定义 props
 const props = defineProps({
@@ -46,7 +39,7 @@ const props = defineProps({
     default: 2,
     validator: (value) => [2, 4].includes(value),
   },
-});
+})
 </script>
 
 <style lang="scss" scoped>

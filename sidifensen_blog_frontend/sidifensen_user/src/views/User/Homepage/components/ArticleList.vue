@@ -6,7 +6,12 @@
       <div class="filter-controls">
         <!-- 可见范围筛选 -->
         <div v-if="isCurrentUser" class="visibility-filter">
-          <el-select v-model="visibilityType" @change="handleVisibilityChange" placeholder="可见范围" size="default">
+          <el-select
+            v-model="visibilityType"
+            @change="handleVisibilityChange"
+            placeholder="可见范围"
+            size="default"
+          >
             <el-option label="全部可见" value="all" />
             <el-option label="仅我可见" value="private" />
             <el-option label="审核中&失败" value="pending" />
@@ -77,7 +82,9 @@
               <!-- 第一行：文章类型、审核状态、发布时间 -->
               <div class="article-meta-primary">
                 <span class="article-type">{{ getArticleType(article.reprintType) }}</span>
-                <span v-if="getVisibilityLabel(article.visibleRange)" class="article-visibility">{{ getVisibilityLabel(article.visibleRange) }}</span>
+                <span v-if="getVisibilityLabel(article.visibleRange)" class="article-visibility">{{
+                  getVisibilityLabel(article.visibleRange)
+                }}</span>
                 <span
                   v-if="isCurrentUser && article.examineStatus !== 1"
                   class="article-examine-status"
@@ -124,9 +131,9 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-import { Picture, Clock, View, Star, Collection, ChatDotRound } from "@element-plus/icons-vue";
-import { formatCompactNumber } from "@/utils/formatNumber";
+import { ref, watch } from 'vue'
+import { Picture, Clock, View, Star, Collection, ChatDotRound } from '@element-plus/icons-vue'
+import { formatCompactNumber } from '@/utils/formatNumber'
 
 // 定义 props
 const props = defineProps({
@@ -148,84 +155,84 @@ const props = defineProps({
   },
   sortType: {
     type: String,
-    default: "time",
+    default: 'time',
   },
   visibilityType: {
     type: String,
-    default: "all",
+    default: 'all',
   },
-});
+})
 
 // 定义 emits
-const emit = defineEmits(["article-click", "sort-change", "visibility-change"]);
+const emit = defineEmits(['article-click', 'sort-change', 'visibility-change'])
 
 // 响应式数据
-const sortType = ref(props.sortType);
-const visibilityType = ref(props.visibilityType);
+const sortType = ref(props.sortType)
+const visibilityType = ref(props.visibilityType)
 
 // 监听 props 变化
 watch(
   () => props.sortType,
   (newValue) => {
-    sortType.value = newValue;
-  }
-);
+    sortType.value = newValue
+  },
+)
 
 watch(
   () => props.visibilityType,
   (newValue) => {
-    visibilityType.value = newValue;
-  }
-);
+    visibilityType.value = newValue
+  },
+)
 
 // 处理文章点击事件
 const handleArticleClick = (articleId) => {
-  emit("article-click", articleId);
-};
+  emit('article-click', articleId)
+}
 
 // 处理排序条件变化
 const handleSortChange = (value) => {
-  sortType.value = value;
-  emit("sort-change", value);
-};
+  sortType.value = value
+  emit('sort-change', value)
+}
 
 // 处理可见范围变化
 const handleVisibilityChange = (value) => {
-  visibilityType.value = value;
-  emit("visibility-change", value);
-};
+  visibilityType.value = value
+  emit('visibility-change', value)
+}
 
 // 获取文章类型
 const getArticleType = (type) => {
   const typeMap = {
-    0: "原创",
-    1: "转载",
-  };
-  return typeMap[type] || "原创";
-};
+    0: '原创',
+    1: '转载',
+  }
+  return typeMap[type] || '原创'
+}
 
 const getVisibilityLabel = (visibleRange) => {
   const visibilityMap = {
-    1: "仅自己",
-    2: "粉丝",
-    3: "VIP",
-  };
-  return visibilityMap[visibleRange] || "";
-};
+    1: '仅自己',
+    2: '粉丝',
+    3: 'VIP',
+  }
+  return visibilityMap[visibleRange] || ''
+}
 
 // 获取审核状态
 const getExamineStatus = (status) => {
   const statusMap = {
-    0: "待审核",
-    1: "审核通过",
-    2: "审核未通过",
-  };
-  return statusMap[status] || "审核通过";
-};
+    0: '待审核',
+    1: '审核通过',
+    2: '审核未通过',
+  }
+  return statusMap[status] || '审核通过'
+}
 
 const formatStatNumber = (value) => {
-  return formatCompactNumber(value);
-};
+  return formatCompactNumber(value)
+}
 </script>
 
 <style lang="scss" scoped>
@@ -307,9 +314,17 @@ const formatStatNumber = (value) => {
   --section-border: rgba(var(--el-border-color-rgb, 226, 232, 240), 0.6);
   --section-shadow: rgba(0, 0, 0, 0.04);
   --section-shadow-light: rgba(0, 0, 0, 0.02);
-  --article-bg: linear-gradient(135deg, rgba(var(--el-bg-color-rgb, 255, 255, 255), 0.8) 0%, rgba(var(--el-bg-color-rgb, 255, 255, 255), 0.4) 100%);
+  --article-bg: linear-gradient(
+    135deg,
+    rgba(var(--el-bg-color-rgb, 255, 255, 255), 0.8) 0%,
+    rgba(var(--el-bg-color-rgb, 255, 255, 255), 0.4) 100%
+  );
   --article-border: rgba(var(--el-border-color-rgb, 226, 232, 240), 0.5);
-  --article-hover-bg: linear-gradient(135deg, rgba(var(--el-bg-color-rgb, 255, 255, 255), 1) 0%, rgba(var(--el-bg-color-rgb, 255, 255, 255), 0.7) 100%);
+  --article-hover-bg: linear-gradient(
+    135deg,
+    rgba(var(--el-bg-color-rgb, 255, 255, 255), 1) 0%,
+    rgba(var(--el-bg-color-rgb, 255, 255, 255), 0.7) 100%
+  );
   --article-hover-border: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.3);
   --article-hover-shadow: rgba(0, 0, 0, 0.08);
   --article-hover-shadow-light: rgba(0, 0, 0, 0.04);
@@ -331,9 +346,17 @@ const formatStatNumber = (value) => {
     --section-border: rgba(var(--el-border-color-rgb, 51, 65, 85), 0.6);
     --section-shadow: rgba(0, 0, 0, 0.2);
     --section-shadow-light: rgba(0, 0, 0, 0.1);
-    --article-bg: linear-gradient(135deg, rgba(var(--el-bg-color-rgb, 30, 41, 59), 0.8) 0%, rgba(var(--el-bg-color-rgb, 30, 41, 59), 0.4) 100%);
+    --article-bg: linear-gradient(
+      135deg,
+      rgba(var(--el-bg-color-rgb, 30, 41, 59), 0.8) 0%,
+      rgba(var(--el-bg-color-rgb, 30, 41, 59), 0.4) 100%
+    );
     --article-border: rgba(var(--el-border-color-rgb, 51, 65, 85), 0.5);
-    --article-hover-bg: linear-gradient(135deg, rgba(var(--el-bg-color-rgb, 30, 41, 59), 1) 0%, rgba(var(--el-bg-color-rgb, 30, 41, 59), 0.7) 100%);
+    --article-hover-bg: linear-gradient(
+      135deg,
+      rgba(var(--el-bg-color-rgb, 30, 41, 59), 1) 0%,
+      rgba(var(--el-bg-color-rgb, 30, 41, 59), 0.7) 100%
+    );
     --article-hover-border: rgba(var(--el-color-primary-rgb, 96, 168, 255), 0.3);
     --article-hover-shadow: rgba(0, 0, 0, 0.3);
     --article-hover-shadow-light: rgba(0, 0, 0, 0.15);
@@ -383,13 +406,17 @@ const formatStatNumber = (value) => {
 
       // 装饰性光晕
       &::before {
-        content: "";
+        content: '';
         position: absolute;
         top: 0;
         left: 0;
         width: 3px;
         height: 100%;
-        background: linear-gradient(180deg, var(--el-color-primary) 0%, var(--el-color-primary-light-3) 100%);
+        background: linear-gradient(
+          180deg,
+          var(--el-color-primary) 0%,
+          var(--el-color-primary-light-3) 100%
+        );
         opacity: 0;
         transition: opacity 0.3s ease;
       }
@@ -434,7 +461,11 @@ const formatStatNumber = (value) => {
             align-items: center;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, var(--el-fill-color-light) 0%, var(--el-fill-color) 100%);
+            background: linear-gradient(
+              135deg,
+              var(--el-fill-color-light) 0%,
+              var(--el-fill-color) 100%
+            );
 
             .loading-icon {
               font-size: 32px;
@@ -449,7 +480,11 @@ const formatStatNumber = (value) => {
             align-items: center;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, var(--el-fill-color-light) 0%, var(--el-fill-color) 100%);
+            background: linear-gradient(
+              135deg,
+              var(--el-fill-color-light) 0%,
+              var(--el-fill-color) 100%
+            );
 
             .el-icon {
               font-size: 40px;
@@ -666,7 +701,8 @@ const formatStatNumber = (value) => {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.6;
     transform: scale(1);
   }

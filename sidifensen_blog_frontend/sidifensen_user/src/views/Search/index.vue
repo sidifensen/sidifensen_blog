@@ -129,16 +129,26 @@
                 <span v-if="searchKeyword">"</span>
                 <span class="keyword-tag" v-if="searchKeyword">{{ searchKeyword }}</span>
                 <span v-if="searchKeyword">"</span>
-                <span class="search-type-hint" v-if="searchType === 'all'">（综合搜索：标题 + 标签）</span>
+                <span class="search-type-hint" v-if="searchType === 'all'"
+                  >（综合搜索：标题 + 标签）</span
+                >
                 <span class="search-type-hint" v-if="searchType === 'title'">（标题搜索）</span>
                 <span class="search-type-hint" v-if="searchType === 'tag'">（标签搜索）</span>
                 <span class="search-type-hint" v-if="searchType === 'author'">（作者搜索）</span>
               </span>
             </div>
-            <el-dropdown trigger="click" class="sort-dropdown-wrapper" @visible-change="handleSortDropdownVisible">
+            <el-dropdown
+              trigger="click"
+              class="sort-dropdown-wrapper"
+              @visible-change="handleSortDropdownVisible"
+            >
               <div class="sort-dropdown-trigger">
-                <span class="sort-dropdown-text">{{ sortOptions.find(o => o.value === sortBy)?.label }}</span>
-                <el-icon class="sort-arrow-icon" :class="{ 'is-up': isSortDropdownOpen }"><ArrowDown /></el-icon>
+                <span class="sort-dropdown-text">{{
+                  sortOptions.find((o) => o.value === sortBy)?.label
+                }}</span>
+                <el-icon class="sort-arrow-icon" :class="{ 'is-up': isSortDropdownOpen }"
+                  ><ArrowDown
+                /></el-icon>
               </div>
               <template #dropdown>
                 <el-dropdown-menu class="sort-menu">
@@ -159,10 +169,19 @@
             <el-skeleton animated :count="5">
               <template #template>
                 <div v-for="i in 5" :key="i" class="article-skeleton">
-                  <el-skeleton-item variant="image" style="width: 180px; height: 108px; border-radius: 8px" />
+                  <el-skeleton-item
+                    variant="image"
+                    style="width: 180px; height: 108px; border-radius: 8px"
+                  />
                   <div class="skeleton-content">
-                    <el-skeleton-item variant="h3" style="width: 80%; height: 20px; margin-bottom: 10px" />
-                    <el-skeleton-item variant="text" style="width: 100%; height: 16px; margin-bottom: 8px" />
+                    <el-skeleton-item
+                      variant="h3"
+                      style="width: 80%; height: 20px; margin-bottom: 10px"
+                    />
+                    <el-skeleton-item
+                      variant="text"
+                      style="width: 100%; height: 16px; margin-bottom: 8px"
+                    />
                     <el-skeleton-item variant="text" style="width: 90%; height: 16px" />
                   </div>
                 </div>
@@ -186,11 +205,7 @@
               class="article-card"
               @click="goToArticle(article)"
             >
-              <el-image
-                :src="article.coverUrl || ''"
-                class="article-cover"
-                fit="cover"
-              >
+              <el-image :src="article.coverUrl || ''" class="article-cover" fit="cover">
                 <template #placeholder>
                   <div class="image-placeholder">
                     <el-icon class="is-loading"><Loading /></el-icon>
@@ -205,18 +220,22 @@
 
               <div class="article-content">
                 <h3 class="article-title">{{ article.title }}</h3>
-                <p class="article-description">{{ article.description || "暂无描述" }}</p>
+                <p class="article-description">{{ article.description || '暂无描述' }}</p>
                 <div class="article-meta">
                   <!-- 第一行：时间、浏览量、点赞量 -->
                   <div class="meta-row stats-row">
                     <span class="meta-item">📅 {{ formatDate(article.createTime) }}</span>
-                    <span class="meta-item">👁 {{ formatCompactNumber(article.readCount || 0) }}</span>
-                    <span class="meta-item">❤️ {{ formatCompactNumber(article.likeCount || 0) }}</span>
+                    <span class="meta-item"
+                      >👁 {{ formatCompactNumber(article.readCount || 0) }}</span
+                    >
+                    <span class="meta-item"
+                      >❤️ {{ formatCompactNumber(article.likeCount || 0) }}</span
+                    >
                   </div>
                   <!-- 第二行：作者 -->
                   <div class="meta-row author-row">
                     <span class="meta-item author-link" @click.stop="goToAuthor(article.userId)">
-                      👤 {{ article.nickname || "匿名用户" }}
+                      👤 {{ article.nickname || '匿名用户' }}
                     </span>
                   </div>
                   <!-- 第三行：标签 -->
@@ -319,16 +338,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import {
-  Search,
-  Close,
-  ArrowDown,
-  Loading,
-  Picture,
-  DocumentDelete
-} from "@element-plus/icons-vue";
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { Search, Close, ArrowDown, Loading, Picture, DocumentDelete } from '@element-plus/icons-vue'
 import {
   searchArticleByTitle,
   searchArticleByTag,
@@ -336,412 +348,409 @@ import {
   getTitleSuggestions,
   getTagSuggestions,
   getHotArticleList,
-  getHotTags
-} from "@/api/article";
-import { getRecommendedAuthors, getHotSearches } from "@/api/user";
-import { formatCompactNumber } from "@/utils/formatNumber";
-import { useSeoMeta } from "@/plugins/seo";
+  getHotTags,
+} from '@/api/article'
+import { getRecommendedAuthors, getHotSearches } from '@/api/user'
+import { formatCompactNumber } from '@/utils/formatNumber'
+import { useSeoMeta } from '@/plugins/seo'
 
 // SEO - 搜索
 useSeoMeta({
-  title: "搜索",
-  description: "搜索技术文章、标签和作者，发现你感兴趣的内容",
-  keywords: "搜索,查找文章,标签搜索,作者搜索"
-});
+  title: '搜索',
+  description: '搜索技术文章、标签和作者，发现你感兴趣的内容',
+  keywords: '搜索,查找文章,标签搜索,作者搜索',
+})
 
 // 路由
-const router = useRouter();
-const route = useRoute();
+const router = useRouter()
+const route = useRoute()
 
 // 响应式数据
-const searchKeyword = ref("");
-const searchType = ref("all"); // all, title, tag, author
-const articles = ref([]);
-const searchLoading = ref(false);
-const loadingMore = ref(false);
-const currentPage = ref(1);
-const pageSize = ref(10);
-const total = ref(0);
-const hasSearched = ref(false);
-const sortBy = ref("default");
-const isSortDropdownOpen = ref(false);
+const searchKeyword = ref('')
+const searchType = ref('all') // all, title, tag, author
+const articles = ref([])
+const searchLoading = ref(false)
+const loadingMore = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+const hasSearched = ref(false)
+const sortBy = ref('default')
+const isSortDropdownOpen = ref(false)
 // 标记是否还有更多数据（当页加载数量小于 pageSize 说明没有更多了）
-const hasMoreData = ref(true);
+const hasMoreData = ref(true)
 
 // 搜索历史（从 localStorage 读取）
-const searchHistory = ref([]);
+const searchHistory = ref([])
 
 // 热门搜索数据（从后端获取）
-const hotSearches = ref([]);
+const hotSearches = ref([])
 
 // 热门标签（从后端获取）
-const hotTags = ref([]);
+const hotTags = ref([])
 
 // 推荐作者（从后端获取）
-const recommendedAuthors = ref([]);
+const recommendedAuthors = ref([])
 
 // 排序选项
 const sortOptions = ref([
-  { value: "default", label: "综合排序" },
-  { value: "latest", label: "最新发布" },
-  { value: "hot", label: "最热门" },
-  { value: "discussed", label: "最多讨论" }
-]);
+  { value: 'default', label: '综合排序' },
+  { value: 'latest', label: '最新发布' },
+  { value: 'hot', label: '最热门' },
+  { value: 'discussed', label: '最多讨论' },
+])
 
 // 计算属性 - 基于 hasMoreData 标记判断是否还有更多
 const hasMore = computed(() => {
   // 只要有更多数据标记为 true，就继续加载
-  return hasMoreData.value;
-});
+  return hasMoreData.value
+})
 
 // 获取标签大小样式
 const getTagSizeClass = (index) => {
-  if (index === 0) return "large";
-  if (index < 3) return "medium";
-  return "small";
-};
+  if (index === 0) return 'large'
+  if (index < 3) return 'medium'
+  return 'small'
+}
 
 // 格式化数字显示
 const formatCount = (count) => {
   if (count >= 1000) {
-    return (count / 1000).toFixed(1) + "k";
+    return (count / 1000).toFixed(1) + 'k'
   }
-  return count.toString();
-};
+  return count.toString()
+}
 
 // 清空关键词
 const clearKeyword = () => {
-  searchKeyword.value = "";
-};
+  searchKeyword.value = ''
+}
 
 // 切换搜索类型
 const changeSearchType = (type) => {
-  searchType.value = type;
+  searchType.value = type
   // 如果已经有搜索关键词，立即执行搜索
   if (searchKeyword.value.trim()) {
     if (hasSearched.value) {
       // 已经搜索过，重新搜索
-      handleSearch();
+      handleSearch()
     } else {
       // 未搜索过，直接执行搜索
-      performSearch(true);
+      performSearch(true)
     }
   }
-};
+}
 
 // 处理排序下拉菜单显示状态变化
 const handleSortDropdownVisible = (visible) => {
-  isSortDropdownOpen.value = visible;
-};
+  isSortDropdownOpen.value = visible
+}
 
 // 切换排序类型
 const changeSortType = (value) => {
-  sortBy.value = value;
+  sortBy.value = value
   // 如果已经有搜索关键词，立即执行搜索
   if (searchKeyword.value.trim() && hasSearched.value) {
-    handleSearch();
+    handleSearch()
   }
-};
+}
 
 // 执行搜索
 const handleSearch = async () => {
-  const keyword = searchKeyword.value.trim();
+  const keyword = searchKeyword.value.trim()
   if (!keyword) {
     // 搜索栏为空时，清空搜索恢复到初始状态
-    clearSearch();
-    return;
+    clearSearch()
+    return
   }
 
   // 添加到搜索历史
   if (keyword && !searchHistory.value.includes(keyword)) {
-    searchHistory.value.unshift(keyword);
+    searchHistory.value.unshift(keyword)
     if (searchHistory.value.length > 10) {
-      searchHistory.value.pop();
+      searchHistory.value.pop()
     }
-    localStorage.setItem("searchHistory", JSON.stringify(searchHistory.value));
+    localStorage.setItem('searchHistory', JSON.stringify(searchHistory.value))
   }
 
   // 更新 URL 参数
   router.replace({
-    path: "/search",
+    path: '/search',
     query: {
       keyword: keyword,
       type: searchType.value,
     },
-  });
+  })
 
-  await performSearch(true);
-};
+  await performSearch(true)
+}
 
 // 根据历史搜索
 const searchByHistory = (keyword) => {
-  searchKeyword.value = keyword;
-  handleSearch();
-};
+  searchKeyword.value = keyword
+  handleSearch()
+}
 
 // 根据热门搜索搜索
 const searchByHot = (keyword) => {
-  searchKeyword.value = keyword;
-  searchType.value = "all";
-  handleSearch();
-};
+  searchKeyword.value = keyword
+  searchType.value = 'all'
+  handleSearch()
+}
 
 // 根据标签搜索
 const searchByTag = (tagName) => {
-  searchKeyword.value = tagName;
-  searchType.value = "tag";
-  handleSearch();
-};
+  searchKeyword.value = tagName
+  searchType.value = 'tag'
+  handleSearch()
+}
 
 // 移除历史
 const removeHistory = (index) => {
-  searchHistory.value.splice(index, 1);
-  localStorage.setItem("searchHistory", JSON.stringify(searchHistory.value));
-};
+  searchHistory.value.splice(index, 1)
+  localStorage.setItem('searchHistory', JSON.stringify(searchHistory.value))
+}
 
 // 清空历史
 const clearHistory = () => {
-  searchHistory.value = [];
-  localStorage.removeItem("searchHistory");
-};
+  searchHistory.value = []
+  localStorage.removeItem('searchHistory')
+}
 
 // 执行搜索请求
 const performSearch = async (reset = false) => {
   try {
     if (reset) {
-      searchLoading.value = true;
-      currentPage.value = 1;
-      articles.value = [];
-      hasMoreData.value = true; // 重置时重置标记
+      searchLoading.value = true
+      currentPage.value = 1
+      articles.value = []
+      hasMoreData.value = true // 重置时重置标记
     } else {
-      loadingMore.value = true;
+      loadingMore.value = true
     }
 
-    hasSearched.value = true;
+    hasSearched.value = true
 
-    let allArticles = [];
-    let totalTitle = 0;
-    let totalTag = 0;
+    let allArticles = []
+    let totalTitle = 0
+    let totalTag = 0
 
     // 根据搜索类型调用不同接口
-    if (searchType.value === "all") {
+    if (searchType.value === 'all') {
       // 综合搜索：同时搜索标题和标签，合并结果
       const [titleRes, tagRes] = await Promise.all([
         searchArticleByTitle(searchKeyword.value, currentPage.value, pageSize.value),
-        searchArticleByTag(searchKeyword.value, currentPage.value, pageSize.value)
-      ]);
+        searchArticleByTag(searchKeyword.value, currentPage.value, pageSize.value),
+      ])
 
       // 解析标题搜索结果：PageVo { data: [...], total }
-      const titlePageVo = titleRes?.data || {};
-      const titleArticles = titlePageVo.data || titlePageVo.records || [];
-      totalTitle = titlePageVo.total || titleArticles.length;
+      const titlePageVo = titleRes?.data || {}
+      const titleArticles = titlePageVo.data || titlePageVo.records || []
+      totalTitle = titlePageVo.total || titleArticles.length
 
       // 解析标签搜索结果：PageVo { data: [...], total }
-      const tagPageVo = tagRes?.data || {};
-      const tagArticles = tagPageVo.data || tagPageVo.records || [];
-      totalTag = tagPageVo.total || tagArticles.length;
+      const tagPageVo = tagRes?.data || {}
+      const tagArticles = tagPageVo.data || tagPageVo.records || []
+      totalTag = tagPageVo.total || tagArticles.length
 
       // 合并结果（按文章 ID 去重）
-      const articleMap = new Map();
-      titleArticles.forEach(article => {
-        articleMap.set(article.id, article);
-      });
-      tagArticles.forEach(article => {
+      const articleMap = new Map()
+      titleArticles.forEach((article) => {
+        articleMap.set(article.id, article)
+      })
+      tagArticles.forEach((article) => {
         if (!articleMap.has(article.id)) {
-          articleMap.set(article.id, article);
+          articleMap.set(article.id, article)
         }
-      });
-      allArticles = Array.from(articleMap.values());
+      })
+      allArticles = Array.from(articleMap.values())
       // 综合搜索时，total 设置为两者之和（可能包含重复，但用于 hasMore 判断是保守安全的）
-      total.value = totalTitle + totalTag;
-
-    } else if (searchType.value === "title") {
+      total.value = totalTitle + totalTag
+    } else if (searchType.value === 'title') {
       // 标题搜索
-      const res = await searchArticleByTitle(searchKeyword.value, currentPage.value, pageSize.value);
-      const pageVo = res?.data || {};
-      allArticles = pageVo.data || pageVo.records || [];
-      total.value = pageVo.total || allArticles.length;
-
-    } else if (searchType.value === "tag") {
+      const res = await searchArticleByTitle(searchKeyword.value, currentPage.value, pageSize.value)
+      const pageVo = res?.data || {}
+      allArticles = pageVo.data || pageVo.records || []
+      total.value = pageVo.total || allArticles.length
+    } else if (searchType.value === 'tag') {
       // 标签搜索
-      const res = await searchArticleByTag(searchKeyword.value, currentPage.value, pageSize.value);
-      const pageVo = res?.data || {};
-      allArticles = pageVo.data || pageVo.records || [];
-      total.value = pageVo.total || allArticles.length;
-
-    } else if (searchType.value === "author") {
+      const res = await searchArticleByTag(searchKeyword.value, currentPage.value, pageSize.value)
+      const pageVo = res?.data || {}
+      allArticles = pageVo.data || pageVo.records || []
+      total.value = pageVo.total || allArticles.length
+    } else if (searchType.value === 'author') {
       // 作者搜索
-      const res = await searchArticleByAuthor(searchKeyword.value, currentPage.value, pageSize.value);
-      const pageVo = res?.data || {};
-      allArticles = pageVo.data || pageVo.records || [];
-      total.value = pageVo.total || allArticles.length;
+      const res = await searchArticleByAuthor(
+        searchKeyword.value,
+        currentPage.value,
+        pageSize.value,
+      )
+      const pageVo = res?.data || {}
+      allArticles = pageVo.data || pageVo.records || []
+      total.value = pageVo.total || allArticles.length
     }
 
     if (reset) {
-      articles.value = allArticles;
-      hasMoreData.value = true; // 重置时重置标记
+      articles.value = allArticles
+      hasMoreData.value = true // 重置时重置标记
     } else {
-      articles.value = [...articles.value, ...allArticles];
+      articles.value = [...articles.value, ...allArticles]
     }
 
     // 判断是否还有更多数据：已加载的文章数量是否已经达到总数
     // 当已加载数量 >= 总数时，说明没有更多数据了
     if (articles.value.length >= total.value) {
-      hasMoreData.value = false;
+      hasMoreData.value = false
     }
 
     // 只有当页有数据时才递增页码，没有数据说明已经加载完毕
     if (allArticles.length > 0) {
-      currentPage.value++;
+      currentPage.value++
     }
 
     if (total.value === 0) {
-      ElMessage.info(`未找到相关内容`);
+      ElMessage.info(`未找到相关内容`)
     }
   } catch (error) {
-    ElMessage.error("搜索失败，请稍后重试");
+    ElMessage.error('搜索失败，请稍后重试')
   } finally {
-    searchLoading.value = false;
-    loadingMore.value = false;
+    searchLoading.value = false
+    loadingMore.value = false
   }
-};
+}
 
 // 清空搜索
 const clearSearch = () => {
-  searchKeyword.value = "";
-  articles.value = [];
-  hasSearched.value = false;
-  currentPage.value = 1;
-  total.value = 0;
-  hasMoreData.value = true; // 重置 hasMoreData 标记
-  router.replace({ path: "/search", query: {} });
-};
+  searchKeyword.value = ''
+  articles.value = []
+  hasSearched.value = false
+  currentPage.value = 1
+  total.value = 0
+  hasMoreData.value = true // 重置 hasMoreData 标记
+  router.replace({ path: '/search', query: {} })
+}
 
 // 格式化日期
 const formatDate = (dateString) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-};
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+}
 
 // 解析标签
 const parseTag = (tagString) => {
-  if (!tagString) return [];
-  return tagString.split(",").filter((tag) => tag.trim());
-};
+  if (!tagString) return []
+  return tagString.split(',').filter((tag) => tag.trim())
+}
 
 // 跳转到文章详情
 const goToArticle = (article) => {
-  router.push(`/user/${article.userId}/article/${article.id}`);
-};
+  router.push(`/user/${article.userId}/article/${article.id}`)
+}
 
 // 跳转到作者个人主页
 const goToAuthor = (userId) => {
-  router.push(`/user/${userId}`);
-};
+  router.push(`/user/${userId}`)
+}
 
 // 节流函数 - 简化版本
 const throttle = (func, delay) => {
-  let lastCall = 0;
+  let lastCall = 0
   return function (...args) {
-    const now = Date.now();
+    const now = Date.now()
     if (now - lastCall >= delay) {
-      lastCall = now;
-      func.apply(this, args);
+      lastCall = now
+      func.apply(this, args)
     }
-  };
-};
+  }
+}
 
 // 滚动加载更多
 const handleScroll = throttle(() => {
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  const windowHeight = window.innerHeight;
-  const documentHeight = document.documentElement.scrollHeight;
-  const remaining = documentHeight - scrollTop - windowHeight;
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+  const windowHeight = window.innerHeight
+  const documentHeight = document.documentElement.scrollHeight
+  const remaining = documentHeight - scrollTop - windowHeight
 
   if (loadingMore.value || searchLoading.value || !hasSearched.value) {
-    return;
+    return
   }
 
   // 检查是否还有更多数据
   if (!hasMore.value) {
-    return;
+    return
   }
 
   // 距离底部 300px 时触发加载
   if (remaining <= 300) {
-    performSearch(false);
+    performSearch(false)
   }
-}, 300);
+}, 300)
 
 // 生命周期
 onMounted(async () => {
   // 加载搜索历史
-  const savedHistory = localStorage.getItem("searchHistory");
+  const savedHistory = localStorage.getItem('searchHistory')
   if (savedHistory) {
-    searchHistory.value = JSON.parse(savedHistory);
+    searchHistory.value = JSON.parse(savedHistory)
   }
 
   // 并行加载所有数据
-  await Promise.all([
-    loadHotTags(),
-    loadRecommendedAuthors(),
-    loadHotSearches()
-  ]);
+  await Promise.all([loadHotTags(), loadRecommendedAuthors(), loadHotSearches()])
 
   // 检查 URL 参数
-  const keyword = route.query.keyword;
-  const type = route.query.type || "all";
+  const keyword = route.query.keyword
+  const type = route.query.type || 'all'
 
   if (keyword) {
-    searchKeyword.value = keyword;
-    searchType.value = type;
-    await performSearch(true);
+    searchKeyword.value = keyword
+    searchType.value = type
+    await performSearch(true)
   }
 
-  await nextTick();
-  window.addEventListener("scroll", handleScroll, { passive: true });
-});
+  await nextTick()
+  window.addEventListener('scroll', handleScroll, { passive: true })
+})
 
 // 加载热门标签
 const loadHotTags = async () => {
   try {
-    const res = await getHotTags(10);
-    hotTags.value = res.data || [];
+    const res = await getHotTags(10)
+    hotTags.value = res.data || []
   } catch (error) {
     // 静默处理
   }
-};
+}
 
 // 加载推荐作者
 const loadRecommendedAuthors = async () => {
   try {
-    const res = await getRecommendedAuthors(3);
-    recommendedAuthors.value = res.data || [];
+    const res = await getRecommendedAuthors(3)
+    recommendedAuthors.value = res.data || []
   } catch (error) {
     // 静默处理
   }
-};
+}
 
 // 加载热门搜索
 const loadHotSearches = async () => {
   try {
-    const res = await getHotSearches(10);
+    const res = await getHotSearches(10)
     // 后端返回格式：[{keyword: "xxx", count: 123}, ...]
-    hotSearches.value = res.data || [];
+    hotSearches.value = res.data || []
   } catch (error) {
     // 失败时使用默认空数组，不影响页面其他功能
-    hotSearches.value = [];
+    hotSearches.value = []
   }
-};
+}
 
 onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
-});
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -1358,7 +1367,7 @@ onUnmounted(() => {
       .no-more {
         padding: 16px;
 
-        :deep(.el-divider__text) {
+        ::v-deep(.el-divider__text) {
           color: var(--text-muted);
           font-size: 13px;
         }

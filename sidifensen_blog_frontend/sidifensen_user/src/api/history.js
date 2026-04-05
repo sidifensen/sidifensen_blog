@@ -1,4 +1,4 @@
-import request from "@/utils/Request";
+import request from '@/utils/Request'
 
 /**
  * 分页获取当前用户的文章浏览记录
@@ -8,14 +8,14 @@ import request from "@/utils/Request";
  */
 export const getUserHistoryList = (pageNum, pageSize) => {
   return request({
-    url: "/history/list",
-    method: "get",
+    url: '/history/list',
+    method: 'get',
     params: {
       pageNum,
       pageSize,
     },
-  });
-};
+  })
+}
 
 /**
  * 清除当前用户的所有浏览记录
@@ -23,7 +23,7 @@ export const getUserHistoryList = (pageNum, pageSize) => {
  */
 export const clearUserHistory = () => {
   return request({
-    url: "/history/clear",
-    method: "delete",
-  });
-};
+    url: '/history/clear',
+    method: 'delete',
+  })
+}

@@ -5,11 +5,21 @@
         <div class="header-copy">
           <p class="header-copy__eyebrow">Notification Center</p>
           <h2 class="header-copy__title">消息中心</h2>
-          <p class="header-copy__description">把系统提醒、评论互动和关注动态集中收进一个更清晰的收件箱。</p>
+          <p class="header-copy__description">
+            把系统提醒、评论互动和关注动态集中收进一个更清晰的收件箱。
+          </p>
         </div>
         <div class="header-actions">
-          <el-button plain :icon="RefreshRight" @click="handleRefreshNotifications">刷新列表</el-button>
-          <el-button plain :icon="Select" :disabled="!hasUnreadInView" @click="handleMarkCurrentAsRead">全部已读</el-button>
+          <el-button plain :icon="RefreshRight" @click="handleRefreshNotifications"
+            >刷新列表</el-button
+          >
+          <el-button
+            plain
+            :icon="Select"
+            :disabled="!hasUnreadInView"
+            @click="handleMarkCurrentAsRead"
+            >全部已读</el-button
+          >
         </div>
       </div>
 
@@ -27,7 +37,12 @@
             <template #label>
               <span class="tab-label">
                 <span>{{ tab.label }}</span>
-                <el-badge v-if="unreadCount[tab.name] > 0" :value="unreadCount[tab.name]" :max="99" class="tab-label__badge" />
+                <el-badge
+                  v-if="unreadCount[tab.name] > 0"
+                  :value="unreadCount[tab.name]"
+                  :max="99"
+                  class="tab-label__badge"
+                />
               </span>
             </template>
           </el-tab-pane>
@@ -62,7 +77,9 @@
               <div class="notification-item__content">
                 <div class="notification-item__top">
                   <span class="type-pill">公告</span>
-                  <span class="notification-time">{{ formatTime(item.sendTime || item.createTime) }}</span>
+                  <span class="notification-time">{{
+                    formatTime(item.sendTime || item.createTime)
+                  }}</span>
                 </div>
                 <div class="notification-item__text">
                   <span class="user-nickname">{{ item.title }}</span>
@@ -87,34 +104,55 @@
           </template>
           <!-- 普通通知列表 -->
           <template v-else>
-            <article v-for="notification in notificationList" :key="notification.id" class="notification-item" :class="{ unread: isUnread(notification) }">
-              <div class="notification-item__avatar" @click.stop="goToUserPage(notification.contentData?.userId)">
+            <article
+              v-for="notification in notificationList"
+              :key="notification.id"
+              class="notification-item"
+              :class="{ unread: isUnread(notification) }"
+            >
+              <div
+                class="notification-item__avatar"
+                @click.stop="goToUserPage(notification.contentData?.userId)"
+              >
                 <el-avatar :size="46" :src="notification.contentData?.avatar" class="user-avatar">
                   <el-icon v-if="notification.type === 0"><Bell /></el-icon>
                   <el-icon v-else><User /></el-icon>
                 </el-avatar>
               </div>
 
-              <div class="notification-item__content" @click="handleNotificationClick(notification)">
+              <div
+                class="notification-item__content"
+                @click="handleNotificationClick(notification)"
+              >
                 <div class="notification-item__top">
                   <span class="type-pill">{{ getTypeLabel(notification.type) }}</span>
                   <span class="notification-time">{{ formatTime(notification.createTime) }}</span>
                 </div>
                 <div class="notification-item__text">
-                  <span class="user-nickname" @click.stop="goToUserPage(notification.contentData?.userId)">
-                    {{ notification.contentData?.nickname || "系统" }}
+                  <span
+                    class="user-nickname"
+                    @click.stop="goToUserPage(notification.contentData?.userId)"
+                  >
+                    {{ notification.contentData?.nickname || '系统' }}
                   </span>
                   <span class="message-text">{{ getMessageText(notification) }}</span>
                   <span
                     v-if="notification.contentData?.articleTitle"
                     class="article-title"
-                    @click.stop="goToArticle(notification.contentData?.authorId, notification.contentData?.articleId)"
+                    @click.stop="
+                      goToArticle(
+                        notification.contentData?.authorId,
+                        notification.contentData?.articleId,
+                      )
+                    "
                   >
                     《{{ notification.contentData?.articleTitle }}》
                   </span>
                 </div>
                 <div v-if="notification.contentData?.commentContent" class="comment-content">
-                  <span class="comment-content__text">{{ notification.contentData.commentContent }}</span>
+                  <span class="comment-content__text">{{
+                    notification.contentData.commentContent
+                  }}</span>
                 </div>
               </div>
 
@@ -129,7 +167,14 @@
                 >
                   已读
                 </el-button>
-                <el-button plain size="small" :icon="Delete" class="notification-action" @click.stop="handleDelete(notification.id)">删除</el-button>
+                <el-button
+                  plain
+                  size="small"
+                  :icon="Delete"
+                  class="notification-action"
+                  @click.stop="handleDelete(notification.id)"
+                  >删除</el-button
+                >
               </div>
             </article>
           </template>
@@ -148,23 +193,28 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
-import { useRouter } from "vue-router";
-import { Bell, Delete, RefreshRight, Select, User } from "@element-plus/icons-vue";
-import { deleteNotifications, getUnreadNotificationCount, getUserNotifications, markNotificationsAsRead } from "@/api/notification";
-import { getAnnouncementPage, readAnnouncement, getReadAnnouncementIds } from "@/api/announcement";
-import { formatTimeAgo } from "@/utils/timeUtils";
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { Bell, Delete, RefreshRight, Select, User } from '@element-plus/icons-vue'
+import {
+  deleteNotifications,
+  getUnreadNotificationCount,
+  getUserNotifications,
+  markNotificationsAsRead,
+} from '@/api/notification'
+import { getAnnouncementPage, readAnnouncement, getReadAnnouncementIds } from '@/api/announcement'
+import { formatTimeAgo } from '@/utils/timeUtils'
 
-const router = useRouter();
+const router = useRouter()
 
-const activeTab = ref("system");
-const loading = ref(false);
-const loadingMore = ref(false);
-const notificationList = ref([]);
-const currentPage = ref(1);
-const pageSize = ref(20);
-const total = ref(0);
-const hasMore = ref(true);
+const activeTab = ref('system')
+const loading = ref(false)
+const loadingMore = ref(false)
+const notificationList = ref([])
+const currentPage = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
+const hasMore = ref(true)
 
 const unreadCount = reactive({
   total: 0,
@@ -174,16 +224,16 @@ const unreadCount = reactive({
   collect: 0,
   follow: 0,
   announcement: 0,
-});
+})
 
 const tabOptions = [
-  { name: "announcement", label: "公告", type: -1 },
-  { name: "system", label: "系统", type: 0 },
-  { name: "comment", label: "评论", type: 1 },
-  { name: "like", label: "点赞", type: 2 },
-  { name: "collect", label: "收藏", type: 3 },
-  { name: "follow", label: "关注", type: 4 },
-];
+  { name: 'announcement', label: '公告', type: -1 },
+  { name: 'system', label: '系统', type: 0 },
+  { name: 'comment', label: '评论', type: 1 },
+  { name: 'like', label: '点赞', type: 2 },
+  { name: 'collect', label: '收藏', type: 3 },
+  { name: 'follow', label: '关注', type: 4 },
+]
 
 const typeMap = {
   system: 0,
@@ -192,169 +242,180 @@ const typeMap = {
   collect: 3,
   follow: 4,
   announcement: -1,
-};
+}
 
-const currentTabLabel = computed(() => tabOptions.find((item) => item.name === activeTab.value)?.label || "系统");
-const hasUnreadInView = computed(() => notificationList.value.some((item) => isUnread(item)));
+const currentTabLabel = computed(
+  () => tabOptions.find((item) => item.name === activeTab.value)?.label || '系统',
+)
+const hasUnreadInView = computed(() => notificationList.value.some((item) => isUnread(item)))
 const summaryCards = computed(() => [
-  { key: "total", label: "全部未读", value: unreadCount.total || 0, hint: "跨分类汇总" },
-  { key: "current", label: `${currentTabLabel.value}未读`, value: unreadCount[activeTab.value] || 0, hint: "当前筛选" },
-  { key: "loaded", label: "当前列表", value: total.value || 0, hint: "已同步通知" },
-]);
+  { key: 'total', label: '全部未读', value: unreadCount.total || 0, hint: '跨分类汇总' },
+  {
+    key: 'current',
+    label: `${currentTabLabel.value}未读`,
+    value: unreadCount[activeTab.value] || 0,
+    hint: '当前筛选',
+  },
+  { key: 'loaded', label: '当前列表', value: total.value || 0, hint: '已同步通知' },
+])
 
-const isUnread = (notification) => Number(notification.isRead) !== 1;
+const isUnread = (notification) => Number(notification.isRead) !== 1
 
 // 公告相关
-const isAnnouncementRead = (id) => readAnnouncementIds.value.includes(id);
+const isAnnouncementRead = (id) => readAnnouncementIds.value.includes(id)
 
 const handleAnnouncementClick = async (item) => {
-  if (isAnnouncementRead(item.id)) return;
-  await handleAnnouncementRead(item);
-};
+  if (isAnnouncementRead(item.id)) return
+  await handleAnnouncementRead(item)
+}
 
 const handleAnnouncementRead = async (item) => {
-  if (isAnnouncementRead(item.id)) return;
+  if (isAnnouncementRead(item.id)) return
   try {
-    await readAnnouncement(item.id);
+    await readAnnouncement(item.id)
     if (!readAnnouncementIds.value.includes(item.id)) {
-      readAnnouncementIds.value.push(item.id);
+      readAnnouncementIds.value.push(item.id)
     }
-    unreadCount.announcement = Math.max(unreadCount.announcement - 1, 0);
-    unreadCount.total = Math.max(unreadCount.total - 1, 0);
-    window.dispatchEvent(new CustomEvent("notification-read"));
+    unreadCount.announcement = Math.max(unreadCount.announcement - 1, 0)
+    unreadCount.total = Math.max(unreadCount.total - 1, 0)
+    window.dispatchEvent(new CustomEvent('notification-read'))
   } catch (error) {
     // 静默处理
   }
-};
+}
 
-const getTypeLabel = (type) => tabOptions.find((item) => item.type === type)?.label || "系统";
+const getTypeLabel = (type) => tabOptions.find((item) => item.type === type)?.label || '系统'
 
 const parseNotificationContent = (notification) => {
   try {
-    const parsedContent = JSON.parse(notification.content);
+    const parsedContent = JSON.parse(notification.content)
     return {
       ...notification,
       contentData: {
         ...parsedContent,
         title: parsedContent.title || parsedContent.text || notification.content,
       },
-    };
+    }
   } catch (error) {
     return {
       ...notification,
       contentData: {
         title: notification.content,
-        nickname: "系统",
+        nickname: '系统',
       },
-    };
+    }
   }
-};
+}
 
 // 公告相关数据
-const readAnnouncementIds = ref([]);
+const readAnnouncementIds = ref([])
 
 const fetchAnnouncements = async (reset = false) => {
   if (reset) {
-    loading.value = true;
-    currentPage.value = 1;
-    notificationList.value = [];
-    hasMore.value = true;
+    loading.value = true
+    currentPage.value = 1
+    notificationList.value = []
+    hasMore.value = true
   } else {
-    loadingMore.value = true;
+    loadingMore.value = true
   }
 
   try {
-    const res = await getAnnouncementPage(currentPage.value, pageSize.value);
-    const data = res.data || {};
-    const list = data.data || [];
+    const res = await getAnnouncementPage(currentPage.value, pageSize.value)
+    const data = res.data || {}
+    const list = data.data || []
 
     if (reset) {
-      notificationList.value = list;
+      notificationList.value = list
     } else {
-      notificationList.value = [...notificationList.value, ...list];
+      notificationList.value = [...notificationList.value, ...list]
     }
 
-    total.value = data.total || 0;
-    hasMore.value = notificationList.value.length < total.value;
+    total.value = data.total || 0
+    hasMore.value = notificationList.value.length < total.value
   } catch (error) {
     // 静默处理
   } finally {
-    loading.value = false;
-    loadingMore.value = false;
+    loading.value = false
+    loadingMore.value = false
   }
-};
+}
 
 const fetchReadAnnouncementIds = async () => {
   try {
-    const res = await getReadAnnouncementIds();
-    readAnnouncementIds.value = res.data || [];
+    const res = await getReadAnnouncementIds()
+    readAnnouncementIds.value = res.data || []
   } catch (error) {
-    readAnnouncementIds.value = [];
+    readAnnouncementIds.value = []
   }
-};
+}
 
 const fetchNotifications = async (reset = false) => {
   // 公告 tab 使用独立的 API
-  if (activeTab.value === "announcement") {
-    await fetchAnnouncements(reset);
-    return;
+  if (activeTab.value === 'announcement') {
+    await fetchAnnouncements(reset)
+    return
   }
 
   try {
     if (reset) {
-      loading.value = true;
-      currentPage.value = 1;
-      notificationList.value = [];
-      hasMore.value = true;
+      loading.value = true
+      currentPage.value = 1
+      notificationList.value = []
+      hasMore.value = true
     } else {
-      loadingMore.value = true;
+      loadingMore.value = true
     }
 
-    const res = await getUserNotifications(typeMap[activeTab.value], currentPage.value, pageSize.value);
-    const data = res.data || {};
-    const parsedData = (data.data || []).map((item) => parseNotificationContent(item));
+    const res = await getUserNotifications(
+      typeMap[activeTab.value],
+      currentPage.value,
+      pageSize.value,
+    )
+    const data = res.data || {}
+    const parsedData = (data.data || []).map((item) => parseNotificationContent(item))
 
     if (reset) {
-      notificationList.value = parsedData;
+      notificationList.value = parsedData
     } else {
-      notificationList.value = [...notificationList.value, ...parsedData];
+      notificationList.value = [...notificationList.value, ...parsedData]
     }
 
-    total.value = data.total || 0;
-    hasMore.value = notificationList.value.length < total.value;
-    autoMarkAsRead(parsedData);
+    total.value = data.total || 0
+    hasMore.value = notificationList.value.length < total.value
+    autoMarkAsRead(parsedData)
   } catch (error) {
     // 静默处理
   } finally {
-    loading.value = false;
-    loadingMore.value = false;
+    loading.value = false
+    loadingMore.value = false
   }
-};
+}
 
 const autoMarkAsRead = async (newNotifications) => {
-  const unreadIds = (newNotifications || []).filter((item) => isUnread(item)).map((item) => item.id);
+  const unreadIds = (newNotifications || []).filter((item) => isUnread(item)).map((item) => item.id)
   if (!unreadIds.length) {
-    return;
+    return
   }
 
   try {
-    await markNotificationsAsRead(unreadIds);
+    await markNotificationsAsRead(unreadIds)
     notificationList.value.forEach((item) => {
       if (unreadIds.includes(item.id)) {
-        item.isRead = 1;
+        item.isRead = 1
       }
-    });
-    await fetchUnreadCount();
-    window.dispatchEvent(new CustomEvent("notification-read"));
+    })
+    await fetchUnreadCount()
+    window.dispatchEvent(new CustomEvent('notification-read'))
   } catch (error) {
     // 静默处理
   }
-};
+}
 
 const fetchUnreadCount = async () => {
   try {
-    const res = await getUnreadNotificationCount();
-    const data = res.data || {};
+    const res = await getUnreadNotificationCount()
+    const data = res.data || {}
     Object.assign(unreadCount, {
       total: data.total || 0,
       system: data.system || 0,
@@ -362,160 +423,161 @@ const fetchUnreadCount = async () => {
       like: data.like || 0,
       collect: data.collect || 0,
       follow: data.follow || 0,
-    });
+    })
     // 获取公告未读数
-    const announcementRes = await getAnnouncementPage(1, 1);
-    const totalAnnouncements = announcementRes.data?.total || 0;
-    const readIds = readAnnouncementIds.value;
-    unreadCount.announcement = Math.max(totalAnnouncements - readIds.length, 0);
+    const announcementRes = await getAnnouncementPage(1, 1)
+    const totalAnnouncements = announcementRes.data?.total || 0
+    const readIds = readAnnouncementIds.value
+    unreadCount.announcement = Math.max(totalAnnouncements - readIds.length, 0)
     // 公告未读数计入总数
-    unreadCount.total += unreadCount.announcement;
+    unreadCount.total += unreadCount.announcement
   } catch (error) {
     // 静默处理
   }
-};
+}
 
 const handleTabChange = (tabName) => {
-  activeTab.value = tabName;
-  if (tabName === "announcement") {
+  activeTab.value = tabName
+  if (tabName === 'announcement') {
     fetchReadAnnouncementIds().then(() => {
-      fetchUnreadCount();
-    });
+      fetchUnreadCount()
+    })
   }
-  fetchNotifications(true);
-};
+  fetchNotifications(true)
+}
 
 const handleScroll = () => {
   if (loading.value || loadingMore.value || !hasMore.value) {
-    return;
+    return
   }
 
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
-  const windowHeight = window.innerHeight;
-  const documentHeight = document.documentElement.scrollHeight;
+  const scrollTop =
+    window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
+  const windowHeight = window.innerHeight
+  const documentHeight = document.documentElement.scrollHeight
 
   if (scrollTop + windowHeight >= documentHeight - 300) {
-    currentPage.value += 1;
-    fetchNotifications(false);
+    currentPage.value += 1
+    fetchNotifications(false)
   }
-};
+}
 
 const handleMarkCurrentAsRead = async () => {
-  const unreadIds = notificationList.value.filter((item) => isUnread(item)).map((item) => item.id);
+  const unreadIds = notificationList.value.filter((item) => isUnread(item)).map((item) => item.id)
   if (!unreadIds.length) {
-    ElMessage.info("当前分类没有未读通知");
-    return;
+    ElMessage.info('当前分类没有未读通知')
+    return
   }
 
   try {
-    await markNotificationsAsRead(unreadIds);
+    await markNotificationsAsRead(unreadIds)
     notificationList.value.forEach((item) => {
       if (unreadIds.includes(item.id)) {
-        item.isRead = 1;
+        item.isRead = 1
       }
-    });
-    await fetchUnreadCount();
-    window.dispatchEvent(new CustomEvent("notification-read"));
-    ElMessage.success("已标记为已读");
+    })
+    await fetchUnreadCount()
+    window.dispatchEvent(new CustomEvent('notification-read'))
+    ElMessage.success('已标记为已读')
   } catch (error) {
     // 静默处理
   }
-};
+}
 
 const handleSingleRead = async (notification) => {
   try {
-    await markNotificationsAsRead([notification.id]);
-    notification.isRead = 1;
-    await fetchUnreadCount();
-    window.dispatchEvent(new CustomEvent("notification-read"));
-    ElMessage.success("已标记为已读");
+    await markNotificationsAsRead([notification.id])
+    notification.isRead = 1
+    await fetchUnreadCount()
+    window.dispatchEvent(new CustomEvent('notification-read'))
+    ElMessage.success('已标记为已读')
   } catch (error) {
     // 静默处理
   }
-};
+}
 
 const handleDelete = async (notificationId) => {
   try {
-    await ElMessageBox.confirm("确定要删除这条通知吗？", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await ElMessageBox.confirm('确定要删除这条通知吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
 
-    await deleteNotifications([notificationId]);
-    notificationList.value = notificationList.value.filter((item) => item.id !== notificationId);
-    total.value = Math.max(total.value - 1, 0);
-    hasMore.value = notificationList.value.length < total.value;
-    await fetchUnreadCount();
-    ElMessage.success("删除成功");
+    await deleteNotifications([notificationId])
+    notificationList.value = notificationList.value.filter((item) => item.id !== notificationId)
+    total.value = Math.max(total.value - 1, 0)
+    hasMore.value = notificationList.value.length < total.value
+    await fetchUnreadCount()
+    ElMessage.success('删除成功')
   } catch (error) {
-    if (error !== "cancel") {
+    if (error !== 'cancel') {
       // 静默处理
     }
   }
-};
+}
 
 const getMessageText = (notification) => {
-  const contentData = notification.contentData;
+  const contentData = notification.contentData
   if (!contentData) {
-    return notification.content;
+    return notification.content
   }
 
-  let text = contentData.title || contentData.text || notification.content;
+  let text = contentData.title || contentData.text || notification.content
   if (contentData.nickname) {
-    text = text.replace(contentData.nickname, "").trim();
+    text = text.replace(contentData.nickname, '').trim()
   }
   if (contentData.articleTitle) {
-    text = text.replace(`《${contentData.articleTitle}》`, "").trim();
+    text = text.replace(`《${contentData.articleTitle}》`, '').trim()
   }
-  return text;
-};
+  return text
+}
 
 const goToUserPage = (userId) => {
   if (userId) {
-    router.push(`/user/${userId}`);
+    router.push(`/user/${userId}`)
   }
-};
+}
 
 const goToArticle = (userId, articleId) => {
   if (userId && articleId) {
-    router.push(`/user/${userId}/article/${articleId}`);
+    router.push(`/user/${userId}/article/${articleId}`)
   }
-};
+}
 
 const handleNotificationClick = (notification) => {
-  const contentData = notification.contentData;
+  const contentData = notification.contentData
   if (!contentData) {
-    return;
+    return
   }
 
   if (contentData.articleId && contentData.authorId) {
-    goToArticle(contentData.authorId, contentData.articleId);
+    goToArticle(contentData.authorId, contentData.articleId)
   } else if (contentData.userId) {
-    goToUserPage(contentData.userId);
+    goToUserPage(contentData.userId)
   }
-};
+}
 
-const formatTime = (time) => formatTimeAgo(time);
+const formatTime = (time) => formatTimeAgo(time)
 
 const handleRefreshNotifications = async () => {
-  currentPage.value = 1;
-  hasMore.value = true;
-  await fetchNotifications(true);
-  await fetchUnreadCount();
-};
+  currentPage.value = 1
+  hasMore.value = true
+  await fetchNotifications(true)
+  await fetchUnreadCount()
+}
 
 onMounted(async () => {
-  await fetchReadAnnouncementIds();
-  await handleRefreshNotifications();
-  window.addEventListener("scroll", handleScroll);
-  window.addEventListener("refresh-notifications", handleRefreshNotifications);
-});
+  await fetchReadAnnouncementIds()
+  await handleRefreshNotifications()
+  window.addEventListener('scroll', handleScroll)
+  window.addEventListener('refresh-notifications', handleRefreshNotifications)
+})
 
 onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
-  window.removeEventListener("refresh-notifications", handleRefreshNotifications);
-});
+  window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('refresh-notifications', handleRefreshNotifications)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -573,7 +635,7 @@ onUnmounted(() => {
 
         .header-copy__title {
           margin: 0;
-          font-family: "Helvetica Neue", Arial, sans-serif;
+          font-family: 'Helvetica Neue', Arial, sans-serif;
           font-size: 34px;
           color: var(--text-title);
         }
@@ -593,7 +655,7 @@ onUnmounted(() => {
         gap: 12px;
         align-content: flex-start;
 
-        :deep(.el-button) {
+        ::v-deep(.el-button) {
           height: 40px;
           padding: 0 16px;
           border-radius: 999px;
@@ -646,26 +708,26 @@ onUnmounted(() => {
       border-radius: 24px 24px 0 0;
       box-shadow: var(--shadow);
 
-      :deep(.el-tabs__header) {
+      ::v-deep(.el-tabs__header) {
         margin: 0;
       }
 
-      :deep(.el-tabs__nav-wrap::after) {
+      ::v-deep(.el-tabs__nav-wrap::after) {
         display: none;
       }
 
-      :deep(.el-tabs__active-bar) {
+      ::v-deep(.el-tabs__active-bar) {
         height: 3px;
         border-radius: 999px;
         background: var(--accent);
       }
 
-      :deep(.el-tabs__item) {
+      ::v-deep(.el-tabs__item) {
         height: 64px;
         color: var(--text-secondary);
       }
 
-      :deep(.el-tabs__item.is-active) {
+      ::v-deep(.el-tabs__item.is-active) {
         color: var(--text-title);
       }
 
@@ -724,7 +786,9 @@ onUnmounted(() => {
           border-radius: 18px;
           background: var(--bg-card);
           box-shadow: var(--shadow);
-          transition: box-shadow 0.2s ease, border-color 0.2s ease;
+          transition:
+            box-shadow 0.2s ease,
+            border-color 0.2s ease;
 
           &:hover {
             border-color: var(--border-strong);
@@ -841,7 +905,7 @@ onUnmounted(() => {
             flex-direction: column;
             gap: 10px;
 
-            :deep(.el-button) {
+            ::v-deep(.el-button) {
               min-width: 84px;
               height: 36px;
               padding: 0 14px;
@@ -985,7 +1049,7 @@ html.dark {
             .notification-item__actions {
               width: 100%;
 
-              :deep(.el-button) {
+              ::v-deep(.el-button) {
                 flex: 1;
                 min-width: 0;
               }

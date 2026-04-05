@@ -4,7 +4,7 @@ import request from '@/utils/Request'
 export function getAlbum(albumId) {
   return request({
     url: `/album/get/${albumId}`,
-    method: 'get'
+    method: 'get',
   })
 }
 
@@ -13,7 +13,7 @@ export function createAlbum(data) {
   return request({
     url: '/album/create',
     method: 'post',
-    data
+    data,
   })
 }
 
@@ -22,7 +22,7 @@ export function updateAlbum(data) {
   return request({
     url: '/album/update',
     method: 'put',
-    data
+    data,
   })
 }
 
@@ -30,7 +30,7 @@ export function updateAlbum(data) {
 export function deleteAlbum(albumId) {
   return request({
     url: `/album/delete/${albumId}`,
-    method: 'delete'
+    method: 'delete',
   })
 }
 
@@ -38,7 +38,7 @@ export function deleteAlbum(albumId) {
 export function listAlbum() {
   return request({
     url: '/album/list',
-    method: 'get'
+    method: 'get',
   })
 }
 
@@ -46,7 +46,7 @@ export function listAlbum() {
 export function listAllAlbum() {
   return request({
     url: '/album/listAll',
-    method: 'get'
+    method: 'get',
   })
 }
 
@@ -55,7 +55,7 @@ export function changeShowStatus(data) {
   return request({
     url: '/album/changeShowStatus',
     method: 'put',
-    data
+    data,
   })
 }
 
@@ -64,6 +64,6 @@ export function changeCover(data) {
   return request({
     url: '/album/changeCover',
     method: 'put',
-    data
+    data,
   })
 }

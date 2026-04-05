@@ -1,80 +1,80 @@
-import request from "@/utils/Request";
+import request from '@/utils/Request'
 
 // 上传相册图片
 export function uploadAlbumPhoto(file, albumId) {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("albumId", albumId);
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('albumId', albumId)
   return request({
-    url: "/photo/uploadAlbum",
-    method: "post",
+    url: '/photo/uploadAlbum',
+    method: 'post',
     data: formData,
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
 }
 
 // 上传文章图片
 export function uploadArticlePhoto(file) {
-  const formData = new FormData();
-  formData.append("file", file);
+  const formData = new FormData()
+  formData.append('file', file)
   return request({
-    url: "/photo/uploadArticle",
-    method: "post",
+    url: '/photo/uploadArticle',
+    method: 'post',
     data: formData,
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
 }
 
 // 上传专栏图片
 export function uploadColumnPhoto(file) {
-  const formData = new FormData();
-  formData.append("file", file);
+  const formData = new FormData()
+  formData.append('file', file)
   return request({
-    url: "/photo/uploadColumn",
-    method: "post",
+    url: '/photo/uploadColumn',
+    method: 'post',
     data: formData,
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
 }
 
 // 上传头像
 export function uploadAvatar(file) {
-  const formData = new FormData();
-  formData.append("file", file);
+  const formData = new FormData()
+  formData.append('file', file)
   return request({
-    url: "/photo/uploadAvatar",
-    method: "post",
+    url: '/photo/uploadAvatar',
+    method: 'post',
     data: formData,
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
 }
 
 // 上传私信图片
 export function uploadMessagePhoto(file) {
-  const formData = new FormData();
-  formData.append("file", file);
+  const formData = new FormData()
+  formData.append('file', file)
   return request({
-    url: "/photo/uploadMessage",
-    method: "post",
+    url: '/photo/uploadMessage',
+    method: 'post',
     data: formData,
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
 }
 
 // 修改图片展示状态
 export function changeShowStatus(data) {
   return request({
-    url: "photo/changeShowStatus",
-    method: "put",
+    url: 'photo/changeShowStatus',
+    method: 'put',
     data,
-  });
+  })
 }
 
 // 批量删除图片
 export function batchDeletePhoto(photoIds) {
   return request({
-    url: "/photo/delete/batch",
-    method: "delete",
+    url: '/photo/delete/batch',
+    method: 'delete',
     data: photoIds,
-  });
+  })
 }

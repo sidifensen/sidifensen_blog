@@ -12,7 +12,9 @@
             </div>
             <div class="user-details">
               <span class="username">{{ targetUser.nickname }}</span>
-              <span class="online-status-text" v-if="isOnline && !messageStore.targetUserTyping">在线</span>
+              <span class="online-status-text" v-if="isOnline && !messageStore.targetUserTyping"
+                >在线</span
+              >
               <span class="typing-status" v-if="messageStore.targetUserTyping">
                 <span class="typing-text">正在输入</span>
               </span>
@@ -45,12 +47,23 @@
           </div>
 
           <!-- 空状态 -->
-          <el-empty v-if="messageStore.currentChatMessages.length === 0 && !loading" description="暂无消息" />
+          <el-empty
+            v-if="messageStore.currentChatMessages.length === 0 && !loading"
+            description="暂无消息"
+          />
         </div>
 
         <!-- 右键菜单 -->
-        <div v-if="contextMenuVisible" class="context-menu" :style="{ left: contextMenuPosition.x + 'px', top: contextMenuPosition.y + 'px' }">
-          <div v-if="selectedMessage && selectedMessage.messageType === 1" class="context-menu-item" @click="handleCopy">
+        <div
+          v-if="contextMenuVisible"
+          class="context-menu"
+          :style="{ left: contextMenuPosition.x + 'px', top: contextMenuPosition.y + 'px' }"
+        >
+          <div
+            v-if="selectedMessage && selectedMessage.messageType === 1"
+            class="context-menu-item"
+            @click="handleCopy"
+          >
             <el-icon><DocumentCopy /></el-icon>
             <span>复制</span>
           </div>
@@ -62,11 +75,22 @@
 
         <!-- 消息输入框 -->
         <div class="message-input-area">
-          <el-input ref="messageInput" v-model="messageContent" type="textarea" :rows="3" placeholder="请输入消息... (Shift+Enter 换行)" @keydown.enter="handleEnterKey" @input="handleInput" resize="none" />
+          <el-input
+            ref="messageInput"
+            v-model="messageContent"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入消息... (Shift+Enter 换行)"
+            @keydown.enter="handleEnterKey"
+            @input="handleInput"
+            resize="none"
+          />
           <div class="input-actions">
             <div class="input-actions-left">
               <el-button :icon="ChatDotSquare" @click="toggleEmojiPicker">表情</el-button>
-              <el-button :icon="Picture" @click="openImagePicker" :loading="imageUploadLoading">图片</el-button>
+              <el-button :icon="Picture" @click="openImagePicker" :loading="imageUploadLoading"
+                >图片</el-button
+              >
             </div>
             <el-button type="primary" class="send-btn" @click="sendMessage">发送 (Enter)</el-button>
           </div>
@@ -78,7 +102,12 @@
               <el-button text :icon="Close" @click="closeEmojiPicker" />
             </div>
             <div class="emoji-list">
-              <div v-for="(emoji, index) in emojiList" :key="index" class="emoji-item" @click="insertEmoji(emoji)">
+              <div
+                v-for="(emoji, index) in emojiList"
+                :key="index"
+                class="emoji-item"
+                @click="insertEmoji(emoji)"
+              >
                 {{ emoji }}
               </div>
             </div>
@@ -90,96 +119,103 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { ArrowLeft, Delete, DocumentCopy, ChatDotSquare, Close, Picture } from "@element-plus/icons-vue";
-import { getChatHistory } from "@/api/privateMessage";
-import { getUserInfoById } from "@/api/user";
-import { getConversationList } from "@/api/conversation";
-import { uploadMessagePhoto } from "@/api/photo";
-import { useMessageStore } from "@/stores/messageStore";
-import { useUserStore } from "@/stores/userStore";
-import WebSocketClient from "@/utils/WebSocketClient";
-import { getFriendlyTime } from "@/utils/formatTime";
-import { emojiList } from "@/utils/emoji";
-import MessageBubble from "@/components/MessageBubble.vue";
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  ArrowLeft,
+  Delete,
+  DocumentCopy,
+  ChatDotSquare,
+  Close,
+  Picture,
+} from '@element-plus/icons-vue'
+import { getChatHistory } from '@/api/privateMessage'
+import { getUserInfoById } from '@/api/user'
+import { getConversationList } from '@/api/conversation'
+import { uploadMessagePhoto } from '@/api/photo'
+import { useMessageStore } from '@/stores/messageStore'
+import { useUserStore } from '@/stores/userStore'
+import WebSocketClient from '@/utils/WebSocketClient'
+import { getFriendlyTime } from '@/utils/formatTime'
+import { emojiList } from '@/utils/emoji'
+import MessageBubble from '@/components/MessageBubble.vue'
 
-const route = useRoute();
-const router = useRouter();
-const messageStore = useMessageStore();
-const userStore = useUserStore();
+const route = useRoute()
+const router = useRouter()
+const messageStore = useMessageStore()
+const userStore = useUserStore()
 
-const loading = ref(false); // 加载状态
-const messageContent = ref(""); // 消息输入框内容
-const targetUser = ref(null); // 目标用户信息
-const messageContainer = ref(null); // 消息列表容器
-const messageInput = ref(null); // 消息输入框引用
+const loading = ref(false) // 加载状态
+const messageContent = ref('') // 消息输入框内容
+const targetUser = ref(null) // 目标用户信息
+const messageContainer = ref(null) // 消息列表容器
+const messageInput = ref(null) // 消息输入框引用
 
 // Emoji 表情选择器相关
-const showEmojiPicker = ref(false); // 表情选择器显示状态
+const showEmojiPicker = ref(false) // 表情选择器显示状态
 
 // 图片上传相关
-const imageUploadLoading = ref(false); // 图片上传加载状态
-const fileInputRef = ref(null); // 文件输入框引用
+const imageUploadLoading = ref(false) // 图片上传加载状态
+const fileInputRef = ref(null) // 文件输入框引用
 
-const targetUserId = computed(() => parseInt(route.params.userId)); // 目标用户ID
-const currentUserId = computed(() => userStore.user?.id); // 当前用户ID
-const isOnline = ref(false);
+const targetUserId = computed(() => parseInt(route.params.userId)) // 目标用户ID
+const currentUserId = computed(() => userStore.user?.id) // 当前用户ID
+const isOnline = ref(false)
 
 // 右键菜单相关
-const contextMenuVisible = ref(false); // 右键菜单是否可见
-const contextMenuPosition = ref({ x: 0, y: 0 }); // 右键菜单位置
-const selectedMessage = ref(null); // 选中的消息
+const contextMenuVisible = ref(false) // 右键菜单是否可见
+const contextMenuPosition = ref({ x: 0, y: 0 }) // 右键菜单位置
+const selectedMessage = ref(null) // 选中的消息
 
 // 长按相关
-const longPressTimer = ref(null); // 长按定时器
-const isLongPress = ref(false); // 是否是长按
+const longPressTimer = ref(null) // 长按定时器
+const isLongPress = ref(false) // 是否是长按
 
 // 撤回提示
-const revokeNotification = ref(""); // 撤回提示文本
-const revokeNotificationTimer = ref(null); // 撤回提示定时器
+const revokeNotification = ref('') // 撤回提示文本
+const revokeNotificationTimer = ref(null) // 撤回提示定时器
 
 // 输入检测相关
-const lastTypingSentTime = ref(0);  // 上次发送 TYPING 消息的时间
-const typingTimer = ref(null);  // 输入状态消失定时器
+const lastTypingSentTime = ref(0) // 上次发送 TYPING 消息的时间
+const typingTimer = ref(null) // 输入状态消失定时器
 // 获取目标用户信息
 const fetchTargetUser = async () => {
   try {
-    const res = await getUserInfoById(targetUserId.value);
-    targetUser.value = res.data;
+    const res = await getUserInfoById(targetUserId.value)
+    targetUser.value = res.data
   } catch (error) {
     // 静默处理
   }
-};
+}
 
 // 获取聊天记录
 const fetchChatHistory = async () => {
   try {
-    loading.value = true;
-    const res = await getChatHistory(targetUserId.value, 1, 50);
-    const messages = res.data?.data || [];
+    loading.value = true
+    const res = await getChatHistory(targetUserId.value, 1, 50)
+    const messages = res.data?.data || []
     // 将消息列表反转，确保最新消息在底部
-    messageStore.setCurrentChatMessages(messages.reverse());
-    scrollToBottom();
+    messageStore.setCurrentChatMessages(messages.reverse())
+    scrollToBottom()
 
     // 获取历史消息后，标记为已读
     if (messages.length > 0) {
-      WebSocketClient.markAsRead(targetUserId.value);
+      WebSocketClient.markAsRead(targetUserId.value)
     }
   } catch (error) {
     // 静默处理
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 发送消息
 const sendMessage = () => {
   if (!messageContent.value.trim()) {
-    return;
+    return
   }
 
-  const content = messageContent.value;
+  const content = messageContent.value
 
   // 立即添加到消息列表（乐观更新）
   const tempMessage = {
@@ -195,100 +231,100 @@ const sendMessage = () => {
     fromUserAvatar: userStore.user?.avatar,
     toUserNickname: targetUser.value?.nickname,
     toUserAvatar: targetUser.value?.avatar,
-  };
+  }
 
-  messageStore.addMessageToCurrentChat(tempMessage);
-  scrollToBottom();
+  messageStore.addMessageToCurrentChat(tempMessage)
+  scrollToBottom()
 
-  WebSocketClient.sendTextMessage(targetUserId.value, content);
-  messageContent.value = "";
-};
+  WebSocketClient.sendTextMessage(targetUserId.value, content)
+  messageContent.value = ''
+}
 
 // 处理 Enter 键按下 - Enter 发送，Shift+Enter 换行
 const handleEnterKey = (event) => {
   // Shift+Enter：允许换行，不阻止默认行为
   if (event.shiftKey) {
-    return;
+    return
   }
   // 单独按 Enter：发送消息，阻止默认换行行为
-  event.preventDefault();
-  sendMessage();
-};
+  event.preventDefault()
+  sendMessage()
+}
 
 // 处理输入事件 - 发送正在输入通知
 const handleInput = () => {
-  const now = Date.now();
+  const now = Date.now()
 
   // 检查：距离上次发送 TYPING 是否超过 3 秒
   if (now - lastTypingSentTime.value < 3000) {
-    return;
+    return
   }
 
   // 检查：对方在 10 秒内给我发过消息？
-  const messages = messageStore.currentChatMessages;
+  const messages = messageStore.currentChatMessages
   if (messages.length > 0) {
-    const lastMessage = messages[messages.length - 1];
+    const lastMessage = messages[messages.length - 1]
     if (lastMessage.fromUserId === targetUserId.value) {
       // 最后一条是对方发的
-      const messageTime = new Date(lastMessage.createTime).getTime();
+      const messageTime = new Date(lastMessage.createTime).getTime()
       if (now - messageTime > 10000) {
         // 超过 10 秒没收到对方消息，不发送 TYPING
-        return;
+        return
       }
     }
   }
 
   // 发送 TYPING 通知
-  lastTypingSentTime.value = now;
-  WebSocketClient.sendTyping(targetUserId.value);
-};
+  lastTypingSentTime.value = now
+  WebSocketClient.sendTyping(targetUserId.value)
+}
 
 // 打开图片选择器
 const openImagePicker = () => {
   // 创建隐藏的文件输入框
   if (!fileInputRef.value) {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = handleImageSelect;
-    fileInputRef.value = input;
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.onchange = handleImageSelect
+    fileInputRef.value = input
   }
-  fileInputRef.value.click();
-};
+  fileInputRef.value.click()
+}
 
 // 处理图片选择
 const handleImageSelect = async (event) => {
-  const file = event.target.files?.[0];
+  const file = event.target.files?.[0]
   if (!file) {
-    return;
+    return
   }
 
   // 验证文件类型
-  if (!file.type.startsWith("image/")) {
-    ElMessage.error("只能上传图片文件");
-    return;
+  if (!file.type.startsWith('image/')) {
+    ElMessage.error('只能上传图片文件')
+    return
   }
 
   // 验证文件大小（10MB）
-  const maxSize = 10 * 1024 * 1024;
+  const maxSize = 10 * 1024 * 1024
   if (file.size > maxSize) {
-    ElMessage.error("图片大小不能超过10MB");
-    return;
+    ElMessage.error('图片大小不能超过10MB')
+    return
   }
 
   try {
-    imageUploadLoading.value = true;
+    imageUploadLoading.value = true
 
     // 上传图片
-    const res = await uploadMessagePhoto(file);
-    const imageUrl = res.data;
+    const res = await uploadMessagePhoto(file)
+    const imageUrl = res.data
 
     // 立即添加到消息列表（乐观更新）
     const tempMessage = {
       id: Date.now(), // 临时ID
       fromUserId: currentUserId.value,
       toUserId: targetUserId.value,
-      content: "[图片]",
+      content: '[图片]',
       messageType: 2,
       imageUrl: imageUrl,
       createTime: new Date(),
@@ -298,245 +334,250 @@ const handleImageSelect = async (event) => {
       fromUserAvatar: userStore.user?.avatar,
       toUserNickname: targetUser.value?.nickname,
       toUserAvatar: targetUser.value?.avatar,
-    };
+    }
 
-    messageStore.addMessageToCurrentChat(tempMessage);
-    scrollToBottom();
+    messageStore.addMessageToCurrentChat(tempMessage)
+    scrollToBottom()
 
     // 发送图片消息
-    WebSocketClient.sendImageMessage(targetUserId.value, imageUrl);
-    ElMessage.success("图片发送成功");
+    WebSocketClient.sendImageMessage(targetUserId.value, imageUrl)
+    ElMessage.success('图片发送成功')
   } catch (error) {
     // 静默处理
   } finally {
-    imageUploadLoading.value = false;
+    imageUploadLoading.value = false
     // 清空文件输入框，允许重复上传同一文件
     if (fileInputRef.value) {
-      fileInputRef.value.value = "";
+      fileInputRef.value.value = ''
     }
   }
-};
+}
 
 // 切换表情选择器
 const toggleEmojiPicker = () => {
-  showEmojiPicker.value = !showEmojiPicker.value;
-};
+  showEmojiPicker.value = !showEmojiPicker.value
+}
 
 // 关闭表情选择器
 const closeEmojiPicker = () => {
-  showEmojiPicker.value = false;
-};
+  showEmojiPicker.value = false
+}
 
 // 插入表情到输入框
 const insertEmoji = (emoji) => {
   // 获取 textarea 元素
-  const textarea = messageInput.value?.$el?.querySelector("textarea");
+  const textarea = messageInput.value?.$el?.querySelector('textarea')
 
   if (textarea) {
     // 获取当前光标位置
-    const startPos = textarea.selectionStart;
-    const endPos = textarea.selectionEnd;
+    const startPos = textarea.selectionStart
+    const endPos = textarea.selectionEnd
 
     // 在光标位置插入表情
-    const beforeText = messageContent.value.substring(0, startPos);
-    const afterText = messageContent.value.substring(endPos);
-    messageContent.value = beforeText + emoji + afterText;
+    const beforeText = messageContent.value.substring(0, startPos)
+    const afterText = messageContent.value.substring(endPos)
+    messageContent.value = beforeText + emoji + afterText
 
     // 更新光标位置（在插入的表情后面）
     nextTick(() => {
-      const newPos = startPos + emoji.length;
-      textarea.setSelectionRange(newPos, newPos);
-      textarea.focus();
-    });
+      const newPos = startPos + emoji.length
+      textarea.setSelectionRange(newPos, newPos)
+      textarea.focus()
+    })
   } else {
     // 如果无法获取 textarea，直接在末尾添加
-    messageContent.value += emoji;
+    messageContent.value += emoji
   }
 
   // 不关闭表情选择器，允许连续选择表情
   // closeEmojiPicker();
-};
+}
 
 // 滚动到底部
 const scrollToBottom = () => {
   nextTick(() => {
     if (messageContainer.value) {
-      messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
+      messageContainer.value.scrollTop = messageContainer.value.scrollHeight
     }
-  });
-};
+  })
+}
 
 // 返回会话列表
 const goBack = () => {
-  router.push("/message");
-};
+  router.push('/message')
+}
 
 // 跳转到用户主页
 const goToUserHomepage = (userId) => {
-  router.push(`/user/${userId}`);
-};
+  router.push(`/user/${userId}`)
+}
 
 // 检查消息是否可以撤回（2分钟内且是自己的消息）
 const canRevoke = (msg) => {
   if (msg.fromUserId !== currentUserId.value) {
-    return false;
+    return false
   }
   if (msg.isRevoked === 1) {
-    return false;
+    return false
   }
-  const now = new Date().getTime();
-  const createTime = new Date(msg.createTime).getTime();
-  const diffMinutes = (now - createTime) / 1000 / 60;
-  return diffMinutes <= 2; // 2分钟内可以撤回
-};
+  const now = new Date().getTime()
+  const createTime = new Date(msg.createTime).getTime()
+  const diffMinutes = (now - createTime) / 1000 / 60
+  return diffMinutes <= 2 // 2分钟内可以撤回
+}
 
 // 处理右键菜单
 const handleContextMenu = (event, msg) => {
   // 图片消息且不可撤回时，不显示菜单
   if (msg.messageType !== 1 && !canRevoke(msg)) {
-    return;
+    return
   }
 
-  contextMenuVisible.value = true;
+  contextMenuVisible.value = true
   contextMenuPosition.value = {
     x: event.clientX,
     y: event.clientY,
-  };
-  selectedMessage.value = msg;
-};
+  }
+  selectedMessage.value = msg
+}
 
 // 处理长按开始
 const handleTouchStart = (event, msg) => {
   // 图片消息且不可撤回时，不响应长按
   if (msg.messageType !== 1 && !canRevoke(msg)) {
-    return;
+    return
   }
 
-  isLongPress.value = false;
+  isLongPress.value = false
   longPressTimer.value = setTimeout(() => {
-    isLongPress.value = true;
+    isLongPress.value = true
     // 获取触摸位置
-    const touch = event.touches[0];
-    contextMenuVisible.value = true;
+    const touch = event.touches[0]
+    contextMenuVisible.value = true
     contextMenuPosition.value = {
       x: touch.clientX,
       y: touch.clientY,
-    };
-    selectedMessage.value = msg;
+    }
+    selectedMessage.value = msg
 
     // 震动反馈（如果支持）
     if (navigator.vibrate) {
-      navigator.vibrate(50);
+      navigator.vibrate(50)
     }
-  }, 500); // 长按500毫秒触发
-};
+  }, 500) // 长按500毫秒触发
+}
 
 // 处理长按结束
 const handleTouchEnd = () => {
   if (longPressTimer.value) {
-    clearTimeout(longPressTimer.value);
-    longPressTimer.value = null;
+    clearTimeout(longPressTimer.value)
+    longPressTimer.value = null
   }
-};
+}
 
 // 处理触摸移动（取消长按）
 const handleTouchMove = () => {
   if (longPressTimer.value) {
-    clearTimeout(longPressTimer.value);
-    longPressTimer.value = null;
+    clearTimeout(longPressTimer.value)
+    longPressTimer.value = null
   }
-};
+}
 
 // 复制消息
 const handleCopy = async () => {
   if (!selectedMessage.value || selectedMessage.value.messageType !== 1) {
-    return;
+    return
   }
 
   try {
     // 使用现代浏览器的 Clipboard API
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(selectedMessage.value.content);
-      ElMessage.success("消息已复制到剪贴板");
+      await navigator.clipboard.writeText(selectedMessage.value.content)
+      ElMessage.success('消息已复制到剪贴板')
     } else {
       // 降级方案：使用传统的 document.execCommand
-      const textArea = document.createElement("textarea");
-      textArea.value = selectedMessage.value.content;
-      textArea.style.position = "fixed";
-      textArea.style.left = "-999999px";
-      textArea.style.top = "-999999px";
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
+      const textArea = document.createElement('textarea')
+      textArea.value = selectedMessage.value.content
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
 
       try {
-        document.execCommand("copy");
-        ElMessage.success("消息已复制到剪贴板");
+        document.execCommand('copy')
+        ElMessage.success('消息已复制到剪贴板')
       } catch (err) {
         // 静默处理
-        ElMessage.error("复制失败，请手动复制");
+        ElMessage.error('复制失败，请手动复制')
       }
 
-      document.body.removeChild(textArea);
+      document.body.removeChild(textArea)
     }
   } catch (error) {
     // 静默处理
   }
 
   // 关闭右键菜单
-  contextMenuVisible.value = false;
-  selectedMessage.value = null;
-};
+  contextMenuVisible.value = false
+  selectedMessage.value = null
+}
 
 // 撤回消息
 const handleRevoke = async () => {
   if (!selectedMessage.value) {
-    return;
+    return
   }
 
   // 调用 WebSocket 撤回消息（等待后端响应，不再乐观更新）
-  WebSocketClient.revokeMessage(selectedMessage.value.id);
+  WebSocketClient.revokeMessage(selectedMessage.value.id)
 
   // 关闭右键菜单
-  contextMenuVisible.value = false;
-  selectedMessage.value = null;
-};
+  contextMenuVisible.value = false
+  selectedMessage.value = null
+}
 
 // 显示撤回提示
 const showRevokeNotification = (text) => {
-  revokeNotification.value = text;
+  revokeNotification.value = text
 
   // 清除之前的定时器
   if (revokeNotificationTimer.value) {
-    clearTimeout(revokeNotificationTimer.value);
+    clearTimeout(revokeNotificationTimer.value)
   }
 
   // 10秒后自动隐藏
   revokeNotificationTimer.value = setTimeout(() => {
-    revokeNotification.value = "";
-    revokeNotificationTimer.value = null;
-  }, 10000);
+    revokeNotification.value = ''
+    revokeNotificationTimer.value = null
+  }, 10000)
 
   // 滚动到底部以显示提示
-  scrollToBottom();
-};
+  scrollToBottom()
+}
 
 // 关闭右键菜单（点击其他地方）
 const closeContextMenu = (event) => {
-  contextMenuVisible.value = false;
-  selectedMessage.value = null;
+  contextMenuVisible.value = false
+  selectedMessage.value = null
 
   // 如果点击的不是表情按钮和表情选择器本身，则关闭表情选择器
   if (event && showEmojiPicker.value) {
-    const target = event.target;
-    const emojiPicker = document.querySelector(".emoji-picker");
-    const emojiButton = document.querySelector(".input-actions .el-button");
+    const target = event.target
+    const emojiPicker = document.querySelector('.emoji-picker')
+    const emojiButton = document.querySelector('.input-actions .el-button')
 
-    if (emojiPicker && !emojiPicker.contains(target) && emojiButton && !emojiButton.contains(target)) {
-      closeEmojiPicker();
+    if (
+      emojiPicker &&
+      !emojiPicker.contains(target) &&
+      emojiButton &&
+      !emojiButton.contains(target)
+    ) {
+      closeEmojiPicker()
     }
   }
-};
+}
 
 // WebSocket 消息处理
 const handleNewMessage = (data) => {
@@ -549,49 +590,49 @@ const handleNewMessage = (data) => {
       fromUserAvatar: data.fromUserAvatar || targetUser.value?.avatar,
       toUserNickname: data.toUserNickname || userStore.user?.nickname,
       toUserAvatar: data.toUserAvatar || userStore.user?.avatar,
-    };
+    }
     // 将消息添加到当前聊天窗口
-    messageStore.addMessageToCurrentChat(message);
-    scrollToBottom();
+    messageStore.addMessageToCurrentChat(message)
+    scrollToBottom()
 
     // 如果是收到对方的消息，立即标记为已读
     if (data.fromUserId === targetUserId.value) {
       // 清空前端会话未读数
-      messageStore.clearConversationUnread(targetUserId.value);
+      messageStore.clearConversationUnread(targetUserId.value)
       // 通知后端标记为已读
-      WebSocketClient.markAsRead(targetUserId.value);
+      WebSocketClient.markAsRead(targetUserId.value)
     }
   }
-};
+}
 
 // 处理对方正在输入通知
 const handleTypingNotify = (data) => {
   if (data.fromUserId === targetUserId.value) {
     // 设置 typing 状态
-    messageStore.setTargetUserTyping(true);
+    messageStore.setTargetUserTyping(true)
 
     // 清除之前的定时器
     if (typingTimer.value) {
-      clearTimeout(typingTimer.value);
+      clearTimeout(typingTimer.value)
     }
 
     // 设置 6 秒后自动消失
     typingTimer.value = setTimeout(() => {
-      messageStore.setTargetUserTyping(false);
-      typingTimer.value = null;
-    }, 6000);
+      messageStore.setTargetUserTyping(false)
+      typingTimer.value = null
+    }, 6000)
   }
-};
+}
 
 const handleSendSuccess = (data) => {
   // 消息发送成功，更新临时ID为真实ID
-  const messages = messageStore.currentChatMessages;
-  const lastMessage = messages[messages.length - 1];
+  const messages = messageStore.currentChatMessages
+  const lastMessage = messages[messages.length - 1]
   if (lastMessage && lastMessage.id > Date.now() - 5000) {
     // 更新最后一条消息的ID
-    lastMessage.id = data.messageId;
+    lastMessage.id = data.messageId
   }
-};
+}
 
 // 处理消息已读回执
 const handleMessageRead = (data) => {
@@ -599,147 +640,155 @@ const handleMessageRead = (data) => {
   if (data.fromUserId === targetUserId.value) {
     messageStore.currentChatMessages.forEach((msg) => {
       if (msg.fromUserId === currentUserId.value && msg.toUserId === targetUserId.value) {
-        msg.isRead = 1;
+        msg.isRead = 1
       }
-    });
+    })
   }
-};
+}
 
 // 处理用户在线状态变化
 const handleUserOnlineStatus = (data) => {
   // 如果是当前聊天的用户，更新在线状态
   if (data.userId === targetUserId.value) {
-    isOnline.value = data.isOnline;
+    isOnline.value = data.isOnline
     // 同时更新 messageStore 中的在线状态
-    messageStore.updateUserOnlineStatus(data.userId, data.isOnline);
+    messageStore.updateUserOnlineStatus(data.userId, data.isOnline)
   }
-};
+}
 
 // 处理撤回成功响应
 const handleRevokeSuccess = (data) => {
   // 从消息列表中移除该消息
-  const messageIndex = messageStore.currentChatMessages.findIndex((msg) => msg.id === data.messageId);
+  const messageIndex = messageStore.currentChatMessages.findIndex(
+    (msg) => msg.id === data.messageId,
+  )
   if (messageIndex > -1) {
-    const isLastMessage = messageIndex === messageStore.currentChatMessages.length - 1;
-    messageStore.currentChatMessages.splice(messageIndex, 1);
+    const isLastMessage = messageIndex === messageStore.currentChatMessages.length - 1
+    messageStore.currentChatMessages.splice(messageIndex, 1)
 
     // 如果撤回的是最后一条消息，更新会话列表中的最后一条消息内容
     if (isLastMessage) {
-      messageStore.updateConversationLastMessage(targetUserId.value, "你撤回了一条消息");
+      messageStore.updateConversationLastMessage(targetUserId.value, '你撤回了一条消息')
     }
   }
 
   // 显示撤回提示
-  showRevokeNotification("你撤回了一条消息");
-  ElMessage.success("消息已撤回");
-};
+  showRevokeNotification('你撤回了一条消息')
+  ElMessage.success('消息已撤回')
+}
 
 // 处理撤回失败响应
 const handleRevokeFailed = (data) => {
-  ElMessage.error(data.message || "撤回消息失败");
-};
+  ElMessage.error(data.message || '撤回消息失败')
+}
 
 // 处理消息撤回通知（对方撤回）
 const handleMessageRevoke = (data) => {
   // 查找并从列表中移除被撤回的消息
-  const messageIndex = messageStore.currentChatMessages.findIndex((msg) => msg.id === data.messageId);
+  const messageIndex = messageStore.currentChatMessages.findIndex(
+    (msg) => msg.id === data.messageId,
+  )
   if (messageIndex > -1) {
-    const message = messageStore.currentChatMessages[messageIndex];
-    const isLastMessage = messageIndex === messageStore.currentChatMessages.length - 1;
-    messageStore.currentChatMessages.splice(messageIndex, 1);
+    const message = messageStore.currentChatMessages[messageIndex]
+    const isLastMessage = messageIndex === messageStore.currentChatMessages.length - 1
+    messageStore.currentChatMessages.splice(messageIndex, 1)
 
     // 如果是对方撤回的消息，显示提示
     if (message.fromUserId === targetUserId.value) {
-      const revokeText = `${message.fromUserNickname || "对方"}撤回了一条消息`;
-      showRevokeNotification(revokeText);
+      const revokeText = `${message.fromUserNickname || '对方'}撤回了一条消息`
+      showRevokeNotification(revokeText)
 
       // 如果撤回的是最后一条消息，更新会话列表中的最后一条消息内容
       if (isLastMessage) {
-        messageStore.updateConversationLastMessage(targetUserId.value, revokeText);
+        messageStore.updateConversationLastMessage(targetUserId.value, revokeText)
       }
     } else {
       // 自己在其他设备撤回的消息
       if (isLastMessage) {
-        messageStore.updateConversationLastMessage(targetUserId.value, "你撤回了一条消息");
+        messageStore.updateConversationLastMessage(targetUserId.value, '你撤回了一条消息')
       }
     }
   }
-};
+}
 
 // 组件挂载
 onMounted(async () => {
   // 设置当前聊天用户
-  messageStore.setCurrentChatUser(targetUserId.value);
-  fetchTargetUser();
-  fetchChatHistory();
+  messageStore.setCurrentChatUser(targetUserId.value)
+  fetchTargetUser()
+  fetchChatHistory()
 
   // 如果会话列表为空（刷新页面时），主动获取会话列表以获取在线状态
   if (messageStore.conversationList.length === 0) {
     try {
-      const res = await getConversationList();
-      messageStore.setConversationList(res.data || []);
+      const res = await getConversationList()
+      messageStore.setConversationList(res.data || [])
 
       // 在获取会话列表后立即更新在线状态
-      const conversation = messageStore.conversationList.find((conv) => conv.targetUserId === targetUserId.value);
+      const conversation = messageStore.conversationList.find(
+        (conv) => conv.targetUserId === targetUserId.value,
+      )
       if (conversation) {
-        isOnline.value = conversation.isOnline || false;
+        isOnline.value = conversation.isOnline || false
       }
     } catch (error) {
       // 静默处理
     }
   } else {
     // 从已有的会话列表中获取初始在线状态
-    const conversation = messageStore.conversationList.find((conv) => conv.targetUserId === targetUserId.value);
+    const conversation = messageStore.conversationList.find(
+      (conv) => conv.targetUserId === targetUserId.value,
+    )
     if (conversation) {
-      isOnline.value = conversation.isOnline || false;
+      isOnline.value = conversation.isOnline || false
     }
   }
 
   // 注意：不要在这里初始化 WebSocket，Header.vue 已经全局初始化了
   // 只需要监听消息事件
-  WebSocketClient.on("NEW_MESSAGE", handleNewMessage);
-  WebSocketClient.on("SEND_SUCCESS", handleSendSuccess);
-  WebSocketClient.on("MESSAGE_READ", handleMessageRead);
-  WebSocketClient.on("USER_ONLINE_STATUS", handleUserOnlineStatus);
-  WebSocketClient.on("REVOKE_SUCCESS", handleRevokeSuccess);
-  WebSocketClient.on("REVOKE_FAILED", handleRevokeFailed);
-  WebSocketClient.on("MESSAGE_REVOKED", handleMessageRevoke);
-  WebSocketClient.on("TYPING_NOTIFY", handleTypingNotify);
+  WebSocketClient.on('NEW_MESSAGE', handleNewMessage)
+  WebSocketClient.on('SEND_SUCCESS', handleSendSuccess)
+  WebSocketClient.on('MESSAGE_READ', handleMessageRead)
+  WebSocketClient.on('USER_ONLINE_STATUS', handleUserOnlineStatus)
+  WebSocketClient.on('REVOKE_SUCCESS', handleRevokeSuccess)
+  WebSocketClient.on('REVOKE_FAILED', handleRevokeFailed)
+  WebSocketClient.on('MESSAGE_REVOKED', handleMessageRevoke)
+  WebSocketClient.on('TYPING_NOTIFY', handleTypingNotify)
 
   // 监听点击事件，关闭右键菜单
-  document.addEventListener("click", closeContextMenu);
-});
+  document.addEventListener('click', closeContextMenu)
+})
 
 // 组件卸载
 onUnmounted(() => {
-  WebSocketClient.off("NEW_MESSAGE", handleNewMessage);
-  WebSocketClient.off("SEND_SUCCESS", handleSendSuccess);
-  WebSocketClient.off("MESSAGE_READ", handleMessageRead);
-  WebSocketClient.off("USER_ONLINE_STATUS", handleUserOnlineStatus);
-  WebSocketClient.off("REVOKE_SUCCESS", handleRevokeSuccess);
-  WebSocketClient.off("REVOKE_FAILED", handleRevokeFailed);
-  WebSocketClient.off("MESSAGE_REVOKED", handleMessageRevoke);
-  WebSocketClient.off("TYPING_NOTIFY", handleTypingNotify);
-  messageStore.setCurrentChatUser(null);
+  WebSocketClient.off('NEW_MESSAGE', handleNewMessage)
+  WebSocketClient.off('SEND_SUCCESS', handleSendSuccess)
+  WebSocketClient.off('MESSAGE_READ', handleMessageRead)
+  WebSocketClient.off('USER_ONLINE_STATUS', handleUserOnlineStatus)
+  WebSocketClient.off('REVOKE_SUCCESS', handleRevokeSuccess)
+  WebSocketClient.off('REVOKE_FAILED', handleRevokeFailed)
+  WebSocketClient.off('MESSAGE_REVOKED', handleMessageRevoke)
+  WebSocketClient.off('TYPING_NOTIFY', handleTypingNotify)
+  messageStore.setCurrentChatUser(null)
 
   // 清理事件监听器
-  document.removeEventListener("click", closeContextMenu);
+  document.removeEventListener('click', closeContextMenu)
 
   // 清理长按定时器
   if (longPressTimer.value) {
-    clearTimeout(longPressTimer.value);
+    clearTimeout(longPressTimer.value)
   }
 
   // 清理 typing 定时器
   if (typingTimer.value) {
-    clearTimeout(typingTimer.value);
+    clearTimeout(typingTimer.value)
   }
 
   // 清理撤回提示定时器
   if (revokeNotificationTimer.value) {
-    clearTimeout(revokeNotificationTimer.value);
+    clearTimeout(revokeNotificationTimer.value)
   }
-});
+})
 </script>
 
 <style lang="scss" scoped>
@@ -771,7 +820,9 @@ onUnmounted(() => {
   .chat-window-container {
     background: var(--bg-card);
     border-radius: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.08),
+      0 1px 2px rgba(0, 0, 0, 0.06);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -800,7 +851,7 @@ onUnmounted(() => {
       z-index: 100;
       backdrop-filter: blur(10px);
 
-      :deep(.el-button) {
+      ::v-deep(.el-button) {
         border-radius: 10px;
         width: 40px;
         height: 40px;
@@ -832,7 +883,7 @@ onUnmounted(() => {
             transform: scale(1.08);
           }
 
-          :deep(.el-avatar) {
+          ::v-deep(.el-avatar) {
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
           }
@@ -850,7 +901,8 @@ onUnmounted(() => {
             animation: onlinePulse 2s ease-in-out infinite;
 
             @keyframes onlinePulse {
-              0%, 100% {
+              0%,
+              100% {
                 opacity: 1;
               }
               50% {
@@ -893,10 +945,18 @@ onUnmounted(() => {
           }
 
           @keyframes typing-dots {
-            0%   { content: '.'; }
-            33%  { content: '..'; }
-            66%  { content: '...'; }
-            100% { content: '.'; }
+            0% {
+              content: '.';
+            }
+            33% {
+              content: '..';
+            }
+            66% {
+              content: '...';
+            }
+            100% {
+              content: '.';
+            }
           }
         }
       }
@@ -1128,7 +1188,7 @@ onUnmounted(() => {
       padding: 20px 24px;
       background: var(--bg-card);
 
-      :deep(.el-input__wrapper) {
+      ::v-deep(.el-input__wrapper) {
         border-radius: 12px;
         padding: 14px 16px;
         box-shadow: none;
@@ -1146,7 +1206,7 @@ onUnmounted(() => {
         }
       }
 
-      :deep(.el-textarea__inner) {
+      ::v-deep(.el-textarea__inner) {
         resize: none;
         font-size: 14px;
         line-height: 1.5;
@@ -1167,7 +1227,7 @@ onUnmounted(() => {
           display: flex;
           gap: 8px;
 
-          :deep(.el-button) {
+          ::v-deep(.el-button) {
             border-radius: 10px;
             padding: 10px 16px;
             font-size: 13px;
@@ -1252,7 +1312,7 @@ onUnmounted(() => {
             color: var(--text-primary);
           }
 
-          :deep(.el-button) {
+          ::v-deep(.el-button) {
             padding: 6px;
             border-radius: 8px;
 

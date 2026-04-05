@@ -1,5 +1,13 @@
 <template>
-  <el-menu :default-active="activeIndex" router class="pc-menu" mode="horizontal" @select="handleSelect" :ellipsis="false" :class="{ hidden: !isVisible }">
+  <el-menu
+    :default-active="activeIndex"
+    router
+    class="pc-menu"
+    mode="horizontal"
+    @select="handleSelect"
+    :ellipsis="false"
+    :class="{ hidden: !isVisible }"
+  >
     <!-- 移动端菜单按钮 -->
     <div class="mobile-menu-button" @click="toggleMobileMenu">
       <svg-icon name="menu" width="50px" height="50px" cursor="pointer" />
@@ -10,7 +18,8 @@
       <Dark />
       <div v-if="user" class="user-info">
         <el-text size="large" class="nickname">{{ user.nickname }}</el-text>
-        <el-dropdown :popper-options="{
+        <el-dropdown
+          :popper-options="{
             modifiers: [
               {
                 name: 'offset',
@@ -19,7 +28,8 @@
                 },
               },
             ],
-          }">
+          }"
+        >
           <el-avatar v-if="user.avatar" style="cursor: pointer" :size="40" :src="user.avatar" />
           <el-avatar v-else style="cursor: pointer" :size="40" :icon="UserFilled" />
           <template #dropdown>
@@ -39,7 +49,13 @@
   <teleport to="body">
     <transition name="slide-fade">
       <div v-show="isMobileMenuVisible" class="mobile-menu-overlay" @click="closeMobileMenu">
-        <el-menu class="mobile-menu" router @click.stop @select="closeMobileMenu" :default-openeds="['/creation/manage']">
+        <el-menu
+          class="mobile-menu"
+          router
+          @click.stop
+          @select="closeMobileMenu"
+          :default-openeds="['/creation/manage']"
+        >
           <el-menu-item index="/editor" class="menu-item">
             <el-icon><Plus /></el-icon>
             <span class="menu-text">创作</span>
@@ -68,73 +84,73 @@
 </template>
 
 <script setup>
-import Dark from "./Dark.vue";
-import { useUserStore } from "@/stores/userStore.js";
-import { ref, onMounted } from "vue";
-import { storeToRefs } from "pinia";
-import { useRouter } from "vue-router";
-import { info } from "@/api/user";
-import { UserFilled, HomeFilled, Management, House, Plus } from "@element-plus/icons-vue";
+import Dark from './Dark.vue'
+import { useUserStore } from '@/stores/userStore.js'
+import { ref, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
+import { info } from '@/api/user'
+import { UserFilled, HomeFilled, Management, House, Plus } from '@element-plus/icons-vue'
 
-const userStore = useUserStore();
-const { user } = storeToRefs(userStore);
-const router = useRouter();
+const userStore = useUserStore()
+const { user } = storeToRefs(userStore)
+const router = useRouter()
 // 控制header显示状态，默认为true确保header可见
-const isVisible = ref(true);
+const isVisible = ref(true)
 
 // 当前激活的菜单索引
-const activeIndex = ref("/creation");
+const activeIndex = ref('/creation')
 
 // 监听路由变化，更新激活的菜单
 router.afterEach((to) => {
-  activeIndex.value = to.path;
-});
+  activeIndex.value = to.path
+})
 
 // 处理菜单选择事件
 const handleSelect = (index) => {
-  router.push(index);
-};
+  router.push(index)
+}
 
 const handleLoginClick = () => {
   // 根据路由名称跳转
-  router.push({ name: "Account" });
-};
+  router.push({ name: 'Account' })
+}
 
 const getUserInfo = async () => {
-  const res = await info();
-  user.value = res.data;
-};
+  const res = await info()
+  user.value = res.data
+}
 
 const logout = () => {
-  userStore.clearUser();
-};
+  userStore.clearUser()
+}
 
 // 跳转到个人主页
 const goToProfile = () => {
-  location.href = `/user/${user.value.id}`;
-};
+  location.href = `/user/${user.value.id}`
+}
 
 const goToUserSettings = () => {
-  window.location.href = "/setting";
-};
+  window.location.href = '/setting'
+}
 
 // 移动端菜单是否可见
-const isMobileMenuVisible = ref(false);
+const isMobileMenuVisible = ref(false)
 // 切换移动端菜单
 const toggleMobileMenu = () => {
-  isMobileMenuVisible.value = !isMobileMenuVisible.value;
-};
+  isMobileMenuVisible.value = !isMobileMenuVisible.value
+}
 
 // 关闭移动端菜单
 const closeMobileMenu = () => {
-  isMobileMenuVisible.value = false;
-};
+  isMobileMenuVisible.value = false
+}
 
 onMounted(() => {
   if (user.value) {
-    getUserInfo();
+    getUserInfo()
   }
-});
+})
 </script>
 
 <style lang="scss" scoped>
@@ -171,7 +187,7 @@ onMounted(() => {
       position: relative;
       transition: all 0.3s ease;
       &::after {
-        content: "";
+        content: '';
         position: absolute;
         bottom: -5px;
         left: 0;
@@ -276,7 +292,7 @@ onMounted(() => {
     .el-menu-item {
       width: 100%;
     }
-    :deep(.el-sub-menu) {
+    ::v-deep(.el-sub-menu) {
       width: 100%;
     }
   }

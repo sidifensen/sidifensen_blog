@@ -7,19 +7,19 @@
 </template>
 
 <script setup>
-import { ChatLineRound } from "@element-plus/icons-vue"
-import DetailCard from "@/components/cards/DetailCard.vue"
-import InteractionTrendChart from "@/components/charts/InteractionTrendChart.vue"
+import { ChatLineRound } from '@element-plus/icons-vue'
+import DetailCard from '@/components/cards/DetailCard.vue'
+import InteractionTrendChart from '@/components/charts/InteractionTrendChart.vue'
 
 defineProps({
   data: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   loading: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 </script>
 

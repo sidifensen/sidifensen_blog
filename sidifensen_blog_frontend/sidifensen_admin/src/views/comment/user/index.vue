@@ -5,7 +5,14 @@
       <div class="card-header">
         <h2 class="card-title">用户评论管理</h2>
         <div class="card-actions">
-          <el-input v-model="searchUserKeyword" placeholder="搜索用户名" class="search-input" size="small" clearable @input="handleUserSearch">
+          <el-input
+            v-model="searchUserKeyword"
+            placeholder="搜索用户名"
+            class="search-input"
+            size="small"
+            clearable
+            @input="handleUserSearch"
+          >
             <template #prefix>
               <el-icon><Search /></el-icon>
             </template>
@@ -41,7 +48,15 @@
                   </div>
                 </div>
                 <div class="user-actions">
-                  <el-button type="primary" size="default" @click="handleViewUserComments(user)" :icon="ChatDotRound" class="view-comments-btn"> 查看评论 </el-button>
+                  <el-button
+                    type="primary"
+                    size="default"
+                    @click="handleViewUserComments(user)"
+                    :icon="ChatDotRound"
+                    class="view-comments-btn"
+                  >
+                    查看评论
+                  </el-button>
                 </div>
               </div>
             </div>
@@ -55,8 +70,18 @@
       <div class="card-header">
         <h2 class="card-title">{{ currentUser?.nickname || currentUser?.username }}的评论</h2>
         <div class="card-actions">
-          <el-button @click="handleBackToUsers" :icon="ArrowLeft" size="small">返回用户列表</el-button>
-          <el-select v-model="searchExamineStatus" placeholder="审核状态" filterable clearable size="small" class="search-input" @change="handleSearch">
+          <el-button @click="handleBackToUsers" :icon="ArrowLeft" size="small"
+            >返回用户列表</el-button
+          >
+          <el-select
+            v-model="searchExamineStatus"
+            placeholder="审核状态"
+            filterable
+            clearable
+            size="small"
+            class="search-input"
+            @change="handleSearch"
+          >
             <el-option label="待审核" value="0" />
             <el-option label="审核通过" value="1" />
             <el-option label="审核不通过" value="2" />
@@ -94,7 +119,14 @@
       </div>
 
       <div class="card-second">
-        <el-input v-model="searchKeyword" placeholder="搜索评论内容" class="search-input" size="small" clearable @input="handleSearch">
+        <el-input
+          v-model="searchKeyword"
+          placeholder="搜索评论内容"
+          class="search-input"
+          size="small"
+          clearable
+          @input="handleSearch"
+        >
           <template #prefix>
             <el-icon><Search /></el-icon>
           </template>
@@ -102,26 +134,68 @@
       </div>
 
       <div class="card-third">
-        <el-button type="primary" plain round @click="handleBatchAudit" :disabled="selectedComments.length === 0" :loading="batchAuditLoading"> 批量审核 </el-button>
-        <el-button type="warning" plain round @click="handleBatchReject" :disabled="selectedComments.length === 0" :loading="batchRejectLoading"> 批量拒绝 </el-button>
-        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedComments.length === 0" :loading="batchDeleteLoading"> 批量删除 </el-button>
+        <el-button
+          type="primary"
+          plain
+          round
+          @click="handleBatchAudit"
+          :disabled="selectedComments.length === 0"
+          :loading="batchAuditLoading"
+        >
+          批量审核
+        </el-button>
+        <el-button
+          type="warning"
+          plain
+          round
+          @click="handleBatchReject"
+          :disabled="selectedComments.length === 0"
+          :loading="batchRejectLoading"
+        >
+          批量拒绝
+        </el-button>
+        <el-button
+          type="danger"
+          plain
+          round
+          @click="handleBatchDelete"
+          :disabled="selectedComments.length === 0"
+          :loading="batchDeleteLoading"
+        >
+          批量删除
+        </el-button>
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table v-loading="loading" :data="paginatedCommentList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
+        <el-table
+          v-loading="loading"
+          :data="paginatedCommentList"
+          class="table"
+          @selection-change="handleSelectionChange"
+          :row-style="{ height: 'auto' }"
+          :cell-style="{ padding: '8px 0' }"
+        >
           <el-table-column type="selection" width="30" />
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="content" label="评论内容" min-width="300">
             <template #default="{ row }">
-              <el-tooltip :content="row.content" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"">
+              <el-tooltip
+                :content="row.content"
+                placement="top-start"
+                :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"
+              >
                 <div class="comment-content">{{ row.content }}</div>
               </el-tooltip>
             </template>
           </el-table-column>
           <el-table-column prop="articleTitle" label="所属文章" min-width="170">
             <template #default="{ row }">
-              <el-tooltip :content="row.articleTitle" placement="top-start" :popper-style="{ maxWidth: '300px', wordWrap: 'break-word', whiteSpace: 'normal' }"">
+              <el-tooltip
+                :content="row.articleTitle"
+                placement="top-start"
+                :popper-style="{ maxWidth: '300px', wordWrap: 'break-word', whiteSpace: 'normal' }"
+              >
                 <div class="article-title">{{ row.articleTitle }}</div>
               </el-tooltip>
             </template>
@@ -134,8 +208,19 @@
           </el-table-column>
           <el-table-column prop="examineStatus" label="审核状态" width="80">
             <template #default="{ row }">
-              <div class="comment-status" :class="row.examineStatus === 0 ? 'status-unaudited' : row.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-                {{ row.examineStatus === 0 ? "待审核" : row.examineStatus === 1 ? "已审核" : "未通过" }}
+              <div
+                class="comment-status"
+                :class="
+                  row.examineStatus === 0
+                    ? 'status-unaudited'
+                    : row.examineStatus === 1
+                      ? 'status-audited'
+                      : 'status-rejected'
+                "
+              >
+                {{
+                  row.examineStatus === 0 ? '待审核' : row.examineStatus === 1 ? '已审核' : '未通过'
+                }}
               </div>
             </template>
           </el-table-column>
@@ -145,10 +230,38 @@
           <el-table-column label="操作" width="320">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button type="info" @click="handleViewComment(row)" :icon="View" class="view-button" size="small">查看</el-button>
-                <el-button type="primary" @click="handleAuditComment(row.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
-                <el-button type="warning" @click="handleRejectComment(row.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
-                <el-button type="danger" @click="handleDeleteComment(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
+                <el-button
+                  type="info"
+                  @click="handleViewComment(row)"
+                  :icon="View"
+                  class="view-button"
+                  size="small"
+                  >查看</el-button
+                >
+                <el-button
+                  type="primary"
+                  @click="handleAuditComment(row.id)"
+                  :icon="Check"
+                  class="examine-button"
+                  size="small"
+                  >审核</el-button
+                >
+                <el-button
+                  type="warning"
+                  @click="handleRejectComment(row.id)"
+                  :icon="Close"
+                  class="reject-button"
+                  size="small"
+                  >拒绝</el-button
+                >
+                <el-button
+                  type="danger"
+                  @click="handleDeleteComment(row.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                  size="small"
+                  >删除</el-button
+                >
               </div>
             </template>
           </el-table-column>
@@ -158,19 +271,43 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="comment-cards">
-          <el-card v-for="comment in paginatedCommentList" :key="comment.id" class="comment-card" :class="{ 'is-selected': isCommentSelected(comment.id) }">
+          <el-card
+            v-for="comment in paginatedCommentList"
+            :key="comment.id"
+            class="comment-card"
+            :class="{ 'is-selected': isCommentSelected(comment.id) }"
+          >
             <div class="comment-card-content">
               <div class="comment-header-section">
                 <div class="comment-info">
                   <div class="comment-header">
-                    <el-checkbox :model-value="isCommentSelected(comment.id)" @change="handleMobileSelect(comment)" class="mobile-checkbox" />
+                    <el-checkbox
+                      :model-value="isCommentSelected(comment.id)"
+                      @change="handleMobileSelect(comment)"
+                      class="mobile-checkbox"
+                    />
                     <div class="comment-id">#{{ comment.id }}</div>
-                    <div class="comment-status" :class="comment.examineStatus === 0 ? 'status-unaudited' : comment.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-                      {{ comment.examineStatus === 0 ? "待审核" : comment.examineStatus === 1 ? "已审核" : "未通过" }}
+                    <div
+                      class="comment-status"
+                      :class="
+                        comment.examineStatus === 0
+                          ? 'status-unaudited'
+                          : comment.examineStatus === 1
+                            ? 'status-audited'
+                            : 'status-rejected'
+                      "
+                    >
+                      {{
+                        comment.examineStatus === 0
+                          ? '待审核'
+                          : comment.examineStatus === 1
+                            ? '已审核'
+                            : '未通过'
+                      }}
                     </div>
                   </div>
                   <div class="comment-content-mobile">{{ comment.content }}</div>
-                  
+
                   <!-- 评论用户信息 -->
                   <div class="comment-author-mobile" v-if="comment.nickname">
                     <span class="author-label">评论用户:</span>
@@ -219,10 +356,38 @@
                 </div>
               </div>
               <div class="comment-actions">
-                <el-button type="info" @click="handleViewComment(comment)" :icon="View" class="view-button" size="small">查看</el-button>
-                <el-button type="primary" @click="handleAuditComment(comment.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
-                <el-button type="warning" @click="handleRejectComment(comment.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
-                <el-button type="danger" @click="handleDeleteComment(comment.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
+                <el-button
+                  type="info"
+                  @click="handleViewComment(comment)"
+                  :icon="View"
+                  class="view-button"
+                  size="small"
+                  >查看</el-button
+                >
+                <el-button
+                  type="primary"
+                  @click="handleAuditComment(comment.id)"
+                  :icon="Check"
+                  class="examine-button"
+                  size="small"
+                  >审核</el-button
+                >
+                <el-button
+                  type="warning"
+                  @click="handleRejectComment(comment.id)"
+                  :icon="Close"
+                  class="reject-button"
+                  size="small"
+                  >拒绝</el-button
+                >
+                <el-button
+                  type="danger"
+                  @click="handleDeleteComment(comment.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                  size="small"
+                  >删除</el-button
+                >
               </div>
             </div>
           </el-card>
@@ -230,11 +395,27 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <Pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
 
     <!-- 评论详情对话框 -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="70%" class="comment-detail-dialog" :close-on-click-modal="false" :close-on-press-escape="true" draggable align-center @close="handleDialogClose">
+    <el-dialog
+      v-model="dialogVisible"
+      :title="dialogTitle"
+      width="70%"
+      class="comment-detail-dialog"
+      :close-on-click-modal="false"
+      :close-on-press-escape="true"
+      draggable
+      align-center
+      @close="handleDialogClose"
+    >
       <div v-if="currentComment" class="comment-detail" v-loading="detailLoading">
         <!-- 评论基本信息 -->
         <div class="comment-info-section">
@@ -243,7 +424,7 @@
             <div class="comment-detail-info">
               <div class="comment-title-section">
                 <h2 class="comment-title-detail">评论详情</h2>
-                <div class="comment-id-detail">#{{ currentComment?.id || "N/A" }}</div>
+                <div class="comment-id-detail">#{{ currentComment?.id || 'N/A' }}</div>
               </div>
 
               <div class="comment-user-section">
@@ -253,14 +434,16 @@
                   </template>
                 </el-avatar>
                 <div class="user-info-detail">
-                  <span class="user-name-detail">{{ currentComment?.nickname || "匿名用户" }}</span>
-                  <span class="comment-time-detail">{{ currentComment?.createTime || "未知时间" }}</span>
+                  <span class="user-name-detail">{{ currentComment?.nickname || '匿名用户' }}</span>
+                  <span class="comment-time-detail">{{
+                    currentComment?.createTime || '未知时间'
+                  }}</span>
                 </div>
               </div>
 
               <div class="comment-content-detail">
                 <h4>评论内容</h4>
-                <div class="content-text">{{ currentComment?.content || "暂无内容" }}</div>
+                <div class="content-text">{{ currentComment?.content || '暂无内容' }}</div>
               </div>
 
               <div class="comment-article-detail" v-if="currentComment?.articleTitle">
@@ -277,8 +460,23 @@
               <div class="comment-badges-detail">
                 <div class="badge-group">
                   <span class="badge-label">审核状态:</span>
-                  <div class="comment-status" :class="(currentComment?.examineStatus || 0) === 0 ? 'status-unaudited' : (currentComment?.examineStatus || 0) === 1 ? 'status-audited' : 'status-rejected'">
-                    {{ (currentComment?.examineStatus || 0) === 0 ? "待审核" : (currentComment?.examineStatus || 0) === 1 ? "已审核" : "未通过" }}
+                  <div
+                    class="comment-status"
+                    :class="
+                      (currentComment?.examineStatus || 0) === 0
+                        ? 'status-unaudited'
+                        : (currentComment?.examineStatus || 0) === 1
+                          ? 'status-audited'
+                          : 'status-rejected'
+                    "
+                  >
+                    {{
+                      (currentComment?.examineStatus || 0) === 0
+                        ? '待审核'
+                        : (currentComment?.examineStatus || 0) === 1
+                          ? '已审核'
+                          : '未通过'
+                    }}
                   </div>
                 </div>
               </div>
@@ -301,7 +499,7 @@
               <div class="stat-item time-stat-item">
                 <el-icon class="stat-icon"><Clock /></el-icon>
                 <span class="stat-label">创建时间:</span>
-                <span class="stat-value">{{ currentComment?.createTime || "未知" }}</span>
+                <span class="stat-value">{{ currentComment?.createTime || '未知' }}</span>
               </div>
             </div>
           </div>
@@ -316,8 +514,22 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="dialogVisible = false" :icon="Close">关闭</el-button>
-          <el-button type="primary" @click="handleAuditComment(currentComment?.id)" :icon="Check" :disabled="!currentComment || (currentComment?.examineStatus || 0) === 1"> 审核通过 </el-button>
-          <el-button type="warning" @click="handleRejectComment(currentComment?.id)" :icon="Close" :disabled="!currentComment || (currentComment?.examineStatus || 0) === 2"> 审核拒绝 </el-button>
+          <el-button
+            type="primary"
+            @click="handleAuditComment(currentComment?.id)"
+            :icon="Check"
+            :disabled="!currentComment || (currentComment?.examineStatus || 0) === 1"
+          >
+            审核通过
+          </el-button>
+          <el-button
+            type="warning"
+            @click="handleRejectComment(currentComment?.id)"
+            :icon="Close"
+            :disabled="!currentComment || (currentComment?.examineStatus || 0) === 2"
+          >
+            审核拒绝
+          </el-button>
         </div>
       </template>
     </el-dialog>
@@ -325,110 +537,138 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from "vue";
-import { Delete, Close, Check, View, Search, ArrowLeft, User, ChatDotRound, Star, Clock } from "@element-plus/icons-vue";
-import { getUserListWithCommentCount } from "@/api/comment";
-import { adminGetCommentsByUserId, adminSearchComment, adminExamineComment, adminExamineBatchComment, adminDeleteComment, adminDeleteBatchComment } from "@/api/comment";
-import Pagination from "@/components/Pagination.vue";
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import {
+  Delete,
+  Close,
+  Check,
+  View,
+  Search,
+  ArrowLeft,
+  User,
+  ChatDotRound,
+  Star,
+  Clock,
+} from '@element-plus/icons-vue'
+import { getUserListWithCommentCount } from '@/api/comment'
+import {
+  adminGetCommentsByUserId,
+  adminSearchComment,
+  adminExamineComment,
+  adminExamineBatchComment,
+  adminDeleteComment,
+  adminDeleteBatchComment,
+} from '@/api/comment'
+import Pagination from '@/components/Pagination.vue'
 
 // 视图状态
-const showComments = ref(false);
-const currentUser = ref(null);
+const showComments = ref(false)
+const currentUser = ref(null)
 
 // 用户列表数据
-const userList = ref([]);
-const userLoading = ref(false);
-const searchUserKeyword = ref("");
+const userList = ref([])
+const userLoading = ref(false)
+const searchUserKeyword = ref('')
 
 // 过滤后的用户列表
 const filteredUserList = computed(() => {
-  if (!searchUserKeyword.value) return userList.value;
-  const keyword = searchUserKeyword.value.toLowerCase();
-  return userList.value.filter((user) => user.username.toLowerCase().includes(keyword) || user.nickname?.toLowerCase().includes(keyword));
-});
+  if (!searchUserKeyword.value) return userList.value
+  const keyword = searchUserKeyword.value.toLowerCase()
+  return userList.value.filter(
+    (user) =>
+      user.username.toLowerCase().includes(keyword) ||
+      user.nickname?.toLowerCase().includes(keyword),
+  )
+})
 
 // 评论列表数据
-const commentList = ref([]);
-const paginatedCommentList = ref([]);
-const loading = ref(false);
-const currentPage = ref(1);
-const pageSize = ref(10);
-const total = ref(0);
-const dialogVisible = ref(false);
-const dialogTitle = ref("评论详情");
-const currentComment = ref(null);
-const detailLoading = ref(false);
+const commentList = ref([])
+const paginatedCommentList = ref([])
+const loading = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+const dialogVisible = ref(false)
+const dialogTitle = ref('评论详情')
+const currentComment = ref(null)
+const detailLoading = ref(false)
 
 // 搜索条件
-const searchExamineStatus = ref("");
-const searchKeyword = ref("");
-const searchStartTime = ref("");
-const searchEndTime = ref("");
+const searchExamineStatus = ref('')
+const searchKeyword = ref('')
+const searchStartTime = ref('')
+const searchEndTime = ref('')
 
 // 选中的评论
-const selectedComments = ref([]);
+const selectedComments = ref([])
 
 // 批量操作加载状态
-const batchAuditLoading = ref(false);
-const batchRejectLoading = ref(false);
-const batchDeleteLoading = ref(false);
+const batchAuditLoading = ref(false)
+const batchRejectLoading = ref(false)
+const batchDeleteLoading = ref(false)
 
 // 移动端检测
-const isMobileView = ref(false);
+const isMobileView = ref(false)
 
 // 监听窗口大小变化
 const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768;
-};
+  isMobileView.value = window.innerWidth <= 768
+}
 
 // 获取用户列表
 const getUsers = async () => {
-  userLoading.value = true;
+  userLoading.value = true
   try {
-    const res = await getUserListWithCommentCount();
-    userList.value = res.data;
+    const res = await getUserListWithCommentCount()
+    userList.value = res.data
   } catch (error) {
-    ElMessage.error("获取用户列表失败");
+    ElMessage.error('获取用户列表失败')
   } finally {
-    userLoading.value = false;
+    userLoading.value = false
   }
-};
+}
 
 // 处理用户搜索
 const handleUserSearch = () => {
   // 搜索逻辑已在computed中处理
-};
+}
 
 // 查看用户评论
 const handleViewUserComments = async (user) => {
-  currentUser.value = user;
-  showComments.value = true;
-  await getUserComments(user.id);
-};
+  currentUser.value = user
+  showComments.value = true
+  await getUserComments(user.id)
+}
 
 // 返回用户列表
 const handleBackToUsers = () => {
-  showComments.value = false;
-  currentUser.value = null;
-  commentList.value = [];
-  paginatedCommentList.value = [];
-  currentPage.value = 1;
-  total.value = 0;
+  showComments.value = false
+  currentUser.value = null
+  commentList.value = []
+  paginatedCommentList.value = []
+  currentPage.value = 1
+  total.value = 0
   // 重置搜索条件
-  searchExamineStatus.value = "";
-  searchKeyword.value = "";
-  searchStartTime.value = "";
-  searchEndTime.value = "";
-  selectedComments.value = [];
-};
+  searchExamineStatus.value = ''
+  searchKeyword.value = ''
+  searchStartTime.value = ''
+  searchEndTime.value = ''
+  selectedComments.value = []
+}
 
 // 获取用户评论列表
 const getUserComments = async (userId) => {
-  currentPage.value = 1;
-  await fetchUserComments(userId);
-};
+  currentPage.value = 1
+  await fetchUserComments(userId)
+}
 
-const hasSearchConditions = () => !!(searchExamineStatus.value || searchKeyword.value || searchStartTime.value || searchEndTime.value);
+const hasSearchConditions = () =>
+  !!(
+    searchExamineStatus.value ||
+    searchKeyword.value ||
+    searchStartTime.value ||
+    searchEndTime.value
+  )
 
 const buildSearchPayload = () => ({
   pageNum: currentPage.value,
@@ -438,251 +678,251 @@ const buildSearchPayload = () => ({
   keyword: searchKeyword.value || undefined,
   createTimeStart: searchStartTime.value || undefined,
   createTimeEnd: searchEndTime.value || undefined,
-});
+})
 
 const applyPageData = (pageData) => {
-  commentList.value = pageData?.data || [];
-  paginatedCommentList.value = commentList.value;
-  total.value = Number(pageData?.total || 0);
-  selectedComments.value = [];
-};
+  commentList.value = pageData?.data || []
+  paginatedCommentList.value = commentList.value
+  total.value = Number(pageData?.total || 0)
+  selectedComments.value = []
+}
 
 const fetchUserComments = async (userId = currentUser.value?.id) => {
-  if (!userId) return;
-  loading.value = true;
+  if (!userId) return
+  loading.value = true
   try {
-    let pageData = null;
+    let pageData = null
     if (hasSearchConditions()) {
-      const res = await adminSearchComment(buildSearchPayload());
-      pageData = res.data;
+      const res = await adminSearchComment(buildSearchPayload())
+      pageData = res.data
     } else {
       const res = await adminGetCommentsByUserId(userId, {
         pageNum: currentPage.value,
         pageSize: pageSize.value,
-      });
-      pageData = res.data;
+      })
+      pageData = res.data
     }
-    applyPageData(pageData);
+    applyPageData(pageData)
   } catch (error) {
-    ElMessage.error(hasSearchConditions() ? "搜索评论失败" : "获取用户评论列表失败");
+    ElMessage.error(hasSearchConditions() ? '搜索评论失败' : '获取用户评论列表失败')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 更新分页数据
 const updatePaginatedCommentList = () => {
-  paginatedCommentList.value = commentList.value;
-};
+  paginatedCommentList.value = commentList.value
+}
 
 // 处理分页大小变化
 const handleSizeChange = async (size) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  await fetchUserComments();
-};
+  pageSize.value = size
+  currentPage.value = 1
+  await fetchUserComments()
+}
 
 // 处理当前页码变化
 const handleCurrentChange = async (current) => {
-  currentPage.value = current;
-  await fetchUserComments();
-};
+  currentPage.value = current
+  await fetchUserComments()
+}
 
 // 处理搜索
 const handleSearch = async () => {
-  if (!currentUser.value) return;
-  currentPage.value = 1;
-  await fetchUserComments();
-};
+  if (!currentUser.value) return
+  currentPage.value = 1
+  await fetchUserComments()
+}
 
 // 智能刷新列表
 const refreshCommentList = async (deletedCount = 0) => {
-  if (!currentUser.value) return;
+  if (!currentUser.value) return
   if (deletedCount > 0 && currentPage.value > 1 && commentList.value.length <= deletedCount) {
-    currentPage.value -= 1;
+    currentPage.value -= 1
   }
-  await fetchUserComments();
-};
+  await fetchUserComments()
+}
 
 // 表格多选
 const handleSelectionChange = (comments) => {
-  selectedComments.value = comments;
-};
+  selectedComments.value = comments
+}
 
 // 检查评论是否被选中
 const isCommentSelected = (commentId) => {
-  return selectedComments.value.some((comment) => comment.id === commentId);
-};
+  return selectedComments.value.some((comment) => comment.id === commentId)
+}
 
 // 移动端选择处理
 const handleMobileSelect = (comment) => {
-  const index = selectedComments.value.findIndex((item) => item.id === comment.id);
+  const index = selectedComments.value.findIndex((item) => item.id === comment.id)
   if (index > -1) {
     // 已选中，取消选中
-    selectedComments.value.splice(index, 1);
+    selectedComments.value.splice(index, 1)
   } else {
     // 未选中，添加到选中列表
-    selectedComments.value.push(comment);
+    selectedComments.value.push(comment)
   }
-};
+}
 
 // 对话框关闭处理
 const handleDialogClose = () => {
-  currentComment.value = null;
-  detailLoading.value = false;
-};
+  currentComment.value = null
+  detailLoading.value = false
+}
 
 // 查看评论详情
 const handleViewComment = (comment) => {
-  currentComment.value = comment;
-  dialogTitle.value = "评论详情";
-  dialogVisible.value = true;
-};
+  currentComment.value = comment
+  dialogTitle.value = '评论详情'
+  dialogVisible.value = true
+}
 
 // 处理单个评论审核
 const handleAuditComment = async (commentId) => {
   try {
-    await adminExamineComment({ commentId: commentId, examineStatus: 1 });
-    ElMessage.success("审核成功");
-    await refreshCommentList();
+    await adminExamineComment({ commentId: commentId, examineStatus: 1 })
+    ElMessage.success('审核成功')
+    await refreshCommentList()
     if (dialogVisible.value) {
-      dialogVisible.value = false;
+      dialogVisible.value = false
     }
   } catch (error) {
-    ElMessage.error("审核失败");
+    ElMessage.error('审核失败')
   }
-};
+}
 
 // 处理批量审核
 const handleBatchAudit = () => {
-  ElMessageBox.confirm(`确定要审核通过选中的 ${selectedComments.value.length} 条评论吗？`, "确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "info",
+  ElMessageBox.confirm(`确定要审核通过选中的 ${selectedComments.value.length} 条评论吗？`, '确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'info',
   })
     .then(async () => {
-      batchAuditLoading.value = true;
+      batchAuditLoading.value = true
       try {
         const data = selectedComments.value.map((comment) => ({
           commentId: comment.id,
           examineStatus: 1,
-        }));
-        await adminExamineBatchComment(data);
-        ElMessage.success("批量审核成功");
-        await refreshCommentList();
+        }))
+        await adminExamineBatchComment(data)
+        ElMessage.success('批量审核成功')
+        await refreshCommentList()
       } catch (error) {
-        ElMessage.error("批量审核失败");
+        ElMessage.error('批量审核失败')
       } finally {
-        batchAuditLoading.value = false;
+        batchAuditLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("审核已取消");
-    });
-};
+      ElMessage.info('审核已取消')
+    })
+}
 
 // 处理单个评论拒绝
 const handleRejectComment = async (commentId) => {
   try {
-    await adminExamineComment({ commentId: commentId, examineStatus: 2 });
-    ElMessage.success("拒绝成功");
-    await refreshCommentList();
+    await adminExamineComment({ commentId: commentId, examineStatus: 2 })
+    ElMessage.success('拒绝成功')
+    await refreshCommentList()
     if (dialogVisible.value) {
-      dialogVisible.value = false;
+      dialogVisible.value = false
     }
   } catch (error) {
-    ElMessage.error("拒绝失败");
+    ElMessage.error('拒绝失败')
   }
-};
+}
 
 // 处理批量拒绝
 const handleBatchReject = () => {
-  ElMessageBox.confirm(`确定要拒绝选中的 ${selectedComments.value.length} 条评论吗？`, "确认", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm(`确定要拒绝选中的 ${selectedComments.value.length} 条评论吗？`, '确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      batchRejectLoading.value = true;
+      batchRejectLoading.value = true
       try {
         const data = selectedComments.value.map((comment) => ({
           commentId: comment.id,
           examineStatus: 2,
-        }));
-        await adminExamineBatchComment(data);
-        ElMessage.success("批量拒绝成功");
-        await refreshCommentList();
+        }))
+        await adminExamineBatchComment(data)
+        ElMessage.success('批量拒绝成功')
+        await refreshCommentList()
       } catch (error) {
-        ElMessage.error("批量拒绝失败");
+        ElMessage.error('批量拒绝失败')
       } finally {
-        batchRejectLoading.value = false;
+        batchRejectLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("拒绝已取消");
-    });
-};
+      ElMessage.info('拒绝已取消')
+    })
+}
 
 // 处理删除单个评论
 const handleDeleteComment = (commentId) => {
-  ElMessageBox.confirm("确定要删除该评论吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要删除该评论吗？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
       try {
-        await adminDeleteComment(commentId);
-        ElMessage.success("删除成功");
-        await refreshCommentList();
+        await adminDeleteComment(commentId)
+        ElMessage.success('删除成功')
+        await refreshCommentList()
         if (dialogVisible.value) {
-          dialogVisible.value = false;
+          dialogVisible.value = false
         }
       } catch (error) {
-        ElMessage.error("删除失败");
+        ElMessage.error('删除失败')
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 处理批量删除
 const handleBatchDelete = () => {
-  ElMessageBox.confirm(`确定要删除选中的 ${selectedComments.value.length} 条评论吗？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm(`确定要删除选中的 ${selectedComments.value.length} 条评论吗？`, '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      batchDeleteLoading.value = true;
+      batchDeleteLoading.value = true
       try {
-        const commentIds = selectedComments.value.map((comment) => comment.id);
-        await adminDeleteBatchComment(commentIds);
-        ElMessage.success("批量删除成功");
-        await refreshCommentList();
+        const commentIds = selectedComments.value.map((comment) => comment.id)
+        await adminDeleteBatchComment(commentIds)
+        ElMessage.success('批量删除成功')
+        await refreshCommentList()
       } catch (error) {
-        ElMessage.error("批量删除失败");
+        ElMessage.error('批量删除失败')
       } finally {
-        batchDeleteLoading.value = false;
+        batchDeleteLoading.value = false
       }
     })
     .catch(() => {
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
 // 初始化
 onMounted(() => {
-  getUsers();
-  handleResize();
-  window.addEventListener("resize", handleResize);
-});
+  getUsers()
+  handleResize()
+  window.addEventListener('resize', handleResize)
+})
 
 // 组件卸载时移除监听
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -722,7 +962,7 @@ onUnmounted(() => {
         align-items: center;
 
         &::before {
-          content: "";
+          content: '';
           display: inline-block;
           width: 4px;
           height: 20px;
@@ -1260,7 +1500,6 @@ onUnmounted(() => {
                 }
               }
 
-
               // 评论元信息
               .comment-meta {
                 display: flex;
@@ -1365,7 +1604,6 @@ onUnmounted(() => {
       color: #e6a23c;
     }
   }
-
 }
 
 // 评论详情对话框样式

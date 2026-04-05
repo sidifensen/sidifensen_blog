@@ -8,37 +8,37 @@
  * @returns {string} 格式化后的时间
  */
 export const formatTime = (date) => {
-  if (!date) return "";
+  if (!date) return ''
 
-  const now = new Date();
-  const target = new Date(date);
-  const diff = now.getTime() - target.getTime();
+  const now = new Date()
+  const target = new Date(date)
+  const diff = now.getTime() - target.getTime()
 
   // 时间差（毫秒）
-  const minute = 60 * 1000;
-  const hour = 60 * minute;
-  const day = 24 * hour;
-  const week = 7 * day;
-  const month = 30 * day;
-  const year = 365 * day;
+  const minute = 60 * 1000
+  const hour = 60 * minute
+  const day = 24 * hour
+  const week = 7 * day
+  const month = 30 * day
+  const year = 365 * day
 
   if (diff < minute) {
-    return "刚刚";
+    return '刚刚'
   } else if (diff < hour) {
-    return `${Math.floor(diff / minute)}分钟前`;
+    return `${Math.floor(diff / minute)}分钟前`
   } else if (diff < day) {
-    return `${Math.floor(diff / hour)}小时前`;
+    return `${Math.floor(diff / hour)}小时前`
   } else if (diff < week) {
-    return `${Math.floor(diff / day)}天前`;
+    return `${Math.floor(diff / day)}天前`
   } else if (diff < month) {
-    return `${Math.floor(diff / week)}周前`;
+    return `${Math.floor(diff / week)}周前`
   } else if (diff < year) {
-    return `${Math.floor(diff / month)}个月前`;
+    return `${Math.floor(diff / month)}个月前`
   } else {
     // 超过一年显示具体日期
-    return formatDate(target, "YYYY-MM-DD");
+    return formatDate(target, 'YYYY-MM-DD')
   }
-};
+}
 
 /**
  * 格式化日期
@@ -46,20 +46,26 @@ export const formatTime = (date) => {
  * @param {string} format 格式字符串
  * @returns {string} 格式化后的日期
  */
-export const formatDate = (date, format = "YYYY-MM-DD HH:mm:ss") => {
-  if (!date) return "";
+export const formatDate = (date, format = 'YYYY-MM-DD HH:mm:ss') => {
+  if (!date) return ''
 
-  const d = new Date(date);
+  const d = new Date(date)
 
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  const hours = String(d.getHours()).padStart(2, "0");
-  const minutes = String(d.getMinutes()).padStart(2, "0");
-  const seconds = String(d.getSeconds()).padStart(2, "0");
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  const hours = String(d.getHours()).padStart(2, '0')
+  const minutes = String(d.getMinutes()).padStart(2, '0')
+  const seconds = String(d.getSeconds()).padStart(2, '0')
 
-  return format.replace("YYYY", year).replace("MM", month).replace("DD", day).replace("HH", hours).replace("mm", minutes).replace("ss", seconds);
-};
+  return format
+    .replace('YYYY', year)
+    .replace('MM', month)
+    .replace('DD', day)
+    .replace('HH', hours)
+    .replace('mm', minutes)
+    .replace('ss', seconds)
+}
 
 /**
  * 格式化日期为中文本地化格式
@@ -67,14 +73,14 @@ export const formatDate = (date, format = "YYYY-MM-DD HH:mm:ss") => {
  * @returns {string} 格式化后的日期 (YYYY/MM/DD)
  */
 export const formatDateCN = (dateString) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-};
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+}
 
 /**
  * 获取友好的时间显示
@@ -82,31 +88,31 @@ export const formatDateCN = (dateString) => {
  * @returns {string} 友好的时间显示
  */
 export const getFriendlyTime = (date) => {
-  if (!date) return "";
+  if (!date) return ''
 
-  const now = new Date();
-  const target = new Date(date);
+  const now = new Date()
+  const target = new Date(date)
 
   // 如果是今天，显示时间
   if (now.toDateString() === target.toDateString()) {
-    return formatDate(target, "HH:mm");
+    return formatDate(target, 'HH:mm')
   }
 
   // 如果是昨天
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
+  const yesterday = new Date(now)
+  yesterday.setDate(now.getDate() - 1)
   if (yesterday.toDateString() === target.toDateString()) {
-    return `昨天 ${formatDate(target, "HH:mm")}`;
+    return `昨天 ${formatDate(target, 'HH:mm')}`
   }
 
   // 如果是今年
   if (now.getFullYear() === target.getFullYear()) {
-    return formatDate(target, "MM-DD HH:mm");
+    return formatDate(target, 'MM-DD HH:mm')
   }
 
   // 其他情况显示完整日期
-  return formatDate(target, "YYYY-MM-DD HH:mm");
-};
+  return formatDate(target, 'YYYY-MM-DD HH:mm')
+}
 
 /**
  * 格式化会话列表的时间显示（短格式）
@@ -114,16 +120,16 @@ export const getFriendlyTime = (date) => {
  * @returns {string} 格式化后的时间（刚刚、X 分钟前、X 小时前、日期）
  */
 export const formatConversationTime = (time) => {
-  if (!time) return "";
-  const date = new Date(time);
-  const now = new Date();
-  const diff = now - date;
+  if (!time) return ''
+  const date = new Date(time)
+  const now = new Date()
+  const diff = now - date
 
-  if (diff < 60000) return "刚刚";
-  if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`;
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`;
-  return date.toLocaleDateString();
-};
+  if (diff < 60000) return '刚刚'
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
+  return date.toLocaleDateString()
+}
 
 /**
  * 格式化会员到期日期
@@ -131,10 +137,10 @@ export const formatConversationTime = (time) => {
  * @returns {string} 格式化后的日期 (YYYY-MM-DD HH:mm)，无效日期返回 "--"
  */
 export const formatVipExpireDate = (value) => {
-  if (!value) return "--";
-  const date = new Date(value);
+  if (!value) return '--'
+  const date = new Date(value)
   if (Number.isNaN(date.getTime())) {
-    return value;
+    return value
   }
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
-};
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}

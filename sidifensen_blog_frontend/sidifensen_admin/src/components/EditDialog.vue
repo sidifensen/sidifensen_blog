@@ -28,95 +28,94 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch } from 'vue'
 
 // Props
 const props = defineProps({
   // 对话框显示状态
   modelValue: {
     type: Boolean,
-    default: false
+    default: false,
   },
   // 标题
   title: {
     type: String,
-    default: "编辑"
+    default: '编辑',
   },
   // 宽度
   width: {
     type: String,
-    default: "500px"
+    default: '500px',
   },
   // 表单标签宽度
   labelWidth: {
     type: String,
-    default: "100px"
+    default: '100px',
   },
   // 提交按钮文本
   submitText: {
     type: String,
-    default: "确认"
+    default: '确认',
   },
   // 提交加载状态
   submitLoading: {
     type: Boolean,
-    default: false
+    default: false,
   },
   // 表单数据
   formData: {
     type: Object,
-    default: () => ({})
+    default: () => ({}),
   },
   // 表单验证规则
   rules: {
     type: Object,
-    default: () => ({})
-  }
-});
+    default: () => ({}),
+  },
+})
 
 // Emits
-const emit = defineEmits([
-  "update:modelValue",
-  "close",
-  "submit"
-]);
+const emit = defineEmits(['update:modelValue', 'close', 'submit'])
 
 // 响应式
-const visible = ref(props.modelValue);
-const formRef = ref(null);
+const visible = ref(props.modelValue)
+const formRef = ref(null)
 
 // 监听 props 变化
-watch(() => props.modelValue, (val) => {
-  visible.value = val;
-});
+watch(
+  () => props.modelValue,
+  (val) => {
+    visible.value = val
+  },
+)
 
 watch(visible, (val) => {
-  emit("update:modelValue", val);
-});
+  emit('update:modelValue', val)
+})
 
 // 关闭处理
 const handleClose = () => {
-  formRef.value?.resetFields();
-  visible.value = false;
-  emit("close");
-};
+  formRef.value?.resetFields()
+  visible.value = false
+  emit('close')
+}
 
 // 提交处理
 const handleSubmit = async () => {
   try {
-    await formRef.value.validate();
-    emit("submit");
+    await formRef.value.validate()
+    emit('submit')
   } catch (error) {
     // 验证失败
   }
-};
+}
 
 // 暴露方法
 defineExpose({
   validate: () => formRef.value?.validate(),
   resetFields: () => formRef.value?.resetFields(),
-  clearValidate: () => formRef.value?.clearValidate()
-});
+  clearValidate: () => formRef.value?.clearValidate(),
+})
 </script>
 
 <style lang="scss" scoped>

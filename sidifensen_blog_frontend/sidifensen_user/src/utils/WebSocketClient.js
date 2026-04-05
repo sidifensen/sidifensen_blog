@@ -1,79 +1,79 @@
-import { GetJwt } from "@/utils/Auth";
+import { GetJwt } from '@/utils/Auth'
 
 class WebSocketClient {
   constructor() {
-    this.ws = null; // WebSocket 实例
-    this.url = ""; // WebSocket URL
-    this.reconnectTimer = null; // 重连定时器
-    this.heartbeatTimer = null; // 心跳定时器
-    this.isManualClose = false; // 是否手动关闭 (用于判断是否需要自动重连)
-    this.messageHandlers = new Map(); // 消息处理器 (观察者模式)
+    this.ws = null // WebSocket 实例
+    this.url = '' // WebSocket URL
+    this.reconnectTimer = null // 重连定时器
+    this.heartbeatTimer = null // 心跳定时器
+    this.isManualClose = false // 是否手动关闭 (用于判断是否需要自动重连)
+    this.messageHandlers = new Map() // 消息处理器 (观察者模式)
   }
 
   /**
    * 连接 WebSocket
    */
   connect() {
-    const token = GetJwt();
+    const token = GetJwt()
     if (!token) {
-      return;
+      return
     }
 
     // 如果已经有连接，先关闭
     if (this.ws) {
-      this.close();
+      this.close()
     }
 
     // 将 HTTP URL 转换为 WebSocket URL 例如 http://localhost:5000 转换为 ws://localhost:5000
-    const httpUrl = import.meta.env.VITE_BACKEND_SERVER || "http://localhost:5000";
-    const wsUrl = `${httpUrl.replace(/^http/, "ws")}/ws/message?token=${token}`;
-    this.url = wsUrl;
+    const httpUrl = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:5000'
+    const wsUrl = `${httpUrl.replace(/^http/, 'ws')}/ws/message?token=${token}`
+    this.url = wsUrl
     // 是否手动关闭
-    this.isManualClose = false;
+    this.isManualClose = false
 
     try {
-      this.ws = new WebSocket(wsUrl);
+      this.ws = new WebSocket(wsUrl)
 
       // 连接成功
       this.ws.onopen = () => {
         // 开始心跳
-        this.startHeartbeat();
+        this.startHeartbeat()
         // 触发连接成功事件
-        this.triggerHandler("open");
-      };
+        this.triggerHandler('open')
+      }
 
       // 处理收到的消息
       this.ws.onmessage = (event) => {
         try {
-          const data = JSON.parse(event.data);
+          const data = JSON.parse(event.data)
           // 处理收到的消息
-          this.handleMessage(data);
-        } catch (error) {
+          this.handleMessage(data)
+        } catch {
           // 静默处理
         }
-      };
+      }
 
       // 连接错误
       this.ws.onerror = (error) => {
         // 静默处理
         // 触发连接错误事件
-        this.triggerHandler("error", error);
-      };
+        this.triggerHandler('error', error)
+      }
 
       // 连接关闭
       this.ws.onclose = () => {
         // 停止心跳
-        this.stopHeartbeat();
+        this.stopHeartbeat()
         // 触发连接关闭事件
-        this.triggerHandler("close");
+        this.triggerHandler('close')
 
         // 如果非手动关闭，则自动重连
         if (!this.isManualClose) {
           // 自动重连
-          this.reconnect();
+          this.reconnect()
         }
-      };
-    } catch (error) {
+      }
+    } catch {
       // 静默处理
     }
   }
@@ -83,10 +83,10 @@ class WebSocketClient {
    */
   send(message) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      const json = JSON.stringify(message);
-      this.ws.send(json);
+      const json = JSON.stringify(message)
+      this.ws.send(json)
       // 心跳消息不打印日志，避免控制屏
-      if (message.type !== "HEARTBEAT") {
+      if (message.type !== 'HEARTBEAT') {
         // 静默处理
       }
     } else {
@@ -99,11 +99,11 @@ class WebSocketClient {
    */
   sendTextMessage(toUserId, content) {
     this.send({
-      type: "SEND_MESSAGE",
+      type: 'SEND_MESSAGE',
       toUserId,
       content,
       messageType: 1,
-    });
+    })
   }
 
   /**
@@ -111,12 +111,12 @@ class WebSocketClient {
    */
   sendImageMessage(toUserId, imageUrl) {
     this.send({
-      type: "SEND_MESSAGE",
+      type: 'SEND_MESSAGE',
       toUserId,
-      content: "[图片]",
+      content: '[图片]',
       messageType: 2,
       imageUrl,
-    });
+    })
   }
 
   /**
@@ -124,9 +124,9 @@ class WebSocketClient {
    */
   sendTyping(toUserId) {
     this.send({
-      type: "TYPING",
+      type: 'TYPING',
       toUserId,
-    });
+    })
   }
 
   /**
@@ -134,9 +134,9 @@ class WebSocketClient {
    */
   markAsRead(targetUserId) {
     this.send({
-      type: "READ_MESSAGE",
+      type: 'READ_MESSAGE',
       targetUserId,
-    });
+    })
   }
 
   /**
@@ -144,23 +144,23 @@ class WebSocketClient {
    */
   revokeMessage(messageId) {
     this.send({
-      type: "REVOKE_MESSAGE",
+      type: 'REVOKE_MESSAGE',
       messageId,
-    });
+    })
   }
 
   /**
    * 处理收到的消息
    */
   handleMessage(data) {
-    const { type } = data;
+    const { type } = data
 
     // 如果是系统消息，显示通知
-    if (type === "SYSTEM") {
-      this.handleSystemNotification(data);
+    if (type === 'SYSTEM') {
+      this.handleSystemNotification(data)
     }
 
-    this.triggerHandler(type, data);
+    this.triggerHandler(type, data)
   }
 
   /**
@@ -168,27 +168,27 @@ class WebSocketClient {
    * @param {object} data - 系统通知数据
    */
   handleSystemNotification(data) {
-    const { content, messageType } = data;
+    const { content, messageType } = data
 
     // 根据消息类型显示不同的通知
     const typeMap = {
-      1: "评论",
-      2: "点赞",
-      3: "收藏",
-      4: "关注",
-    };
+      1: '评论',
+      2: '点赞',
+      3: '收藏',
+      4: '关注',
+    }
 
-    const typeName = typeMap[messageType] || "系统";
+    const typeName = typeMap[messageType] || '系统'
 
     // 使用 Element Plus 的通知组件显示
     if (window.ElNotification) {
       window.ElNotification({
         title: `${typeName}通知`,
         message: content,
-        type: "info",
+        type: 'info',
         duration: 4500,
-        position: "top-right",
-      });
+        position: 'top-right',
+      })
     } else {
       // 静默处理
     }
@@ -203,11 +203,11 @@ class WebSocketClient {
     // 第1步：检查这个消息类型是否已经有人订阅
     if (!this.messageHandlers.has(type)) {
       // 如果没有，创建一个空数组来存放订阅者
-      this.messageHandlers.set(type, []);
+      this.messageHandlers.set(type, [])
     }
 
     // 第2步：把这个处理函数加入订阅列表
-    this.messageHandlers.get(type).push(handler);
+    this.messageHandlers.get(type).push(handler)
   }
 
   /**
@@ -217,10 +217,10 @@ class WebSocketClient {
    */
   off(type, handler) {
     if (this.messageHandlers.has(type)) {
-      const handlers = this.messageHandlers.get(type);
-      const index = handlers.indexOf(handler);
+      const handlers = this.messageHandlers.get(type)
+      const index = handlers.indexOf(handler)
       if (index > -1) {
-        handlers.splice(index, 1); // 从数组中删除这个处理函数
+        handlers.splice(index, 1) // 从数组中删除这个处理函数
       }
     }
   }
@@ -235,8 +235,8 @@ class WebSocketClient {
     if (this.messageHandlers.has(type)) {
       // 遍历所有订阅者，逐个通知
       this.messageHandlers.get(type).forEach((handler) => {
-        handler(data); // 执行每个订阅者的处理函数
-      });
+        handler(data) // 执行每个订阅者的处理函数
+      })
     }
   }
 
@@ -245,11 +245,11 @@ class WebSocketClient {
    */
   startHeartbeat() {
     // 先清理旧的心跳定时器
-    this.stopHeartbeat();
+    this.stopHeartbeat()
 
     this.heartbeatTimer = setInterval(() => {
-      this.send({ type: "HEARTBEAT" });
-    }, 30000); // 30秒一次心跳
+      this.send({ type: 'HEARTBEAT' })
+    }, 30000) // 30秒一次心跳
   }
 
   /**
@@ -257,8 +257,8 @@ class WebSocketClient {
    */
   stopHeartbeat() {
     if (this.heartbeatTimer) {
-      clearInterval(this.heartbeatTimer);
-      this.heartbeatTimer = null;
+      clearInterval(this.heartbeatTimer)
+      this.heartbeatTimer = null
     }
   }
 
@@ -267,32 +267,32 @@ class WebSocketClient {
    */
   reconnect() {
     if (this.reconnectTimer) {
-      return;
+      return
     }
 
     this.reconnectTimer = setTimeout(() => {
-      this.reconnectTimer = null;
-      this.connect();
-    }, 5000);
+      this.reconnectTimer = null
+      this.connect()
+    }, 5000)
   }
 
   /**
    * 手动关闭连接
    */
   close() {
-    this.isManualClose = true;
-    this.stopHeartbeat();
+    this.isManualClose = true
+    this.stopHeartbeat()
 
     if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
+      clearTimeout(this.reconnectTimer)
+      this.reconnectTimer = null
     }
 
     if (this.ws) {
       // 先移除事件监听，避免触发 onclose 导致自动重连
-      this.ws.onclose = null;
-      this.ws.close();
-      this.ws = null;
+      this.ws.onclose = null
+      this.ws.close()
+      this.ws = null
     }
   }
 
@@ -300,9 +300,9 @@ class WebSocketClient {
    * 检查连接状态
    */
   isConnected() {
-    return this.ws && this.ws.readyState === WebSocket.OPEN;
+    return this.ws && this.ws.readyState === WebSocket.OPEN
   }
 }
 
 // 导出单例
-export default new WebSocketClient();
+export default new WebSocketClient()

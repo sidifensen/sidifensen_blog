@@ -1,4 +1,4 @@
-import request from "@/utils/Request";
+import request from '@/utils/Request'
 
 /**
  * 点赞或取消点赞
@@ -8,13 +8,13 @@ import request from "@/utils/Request";
  */
 export function toggleLike(type, typeId) {
   return request({
-    url: "/like/toggle",
-    method: "post",
+    url: '/like/toggle',
+    method: 'post',
     params: {
       type,
       typeId,
     },
-  });
+  })
 }
 
 /**
@@ -25,11 +25,11 @@ export function toggleLike(type, typeId) {
  */
 export function isLiked(type, typeId) {
   return request({
-    url: "/like/isLiked",
-    method: "get",
+    url: '/like/isLiked',
+    method: 'get',
     params: {
       type,
       typeId,
     },
-  });
+  })
 }

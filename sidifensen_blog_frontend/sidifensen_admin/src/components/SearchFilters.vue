@@ -44,103 +44,98 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from "vue";
-import { Search } from "@element-plus/icons-vue";
+import { ref, watch, onMounted } from 'vue'
+import { Search } from '@element-plus/icons-vue'
 
 // Props
 const props = defineProps({
   // 是否显示关键词搜索
   showKeyword: {
     type: Boolean,
-    default: false
+    default: false,
   },
   keywordPlaceholder: {
     type: String,
-    default: "搜索关键词"
+    default: '搜索关键词',
   },
   keywordWidth: {
     type: String,
-    default: "240px"
+    default: '240px',
   },
   // 是否显示时间范围
   showTimeRange: {
     type: Boolean,
-    default: false
+    default: false,
   },
   startTimePlaceholder: {
     type: String,
-    default: "开始时间"
+    default: '开始时间',
   },
   endTimePlaceholder: {
     type: String,
-    default: "结束时间"
+    default: '结束时间',
   },
   // 防抖延迟
   debounceDelay: {
     type: Number,
-    default: 500
-  }
-});
+    default: 500,
+  },
+})
 
 // Emits
-const emit = defineEmits([
-  "update:keyword",
-  "update:startTime",
-  "update:endTime",
-  "change"
-]);
+const emit = defineEmits(['update:keyword', 'update:startTime', 'update:endTime', 'change'])
 
 // 响应式数据
-const keywordValue = ref("");
-const startTime = ref("");
-const endTime = ref("");
-let debounceTimer = null;
+const keywordValue = ref('')
+const startTime = ref('')
+const endTime = ref('')
+let debounceTimer = null
 
 // 关键词输入处理（防抖）
 const handleKeywordInput = () => {
   if (debounceTimer) {
-    clearTimeout(debounceTimer);
+    clearTimeout(debounceTimer)
   }
   debounceTimer = setTimeout(() => {
-    emit("update:keyword", keywordValue.value);
-    emit("change");
-  }, props.debounceDelay);
-};
+    emit('update:keyword', keywordValue.value)
+    emit('change')
+  }, props.debounceDelay)
+}
 
 // 变化处理
 const handleChange = () => {
-  emit("update:startTime", startTime.value);
-  emit("update:endTime", endTime.value);
-  emit("change");
-};
+  emit('update:startTime', startTime.value)
+  emit('update:endTime', endTime.value)
+  emit('change')
+}
 
 // 重置
 const reset = () => {
-  keywordValue.value = "";
-  startTime.value = "";
-  endTime.value = "";
-  emit("update:keyword", "");
-  emit("update:startTime", "");
-  emit("update:endTime", "");
-};
+  keywordValue.value = ''
+  startTime.value = ''
+  endTime.value = ''
+  emit('update:keyword', '')
+  emit('update:startTime', '')
+  emit('update:endTime', '')
+}
 
 // 获取值
 const getValues = () => ({
   keyword: keywordValue.value,
   startTime: startTime.value,
-  endTime: endTime.value
-});
+  endTime: endTime.value,
+})
 
 // 暴露方法
 defineExpose({
   reset,
-  getValues
-});
+  getValues,
+})
 
 // 初始化
 onMounted(() => {
   // 可以在这里从 url 或 store 恢复状态
-});
+})
 </script>
 
 <style lang="scss" scoped>

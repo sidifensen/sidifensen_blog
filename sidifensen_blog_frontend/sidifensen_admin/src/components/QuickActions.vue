@@ -29,7 +29,14 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { Document, ChatLineRound, User, Picture, ArrowRight, Operation } from '@element-plus/icons-vue'
+import {
+  Document,
+  ChatLineRound,
+  User,
+  Picture,
+  ArrowRight,
+  Operation,
+} from '@element-plus/icons-vue'
 import DetailCard from './cards/DetailCard.vue'
 
 /**
@@ -42,8 +49,8 @@ defineProps({
    */
   actions: {
     type: Array,
-    default: () => []
-  }
+    default: () => [],
+  },
 })
 
 const router = useRouter()

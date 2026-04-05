@@ -28,7 +28,12 @@
             <!-- 关注列表内容 -->
             <div v-else class="follow-content">
               <div class="user-list">
-                <div v-for="user in followingList" :key="user.id" class="user-item" @click="goToUserHomepage(user.id)">
+                <div
+                  v-for="user in followingList"
+                  :key="user.id"
+                  class="user-item"
+                  @click="goToUserHomepage(user.id)"
+                >
                   <!-- 用户头像 -->
                   <el-avatar :size="60" :src="user.avatar" class="user-avatar">
                     <template #error>
@@ -39,7 +44,7 @@
                   <!-- 用户信息 -->
                   <div class="user-info">
                     <h4 class="username">{{ user.nickname }}</h4>
-                    <p class="user-intro">{{ user.introduction || "这个人很懒，什么都没写~" }}</p>
+                    <p class="user-intro">{{ user.introduction || '这个人很懒，什么都没写~' }}</p>
                     <div class="user-stats">
                       <span class="stat-item">{{ user.fansCount || 0 }} 粉丝</span>
                       <span class="stat-item">{{ user.followCount || 0 }} 关注</span>
@@ -48,8 +53,13 @@
 
                   <!-- 操作按钮 -->
                   <div class="user-actions">
-                    <el-button type="primary" size="small" @click.stop="handleToggleFollow(user.id)" :loading="followActionLoading">
-                      {{ isCurrentUser ? "已关注" : "关注" }}
+                    <el-button
+                      type="primary"
+                      size="small"
+                      @click.stop="handleToggleFollow(user.id)"
+                      :loading="followActionLoading"
+                    >
+                      {{ isCurrentUser ? '已关注' : '关注' }}
                     </el-button>
                   </div>
                 </div>
@@ -87,7 +97,12 @@
             <!-- 粉丝列表内容 -->
             <div v-else class="follow-content">
               <div class="user-list">
-                <div v-for="user in fansList" :key="user.id" class="user-item" @click="goToUserHomepage(user.id)">
+                <div
+                  v-for="user in fansList"
+                  :key="user.id"
+                  class="user-item"
+                  @click="goToUserHomepage(user.id)"
+                >
                   <!-- 用户头像 -->
                   <el-avatar :size="60" :src="user.avatar" class="user-avatar">
                     <template #error>
@@ -98,7 +113,7 @@
                   <!-- 用户信息 -->
                   <div class="user-info">
                     <h4 class="username">{{ user.nickname }}</h4>
-                    <p class="user-intro">{{ user.introduction || "这个人很懒，什么都没写~" }}</p>
+                    <p class="user-intro">{{ user.introduction || '这个人很懒，什么都没写~' }}</p>
                     <div class="user-stats">
                       <span class="stat-item">{{ user.fansCount || 0 }} 粉丝</span>
                       <span class="stat-item">{{ user.followCount || 0 }} 关注</span>
@@ -107,8 +122,13 @@
 
                   <!-- 操作按钮 -->
                   <div class="user-actions">
-                    <el-button :type="checkIfFollowing(user.id) ? 'default' : 'primary'" size="small" @click.stop="handleToggleFollow(user.id)" :loading="followActionLoading">
-                      {{ checkIfFollowing(user.id) ? "已关注" : "关注" }}
+                    <el-button
+                      :type="checkIfFollowing(user.id) ? 'default' : 'primary'"
+                      size="small"
+                      @click.stop="handleToggleFollow(user.id)"
+                      :loading="followActionLoading"
+                    >
+                      {{ checkIfFollowing(user.id) ? '已关注' : '关注' }}
                     </el-button>
                   </div>
                 </div>
@@ -128,223 +148,233 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { User } from "@element-plus/icons-vue";
-import { getFollowList, getFansList, toggleFollow, isFollowing } from "@/api/follow";
-import { useUserStore } from "@/stores/userStore";
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { User } from '@element-plus/icons-vue'
+import { getFollowList, getFansList, toggleFollow, isFollowing } from '@/api/follow'
+import { useUserStore } from '@/stores/userStore'
 
 // 路由和状态管理
-const route = useRoute();
-const router = useRouter();
-const userStore = useUserStore();
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 
 // 响应式数据 - 按功能分组并添加注释
-const activeFollowTab = ref("following"); // 当前激活的关注标签
-const followingLoading = ref(false); // 关注列表加载状态
-const fansLoading = ref(false); // 粉丝列表加载状态
-const followingLoadingMore = ref(false); // 关注列表加载更多状态
-const fansLoadingMore = ref(false); // 粉丝列表加载更多状态
-const followActionLoading = ref(false); // 关注操作加载状态
-const followingList = ref([]); // 关注列表数据
-const fansList = ref([]); // 粉丝列表数据
-const followingCurrentPage = ref(1); // 关注列表当前页码
-const fansCurrentPage = ref(1); // 粉丝列表当前页码
-const followingHasMore = ref(true); // 关注列表是否还有更多数据
-const fansHasMore = ref(true); // 粉丝列表是否还有更多数据
-const followingTotal = ref(0); // 关注列表总数
-const fansTotal = ref(0); // 粉丝列表总数
-const pageSize = ref(10); // 每页数据量
-const userFollowStatus = ref(new Map()); // 用户关注状态缓存
+const activeFollowTab = ref('following') // 当前激活的关注标签
+const followingLoading = ref(false) // 关注列表加载状态
+const fansLoading = ref(false) // 粉丝列表加载状态
+const followingLoadingMore = ref(false) // 关注列表加载更多状态
+const fansLoadingMore = ref(false) // 粉丝列表加载更多状态
+const followActionLoading = ref(false) // 关注操作加载状态
+const followingList = ref([]) // 关注列表数据
+const fansList = ref([]) // 粉丝列表数据
+const followingCurrentPage = ref(1) // 关注列表当前页码
+const fansCurrentPage = ref(1) // 粉丝列表当前页码
+const followingHasMore = ref(true) // 关注列表是否还有更多数据
+const fansHasMore = ref(true) // 粉丝列表是否还有更多数据
+const followingTotal = ref(0) // 关注列表总数
+const fansTotal = ref(0) // 粉丝列表总数
+const pageSize = ref(10) // 每页数据量
+const userFollowStatus = ref(new Map()) // 用户关注状态缓存
 
 // 计算属性
 const isCurrentUser = computed(() => {
-  return userStore.user?.id === parseInt(route.params.userId);
-});
+  return userStore.user?.id === parseInt(route.params.userId)
+})
 
 // 获取关注列表
 const fetchFollowingList = async (reset = false) => {
   if (!followingHasMore.value || followingLoading.value || followingLoadingMore.value) {
-    return;
+    return
   }
 
   try {
     // 设置加载状态
     if (reset) {
-      followingLoading.value = true;
+      followingLoading.value = true
     } else {
-      followingLoadingMore.value = true;
+      followingLoadingMore.value = true
     }
 
-    const userId = route.params.userId;
-    const res = await getFollowList(userId, followingCurrentPage.value, pageSize.value);
-    const newUsers = res.data.data || [];
-    followingTotal.value = res.data.total || 0;
+    const userId = route.params.userId
+    const res = await getFollowList(userId, followingCurrentPage.value, pageSize.value)
+    const newUsers = res.data.data || []
+    followingTotal.value = res.data.total || 0
 
     if (reset) {
-      followingList.value = newUsers;
+      followingList.value = newUsers
     } else {
-      followingList.value = [...followingList.value, ...newUsers];
+      followingList.value = [...followingList.value, ...newUsers]
     }
 
     // 判断是否还有更多数据
-    followingHasMore.value = followingList.value.length < followingTotal.value;
+    followingHasMore.value = followingList.value.length < followingTotal.value
 
     // 更新页码
     if (followingHasMore.value && newUsers.length > 0) {
-      followingCurrentPage.value++;
+      followingCurrentPage.value++
     }
   } catch (error) {
     // 静默处理
   } finally {
-    followingLoading.value = false;
-    followingLoadingMore.value = false;
+    followingLoading.value = false
+    followingLoadingMore.value = false
   }
-};
+}
 
 // 获取粉丝列表
 const fetchFansList = async (reset = false) => {
   if (!fansHasMore.value || fansLoading.value || fansLoadingMore.value) {
-    return;
+    return
   }
 
   try {
     // 设置加载状态
     if (reset) {
-      fansLoading.value = true;
+      fansLoading.value = true
     } else {
-      fansLoadingMore.value = true;
+      fansLoadingMore.value = true
     }
 
-    const userId = route.params.userId;
-    const res = await getFansList(userId, fansCurrentPage.value, pageSize.value);
-    const newUsers = res.data.data || [];
-    fansTotal.value = res.data.total || 0;
+    const userId = route.params.userId
+    const res = await getFansList(userId, fansCurrentPage.value, pageSize.value)
+    const newUsers = res.data.data || []
+    fansTotal.value = res.data.total || 0
 
     if (reset) {
-      fansList.value = newUsers;
+      fansList.value = newUsers
     } else {
-      fansList.value = [...fansList.value, ...newUsers];
+      fansList.value = [...fansList.value, ...newUsers]
     }
 
     // 判断是否还有更多数据
-    fansHasMore.value = fansList.value.length < fansTotal.value;
+    fansHasMore.value = fansList.value.length < fansTotal.value
 
     // 更新页码
     if (fansHasMore.value && newUsers.length > 0) {
-      fansCurrentPage.value++;
+      fansCurrentPage.value++
     }
 
     // 如果是当前用户查看自己的粉丝，需要检查是否关注了这些粉丝
     if (isCurrentUser.value) {
-      await checkFollowStatusForUsers(newUsers);
+      await checkFollowStatusForUsers(newUsers)
     }
   } catch (error) {
     // 静默处理
   } finally {
-    fansLoading.value = false;
-    fansLoadingMore.value = false;
+    fansLoading.value = false
+    fansLoadingMore.value = false
   }
-};
+}
 
 // 检查用户关注状态
 const checkFollowStatusForUsers = async (users) => {
-  if (!isCurrentUser.value || !userStore.user?.id) return;
+  if (!isCurrentUser.value || !userStore.user?.id) return
 
-  const currentUserId = userStore.user.id;
+  const currentUserId = userStore.user.id
   for (const user of users) {
     try {
-      const res = await isFollowing(currentUserId, user.id);
-      userFollowStatus.value.set(user.id, res.data);
+      const res = await isFollowing(currentUserId, user.id)
+      userFollowStatus.value.set(user.id, res.data)
     } catch (error) {
       // 静默处理
     }
   }
-};
+}
 
 // 检查是否关注某个用户
 const checkIfFollowing = (userId) => {
-  return userFollowStatus.value.get(userId) || false;
-};
+  return userFollowStatus.value.get(userId) || false
+}
 
 // 切换关注标签
 const handleFollowTabChange = (tabName) => {
-  activeFollowTab.value = tabName;
-  if (tabName === "following" && followingList.value.length === 0) {
-    fetchFollowingList(true);
-  } else if (tabName === "fans" && fansList.value.length === 0) {
-    fetchFansList(true);
+  activeFollowTab.value = tabName
+  if (tabName === 'following' && followingList.value.length === 0) {
+    fetchFollowingList(true)
+  } else if (tabName === 'fans' && fansList.value.length === 0) {
+    fetchFansList(true)
   }
-};
+}
 
 // 页面滚动监听 - 无限滚动
 const handlePageScroll = () => {
   // 检查当前是否在关注标签页且有更多数据
-  if (activeFollowTab.value === "following" && followingHasMore.value && !followingLoading.value && !followingLoadingMore.value) {
-    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-    const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
-    const clientHeight = document.documentElement.clientHeight || window.innerHeight;
+  if (
+    activeFollowTab.value === 'following' &&
+    followingHasMore.value &&
+    !followingLoading.value &&
+    !followingLoadingMore.value
+  ) {
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+    const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight
+    const clientHeight = document.documentElement.clientHeight || window.innerHeight
 
     // 当滚动到页面底部附近时加载更多
     if (scrollTop + clientHeight >= scrollHeight - 100) {
-      fetchFollowingList();
+      fetchFollowingList()
     }
   }
 
   // 检查当前是否在粉丝标签页且有更多数据
-  if (activeFollowTab.value === "fans" && fansHasMore.value && !fansLoading.value && !fansLoadingMore.value) {
-    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-    const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
-    const clientHeight = document.documentElement.clientHeight || window.innerHeight;
+  if (
+    activeFollowTab.value === 'fans' &&
+    fansHasMore.value &&
+    !fansLoading.value &&
+    !fansLoadingMore.value
+  ) {
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+    const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight
+    const clientHeight = document.documentElement.clientHeight || window.innerHeight
 
     // 当滚动到页面底部附近时加载更多
     if (scrollTop + clientHeight >= scrollHeight - 100) {
-      fetchFansList();
+      fetchFansList()
     }
   }
-};
+}
 
 // 处理关注/取消关注操作
 const handleToggleFollow = async (userId) => {
   if (!userStore.user?.id) {
-    ElMessage.warning("请先登录");
-    return;
+    ElMessage.warning('请先登录')
+    return
   }
 
   try {
-    followActionLoading.value = true;
-    const currentStatus = userFollowStatus.value.get(userId) || false;
+    followActionLoading.value = true
+    const currentStatus = userFollowStatus.value.get(userId) || false
 
-    await toggleFollow(userId);
+    await toggleFollow(userId)
 
     // 更新本地关注状态
-    userFollowStatus.value.set(userId, !currentStatus);
+    userFollowStatus.value.set(userId, !currentStatus)
 
-    ElMessage.success(currentStatus ? "取消关注成功" : "关注成功");
+    ElMessage.success(currentStatus ? '取消关注成功' : '关注成功')
 
     // 重新请求数据以获取最新状态
-    if (activeFollowTab.value === "following") {
+    if (activeFollowTab.value === 'following') {
       // 重新获取关注列表
-      followingCurrentPage.value = 1;
-      followingHasMore.value = true;
-      await fetchFollowingList(true);
-    } else if (activeFollowTab.value === "fans") {
+      followingCurrentPage.value = 1
+      followingHasMore.value = true
+      await fetchFollowingList(true)
+    } else if (activeFollowTab.value === 'fans') {
       // 重新获取粉丝列表（可能有新的关注状态变化）
-      fansCurrentPage.value = 1;
-      fansHasMore.value = true;
-      await fetchFansList(true);
+      fansCurrentPage.value = 1
+      fansHasMore.value = true
+      await fetchFansList(true)
     }
   } catch (error) {
     // 静默处理
   } finally {
-    followActionLoading.value = false;
+    followActionLoading.value = false
   }
-};
+}
 
 // 跳转到用户主页
 const goToUserHomepage = (userId) => {
-  router.push(`/user/${userId}`);
-};
+  router.push(`/user/${userId}`)
+}
 
 // 监听路由参数变化
 watch(
@@ -352,38 +382,38 @@ watch(
   (newUserId) => {
     if (newUserId) {
       // 重置数据
-      followingCurrentPage.value = 1;
-      fansCurrentPage.value = 1;
-      followingList.value = [];
-      fansList.value = [];
-      followingHasMore.value = true;
-      fansHasMore.value = true;
-      userFollowStatus.value.clear();
+      followingCurrentPage.value = 1
+      fansCurrentPage.value = 1
+      followingList.value = []
+      fansList.value = []
+      followingHasMore.value = true
+      fansHasMore.value = true
+      userFollowStatus.value.clear()
 
       // 根据当前标签重新加载数据
-      if (activeFollowTab.value === "following") {
-        fetchFollowingList(true);
-      } else if (activeFollowTab.value === "fans") {
-        fetchFansList(true);
+      if (activeFollowTab.value === 'following') {
+        fetchFollowingList(true)
+      } else if (activeFollowTab.value === 'fans') {
+        fetchFansList(true)
       }
     }
   },
-  { immediate: true }
-);
+  { immediate: true },
+)
 
 // 组件挂载
 onMounted(() => {
   // 默认加载关注列表
-  fetchFollowingList(true);
+  fetchFollowingList(true)
 
   // 添加页面滚动监听
-  window.addEventListener("scroll", handlePageScroll);
-});
+  window.addEventListener('scroll', handlePageScroll)
+})
 
 // 组件卸载时移除监听
 onUnmounted(() => {
-  window.removeEventListener("scroll", handlePageScroll);
-});
+  window.removeEventListener('scroll', handlePageScroll)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -420,7 +450,7 @@ onUnmounted(() => {
     .follow-tabs {
       .el-tabs {
         // 重写标签页样式
-        :deep(.el-tabs__header) {
+        ::v-deep(.el-tabs__header) {
           margin-bottom: 16px;
 
           .el-tabs__nav-wrap {
@@ -447,7 +477,7 @@ onUnmounted(() => {
           }
         }
 
-        :deep(.el-tabs__content) {
+        ::v-deep(.el-tabs__content) {
           .el-tab-pane {
             height: 100%;
           }

@@ -4,14 +4,29 @@
       <div class="card-header">
         <h2 class="card-title">菜单管理</h2>
         <div class="card-actions">
-          <el-input v-model="searchQuery" placeholder="搜索菜单名称" :prefix-icon="Search" size="small" class="search-input" />
-          <el-button type="primary" size="small" @click="handleAddMenu" :icon="Plus" class="add"> 新增菜单 </el-button>
+          <el-input
+            v-model="searchQuery"
+            placeholder="搜索菜单名称"
+            :prefix-icon="Search"
+            size="small"
+            class="search-input"
+          />
+          <el-button type="primary" size="small" @click="handleAddMenu" :icon="Plus" class="add">
+            新增菜单
+          </el-button>
         </div>
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table v-loading="loading" :data="paginatedMenuList" row-key="id" default-expand-all class="menu-table" style="height: 100%">
+        <el-table
+          v-loading="loading"
+          :data="paginatedMenuList"
+          row-key="id"
+          default-expand-all
+          class="menu-table"
+          style="height: 100%"
+        >
           <el-table-column prop="id" label="菜单id" width="120" />
           <el-table-column prop="parentId" label="父菜单id" />
           <el-table-column prop="name" label="菜单名称" />
@@ -46,10 +61,43 @@
           <el-table-column label="操作" width="330">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button size="small" type="success" @click="handleAddMenu(row)" :icon="Plus" v-if="row.children || row.parentId == 0" class="add-button"> 新增 </el-button>
-                <el-button size="small" type="primary" @click="handleEditMenu(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
-                <el-button size="small" type="danger" @click="handleDeleteMenu(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
-                <el-button size="small" type="warning" @click="handleAuthorizeRole(row)" :icon="Avatar" class="role-button"> 分配角色 </el-button>
+                <el-button
+                  size="small"
+                  type="success"
+                  @click="handleAddMenu(row)"
+                  :icon="Plus"
+                  v-if="row.children || row.parentId == 0"
+                  class="add-button"
+                >
+                  新增
+                </el-button>
+                <el-button
+                  size="small"
+                  type="primary"
+                  @click="handleEditMenu(row)"
+                  :icon="Edit"
+                  class="edit-button"
+                >
+                  编辑
+                </el-button>
+                <el-button
+                  size="small"
+                  type="danger"
+                  @click="handleDeleteMenu(row.id)"
+                  :icon="Delete"
+                  class="delete-button"
+                >
+                  删除
+                </el-button>
+                <el-button
+                  size="small"
+                  type="warning"
+                  @click="handleAuthorizeRole(row)"
+                  :icon="Avatar"
+                  class="role-button"
+                >
+                  分配角色
+                </el-button>
               </div>
             </template>
           </el-table-column>
@@ -60,7 +108,12 @@
       <div v-else class="mobile-view">
         <div class="menu-cards" v-loading="loading">
           <!-- 展平的菜单列表，用缩进显示层级 -->
-          <div v-for="menu in flatMenuList" :key="menu.id" class="menu-card" :style="{ marginLeft: menu.level * 16 + 'px' }">
+          <div
+            v-for="menu in flatMenuList"
+            :key="menu.id"
+            class="menu-card"
+            :style="{ marginLeft: menu.level * 16 + 'px' }"
+          >
             <div class="menu-card-header">
               <!-- 展开/收起按钮 -->
               <div v-if="menu.hasChildren" class="expand-button" @click="toggleMenuExpand(menu.id)">
@@ -91,7 +144,7 @@
             <div class="menu-details">
               <div v-if="menu.parentId !== undefined" class="detail-item">
                 <span class="label">父菜单ID:</span>
-                <span class="value">{{ menu.parentId === 0 ? "无" : menu.parentId }}</span>
+                <span class="value">{{ menu.parentId === 0 ? '无' : menu.parentId }}</span>
               </div>
               <div v-if="menu.component" class="detail-item">
                 <span class="label">组件路径:</span>
@@ -130,17 +183,56 @@
 
             <!-- 操作按钮 -->
             <div class="menu-actions">
-              <el-button v-if="menu.hasChildren || menu.parentId == 0" text bg type="success" size="small" :icon="Plus" @click="handleAddMenu(menu)">新增</el-button>
-              <el-button text bg type="primary" size="small" :icon="Edit" @click="handleEditMenu(menu)">编辑</el-button>
-              <el-button text bg type="danger" size="small" :icon="Delete" @click="handleDeleteMenu(menu.id)">删除</el-button>
-              <el-button text bg type="warning" size="small" :icon="Avatar" @click="handleAuthorizeRole(menu)">角色</el-button>
+              <el-button
+                v-if="menu.hasChildren || menu.parentId == 0"
+                text
+                bg
+                type="success"
+                size="small"
+                :icon="Plus"
+                @click="handleAddMenu(menu)"
+                >新增</el-button
+              >
+              <el-button
+                text
+                bg
+                type="primary"
+                size="small"
+                :icon="Edit"
+                @click="handleEditMenu(menu)"
+                >编辑</el-button
+              >
+              <el-button
+                text
+                bg
+                type="danger"
+                size="small"
+                :icon="Delete"
+                @click="handleDeleteMenu(menu.id)"
+                >删除</el-button
+              >
+              <el-button
+                text
+                bg
+                type="warning"
+                size="small"
+                :icon="Avatar"
+                @click="handleAuthorizeRole(menu)"
+                >角色</el-button
+              >
             </div>
           </div>
         </div>
       </div>
 
       <!-- 分页 -->
-      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <Pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
 
     <!-- 新增/编辑菜单对话框 -->
@@ -178,10 +270,22 @@
         <el-form-item prop="parentId" label="父菜单">
           <el-select v-model="menuForm.parentId" placeholder="请选择父菜单">
             <el-option :value="0" label="无父菜单" />
-            <el-option v-for="menu in allMenus" :key="menu.id" :label="menu.name" :value="menu.id" />
+            <el-option
+              v-for="menu in allMenus"
+              :key="menu.id"
+              :label="menu.name"
+              :value="menu.id"
+            />
           </el-select>
         </el-form-item>
-        <el-form-item prop="sort"> 排序号 &nbsp<el-input-number v-model="menuForm.sort" :min="0" :max="999" placeholder="请输入排序号" /> </el-form-item>
+        <el-form-item prop="sort">
+          排序号 &nbsp<el-input-number
+            v-model="menuForm.sort"
+            :min="0"
+            :max="999"
+            placeholder="请输入排序号"
+          />
+        </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
@@ -192,14 +296,21 @@
     </el-dialog>
 
     <!-- 分配角色对话框 -->
-    <el-dialog v-model="authorizeDialogVisible" title="菜单分配角色" :before-close="handleAuthorizeDialogClose" class="authorize-dialog">
+    <el-dialog
+      v-model="authorizeDialogVisible"
+      title="菜单分配角色"
+      :before-close="handleAuthorizeDialogClose"
+      class="authorize-dialog"
+    >
       <div v-loading="authorizeLoading" class="authorize-dialog-content">
         <p class="menu-name">当前菜单: {{ currentMenu?.name }}</p>
         <template v-if="!authorizeLoading">
           <el-form ref="authorizeFormRef" class="authorize-form">
             <el-form-item label="选择角色">
               <el-checkbox-group v-model="selectedRoles" class="role-checkbox-group">
-                <el-checkbox v-for="role in allRoles" :key="role.id" :label="role.id">{{ role.name }}</el-checkbox>
+                <el-checkbox v-for="role in allRoles" :key="role.id" :label="role.id">{{
+                  role.name
+                }}</el-checkbox>
               </el-checkbox-group>
             </el-form-item>
           </el-form>
@@ -216,360 +327,364 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, computed } from "vue";
-import { Search, Plus, Edit, Delete, Avatar, Document, ArrowRight } from "@element-plus/icons-vue";
-import { getAllMenuList, getMenuPage, addMenu, updateMenu, deleteMenu, queryMenuPage } from "@/api/menu";
-import { addRoleMenu, getRolesByMenu } from "@/api/role-menu";
-import { getRoleList } from "@/api/role";
-import { icons } from "@/utils/Icon";
-import { formatMenu } from "@/utils/Menu";
-import Pagination from "@/components/Pagination.vue";
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+import { Search, Plus, Edit, Delete, Avatar, Document, ArrowRight } from '@element-plus/icons-vue'
+import {
+  getAllMenuList,
+  getMenuPage,
+  addMenu,
+  updateMenu,
+  deleteMenu,
+  queryMenuPage,
+} from '@/api/menu'
+import { addRoleMenu, getRolesByMenu } from '@/api/role-menu'
+import { getRoleList } from '@/api/role'
+import { icons } from '@/utils/Icon'
+import { formatMenu } from '@/utils/Menu'
+import Pagination from '@/components/Pagination.vue'
 
 // 搜索查询
-const searchQuery = ref("");
+const searchQuery = ref('')
 // 移动端检测
-const isMobileView = ref(false);
+const isMobileView = ref(false)
 // 移动端展开的菜单ID集合
-const expandedMenus = ref(new Set());
+const expandedMenus = ref(new Set())
 
 // 监听窗口大小变化
 const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768;
-};
+  isMobileView.value = window.innerWidth <= 768
+}
 
 // 切换菜单展开状态
 const toggleMenuExpand = (menuId) => {
   if (expandedMenus.value.has(menuId)) {
-    expandedMenus.value.delete(menuId);
+    expandedMenus.value.delete(menuId)
   } else {
-    expandedMenus.value.add(menuId);
+    expandedMenus.value.add(menuId)
   }
   // 触发响应式更新
-  expandedMenus.value = new Set(expandedMenus.value);
-};
+  expandedMenus.value = new Set(expandedMenus.value)
+}
 
 // 检查菜单是否展开
 const isMenuExpanded = (menuId) => {
-  return expandedMenus.value.has(menuId);
-};
+  return expandedMenus.value.has(menuId)
+}
 // 菜单列表数据
-const menuList = ref([]);
+const menuList = ref([])
 // 分页后的菜单列表
-const paginatedMenuList = ref([]);
+const paginatedMenuList = ref([])
 // 父菜单选项
-const parentMenuOptions = ref([]);
+const parentMenuOptions = ref([])
 // 加载状态
-const loading = ref(false);
+const loading = ref(false)
 // 总条数
-const total = ref(0);
+const total = ref(0)
 
 // 对话框可见性
-const dialogVisible = ref(false);
+const dialogVisible = ref(false)
 // 对话框标题
-const dialogTitle = ref("新增菜单");
+const dialogTitle = ref('新增菜单')
 
 // 表单引用
-const menuFormRef = ref(null);
-const authorizeFormRef = ref(null);
+const menuFormRef = ref(null)
+const authorizeFormRef = ref(null)
 // 表单数据
 const menuForm = ref({
   id: null,
-  name: "",
-  path: "",
-  component: "",
-  icon: "",
+  name: '',
+  path: '',
+  component: '',
+  icon: '',
   parentId: 0,
   sort: 0,
   status: 0,
-});
+})
 // 表单验证规则
 const rules = {
-  parentId: [{ required: true, message: "请选择父菜单", trigger: "change" }],
-  name: [{ required: true, message: "请输入菜单名称", trigger: "blur" }],
-  path: [{ required: true, message: "请输入路由路径", trigger: "blur" }],
-  component: [{ required: true, message: "请输入组件路径", trigger: "blur" }],
+  parentId: [{ required: true, message: '请选择父菜单', trigger: 'change' }],
+  name: [{ required: true, message: '请输入菜单名称', trigger: 'blur' }],
+  path: [{ required: true, message: '请输入路由路径', trigger: 'blur' }],
+  component: [{ required: true, message: '请输入组件路径', trigger: 'blur' }],
   sort: [
-    { required: true, message: "请输入排序号", trigger: "blur" },
-    { type: "number", message: "排序号必须是数字", trigger: "blur" },
+    { required: true, message: '请输入排序号', trigger: 'blur' },
+    { type: 'number', message: '排序号必须是数字', trigger: 'blur' },
   ],
-};
+}
 
 // 初始化
 onMounted(() => {
-  getMenuList();
-  handleResize();
-  window.addEventListener("resize", handleResize);
-});
+  getMenuList()
+  handleResize()
+  window.addEventListener('resize', handleResize)
+})
 
 // 组件卸载时移除监听
 onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
-});
+  window.removeEventListener('resize', handleResize)
+})
 
 // 获取菜单列表
 const getMenuList = async () => {
-  currentPage.value = 1;
-  await fetchMenus();
-};
+  currentPage.value = 1
+  await fetchMenus()
+}
 
 // 当前页码
-const currentPage = ref(1);
+const currentPage = ref(1)
 // 每页条数
-const pageSize = ref(10);
+const pageSize = ref(10)
 
-const hasSearchConditions = () => !!searchQuery.value.trim();
+const hasSearchConditions = () => !!searchQuery.value.trim()
 
 const applyPageData = (pageData) => {
-  menuList.value = formatMenu(pageData?.data || []);
-  paginatedMenuList.value = menuList.value;
-  total.value = Number(pageData?.total || 0);
-};
+  menuList.value = formatMenu(pageData?.data || [])
+  paginatedMenuList.value = menuList.value
+  total.value = Number(pageData?.total || 0)
+}
 
 const fetchMenus = async () => {
-  loading.value = true;
+  loading.value = true
   try {
-    let pageData = null;
+    let pageData = null
     if (hasSearchConditions()) {
       const res = await queryMenuPage({
         name: searchQuery.value,
         pageNum: currentPage.value,
         pageSize: pageSize.value,
-      });
-      pageData = res.data;
+      })
+      pageData = res.data
     } else {
       const res = await getMenuPage({
         pageNum: currentPage.value,
         pageSize: pageSize.value,
-      });
-      pageData = res.data;
+      })
+      pageData = res.data
     }
-    applyPageData(pageData);
+    applyPageData(pageData)
   } catch (error) {
-    ElMessage.error(hasSearchConditions() ? "搜索菜单失败" : "获取菜单列表失败");
+    ElMessage.error(hasSearchConditions() ? '搜索菜单失败' : '获取菜单列表失败')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 更新分页数据
 const updatePaginatedMenuList = () => {
-  paginatedMenuList.value = menuList.value;
-};
+  paginatedMenuList.value = menuList.value
+}
 
 // 处理分页大小变化
 const handleSizeChange = async (size) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  await fetchMenus();
-};
+  pageSize.value = size
+  currentPage.value = 1
+  await fetchMenus()
+}
 
 // 处理当前页码变化
 const handleCurrentChange = async (current) => {
-  currentPage.value = current;
-  await fetchMenus();
-};
+  currentPage.value = current
+  await fetchMenus()
+}
 
 // 处理搜索
 const handleSearch = async () => {
-  currentPage.value = 1;
-  await fetchMenus();
-};
+  currentPage.value = 1
+  await fetchMenus()
+}
 
 // 监听搜索输入变化
-const searchTimeout = ref(null);
+const searchTimeout = ref(null)
 watch(searchQuery, (newVal) => {
   // 防抖处理
   if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value);
+    clearTimeout(searchTimeout.value)
   }
   searchTimeout.value = setTimeout(() => {
-    handleSearch();
-  }, 500);
-});
+    handleSearch()
+  }, 500)
+})
 
-const allMenus = ref([]);
+const allMenus = ref([])
 // 获取所有菜单
 const getAllMenus = async () => {
   try {
-    const res = await getAllMenuList();
-    allMenus.value = res.data;
+    const res = await getAllMenuList()
+    allMenus.value = res.data
   } catch (error) {
-    ElMessage.error("获取所有菜单失败");
-    console.error("获取所有菜单失败:", error);
+    ElMessage.error('获取所有菜单失败')
+    console.error('获取所有菜单失败:', error)
   }
-};
+}
 
 // 处理添加菜单
 const handleAddMenu = async (row) => {
-  await getAllMenus();
+  await getAllMenus()
 
   // 判断 row 是否是真正的菜单对象（而不是事件对象）
   if (row && row.id) {
-    dialogTitle.value = "新增菜单";
+    dialogTitle.value = '新增菜单'
     // 如果传值了说明是在表格行内的新增按钮（添加子菜单）
     menuForm.value = {
       id: null,
-      name: "",
-      path: "",
-      component: "",
-      icon: "",
+      name: '',
+      path: '',
+      component: '',
+      icon: '',
       parentId: row.id,
       sort: 0, // 子菜单排序从0开始
       status: 0,
-    };
-    dialogVisible.value = true;
+    }
+    dialogVisible.value = true
   } else {
     // 点击右上角的新增菜单按钮，计算顶级菜单的最大排序号
-    const topLevelMenus = allMenus.value.filter((menu) => menu.parentId === 0);
+    const topLevelMenus = allMenus.value.filter((menu) => menu.parentId === 0)
 
     const maxSort =
       topLevelMenus.length > 0
         ? topLevelMenus.reduce((max, menu) => {
-            return menu.sort > max ? menu.sort : max;
+            return menu.sort > max ? menu.sort : max
           }, 0)
-        : 0;
+        : 0
 
-    dialogTitle.value = "新增菜单";
+    dialogTitle.value = '新增菜单'
     menuForm.value = {
       id: null,
-      name: "",
-      path: "",
-      component: "",
-      icon: "",
+      name: '',
+      path: '',
+      component: '',
+      icon: '',
       parentId: 0,
       sort: maxSort + 1, // 顶级菜单排序为最大值+1
       status: 0,
-    };
-    dialogVisible.value = true;
+    }
+    dialogVisible.value = true
   }
-};
+}
 
 // 处理编辑菜单
 const handleEditMenu = (row) => {
-  getAllMenus();
-  dialogTitle.value = "编辑菜单";
+  getAllMenus()
+  dialogTitle.value = '编辑菜单'
   // 深拷贝行数据
-  menuForm.value = { ...row };
-  dialogVisible.value = true;
-};
+  menuForm.value = { ...row }
+  dialogVisible.value = true
+}
 
 // 处理删除菜单
 const handleDeleteMenu = (id) => {
-  ElMessageBox.confirm("确定要删除该菜单吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
+  ElMessageBox.confirm('确定要删除该菜单吗？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
     .then(async () => {
-      loading.value = true;
+      loading.value = true
       try {
-        await deleteMenu(id);
-        ElMessage.success("删除成功");
-        getMenuList();
+        await deleteMenu(id)
+        ElMessage.success('删除成功')
+        getMenuList()
       } catch (error) {
-        ElMessage.error("删除失败");
+        ElMessage.error('删除失败')
       } finally {
-        loading.value = false;
+        loading.value = false
       }
     })
     .catch(() => {
       // 取消删除
-      ElMessage.info("删除已取消");
-    });
-};
+      ElMessage.info('删除已取消')
+    })
+}
 
-const switchLoading = ref(false);
+const switchLoading = ref(false)
 // 处理状态变更
 const handleStatusChange = async (id, status) => {
   return new Promise((resolve, reject) => {
-    switchLoading.value = true;
+    switchLoading.value = true
     updateMenu({ id, status })
       .then(() => {
-        ElMessage.success("状态更新成功");
+        ElMessage.success('状态更新成功')
         // 手动更新本地数据状态
-        const menu = menuList.value.find((item) => item.id === id);
+        const menu = menuList.value.find((item) => item.id === id)
         if (menu) {
-          menu.status = status;
+          menu.status = status
         }
-        resolve();
+        resolve()
       })
       .catch((error) => {
-        ElMessage.error("状态更新失败");
-        reject(error);
+        ElMessage.error('状态更新失败')
+        reject(error)
       })
       .finally(() => {
-        switchLoading.value = false;
-      });
-  });
-};
+        switchLoading.value = false
+      })
+  })
+}
 
 // 处理表单提交
 const handleSubmit = () => {
   menuFormRef.value.validate(async (valid) => {
     if (!valid) {
-      return;
+      return
     }
     try {
       if (menuForm.value.id) {
         // 编辑菜单
-        await updateMenu(menuForm.value);
-        ElMessage.success("编辑菜单成功");
+        await updateMenu(menuForm.value)
+        ElMessage.success('编辑菜单成功')
       } else {
         // 新增菜单
-        await addMenu(menuForm.value);
-        ElMessage.success("新增菜单成功");
+        await addMenu(menuForm.value)
+        ElMessage.success('新增菜单成功')
       }
-      dialogVisible.value = false;
-      getMenuList();
+      dialogVisible.value = false
+      getMenuList()
     } catch (error) {
-      ElMessage.error(menuForm.value.id ? "编辑菜单失败" : "新增菜单失败");
-      handleDialogClose();
+      ElMessage.error(menuForm.value.id ? '编辑菜单失败' : '新增菜单失败')
+      handleDialogClose()
     }
-  });
-};
+  })
+}
 
 // 处理新增/编辑对话框关闭
 const handleDialogClose = () => {
-  menuFormRef.value.resetFields();
-  dialogVisible.value = false;
-};
+  menuFormRef.value.resetFields()
+  dialogVisible.value = false
+}
 
 // 授权角色弹窗
-const authorizeDialogVisible = ref(false);
+const authorizeDialogVisible = ref(false)
 // 当前菜单
-const currentMenu = ref(null);
+const currentMenu = ref(null)
 // 选择的角色
-const selectedRoles = ref([]);
+const selectedRoles = ref([])
 // 所有角色
-const allRoles = ref([]);
+const allRoles = ref([])
 // 授权弹窗加载状态
-const authorizeLoading = ref(false);
+const authorizeLoading = ref(false)
 
 // 处理授权角色
 const handleAuthorizeRole = async (row) => {
-  currentMenu.value = row;
-  selectedRoles.value = [];
+  currentMenu.value = row
+  selectedRoles.value = []
 
   // 先打开弹窗并显示 loading
-  authorizeDialogVisible.value = true;
-  authorizeLoading.value = true;
+  authorizeDialogVisible.value = true
+  authorizeLoading.value = true
 
   try {
     // 并行加载角色列表和菜单已有角色
-    const [roleRes, menuRolesRes] = await Promise.all([
-      getRoleList(),
-      getRolesByMenu(row.id),
-    ]);
+    const [roleRes, menuRolesRes] = await Promise.all([getRoleList(), getRolesByMenu(row.id)])
 
-    allRoles.value = roleRes.data;
-    selectedRoles.value = menuRolesRes.data.map((item) => item.id);
+    allRoles.value = roleRes.data
+    selectedRoles.value = menuRolesRes.data.map((item) => item.id)
   } catch (error) {
-    ElMessage.error("获取角色列表失败");
-    console.error("获取角色列表失败:", error);
+    ElMessage.error('获取角色列表失败')
+    console.error('获取角色列表失败:', error)
   } finally {
-    authorizeLoading.value = false;
+    authorizeLoading.value = false
   }
-};
+}
 
 // 处理授权提交
 const handleAuthorizeSubmit = async () => {
@@ -577,23 +692,23 @@ const handleAuthorizeSubmit = async () => {
     await addRoleMenu({
       menuId: currentMenu.value.id,
       roleIds: selectedRoles.value,
-    });
-    ElMessage.success(`已为菜单 ${currentMenu.value.name} 授权角色`);
+    })
+    ElMessage.success(`已为菜单 ${currentMenu.value.name} 授权角色`)
   } catch (error) {
-    ElMessage.error(`为菜单 ${currentMenu.value.name} 授权角色失败`);
-    console.error("授权失败:", error);
+    ElMessage.error(`为菜单 ${currentMenu.value.name} 授权角色失败`)
+    console.error('授权失败:', error)
   } finally {
-    authorizeDialogVisible.value = false;
+    authorizeDialogVisible.value = false
     // 重置选择的角色和禁用的角色
-    selectedRoles.value = [];
+    selectedRoles.value = []
   }
-};
+}
 
 // 处理授权对话框关闭
 const handleAuthorizeDialogClose = () => {
-  authorizeDialogVisible.value = false;
-  selectedRoles.value = [];
-};
+  authorizeDialogVisible.value = false
+  selectedRoles.value = []
+}
 
 // 计算扁平化的菜单列表（用于移动端显示）
 const flatMenuList = computed(() => {
@@ -604,19 +719,19 @@ const flatMenuList = computed(() => {
         ...menu,
         level,
         hasChildren: menu.children && menu.children.length > 0,
-      };
-      result.push(flatMenu);
+      }
+      result.push(flatMenu)
 
       // 如果有子菜单且处于展开状态，递归添加子菜单
       if (flatMenu.hasChildren && isMenuExpanded(menu.id)) {
-        flattenMenus(menu.children, level + 1, result);
+        flattenMenus(menu.children, level + 1, result)
       }
-    });
-    return result;
-  };
+    })
+    return result
+  }
 
-  return flattenMenus(paginatedMenuList.value);
-});
+  return flattenMenus(paginatedMenuList.value)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -657,7 +772,7 @@ const flatMenuList = computed(() => {
         align-items: center;
 
         &::before {
-          content: "";
+          content: '';
           display: inline-block;
           width: 4px;
           height: 20px;
@@ -1145,7 +1260,9 @@ const flatMenuList = computed(() => {
       }
 
       .menu-table {
-        max-height: calc(100vh - 200px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
+        max-height: calc(
+          100vh - 200px
+        ); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
       }
     }
   }

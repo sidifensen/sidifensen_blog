@@ -1,99 +1,94 @@
 <template>
   <div class="album-page-body">
-  <div class="container">
-    <!-- 页面头部 -->
-    <div class="page-hero">
-      <div class="hero-content">
-        <div class="hero-copy">
-          <div class="hero-kicker">Album Square</div>
-          <h1>相册广场</h1>
-          <p>探索社区精彩瞬间，发现视觉之美。</p>
-        </div>
-        <div class="hero-actions">
-          <button class="btn-my-album" @click="goToMyAlbum">
-            <span>我的相册</span>
-            <el-icon><ArrowRight /></el-icon>
-          </button>
+    <div class="container">
+      <!-- 页面头部 -->
+      <div class="page-hero">
+        <div class="hero-content">
+          <div class="hero-copy">
+            <div class="hero-kicker">Album Square</div>
+            <h1>相册广场</h1>
+            <p>探索社区精彩瞬间，发现视觉之美。</p>
+          </div>
+          <div class="hero-actions">
+            <button class="btn-my-album" @click="goToMyAlbum">
+              <span>我的相册</span>
+              <el-icon><ArrowRight /></el-icon>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- 内容布局 -->
-    <div class="content-layout">
-      <!-- 主内容区 -->
-      <div class="main-content">
-        <LoadingAnimation v-if="loading" />
+      <!-- 内容布局 -->
+      <div class="content-layout">
+        <!-- 主内容区 -->
+        <div class="main-content">
+          <LoadingAnimation v-if="loading" />
 
-        <div v-else-if="albums.length > 0" class="album-masonry">
-          <div
-            v-for="(album, index) in albums"
-            :key="album.id"
-            class="masonry-item"
-            :style="{ animationDelay: `${index * 0.05}s` }"
-            @click="handleViewAlbum(album.id)"
-          >
-            <div class="item-inner">
-              <div class="image-container">
-                <el-image
-                  :src="album.coverUrl || ''"
-                  class="album-cover"
-                  fit="cover"
-                  lazy
-                >
-                  <template #placeholder>
-                    <div class="placeholder">
-                      <el-icon class="spinner"><Loading /></el-icon>
-                    </div>
-                  </template>
-                  <template #error>
-                    <div class="error-state">
-                      <el-icon><Picture /></el-icon>
-                    </div>
-                  </template>
-                </el-image>
+          <div v-else-if="albums.length > 0" class="album-masonry">
+            <div
+              v-for="(album, index) in albums"
+              :key="album.id"
+              class="masonry-item"
+              :style="{ animationDelay: `${index * 0.05}s` }"
+              @click="handleViewAlbum(album.id)"
+            >
+              <div class="item-inner">
+                <div class="image-container">
+                  <el-image :src="album.coverUrl || ''" class="album-cover" fit="cover" lazy>
+                    <template #placeholder>
+                      <div class="placeholder">
+                        <el-icon class="spinner"><Loading /></el-icon>
+                      </div>
+                    </template>
+                    <template #error>
+                      <div class="error-state">
+                        <el-icon><Picture /></el-icon>
+                      </div>
+                    </template>
+                  </el-image>
 
-                <!-- 悬停效果层 -->
-                <div class="hover-layer">
-                  <div class="layer-content">
-                    <div class="zoom-icon">
-                      <el-icon><ZoomIn /></el-icon>
+                  <!-- 悬停效果层 -->
+                  <div class="hover-layer">
+                    <div class="layer-content">
+                      <div class="zoom-icon">
+                        <el-icon><ZoomIn /></el-icon>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div class="item-footer">
-                <div class="album-title-text">{{ album.name }}</div>
-                <div class="album-author">
-                  <div class="author-dot"></div>
-                  {{ album.userName }}
+                <div class="item-footer">
+                  <div class="album-title-text">{{ album.name }}</div>
+                  <div class="album-author">
+                    <div class="author-dot"></div>
+                    {{ album.userName }}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <el-empty v-else description="暂无相册" :image-size="160" />
+          <el-empty v-else description="暂无相册" :image-size="160" />
+        </div>
       </div>
     </div>
-  </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"
-import { useRouter } from "vue-router"
-import { Picture, Loading, ZoomIn, ArrowRight } from "@element-plus/icons-vue"
-import { listAllAlbum } from "@/api/album"
-import LoadingAnimation from "@/components/LoadingAnimation.vue"
-import { useSeoMeta } from "@/plugins/seo"
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { Picture, Loading, ZoomIn, ArrowRight } from '@element-plus/icons-vue'
+import { listAllAlbum } from '@/api/album'
+import LoadingAnimation from '@/components/LoadingAnimation.vue'
+import { useSeoMeta } from '@/plugins/seo'
 
 // SEO - 相册广场
 useSeoMeta({
-  title: "相册广场",
-  description: "浏览社区精彩相册，发现摄影作品和创意分享",
-  keywords: "相册,图片,摄影,作品展示,社区图库"
-});
+  title: '相册广场',
+  description: '浏览社区精彩相册，发现摄影作品和创意分享',
+  keywords: '相册,图片,摄影,作品展示,社区图库',
+})
 
 const router = useRouter()
 const loading = ref(false)
@@ -112,11 +107,11 @@ const getAllAlbums = async () => {
 }
 
 const handleViewAlbum = (albumId) => {
-  router.push({ name: "AlbumDetail", params: { albumId } })
+  router.push({ name: 'AlbumDetail', params: { albumId } })
 }
 
 const goToMyAlbum = () => {
-  router.push({ name: "MyAlbum" })
+  router.push({ name: 'MyAlbum' })
 }
 
 onMounted(() => {
@@ -198,7 +193,8 @@ onMounted(() => {
   padding: 0 24px;
   min-height: 100vh;
   background: var(--bg-page);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.6;
 
   // 手机端适配

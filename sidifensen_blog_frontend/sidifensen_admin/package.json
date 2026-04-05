@@ -4,19 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "vp dev",
+    "build": "vp build",
+    "preview": "vp preview",
+    "check": "vp check",
+    "test": "vp test",
+    "test:run": "vp test run"
   },
   "dependencies": {
     "@antv/g2": "^5.4.8",
     "@element-plus/icons-vue": "^2.3.1",
     "axios": "^1.11.0",
     "disable-devtool": "^0.3.9",
-    "echarts": "^5.6.0",
     "element-plus": "^2.10.5",
     "file-saver": "^2.0.5",
-    "oxc": "^1.0.1",
     "pinia": "^3.0.1",
     "pinia-plugin-persistedstate": "^4.5.0",
     "vite-plugin-svg-icons": "^2.0.1",
@@ -25,13 +26,16 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@types/node": "^25.5.2",
     "@vitejs/plugin-vue": "^5.2.3",
     "fast-glob": "^3.3.3",
+    "javascript-obfuscator": "^4.2.2",
+    "jsdom": "^25.0.0",
     "sass-embedded": "^1.89.2",
     "unplugin-auto-import": "^19.3.0",
+    "unplugin-element-plus": "^0.10.0",
     "unplugin-vue-components": "^28.8.0",
-    "vite": "^6.2.4",
-    "vite-plugin-obfuscator": "^1.0.5",
-    "vite-plugin-vue-devtools": "^7.7.2"
+    "vite-plugin-vue-devtools": "^7.7.2",
+    "vite-plus": "^0.1.15"
   }
 }
