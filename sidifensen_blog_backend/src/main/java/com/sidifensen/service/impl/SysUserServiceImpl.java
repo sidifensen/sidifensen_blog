@@ -449,6 +449,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     // 管理员登录
     @Override
     public String adminLogin(AdminLoginDto adminLoginDto) {
+        // 验证图形验证码
+        String cachedCode = redisComponent.getCheckCode(adminLoginDto.getCheckCodeKey());
+        if (cachedCode == null || !cachedCode.equalsIgnoreCase(adminLoginDto.getCheckCode())) {
+            throw new BlogException(BlogConstants.CheckCodeError); // 验证码错误
+        }
+        // 验证成功后清除验证码
+        redisComponent.cleanCheckCode(adminLoginDto.getCheckCodeKey());
+
         try {
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     adminLoginDto.getUsername(), adminLoginDto.getPassword());

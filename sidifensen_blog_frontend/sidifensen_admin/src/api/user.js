@@ -1,5 +1,13 @@
 import request from '@/utils/Request'
 
+// 获取图形验证码
+export function checkCode() {
+  return request({
+    url: '/user/checkCode',
+    method: 'get',
+  })
+}
+
 // 登录
 export function login(data) {
   return request({

@@ -65,6 +65,25 @@
             />
           </el-form-item>
 
+          <el-form-item prop="checkCode">
+            <label class="form-label">验证码</label>
+            <div class="check-code-wrapper">
+              <el-input
+                v-model="loginForm.checkCode"
+                placeholder="请输入验证码"
+                size="large"
+                class="check-code-input"
+                @keyup.enter="handleLogin"
+              />
+              <img
+                :src="checkCodeInfo.checkCodeBase64"
+                class="check-code-image"
+                title="点击刷新验证码"
+                @click="refreshCheckCode"
+              />
+            </div>
+          </el-form-item>
+
           <div class="form-remember">
             <el-checkbox v-model="loginForm.rememberMe">记住密码</el-checkbox>
           </div>
@@ -91,7 +110,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { User, Lock } from '@element-plus/icons-vue'
-import { login, info } from '@/api/user'
+import { login, checkCode, info } from '@/api/user'
 import { SetJwt } from '@/utils/Auth'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'
@@ -102,17 +121,37 @@ const loginForm = ref({
   username: '',
   password: '',
   rememberMe: false,
+  checkCodeKey: '',
+  checkCode: '',
 })
 
 const loading = ref(false)
+const checkCodeInfo = ref({})
 
 const rules = {
   username: [{ required: true, message: '请输入用户名/邮箱', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  checkCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }],
 }
 
 // 登录
 const loginFormRef = ref(null)
+
+// 获取验证码
+const getCheckCode = async () => {
+  try {
+    const res = await checkCode()
+    checkCodeInfo.value = res.data
+    loginForm.value.checkCodeKey = res.data.checkCodeKey
+  } catch (error) {
+    console.error('获取验证码失败:', error)
+  }
+}
+
+// 刷新验证码
+const refreshCheckCode = async () => {
+  await getCheckCode()
+}
 
 // 测试模式自动填充（仅开发环境生效）
 const autoFillTestAccount = () => {
@@ -124,6 +163,7 @@ const autoFillTestAccount = () => {
 
 onMounted(() => {
   autoFillTestAccount()
+  getCheckCode()
 })
 
 const handleLogin = async () => {
@@ -150,6 +190,9 @@ const handleLogin = async () => {
 
     await router.push('/home')
     ElMessage.success('登录成功')
+  } catch {
+    // 登录失败后刷新验证码
+    await refreshCheckCode()
   } finally {
     loading.value = false
   }
@@ -314,6 +357,38 @@ const handleLogin = async () => {
 
   :deep(.el-checkbox__input.is-checked + .el-checkbox__label) {
     color: #42b983;
+  }
+}
+
+// ========================================
+// 验证码样式
+// ========================================
+.check-code-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+
+  .check-code-input {
+    flex: 1;
+
+    :deep(.el-input__wrapper) {
+      height: 40px;
+      box-sizing: border-box;
+    }
+  }
+
+  .check-code-image {
+    height: 40px;
+    width: auto;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid var(--input-border);
+    transition: border-color 0.2s;
+    object-fit: contain;
+
+    &:hover {
+      border-color: var(--input-focus-border);
+    }
   }
 }
 

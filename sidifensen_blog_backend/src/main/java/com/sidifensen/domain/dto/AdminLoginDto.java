@@ -16,5 +16,11 @@ public class AdminLoginDto {
     //记住我
     @NotNull(message = "记住我不能为空")
     private Boolean rememberMe;
+    //验证码key
+    @NotEmpty(message = "验证码key不能为空")
+    private String checkCodeKey;
+    //验证码
+    @NotEmpty(message = "验证码不能为空")
+    private String checkCode;
 
 }
