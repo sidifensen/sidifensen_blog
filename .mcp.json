@@ -6,7 +6,7 @@
     },
     "chrome-devtools": {
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "chrome-devtools-mcp", "--isolated"]
+      "args": ["/c", "npx", "-y", "chrome-devtools-mcp", "--user-data-dir", "C:/Users/x/AppData/Local/Google/Chrome/User Data"]
     },
     "mysql": {
       "command": "cmd",
