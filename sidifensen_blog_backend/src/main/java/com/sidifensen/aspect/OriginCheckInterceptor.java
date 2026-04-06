@@ -53,7 +53,23 @@ public class OriginCheckInterceptor implements HandlerInterceptor {
             }
         }
 
-        // 如果都没有（可能是直接访问），记录警告并拒绝
+        // 如果都没有（可能是直接访问或同源请求），验证是否为同源请求
+        if (origin == null && referer == null) {
+            // 检查请求的Host是否在允许的域名列表中（同源请求不会发送Origin/Referer）
+            String host = request.getHeader("Host");
+            if (host != null && isHostAllowed(host, allowOrigins)) {
+                return true;
+            }
+            // 非同源请求，记录警告并拒绝
+            log.warn("拒绝非法请求: Origin={}, Referer={}, URI={}, IP={}",
+                    origin, referer, request.getRequestURI(), getClientIp(request));
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"code\":403,\"message\":\"访问被拒绝\"}");
+            return false;
+        }
+
+        // 如果都有但都不在允许列表
         log.warn("拒绝非法请求: Origin={}, Referer={}, URI={}, IP={}",
                 origin, referer, request.getRequestURI(), getClientIp(request));
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -116,6 +132,33 @@ public class OriginCheckInterceptor implements HandlerInterceptor {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /**
+     * 验证 Host 是否在允许列表中
+     * 用于同源请求的校验（浏览器不会发送Origin/Referer）
+     */
+    private boolean isHostAllowed(String host, List<String> allowOrigins) {
+        if (allowOrigins == null || allowOrigins.isEmpty()) {
+            return false;
+        }
+        // 移除端口号
+        String hostWithoutPort = host;
+        if (hostWithoutPort.contains(":")) {
+            hostWithoutPort = hostWithoutPort.substring(0, hostWithoutPort.indexOf(":"));
+        }
+        for (String allowed : allowOrigins) {
+            try {
+                java.net.URL url = new java.net.URL(allowed);
+                String allowedHost = url.getHost();
+                if (hostWithoutPort.equalsIgnoreCase(allowedHost)) {
+                    return true;
+                }
+            } catch (Exception e) {
+                // 忽略解析异常
+            }
+        }
+        return false;
     }
 
     /**

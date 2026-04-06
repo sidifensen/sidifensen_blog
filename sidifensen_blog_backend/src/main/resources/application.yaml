@@ -180,5 +180,3 @@ logging:
     org.springframework.boot.context.properties: INFO
     org.springframework.core.env: INFO
     org.springframework.boot.env: INFO
-
-# Actuator 监控配置

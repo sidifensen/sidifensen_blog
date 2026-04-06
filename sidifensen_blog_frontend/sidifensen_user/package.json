@@ -9,7 +9,14 @@
     "preview": "vp preview",
     "check": "vp check",
     "test": "vp test",
-    "test:run": "vp test run"
+    "test:run": "vp test run",
+    "playwright": "playwright",
+    "playwright:test": "playwright test",
+    "playwright:ui": "playwright test --ui",
+    "playwright:debug": "playwright test --debug",
+    "playwright:codegen": "playwright codegen http://localhost:7000",
+    "playwright:install": "playwright install",
+    "playwright:install-deps": "playwright install-deps"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
@@ -26,12 +33,14 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@types/node": "^25.5.2",
     "@vitejs/plugin-vue": "^5.2.3",
     "@vue/test-utils": "^2.4.6",
     "fast-glob": "^3.3.3",
     "javascript-obfuscator": "^4.2.2",
     "jsdom": "^25.0.0",
+    "playwright": "^1.59.1",
     "sass-embedded": "^1.89.2",
     "unplugin-auto-import": "^19.3.0",
     "unplugin-element-plus": "^0.10.0",
