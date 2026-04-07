@@ -642,7 +642,7 @@ import {
   adminSearchArticle,
   adminGetArticle,
 } from '@/api/article'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
 
 // 文章列表数据
 const articleList = ref([])
@@ -1056,7 +1056,7 @@ const getEditStatusType = (editStatus) => {
           display: inline-block;
           width: 4px;
           height: 20px;
-          background-color: #42b983;
+          background-color: var(--admin-primary);
           border-radius: 2px;
           margin-right: 10px;
         }
@@ -1079,8 +1079,8 @@ const getEditStatusType = (editStatus) => {
             transition: all 0.3s ease;
 
             &:focus-within {
-              box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-              border-color: #42b983;
+              box-shadow: 0 0 0 3px var(--admin-primary-light);
+              border-color: var(--admin-primary);
             }
           }
 
@@ -1090,8 +1090,8 @@ const getEditStatusType = (editStatus) => {
             transition: all 0.3s ease;
 
             &:focus-within {
-              box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-              border-color: #42b983;
+              box-shadow: 0 0 0 3px var(--admin-primary-light);
+              border-color: var(--admin-primary);
             }
           }
         }
@@ -1110,8 +1110,8 @@ const getEditStatusType = (editStatus) => {
       :deep(.el-input__wrapper) {
         border-radius: 8px;
         &:focus-within {
-          box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-          border-color: #42b983;
+          box-shadow: 0 0 0 3px var(--admin-primary-light);
+          border-color: var(--admin-primary);
         }
       }
     }
@@ -1188,7 +1188,7 @@ const getEditStatusType = (editStatus) => {
           cursor: pointer;
 
           &:hover {
-            color: #42b983;
+            color: var(--admin-primary);
           }
         }
 
@@ -1340,8 +1340,8 @@ const getEditStatusType = (editStatus) => {
 
           // 选中状态样式
           &.is-selected {
-            border: 2px solid #42b983;
-            box-shadow: 0 0 12px rgba(66, 185, 131, 0.3);
+            border: 2px solid var(--admin-primary);
+            box-shadow: 0 0 12px var(--admin-primary-light);
           }
 
           // 卡片内容容器

@@ -520,7 +520,7 @@ import {
   adminExamineBatchComment,
   adminSearchComment,
 } from '@/api/comment'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
 
 // 评论列表数据
 const commentList = ref([])
@@ -890,7 +890,7 @@ const handleBatchDelete = () => {
           display: inline-block;
           width: 4px;
           height: 20px;
-          background-color: #42b983;
+          background-color: var(--admin-primary);
           border-radius: 2px;
           margin-right: 10px;
         }
@@ -913,8 +913,8 @@ const handleBatchDelete = () => {
             transition: all 0.3s ease;
 
             &:focus-within {
-              box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-              border-color: #42b983;
+              box-shadow: 0 0 0 3px var(--admin-primary-light);
+              border-color: var(--admin-primary);
             }
           }
 
@@ -924,8 +924,8 @@ const handleBatchDelete = () => {
             transition: all 0.3s ease;
 
             &:focus-within {
-              box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-              border-color: #42b983;
+              box-shadow: 0 0 0 3px var(--admin-primary-light);
+              border-color: var(--admin-primary);
             }
           }
         }
@@ -944,8 +944,8 @@ const handleBatchDelete = () => {
       :deep(.el-input__wrapper) {
         border-radius: 8px;
         &:focus-within {
-          box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-          border-color: #42b983;
+          box-shadow: 0 0 0 3px var(--admin-primary-light);
+          border-color: var(--admin-primary);
         }
       }
     }
@@ -1021,7 +1021,7 @@ const handleBatchDelete = () => {
           cursor: pointer;
 
           &:hover {
-            color: #42b983;
+            color: var(--admin-primary);
           }
         }
 
@@ -1138,8 +1138,8 @@ const handleBatchDelete = () => {
 
           // 选中状态样式
           &.is-selected {
-            border: 2px solid #42b983;
-            box-shadow: 0 0 12px rgba(66, 185, 131, 0.3);
+            border: 2px solid var(--admin-primary);
+            box-shadow: 0 0 12px var(--admin-primary-light);
           }
 
           // 卡片内容容器

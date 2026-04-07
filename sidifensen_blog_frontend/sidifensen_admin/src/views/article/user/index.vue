@@ -814,7 +814,7 @@ import {
   adminGetArticle,
   adminUpdateArticle,
 } from '@/api/article'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
 
 // 视图状态
 const showArticles = ref(false)
@@ -1369,7 +1369,7 @@ onUnmounted(() => {
           display: inline-block;
           width: 4px;
           height: 20px;
-          background-color: #42b983;
+          background-color: var(--admin-primary);
           border-radius: 2px;
           margin-right: 10px;
         }
@@ -1389,8 +1389,8 @@ onUnmounted(() => {
             transition: all 0.3s ease;
 
             &:focus-within {
-              box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-              border-color: #42b983;
+              box-shadow: 0 0 0 3px var(--admin-primary-light);
+              border-color: var(--admin-primary);
             }
           }
 
@@ -1399,8 +1399,8 @@ onUnmounted(() => {
             transition: all 0.3s ease;
 
             &:focus-within {
-              box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-              border-color: #42b983;
+              box-shadow: 0 0 0 3px var(--admin-primary-light);
+              border-color: var(--admin-primary);
             }
           }
         }
@@ -1417,8 +1417,8 @@ onUnmounted(() => {
       :deep(.el-input__wrapper) {
         border-radius: 8px;
         &:focus-within {
-          box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-          border-color: #42b983;
+          box-shadow: 0 0 0 3px var(--admin-primary-light);
+          border-color: var(--admin-primary);
         }
       }
     }
@@ -1529,7 +1529,11 @@ onUnmounted(() => {
                 }
 
                 .article-count-value {
-                  background: linear-gradient(45deg, #42b983, #36a970);
+                  background: linear-gradient(
+                    45deg,
+                    var(--admin-primary),
+                    var(--admin-primary-dark)
+                  );
                   color: white;
                   padding: 2px 8px;
                   border-radius: 12px;
@@ -1627,7 +1631,7 @@ onUnmounted(() => {
         cursor: pointer;
 
         &:hover {
-          color: #42b983;
+          color: var(--admin-primary);
         }
       }
 
@@ -1791,8 +1795,8 @@ onUnmounted(() => {
 
         // 选中状态样式
         &.is-selected {
-          border: 2px solid #42b983;
-          box-shadow: 0 0 12px rgba(66, 185, 131, 0.3);
+          border: 2px solid var(--admin-primary);
+          box-shadow: 0 0 12px var(--admin-primary-light);
         }
 
         // 文章卡片内容容器

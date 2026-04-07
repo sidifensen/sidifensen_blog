@@ -150,8 +150,8 @@ defineExpose({
     transition: all 0.3s ease;
 
     &:focus-within {
-      box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-      border-color: #42b983;
+      box-shadow: 0 0 0 3px var(--admin-primary-light);
+      border-color: var(--admin-primary);
     }
   }
 }

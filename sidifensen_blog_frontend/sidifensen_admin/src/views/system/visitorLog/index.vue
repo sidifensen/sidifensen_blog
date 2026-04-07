@@ -238,7 +238,7 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { Search, Delete } from '@element-plus/icons-vue'
 import { getVisitorLogList, searchVisitorLog, deleteVisitorLogs } from '@/api/visitorLog'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
 
 // 访客日志列表数据
 const logList = ref([])

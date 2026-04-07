@@ -11,17 +11,17 @@
   >
     <!-- 筛选条件（放在标题下方） -->
     <template #second-filters>
-      <AdminSearchFilters
-        v-model:examine-status="searchExamineStatus"
-        v-model:user-id="searchUserId"
-        v-model:keyword="searchKeyword"
-        keyword-placeholder="搜索友链名称或描述"
-        @change="handleSearch"
-      ></AdminSearchFilters>
+      <ExamineStatusSelect v-model="searchExamineStatus" width="140px" />
+      <UserSearchSelect v-model="searchUserId" width="180px" />
+      <KeywordSearch
+        v-model="searchKeyword"
+        show-label
+        label="关键词"
+        placeholder="搜索友链名称或描述"
+        auto-width
+      />
+      <SearchButtons @search="handleSearch" @reset="handleReset" />
     </template>
-
-    <!-- 头部搜索操作（仅放按钮） -->
-    <template #header-actions> </template>
 
     <!-- 批量操作按钮 -->
     <template #batch-actions>
@@ -153,7 +153,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useUserSearch } from '@/hooks/useUserSearch'
 import {
   adminGetLinkList,
@@ -166,11 +166,14 @@ import {
 } from '@/api/link'
 
 // 组件
-import ManagementCard from '@/components/ManagementCard.vue'
-import AdminSearchFilters from '@/components/AdminSearchFilters.vue'
-import BatchActions from '@/components/BatchActions.vue'
-import DataTable from '@/components/DataTable.vue'
-import MobileCardList from '@/components/MobileCardList.vue'
+import ManagementCard from '@/components/management/ManagementCard.vue'
+import BatchActions from '@/components/actions/BatchActions.vue'
+import DataTable from '@/components/data/DataTable.vue'
+import MobileCardList from '@/components/data/MobileCardList.vue'
+import ExamineStatusSelect from '@/components/search/ExamineStatusSelect.vue'
+import UserSearchSelect from '@/components/search/UserSearchSelect.vue'
+import KeywordSearch from '@/components/search/KeywordSearch.vue'
+import SearchButtons from '@/components/search/SearchButtons.vue'
 
 // 友链列表数据
 const linkList = ref([])
@@ -275,6 +278,16 @@ const fetchLinks = async () => {
 const handleSearch = async () => {
   currentPage.value = 1
   await fetchLinks()
+}
+
+// 重置处理
+const handleReset = () => {
+  searchExamineStatus.value = ''
+  searchKeyword.value = ''
+  searchStartTime.value = ''
+  searchEndTime.value = ''
+  searchUserId.value = ''
+  handleSearch()
 }
 
 // 时间筛选变化

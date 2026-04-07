@@ -17,14 +17,14 @@ const router = createRouter({
       path: '/',
       name: 'layout',
       redirect: '/home',
-      component: () => import('@/components/Layout.vue'),
+      component: () => import('@/components/layout/Layout.vue'),
       children: [], // 动态路由将在这里添加
     },
   ],
 })
 
 // 导入404组件
-const NotFound = () => import('@/components/404.vue')
+const NotFound = () => import('@/components/common/404.vue')
 
 // 路由守卫
 router.beforeEach(async (to, from, next) => {

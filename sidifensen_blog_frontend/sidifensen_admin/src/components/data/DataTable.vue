@@ -115,8 +115,8 @@
 </template>
 
 <script setup>
-import StatusBadge from './StatusBadge.vue'
-import TableActions from './TableActions.vue'
+import StatusBadge from '@/components/common/StatusBadge.vue'
+import TableActions from '@/components/data/TableActions.vue'
 
 // Props
 const props = defineProps({
@@ -303,7 +303,7 @@ const handleSelectionChange = (selection) => {
       cursor: pointer;
 
       &:hover {
-        color: #42b983;
+        color: var(--admin-primary);
       }
     }
 

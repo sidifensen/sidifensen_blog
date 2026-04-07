@@ -709,7 +709,7 @@ import {
   adminUpdateColumn,
   adminGetColumnDetail,
 } from '@/api/column'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
 
 // 专栏列表数据
 const columnList = ref([])

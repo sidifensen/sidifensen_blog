@@ -754,7 +754,7 @@ import {
   adminUpdateColumn,
   adminGetColumnDetail,
 } from '@/api/column'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
 
 // 视图状态
 const showColumns = ref(false)

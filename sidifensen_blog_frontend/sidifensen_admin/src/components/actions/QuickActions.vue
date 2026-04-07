@@ -37,7 +37,7 @@ import {
   ArrowRight,
   Operation,
 } from '@element-plus/icons-vue'
-import DetailCard from './cards/DetailCard.vue'
+import DetailCard from '@/components/cards/DetailCard.vue'
 
 /**
  * QuickActions 快速操作组件

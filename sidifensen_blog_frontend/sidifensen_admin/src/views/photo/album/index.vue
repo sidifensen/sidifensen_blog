@@ -97,7 +97,7 @@
               <el-switch
                 v-model="row.showStatus"
                 size="large"
-                active-color="#42b983"
+                active-color="var(--admin-primary)"
                 inactive-color="#cccccc"
                 active-text="正常"
                 inactive-text="禁用"
@@ -184,7 +184,7 @@
               <div class="album-status-section">
                 <el-switch
                   v-model="album.showStatus"
-                  active-color="#42b983"
+                  active-color="var(--admin-primary)"
                   inactive-color="#cccccc"
                   active-text="正常"
                   inactive-text="禁用"
@@ -444,7 +444,7 @@ import {
   adminAuditPhoto,
   adminAuditBatchPhoto,
 } from '@/api/photo'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
 
 // 相册列表数据
 const albumList = ref([])
@@ -959,7 +959,7 @@ const handleDetailDialogClose = () => {
           display: inline-block;
           width: 4px;
           height: 20px;
-          background-color: #42b983;
+          background-color: var(--admin-primary);
           border-radius: 2px;
           margin-right: 10px;
         }
@@ -979,8 +979,8 @@ const handleDetailDialogClose = () => {
             transition: all 0.3s ease;
 
             &:focus-within {
-              box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-              border-color: #42b983;
+              box-shadow: 0 0 0 3px var(--admin-primary-light);
+              border-color: var(--admin-primary);
             }
           }
           :deep(.el-select__wrapper) {
@@ -988,8 +988,8 @@ const handleDetailDialogClose = () => {
             transition: all 0.3s ease;
 
             &:focus-within {
-              box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-              border-color: #42b983;
+              box-shadow: 0 0 0 3px var(--admin-primary-light);
+              border-color: var(--admin-primary);
             }
           }
         }
@@ -1004,8 +1004,8 @@ const handleDetailDialogClose = () => {
       :deep(.el-input__wrapper) {
         border-radius: 8px;
         &:focus-within {
-          box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-          border-color: #42b983;
+          box-shadow: 0 0 0 3px var(--admin-primary-light);
+          border-color: var(--admin-primary);
         }
       }
     }
@@ -1247,8 +1247,8 @@ const handleDetailDialogClose = () => {
     border-radius: 16px;
     transition: all 0.3s ease;
     &:focus-within {
-      box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-      border-color: #42b983;
+      box-shadow: 0 0 0 3px var(--admin-primary-light);
+      border-color: var(--admin-primary);
     }
   }
 }
@@ -1394,7 +1394,7 @@ const handleDetailDialogClose = () => {
           font-weight: 500;
         }
         .status-normal {
-          color: #42b983;
+          color: var(--admin-primary);
           font-weight: 500;
         }
         .status-disabled {
@@ -1472,7 +1472,7 @@ const handleDetailDialogClose = () => {
 
   &.photo-item-selected {
     box-shadow:
-      0 0 0 2px #42b983,
+      0 0 0 2px var(--admin-primary),
       0 4px 12px rgba(0, 0, 0, 0.1);
   }
 

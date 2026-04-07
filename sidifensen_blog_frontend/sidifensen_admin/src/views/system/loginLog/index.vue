@@ -259,7 +259,7 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { Search, Delete } from '@element-plus/icons-vue'
 import { getLoginLogList, searchLoginLog, deleteLoginLogs } from '@/api/loginLog'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
 
 // 登录日志列表数据
 const logList = ref([])

@@ -40,3 +40,6 @@ dist-electron/
 *.dmg
 *.AppImage
 *.deb
+
+
+/playwright-report/

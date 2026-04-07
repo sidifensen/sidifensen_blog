@@ -193,7 +193,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'
 import { ElMessage } from 'element-plus'
-import Dark from './Dark.vue'
+import Dark from '@/components/common/Dark.vue'
 import {
   getMessagesCount,
   getMessageList,
@@ -424,11 +424,15 @@ const handleLogout = () => {
       .logo-icon {
         width: 40px;
         height: 40px;
-        background: linear-gradient(135deg, #42b983 0%, #3aa17e 100%);
+        background: linear-gradient(
+          135deg,
+          var(--admin-primary) 0%,
+          var(--admin-primary-dark) 100%
+        );
         border-radius: 50%;
         margin-right: 12px;
         position: relative;
-        box-shadow: 0 5px 15px rgba(66, 185, 131, 0.4);
+        box-shadow: 0 5px 15px var(--admin-primary-light);
 
         // 白色圆环
         &::after {
@@ -570,14 +574,14 @@ const handleLogout = () => {
             }
             .message-icon {
               font-size: 25px;
-              color: #3aa17e;
+              color: var(--admin-primary-dark);
             }
             // 徽章
             .el-badge__content {
               top: 10px;
               right: 20px;
               color: #fff;
-              background: #3aa17e;
+              background: var(--admin-primary-dark);
             }
           }
 
@@ -685,7 +689,7 @@ const handleLogout = () => {
                   width: 6px;
                   height: 6px;
                   border-radius: 50%;
-                  background-color: #3aa17e;
+                  background-color: var(--admin-primary-dark);
                 }
                 .message-content {
                   flex: 1;
@@ -734,10 +738,10 @@ const handleLogout = () => {
                     }
                   }
                   .read-button {
-                    color: #3aa17e;
-                    border-color: #3aa17e;
+                    color: var(--admin-primary-dark);
+                    border-color: var(--admin-primary-dark);
                     &:hover {
-                      background-color: rgba(58, 161, 126, 0.1);
+                      background-color: var(--admin-primary-light);
                     }
                   }
                   .delete-button {

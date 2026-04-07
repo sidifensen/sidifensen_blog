@@ -288,7 +288,7 @@ import {
   adminSearchPhoto,
   adminGetPhotoList,
 } from '@/api/photo'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
 
 // 图片列表数据
 const photoList = ref([])
@@ -628,7 +628,7 @@ const handleBatchDelete = () => {
           display: inline-block;
           width: 4px;
           height: 20px;
-          background-color: #42b983;
+          background-color: var(--admin-primary);
           border-radius: 2px;
           margin-right: 10px;
         }
@@ -648,8 +648,8 @@ const handleBatchDelete = () => {
             transition: all 0.3s ease;
 
             &:focus-within {
-              box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-              border-color: #42b983;
+              box-shadow: 0 0 0 3px var(--admin-primary-light);
+              border-color: var(--admin-primary);
             }
           }
           :deep(.el-select__wrapper) {
@@ -657,8 +657,8 @@ const handleBatchDelete = () => {
             transition: all 0.3s ease;
 
             &:focus-within {
-              box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-              border-color: #42b983;
+              box-shadow: 0 0 0 3px var(--admin-primary-light);
+              border-color: var(--admin-primary);
             }
           }
         }
@@ -672,8 +672,8 @@ const handleBatchDelete = () => {
       :deep(.el-input__wrapper) {
         border-radius: 8px;
         &:focus-within {
-          box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-          border-color: #42b983;
+          box-shadow: 0 0 0 3px var(--admin-primary-light);
+          border-color: var(--admin-primary);
         }
       }
     }
@@ -815,8 +815,8 @@ const handleBatchDelete = () => {
 
         // 选中状态样式
         &.is-selected {
-          border: 2px solid #42b983;
-          box-shadow: 0 0 12px rgba(66, 185, 131, 0.3);
+          border: 2px solid var(--admin-primary);
+          box-shadow: 0 0 12px var(--admin-primary-light);
         }
 
         .photo-card-content {
@@ -1012,8 +1012,8 @@ const handleBatchDelete = () => {
     border-radius: 16px;
     transition: all 0.3s ease;
     &:focus-within {
-      box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-      border-color: #42b983;
+      box-shadow: 0 0 0 3px var(--admin-primary-light);
+      border-color: var(--admin-primary);
     }
   }
 }
@@ -1151,7 +1151,7 @@ const handleBatchDelete = () => {
           font-weight: 500;
         }
         .status-normal {
-          color: #42b983;
+          color: var(--admin-primary);
           font-weight: 500;
         }
         .status-disabled {
@@ -1229,7 +1229,7 @@ const handleBatchDelete = () => {
 
   &.photo-item-selected {
     box-shadow:
-      0 0 0 2px #42b983,
+      0 0 0 2px var(--admin-primary),
       0 4px 12px rgba(0, 0, 0, 0.1);
   }
 

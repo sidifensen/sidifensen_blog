@@ -113,7 +113,7 @@
 </template>
 
 <script setup>
-import StatusBadge from './StatusBadge.vue'
+import StatusBadge from '@/components/common/StatusBadge.vue'
 
 // Props
 const props = defineProps({
@@ -239,8 +239,8 @@ const handleSelect = (item) => {
       }
 
       &.is-selected {
-        border: 2px solid #42b983;
-        box-shadow: 0 0 12px rgba(66, 185, 131, 0.3);
+        border: 2px solid var(--admin-primary);
+        box-shadow: 0 0 12px var(--admin-primary-light);
       }
 
       .card-content {

@@ -35,7 +35,7 @@
               <el-switch
                 v-model="row.status"
                 size="large"
-                active-color="#42b983"
+                active-color="var(--admin-primary)"
                 inactive-color="#cccccc"
                 active-text="正常"
                 inactive-text="禁用"
@@ -110,7 +110,7 @@
                 <el-switch
                   v-model="role.status"
                   size="small"
-                  active-color="#42b983"
+                  active-color="var(--admin-primary)"
                   inactive-color="#cccccc"
                   :active-value="0"
                   :inactive-value="1"
@@ -308,7 +308,7 @@ import { addUser, getUsersByRole } from '@/api/user-role'
 import { getUserList } from '@/api/user'
 import { getAllMenuList } from '@/api/menu'
 import { getMenusByRole, assignMenus } from '@/api/role-menu'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
 
 // 搜索查询
 const searchQuery = ref('')
@@ -780,7 +780,7 @@ const handleResize = () => {
           display: inline-block;
           width: 4px;
           height: 20px;
-          background-color: #42b983;
+          background-color: var(--admin-primary);
           border-radius: 2px;
           margin-right: 10px;
         }
@@ -801,22 +801,30 @@ const handleResize = () => {
             transition: all 0.3s ease;
 
             &:focus-within {
-              box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-              border-color: #42b983;
+              box-shadow: 0 0 0 3px var(--admin-primary-light);
+              border-color: var(--admin-primary);
             }
           }
         }
 
         .add-button {
           border-radius: 8px;
-          background: linear-gradient(135deg, #42b983 0%, #3aa17e 100%);
+          background: linear-gradient(
+            135deg,
+            var(--admin-primary) 0%,
+            var(--admin-primary-dark) 100%
+          );
           border: none;
           transition: all 0.3s ease;
 
           &:hover {
-            background: linear-gradient(135deg, #3aa17e 0%, #2d8f6a 100%);
+            background: linear-gradient(
+              135deg,
+              var(--admin-primary-dark) 0%,
+              var(--admin-primary-active) 100%
+            );
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(66, 185, 131, 0.4);
+            box-shadow: 0 4px 12px var(--admin-primary-light);
           }
         }
       }
@@ -1010,7 +1018,7 @@ const handleResize = () => {
                 }
 
                 .role-text {
-                  color: #42b983;
+                  color: var(--admin-primary);
                   font-family: 'Courier New', monospace;
                 }
 
@@ -1103,8 +1111,8 @@ const handleResize = () => {
       border-radius: 16px;
       transition: all 0.3s ease;
       &:focus-within {
-        box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-        border-color: #42b983;
+        box-shadow: 0 0 0 3px var(--admin-primary-light);
+        border-color: var(--admin-primary);
       }
     }
   }
@@ -1171,7 +1179,11 @@ const handleResize = () => {
           width: 24px;
           height: 24px;
           border-radius: 4px;
-          background: linear-gradient(135deg, #42b983 0%, #3aa17e 100%);
+          background: linear-gradient(
+            135deg,
+            var(--admin-primary) 0%,
+            var(--admin-primary-dark) 100%
+          );
           color: #fff;
           font-size: 14px;
         }

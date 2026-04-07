@@ -217,7 +217,7 @@ const handleLogin = async () => {
   --border: #e2e8f0;
   --input-bg: #f8fafc;
   --input-border: #e2e8f0;
-  --input-focus-border: #42b983;
+  --input-focus-border: var(--admin-primary);
   --btn-bg: #1e293b;
   --btn-hover-bg: #334155;
   --btn-text: #ffffff;
@@ -326,7 +326,7 @@ const handleLogin = async () => {
 
     &.is-focus {
       border-color: var(--input-focus-border);
-      box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.15);
+      box-shadow: 0 0 0 2px var(--admin-primary-focus);
     }
   }
 
@@ -351,12 +351,12 @@ const handleLogin = async () => {
   }
 
   :deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
-    background-color: #42b983;
-    border-color: #42b983;
+    background-color: var(--admin-primary);
+    border-color: var(--admin-primary);
   }
 
   :deep(.el-checkbox__input.is-checked + .el-checkbox__label) {
-    color: #42b983;
+    color: var(--admin-primary);
   }
 }
 

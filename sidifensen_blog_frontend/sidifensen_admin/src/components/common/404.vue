@@ -28,7 +28,7 @@ $card-bg: #ffffff;
 $text-primary: #333333;
 $text-secondary: #555555;
 $text-tertiary: #777777;
-$button-color: #42b983;
+$button-color: var(--admin-primary);
 $button-hover-color: #3aa876;
 
 // 尺寸变量定义

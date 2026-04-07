@@ -360,7 +360,7 @@ import {
   updateBlacklist,
   deleteBlacklist,
 } from '@/api/blacklist'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
 
 // 黑名单列表数据
 const blacklistList = ref([])

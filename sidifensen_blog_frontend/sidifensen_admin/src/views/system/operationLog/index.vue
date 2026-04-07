@@ -426,7 +426,7 @@ import {
   deleteOperationLogs,
   getOperationLogDetail,
 } from '@/api/operationLog'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
 
 // 操作日志列表数据
 const logList = ref([])

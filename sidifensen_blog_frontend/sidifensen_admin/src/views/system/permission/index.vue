@@ -334,7 +334,7 @@ import {
   getRolesByPermission,
 } from '@/api/role-permission'
 import { getAllMenuList } from '@/api/menu'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
 
 import FileSaver from 'file-saver'
 import * as XLSX from 'xlsx'
@@ -794,7 +794,7 @@ const handleAuthorizeBatchDialogClose = () => {
           display: inline-block;
           width: 4px;
           height: 20px;
-          background-color: #42b983;
+          background-color: var(--admin-primary);
           border-radius: 2px;
           margin-right: 10px;
         }
@@ -815,8 +815,8 @@ const handleAuthorizeBatchDialogClose = () => {
             transition: all 0.3s ease;
 
             &:focus-within {
-              box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-              border-color: #42b983;
+              box-shadow: 0 0 0 3px var(--admin-primary-light);
+              border-color: var(--admin-primary);
             }
           }
           :deep(.el-select__wrapper) {
@@ -824,8 +824,8 @@ const handleAuthorizeBatchDialogClose = () => {
             transition: all 0.3s ease;
 
             &:focus-within {
-              box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-              border-color: #42b983;
+              box-shadow: 0 0 0 3px var(--admin-primary-light);
+              border-color: var(--admin-primary);
             }
           }
         }
@@ -872,14 +872,22 @@ const handleAuthorizeBatchDialogClose = () => {
       .add-button {
         margin-left: 10px;
         border-radius: 8px;
-        background: linear-gradient(135deg, #42b983 0%, #3aa17e 100%);
+        background: linear-gradient(
+          135deg,
+          var(--admin-primary) 0%,
+          var(--admin-primary-dark) 100%
+        );
         border: none;
         transition: all 0.3s ease;
 
         &:hover {
-          background: linear-gradient(135deg, #3aa17e 0%, #2d8f6a 100%);
+          background: linear-gradient(
+            135deg,
+            var(--admin-primary-dark) 0%,
+            var(--admin-primary-active) 100%
+          );
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(66, 185, 131, 0.4);
+          box-shadow: 0 4px 12px var(--admin-primary-light);
         }
       }
     }
@@ -1011,8 +1019,8 @@ const handleAuthorizeBatchDialogClose = () => {
 
         // 选中状态样式
         &.is-selected {
-          border: 2px solid #42b983;
-          box-shadow: 0 0 12px rgba(66, 185, 131, 0.3);
+          border: 2px solid var(--admin-primary);
+          box-shadow: 0 0 12px var(--admin-primary-light);
         }
 
         // 权限卡片内容容器
@@ -1168,8 +1176,8 @@ const handleAuthorizeBatchDialogClose = () => {
     border-radius: 16px;
     transition: all 0.3s ease;
     &:focus-within {
-      box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-      border-color: #42b983;
+      box-shadow: 0 0 0 3px var(--admin-primary-light);
+      border-color: var(--admin-primary);
     }
   }
 }

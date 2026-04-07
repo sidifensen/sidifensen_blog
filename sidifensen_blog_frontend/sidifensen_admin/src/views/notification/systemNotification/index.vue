@@ -221,7 +221,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { Check, Delete } from '@element-plus/icons-vue'
 import { getMessagePage, readAdminMessages, deleteAdminMessages } from '@/api/message'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
 
 // 系统通知列表数据
 const messageList = ref([])

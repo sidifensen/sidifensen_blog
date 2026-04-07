@@ -302,7 +302,7 @@ import {
   deleteAnnouncement,
 } from '@/api/announcement'
 import { getUserList } from '@/api/user'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
 
 // 列表数据
 const list = ref([])

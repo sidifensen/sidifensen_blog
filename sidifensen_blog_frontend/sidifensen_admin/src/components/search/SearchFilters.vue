@@ -17,28 +17,34 @@
 
     <!-- 时间范围选择 -->
     <template v-if="showTimeRange">
-      <el-date-picker
-        v-model="startTime"
-        type="datetime"
-        :placeholder="startTimePlaceholder"
-        size="small"
-        class="search-input time-input"
-        format="YYYY-MM-DD HH:mm:ss"
-        value-format="YYYY-MM-DD HH:mm:ss"
-        clearable
-        @change="handleChange"
-      />
-      <el-date-picker
-        v-model="endTime"
-        type="datetime"
-        :placeholder="endTimePlaceholder"
-        size="small"
-        class="search-input time-input"
-        format="YYYY-MM-DD HH:mm:ss"
-        value-format="YYYY-MM-DD HH:mm:ss"
-        clearable
-        @change="handleChange"
-      />
+      <div class="filter-item">
+        <span class="filter-label">开始时间</span>
+        <el-date-picker
+          v-model="startTime"
+          type="datetime"
+          placeholder="请选择开始时间"
+          size="small"
+          class="search-input time-input"
+          format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          clearable
+          @change="handleChange"
+        />
+      </div>
+      <div class="filter-item">
+        <span class="filter-label">结束时间</span>
+        <el-date-picker
+          v-model="endTime"
+          type="datetime"
+          placeholder="请选择结束时间"
+          size="small"
+          class="search-input time-input"
+          format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          clearable
+          @change="handleChange"
+        />
+      </div>
     </template>
   </div>
 </template>
@@ -142,8 +148,20 @@ onMounted(() => {
 .search-filters {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
+
+  .filter-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .filter-label {
+    font-size: 14px;
+    color: var(--text-regular);
+    white-space: nowrap;
+  }
 
   .search-input {
     border-radius: 8px;
@@ -153,8 +171,8 @@ onMounted(() => {
       transition: all 0.3s ease;
 
       &:focus-within {
-        box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-        border-color: #42b983;
+        box-shadow: 0 0 0 3px var(--admin-primary-light);
+        border-color: var(--admin-primary);
       }
     }
 
@@ -163,8 +181,8 @@ onMounted(() => {
       transition: all 0.3s ease;
 
       &:focus-within {
-        box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-        border-color: #42b983;
+        box-shadow: 0 0 0 3px var(--admin-primary-light);
+        border-color: var(--admin-primary);
       }
     }
   }
@@ -174,7 +192,7 @@ onMounted(() => {
   }
 
   .time-input {
-    width: 160px;
+    width: 180px;
   }
 }
 

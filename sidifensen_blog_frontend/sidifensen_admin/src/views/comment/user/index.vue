@@ -559,7 +559,7 @@ import {
   adminDeleteComment,
   adminDeleteBatchComment,
 } from '@/api/comment'
-import Pagination from '@/components/Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
 
 // 视图状态
 const showComments = ref(false)

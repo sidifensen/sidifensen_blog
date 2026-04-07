@@ -16,7 +16,7 @@ if (import.meta.env.PROD) {
 }
 
 // 注册svg全局组件
-import SvgIcon from '@/components/SvgIcon.vue'
+import SvgIcon from '@/components/common/SvgIcon.vue'
 import 'virtual:svg-icons-register'
 // 注册svg全局组件
 app.component('svg-icon', SvgIcon)

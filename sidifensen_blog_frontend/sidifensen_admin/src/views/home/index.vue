@@ -99,9 +99,9 @@ import {
 } from '@/api/dashboard'
 
 // 公共组件
-import PageHeader from '@/components/PageHeader.vue'
-import StatCard from '@/components/StatCard.vue'
-import QuickActions from '@/components/QuickActions.vue'
+import PageHeader from '@/components/management/PageHeader.vue'
+import StatCard from '@/components/cards/StatCard.vue'
+import QuickActions from '@/components/actions/QuickActions.vue'
 
 // 图表卡片组件
 import UserActivityCard from '@/components/cards/UserActivityCard.vue'

@@ -15,6 +15,50 @@ body {
   overflow: hidden;
 }
 
+// ============================================
+// 管理端主题色定义
+// ============================================
+
+// 浅色模式主题色
+#app {
+  // 主色系
+  --admin-primary: #42b983; // 主色-翠绿
+  --admin-primary-dark: #3aa17e; // 主色-深绿
+  --admin-primary-light: rgba(66, 185, 131, 0.2); // 主色-浅色（用于 focus/hover 背景）
+  --admin-primary-lighter: rgba(66, 185, 131, 0.1); // 主色-更浅（用于 hover 背景）
+  --admin-primary-focus: rgba(66, 185, 131, 0.15); // 主色-聚焦环
+  --admin-primary-active: #2d8a6a; // 主色-激活态
+
+  // 功能色系
+  --admin-success: #22c55e; // 成功-绿色
+  --admin-warning: #f59e0b; // 警告-橙色
+  --admin-danger: #ef4444; // 危险-红色
+  --admin-info: #3b82f6; // 信息-蓝色
+
+  // 图表主题变量
+  --chart-line: #475569;
+}
+
+// 深色模式主题色
+html.dark {
+  // 主色系 - 深色模式下保持一致的绿色调
+  --admin-primary: #4ade80; // 主色-亮绿（深色模式下更醒目）
+  --admin-primary-dark: #42b983; // 主色-标准绿
+  --admin-primary-light: rgba(74, 222, 128, 0.15); // 主色-浅色
+  --admin-primary-lighter: rgba(74, 222, 128, 0.08); // 主色-更浅
+  --admin-primary-focus: rgba(74, 222, 128, 0.12); // 主色-聚焦环
+  --admin-primary-active: #22c55e; // 主色-激活态
+
+  // 功能色系 - 深色模式下调整
+  --admin-success: #4ade80;
+  --admin-warning: #fbbf24;
+  --admin-danger: #f87171;
+  --admin-info: #60a5fa;
+
+  // 图表主题变量
+  --chart-line: #94a3b8;
+}
+
 // 防止 Element Plus 对话框打开时页面抖动
 // Element Plus 会添加 padding-right 补偿滚动条，但我们页面本身不滚动，需要重置
 body.el-popup-parent--hidden {
@@ -32,17 +76,7 @@ a {
   outline: unset;
 }
 
-// 图表主题变量 - 浅色模式
-#app {
-  /* 图表线条颜色 */
-  --chart-line: #475569;
-}
-
-// 图表主题变量 - 深色模式
-html.dark {
-  /* 图表线条颜色 */
-  --chart-line: #94a3b8;
-}
+// 图表主题变量
 
 /* 设置滚动条样式 */
 ::-webkit-scrollbar {

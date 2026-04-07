@@ -5,38 +5,17 @@
       <div class="card-header">
         <div class="card-header-top">
           <h2 class="card-title" :style="{ '--title-color': titleColor }">{{ title }}</h2>
-          <div class="card-actions">
-            <slot name="header-actions" />
-          </div>
         </div>
-
-        <!-- 第二行筛选区域（可选） -->
-        <div v-if="$slots['second-filters'] || showTimeFilter" class="card-second">
-          <slot name="second-filters" />
-          <el-date-picker
-            v-if="showTimeFilter"
-            v-model="startTime"
-            type="datetime"
-            placeholder="开始时间"
-            size="small"
-            class="time-input"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            clearable
-            @change="handleTimeChange"
-          />
-          <el-date-picker
-            v-if="showTimeFilter"
-            v-model="endTime"
-            type="datetime"
-            placeholder="结束时间"
-            size="small"
-            class="time-input"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            clearable
-            @change="handleTimeChange"
-          />
+        <div class="card-header-bottom">
+          <div class="card-filters">
+            <slot name="second-filters" />
+            <TimeRangePicker
+              v-if="showTimeFilter"
+              v-model:start-time="startTime"
+              v-model:end-time="endTime"
+              @change="handleTimeChange"
+            />
+          </div>
         </div>
 
         <!-- 第三行批量操作区域（可选） -->
@@ -73,7 +52,8 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue'
-import Pagination from './Pagination.vue'
+import Pagination from '@/components/data/Pagination.vue'
+import TimeRangePicker from '@/components/search/TimeRangePicker.vue'
 
 // Props
 const props = defineProps({
@@ -83,7 +63,7 @@ const props = defineProps({
   },
   titleColor: {
     type: String,
-    default: '#42b983',
+    default: 'var(--admin-primary)',
   },
   showTimeFilter: {
     type: Boolean,
@@ -123,6 +103,8 @@ const isMobileView = ref(false)
 // 分页
 const currentPage = ref(props.modelCurrentPage)
 const pageSize = ref(props.modelPageSize)
+
+// 时间筛选
 const startTime = ref('')
 const endTime = ref('')
 
@@ -228,8 +210,16 @@ onUnmounted(() => {
 
       .card-header-top {
         display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .card-header-bottom {
+        display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
       }
 
       .card-title {
@@ -244,39 +234,17 @@ onUnmounted(() => {
           display: inline-block;
           width: 4px;
           height: 20px;
-          background-color: var(--title-color, #42b983);
+          background-color: var(--title-color, var(--admin-primary));
           border-radius: 2px;
           margin-right: 10px;
         }
       }
 
-      .card-actions {
+      .card-filters {
         display: flex;
-        align-items: center;
+        justify-content: flex-start;
         gap: 10px;
-      }
-    }
-
-    // 第二行筛选区域：支持多元素换行显示（筛选器、时间范围选择器等）
-    .card-second {
-      display: flex;
-      justify-content: flex-start;
-      gap: 10px;
-      padding: 10px;
-
-      .time-input {
-        width: 160px;
-        border-radius: 8px;
-
-        :deep(.el-input__wrapper) {
-          border-radius: 8px;
-          transition: all 0.3s ease;
-
-          &:focus-within {
-            box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
-            border-color: #42b983;
-          }
-        }
+        align-items: center;
       }
     }
 
@@ -320,7 +288,7 @@ onUnmounted(() => {
         align-items: flex-start;
         gap: 12px;
 
-        .card-header-top {
+        .card-header-bottom {
           flex-direction: column;
           align-items: flex-start;
           width: 100%;
@@ -330,26 +298,12 @@ onUnmounted(() => {
         .card-title {
           font-size: 16px;
         }
-
-        .card-actions {
-          width: 100%;
-          flex-direction: column;
-
-          :deep(.el-button),
-          :deep(.el-input),
-          :deep(.el-select) {
-            width: 100%;
-          }
-        }
       }
 
-      .card-second {
+      .card-filters {
         padding: 8px;
         // 移动端默认纵向排列，已通过 flex-wrap: wrap 自动处理
-
-        .time-input {
-          width: 100%;
-        }
+        flex-wrap: wrap;
       }
 
       .card-third {
