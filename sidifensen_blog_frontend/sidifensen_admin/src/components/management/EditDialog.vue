@@ -1,18 +1,6 @@
 <template>
-  <el-dialog
-    v-model="visible"
-    :title="title"
-    :width="width"
-    :before-close="handleClose"
-    class="edit-dialog"
-  >
-    <el-form
-      ref="formRef"
-      :model="formData"
-      :rules="rules"
-      :label-width="labelWidth"
-      class="edit-form"
-    >
+  <el-dialog v-model="visible" :title="title" :width="width" :before-close="handleClose" class="edit-dialog">
+    <el-form ref="formRef" :model="formData" :rules="rules" :label-width="labelWidth" class="edit-form">
       <slot />
     </el-form>
 

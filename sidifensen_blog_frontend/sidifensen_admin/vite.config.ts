@@ -69,7 +69,7 @@ export default defineConfig({
     ],
 
     // 单行字符数限制，超过则换行（默认 100）
-    printWidth: 100,
+    printWidth: 200,
     // 缩进宽度（默认 2）
     tabWidth: 2,
     // 是否使用 Tab 缩进（默认 false，使用空格）

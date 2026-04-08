@@ -5,24 +5,9 @@
       <div class="card-header">
         <h2 class="card-title">标签管理</h2>
         <div class="card-actions">
-          <el-input
-            v-model="searchKeyword"
-            placeholder="搜索分类或标签"
-            :prefix-icon="Search"
-            size="small"
-            class="search-input"
-            clearable
-          />
+          <el-input v-model="searchKeyword" placeholder="搜索分类或标签" :prefix-icon="Search" size="small" class="search-input" clearable />
           <el-button type="primary" plain round @click="handleAdd" :icon="Plus">新增标签</el-button>
-          <el-button
-            type="danger"
-            plain
-            round
-            @click="handleBatchDelete"
-            :disabled="selectedTags.length === 0"
-            :loading="batchDeleteLoading"
-            >批量删除 ({{ selectedTags.length }})</el-button
-          >
+          <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedTags.length === 0" :loading="batchDeleteLoading">批量删除 ({{ selectedTags.length }})</el-button>
         </div>
       </div>
 
@@ -37,10 +22,7 @@
             <div v-for="(category, index) in filteredCategories" :key="index" class="category-item">
               <div class="category-header" @click="toggleCategory(category.name)">
                 <div class="category-left">
-                  <el-icon
-                    class="expand-icon"
-                    :class="{ expanded: expandedCategories.includes(category.name) }"
-                  >
+                  <el-icon class="expand-icon" :class="{ expanded: expandedCategories.includes(category.name) }">
                     <ArrowRight />
                   </el-icon>
                   <span class="category-name">{{ category.name }}</span>
@@ -49,29 +31,10 @@
                 <div class="category-actions" @click.stop>
                   <div class="sort-control">
                     <span class="sort-label">排序:</span>
-                    <el-input-number
-                      v-model="category.sort"
-                      :min="0"
-                      :max="maxSortValue"
-                      size="small"
-                      @change="handleSortChange(category)"
-                      class="sort-input"
-                    />
+                    <el-input-number v-model="category.sort" :min="0" :max="maxSortValue" size="small" @change="handleSortChange(category)" class="sort-input" />
                   </div>
-                  <el-button
-                    type="primary"
-                    size="small"
-                    @click="handleAddToCategory(category.name)"
-                    :icon="Plus"
-                    >新增标签</el-button
-                  >
-                  <el-button
-                    type="danger"
-                    size="small"
-                    @click="handleDeleteCategory(category.name)"
-                    :icon="Delete"
-                    >删除分类</el-button
-                  >
+                  <el-button type="primary" size="small" @click="handleAddToCategory(category.name)" :icon="Plus">新增标签</el-button>
+                  <el-button type="danger" size="small" @click="handleDeleteCategory(category.name)" :icon="Delete">删除分类</el-button>
                 </div>
               </div>
 
@@ -83,20 +46,9 @@
                   </div>
                   <div v-else class="tags-grid">
                     <div v-for="(tag, tagIndex) in category.tags" :key="tagIndex" class="tag-item">
-                      <el-checkbox
-                        v-model="tag.checked"
-                        @change="handleTagCheck(category.name, tag)"
-                        class="tag-checkbox"
-                      />
+                      <el-checkbox v-model="tag.checked" @change="handleTagCheck(category.name, tag)" class="tag-checkbox" />
                       <span class="tag-name">{{ tag.name }}</span>
-                      <el-button
-                        type="danger"
-                        size="small"
-                        :icon="Delete"
-                        circle
-                        @click="handleDeleteTag(category.name, tag)"
-                        class="delete-icon"
-                      />
+                      <el-button type="danger" size="small" :icon="Delete" circle @click="handleDeleteTag(category.name, tag)" class="delete-icon" />
                     </div>
                   </div>
                 </div>
@@ -113,18 +65,11 @@
             <el-empty description="暂无标签数据" />
           </div>
           <div v-else>
-            <el-card
-              v-for="(category, index) in filteredCategories"
-              :key="index"
-              class="category-card"
-            >
+            <el-card v-for="(category, index) in filteredCategories" :key="index" class="category-card">
               <div class="category-card-content">
                 <div class="category-header-mobile" @click="toggleCategory(category.name)">
                   <div class="category-info">
-                    <el-icon
-                      class="expand-icon"
-                      :class="{ expanded: expandedCategories.includes(category.name) }"
-                    >
+                    <el-icon class="expand-icon" :class="{ expanded: expandedCategories.includes(category.name) }">
                       <ArrowRight />
                     </el-icon>
                     <span class="category-name">{{ category.name }}</span>
@@ -135,60 +80,25 @@
                 <div class="category-actions-mobile" @click.stop>
                   <div class="sort-control-mobile">
                     <span class="sort-label">排序:</span>
-                    <el-input-number
-                      v-model="category.sort"
-                      :min="0"
-                      :max="maxSortValue"
-                      size="small"
-                      @change="handleSortChange(category)"
-                      class="sort-input"
-                    />
+                    <el-input-number v-model="category.sort" :min="0" :max="maxSortValue" size="small" @change="handleSortChange(category)" class="sort-input" />
                   </div>
                   <div class="button-group-mobile">
-                    <el-button
-                      type="primary"
-                      size="small"
-                      @click="handleAddToCategory(category.name)"
-                      :icon="Plus"
-                      >新增</el-button
-                    >
-                    <el-button
-                      type="danger"
-                      size="small"
-                      @click="handleDeleteCategory(category.name)"
-                      :icon="Delete"
-                      >删除</el-button
-                    >
+                    <el-button type="primary" size="small" @click="handleAddToCategory(category.name)" :icon="Plus">新增</el-button>
+                    <el-button type="danger" size="small" @click="handleDeleteCategory(category.name)" :icon="Delete">删除</el-button>
                   </div>
                 </div>
 
                 <!-- 移动端标签列表 -->
                 <transition name="slide-fade">
-                  <div
-                    v-if="expandedCategories.includes(category.name)"
-                    class="tags-container-mobile"
-                  >
+                  <div v-if="expandedCategories.includes(category.name)" class="tags-container-mobile">
                     <div v-if="category.tags.length === 0" class="empty-tags">
                       <span>该分类下暂无标签</span>
                     </div>
                     <div v-else class="tags-list-mobile">
-                      <div
-                        v-for="(tag, tagIndex) in category.tags"
-                        :key="tagIndex"
-                        class="tag-item-mobile"
-                      >
-                        <el-checkbox
-                          v-model="tag.checked"
-                          @change="handleTagCheck(category.name, tag)"
-                        />
+                      <div v-for="(tag, tagIndex) in category.tags" :key="tagIndex" class="tag-item-mobile">
+                        <el-checkbox v-model="tag.checked" @change="handleTagCheck(category.name, tag)" />
                         <span class="tag-name">{{ tag.name }}</span>
-                        <el-button
-                          type="danger"
-                          size="small"
-                          :icon="Delete"
-                          circle
-                          @click="handleDeleteTag(category.name, tag)"
-                        />
+                        <el-button type="danger" size="small" :icon="Delete" circle @click="handleDeleteTag(category.name, tag)" />
                       </div>
                     </div>
                   </div>
@@ -201,35 +111,17 @@
     </div>
 
     <!-- 新增/编辑标签对话框 -->
-    <el-dialog
-      v-model="dialogVisible"
-      :title="dialogTitle"
-      :before-close="handleDialogClose"
-      width="500px"
-      class="tag-dialog"
-    >
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" :before-close="handleDialogClose" width="500px" class="tag-dialog">
       <el-form ref="tagFormRef" :model="tagForm" :rules="rules" label-width="80px">
         <el-form-item prop="category" label="分类名">
-          <el-select
-            v-model="tagForm.category"
-            placeholder="请选择或输入分类名"
-            filterable
-            allow-create
-            default-first-option
-            style="width: 100%"
-          >
+          <el-select v-model="tagForm.category" placeholder="请选择或输入分类名" filterable allow-create default-first-option style="width: 100%">
             <el-option v-for="cat in categoryNames" :key="cat" :label="cat" :value="cat" />
           </el-select>
           <div class="form-tip">可以选择现有分类，也可以输入新建分类</div>
         </el-form-item>
 
         <el-form-item prop="name" label="标签名">
-          <el-input
-            v-model="tagForm.name"
-            placeholder="请输入标签名"
-            maxlength="50"
-            show-word-limit
-          />
+          <el-input v-model="tagForm.name" placeholder="请输入标签名" maxlength="50" show-word-limit />
         </el-form-item>
       </el-form>
 
@@ -480,15 +372,11 @@ const handleDeleteCategory = (categoryName) => {
   const category = categories.value.find((cat) => cat.name === categoryName)
   if (!category) return
 
-  ElMessageBox.confirm(
-    `确定要删除分类【${categoryName}】及其下的所有 ${category.tags.length} 个标签吗？`,
-    '警告',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    },
-  )
+  ElMessageBox.confirm(`确定要删除分类【${categoryName}】及其下的所有 ${category.tags.length} 个标签吗？`, '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
     .then(async () => {
       try {
         const tagIds = category.tags.map((tag) => tag.id)
@@ -989,13 +877,7 @@ onUnmounted(() => {
 
 // 响应式设计
 @media screen and (max-width: 1200px) {
-  .management-container
-    .card
-    .desktop-view
-    .tag-categories
-    .category-item
-    .tags-container
-    .tags-grid {
+  .management-container .card .desktop-view .tag-categories .category-item .tags-container .tags-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
 }

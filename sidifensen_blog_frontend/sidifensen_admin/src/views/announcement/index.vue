@@ -5,22 +5,8 @@
       <div class="card-header">
         <h2 class="card-title">公告管理</h2>
         <div class="card-actions">
-          <el-input
-            v-model="searchKeyword"
-            placeholder="搜索公告标题"
-            :prefix-icon="Search"
-            size="small"
-            class="search-input"
-            clearable
-            @keyup.enter="handleSearch"
-          />
-          <el-select
-            v-model="filterStatus"
-            placeholder="状态筛选"
-            size="small"
-            clearable
-            class="status-select"
-          >
+          <el-input v-model="searchKeyword" placeholder="搜索公告标题" :prefix-icon="Search" size="small" class="search-input" clearable @keyup.enter="handleSearch" />
+          <el-select v-model="filterStatus" placeholder="状态筛选" size="small" clearable class="status-select">
             <el-option label="待发送" :value="0" />
             <el-option label="已发布" :value="2" />
             <el-option label="已取消" :value="1" />
@@ -31,36 +17,21 @@
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table
-          v-loading="loading"
-          :data="announcementList"
-          stripe
-          style="width: 100%"
-          @selection-change="handleSelectionChange"
-        >
+        <el-table v-loading="loading" :data="announcementList" stripe style="width: 100%" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="55" />
           <el-table-column prop="id" label="ID" width="80" />
           <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip />
           <el-table-column prop="content" label="内容" min-width="300" show-overflow-tooltip />
           <el-table-column prop="status" label="状态" width="100">
             <template #default="{ row }">
-              <el-tag :type="getStatusType(row.status)" size="small">{{
-                getStatusText(row.status)
-              }}</el-tag>
+              <el-tag :type="getStatusType(row.status)" size="small">{{ getStatusText(row.status) }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column prop="createTime" label="创建时间" width="180" />
           <el-table-column label="操作" width="200" fixed="right">
             <template #default="{ row }">
               <el-button type="primary" size="small" link @click="handleEdit(row)">编辑</el-button>
-              <el-button
-                v-if="row.status === 0"
-                type="warning"
-                size="small"
-                link
-                @click="handleCancel(row)"
-                >取消</el-button
-              >
+              <el-button v-if="row.status === 0" type="warning" size="small" link @click="handleCancel(row)">取消</el-button>
               <el-button type="danger" size="small" link @click="handleDelete(row)">删除</el-button>
             </template>
           </el-table-column>
@@ -73,25 +44,16 @@
           <div v-if="announcementList.length === 0" class="empty-state">
             <el-empty description="暂无公告数据" />
           </div>
-          <el-card
-            v-for="item in announcementList"
-            :key="item.id"
-            class="announcement-card"
-            @click="handleEdit(item)"
-          >
+          <el-card v-for="item in announcementList" :key="item.id" class="announcement-card" @click="handleEdit(item)">
             <div class="card-header-mobile">
               <span class="card-title-mobile">{{ item.title }}</span>
-              <el-tag :type="getStatusType(item.status)" size="small">{{
-                getStatusText(item.status)
-              }}</el-tag>
+              <el-tag :type="getStatusType(item.status)" size="small">{{ getStatusText(item.status) }}</el-tag>
             </div>
             <div class="card-content-mobile">{{ item.content }}</div>
             <div class="card-footer-mobile">
               <span class="card-time">{{ item.createTime }}</span>
               <div class="card-actions-mobile">
-                <el-button type="danger" size="small" link @click.stop="handleDelete(item)"
-                  >删除</el-button
-                >
+                <el-button type="danger" size="small" link @click.stop="handleDelete(item)">删除</el-button>
               </div>
             </div>
           </el-card>
@@ -113,36 +75,13 @@
     </div>
 
     <!-- 新增/编辑公告对话框 -->
-    <el-dialog
-      v-model="dialogVisible"
-      :title="dialogTitle"
-      width="600px"
-      class="announcement-dialog"
-      :before-close="handleDialogClose"
-    >
-      <el-form
-        ref="announcementFormRef"
-        :model="announcementForm"
-        :rules="rules"
-        label-width="80px"
-      >
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" class="announcement-dialog" :before-close="handleDialogClose">
+      <el-form ref="announcementFormRef" :model="announcementForm" :rules="rules" label-width="80px">
         <el-form-item prop="title" label="标题">
-          <el-input
-            v-model="announcementForm.title"
-            placeholder="请输入公告标题"
-            maxlength="100"
-            show-word-limit
-          />
+          <el-input v-model="announcementForm.title" placeholder="请输入公告标题" maxlength="100" show-word-limit />
         </el-form-item>
         <el-form-item prop="content" label="内容">
-          <el-input
-            v-model="announcementForm.content"
-            type="textarea"
-            :rows="5"
-            placeholder="请输入公告内容"
-            maxlength="2000"
-            show-word-limit
-          />
+          <el-input v-model="announcementForm.content" type="textarea" :rows="5" placeholder="请输入公告内容" maxlength="2000" show-word-limit />
         </el-form-item>
         <el-form-item prop="status" label="状态">
           <el-radio-group v-model="announcementForm.status">
@@ -164,13 +103,7 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { Search, Plus } from '@element-plus/icons-vue'
-import {
-  getAnnouncementPage,
-  createAnnouncement,
-  updateAnnouncement,
-  cancelAnnouncement,
-  deleteAnnouncement,
-} from '@/api/announcement'
+import { getAnnouncementPage, createAnnouncement, updateAnnouncement, cancelAnnouncement, deleteAnnouncement } from '@/api/announcement'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 公告列表数据

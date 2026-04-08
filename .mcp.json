@@ -1,13 +1,5 @@
 {
   "mcpServers": {
-    "antd-components": {
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@jzone-mcp/antd-components-mcp"]
-    },
-    "chrome-devtools": {
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "chrome-devtools-mcp", "--user-data-dir", "C:/Users/x/AppData/Local/Google/Chrome/User Data"]
-    },
     "mysql": {
       "command": "cmd",
       "args": ["/c", "npx", "-y", "@berthojoris/mcp-mysql-server", "mysql://root:root@localhost:3306/sidifensen_blog"]

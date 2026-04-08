@@ -4,20 +4,10 @@
       <div class="hero-section__copy">
         <p class="hero-section__eyebrow">MEMBERSHIP OPERATIONS</p>
         <h2 class="hero-section__title">会员管理</h2>
-        <p class="hero-section__subtitle">
-          统一查看会员状态、支付订单与套餐配置，人工调整只影响会员数据，不伪造支付记录。
-        </p>
+        <p class="hero-section__subtitle">统一查看会员状态、支付订单与套餐配置，人工调整只影响会员数据，不伪造支付记录。</p>
       </div>
       <div class="hero-section__actions">
-        <el-button
-          class="vip-button vip-button--hero vip-button--primary"
-          type="primary"
-          :icon="RefreshRight"
-          :loading="refreshing"
-          @click="refreshAll"
-        >
-          刷新数据
-        </el-button>
+        <el-button class="vip-button vip-button--hero vip-button--primary" type="primary" :icon="RefreshRight" :loading="refreshing" @click="refreshAll"> 刷新数据 </el-button>
       </div>
     </div>
 
@@ -50,13 +40,7 @@
                   :prefix-icon="Search"
                   @keyup.enter="handleMemberSearch"
                 />
-                <el-select
-                  v-model="memberFilters.status"
-                  placeholder="会员状态"
-                  clearable
-                  class="pane-section__input"
-                  @change="handleMemberSearch"
-                >
+                <el-select v-model="memberFilters.status" placeholder="会员状态" clearable class="pane-section__input" @change="handleMemberSearch">
                   <el-option label="未开通" value="NONE" />
                   <el-option label="有效" value="ACTIVE" />
                   <el-option label="已过期" value="EXPIRED" />
@@ -73,35 +57,18 @@
                 />
               </div>
               <div class="pane-section__toolbar-group pane-section__toolbar-group--actions">
-                <el-button
-                  class="vip-button vip-button--primary"
-                  :icon="Search"
-                  type="primary"
-                  @click="handleMemberSearch"
-                  >查询</el-button
-                >
-                <el-button class="vip-button vip-button--secondary" @click="resetMemberFilters"
-                  >重置</el-button
-                >
+                <el-button class="vip-button vip-button--primary" :icon="Search" type="primary" @click="handleMemberSearch">查询</el-button>
+                <el-button class="vip-button vip-button--secondary" @click="resetMemberFilters">重置</el-button>
               </div>
             </div>
 
             <div class="pane-section__table-wrapper">
-              <el-table
-                v-loading="memberLoading"
-                :data="memberList"
-                class="pane-section__table pane-section__table--members"
-              >
+              <el-table v-loading="memberLoading" :data="memberList" class="pane-section__table pane-section__table--members">
                 <el-table-column prop="userId" label="用户ID" width="88" />
                 <el-table-column label="用户" width="250">
                   <template #default="{ row }">
                     <div class="user-cell">
-                      <el-avatar
-                        class="user-cell__avatar"
-                        :src="resolveAvatar(row.avatar)"
-                        :size="40"
-                        >{{ getAvatarFallback(row) }}</el-avatar
-                      >
+                      <el-avatar class="user-cell__avatar" :src="resolveAvatar(row.avatar)" :size="40">{{ getAvatarFallback(row) }}</el-avatar>
                       <div class="user-cell__meta">
                         <span class="user-cell__name">{{ row.nickname || row.username }}</span>
                         <span class="user-cell__sub">{{ row.username }}</span>
@@ -112,68 +79,34 @@
                 </el-table-column>
                 <el-table-column label="用户状态" width="110">
                   <template #default="{ row }">
-                    <el-tag :type="getUserStatusMeta(row.userStatus).type">{{
-                      getUserStatusMeta(row.userStatus).text
-                    }}</el-tag>
+                    <el-tag :type="getUserStatusMeta(row.userStatus).type">{{ getUserStatusMeta(row.userStatus).text }}</el-tag>
                   </template>
                 </el-table-column>
                 <el-table-column label="会员状态" width="110">
                   <template #default="{ row }">
-                    <el-tag :type="getVipStatusMeta(row.vipStatus).type">{{
-                      getVipStatusMeta(row.vipStatus).text
-                    }}</el-tag>
+                    <el-tag :type="getVipStatusMeta(row.vipStatus).type">{{ getVipStatusMeta(row.vipStatus).text }}</el-tag>
                   </template>
                 </el-table-column>
-                <el-table-column
-                  prop="vipExpireTime"
-                  label="到期时间"
-                  min-width="170"
-                  show-overflow-tooltip
-                />
+                <el-table-column prop="vipExpireTime" label="到期时间" min-width="170" show-overflow-tooltip />
                 <el-table-column label="剩余天数" width="108">
                   <template #default="{ row }">
                     <span class="metric-text">{{ row.remainingDays || 0 }} 天</span>
                   </template>
                 </el-table-column>
-                <el-table-column
-                  prop="latestPlanName"
-                  label="最近套餐"
-                  min-width="120"
-                  show-overflow-tooltip
-                />
-                <el-table-column
-                  prop="lastOrderNo"
-                  label="最后订单号"
-                  min-width="210"
-                  show-overflow-tooltip
-                />
-                <el-table-column
-                  prop="loginTime"
-                  label="最近登录"
-                  min-width="168"
-                  show-overflow-tooltip
-                />
+                <el-table-column prop="latestPlanName" label="最近套餐" min-width="120" show-overflow-tooltip />
+                <el-table-column prop="lastOrderNo" label="最后订单号" min-width="210" show-overflow-tooltip />
+                <el-table-column prop="loginTime" label="最近登录" min-width="168" show-overflow-tooltip />
                 <el-table-column label="操作" width="300" fixed="right">
                   <template #default="{ row }">
                     <div class="action-group">
-                      <el-button
-                        class="vip-button vip-button--soft-info"
-                        type="primary"
-                        plain
-                        size="small"
-                        :icon="View"
-                        @click="openMemberDetail(row.userId)"
-                        >详情</el-button
-                      >
+                      <el-button class="vip-button vip-button--soft-info" type="primary" plain size="small" :icon="View" @click="openMemberDetail(row.userId)">详情</el-button>
                       <el-button
                         class="vip-button vip-button--soft-accent"
                         type="warning"
                         plain
                         size="small"
                         :icon="Plus"
-                        @click="
-                          openAdjustDialog(row, row.vipStatus === 'ACTIVE' ? 'EXTEND' : 'ACTIVATE')
-                        "
+                        @click="openAdjustDialog(row, row.vipStatus === 'ACTIVE' ? 'EXTEND' : 'ACTIVATE')"
                       >
                         {{ row.vipStatus === 'ACTIVE' ? '延期' : '开通' }}
                       </el-button>
@@ -211,14 +144,7 @@
           <div class="pane-section">
             <div class="pane-section__toolbar">
               <div class="pane-section__toolbar-group">
-                <el-input
-                  v-model="orderFilters.orderNo"
-                  placeholder="搜索订单号"
-                  clearable
-                  class="pane-section__input"
-                  :prefix-icon="Search"
-                  @keyup.enter="handleOrderSearch"
-                />
+                <el-input v-model="orderFilters.orderNo" placeholder="搜索订单号" clearable class="pane-section__input" :prefix-icon="Search" @keyup.enter="handleOrderSearch" />
                 <el-input
                   v-model="orderFilters.userKeyword"
                   placeholder="搜索用户ID / 用户名 / 昵称 / 邮箱"
@@ -227,48 +153,19 @@
                   :prefix-icon="UserFilled"
                   @keyup.enter="handleOrderSearch"
                 />
-                <el-select
-                  v-model="orderFilters.planCode"
-                  placeholder="套餐"
-                  clearable
-                  class="pane-section__input pane-section__input--compact"
-                  @change="handleOrderSearch"
-                >
-                  <el-option
-                    v-for="plan in planList"
-                    :key="plan.id"
-                    :label="plan.name"
-                    :value="plan.code"
-                  />
+                <el-select v-model="orderFilters.planCode" placeholder="套餐" clearable class="pane-section__input pane-section__input--compact" @change="handleOrderSearch">
+                  <el-option v-for="plan in planList" :key="plan.id" :label="plan.name" :value="plan.code" />
                 </el-select>
-                <el-select
-                  v-model="orderFilters.status"
-                  placeholder="订单状态"
-                  clearable
-                  class="pane-section__input pane-section__input--compact"
-                  @change="handleOrderSearch"
-                >
+                <el-select v-model="orderFilters.status" placeholder="订单状态" clearable class="pane-section__input pane-section__input--compact" @change="handleOrderSearch">
                   <el-option label="待支付" value="PAYING" />
                   <el-option label="已支付" value="PAID" />
                   <el-option label="已关闭" value="CLOSED" />
                   <el-option label="失败" value="FAILED" />
                 </el-select>
-                <el-select
-                  v-model="orderFilters.channel"
-                  placeholder="渠道"
-                  clearable
-                  class="pane-section__input pane-section__input--compact"
-                  @change="handleOrderSearch"
-                >
+                <el-select v-model="orderFilters.channel" placeholder="渠道" clearable class="pane-section__input pane-section__input--compact" @change="handleOrderSearch">
                   <el-option label="支付宝" value="ALIPAY" />
                 </el-select>
-                <el-select
-                  v-model="orderFilters.clientType"
-                  placeholder="客户端"
-                  clearable
-                  class="pane-section__input pane-section__input--compact"
-                  @change="handleOrderSearch"
-                >
+                <el-select v-model="orderFilters.clientType" placeholder="客户端" clearable class="pane-section__input pane-section__input--compact" @change="handleOrderSearch">
                   <el-option label="PC" value="PC" />
                   <el-option label="H5" value="H5" />
                 </el-select>
@@ -284,48 +181,24 @@
                 />
               </div>
               <div class="pane-section__toolbar-group pane-section__toolbar-group--actions">
-                <el-button
-                  class="vip-button vip-button--primary"
-                  :icon="Search"
-                  type="primary"
-                  @click="handleOrderSearch"
-                  >查询</el-button
-                >
-                <el-button class="vip-button vip-button--secondary" @click="resetOrderFilters"
-                  >重置</el-button
-                >
+                <el-button class="vip-button vip-button--primary" :icon="Search" type="primary" @click="handleOrderSearch">查询</el-button>
+                <el-button class="vip-button vip-button--secondary" @click="resetOrderFilters">重置</el-button>
               </div>
             </div>
 
             <div class="pane-section__table-wrapper">
-              <el-table
-                v-loading="orderLoading"
-                :data="orderList"
-                class="pane-section__table pane-section__table--orders"
-              >
-                <el-table-column
-                  prop="orderNo"
-                  label="订单号"
-                  min-width="220"
-                  show-overflow-tooltip
-                />
+              <el-table v-loading="orderLoading" :data="orderList" class="pane-section__table pane-section__table--orders">
+                <el-table-column prop="orderNo" label="订单号" min-width="220" show-overflow-tooltip />
                 <el-table-column label="用户" min-width="180" show-overflow-tooltip>
                   <template #default="{ row }">
                     <div class="order-user">
-                      <span class="order-user__name">{{
-                        row.nickname || row.username || `用户 ${row.userId}`
-                      }}</span>
+                      <span class="order-user__name">{{ row.nickname || row.username || `用户 ${row.userId}` }}</span>
                       <span class="order-user__sub">#{{ row.userId }}</span>
                       <span class="order-user__sub" v-if="row.email">{{ row.email }}</span>
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column
-                  prop="planName"
-                  label="套餐"
-                  min-width="120"
-                  show-overflow-tooltip
-                />
+                <el-table-column prop="planName" label="套餐" min-width="120" show-overflow-tooltip />
                 <el-table-column label="金额" width="110">
                   <template #default="{ row }">
                     <span class="metric-text">¥{{ normalizePrice(row.priceYuan) }}</span>
@@ -333,9 +206,7 @@
                 </el-table-column>
                 <el-table-column label="状态" width="110">
                   <template #default="{ row }">
-                    <el-tag :type="getOrderStatusMeta(row.status).type">{{
-                      getOrderStatusMeta(row.status).text
-                    }}</el-tag>
+                    <el-tag :type="getOrderStatusMeta(row.status).type">{{ getOrderStatusMeta(row.status).text }}</el-tag>
                   </template>
                 </el-table-column>
                 <el-table-column label="渠道" width="90">
@@ -348,18 +219,8 @@
                     <span>{{ row.clientType || '-' }}</span>
                   </template>
                 </el-table-column>
-                <el-table-column
-                  prop="paidTime"
-                  label="支付时间"
-                  min-width="168"
-                  show-overflow-tooltip
-                />
-                <el-table-column
-                  prop="createTime"
-                  label="创建时间"
-                  min-width="168"
-                  show-overflow-tooltip
-                />
+                <el-table-column prop="paidTime" label="支付时间" min-width="168" show-overflow-tooltip />
+                <el-table-column prop="createTime" label="创建时间" min-width="168" show-overflow-tooltip />
               </el-table>
             </div>
 
@@ -386,9 +247,7 @@
                     <span class="plan-card__code">{{ plan.code }}</span>
                     <h3 class="plan-card__title">{{ plan.name }}</h3>
                   </div>
-                  <el-tag :type="plan.enabled ? 'success' : 'info'">{{
-                    plan.enabled ? '启用中' : '已停用'
-                  }}</el-tag>
+                  <el-tag :type="plan.enabled ? 'success' : 'info'">{{ plan.enabled ? '启用中' : '已停用' }}</el-tag>
                 </div>
                 <div class="plan-card__price">
                   <span class="plan-card__currency">¥</span>
@@ -399,17 +258,8 @@
                   <span>{{ plan.description || '暂无套餐说明' }}</span>
                 </div>
                 <div class="plan-card__footer">
-                  <span class="plan-card__time"
-                    >更新于 {{ plan.updateTime || plan.createTime || '-' }}</span
-                  >
-                  <el-button
-                    class="vip-button vip-button--soft-info"
-                    type="primary"
-                    plain
-                    :icon="EditPen"
-                    @click="openPlanDialog(plan)"
-                    >编辑套餐</el-button
-                  >
+                  <span class="plan-card__time">更新于 {{ plan.updateTime || plan.createTime || '-' }}</span>
+                  <el-button class="vip-button vip-button--soft-info" type="primary" plain :icon="EditPen" @click="openPlanDialog(plan)">编辑套餐</el-button>
                 </div>
               </div>
             </div>
@@ -418,12 +268,7 @@
       </el-tabs>
     </div>
 
-    <el-drawer
-      v-model="detailVisible"
-      :size="isMobileView ? '100%' : '700px'"
-      destroy-on-close
-      class="detail-drawer"
-    >
+    <el-drawer v-model="detailVisible" :size="isMobileView ? '100%' : '700px'" destroy-on-close class="detail-drawer">
       <template #header>
         <div class="detail-drawer__header">
           <span class="detail-drawer__title">会员详情</span>
@@ -435,12 +280,7 @@
         <template v-if="memberDetail">
           <div class="detail-drawer__hero">
             <div class="detail-drawer__hero-user">
-              <el-avatar
-                class="detail-drawer__avatar"
-                :src="resolveAvatar(memberDetail.avatar)"
-                :size="56"
-                >{{ getAvatarFallback(memberDetail) }}</el-avatar
-              >
+              <el-avatar class="detail-drawer__avatar" :src="resolveAvatar(memberDetail.avatar)" :size="56">{{ getAvatarFallback(memberDetail) }}</el-avatar>
               <div class="detail-drawer__hero-meta">
                 <h3>{{ memberDetail.nickname || memberDetail.username }}</h3>
                 <p>#{{ memberDetail.userId }} · {{ memberDetail.username }}</p>
@@ -448,63 +288,37 @@
               </div>
             </div>
             <div class="detail-drawer__hero-tags">
-              <el-tag :type="getVipStatusMeta(memberDetail.vipStatus).type">{{
-                getVipStatusMeta(memberDetail.vipStatus).text
-              }}</el-tag>
-              <el-tag :type="getUserStatusMeta(memberDetail.userStatus).type">{{
-                getUserStatusMeta(memberDetail.userStatus).text
-              }}</el-tag>
+              <el-tag :type="getVipStatusMeta(memberDetail.vipStatus).type">{{ getVipStatusMeta(memberDetail.vipStatus).text }}</el-tag>
+              <el-tag :type="getUserStatusMeta(memberDetail.userStatus).type">{{ getUserStatusMeta(memberDetail.userStatus).text }}</el-tag>
             </div>
           </div>
 
           <div class="detail-drawer__panel">
             <div class="detail-drawer__grid">
               <div class="detail-drawer__item">
-                <span class="detail-drawer__label">开始时间</span
-                ><span class="detail-drawer__value">{{ memberDetail.vipStartTime || '-' }}</span>
+                <span class="detail-drawer__label">开始时间</span><span class="detail-drawer__value">{{ memberDetail.vipStartTime || '-' }}</span>
               </div>
               <div class="detail-drawer__item">
-                <span class="detail-drawer__label">到期时间</span
-                ><span class="detail-drawer__value">{{ memberDetail.vipExpireTime || '-' }}</span>
+                <span class="detail-drawer__label">到期时间</span><span class="detail-drawer__value">{{ memberDetail.vipExpireTime || '-' }}</span>
               </div>
               <div class="detail-drawer__item">
-                <span class="detail-drawer__label">剩余天数</span
-                ><span class="detail-drawer__value">{{ memberDetail.remainingDays || 0 }} 天</span>
+                <span class="detail-drawer__label">剩余天数</span><span class="detail-drawer__value">{{ memberDetail.remainingDays || 0 }} 天</span>
               </div>
               <div class="detail-drawer__item">
-                <span class="detail-drawer__label">最近套餐</span
-                ><span class="detail-drawer__value">{{ memberDetail.latestPlanName || '-' }}</span>
+                <span class="detail-drawer__label">最近套餐</span><span class="detail-drawer__value">{{ memberDetail.latestPlanName || '-' }}</span>
               </div>
               <div class="detail-drawer__item">
-                <span class="detail-drawer__label">最后订单号</span
-                ><span class="detail-drawer__value detail-drawer__value--mono">{{
-                  memberDetail.lastOrderNo || '-'
-                }}</span>
+                <span class="detail-drawer__label">最后订单号</span><span class="detail-drawer__value detail-drawer__value--mono">{{ memberDetail.lastOrderNo || '-' }}</span>
               </div>
               <div class="detail-drawer__item">
-                <span class="detail-drawer__label">最近登录</span
-                ><span class="detail-drawer__value">{{ memberDetail.loginTime || '-' }}</span>
+                <span class="detail-drawer__label">最近登录</span><span class="detail-drawer__value">{{ memberDetail.loginTime || '-' }}</span>
               </div>
             </div>
             <div class="detail-drawer__actions">
-              <el-button
-                class="vip-button vip-button--primary"
-                type="primary"
-                @click="
-                  openAdjustDialog(
-                    memberDetail,
-                    memberDetail.vipStatus === 'ACTIVE' ? 'EXTEND' : 'ACTIVATE',
-                  )
-                "
-              >
+              <el-button class="vip-button vip-button--primary" type="primary" @click="openAdjustDialog(memberDetail, memberDetail.vipStatus === 'ACTIVE' ? 'EXTEND' : 'ACTIVATE')">
                 {{ memberDetail.vipStatus === 'ACTIVE' ? '延期会员' : '开通会员' }}
               </el-button>
-              <el-button
-                v-if="memberDetail.vipStatus !== 'NONE'"
-                class="vip-button vip-button--soft-danger"
-                type="danger"
-                plain
-                @click="openAdjustDialog(memberDetail, 'EXPIRE_NOW')"
+              <el-button v-if="memberDetail.vipStatus !== 'NONE'" class="vip-button vip-button--soft-danger" type="danger" plain @click="openAdjustDialog(memberDetail, 'EXPIRE_NOW')"
                 >立即失效</el-button
               >
             </div>
@@ -513,41 +327,18 @@
           <div class="detail-drawer__panel">
             <div class="detail-drawer__section-title">最近订单</div>
             <div class="detail-drawer__table-wrapper">
-              <el-table
-                :data="memberDetail.recentOrders || []"
-                class="detail-drawer__table"
-                empty-text="暂无支付订单"
-              >
-                <el-table-column
-                  prop="orderNo"
-                  label="订单号"
-                  min-width="190"
-                  show-overflow-tooltip
-                />
-                <el-table-column
-                  prop="planName"
-                  label="套餐"
-                  min-width="110"
-                  show-overflow-tooltip
-                />
+              <el-table :data="memberDetail.recentOrders || []" class="detail-drawer__table" empty-text="暂无支付订单">
+                <el-table-column prop="orderNo" label="订单号" min-width="190" show-overflow-tooltip />
+                <el-table-column prop="planName" label="套餐" min-width="110" show-overflow-tooltip />
                 <el-table-column label="金额" width="90"
-                  ><template #default="{ row }"
-                    >¥{{ normalizePrice(row.priceYuan) }}</template
-                  ></el-table-column
+                  ><template #default="{ row }">¥{{ normalizePrice(row.priceYuan) }}</template></el-table-column
                 >
                 <el-table-column label="状态" width="100">
                   <template #default="{ row }">
-                    <el-tag :type="getOrderStatusMeta(row.status).type">{{
-                      getOrderStatusMeta(row.status).text
-                    }}</el-tag>
+                    <el-tag :type="getOrderStatusMeta(row.status).type">{{ getOrderStatusMeta(row.status).text }}</el-tag>
                   </template>
                 </el-table-column>
-                <el-table-column
-                  prop="paidTime"
-                  label="支付时间"
-                  min-width="160"
-                  show-overflow-tooltip
-                />
+                <el-table-column prop="paidTime" label="支付时间" min-width="160" show-overflow-tooltip />
               </el-table>
             </div>
           </div>
@@ -555,21 +346,11 @@
       </div>
     </el-drawer>
 
-    <el-dialog
-      v-model="adjustDialogVisible"
-      :title="adjustDialogTitle"
-      width="520px"
-      class="adjust-dialog"
-      destroy-on-close
-    >
+    <el-dialog v-model="adjustDialogVisible" :title="adjustDialogTitle" width="520px" class="adjust-dialog" destroy-on-close>
       <el-form ref="adjustFormRef" :model="adjustForm" :rules="adjustRules" label-width="88px">
         <el-form-item label="用户">
           <div class="dialog-user-card">
-            <span class="dialog-user-card__name">{{
-              adjustTarget?.nickname ||
-              adjustTarget?.username ||
-              `用户 ${adjustTarget?.userId || ''}`
-            }}</span>
+            <span class="dialog-user-card__name">{{ adjustTarget?.nickname || adjustTarget?.username || `用户 ${adjustTarget?.userId || ''}` }}</span>
             <span class="dialog-user-card__sub">#{{ adjustTarget?.userId }}</span>
           </div>
         </el-form-item>
@@ -581,84 +362,33 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item v-if="adjustForm.actionType !== 'EXPIRE_NOW'" label="天数" prop="days">
-          <el-input-number
-            v-model="adjustForm.days"
-            :min="1"
-            :max="3650"
-            controls-position="right"
-          />
+          <el-input-number v-model="adjustForm.days" :min="1" :max="3650" controls-position="right" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input
-            v-model="adjustForm.remark"
-            type="textarea"
-            :rows="4"
-            maxlength="200"
-            show-word-limit
-            placeholder="记录本次人工调整原因，便于后续审计。"
-          />
+          <el-input v-model="adjustForm.remark" type="textarea" :rows="4" maxlength="200" show-word-limit placeholder="记录本次人工调整原因，便于后续审计。" />
         </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button class="vip-button vip-button--secondary" @click="adjustDialogVisible = false"
-            >取消</el-button
-          >
-          <el-button
-            class="vip-button vip-button--primary"
-            type="primary"
-            :loading="adjustSubmitting"
-            @click="submitAdjust"
-            >确认</el-button
-          >
+          <el-button class="vip-button vip-button--secondary" @click="adjustDialogVisible = false">取消</el-button>
+          <el-button class="vip-button vip-button--primary" type="primary" :loading="adjustSubmitting" @click="submitAdjust">确认</el-button>
         </span>
       </template>
     </el-dialog>
 
-    <el-dialog
-      v-model="planDialogVisible"
-      title="编辑套餐"
-      width="540px"
-      class="plan-dialog"
-      destroy-on-close
-    >
+    <el-dialog v-model="planDialogVisible" title="编辑套餐" width="540px" class="plan-dialog" destroy-on-close>
       <el-form ref="planFormRef" :model="planForm" :rules="planRules" label-width="88px">
-        <el-form-item label="套餐编码"
-          ><el-input :model-value="planForm.code" disabled
-        /></el-form-item>
-        <el-form-item label="套餐名称" prop="name"
-          ><el-input v-model="planForm.name" maxlength="50" show-word-limit
-        /></el-form-item>
-        <el-form-item label="时长(天)" prop="days"
-          ><el-input-number v-model="planForm.days" :min="1" :max="3650" controls-position="right"
-        /></el-form-item>
-        <el-form-item label="售价(元)" prop="priceYuan"
-          ><el-input v-model="planForm.priceYuan" placeholder="例如 29.90"
-        /></el-form-item>
-        <el-form-item label="启用状态" prop="enabled"
-          ><el-switch v-model="planForm.enabled"
-        /></el-form-item>
-        <el-form-item label="套餐说明" prop="description"
-          ><el-input
-            v-model="planForm.description"
-            type="textarea"
-            :rows="4"
-            maxlength="100"
-            show-word-limit
-        /></el-form-item>
+        <el-form-item label="套餐编码"><el-input :model-value="planForm.code" disabled /></el-form-item>
+        <el-form-item label="套餐名称" prop="name"><el-input v-model="planForm.name" maxlength="50" show-word-limit /></el-form-item>
+        <el-form-item label="时长(天)" prop="days"><el-input-number v-model="planForm.days" :min="1" :max="3650" controls-position="right" /></el-form-item>
+        <el-form-item label="售价(元)" prop="priceYuan"><el-input v-model="planForm.priceYuan" placeholder="例如 29.90" /></el-form-item>
+        <el-form-item label="启用状态" prop="enabled"><el-switch v-model="planForm.enabled" /></el-form-item>
+        <el-form-item label="套餐说明" prop="description"><el-input v-model="planForm.description" type="textarea" :rows="4" maxlength="100" show-word-limit /></el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button class="vip-button vip-button--secondary" @click="planDialogVisible = false"
-            >取消</el-button
-          >
-          <el-button
-            class="vip-button vip-button--primary"
-            type="primary"
-            :loading="planSubmitting"
-            @click="submitPlan"
-            >保存</el-button
-          >
+          <el-button class="vip-button vip-button--secondary" @click="planDialogVisible = false">取消</el-button>
+          <el-button class="vip-button vip-button--primary" type="primary" :loading="planSubmitting" @click="submitPlan">保存</el-button>
         </span>
       </template>
     </el-dialog>
@@ -667,28 +397,8 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
-import {
-  EditPen,
-  Medal,
-  Plus,
-  RefreshRight,
-  Search,
-  ShoppingBag,
-  SwitchButton,
-  Timer,
-  UserFilled,
-  View,
-  WalletFilled,
-} from '@element-plus/icons-vue'
-import {
-  adjustVipMember,
-  getVipDashboard,
-  getVipMemberDetail,
-  getVipMemberPage,
-  getVipOrderPage,
-  getVipPlanList,
-  updateVipPlan,
-} from '@/api/vip'
+import { EditPen, Medal, Plus, RefreshRight, Search, ShoppingBag, SwitchButton, Timer, UserFilled, View, WalletFilled } from '@element-plus/icons-vue'
+import { adjustVipMember, getVipDashboard, getVipMemberDetail, getVipMemberPage, getVipOrderPage, getVipPlanList, updateVipPlan } from '@/api/vip'
 
 const activeTab = ref('members')
 const refreshing = ref(false)
@@ -799,11 +509,7 @@ const statCards = computed(() => [
 ])
 
 const adjustDialogTitle = computed(() => {
-  return adjustForm.actionType === 'EXTEND'
-    ? '延期会员'
-    : adjustForm.actionType === 'EXPIRE_NOW'
-      ? '立即失效'
-      : '立即开通'
+  return adjustForm.actionType === 'EXTEND' ? '延期会员' : adjustForm.actionType === 'EXPIRE_NOW' ? '立即失效' : '立即开通'
 })
 
 const adjustRules = {
@@ -1085,8 +791,7 @@ const getOrderStatusMeta = (status) =>
     CLOSED: { text: '已关闭', type: 'info' },
     FAILED: { text: '失败', type: 'danger' },
   })[status] || { text: status || '未知', type: 'info' }
-const getUserStatusMeta = (status) =>
-  status === 0 ? { text: '正常', type: 'success' } : { text: '禁用', type: 'danger' }
+const getUserStatusMeta = (status) => (status === 0 ? { text: '正常', type: 'success' } : { text: '禁用', type: 'danger' })
 
 onMounted(() => {
   handleResize()
@@ -1161,9 +866,7 @@ onUnmounted(() => {
 
   min-height: 100%;
   padding: 24px;
-  background:
-    radial-gradient(circle at top right, var(--page-glow), transparent 28%),
-    linear-gradient(180deg, var(--page-overlay-top), var(--page-overlay-bottom)), var(--bg-page);
+  background: radial-gradient(circle at top right, var(--page-glow), transparent 28%), linear-gradient(180deg, var(--page-overlay-top), var(--page-overlay-bottom)), var(--bg-page);
 
   .hero-section {
     display: flex;
@@ -1978,9 +1681,7 @@ html.dark {
     --dialog-header-border: #22314a;
     --mask-bg: rgba(2, 6, 23, 0.7);
 
-    background:
-      radial-gradient(circle at top right, var(--page-glow), transparent 30%),
-      linear-gradient(180deg, var(--page-overlay-top), var(--page-overlay-bottom)), var(--bg-page);
+    background: radial-gradient(circle at top right, var(--page-glow), transparent 30%), linear-gradient(180deg, var(--page-overlay-top), var(--page-overlay-bottom)), var(--bg-page);
   }
 }
 

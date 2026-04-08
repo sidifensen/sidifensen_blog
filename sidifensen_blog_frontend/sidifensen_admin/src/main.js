@@ -10,10 +10,10 @@ app.use(router)
 
 // 引入并配置disable-devtool
 // 只在生产环境启用禁用开发者工具功能
-import { setupDisableDevtool } from '@/utils/disableDevtool'
-if (import.meta.env.PROD) {
-  // setupDisableDevtool();
-}
+// import { setupDisableDevtool } from '@/utils/disableDevtool'
+// if (import.meta.env.PROD) {
+//   // setupDisableDevtool();
+// }
 
 // 注册svg全局组件
 import SvgIcon from '@/components/common/SvgIcon.vue'
@@ -44,7 +44,7 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 
 // G2 图表中文 locale 配置
-import { register, Chart } from '@antv/g2'
+import { register } from '@antv/g2'
 register('locale.zh-CN', {
   legend: {
     open: '收起',

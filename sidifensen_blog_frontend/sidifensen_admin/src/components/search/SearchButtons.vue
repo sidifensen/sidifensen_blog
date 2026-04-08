@@ -21,9 +21,10 @@ const handleReset = () => {
 
 <style lang="scss" scoped>
 .search-buttons {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0;
+  justify-content: center;
+  gap: 8px;
 
   :deep(.el-button) {
     height: 32px;

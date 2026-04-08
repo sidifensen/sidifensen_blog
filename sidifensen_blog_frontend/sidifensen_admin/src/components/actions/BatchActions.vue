@@ -1,44 +1,17 @@
 <template>
   <div class="batch-actions">
     <!-- 批量审核 -->
-    <el-button
-      v-if="showBatchAudit"
-      type="primary"
-      plain
-      round
-      :disabled="selectedCount === 0"
-      :loading="batchAuditLoading"
-      :icon="Check"
-      @click="handleBatchAudit"
-    >
+    <el-button v-if="showBatchAudit" type="primary" plain round :disabled="selectedCount === 0" :loading="batchAuditLoading" :icon="Check" @click="handleBatchAudit">
       批量审核 ({{ selectedCount }})
     </el-button>
 
     <!-- 批量拒绝 -->
-    <el-button
-      v-if="showBatchReject"
-      type="warning"
-      plain
-      round
-      :disabled="selectedCount === 0"
-      :loading="batchRejectLoading"
-      :icon="Close"
-      @click="handleBatchReject"
-    >
+    <el-button v-if="showBatchReject" type="warning" plain round :disabled="selectedCount === 0" :loading="batchRejectLoading" :icon="Close" @click="handleBatchReject">
       批量拒绝 ({{ selectedCount }})
     </el-button>
 
     <!-- 批量删除 -->
-    <el-button
-      v-if="showBatchDelete"
-      type="danger"
-      plain
-      round
-      :disabled="selectedCount === 0"
-      :loading="batchDeleteLoading"
-      :icon="Delete"
-      @click="handleBatchDelete"
-    >
+    <el-button v-if="showBatchDelete" type="danger" plain round :disabled="selectedCount === 0" :loading="batchDeleteLoading" :icon="Delete" @click="handleBatchDelete">
       批量删除 ({{ selectedCount }})
     </el-button>
 

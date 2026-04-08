@@ -13,60 +13,19 @@
     <!-- 统计卡片区域 -->
     <div class="stats-section">
       <div class="stats-grid">
-        <StatCard
-          label="用户总数"
-          :value="userCount"
-          :icon="User"
-          type="user"
-          :loading="statisticsLoading"
-          trend-type="positive"
-          trend-text="较昨日 +12"
-        />
-        <StatCard
-          label="文章总数"
-          :value="articleStatistics?.totalCount || 0"
-          :icon="Document"
-          type="article"
-          :loading="statisticsLoading"
-          trend-type="positive"
-          trend-text="较昨日 +5"
-        />
-        <StatCard
-          label="总访问量"
-          :value="totalVisits"
-          :icon="Monitor"
-          type="visits"
-          :loading="statisticsLoading"
-          trend-type="positive"
-          trend-text="累计数据"
-        />
-        <StatCard
-          label="今日访问"
-          :value="todayVisits"
-          :icon="View"
-          type="today"
-          :loading="statisticsLoading"
-          trend-type="neutral"
-          trend-text="实时数据"
-        />
+        <StatCard label="用户总数" :value="userCount" :icon="User" type="user" :loading="statisticsLoading" trend-type="positive" trend-text="较昨日 +12" />
+        <StatCard label="文章总数" :value="articleStatistics?.totalCount || 0" :icon="Document" type="article" :loading="statisticsLoading" trend-type="positive" trend-text="较昨日 +5" />
+        <StatCard label="总访问量" :value="totalVisits" :icon="Monitor" type="visits" :loading="statisticsLoading" trend-type="positive" trend-text="累计数据" />
+        <StatCard label="今日访问" :value="todayVisits" :icon="View" type="today" :loading="statisticsLoading" trend-type="neutral" trend-text="实时数据" />
       </div>
     </div>
 
     <!-- 图表 -->
     <div class="chart-section">
       <div class="card-grid">
-        <UserActivityCard
-          :active-user-count="todayActiveUserCount"
-          :total-user-count="userCount"
-          :loading="statisticsLoading"
-        />
+        <UserActivityCard :active-user-count="todayActiveUserCount" :total-user-count="userCount" :loading="statisticsLoading" />
         <ArticleStatusCard :data="articleStatistics" :loading="statisticsLoading" />
-        <VisitorTrendCard
-          :data="visitorTrend"
-          :loading="trendLoading"
-          v-model:days="trendDays"
-          @days-change="handleDaysChange"
-        />
+        <VisitorTrendCard :data="visitorTrend" :loading="trendLoading" v-model:days="trendDays" @days-change="handleDaysChange" />
         <InteractionTrendCard :data="interactionTrend" :loading="interactionTrendLoading" />
         <UserGrowthCard :data="weeklyTrend" :loading="weeklyTrendLoading" />
         <VipStatisticsCard :data="vipStatisticsData" :loading="vipStatisticsLoading" />
@@ -80,23 +39,8 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import {
-  User,
-  Document,
-  ChatLineRound,
-  View,
-  Monitor,
-  Picture,
-  Refresh,
-} from '@element-plus/icons-vue'
-import {
-  getDashboardStatistics,
-  getExamineCount,
-  getVipStatistics,
-  getWeeklyTrend,
-  getInteractionTrend,
-  getVisitorTrend,
-} from '@/api/dashboard'
+import { User, Document, ChatLineRound, View, Monitor, Picture, Refresh } from '@element-plus/icons-vue'
+import { getDashboardStatistics, getExamineCount, getVipStatistics, getWeeklyTrend, getInteractionTrend, getVisitorTrend } from '@/api/dashboard'
 
 // 公共组件
 import PageHeader from '@/components/management/PageHeader.vue'
@@ -349,9 +293,7 @@ onMounted(async () => {
 
   min-height: calc(100vh - 88px);
   padding: 24px;
-  background:
-    radial-gradient(circle at top right, var(--page-glow), transparent 28%),
-    linear-gradient(180deg, var(--page-overlay-top), var(--page-overlay-bottom)), var(--bg-page);
+  background: radial-gradient(circle at top right, var(--page-glow), transparent 28%), linear-gradient(180deg, var(--page-overlay-top), var(--page-overlay-bottom)), var(--bg-page);
 
   /* 统计卡片区域 */
   .stats-section {

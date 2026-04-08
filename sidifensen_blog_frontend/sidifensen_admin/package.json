@@ -8,6 +8,10 @@
     "build": "vp build",
     "preview": "vp preview",
     "check": "vp check",
+    "check:fix": "vp check --fix",
+    "fmt": "vp fmt",
+    "lint": "vp lint",
+    "lint:fix": "vp lint --fix",
     "test": "vp test",
     "test:run": "vp test run"
   },

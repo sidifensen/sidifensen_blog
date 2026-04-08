@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'
 import { RemoveJwt } from '@/utils/Auth'
 import { GetJwt } from '@/utils/Auth'
@@ -64,9 +64,7 @@ router.beforeEach(async (to, from, next) => {
       if (layoutRoute) {
         dynamicRoutes.forEach((route) => {
           // 检查路由是否已经添加，避免重复添加
-          const existingRoute = router
-            .getRoutes()
-            .find((r) => r.name === route.name && r.path === route.path)
+          const existingRoute = router.getRoutes().find((r) => r.name === route.name && r.path === route.path)
           if (!existingRoute) {
             router.addRoute(layoutRoute.name, route)
           }

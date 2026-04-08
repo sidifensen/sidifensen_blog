@@ -37,11 +37,7 @@ const renderChart = () => {
   }
 
   // 计算总数
-  const total =
-    (props.data.publishedCount || 0) +
-    (props.data.reviewingCount || 0) +
-    (props.data.draftCount || 0) +
-    (props.data.garbageCount || 0)
+  const total = (props.data.publishedCount || 0) + (props.data.reviewingCount || 0) + (props.data.draftCount || 0) + (props.data.garbageCount || 0)
 
   const data = [
     { item: '已发布', count: props.data.publishedCount || 0 },

@@ -6,7 +6,7 @@
   </router-view>
 
   <!-- 智能客服悬浮按钮 -->
-  <CustomerServiceFloatButton @click="customerServiceChatRef?.open()" />
+  <CustomerServiceFloatButton @click="handleCustomerServiceClick" />
 
   <!-- 智能客服对话窗口 -->
   <CustomerServiceChat ref="customerServiceChatRef" />
@@ -14,10 +14,34 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessageBox } from 'element-plus'
 import CustomerServiceFloatButton from '@/components/CustomerServiceFloatButton.vue'
 import CustomerServiceChat from '@/components/CustomerServiceChat.vue'
+import { useUserStore } from '@/stores/userStore'
 
+const router = useRouter()
+const userStore = useUserStore()
 const customerServiceChatRef = ref(null)
+
+// 处理客服按钮点击
+const handleCustomerServiceClick = () => {
+  // 检查是否已登录
+  if (!userStore.isLoggedIn) {
+    ElMessageBox.confirm('智能客服需要登录后才能使用，是否前往登录？', '提示', {
+      confirmButtonText: '前往登录',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+      .then(() => {
+        router.push('/login')
+      })
+      .catch(() => {})
+    return
+  }
+  // 已登录，打开聊天窗口
+  customerServiceChatRef.value?.open()
+}
 </script>
 
 <style lang="scss">

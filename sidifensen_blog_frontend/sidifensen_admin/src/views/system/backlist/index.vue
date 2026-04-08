@@ -5,28 +5,12 @@
       <div class="card-header">
         <h2 class="card-title">黑名单管理</h2>
         <div class="card-actions">
-          <el-select
-            v-model="searchForm.type"
-            placeholder="黑名单类型"
-            filterable
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
+          <el-select v-model="searchForm.type" placeholder="黑名单类型" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="全部" value="" />
             <el-option label="用户" :value="0" />
             <el-option label="IP地址" :value="1" />
           </el-select>
-          <el-input
-            v-model.number="searchForm.userId"
-            placeholder="用户ID"
-            :prefix-icon="Search"
-            size="small"
-            class="search-input"
-            clearable
-            @input="handleSearch"
-          />
+          <el-input v-model.number="searchForm.userId" placeholder="用户ID" :prefix-icon="Search" size="small" class="search-input" clearable @input="handleSearch" />
         </div>
       </div>
 
@@ -88,27 +72,12 @@
       <!-- 批量操作按钮区域 -->
       <div class="card-third">
         <el-button type="primary" plain round @click="handleAdd" :icon="Plus">新增黑名单</el-button>
-        <el-button
-          type="danger"
-          plain
-          round
-          @click="handleBatchDelete"
-          :disabled="selectedBlacklists.length === 0"
-          :loading="batchDeleteLoading"
-          >批量删除</el-button
-        >
+        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedBlacklists.length === 0" :loading="batchDeleteLoading">批量删除</el-button>
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table
-          v-loading="loading"
-          :data="paginatedBlacklistList"
-          class="table"
-          @selection-change="handleSelectionChange"
-          :row-style="{ height: 'auto' }"
-          :cell-style="{ padding: '8px 0' }"
-        >
+        <el-table v-loading="loading" :data="paginatedBlacklistList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
           <el-table-column type="selection" width="30" />
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="type" label="类型" width="100">
@@ -133,11 +102,7 @@
           </el-table-column>
           <el-table-column prop="reason" label="拉黑原因" min-width="200">
             <template #default="{ row }">
-              <el-tooltip
-                :content="row.reason"
-                placement="top-start"
-                :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"
-              >
+              <el-tooltip :content="row.reason" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
                 <div class="blacklist-reason">{{ row.reason }}</div>
               </el-tooltip>
             </template>
@@ -152,10 +117,7 @@
           </el-table-column>
           <el-table-column prop="status" label="状态" width="80">
             <template #default="{ row }">
-              <div
-                class="blacklist-status"
-                :class="isExpired(row.expireTime) ? 'status-expired' : 'status-active'"
-              >
+              <div class="blacklist-status" :class="isExpired(row.expireTime) ? 'status-expired' : 'status-active'">
                 {{ isExpired(row.expireTime) ? '已过期' : '生效中' }}
               </div>
             </template>
@@ -163,22 +125,8 @@
           <el-table-column label="操作" width="200">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button
-                  type="primary"
-                  @click="handleEdit(row)"
-                  :icon="Edit"
-                  class="edit-button"
-                  size="small"
-                  >编辑</el-button
-                >
-                <el-button
-                  type="danger"
-                  @click="handleDelete(row.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  size="small"
-                  >删除</el-button
-                >
+                <el-button type="primary" @click="handleEdit(row)" :icon="Edit" class="edit-button" size="small">编辑</el-button>
+                <el-button type="danger" @click="handleDelete(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </template>
           </el-table-column>
@@ -188,32 +136,17 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="blacklist-cards">
-          <el-card
-            v-for="blacklist in paginatedBlacklistList"
-            :key="blacklist.id"
-            class="blacklist-card"
-            :class="{ 'is-selected': isBlacklistSelected(blacklist.id) }"
-          >
+          <el-card v-for="blacklist in paginatedBlacklistList" :key="blacklist.id" class="blacklist-card" :class="{ 'is-selected': isBlacklistSelected(blacklist.id) }">
             <div class="blacklist-card-content">
               <div class="blacklist-header-section">
                 <div class="blacklist-info">
                   <div class="blacklist-header">
-                    <el-checkbox
-                      :model-value="isBlacklistSelected(blacklist.id)"
-                      @change="handleMobileSelect(blacklist)"
-                      class="mobile-checkbox"
-                    />
+                    <el-checkbox :model-value="isBlacklistSelected(blacklist.id)" @change="handleMobileSelect(blacklist)" class="mobile-checkbox" />
                     <div class="blacklist-id">#{{ blacklist.id }}</div>
-                    <div
-                      class="blacklist-type"
-                      :class="blacklist.type === 0 ? 'type-user' : 'type-ip'"
-                    >
+                    <div class="blacklist-type" :class="blacklist.type === 0 ? 'type-user' : 'type-ip'">
                       {{ blacklist.type === 0 ? '用户' : 'IP地址' }}
                     </div>
-                    <div
-                      class="blacklist-status"
-                      :class="isExpired(blacklist.expireTime) ? 'status-expired' : 'status-active'"
-                    >
+                    <div class="blacklist-status" :class="isExpired(blacklist.expireTime) ? 'status-expired' : 'status-active'">
                       {{ isExpired(blacklist.expireTime) ? '已过期' : '生效中' }}
                     </div>
                   </div>
@@ -243,10 +176,7 @@
                         <span class="label">拉黑:</span>
                         <span>{{ blacklist.banTime }}</span>
                       </div>
-                      <div
-                        class="meta-item time-item"
-                        :class="{ 'expired-time': isExpired(blacklist.expireTime) }"
-                      >
+                      <div class="meta-item time-item" :class="{ 'expired-time': isExpired(blacklist.expireTime) }">
                         <span class="label">到期:</span>
                         <span>{{ blacklist.expireTime }}</span>
                       </div>
@@ -255,22 +185,8 @@
                 </div>
               </div>
               <div class="blacklist-actions">
-                <el-button
-                  type="primary"
-                  @click="handleEdit(blacklist)"
-                  :icon="Edit"
-                  class="edit-button"
-                  size="small"
-                  >编辑</el-button
-                >
-                <el-button
-                  type="danger"
-                  @click="handleDelete(blacklist.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  size="small"
-                  >删除</el-button
-                >
+                <el-button type="primary" @click="handleEdit(blacklist)" :icon="Edit" class="edit-button" size="small">编辑</el-button>
+                <el-button type="danger" @click="handleDelete(blacklist.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </div>
           </el-card>
@@ -278,41 +194,19 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 新增/编辑黑名单对话框 -->
-    <el-dialog
-      v-model="dialogVisible"
-      :title="dialogTitle"
-      :before-close="handleDialogClose"
-      width="600px"
-      class="blacklist-dialog"
-    >
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" :before-close="handleDialogClose" width="600px" class="blacklist-dialog">
       <el-form ref="blacklistFormRef" :model="blacklistForm" :rules="rules" label-width="90px">
         <el-form-item v-if="!isEdit" prop="userIds" label="用户ID">
-          <el-input
-            v-model="blacklistForm.userIds"
-            placeholder="请输入用户ID，多个用逗号分隔，如：3,4,5"
-          />
+          <el-input v-model="blacklistForm.userIds" placeholder="请输入用户ID，多个用逗号分隔，如：3,4,5" />
           <div class="form-tip">支持批量添加，多个用户ID用逗号分隔，如：3,4,5</div>
         </el-form-item>
 
         <el-form-item prop="reason" label="拉黑原因">
-          <el-input
-            v-model="blacklistForm.reason"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入拉黑原因"
-            maxlength="500"
-            show-word-limit
-          />
+          <el-input v-model="blacklistForm.reason" type="textarea" :rows="3" placeholder="请输入拉黑原因" maxlength="500" show-word-limit />
         </el-form-item>
 
         <el-form-item prop="expireTime" label="到期时间">
@@ -353,13 +247,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { Search, Plus, Delete, Edit } from '@element-plus/icons-vue'
-import {
-  getBlacklistList,
-  addBlacklist,
-  searchBlacklist,
-  updateBlacklist,
-  deleteBlacklist,
-} from '@/api/blacklist'
+import { getBlacklistList, addBlacklist, searchBlacklist, updateBlacklist, deleteBlacklist } from '@/api/blacklist'
 import Pagination from '@/components/data/Pagination.vue'
 
 // 黑名单列表数据
@@ -446,13 +334,7 @@ const getBlacklists = async () => {
   await fetchBlacklists()
 }
 
-const hasSearchConditions = () =>
-  searchForm.type !== '' ||
-  searchForm.userId ||
-  searchForm.banTimeStart ||
-  searchForm.banTimeEnd ||
-  searchForm.expireTimeStart ||
-  searchForm.expireTimeEnd
+const hasSearchConditions = () => searchForm.type !== '' || searchForm.userId || searchForm.banTimeStart || searchForm.banTimeEnd || searchForm.expireTimeStart || searchForm.expireTimeEnd
 
 const buildSearchPayload = () => {
   const searchData = {
@@ -653,15 +535,11 @@ const handleDelete = (id) => {
 
 // 批量删除
 const handleBatchDelete = () => {
-  ElMessageBox.confirm(
-    `确定要删除选中的 ${selectedBlacklists.value.length} 条黑名单记录吗？`,
-    '警告',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    },
-  )
+  ElMessageBox.confirm(`确定要删除选中的 ${selectedBlacklists.value.length} 条黑名单记录吗？`, '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
     .then(async () => {
       batchDeleteLoading.value = true
       try {

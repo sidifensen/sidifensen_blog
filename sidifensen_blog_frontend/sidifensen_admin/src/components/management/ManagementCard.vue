@@ -1,27 +1,20 @@
 <template>
   <div class="management-container">
     <div class="card">
-      <!-- 卡片头部 -->
-      <div class="card-header">
-        <div class="card-header-top">
-          <h2 class="card-title" :style="{ '--title-color': titleColor }">{{ title }}</h2>
-        </div>
-        <div class="card-header-bottom">
-          <div class="card-filters">
-            <slot name="second-filters" />
-            <TimeRangePicker
-              v-if="showTimeFilter"
-              v-model:start-time="startTime"
-              v-model:end-time="endTime"
-              @change="handleTimeChange"
-            />
-          </div>
-        </div>
+      <!-- 标题行 -->
+      <div class="card-title-row">
+        <h2 class="card-title" :style="{ '--title-color': titleColor }">{{ title }}</h2>
+      </div>
 
-        <!-- 第三行批量操作区域（可选） -->
-        <div v-if="$slots['batch-actions']" class="card-third">
-          <slot name="batch-actions" />
-        </div>
+      <!-- 筛选区 -->
+      <div class="card-filters">
+        <slot name="filters" />
+        <TimeRangePicker v-if="showTimeFilter" v-model:start-time="startTime" v-model:end-time="endTime" @change="handleTimeChange" />
+      </div>
+
+      <!-- 批量操作区（可选） -->
+      <div v-if="$slots['batch-actions']" class="card-batch">
+        <slot name="batch-actions" />
       </div>
 
       <!-- 桌面端表格视图 -->
@@ -35,14 +28,7 @@
       </div>
 
       <!-- 分页（可选） -->
-      <Pagination
-        v-if="showPagination"
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <Pagination v-if="showPagination" v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 额外插槽（对话框等） -->
@@ -51,6 +37,39 @@
 </template>
 
 <script setup>
+/**
+ * 管理卡片组件
+ *
+ * 功能说明：
+ * - 统一管理页面布局：标题、筛选区、表格/卡片视图、分页
+ * - 支持响应式布局（桌面端表格，移动端卡片）
+ * - 可选时间范围筛选器（通过 showTimeFilter 控制，默认不显示）
+ * - 可选分页（通过 showPagination 控制，默认显示）
+ * - 支持批量操作区域
+ *
+ * 插槽说明：
+ * - filters: 筛选器插槽（审核状态下拉、关键词搜索等）
+ * - table-view: 桌面端表格内容
+ * - card-view: 移动端卡片内容
+ * - batch-actions: 批量操作按钮区
+ * - table-view: 桌面端表格内容
+ * - card-view: 移动端卡片内容
+ * - batch-actions: 批量操作按钮区
+ *
+ * 使用方式：
+ * ```vue
+ * <ManagementCard title="用户管理" :showTimeFilter="true" :total="100" @search="fetchData">
+ *   <template #filters>
+ *     <ExamineStatusSelect v-model="searchExamineStatus" />
+ *     <KeywordSearch v-model="searchKeyword" />
+ *   </template>
+ *   <template #table-view>
+ *     <DataTable :data="tableData" />
+ *   </template>
+ * </ManagementCard>
+ * ```
+ */
+
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import Pagination from '@/components/data/Pagination.vue'
 import TimeRangePicker from '@/components/search/TimeRangePicker.vue'
@@ -73,7 +92,6 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
-  // 分页相关
   modelCurrentPage: {
     type: Number,
     default: 1,
@@ -89,13 +107,7 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits([
-  'update:modelCurrentPage',
-  'update:modelPageSize',
-  'search',
-  'time-change',
-  'resize',
-])
+const emit = defineEmits(['update:modelCurrentPage', 'update:modelPageSize', 'search', 'time-change', 'resize'])
 
 // 响应式
 const isMobileView = ref(false)
@@ -108,28 +120,19 @@ const pageSize = ref(props.modelPageSize)
 const startTime = ref('')
 const endTime = ref('')
 
-// 监听 props 变化
+// 监听 props 并同步到内部状态
 watch(
-  () => props.modelCurrentPage,
-  (val) => {
-    currentPage.value = val
+  () => [props.modelCurrentPage, props.modelPageSize],
+  ([newPage, newSize]) => {
+    currentPage.value = newPage
+    pageSize.value = newSize
   },
 )
 
-watch(
-  () => props.modelPageSize,
-  (val) => {
-    pageSize.value = val
-  },
-)
-
-// 监听分页变化
-watch(currentPage, (val) => {
-  emit('update:modelCurrentPage', val)
-})
-
-watch(pageSize, (val) => {
-  emit('update:modelPageSize', val)
+// 监听内部状态变化并同步到 props
+watch([currentPage, pageSize], ([newPage, newSize]) => {
+  emit('update:modelCurrentPage', newPage)
+  emit('update:modelPageSize', newSize)
 })
 
 // 窗口大小变化处理
@@ -152,10 +155,7 @@ const handleCurrentChange = (current) => {
 
 // 时间筛选变化
 const handleTimeChange = () => {
-  emit('time-change', {
-    startTime: startTime.value,
-    endTime: endTime.value,
-  })
+  emit('time-change', { startTime: startTime.value, endTime: endTime.value })
 }
 
 // 公开方法
@@ -168,10 +168,7 @@ defineExpose({
   resetPagination,
   getCurrentPage: () => currentPage.value,
   getPageSize: () => pageSize.value,
-  getTimeRange: () => ({
-    startTime: startTime.value,
-    endTime: endTime.value,
-  }),
+  getTimeRange: () => ({ startTime: startTime.value, endTime: endTime.value }),
 })
 
 // 初始化
@@ -188,133 +185,105 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .management-container {
   height: 100%;
-  box-sizing: border-box;
   position: relative;
+}
 
-  .card {
-    height: 100%;
-    padding: 20px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
+.card {
+  height: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease;
+  overflow: hidden;
 
-    &:hover {
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-    }
-
-    .card-header {
-      padding: 10px 10px 0 10px;
-
-      .card-header-top {
-        display: flex;
-        align-items: center;
-        margin-bottom: 12px;
-      }
-
-      .card-header-bottom {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-
-      .card-title {
-        font-size: 20px;
-        font-weight: 600;
-        margin: 0;
-        display: flex;
-        align-items: center;
-
-        &::before {
-          content: '';
-          display: inline-block;
-          width: 4px;
-          height: 20px;
-          background-color: var(--title-color, var(--admin-primary));
-          border-radius: 2px;
-          margin-right: 10px;
-        }
-      }
-
-      .card-filters {
-        display: flex;
-        justify-content: flex-start;
-        gap: 10px;
-        align-items: center;
-      }
-    }
-
-    // 第三行批量操作区域：支持多按钮换行显示
-    .card-third {
-      display: flex;
-      flex-wrap: wrap; // 内容超出一行时自动换行
-      row-gap: 10px;
-      column-gap: 10px;
-      padding: 10px;
-      border-bottom: 1px solid var(--el-border-color);
-    }
-
-    .desktop-view {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding-bottom: 60px;
-    }
-
-    .mobile-view {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      margin-top: 16px;
-      padding-bottom: 60px;
-      overflow-y: auto;
-    }
+  &:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   }
+}
+
+.card-title-row {
+  margin-bottom: 12px;
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 20px;
+    background-color: var(--title-color, var(--admin-primary));
+    border-radius: 2px;
+    margin-right: 10px;
+  }
+}
+
+.card-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.card-batch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--el-border-color);
+  margin-bottom: 12px;
+}
+
+.desktop-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.mobile-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 // 响应式设计
 @media screen and (max-width: 768px) {
-  .management-container {
-    .card {
-      padding: 2px;
+  .card {
+    padding: 12px;
+  }
 
-      .card-header {
-        padding: 6px;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
+  .card-title {
+    font-size: 16px;
+  }
 
-        .card-header-bottom {
-          flex-direction: column;
-          align-items: flex-start;
-          width: 100%;
-          gap: 12px;
-        }
+  .card-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
 
-        .card-title {
-          font-size: 16px;
-        }
-      }
+  .card-batch {
+    flex-direction: column;
+    gap: 10px;
 
-      .card-filters {
-        padding: 8px;
-        // 移动端默认纵向排列，已通过 flex-wrap: wrap 自动处理
-        flex-wrap: wrap;
-      }
-
-      .card-third {
-        padding: 8px;
-        // 移动端按钮全宽，已通过 flex-wrap: wrap 自动处理
-
-        :deep(.el-button) {
-          width: 100%;
-        }
-      }
+    :deep(.el-button) {
+      width: 100%;
     }
+  }
+
+  .mobile-view {
+    margin-top: 12px;
   }
 }
 </style>

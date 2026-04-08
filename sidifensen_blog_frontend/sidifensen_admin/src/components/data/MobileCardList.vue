@@ -5,12 +5,7 @@
 
     <!-- 卡片列表 -->
     <div class="card-list">
-      <el-card
-        v-for="item in data"
-        :key="item.id"
-        class="item-card"
-        :class="{ 'is-selected': isSelected(item) }"
-      >
+      <el-card v-for="item in data" :key="item.id" class="item-card" :class="{ 'is-selected': isSelected(item) }">
         <div class="card-content">
           <!-- 选择器 -->
           <div v-if="showSelection" class="card-selector">
@@ -19,14 +14,7 @@
 
           <!-- 封面 -->
           <div v-if="showCover" class="card-cover">
-            <el-image
-              v-if="item.coverUrl"
-              :src="item.coverUrl"
-              class="cover-image"
-              :preview-src-list="[item.coverUrl]"
-              fit="cover"
-              preview-teleported
-            />
+            <el-image v-if="item.coverUrl" :src="item.coverUrl" class="cover-image" :preview-src-list="[item.coverUrl]" fit="cover" preview-teleported />
             <div v-else class="no-cover">暂无封面</div>
           </div>
 
@@ -64,41 +52,11 @@
 
             <!-- 操作按钮 -->
             <div v-if="showActions" class="card-actions">
-              <el-button v-if="hasViewAction" type="info" size="small" @click="$emit('view', item)">
-                查看
-              </el-button>
-              <el-button
-                v-if="hasEditAction"
-                type="primary"
-                size="small"
-                @click="$emit('edit', item)"
-              >
-                编辑
-              </el-button>
-              <el-button
-                v-if="hasAuditAction"
-                type="primary"
-                size="small"
-                @click="$emit('audit', item)"
-              >
-                审核
-              </el-button>
-              <el-button
-                v-if="hasRejectAction"
-                type="warning"
-                size="small"
-                @click="$emit('reject', item)"
-              >
-                拒绝
-              </el-button>
-              <el-button
-                v-if="hasDeleteAction"
-                type="danger"
-                size="small"
-                @click="$emit('delete', item)"
-              >
-                删除
-              </el-button>
+              <el-button v-if="hasViewAction" type="info" size="small" @click="$emit('view', item)"> 查看 </el-button>
+              <el-button v-if="hasEditAction" type="primary" size="small" @click="$emit('edit', item)"> 编辑 </el-button>
+              <el-button v-if="hasAuditAction" type="primary" size="small" @click="$emit('audit', item)"> 审核 </el-button>
+              <el-button v-if="hasRejectAction" type="warning" size="small" @click="$emit('reject', item)"> 拒绝 </el-button>
+              <el-button v-if="hasDeleteAction" type="danger" size="small" @click="$emit('delete', item)"> 删除 </el-button>
             </div>
           </div>
         </div>

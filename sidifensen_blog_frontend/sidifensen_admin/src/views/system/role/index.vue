@@ -4,22 +4,8 @@
       <div class="card-header">
         <h2 class="card-title">角色管理</h2>
         <div class="card-actions">
-          <el-input
-            v-model="searchQuery"
-            placeholder="搜索角色名称"
-            :prefix-icon="Search"
-            size="small"
-            class="search-input"
-          />
-          <el-button
-            type="primary"
-            size="small"
-            @click="handleAddRole"
-            :icon="Plus"
-            class="add-button"
-          >
-            新增角色
-          </el-button>
+          <el-input v-model="searchQuery" placeholder="搜索角色名称" :prefix-icon="Search" size="small" class="search-input" />
+          <el-button type="primary" size="small" @click="handleAddRole" :icon="Plus" class="add-button"> 新增角色 </el-button>
         </div>
       </div>
 
@@ -52,42 +38,10 @@
           <el-table-column label="操作" width="340">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button
-                  type="primary"
-                  size="small"
-                  @click="handleEditRole(row)"
-                  :icon="Edit"
-                  class="edit-button"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  type="danger"
-                  size="small"
-                  @click="handleDeleteRole(row.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                >
-                  删除
-                </el-button>
-                <el-button
-                  size="small"
-                  type="warning"
-                  @click="handleAuthorizeUser(row)"
-                  :icon="User"
-                  class="user-button"
-                >
-                  分配用户
-                </el-button>
-                <el-button
-                  size="small"
-                  type="success"
-                  @click="handleAuthorizeMenu(row)"
-                  :icon="Key"
-                  class="menu-button"
-                >
-                  分配权限
-                </el-button>
+                <el-button type="primary" size="small" @click="handleEditRole(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
+                <el-button type="danger" size="small" @click="handleDeleteRole(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
+                <el-button size="small" type="warning" @click="handleAuthorizeUser(row)" :icon="User" class="user-button"> 分配用户 </el-button>
+                <el-button size="small" type="success" @click="handleAuthorizeMenu(row)" :icon="Key" class="menu-button"> 分配权限 </el-button>
               </div>
             </template>
           </el-table-column>
@@ -145,38 +99,10 @@
 
               <!-- 操作按钮 -->
               <div class="role-actions">
-                <el-button
-                  type="primary"
-                  size="small"
-                  @click="handleEditRole(role)"
-                  :icon="Edit"
-                  class="edit-button"
-                  >编辑</el-button
-                >
-                <el-button
-                  type="danger"
-                  size="small"
-                  @click="handleDeleteRole(role.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  >删除</el-button
-                >
-                <el-button
-                  size="small"
-                  type="warning"
-                  @click="handleAuthorizeUser(role)"
-                  :icon="User"
-                  class="user-button"
-                  >分配用户</el-button
-                >
-                <el-button
-                  size="small"
-                  type="success"
-                  @click="handleAuthorizeMenu(role)"
-                  :icon="Key"
-                  class="menu-button"
-                  >分配权限</el-button
-                >
+                <el-button type="primary" size="small" @click="handleEditRole(role)" :icon="Edit" class="edit-button">编辑</el-button>
+                <el-button type="danger" size="small" @click="handleDeleteRole(role.id)" :icon="Delete" class="delete-button">删除</el-button>
+                <el-button size="small" type="warning" @click="handleAuthorizeUser(role)" :icon="User" class="user-button">分配用户</el-button>
+                <el-button size="small" type="success" @click="handleAuthorizeMenu(role)" :icon="Key" class="menu-button">分配权限</el-button>
               </div>
             </div>
           </el-card>
@@ -184,13 +110,7 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 新增/编辑角色对话框 -->
@@ -215,12 +135,7 @@
     </el-dialog>
 
     <!-- 分配用户弹窗对话框 -->
-    <el-dialog
-      v-model="authorizeDialogVisible"
-      title="角色分配用户"
-      :before-close="handleAuthorizeDialogClose"
-      class="authorize-dialog"
-    >
+    <el-dialog v-model="authorizeDialogVisible" title="角色分配用户" :before-close="handleAuthorizeDialogClose" class="authorize-dialog">
       <div v-loading="authorizeLoading" class="authorize-dialog-content">
         <p class="role-name">当前角色: {{ currentRole?.name }}</p>
         <template v-if="!authorizeLoading">
@@ -245,12 +160,7 @@
     </el-dialog>
 
     <!-- 分配权限弹窗对话框 -->
-    <el-dialog
-      v-model="authorizeMenuDialogVisible"
-      :title="'分配 ' + currentMenuRole?.name + ' 的菜单权限'"
-      :before-close="handleAuthorizeMenuDialogClose"
-      width="600px"
-    >
+    <el-dialog v-model="authorizeMenuDialogVisible" :title="'分配 ' + currentMenuRole?.name + ' 的菜单权限'" :before-close="handleAuthorizeMenuDialogClose" width="600px">
       <div class="authorize-menu-dialog-content">
         <!-- 操作按钮区域 -->
         <div class="menu-toolbar">
@@ -296,14 +206,7 @@
 import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Plus, Edit, Delete, User, Key } from '@element-plus/icons-vue'
-import {
-  getRoleList,
-  getRolePage,
-  addRole,
-  updateRole,
-  deleteRole,
-  queryRolePage,
-} from '@/api/role'
+import { getRoleList, getRolePage, addRole, updateRole, deleteRole, queryRolePage } from '@/api/role'
 import { addUser, getUsersByRole } from '@/api/user-role'
 import { getUserList } from '@/api/user'
 import { getAllMenuList } from '@/api/menu'
@@ -809,20 +712,12 @@ const handleResize = () => {
 
         .add-button {
           border-radius: 8px;
-          background: linear-gradient(
-            135deg,
-            var(--admin-primary) 0%,
-            var(--admin-primary-dark) 100%
-          );
+          background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
           border: none;
           transition: all 0.3s ease;
 
           &:hover {
-            background: linear-gradient(
-              135deg,
-              var(--admin-primary-dark) 0%,
-              var(--admin-primary-active) 100%
-            );
+            background: linear-gradient(135deg, var(--admin-primary-dark) 0%, var(--admin-primary-active) 100%);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px var(--admin-primary-light);
           }
@@ -1179,11 +1074,7 @@ const handleResize = () => {
           width: 24px;
           height: 24px;
           border-radius: 4px;
-          background: linear-gradient(
-            135deg,
-            var(--admin-primary) 0%,
-            var(--admin-primary-dark) 100%
-          );
+          background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
           color: #fff;
           font-size: 14px;
         }
@@ -1261,9 +1152,7 @@ const handleResize = () => {
 
       .table {
         margin-top: 0;
-        max-height: calc(
-          100vh - 180px
-        ); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
+        max-height: calc(100vh - 180px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
         :deep(.el-table) {
           display: block;
           width: 100%;

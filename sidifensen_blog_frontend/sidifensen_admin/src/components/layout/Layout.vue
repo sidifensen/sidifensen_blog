@@ -7,14 +7,7 @@
         <h3 class="logo-text">管理员后台</h3>
       </div>
       <!-- pc端菜单 -->
-      <el-menu
-        :default-active="activeMenu"
-        class="el-menu-pc"
-        background-color="#1e293b"
-        text-color="#cbd5e1"
-        active-text-color="#4ade80"
-        :router="true"
-      >
+      <el-menu :default-active="activeMenu" class="el-menu-pc" background-color="#1e293b" text-color="#cbd5e1" active-text-color="#4ade80" :router="true">
         <template v-for="menu in menus" :key="menu.id">
           <el-sub-menu v-if="menu.children && menu.children.length > 0" :index="menu.path">
             <template #title>
@@ -51,16 +44,7 @@
     <!-- 移动端菜单 -->
     <transition name="slide-fade">
       <div v-show="isMobileMenuVisible" class="mobile-menu-overlay" @click="closeMobileMenu">
-        <el-menu
-          :default-active="activeMenu"
-          class="el-menu-mobile"
-          background-color="#1e293b"
-          text-color="#cbd5e1"
-          active-text-color="#4ade80"
-          :router="true"
-          @click.stop
-          @select="closeMobileMenu"
-        >
+        <el-menu :default-active="activeMenu" class="el-menu-mobile" background-color="#1e293b" text-color="#cbd5e1" active-text-color="#4ade80" :router="true" @click.stop @select="closeMobileMenu">
           <template v-for="menu in menus" :key="menu.id">
             <el-sub-menu v-if="menu.children && menu.children.length > 0" :index="menu.path">
               <template #title>
@@ -107,56 +91,29 @@
           <Dark />
           <!-- 消息通知 -->
           <div class="message-container" @click.stop="toggleMessageDropdown">
-            <el-badge
-              :value="unreadCount"
-              :hidden="unreadCount === 0"
-              class="message-badge-container"
-            >
+            <el-badge :value="unreadCount" :hidden="unreadCount === 0" class="message-badge-container">
               <el-icon class="message-icon"><Bell /></el-icon>
             </el-badge>
             <!-- 自定义消息下拉框 -->
-            <div
-              v-if="isMessageDropdownVisible"
-              class="custom-message-dropdown"
-              ref="messageDropdownRef"
-            >
+            <div v-if="isMessageDropdownVisible" class="custom-message-dropdown" ref="messageDropdownRef">
               <div class="message-header">
                 <span class="message-title">消息通知</span>
-                <el-button
-                  v-if="hasUnreadMessages"
-                  size="small"
-                  plain
-                  type="success"
-                  @click="markAllAsRead"
-                  >全部标为已读</el-button
-                >
-                <el-button size="small" plain type="danger" @click="deleteAllMessages"
-                  >全部删除</el-button
-                >
+                <el-button v-if="hasUnreadMessages" size="small" plain type="success" @click="markAllAsRead">全部标为已读</el-button>
+                <el-button size="small" plain type="danger" @click="deleteAllMessages">全部删除</el-button>
               </div>
               <div class="message-list" ref="messageListRef">
                 <div v-if="messages.length === 0" class="no-message">
                   <el-icon><Message /></el-icon>
                   <span>暂无消息</span>
                 </div>
-                <div
-                  v-for="message in messages"
-                  :key="message.id"
-                  :data-id="message.id"
-                  class="message-item"
-                  :class="{ unread: !message.isRead }"
-                >
+                <div v-for="message in messages" :key="message.id" :data-id="message.id" class="message-item" :class="{ unread: !message.isRead }">
                   <div class="message-content">
                     <h4 class="message-title">{{ message.title }}</h4>
                     <p class="message-desc">{{ message.content }}</p>
                     <p class="message-time">{{ formatTime(message.createTime) }}</p>
                   </div>
                   <div class="message-actions">
-                    <el-button
-                      v-if="!message.isRead"
-                      class="read-button"
-                      @click.stop="markAsRead(message.id)"
-                    >
+                    <el-button v-if="!message.isRead" class="read-button" @click.stop="markAsRead(message.id)">
                       <el-icon><Check /></el-icon> 已读
                     </el-button>
                     <el-button class="delete-button" @click.stop="deleteMessage(message.id)">
@@ -194,12 +151,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'
 import { ElMessage } from 'element-plus'
 import Dark from '@/components/common/Dark.vue'
-import {
-  getMessagesCount,
-  getMessageList,
-  readAdminMessages,
-  deleteAdminMessages,
-} from '@/api/message'
+import { getMessagesCount, getMessageList, readAdminMessages, deleteAdminMessages } from '@/api/message'
 import { Bell, Message, Delete, User, Check } from '@element-plus/icons-vue'
 import { formatTime } from '@/utils/FormatTime'
 import { onUnmounted } from 'vue'
@@ -267,11 +219,7 @@ const toggleMessageDropdown = async () => {
 
 // 关闭消息下拉框
 const closeMessageDropdown = (e) => {
-  if (
-    messageDropdownRef.value &&
-    !messageDropdownRef.value.contains(e.target) &&
-    !e.target.closest('.message-badge-container')
-  ) {
+  if (messageDropdownRef.value && !messageDropdownRef.value.contains(e.target) && !e.target.closest('.message-badge-container')) {
     isMessageDropdownVisible.value = false
     document.removeEventListener('click', closeMessageDropdown)
   }
@@ -424,11 +372,7 @@ const handleLogout = () => {
       .logo-icon {
         width: 40px;
         height: 40px;
-        background: linear-gradient(
-          135deg,
-          var(--admin-primary) 0%,
-          var(--admin-primary-dark) 100%
-        );
+        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
         border-radius: 50%;
         margin-right: 12px;
         position: relative;

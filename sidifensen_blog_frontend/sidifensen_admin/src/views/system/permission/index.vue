@@ -5,83 +5,25 @@
         <h2 class="card-title">权限管理</h2>
         <div class="card-actions">
           <div class="search">
-            <el-input
-              v-model="searchDescription"
-              placeholder="搜索权限描述"
-              :prefix-icon="Search"
-              size="small"
-              class="search-input"
-              clearable
-            />
-            <el-input
-              v-model="searchPermission"
-              placeholder="搜索权限标识"
-              :prefix-icon="Search"
-              size="small"
-              class="search-input"
-              clearable
-            />
+            <el-input v-model="searchDescription" placeholder="搜索权限描述" :prefix-icon="Search" size="small" class="search-input" clearable />
+            <el-input v-model="searchPermission" placeholder="搜索权限标识" :prefix-icon="Search" size="small" class="search-input" clearable />
           </div>
           <div>
-            <el-select
-              v-model="searchMenuId"
-              placeholder="请选择菜单名称"
-              filterable
-              clearable
-              size="small"
-              class="search-input"
-              @change="handleSearch"
-            >
-              <el-option
-                v-for="menu in menuList"
-                :key="menu.id"
-                :label="menu.name"
-                :value="menu.id"
-              />
+            <el-select v-model="searchMenuId" placeholder="请选择菜单名称" filterable clearable size="small" class="search-input" @change="handleSearch">
+              <el-option v-for="menu in menuList" :key="menu.id" :label="menu.name" :value="menu.id" />
             </el-select>
-            <el-button
-              size="small"
-              type="warning"
-              :disabled="currentPermissionList.length === 0"
-              @click="handleAuthorizeBatchRole"
-              :icon="Avatar"
-              class="authorize-button"
-            >
-              批量授权角色
-            </el-button>
+            <el-button size="small" type="warning" :disabled="currentPermissionList.length === 0" @click="handleAuthorizeBatchRole" :icon="Avatar" class="authorize-button"> 批量授权角色 </el-button>
           </div>
           <div>
-            <el-button
-              type="primary"
-              size="small"
-              @click="exportPermission"
-              :icon="Download"
-              class="export-button"
-              >导出</el-button
-            >
-            <el-button
-              type="primary"
-              size="small"
-              @click="handleAddPermission"
-              :icon="Plus"
-              class="add-button"
-            >
-              新增权限
-            </el-button>
+            <el-button type="primary" size="small" @click="exportPermission" :icon="Download" class="export-button">导出</el-button>
+            <el-button type="primary" size="small" @click="handleAddPermission" :icon="Plus" class="add-button"> 新增权限 </el-button>
           </div>
         </div>
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table
-          id="my-table"
-          v-loading="loading"
-          :data="paginatedPermissionList"
-          class="table"
-          style="height: 100%"
-          @selection-change="handleSelectionChange"
-        >
+        <el-table id="my-table" v-loading="loading" :data="paginatedPermissionList" class="table" style="height: 100%" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="55" />
           <el-table-column prop="id" label="权限id" width="70" />
           <el-table-column prop="description" label="权限描述" />
@@ -99,33 +41,9 @@
           <el-table-column label="操作" width="260">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button
-                  type="primary"
-                  size="small"
-                  @click="handleEditPermission(row)"
-                  :icon="Edit"
-                  class="edit-button"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  type="danger"
-                  size="small"
-                  @click="handleDeletePermission(row.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                >
-                  删除
-                </el-button>
-                <el-button
-                  size="small"
-                  type="warning"
-                  @click="handleAuthorizeRole(row)"
-                  :icon="Avatar"
-                  class="role-button"
-                >
-                  授权角色
-                </el-button>
+                <el-button type="primary" size="small" @click="handleEditPermission(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
+                <el-button type="danger" size="small" @click="handleDeletePermission(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
+                <el-button size="small" type="warning" @click="handleAuthorizeRole(row)" :icon="Avatar" class="role-button"> 授权角色 </el-button>
               </div>
             </template>
           </el-table-column>
@@ -135,21 +53,12 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div v-loading="loading" class="permission-cards">
-          <el-card
-            v-for="permission in paginatedPermissionList"
-            :key="permission.id"
-            class="permission-card"
-            :class="{ 'is-selected': isPermissionSelected(permission.id) }"
-          >
+          <el-card v-for="permission in paginatedPermissionList" :key="permission.id" class="permission-card" :class="{ 'is-selected': isPermissionSelected(permission.id) }">
             <div class="permission-card-content">
               <!-- 卡片头部 -->
               <div class="permission-header">
                 <div class="header-left">
-                  <el-checkbox
-                    :model-value="isPermissionSelected(permission.id)"
-                    @change="handleMobileSelect(permission)"
-                    class="mobile-checkbox"
-                  />
+                  <el-checkbox :model-value="isPermissionSelected(permission.id)" @change="handleMobileSelect(permission)" class="mobile-checkbox" />
                   <div class="permission-id">#{{ permission.id }}</div>
                 </div>
                 <el-tag>
@@ -180,30 +89,9 @@
 
               <!-- 操作按钮 -->
               <div class="permission-actions">
-                <el-button
-                  type="primary"
-                  size="small"
-                  @click="handleEditPermission(permission)"
-                  :icon="Edit"
-                  class="edit-button"
-                  >编辑</el-button
-                >
-                <el-button
-                  type="danger"
-                  size="small"
-                  @click="handleDeletePermission(permission.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  >删除</el-button
-                >
-                <el-button
-                  size="small"
-                  type="warning"
-                  @click="handleAuthorizeRole(permission)"
-                  :icon="Avatar"
-                  class="role-button"
-                  >授权角色</el-button
-                >
+                <el-button type="primary" size="small" @click="handleEditPermission(permission)" :icon="Edit" class="edit-button">编辑</el-button>
+                <el-button type="danger" size="small" @click="handleDeletePermission(permission.id)" :icon="Delete" class="delete-button">删除</el-button>
+                <el-button size="small" type="warning" @click="handleAuthorizeRole(permission)" :icon="Avatar" class="role-button">授权角色</el-button>
               </div>
             </div>
           </el-card>
@@ -211,13 +99,7 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
     <!-- 新增/编辑权限对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" :before-close="handleDialogClose">
@@ -230,12 +112,7 @@
         </el-form-item>
         <el-form-item prop="menuId" label="对应菜单">
           <el-select v-model="permissionForm.menuId" placeholder="请选择菜单名称">
-            <el-option
-              v-for="menu in menuList"
-              :key="menu.id"
-              :label="menu.name"
-              :value="menu.id"
-            />
+            <el-option v-for="menu in menuList" :key="menu.id" :label="menu.name" :value="menu.id" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -248,21 +125,14 @@
     </el-dialog>
 
     <!-- 授权角色弹窗对话框 -->
-    <el-dialog
-      v-model="authorizeDialogVisible"
-      title="权限授权角色"
-      :before-close="handleAuthorizeDialogClose"
-      class="authorize-dialog"
-    >
+    <el-dialog v-model="authorizeDialogVisible" title="权限授权角色" :before-close="handleAuthorizeDialogClose" class="authorize-dialog">
       <div v-loading="authorizeLoading" class="authorize-dialog-content">
         <p class="role-name">当前权限: {{ currentPermission?.description }}</p>
         <template v-if="!authorizeLoading">
           <el-form ref="authorizeFormRef" class="authorize-form">
             <el-form-item label="选择角色">
               <el-checkbox-group v-model="selectedRole" class="role-checkbox-group">
-                <el-checkbox v-for="role in allRole" :key="role.id" :label="role.id">{{
-                  role.role
-                }}</el-checkbox>
+                <el-checkbox v-for="role in allRole" :key="role.id" :label="role.id">{{ role.role }}</el-checkbox>
               </el-checkbox-group>
             </el-form-item>
           </el-form>
@@ -277,26 +147,13 @@
     </el-dialog>
 
     <!-- 批量授权角色弹窗对话框 -->
-    <el-dialog
-      v-model="authorizeBatchDialogVisible"
-      title="权限批量授权角色"
-      :before-close="handleAuthorizeBatchDialogClose"
-      width="500px"
-    >
+    <el-dialog v-model="authorizeBatchDialogVisible" title="权限批量授权角色" :before-close="handleAuthorizeBatchDialogClose" width="500px">
       <div class="authorize-dialog-content">
-        <p class="role-name">
-          当前权限: {{ currentPermissionList.map((item) => item.description).join(', ') }}
-        </p>
+        <p class="role-name">当前权限: {{ currentPermissionList.map((item) => item.description).join(', ') }}</p>
         <el-form ref="authorizeBatchFormRef" class="authorize-form">
           <el-form-item label="选择角色">
-            <el-checkbox-group
-              v-model="selectedRole"
-              class="role-checkbox-group"
-              :disabled="authorizeBatchLoading"
-            >
-              <el-checkbox v-for="role in allRole" :key="role.id" :label="role.id">{{
-                role.role
-              }}</el-checkbox>
+            <el-checkbox-group v-model="selectedRole" class="role-checkbox-group" :disabled="authorizeBatchLoading">
+              <el-checkbox v-for="role in allRole" :key="role.id" :label="role.id">{{ role.role }}</el-checkbox>
             </el-checkbox-group>
           </el-form-item>
         </el-form>
@@ -304,12 +161,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="handleAuthorizeBatchDialogClose">取消</el-button>
-          <el-button
-            type="primary"
-            @click="handleAuthorizeBatchSubmit"
-            :disabled="authorizeBatchLoading"
-            >确认分配</el-button
-          >
+          <el-button type="primary" @click="handleAuthorizeBatchSubmit" :disabled="authorizeBatchLoading">确认分配</el-button>
         </span>
       </template>
     </el-dialog>
@@ -319,20 +171,9 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { Search, Plus, Edit, Delete, Avatar, Download } from '@element-plus/icons-vue'
-import {
-  getPermissionList,
-  getPermissionPage,
-  addPermission,
-  updatePermission,
-  deletePermission,
-  queryPermissionPage,
-} from '@/api/permission'
+import { getPermissionList, getPermissionPage, addPermission, updatePermission, deletePermission, queryPermissionPage } from '@/api/permission'
 import { getRoleList } from '@/api/role'
-import {
-  addBatchRolePermission,
-  addRolePermission,
-  getRolesByPermission,
-} from '@/api/role-permission'
+import { addBatchRolePermission, addRolePermission, getRolesByPermission } from '@/api/role-permission'
 import { getAllMenuList } from '@/api/menu'
 import Pagination from '@/components/data/Pagination.vue'
 
@@ -438,8 +279,7 @@ const searchPermission = ref('')
 // 搜索菜单id
 const searchMenuId = ref('')
 
-const hasSearchConditions = () =>
-  !!(searchDescription.value || searchPermission.value || searchMenuId.value)
+const hasSearchConditions = () => !!(searchDescription.value || searchPermission.value || searchMenuId.value)
 
 const buildSearchPayload = () => ({
   pageNum: currentPage.value,
@@ -629,10 +469,7 @@ const handleAuthorizeRole = async (row) => {
 
   try {
     // 并行加载角色列表和权限已有角色
-    const [roleRes, permissionRolesRes] = await Promise.all([
-      getRoleList(),
-      getRolesByPermission(row.id),
-    ])
+    const [roleRes, permissionRolesRes] = await Promise.all([getRoleList(), getRolesByPermission(row.id)])
 
     allRole.value = roleRes.data
     selectedRole.value = permissionRolesRes.data.map((item) => item.id)
@@ -731,13 +568,9 @@ const handleAuthorizeBatchSubmit = async () => {
       roleIds: selectedRole.value,
       permissionIds: currentPermissionList.value.map((item) => item.id),
     })
-    ElMessage.success(
-      `已为权限 ${currentPermissionList.value.map((item) => item.description).join(', ')} 分配角色`,
-    )
+    ElMessage.success(`已为权限 ${currentPermissionList.value.map((item) => item.description).join(', ')} 分配角色`)
   } catch (error) {
-    ElMessage.error(
-      `为权限 ${currentPermissionList.value.map((item) => item.description).join(', ')} 分配角色失败`,
-    )
+    ElMessage.error(`为权限 ${currentPermissionList.value.map((item) => item.description).join(', ')} 分配角色失败`)
     console.error('分配角色失败:', error)
   } finally {
     authorizeBatchDialogVisible.value = false
@@ -872,20 +705,12 @@ const handleAuthorizeBatchDialogClose = () => {
       .add-button {
         margin-left: 10px;
         border-radius: 8px;
-        background: linear-gradient(
-          135deg,
-          var(--admin-primary) 0%,
-          var(--admin-primary-dark) 100%
-        );
+        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
         border: none;
         transition: all 0.3s ease;
 
         &:hover {
-          background: linear-gradient(
-            135deg,
-            var(--admin-primary-dark) 0%,
-            var(--admin-primary-active) 100%
-          );
+          background: linear-gradient(135deg, var(--admin-primary-dark) 0%, var(--admin-primary-active) 100%);
           transform: translateY(-2px);
           box-shadow: 0 4px 12px var(--admin-primary-light);
         }
@@ -1281,9 +1106,7 @@ const handleAuthorizeBatchDialogClose = () => {
 
       .table {
         margin-top: 0;
-        max-height: calc(
-          100vh - 200px
-        ); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
+        max-height: calc(100vh - 200px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
         :deep(.el-table) {
           display: block;
           width: 100%;

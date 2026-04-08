@@ -1,28 +1,33 @@
 <template>
   <div class="time-range-picker">
-    <el-date-picker
-      v-model="localStartTime"
-      type="datetime"
-      placeholder="开始时间"
-      size="small"
-      class="time-input"
-      format="YYYY-MM-DD HH:mm:ss"
-      value-format="YYYY-MM-DD HH:mm:ss"
-      clearable
-      @change="handleChange"
-    />
+    <span v-if="showLabel" class="filter-label">时间</span>
+    <div class="time-row">
+      <el-date-picker
+        v-model="localStartTime"
+        type="datetime"
+        placeholder="开始时间"
+        size="small"
+        class="time-picker-input"
+        format="YYYY-MM-DD HH:mm:ss"
+        value-format="YYYY-MM-DD HH:mm:ss"
+        clearable
+        @change="handleChange"
+      />
+    </div>
     <span class="separator">至</span>
-    <el-date-picker
-      v-model="localEndTime"
-      type="datetime"
-      placeholder="结束时间"
-      size="small"
-      class="time-input"
-      format="YYYY-MM-DD HH:mm:ss"
-      value-format="YYYY-MM-DD HH:mm:ss"
-      clearable
-      @change="handleChange"
-    />
+    <div class="time-row">
+      <el-date-picker
+        v-model="localEndTime"
+        type="datetime"
+        placeholder="结束时间"
+        size="small"
+        class="time-picker-input"
+        format="YYYY-MM-DD HH:mm:ss"
+        value-format="YYYY-MM-DD HH:mm:ss"
+        clearable
+        @change="handleChange"
+      />
+    </div>
   </div>
 </template>
 
@@ -37,6 +42,10 @@ const props = defineProps({
   endTime: {
     type: String,
     default: '',
+  },
+  showLabel: {
+    type: Boolean,
+    default: true,
   },
 })
 
@@ -78,20 +87,88 @@ defineExpose({
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .time-range-picker {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 
-  .time-input {
+  .filter-label {
+    font-size: 14px;
+    color: var(--text-regular);
+    white-space: nowrap;
+  }
+
+  .time-picker-input {
     width: 160px;
-    border-radius: 6px;
+    height: 32px;
+
+    .el-input__wrapper {
+      border-radius: 8px;
+      min-height: 32px;
+      font-size: 14px;
+      background-color: var(--bg-input);
+
+      &:focus-within {
+        box-shadow: 0 0 0 3px var(--admin-primary-light);
+        border-color: var(--admin-primary);
+      }
+    }
+  }
+
+  .time-row {
+    display: inline-block;
   }
 
   .separator {
     color: var(--text-muted);
     font-size: 13px;
+  }
+}
+
+// 响应式
+@media screen and (max-width: 768px) {
+  .time-range-picker {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    grid-template-rows: auto auto;
+    gap: 8px;
+    width: 100%;
+
+    .filter-label {
+      grid-column: 1;
+      grid-row: 1;
+      text-align: right;
+      line-height: 32px;
+      font-size: 14px;
+      color: var(--text-regular);
+    }
+
+    .time-row {
+      grid-column: 2;
+      width: 100%;
+
+      &:first-child {
+        grid-row: 1;
+      }
+
+      &:last-child {
+        grid-row: 2;
+      }
+    }
+
+    .time-picker-input {
+      width: 100%;
+    }
+
+    .separator {
+      grid-column: 1;
+      grid-row: 2;
+      text-align: right;
+      line-height: 32px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
   }
 }
 </style>

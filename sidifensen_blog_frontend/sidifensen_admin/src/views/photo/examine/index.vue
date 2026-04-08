@@ -4,15 +4,7 @@
       <div class="card-header">
         <h2 class="card-title">图片审核</h2>
         <div class="card-actions">
-          <el-select
-            v-model="searchExamineStatus"
-            placeholder="审核状态"
-            filterable
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
+          <el-select v-model="searchExamineStatus" placeholder="审核状态" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="待审核" value="0" />
             <el-option label="审核通过" value="1" />
             <el-option label="审核不通过" value="2" />
@@ -31,12 +23,7 @@
             class="search-input"
             @change="handleSearch"
           >
-            <el-option
-              v-for="user in filteredUserList"
-              :key="user.id"
-              :label="user.username"
-              :value="user.id"
-            />
+            <el-option v-for="user in filteredUserList" :key="user.id" :label="user.username" :value="user.id" />
           </el-select>
         </div>
       </div>
@@ -67,58 +54,19 @@
         />
       </div>
       <div class="card-third">
-        <el-button
-          type="primary"
-          plain
-          round
-          @click="handleBatchAudit"
-          :disabled="selectedPhotos.length === 0"
-          :loading="batchAuditLoading"
-        >
-          批量审核
-        </el-button>
-        <el-button
-          type="warning"
-          plain
-          round
-          @click="handleBatchReject"
-          :disabled="selectedPhotos.length === 0"
-          :loading="batchRejectLoading"
-        >
-          批量拒绝
-        </el-button>
-        <el-button
-          type="danger"
-          plain
-          round
-          @click="handleBatchDelete"
-          :disabled="selectedPhotos.length === 0"
-          :loading="batchDeleteLoading"
-        >
-          批量删除
-        </el-button>
+        <el-button type="primary" plain round @click="handleBatchAudit" :disabled="selectedPhotos.length === 0" :loading="batchAuditLoading"> 批量审核 </el-button>
+        <el-button type="warning" plain round @click="handleBatchReject" :disabled="selectedPhotos.length === 0" :loading="batchRejectLoading"> 批量拒绝 </el-button>
+        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedPhotos.length === 0" :loading="batchDeleteLoading"> 批量删除 </el-button>
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table
-          v-loading="loading"
-          :data="paginatedPhotoList"
-          class="table"
-          style="height: 100%"
-          @selection-change="handleSelectionChange"
-        >
+        <el-table v-loading="loading" :data="paginatedPhotoList" class="table" style="height: 100%" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="30" />
           <el-table-column prop="url" label="图片" width="350">
             <template #default="{ row }">
               <div style="display: flex; align-items: center">
-                <el-image
-                  preview-teleported
-                  :src="row.url"
-                  style="width: 320px; height: 200px"
-                  :preview-src-list="[row.url]"
-                  fit="cover"
-                />
+                <el-image preview-teleported :src="row.url" style="width: 320px; height: 200px" :preview-src-list="[row.url]" fit="cover" />
               </div>
             </template>
           </el-table-column>
@@ -126,19 +74,8 @@
           <el-table-column prop="username" label="用户名" />
           <el-table-column prop="examineStatus" label="状态">
             <template #default="{ row }">
-              <div
-                class="photo-status"
-                :class="
-                  row.examineStatus === 0
-                    ? 'status-unaudited'
-                    : row.examineStatus === 1
-                      ? 'status-audited'
-                      : 'status-rejected'
-                "
-              >
-                {{
-                  row.examineStatus === 0 ? '待审核' : row.examineStatus === 1 ? '已审核' : '未通过'
-                }}
+              <div class="photo-status" :class="row.examineStatus === 0 ? 'status-unaudited' : row.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
+                {{ row.examineStatus === 0 ? '待审核' : row.examineStatus === 1 ? '已审核' : '未通过' }}
               </div>
             </template>
           </el-table-column>
@@ -147,29 +84,9 @@
           <el-table-column label="操作" width="300">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button
-                  type="info"
-                  @click="handleAuditPhoto(row.id)"
-                  :icon="Check"
-                  class="examine-button"
-                  >审核</el-button
-                >
-                <el-button
-                  type="primary"
-                  @click="handleRejectPhoto(row.id)"
-                  :icon="Close"
-                  class="reject-button"
-                >
-                  拒绝
-                </el-button>
-                <el-button
-                  type="danger"
-                  @click="handleDeletePhoto(row.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                >
-                  删除
-                </el-button>
+                <el-button type="info" @click="handleAuditPhoto(row.id)" :icon="Check" class="examine-button">审核</el-button>
+                <el-button type="primary" @click="handleRejectPhoto(row.id)" :icon="Close" class="reject-button"> 拒绝 </el-button>
+                <el-button type="danger" @click="handleDeletePhoto(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
               </div>
             </template>
           </el-table-column>
@@ -179,49 +96,19 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="photo-cards">
-          <el-card
-            v-for="photo in paginatedPhotoList"
-            :key="photo.id"
-            class="photo-card"
-            :class="{ 'is-selected': isPhotoSelected(photo.id) }"
-          >
+          <el-card v-for="photo in paginatedPhotoList" :key="photo.id" class="photo-card" :class="{ 'is-selected': isPhotoSelected(photo.id) }">
             <div class="photo-card-content">
               <div class="photo-header-section">
                 <div class="photo-cover-container">
-                  <el-checkbox
-                    :model-value="isPhotoSelected(photo.id)"
-                    @change="handleMobileSelect(photo)"
-                    class="mobile-checkbox"
-                  />
-                  <el-image
-                    preview-teleported
-                    :src="photo.url"
-                    class="photo-cover"
-                    :preview-src-list="[photo.url]"
-                    fit="cover"
-                  />
+                  <el-checkbox :model-value="isPhotoSelected(photo.id)" @change="handleMobileSelect(photo)" class="mobile-checkbox" />
+                  <el-image preview-teleported :src="photo.url" class="photo-cover" :preview-src-list="[photo.url]" fit="cover" />
                 </div>
                 <div class="photo-info">
                   <div class="photo-header">
                     <div class="photo-id">#{{ photo.id }}</div>
                     <div class="photo-username">{{ photo.username }}</div>
-                    <div
-                      class="photo-status"
-                      :class="
-                        photo.examineStatus === 0
-                          ? 'status-unaudited'
-                          : photo.examineStatus === 1
-                            ? 'status-audited'
-                            : 'status-rejected'
-                      "
-                    >
-                      {{
-                        photo.examineStatus === 0
-                          ? '待审核'
-                          : photo.examineStatus === 1
-                            ? '已审核'
-                            : '未通过'
-                      }}
+                    <div class="photo-status" :class="photo.examineStatus === 0 ? 'status-unaudited' : photo.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
+                      {{ photo.examineStatus === 0 ? '待审核' : photo.examineStatus === 1 ? '已审核' : '未通过' }}
                     </div>
                   </div>
                   <div class="photo-meta">
@@ -237,27 +124,9 @@
                 </div>
               </div>
               <div class="photo-actions">
-                <el-button
-                  type="info"
-                  @click="handleAuditPhoto(photo.id)"
-                  :icon="Check"
-                  class="examine-button"
-                  >审核</el-button
-                >
-                <el-button
-                  type="primary"
-                  @click="handleRejectPhoto(photo.id)"
-                  :icon="Close"
-                  class="reject-button"
-                  >拒绝</el-button
-                >
-                <el-button
-                  type="danger"
-                  @click="handleDeletePhoto(photo.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  >删除</el-button
-                >
+                <el-button type="info" @click="handleAuditPhoto(photo.id)" :icon="Check" class="examine-button">审核</el-button>
+                <el-button type="primary" @click="handleRejectPhoto(photo.id)" :icon="Close" class="reject-button">拒绝</el-button>
+                <el-button type="danger" @click="handleDeletePhoto(photo.id)" :icon="Delete" class="delete-button">删除</el-button>
               </div>
             </div>
           </el-card>
@@ -265,13 +134,7 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
   </div>
 </template>
@@ -280,14 +143,7 @@
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { Delete, Close, Check } from '@element-plus/icons-vue'
 import { useUserSearch } from '@/utils/userSearch'
-import {
-  adminDeletePhoto,
-  adminDeleteBatchPhoto,
-  adminAuditPhoto,
-  adminAuditBatchPhoto,
-  adminSearchPhoto,
-  adminGetPhotoList,
-} from '@/api/photo'
+import { adminDeletePhoto, adminDeleteBatchPhoto, adminAuditPhoto, adminAuditBatchPhoto, adminSearchPhoto, adminGetPhotoList } from '@/api/photo'
 import Pagination from '@/components/data/Pagination.vue'
 
 // 图片列表数据
@@ -341,13 +197,7 @@ const searchCreateTimeStart = ref(null)
 // 搜索创建时间结束
 const searchCreateTimeEnd = ref(null)
 
-const hasSearchConditions = () =>
-  !!(
-    searchUserId.value ||
-    searchExamineStatus.value ||
-    searchCreateTimeStart.value ||
-    searchCreateTimeEnd.value
-  )
+const hasSearchConditions = () => !!(searchUserId.value || searchExamineStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value)
 
 const buildSearchPayload = () => ({
   pageNum: currentPage.value,

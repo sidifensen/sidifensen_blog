@@ -16,12 +16,7 @@
       @update:model-value="handleUpdate"
       @change="handleChange"
     >
-      <el-option
-        v-for="user in filteredUserList"
-        :key="user.id"
-        :label="user.nickname || user.username"
-        :value="user.id"
-      />
+      <el-option v-for="user in filteredUserList" :key="user.id" :label="user.nickname || user.username" :value="user.id" />
     </el-select>
   </div>
 </template>
@@ -124,6 +119,7 @@ const handleChange = (val) => {
     transition: all 0.3s ease;
     min-height: 32px;
     font-size: 14px;
+    background-color: var(--bg-input);
 
     &:focus-within {
       box-shadow: 0 0 0 3px var(--admin-primary-light) !important;
@@ -132,7 +128,7 @@ const handleChange = (val) => {
   }
 
   :deep(.el-select__placeholder) {
-    color: var(--text-muted);
+    color: var(--text-placeholder, #94a3b8);
   }
 }
 
@@ -140,6 +136,12 @@ const handleChange = (val) => {
 @media screen and (max-width: 768px) {
   .user-search-select {
     width: 100%;
+
+    .filter-label {
+      width: 56px;
+      text-align: right;
+      flex-shrink: 0;
+    }
 
     .search-select {
       width: 100% !important;

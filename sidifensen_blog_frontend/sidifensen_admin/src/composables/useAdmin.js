@@ -155,7 +155,7 @@ export function useConfirmDelete() {
         try {
           await deleteFn(id)
           ElMessage.success('删除成功')
-        } catch (error) {
+        } catch {
           ElMessage.error('删除失败')
         }
       })
@@ -174,15 +174,7 @@ export function useConfirmDelete() {
  */
 export function useConfirmAction() {
   const confirmAction = (actionFn, options = {}) => {
-    const {
-      title = '确认',
-      message = '确定要执行此操作吗？',
-      confirmText = '确定',
-      cancelText = '取消',
-      type = 'warning',
-      successMessage = '操作成功',
-      errorMessage = '操作失败',
-    } = options
+    const { title = '确认', message = '确定要执行此操作吗？', confirmText = '确定', cancelText = '取消', type = 'warning', successMessage = '操作成功', errorMessage = '操作失败' } = options
 
     ElMessageBox.confirm(message, title, {
       confirmButtonText: confirmText,
@@ -193,7 +185,7 @@ export function useConfirmAction() {
         try {
           await actionFn()
           ElMessage.success(successMessage)
-        } catch (error) {
+        } catch {
           ElMessage.error(errorMessage)
         }
       })

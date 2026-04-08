@@ -5,37 +5,13 @@
       <div class="card-header">
         <h2 class="card-title">访客日志管理</h2>
         <div class="card-actions">
-          <el-select
-            v-model="searchForm.device"
-            placeholder="设备类型"
-            filterable
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
+          <el-select v-model="searchForm.device" placeholder="设备类型" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="全部" value="" />
             <el-option label="PC" value="PC" />
             <el-option label="Mobile" value="Mobile" />
           </el-select>
-          <el-input
-            v-model.number="searchForm.userId"
-            placeholder="用户ID"
-            :prefix-icon="Search"
-            size="small"
-            class="search-input"
-            clearable
-            @input="handleSearch"
-          />
-          <el-input
-            v-model="searchForm.ip"
-            placeholder="访客IP地址"
-            :prefix-icon="Search"
-            size="small"
-            class="search-input"
-            clearable
-            @input="handleSearch"
-          />
+          <el-input v-model.number="searchForm.userId" placeholder="用户ID" :prefix-icon="Search" size="small" class="search-input" clearable @input="handleSearch" />
+          <el-input v-model="searchForm.ip" placeholder="访客IP地址" :prefix-icon="Search" size="small" class="search-input" clearable @input="handleSearch" />
         </div>
       </div>
 
@@ -69,27 +45,12 @@
 
       <!-- 批量操作按钮区域 -->
       <div class="card-third">
-        <el-button
-          type="danger"
-          plain
-          round
-          @click="handleBatchDelete"
-          :disabled="selectedLogs.length === 0"
-          :loading="batchDeleteLoading"
-          >批量删除</el-button
-        >
+        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedLogs.length === 0" :loading="batchDeleteLoading">批量删除</el-button>
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table
-          v-loading="loading"
-          :data="logList"
-          class="table"
-          @selection-change="handleSelectionChange"
-          :row-style="{ height: 'auto' }"
-          :cell-style="{ padding: '8px 0' }"
-        >
+        <el-table v-loading="loading" :data="logList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
           <el-table-column type="selection" width="30" />
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="userId" label="用户ID" width="80">
@@ -115,12 +76,7 @@
           </el-table-column>
           <el-table-column prop="address" label="地理位置" min-width="150">
             <template #default="{ row }">
-              <el-tooltip
-                v-if="row.address"
-                :content="row.address"
-                placement="top-start"
-                :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"
-              >
+              <el-tooltip v-if="row.address" :content="row.address" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
                 <div class="log-address">{{ row.address }}</div>
               </el-tooltip>
               <span v-else>-</span>
@@ -137,14 +93,7 @@
           <el-table-column label="操作" width="100">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button
-                  type="danger"
-                  @click="handleDelete(row.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  size="small"
-                  >删除</el-button
-                >
+                <el-button type="danger" @click="handleDelete(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </template>
           </el-table-column>
@@ -154,21 +103,12 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="log-cards">
-          <el-card
-            v-for="log in logList"
-            :key="log.id"
-            class="log-card"
-            :class="{ 'is-selected': isLogSelected(log.id) }"
-          >
+          <el-card v-for="log in logList" :key="log.id" class="log-card" :class="{ 'is-selected': isLogSelected(log.id) }">
             <div class="log-card-content">
               <div class="log-header-section">
                 <div class="log-info">
                   <div class="log-header">
-                    <el-checkbox
-                      :model-value="isLogSelected(log.id)"
-                      @change="handleMobileSelect(log)"
-                      class="mobile-checkbox"
-                    />
+                    <el-checkbox :model-value="isLogSelected(log.id)" @change="handleMobileSelect(log)" class="mobile-checkbox" />
                     <div class="log-id">#{{ log.id }}</div>
                     <div class="device-type" :class="getDeviceTypeClass(log.device)">
                       {{ log.device }}
@@ -178,10 +118,7 @@
                   <!-- 用户信息 -->
                   <div class="log-user-mobile">
                     <span class="user-label">用户:</span>
-                    <span class="user-value"
-                      >{{ log.username || '游客' }}
-                      {{ log.userId ? `(ID: ${log.userId})` : '' }}</span
-                    >
+                    <span class="user-value">{{ log.username || '游客' }} {{ log.userId ? `(ID: ${log.userId})` : '' }}</span>
                   </div>
 
                   <!-- IP地址 -->
@@ -208,14 +145,7 @@
                 </div>
               </div>
               <div class="log-actions">
-                <el-button
-                  type="danger"
-                  @click="handleDelete(log.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  size="small"
-                  >删除</el-button
-                >
+                <el-button type="danger" @click="handleDelete(log.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </div>
           </el-card>
@@ -223,13 +153,7 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
   </div>
 </template>
@@ -309,13 +233,7 @@ const getVisitorLogs = async () => {
 
 // 判断是否存在搜索条件
 const hasSearchConditions = () => {
-  return !!(
-    searchForm.userId ||
-    searchForm.ip ||
-    searchForm.device ||
-    searchForm.visitTimeStart ||
-    searchForm.visitTimeEnd
-  )
+  return !!(searchForm.userId || searchForm.ip || searchForm.device || searchForm.visitTimeStart || searchForm.visitTimeEnd)
 }
 
 // 构建搜索参数

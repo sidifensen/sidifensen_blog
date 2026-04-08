@@ -5,15 +5,7 @@
       <div class="card-header">
         <h2 class="card-title">系统通知管理</h2>
         <div class="card-actions">
-          <el-select
-            v-model="searchForm.isRead"
-            placeholder="消息状态"
-            filterable
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
+          <el-select v-model="searchForm.isRead" placeholder="消息状态" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="全部" value="" />
             <el-option label="未读" :value="0" />
             <el-option label="已读" :value="1" />
@@ -51,57 +43,27 @@
 
       <!-- 批量操作按钮区域 -->
       <div class="card-third">
-        <el-button
-          type="primary"
-          plain
-          round
-          @click="handleBatchRead"
-          :disabled="selectedMessages.length === 0"
-          :loading="batchReadLoading"
-          >标记已读</el-button
-        >
-        <el-button
-          type="danger"
-          plain
-          round
-          @click="handleBatchDelete"
-          :disabled="selectedMessages.length === 0"
-          :loading="batchDeleteLoading"
-          >批量删除</el-button
-        >
+        <el-button type="primary" plain round @click="handleBatchRead" :disabled="selectedMessages.length === 0" :loading="batchReadLoading">标记已读</el-button>
+        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedMessages.length === 0" :loading="batchDeleteLoading">批量删除</el-button>
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table
-          v-loading="loading"
-          :data="paginatedMessageList"
-          class="table"
-          @selection-change="handleSelectionChange"
-          :row-style="{ height: 'auto' }"
-          :cell-style="{ padding: '8px 0' }"
-        >
+        <el-table v-loading="loading" :data="paginatedMessageList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
           <el-table-column type="selection" width="30" />
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="senderId" label="发送者ID" width="100" />
           <el-table-column prop="receiverId" label="接收者ID" width="100" />
           <el-table-column prop="content" label="消息内容" min-width="300">
             <template #default="{ row }">
-              <el-tooltip
-                :content="getMessageContent(row)"
-                placement="top-start"
-                :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"
-              >
+              <el-tooltip :content="getMessageContent(row)" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
                 <div class="message-content">{{ getMessageContent(row) }}</div>
               </el-tooltip>
             </template>
           </el-table-column>
           <el-table-column prop="isRead" label="状态" width="80">
             <template #default="{ row }">
-              <div
-                class="message-status"
-                :class="row.isRead === 0 ? 'status-unread' : 'status-read'"
-              >
+              <div class="message-status" :class="row.isRead === 0 ? 'status-unread' : 'status-read'">
                 {{ row.isRead === 0 ? '未读' : '已读' }}
               </div>
             </template>
@@ -110,23 +72,8 @@
           <el-table-column label="操作" width="200">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button
-                  type="primary"
-                  @click="handleRead(row)"
-                  :icon="Check"
-                  class="read-button"
-                  size="small"
-                  :disabled="row.isRead === 1"
-                  >已读</el-button
-                >
-                <el-button
-                  type="danger"
-                  @click="handleDelete(row.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  size="small"
-                  >删除</el-button
-                >
+                <el-button type="primary" @click="handleRead(row)" :icon="Check" class="read-button" size="small" :disabled="row.isRead === 1">已读</el-button>
+                <el-button type="danger" @click="handleDelete(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </template>
           </el-table-column>
@@ -136,26 +83,14 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="message-cards">
-          <el-card
-            v-for="message in paginatedMessageList"
-            :key="message.id"
-            class="message-card"
-            :class="{ 'is-selected': isMessageSelected(message.id) }"
-          >
+          <el-card v-for="message in paginatedMessageList" :key="message.id" class="message-card" :class="{ 'is-selected': isMessageSelected(message.id) }">
             <div class="message-card-content">
               <div class="message-header-section">
                 <div class="message-info">
                   <div class="message-header">
-                    <el-checkbox
-                      :model-value="isMessageSelected(message.id)"
-                      @change="handleMobileSelect(message)"
-                      class="mobile-checkbox"
-                    />
+                    <el-checkbox :model-value="isMessageSelected(message.id)" @change="handleMobileSelect(message)" class="mobile-checkbox" />
                     <div class="message-id">#{{ message.id }}</div>
-                    <div
-                      class="message-status"
-                      :class="message.isRead === 0 ? 'status-unread' : 'status-read'"
-                    >
+                    <div class="message-status" :class="message.isRead === 0 ? 'status-unread' : 'status-read'">
                       {{ message.isRead === 0 ? '未读' : '已读' }}
                     </div>
                   </div>
@@ -182,23 +117,8 @@
                 </div>
               </div>
               <div class="message-actions">
-                <el-button
-                  type="primary"
-                  @click="handleRead(message)"
-                  :icon="Check"
-                  class="read-button"
-                  size="small"
-                  :disabled="message.isRead === 1"
-                  >已读</el-button
-                >
-                <el-button
-                  type="danger"
-                  @click="handleDelete(message.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  size="small"
-                  >删除</el-button
-                >
+                <el-button type="primary" @click="handleRead(message)" :icon="Check" class="read-button" size="small" :disabled="message.isRead === 1">已读</el-button>
+                <el-button type="danger" @click="handleDelete(message.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </div>
           </el-card>
@@ -206,13 +126,7 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
   </div>
 </template>
@@ -265,8 +179,7 @@ const getMessageContent = (row) => {
 }
 
 // 是否有搜索条件
-const hasSearchConditions = () =>
-  searchForm.isRead !== '' || searchForm.startTime || searchForm.endTime
+const hasSearchConditions = () => searchForm.isRead !== '' || searchForm.startTime || searchForm.endTime
 
 // 获取消息列表
 const getMessages = async () => {
@@ -358,15 +271,11 @@ const handleRead = async (row) => {
 // 批量标记已读
 const handleBatchRead = async () => {
   if (selectedMessages.value.length === 0) return
-  ElMessageBox.confirm(
-    `确定要将选中的 ${selectedMessages.value.length} 条消息标记为已读吗？`,
-    '提示',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'info',
-    },
-  )
+  ElMessageBox.confirm(`确定要将选中的 ${selectedMessages.value.length} 条消息标记为已读吗？`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'info',
+  })
     .then(async () => {
       batchReadLoading.value = true
       try {

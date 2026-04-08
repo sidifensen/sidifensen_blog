@@ -1,16 +1,7 @@
 <template>
   <div class="search-filters">
     <!-- 关键词搜索 -->
-    <el-input
-      v-if="showKeyword"
-      v-model="keywordValue"
-      :placeholder="keywordPlaceholder"
-      :prefix-icon="Search"
-      size="small"
-      class="search-input keyword-input"
-      clearable
-      @input="handleKeywordInput"
-    />
+    <el-input v-if="showKeyword" v-model="keywordValue" :placeholder="keywordPlaceholder" :prefix-icon="Search" size="small" class="search-input keyword-input" clearable @input="handleKeywordInput" />
 
     <!-- 下拉选择器插槽 -->
     <slot />

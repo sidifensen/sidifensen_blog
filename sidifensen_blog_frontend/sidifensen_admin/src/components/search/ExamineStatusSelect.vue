@@ -1,16 +1,7 @@
 <template>
   <div class="examine-status-select">
     <span v-if="showLabel" class="filter-label">审核状态</span>
-    <el-select
-      v-model="value"
-      :placeholder="placeholder"
-      filterable
-      clearable
-      size="small"
-      :class="['search-select', selectClass]"
-      :style="{ width: width }"
-      @change="handleChange"
-    >
+    <el-select v-model="value" :placeholder="placeholder" filterable clearable size="small" :class="['search-select', selectClass]" :style="{ width: width }" @change="handleChange">
       <el-option label="全部" value="" />
       <el-option label="待审核" value="0" />
       <el-option label="审核通过" value="1" />
@@ -103,6 +94,7 @@ const handleChange = (val) => {
     transition: all 0.3s ease;
     min-height: 32px;
     font-size: 14px;
+    background-color: var(--bg-input);
 
     &:focus-within {
       box-shadow: 0 0 0 3px var(--admin-primary-light) !important;
@@ -111,7 +103,7 @@ const handleChange = (val) => {
   }
 
   :deep(.el-select__placeholder) {
-    color: var(--text-muted);
+    color: var(--text-placeholder, #94a3b8);
   }
 }
 
@@ -119,6 +111,12 @@ const handleChange = (val) => {
 @media screen and (max-width: 768px) {
   .examine-status-select {
     width: 100%;
+
+    .filter-label {
+      width: 56px;
+      text-align: right;
+      flex-shrink: 0;
+    }
 
     .search-select {
       width: 100% !important;

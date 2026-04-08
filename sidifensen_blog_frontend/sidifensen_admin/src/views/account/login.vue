@@ -4,20 +4,9 @@
     <div class="login-brand">
       <div class="brand-content">
         <div class="brand-logo">
-          <svg
-            viewBox="0 0 80 80"
-            width="64"
-            height="64"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
+          <svg viewBox="0 0 80 80" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
             <!-- 翻开的书本 -->
-            <path
-              d="M10 22 Q40 12 40 12 Q40 12 70 22 L70 58 Q40 48 40 48 Q40 48 10 58 Z"
-              fill="#334155"
-              stroke="#42b983"
-              stroke-width="2"
-            />
+            <path d="M10 22 Q40 12 40 12 Q40 12 70 22 L70 58 Q40 48 40 48 Q40 48 10 58 Z" fill="#334155" stroke="#42b983" stroke-width="2" />
             <!-- 书脊 -->
             <path d="M40 12 L40 48" stroke="#42b983" stroke-width="2" />
             <!-- 左侧书页线条 -->
@@ -45,42 +34,19 @@
         <el-form ref="loginFormRef" :model="loginForm" :rules="rules" class="login-form">
           <el-form-item prop="username">
             <label class="form-label">用户名</label>
-            <el-input
-              v-model="loginForm.username"
-              placeholder="请输入用户名"
-              :prefix-icon="User"
-              size="large"
-            />
+            <el-input v-model="loginForm.username" placeholder="请输入用户名" :prefix-icon="User" size="large" />
           </el-form-item>
 
           <el-form-item prop="password">
             <label class="form-label">密码</label>
-            <el-input
-              v-model="loginForm.password"
-              type="password"
-              placeholder="请输入密码"
-              :prefix-icon="Lock"
-              size="large"
-              show-password
-            />
+            <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" :prefix-icon="Lock" size="large" show-password />
           </el-form-item>
 
           <el-form-item prop="checkCode">
             <label class="form-label">验证码</label>
             <div class="check-code-wrapper">
-              <el-input
-                v-model="loginForm.checkCode"
-                placeholder="请输入验证码"
-                size="large"
-                class="check-code-input"
-                @keyup.enter="handleLogin"
-              />
-              <img
-                :src="checkCodeInfo.checkCodeBase64"
-                class="check-code-image"
-                title="点击刷新验证码"
-                @click="refreshCheckCode"
-              />
+              <el-input v-model="loginForm.checkCode" placeholder="请输入验证码" size="large" class="check-code-input" @keyup.enter="handleLogin" />
+              <img :src="checkCodeInfo.checkCodeBase64" class="check-code-image" title="点击刷新验证码" @click="refreshCheckCode" />
             </div>
           </el-form-item>
 
@@ -89,13 +55,7 @@
           </div>
 
           <el-form-item>
-            <el-button
-              type="primary"
-              size="large"
-              class="login-button"
-              :loading="loading"
-              @click="handleLogin"
-            >
+            <el-button type="primary" size="large" class="login-button" :loading="loading" @click="handleLogin">
               {{ loading ? '登录中...' : '登录' }}
             </el-button>
           </el-form-item>

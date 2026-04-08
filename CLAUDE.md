@@ -15,7 +15,6 @@
 | 工具 | 包名 | 用途 |
 |------|------|------|
 | MySQL MCP | `@berthojoris/mcp-mysql-server` | 新增表/字段、调试业务逻辑 |
-| chrome-devtools MCP | `chrome-devtools-mcp` | 页面调试、元素检查、控制台日志 |
 | SSH MCP | `@fangjunjie/ssh-mcp-server` | 服务器远程连接、命令执行、文件传输 |
 
 ## 后端规范
@@ -100,6 +99,11 @@ cd sidifensen_blog_backend && mvn clean compile -DskipTests
 --border: #e2e8f0;       // 浅色 / #334155 深色
 ```
 
+### 颜色使用规范
+- **必须先在全局定义再使用**：所有颜色必须定义在 `base.scss` 或对应模块的全局变量文件中，使用 CSS 变量引用
+- **优先使用已定义颜色**：新增颜色前先检查现有变量，避免重复定义
+- **禁止硬编码颜色**：组件内不允许直接写 `#xxx` 或 `rgb(x,x,x)`，必须用 `var(--xxx)` 引用全局变量
+
 ### 修改后检查
 ```bash
 cd sidifensen_blog_frontend/sidifensen_user && npm run build
@@ -120,6 +124,26 @@ cd sidifensen_blog_frontend/sidifensen_admin && npm run build
 - 不看现有代码直接生成全新结构
 - 引入项目外 UI 库
 - 忽略黑夜模式适配
+
+## 设计参考资料
+
+**优先沿用项目现有设计，无对应参考时再从以下资源选取风格。**
+
+项目内置了 58 个真实产品的设计系统文档（来源：[awesome-design-md](https://github.com/VoltAgent/awesome-design-md)），位于 `docs/awesome-design-md/`。
+
+添加新功能时：
+1. 先参考 `docs/awesome-design-md/` 中最接近目标风格的设计文档（如要做类似 Linear 的界面 → 读 `linear.app/DESIGN.md`）
+2. 将选定设计系统的配色、字体、间距、组件规范应用到代码中
+3. 确保仍然符合项目的「三大铁律」和「去 AI 味」规范
+
+常用参考：
+- **简洁工具感** → `linear.app/`
+- **文艺清新** → `notion/`, `superhuman/`
+- **科技感强** → `claude/`, `vercel/`, `supabase/`
+- **视觉冲击** → `figma/`, `framer/`, `spotify/`
+- **企业级** → `stripe/`, `airbnb/`, `apple/`
+
+> 注意：参考设计规范时，需适配项目现有的 CSS 变量体系，不要直接复制十六进制颜色值。
 
 ## 文档规范
 

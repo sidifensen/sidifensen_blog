@@ -5,42 +5,18 @@
       <div class="card-header">
         <h2 class="card-title">操作日志管理</h2>
         <div class="card-actions">
-          <el-select
-            v-model="searchForm.operatorRole"
-            placeholder="操作角色"
-            filterable
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
+          <el-select v-model="searchForm.operatorRole" placeholder="操作角色" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="全部" value="" />
             <el-option label="管理员" value="admin" />
             <el-option label="查看者" value="viewer" />
           </el-select>
-          <el-select
-            v-model="searchForm.status"
-            placeholder="操作状态"
-            filterable
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
+          <el-select v-model="searchForm.status" placeholder="操作状态" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="全部" value="" />
             <el-option label="成功" :value="0" />
             <el-option label="失败" :value="1" />
             <el-option label="异常" :value="2" />
           </el-select>
-          <el-select
-            v-model="searchForm.operation"
-            placeholder="操作类型"
-            filterable
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
+          <el-select v-model="searchForm.operation" placeholder="操作类型" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="全部" value="" />
             <el-option label="获取" value="获取" />
             <el-option label="新增" value="新增" />
@@ -52,30 +28,14 @@
             <el-option label="分配" value="分配" />
             <el-option label="其他" value="其他" />
           </el-select>
-          <el-select
-            v-model="searchForm.requestMethod"
-            placeholder="请求方式"
-            filterable
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
+          <el-select v-model="searchForm.requestMethod" placeholder="请求方式" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="全部" value="" />
             <el-option label="GET" value="GET" />
             <el-option label="POST" value="POST" />
             <el-option label="PUT" value="PUT" />
             <el-option label="DELETE" value="DELETE" />
           </el-select>
-          <el-input
-            v-model.number="searchForm.operatorId"
-            placeholder="操作人员 ID"
-            :prefix-icon="Search"
-            size="small"
-            class="search-input"
-            clearable
-            @input="handleSearch"
-          />
+          <el-input v-model.number="searchForm.operatorId" placeholder="操作人员 ID" :prefix-icon="Search" size="small" class="search-input" clearable @input="handleSearch" />
         </div>
       </div>
 
@@ -109,15 +69,7 @@
 
       <!-- 批量操作按钮区域 -->
       <div class="card-third">
-        <el-button
-          type="danger"
-          plain
-          round
-          @click="handleBatchDelete"
-          :disabled="selectedLogs.length === 0"
-          :loading="batchDeleteLoading"
-          >批量删除</el-button
-        >
+        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedLogs.length === 0" :loading="batchDeleteLoading">批量删除</el-button>
       </div>
 
       <!-- 桌面端表格视图 -->
@@ -150,12 +102,7 @@
               <div class="log-module">{{ row.module || '-' }}</div>
             </template>
           </el-table-column>
-          <el-table-column
-            prop="description"
-            label="操作描述"
-            min-width="150"
-            show-overflow-tooltip
-          >
+          <el-table-column prop="description" label="操作描述" min-width="150" show-overflow-tooltip>
             <template #default="{ row }">
               <span>{{ row.description || '-' }}</span>
             </template>
@@ -203,22 +150,8 @@
           <el-table-column label="操作" width="170" fixed="right">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button
-                  type="info"
-                  size="small"
-                  @click="handleViewDetail(row.id)"
-                  :icon="InfoFilled"
-                  class="detail-button"
-                  >详情</el-button
-                >
-                <el-button
-                  type="danger"
-                  size="small"
-                  @click="handleDelete(row.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  >删除</el-button
-                >
+                <el-button type="info" size="small" @click="handleViewDetail(row.id)" :icon="InfoFilled" class="detail-button">详情</el-button>
+                <el-button type="danger" size="small" @click="handleDelete(row.id)" :icon="Delete" class="delete-button">删除</el-button>
               </div>
             </template>
           </el-table-column>
@@ -228,21 +161,12 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="log-cards">
-          <el-card
-            v-for="log in logList"
-            :key="log.id"
-            class="log-card"
-            :class="{ 'is-selected': isLogSelected(log.id) }"
-          >
+          <el-card v-for="log in logList" :key="log.id" class="log-card" :class="{ 'is-selected': isLogSelected(log.id) }">
             <div class="log-card-content">
               <div class="log-header-section">
                 <div class="log-info">
                   <div class="log-header">
-                    <el-checkbox
-                      :model-value="isLogSelected(log.id)"
-                      @change="handleMobileSelect(log)"
-                      class="mobile-checkbox"
-                    />
+                    <el-checkbox :model-value="isLogSelected(log.id)" @change="handleMobileSelect(log)" class="mobile-checkbox" />
                     <div class="log-id">#{{ log.id }}</div>
                     <div class="role-type" :class="getRoleTypeClass(log.operatorRole)">
                       {{ log.operatorRole === 'admin' ? '管理员' : '查看者' }}
@@ -255,10 +179,7 @@
                   <!-- 操作人员信息 -->
                   <div class="log-operator-mobile">
                     <span class="operator-label">操作人员:</span>
-                    <span class="operator-value"
-                      >{{ log.operatorName || '未知' }}
-                      {{ log.operatorId ? `(ID: ${log.operatorId})` : '' }}</span
-                    >
+                    <span class="operator-value">{{ log.operatorName || '未知' }} {{ log.operatorId ? `(ID: ${log.operatorId})` : '' }}</span>
                   </div>
 
                   <!-- 功能模块 -->
@@ -277,11 +198,7 @@
                   <div v-if="log.requestMethod || log.requestUrl" class="log-request-mobile">
                     <span class="request-label">请求:</span>
                     <span class="request-value">
-                      <span
-                        class="request-method-badge"
-                        :class="'method-' + log.requestMethod?.toLowerCase()"
-                        >{{ log.requestMethod || '-' }}</span
-                      >
+                      <span class="request-method-badge" :class="'method-' + log.requestMethod?.toLowerCase()">{{ log.requestMethod || '-' }}</span>
                       <span class="request-url-text">{{ log.requestUrl || '-' }}</span>
                     </span>
                   </div>
@@ -289,9 +206,7 @@
                   <!-- 操作 IP 和地址 -->
                   <div v-if="log.ip || log.address" class="log-location-mobile">
                     <span class="location-label">位置:</span>
-                    <span class="location-value"
-                      >{{ log.ip || '-' }} {{ log.address ? `(${log.address})` : '' }}</span
-                    >
+                    <span class="location-value">{{ log.ip || '-' }} {{ log.address ? `(${log.address})` : '' }}</span>
                   </div>
 
                   <!-- 操作类型 -->
@@ -316,22 +231,8 @@
                 </div>
               </div>
               <div class="log-actions">
-                <el-button
-                  type="info"
-                  size="small"
-                  @click="handleViewDetail(log.id)"
-                  :icon="InfoFilled"
-                  class="detail-button"
-                  >详情</el-button
-                >
-                <el-button
-                  type="danger"
-                  size="small"
-                  @click="handleDelete(log.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  >删除</el-button
-                >
+                <el-button type="info" size="small" @click="handleViewDetail(log.id)" :icon="InfoFilled" class="detail-button">详情</el-button>
+                <el-button type="danger" size="small" @click="handleDelete(log.id)" :icon="Delete" class="delete-button">删除</el-button>
               </div>
             </div>
           </el-card>
@@ -339,59 +240,33 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 详情弹窗 -->
-    <el-dialog
-      v-model="detailDialogVisible"
-      title="操作日志详情"
-      width="600px"
-      class="detail-dialog"
-    >
+    <el-dialog v-model="detailDialogVisible" title="操作日志详情" width="600px" class="detail-dialog">
       <div v-if="detailData" class="detail-content">
         <el-descriptions :column="1" border>
           <el-descriptions-item label="操作 ID">{{ detailData.id }}</el-descriptions-item>
-          <el-descriptions-item label="操作人员"
-            >{{ detailData.operatorName || '-' }} (ID:
-            {{ detailData.operatorId }})</el-descriptions-item
-          >
+          <el-descriptions-item label="操作人员">{{ detailData.operatorName || '-' }} (ID: {{ detailData.operatorId }})</el-descriptions-item>
           <el-descriptions-item label="操作角色">
             <el-tag :type="detailData.operatorRole === 'admin' ? 'danger' : 'info'" size="small">
               {{ detailData.operatorRole === 'admin' ? '管理员' : '查看者' }}
             </el-tag>
           </el-descriptions-item>
-          <el-descriptions-item label="功能模块">{{
-            detailData.module || '-'
-          }}</el-descriptions-item>
-          <el-descriptions-item label="操作描述">{{
-            detailData.description || '-'
-          }}</el-descriptions-item>
+          <el-descriptions-item label="功能模块">{{ detailData.module || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="操作描述">{{ detailData.description || '-' }}</el-descriptions-item>
           <el-descriptions-item label="操作类型">
-            <el-tag :type="getOperationTypeTag(detailData.operation)" size="small">{{
-              detailData.operation
-            }}</el-tag>
+            <el-tag :type="getOperationTypeTag(detailData.operation)" size="small">{{ detailData.operation }}</el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="请求方式">
             <span class="request-method">{{ detailData.requestMethod || '-' }}</span>
           </el-descriptions-item>
-          <el-descriptions-item label="请求 URL">{{
-            detailData.requestUrl || '-'
-          }}</el-descriptions-item>
+          <el-descriptions-item label="请求 URL">{{ detailData.requestUrl || '-' }}</el-descriptions-item>
           <el-descriptions-item label="操作 IP">{{ detailData.ip || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="操作地址">{{
-            detailData.address || '-'
-          }}</el-descriptions-item>
+          <el-descriptions-item label="操作地址">{{ detailData.address || '-' }}</el-descriptions-item>
           <el-descriptions-item label="操作状态">
-            <el-tag :type="getStatusTag(detailData.status)" size="small">{{
-              getStatusText(detailData.status)
-            }}</el-tag>
+            <el-tag :type="getStatusTag(detailData.status)" size="small">{{ getStatusText(detailData.status) }}</el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="耗时 (ms)">{{ detailData.time }}</el-descriptions-item>
           <el-descriptions-item label="操作时间">{{ detailData.createTime }}</el-descriptions-item>
@@ -420,12 +295,7 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { Search, Delete, InfoFilled } from '@element-plus/icons-vue'
-import {
-  getOperationLogList,
-  searchOperationLog,
-  deleteOperationLogs,
-  getOperationLogDetail,
-} from '@/api/operationLog'
+import { getOperationLogList, searchOperationLog, deleteOperationLogs, getOperationLogDetail } from '@/api/operationLog'
 import Pagination from '@/components/data/Pagination.vue'
 
 // 操作日志列表数据
@@ -534,15 +404,7 @@ const formatJson = (json) => {
 
 // 判断是否存在搜索条件
 const hasSearchConditions = () => {
-  return !!(
-    searchForm.operatorId ||
-    searchForm.operatorRole ||
-    searchForm.operation ||
-    searchForm.requestMethod ||
-    searchForm.status !== '' ||
-    searchForm.createTimeStart ||
-    searchForm.createTimeEnd
-  )
+  return !!(searchForm.operatorId || searchForm.operatorRole || searchForm.operation || searchForm.requestMethod || searchForm.status !== '' || searchForm.createTimeStart || searchForm.createTimeEnd)
 }
 
 // 构建搜索参数

@@ -1,17 +1,7 @@
 <template>
   <div class="keyword-search">
     <span v-if="showLabel" class="filter-label">{{ label }}</span>
-    <el-input
-      v-model="value"
-      :placeholder="placeholder"
-      :prefix-icon="Search"
-      size="small"
-      :clearable="clearable"
-      :class="['search-input', inputClass]"
-      :style="inputStyle"
-      @input="handleInput"
-      @keyup.enter="handleEnter"
-    >
+    <el-input v-model="value" :placeholder="placeholder" size="small" :clearable="clearable" :class="['search-input', inputClass]" :style="inputStyle" @input="handleInput" @keyup.enter="handleEnter">
       <template v-if="$slots.prefix" #prefix>
         <slot name="prefix" />
       </template>
@@ -37,7 +27,6 @@
  */
 
 import { computed } from 'vue'
-import { Search } from '@element-plus/icons-vue'
 
 // Props
 const props = defineProps({
@@ -159,6 +148,7 @@ const handleEnter = (val) => {
     transition: all 0.3s ease;
     min-height: 32px;
     font-size: 14px;
+    background-color: var(--bg-input);
 
     &:focus-within {
       box-shadow: 0 0 0 3px var(--admin-primary-light) !important;
@@ -168,7 +158,7 @@ const handleEnter = (val) => {
 
   :deep(.el-input__inner) {
     &::placeholder {
-      color: var(--text-muted);
+      color: var(--text-placeholder, #94a3b8);
     }
   }
 
@@ -181,9 +171,18 @@ const handleEnter = (val) => {
 @media screen and (max-width: 768px) {
   .keyword-search {
     width: 100%;
+    flex: 1;
+
+    .filter-label {
+      width: 56px;
+      text-align: right;
+      flex-shrink: 0;
+    }
 
     .search-input {
       width: 100% !important;
+      max-width: 100% !important;
+      min-width: auto !important;
     }
   }
 }

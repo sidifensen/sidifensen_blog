@@ -6,30 +6,13 @@
         <h2 class="card-title">公告管理</h2>
         <div class="card-actions">
           <el-button @click="handleSend" class="send-btn">
-            <svg
-              class="send-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"
-                stroke-linecap="round"
-              />
+            <svg class="send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke-linecap="round" />
               <circle cx="12" cy="12" r="4" />
             </svg>
             发送公告
           </el-button>
-          <el-select
-            v-model="searchForm.status"
-            placeholder="状态筛选"
-            filterable
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
+          <el-select v-model="searchForm.status" placeholder="状态筛选" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="全部" value="" />
             <el-option label="待发送" :value="0" />
             <el-option label="发送中" :value="1" />
@@ -41,32 +24,18 @@
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table
-          v-loading="loading"
-          :data="paginatedList"
-          class="table"
-          :row-style="{ height: 'auto' }"
-          :cell-style="{ padding: '8px 0' }"
-        >
+        <el-table v-loading="loading" :data="paginatedList" class="table" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="title" label="标题" min-width="200">
             <template #default="{ row }">
-              <el-tooltip
-                :content="row.title"
-                placement="top-start"
-                :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"
-              >
+              <el-tooltip :content="row.title" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
                 <div class="announcement-title">{{ row.title }}</div>
               </el-tooltip>
             </template>
           </el-table-column>
           <el-table-column prop="content" label="内容" min-width="250">
             <template #default="{ row }">
-              <el-tooltip
-                :content="row.content"
-                placement="top-start"
-                :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"
-              >
+              <el-tooltip :content="row.content" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
                 <div class="announcement-content">{{ row.content }}</div>
               </el-tooltip>
             </template>
@@ -74,12 +43,7 @@
           <el-table-column prop="sendMethod" label="发送方式" width="180">
             <template #default="{ row }">
               <div class="send-methods">
-                <span
-                  v-for="method in parseSendMethod(row.sendMethod)"
-                  :key="method"
-                  class="method-tag"
-                  :class="'method-' + method"
-                >
+                <span v-for="method in parseSendMethod(row.sendMethod)" :key="method" class="method-tag" :class="'method-' + method">
                   {{ methodLabel(method) }}
                 </span>
               </div>
@@ -102,31 +66,9 @@
           <el-table-column label="操作" width="180">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button
-                  type="primary"
-                  @click="handleEdit(row)"
-                  :icon="Edit"
-                  class="edit-button"
-                  size="small"
-                  >编辑</el-button
-                >
-                <el-button
-                  v-if="row.status === 0"
-                  type="warning"
-                  @click="handleCancel(row)"
-                  :icon="Close"
-                  class="cancel-button"
-                  size="small"
-                  >取消</el-button
-                >
-                <el-button
-                  type="danger"
-                  @click="handleDelete(row.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  size="small"
-                  >删除</el-button
-                >
+                <el-button type="primary" @click="handleEdit(row)" :icon="Edit" class="edit-button" size="small">编辑</el-button>
+                <el-button v-if="row.status === 0" type="warning" @click="handleCancel(row)" :icon="Close" class="cancel-button" size="small">取消</el-button>
+                <el-button type="danger" @click="handleDelete(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </template>
           </el-table-column>
@@ -148,12 +90,7 @@
               <div class="card-content-row">{{ item.content }}</div>
               <div class="card-meta-row">
                 <span class="send-methods">
-                  <span
-                    v-for="method in parseSendMethod(item.sendMethod)"
-                    :key="method"
-                    class="method-tag"
-                    :class="'method-' + method"
-                  >
+                  <span v-for="method in parseSendMethod(item.sendMethod)" :key="method" class="method-tag" :class="'method-' + method">
                     {{ methodLabel(method) }}
                   </span>
                 </span>
@@ -161,16 +98,8 @@
               </div>
               <div class="card-actions">
                 <el-button type="primary" @click="handleEdit(item)" size="small">编辑</el-button>
-                <el-button
-                  v-if="item.status === 0"
-                  type="warning"
-                  @click="handleCancel(item)"
-                  size="small"
-                  >取消</el-button
-                >
-                <el-button type="danger" @click="handleDelete(item.id)" size="small"
-                  >删除</el-button
-                >
+                <el-button v-if="item.status === 0" type="warning" @click="handleCancel(item)" size="small">取消</el-button>
+                <el-button type="danger" @click="handleDelete(item.id)" size="small">删除</el-button>
               </div>
             </div>
           </el-card>
@@ -178,23 +107,12 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 发送公告对话框 -->
     <el-dialog v-model="dialogVisible" title="发送公告" width="600px" class="announcement-dialog">
-      <el-form
-        ref="announcementFormRef"
-        :model="announcementForm"
-        :rules="rules"
-        label-width="100px"
-      >
+      <el-form ref="announcementFormRef" :model="announcementForm" :rules="rules" label-width="100px">
         <!-- 发送方式 -->
         <el-form-item label="发送方式" prop="sendMethod">
           <el-checkbox-group v-model="announcementForm.sendMethod">
@@ -206,85 +124,39 @@
 
         <!-- 标题 -->
         <el-form-item label="标题" prop="title">
-          <el-input
-            v-model="announcementForm.title"
-            placeholder="请输入公告标题"
-            maxlength="100"
-            show-word-limit
-          />
+          <el-input v-model="announcementForm.title" placeholder="请输入公告标题" maxlength="100" show-word-limit />
         </el-form-item>
 
         <!-- 内容 -->
         <el-form-item label="内容" prop="content">
-          <el-input
-            v-model="announcementForm.content"
-            type="textarea"
-            :rows="4"
-            placeholder="请输入公告内容"
-            maxlength="2000"
-            show-word-limit
-          />
+          <el-input v-model="announcementForm.content" type="textarea" :rows="4" placeholder="请输入公告内容" maxlength="2000" show-word-limit />
         </el-form-item>
 
         <!-- 指定用户选择（system 方式时显示） -->
-        <el-form-item
-          v-if="
-            announcementForm.sendMethod.includes('system') ||
-            announcementForm.sendMethod.includes('email')
-          "
-          label="发送对象"
-        >
+        <el-form-item v-if="announcementForm.sendMethod.includes('system') || announcementForm.sendMethod.includes('email')" label="发送对象">
           <el-radio-group v-model="announcementForm.targetType">
             <el-radio :value="1">全部用户</el-radio>
             <el-radio :value="2">指定用户</el-radio>
           </el-radio-group>
         </el-form-item>
 
-        <el-form-item
-          v-if="
-            announcementForm.targetType === 2 &&
-            (announcementForm.sendMethod.includes('system') ||
-              announcementForm.sendMethod.includes('email'))
-          "
-          label="选择用户"
-        >
-          <el-select
-            v-model="announcementForm.targetUsers"
-            multiple
-            filterable
-            placeholder="搜索或选择用户"
-            style="width: 100%"
-          >
-            <el-option
-              v-for="user in userList"
-              :key="user.id"
-              :label="user.nickname + ' (ID:' + user.id + ')'"
-              :value="user.id"
-            />
+        <el-form-item v-if="announcementForm.targetType === 2 && (announcementForm.sendMethod.includes('system') || announcementForm.sendMethod.includes('email'))" label="选择用户">
+          <el-select v-model="announcementForm.targetUsers" multiple filterable placeholder="搜索或选择用户" style="width: 100%">
+            <el-option v-for="user in userList" :key="user.id" :label="user.nickname + ' (ID:' + user.id + ')'" :value="user.id" />
           </el-select>
           <div class="form-tip">支持多选，也可直接输入用户ID搜索</div>
         </el-form-item>
 
         <!-- website 方式时显示提示 -->
-        <div
-          v-if="
-            announcementForm.sendMethod.includes('website') &&
-            announcementForm.sendMethod.length === 1
-          "
-          class="website-tip"
-        >
-          <el-alert type="info" :closable="false">
-            公告将发送给全部用户，无需选择发送对象
-          </el-alert>
+        <div v-if="announcementForm.sendMethod.includes('website') && announcementForm.sendMethod.length === 1" class="website-tip">
+          <el-alert type="info" :closable="false"> 公告将发送给全部用户，无需选择发送对象 </el-alert>
         </div>
       </el-form>
 
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="handleDialogClose">取消</el-button>
-          <el-button type="primary" @click="handleSubmit" :loading="submitLoading"
-            >确认发送</el-button
-          >
+          <el-button type="primary" @click="handleSubmit" :loading="submitLoading">确认发送</el-button>
         </span>
       </template>
     </el-dialog>
@@ -294,13 +166,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { Delete, Close, Edit } from '@element-plus/icons-vue'
-import {
-  getAnnouncementPage,
-  createAnnouncement,
-  updateAnnouncement,
-  cancelAnnouncement,
-  deleteAnnouncement,
-} from '@/api/announcement'
+import { getAnnouncementPage, createAnnouncement, updateAnnouncement, cancelAnnouncement, deleteAnnouncement } from '@/api/announcement'
 import { getUserList } from '@/api/user'
 import Pagination from '@/components/data/Pagination.vue'
 

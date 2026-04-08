@@ -4,15 +4,7 @@
       <div class="card-header">
         <h2 class="card-title">评论审核</h2>
         <div class="card-actions">
-          <el-select
-            v-model="searchExamineStatus"
-            placeholder="审核状态"
-            filterable
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
+          <el-select v-model="searchExamineStatus" placeholder="审核状态" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="待审核" value="0" />
             <el-option label="审核通过" value="1" />
             <el-option label="审核不通过" value="2" />
@@ -31,12 +23,7 @@
             class="search-input"
             @change="handleSearch"
           >
-            <el-option
-              v-for="user in filteredUserList"
-              :key="user.id"
-              :label="user.nickname || user.username"
-              :value="user.id"
-            />
+            <el-option v-for="user in filteredUserList" :key="user.id" :label="user.nickname || user.username" :value="user.id" />
           </el-select>
         </div>
       </div>
@@ -67,36 +54,9 @@
         />
       </div>
       <div class="card-third">
-        <el-button
-          type="primary"
-          plain
-          round
-          @click="handleBatchAudit"
-          :disabled="selectedComments.length === 0"
-          :loading="batchAuditLoading"
-        >
-          批量审核
-        </el-button>
-        <el-button
-          type="warning"
-          plain
-          round
-          @click="handleBatchReject"
-          :disabled="selectedComments.length === 0"
-          :loading="batchRejectLoading"
-        >
-          批量拒绝
-        </el-button>
-        <el-button
-          type="danger"
-          plain
-          round
-          @click="handleBatchDelete"
-          :disabled="selectedComments.length === 0"
-          :loading="batchDeleteLoading"
-        >
-          批量删除
-        </el-button>
+        <el-button type="primary" plain round @click="handleBatchAudit" :disabled="selectedComments.length === 0" :loading="batchAuditLoading"> 批量审核 </el-button>
+        <el-button type="warning" plain round @click="handleBatchReject" :disabled="selectedComments.length === 0" :loading="batchRejectLoading"> 批量拒绝 </el-button>
+        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedComments.length === 0" :loading="batchDeleteLoading"> 批量删除 </el-button>
       </div>
 
       <!-- 桌面端表格视图 -->
@@ -114,11 +74,7 @@
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="content" label="评论内容" min-width="200">
             <template #default="{ row }">
-              <el-tooltip
-                :content="row.content"
-                placement="top-start"
-                :popper-style="{ maxWidth: '300px', wordWrap: 'break-word', whiteSpace: 'normal' }"
-              >
+              <el-tooltip :content="row.content" placement="top-start" :popper-style="{ maxWidth: '300px', wordWrap: 'break-word', whiteSpace: 'normal' }">
                 <div class="comment-content">{{ row.content }}</div>
               </el-tooltip>
             </template>
@@ -126,11 +82,7 @@
           <el-table-column prop="nickname" label="评论用户" width="100" />
           <el-table-column prop="articleTitle" label="所属文章" min-width="170">
             <template #default="{ row }">
-              <el-tooltip
-                :content="row.articleTitle"
-                placement="top-start"
-                :popper-style="{ maxWidth: '300px', wordWrap: 'break-word', whiteSpace: 'normal' }"
-              >
+              <el-tooltip :content="row.articleTitle" placement="top-start" :popper-style="{ maxWidth: '300px', wordWrap: 'break-word', whiteSpace: 'normal' }">
                 <div class="article-title">{{ row.articleTitle }}</div>
               </el-tooltip>
             </template>
@@ -150,19 +102,8 @@
           </el-table-column>
           <el-table-column prop="examineStatus" label="审核状态" width="80">
             <template #default="{ row }">
-              <div
-                class="comment-status"
-                :class="
-                  row.examineStatus === 0
-                    ? 'status-unaudited'
-                    : row.examineStatus === 1
-                      ? 'status-audited'
-                      : 'status-rejected'
-                "
-              >
-                {{
-                  row.examineStatus === 0 ? '待审核' : row.examineStatus === 1 ? '已审核' : '未通过'
-                }}
+              <div class="comment-status" :class="row.examineStatus === 0 ? 'status-unaudited' : row.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
+                {{ row.examineStatus === 0 ? '待审核' : row.examineStatus === 1 ? '已审核' : '未通过' }}
               </div>
             </template>
           </el-table-column>
@@ -172,38 +113,10 @@
           <el-table-column label="操作" width="320">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button
-                  type="info"
-                  @click="handleViewComment(row)"
-                  :icon="View"
-                  class="view-button"
-                  size="small"
-                  >查看</el-button
-                >
-                <el-button
-                  type="primary"
-                  @click="handleAuditComment(row.id)"
-                  :icon="Check"
-                  class="examine-button"
-                  size="small"
-                  >审核</el-button
-                >
-                <el-button
-                  type="warning"
-                  @click="handleRejectComment(row.id)"
-                  :icon="Close"
-                  class="reject-button"
-                  size="small"
-                  >拒绝</el-button
-                >
-                <el-button
-                  type="danger"
-                  @click="handleDeleteComment(row.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  size="small"
-                  >删除</el-button
-                >
+                <el-button type="info" @click="handleViewComment(row)" :icon="View" class="view-button" size="small">查看</el-button>
+                <el-button type="primary" @click="handleAuditComment(row.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
+                <el-button type="warning" @click="handleRejectComment(row.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
+                <el-button type="danger" @click="handleDeleteComment(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </template>
           </el-table-column>
@@ -213,39 +126,15 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="comment-cards">
-          <el-card
-            v-for="comment in paginatedCommentList"
-            :key="comment.id"
-            class="comment-card"
-            :class="{ 'is-selected': isCommentSelected(comment.id) }"
-          >
+          <el-card v-for="comment in paginatedCommentList" :key="comment.id" class="comment-card" :class="{ 'is-selected': isCommentSelected(comment.id) }">
             <div class="comment-card-content">
               <div class="comment-header-section">
                 <div class="comment-info">
                   <div class="comment-header">
-                    <el-checkbox
-                      :model-value="isCommentSelected(comment.id)"
-                      @change="handleMobileSelect(comment)"
-                      class="mobile-checkbox"
-                    />
+                    <el-checkbox :model-value="isCommentSelected(comment.id)" @change="handleMobileSelect(comment)" class="mobile-checkbox" />
                     <div class="comment-id">#{{ comment.id }}</div>
-                    <div
-                      class="comment-status"
-                      :class="
-                        comment.examineStatus === 0
-                          ? 'status-unaudited'
-                          : comment.examineStatus === 1
-                            ? 'status-audited'
-                            : 'status-rejected'
-                      "
-                    >
-                      {{
-                        comment.examineStatus === 0
-                          ? '待审核'
-                          : comment.examineStatus === 1
-                            ? '已审核'
-                            : '未通过'
-                      }}
+                    <div class="comment-status" :class="comment.examineStatus === 0 ? 'status-unaudited' : comment.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
+                      {{ comment.examineStatus === 0 ? '待审核' : comment.examineStatus === 1 ? '已审核' : '未通过' }}
                     </div>
                   </div>
 
@@ -304,38 +193,10 @@
                 </div>
               </div>
               <div class="comment-actions">
-                <el-button
-                  type="info"
-                  @click="handleViewComment(comment)"
-                  :icon="View"
-                  class="view-button"
-                  size="small"
-                  >查看</el-button
-                >
-                <el-button
-                  type="primary"
-                  @click="handleAuditComment(comment.id)"
-                  :icon="Check"
-                  class="examine-button"
-                  size="small"
-                  >审核</el-button
-                >
-                <el-button
-                  type="warning"
-                  @click="handleRejectComment(comment.id)"
-                  :icon="Close"
-                  class="reject-button"
-                  size="small"
-                  >拒绝</el-button
-                >
-                <el-button
-                  type="danger"
-                  @click="handleDeleteComment(comment.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  size="small"
-                  >删除</el-button
-                >
+                <el-button type="info" @click="handleViewComment(comment)" :icon="View" class="view-button" size="small">查看</el-button>
+                <el-button type="primary" @click="handleAuditComment(comment.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
+                <el-button type="warning" @click="handleRejectComment(comment.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
+                <el-button type="danger" @click="handleDeleteComment(comment.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </div>
           </el-card>
@@ -343,13 +204,7 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 评论详情对话框 -->
@@ -389,9 +244,7 @@
               <div class="comment-badges-detail">
                 <div class="badge-group">
                   <span class="badge-label">评论类型:</span>
-                  <el-tag v-if="currentComment?.parentId" type="warning" size="small">
-                    回复评论 (父评论ID: {{ currentComment.parentId }})
-                  </el-tag>
+                  <el-tag v-if="currentComment?.parentId" type="warning" size="small"> 回复评论 (父评论ID: {{ currentComment.parentId }}) </el-tag>
                   <el-tag v-else type="success" size="small">主评论</el-tag>
                 </div>
 
@@ -402,30 +255,16 @@
 
                 <div class="badge-group">
                   <span class="badge-label">所属文章:</span>
-                  <el-tag type="primary" size="small"
-                    >文章ID: {{ currentComment?.articleId || '未知' }}</el-tag
-                  >
+                  <el-tag type="primary" size="small">文章ID: {{ currentComment?.articleId || '未知' }}</el-tag>
                 </div>
 
                 <div class="badge-group">
                   <span class="badge-label">审核状态:</span>
                   <div
                     class="comment-status"
-                    :class="
-                      (currentComment?.examineStatus || 0) === 0
-                        ? 'status-unaudited'
-                        : (currentComment?.examineStatus || 0) === 1
-                          ? 'status-audited'
-                          : 'status-rejected'
-                    "
+                    :class="(currentComment?.examineStatus || 0) === 0 ? 'status-unaudited' : (currentComment?.examineStatus || 0) === 1 ? 'status-audited' : 'status-rejected'"
                   >
-                    {{
-                      (currentComment?.examineStatus || 0) === 0
-                        ? '待审核'
-                        : (currentComment?.examineStatus || 0) === 1
-                          ? '已审核'
-                          : '未通过'
-                    }}
+                    {{ (currentComment?.examineStatus || 0) === 0 ? '待审核' : (currentComment?.examineStatus || 0) === 1 ? '已审核' : '未通过' }}
                   </div>
                 </div>
               </div>
@@ -433,12 +272,7 @@
 
             <!-- 右侧：用户头像 -->
             <div class="comment-avatar-detail">
-              <el-avatar
-                v-if="currentComment && currentComment.avatar"
-                :size="120"
-                :src="currentComment.avatar"
-                class="detail-avatar-img"
-              />
+              <el-avatar v-if="currentComment && currentComment.avatar" :size="120" :src="currentComment.avatar" class="detail-avatar-img" />
               <div v-else class="no-avatar-detail">
                 <el-icon class="avatar-icon"><User /></el-icon>
                 <span>暂无头像</span>
@@ -477,22 +311,8 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="dialogVisible = false" :icon="Close">关闭</el-button>
-          <el-button
-            type="primary"
-            @click="handleAuditComment(currentComment?.id)"
-            :icon="Check"
-            :disabled="!currentComment || (currentComment?.examineStatus || 0) === 1"
-          >
-            审核通过
-          </el-button>
-          <el-button
-            type="warning"
-            @click="handleRejectComment(currentComment?.id)"
-            :icon="Close"
-            :disabled="!currentComment || (currentComment?.examineStatus || 0) === 2"
-          >
-            审核拒绝
-          </el-button>
+          <el-button type="primary" @click="handleAuditComment(currentComment?.id)" :icon="Check" :disabled="!currentComment || (currentComment?.examineStatus || 0) === 1"> 审核通过 </el-button>
+          <el-button type="warning" @click="handleRejectComment(currentComment?.id)" :icon="Close" :disabled="!currentComment || (currentComment?.examineStatus || 0) === 2"> 审核拒绝 </el-button>
         </div>
       </template>
     </el-dialog>
@@ -501,25 +321,9 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import {
-  Delete,
-  Close,
-  Check,
-  View,
-  Calendar,
-  User,
-  ChatDotRound,
-  Clock,
-} from '@element-plus/icons-vue'
+import { Delete, Close, Check, View, Calendar, User, ChatDotRound, Clock } from '@element-plus/icons-vue'
 import { useUserSearch } from '@/utils/userSearch'
-import {
-  adminGetCommentList,
-  adminDeleteComment,
-  adminDeleteBatchComment,
-  adminExamineComment,
-  adminExamineBatchComment,
-  adminSearchComment,
-} from '@/api/comment'
+import { adminGetCommentList, adminDeleteComment, adminDeleteBatchComment, adminExamineComment, adminExamineBatchComment, adminSearchComment } from '@/api/comment'
 import Pagination from '@/components/data/Pagination.vue'
 
 // 评论列表数据
@@ -584,13 +388,7 @@ const searchExamineStatus = ref('')
 const searchCreateTimeStart = ref(null)
 const searchCreateTimeEnd = ref(null)
 
-const hasSearchConditions = () =>
-  !!(
-    searchUserId.value ||
-    searchExamineStatus.value ||
-    searchCreateTimeStart.value ||
-    searchCreateTimeEnd.value
-  )
+const hasSearchConditions = () => !!(searchUserId.value || searchExamineStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value)
 
 const buildSearchPayload = () => ({
   pageNum: currentPage.value,

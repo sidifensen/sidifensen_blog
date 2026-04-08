@@ -87,13 +87,7 @@ const renderChart = () => {
     interaction: [{ type: 'tooltip', enable: true }],
   })
 
-  chartInstance
-    .line()
-    .encode('x', '日期')
-    .encode('y', '数值')
-    .encode('color', '类型')
-    .encode('shape', 'smooth')
-    .style({ lineWidth: 2.5 })
+  chartInstance.line().encode('x', '日期').encode('y', '数值').encode('color', '类型').encode('shape', 'smooth').style({ lineWidth: 2.5 })
 
   chartInstance
     .point()

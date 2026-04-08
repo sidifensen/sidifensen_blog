@@ -4,23 +4,8 @@
       <div class="card-header">
         <h2 class="card-title">相册管理</h2>
         <div class="card-actions">
-          <el-input
-            v-model="searchAlbumName"
-            placeholder="搜索相册名称"
-            :prefix-icon="Search"
-            size="small"
-            class="search-input"
-            clearable
-          />
-          <el-select
-            v-model="searchStatus"
-            placeholder="相册状态"
-            filterable
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
+          <el-input v-model="searchAlbumName" placeholder="搜索相册名称" :prefix-icon="Search" size="small" class="search-input" clearable />
+          <el-select v-model="searchStatus" placeholder="相册状态" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="正常" value="0" />
             <el-option label="禁用" value="1" />
           </el-select>
@@ -37,12 +22,7 @@
             class="search-input"
             @change="handleSearch"
           >
-            <el-option
-              v-for="user in filteredUserList"
-              :key="user.id"
-              :label="user.username"
-              :value="user.id"
-            />
+            <el-option v-for="user in filteredUserList" :key="user.id" :label="user.username" :value="user.id" />
           </el-select>
         </div>
       </div>
@@ -80,13 +60,7 @@
           <el-table-column prop="coverUrl" label="相册封面" width="200">
             <template #default="{ row }">
               <div style="display: flex; align-items: center">
-                <el-image
-                  preview-teleported
-                  :src="row.coverUrl"
-                  style="width: 200px; height: 100px"
-                  :preview-src-list="[row.coverUrl]"
-                  fit="cover"
-                />
+                <el-image preview-teleported :src="row.coverUrl" style="width: 200px; height: 100px" :preview-src-list="[row.coverUrl]" fit="cover" />
               </div>
             </template>
           </el-table-column>
@@ -114,32 +88,9 @@
           <el-table-column label="操作" width="230">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button
-                  type="info"
-                  size="small"
-                  @click="handleAlbumDetail(row.id)"
-                  :icon="InfoFilled"
-                  class="detail-button"
-                  >详情</el-button
-                >
-                <el-button
-                  type="primary"
-                  size="small"
-                  @click="handleEditAlbum(row)"
-                  :icon="Edit"
-                  class="edit-button"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  type="danger"
-                  size="small"
-                  @click="handleDeleteAlbum(row.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                >
-                  删除
-                </el-button>
+                <el-button type="info" size="small" @click="handleAlbumDetail(row.id)" :icon="InfoFilled" class="detail-button">详情</el-button>
+                <el-button type="primary" size="small" @click="handleEditAlbum(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
+                <el-button type="danger" size="small" @click="handleDeleteAlbum(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
               </div>
             </template>
           </el-table-column>
@@ -149,21 +100,9 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="album-cards" v-loading="loading">
-          <div
-            v-for="album in paginatedAlbumList"
-            :key="album.id"
-            class="album-card animate-fade-in"
-          >
+          <div v-for="album in paginatedAlbumList" :key="album.id" class="album-card animate-fade-in">
             <div class="album-cover-section">
-              <el-image
-                preview-teleported
-                :src="album.coverUrl"
-                :preview-src-list="[album.coverUrl]"
-                fit="cover"
-                class="album-cover"
-                lazy
-                loading="lazy"
-              />
+              <el-image preview-teleported :src="album.coverUrl" :preview-src-list="[album.coverUrl]" fit="cover" class="album-cover" lazy loading="lazy" />
             </div>
             <div class="album-info">
               <div class="album-header">
@@ -192,39 +131,13 @@
                   :inactive-value="1"
                   inline-prompt
                   :loading="switchLoading"
-                  :before-change="
-                    () => handleStatusChange(album.id, album.showStatus === 0 ? 1 : 0)
-                  "
+                  :before-change="() => handleStatusChange(album.id, album.showStatus === 0 ? 1 : 0)"
                 />
               </div>
               <div class="album-actions">
-                <el-button
-                  text
-                  bg
-                  type="info"
-                  size="small"
-                  @click="handleAlbumDetail(album.id)"
-                  :icon="InfoFilled"
-                  >详情</el-button
-                >
-                <el-button
-                  text
-                  bg
-                  type="primary"
-                  size="small"
-                  @click="handleEditAlbum(album)"
-                  :icon="Edit"
-                  >编辑</el-button
-                >
-                <el-button
-                  text
-                  bg
-                  type="danger"
-                  size="small"
-                  @click="handleDeleteAlbum(album.id)"
-                  :icon="Delete"
-                  >删除</el-button
-                >
+                <el-button text bg type="info" size="small" @click="handleAlbumDetail(album.id)" :icon="InfoFilled">详情</el-button>
+                <el-button text bg type="primary" size="small" @click="handleEditAlbum(album)" :icon="Edit">编辑</el-button>
+                <el-button text bg type="danger" size="small" @click="handleDeleteAlbum(album.id)" :icon="Delete">删除</el-button>
               </div>
             </div>
           </div>
@@ -232,13 +145,7 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 编辑相册对话框 -->
@@ -257,51 +164,23 @@
     </el-dialog>
 
     <!-- 相册详情 -->
-    <el-dialog
-      v-model="albumDetailDialogVisible"
-      title="相册详情"
-      class="album-detail"
-      :before-close="handleDetailDialogClose"
-      width="80%"
-      :close-on-click-modal="false"
-    >
+    <el-dialog v-model="albumDetailDialogVisible" title="相册详情" class="album-detail" :before-close="handleDetailDialogClose" width="80%" :close-on-click-modal="false">
       <el-card v-if="albumDetail" class="album-detail-card animate-fade-in">
         <div class="album-detail-header">
           <div class="album-cover-container">
-            <el-image
-              :src="albumDetail.coverUrl"
-              fit="cover"
-              style="
-                width: 100%;
-                height: 180px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-              "
-            />
+            <el-image :src="albumDetail.coverUrl" fit="cover" style="width: 100%; height: 180px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1)" />
           </div>
           <div class="album-info">
             <h3 class="album-title">{{ albumDetail.name }}</h3>
             <div class="album-meta">
               <div class="meta-item"><span class="label">相册ID：</span>{{ albumDetail.id }}</div>
+              <div class="meta-item"><span class="label">创建者：</span>{{ albumDetail.userName }}</div>
+              <div class="meta-item"><span class="label">创建时间：</span>{{ albumDetail.createTime }}</div>
+              <div class="meta-item"><span class="label">更新时间：</span>{{ albumDetail.updateTime }}</div>
               <div class="meta-item">
-                <span class="label">创建者：</span>{{ albumDetail.userName }}
+                <span class="label">状态：</span><span :class="albumDetail.showStatus === 0 ? 'status-normal' : 'status-disabled'">{{ albumDetail.showStatus === 0 ? '正常' : '禁用' }}</span>
               </div>
-              <div class="meta-item">
-                <span class="label">创建时间：</span>{{ albumDetail.createTime }}
-              </div>
-              <div class="meta-item">
-                <span class="label">更新时间：</span>{{ albumDetail.updateTime }}
-              </div>
-              <div class="meta-item">
-                <span class="label">状态：</span
-                ><span
-                  :class="albumDetail.showStatus === 0 ? 'status-normal' : 'status-disabled'"
-                  >{{ albumDetail.showStatus === 0 ? '正常' : '禁用' }}</span
-                >
-              </div>
-              <div class="meta-item">
-                <span class="label">图片数量：</span>{{ albumDetail.photos?.length || 0 }}
-              </div>
+              <div class="meta-item"><span class="label">图片数量：</span>{{ albumDetail.photos?.length || 0 }}</div>
             </div>
           </div>
         </div>
@@ -313,54 +192,18 @@
             <span class="selected-count">{{ selectedPhotos.length }} 已选择</span>
           </div>
           <div class="action-right">
-            <el-button
-              type="primary"
-              size="small"
-              @click="handleBatchAudit"
-              :disabled="selectedPhotos.length === 0"
-              :loading="batchAuditLoading"
-            >
-              批量审核
-            </el-button>
-            <el-button
-              type="warning"
-              size="small"
-              @click="handleBatchReject"
-              :disabled="selectedPhotos.length === 0"
-              :loading="batchRejectLoading"
-            >
-              批量拒绝
-            </el-button>
-            <el-button
-              type="danger"
-              size="small"
-              @click="handleBatchDelete"
-              :disabled="selectedPhotos.length === 0"
-              :loading="batchDeleteLoading"
-            >
-              批量删除
-            </el-button>
+            <el-button type="primary" size="small" @click="handleBatchAudit" :disabled="selectedPhotos.length === 0" :loading="batchAuditLoading"> 批量审核 </el-button>
+            <el-button type="warning" size="small" @click="handleBatchReject" :disabled="selectedPhotos.length === 0" :loading="batchRejectLoading"> 批量拒绝 </el-button>
+            <el-button type="danger" size="small" @click="handleBatchDelete" :disabled="selectedPhotos.length === 0" :loading="batchDeleteLoading"> 批量删除 </el-button>
           </div>
         </div>
 
-        <div
-          class="album-photos-container"
-          v-if="albumDetail.photos && albumDetail.photos.length > 0"
-        >
+        <div class="album-photos-container" v-if="albumDetail.photos && albumDetail.photos.length > 0">
           <h4 class="photos-title">相册图片</h4>
           <div class="photos-grid">
-            <div
-              v-for="photo in albumDetail.photos"
-              :key="photo.id"
-              class="photo-item animate-fade-in"
-              :class="{ 'photo-item-selected': isPhotoSelected(photo.id) }"
-            >
+            <div v-for="photo in albumDetail.photos" :key="photo.id" class="photo-item animate-fade-in" :class="{ 'photo-item-selected': isPhotoSelected(photo.id) }">
               <div class="photo-selector">
-                <el-checkbox
-                  v-model="selectedPhotos"
-                  :value="photo.id"
-                  @change="handlePhotoSelect(photo.id, $event)"
-                />
+                <el-checkbox v-model="selectedPhotos" :value="photo.id" @change="handlePhotoSelect(photo.id, $event)" />
               </div>
               <el-image
                 preview-teleported
@@ -374,47 +217,14 @@
               />
               <div class="photo-info">
                 <div class="photo-id">ID: {{ photo.id }}</div>
-                <div
-                  class="photo-status"
-                  :class="
-                    photo.examineStatus === 0
-                      ? 'status-unaudited'
-                      : photo.examineStatus === 1
-                        ? 'status-audited'
-                        : 'status-rejected'
-                  "
-                >
-                  {{
-                    photo.examineStatus === 0
-                      ? '未审核'
-                      : photo.examineStatus === 1
-                        ? '已审核'
-                        : '未通过'
-                  }}
+                <div class="photo-status" :class="photo.examineStatus === 0 ? 'status-unaudited' : photo.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
+                  {{ photo.examineStatus === 0 ? '未审核' : photo.examineStatus === 1 ? '已审核' : '未通过' }}
                 </div>
                 <div class="photo-time">{{ photo.createTime }}</div>
                 <div class="photo-actions">
-                  <el-button
-                    text
-                    bg
-                    type="primary"
-                    size="small"
-                    @click="handleAuditPhoto(photo.id)"
-                    v-if="photo.examineStatus === 0"
-                    >审核</el-button
-                  >
-                  <el-button
-                    text
-                    bg
-                    type="warning"
-                    size="small"
-                    @click="handleRejectPhoto(photo.id)"
-                    v-if="photo.examineStatus === 0"
-                    >拒绝</el-button
-                  >
-                  <el-button text bg type="danger" size="small" @click="handleDeletePhoto(photo.id)"
-                    >删除</el-button
-                  >
+                  <el-button text bg type="primary" size="small" @click="handleAuditPhoto(photo.id)" v-if="photo.examineStatus === 0">审核</el-button>
+                  <el-button text bg type="warning" size="small" @click="handleRejectPhoto(photo.id)" v-if="photo.examineStatus === 0">拒绝</el-button>
+                  <el-button text bg type="danger" size="small" @click="handleDeletePhoto(photo.id)">删除</el-button>
                 </div>
               </div>
             </div>
@@ -430,20 +240,9 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { Search, Plus, InfoFilled, Edit, Delete, Avatar } from '@element-plus/icons-vue'
-import {
-  adminList,
-  adminUpdateAlbum,
-  adminDeleteAlbum,
-  adminSearchAlbum,
-  adminGetAlbumDetail,
-} from '@/api/album'
+import { adminList, adminUpdateAlbum, adminDeleteAlbum, adminSearchAlbum, adminGetAlbumDetail } from '@/api/album'
 import { useUserSearch } from '@/utils/userSearch'
-import {
-  adminDeletePhoto,
-  adminDeleteBatchPhoto,
-  adminAuditPhoto,
-  adminAuditBatchPhoto,
-} from '@/api/photo'
+import { adminDeletePhoto, adminDeleteBatchPhoto, adminAuditPhoto, adminAuditBatchPhoto } from '@/api/photo'
 import Pagination from '@/components/data/Pagination.vue'
 
 // 相册列表数据
@@ -544,14 +343,7 @@ const searchCreateTimeStart = ref(null)
 // 搜索创建时间结束
 const searchCreateTimeEnd = ref(null)
 
-const hasSearchConditions = () =>
-  !!(
-    searchAlbumName.value ||
-    searchUserId.value ||
-    searchStatus.value ||
-    searchCreateTimeStart.value ||
-    searchCreateTimeEnd.value
-  )
+const hasSearchConditions = () => !!(searchAlbumName.value || searchUserId.value || searchStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value)
 
 const buildSearchPayload = () => ({
   pageNum: currentPage.value,
@@ -697,10 +489,7 @@ const selectedPhotos = ref([])
 // 全选状态
 const selectAll = computed({
   get() {
-    return (
-      albumDetail.value?.photos?.length > 0 &&
-      selectedPhotos.value.length === albumDetail.value.photos.length
-    )
+    return albumDetail.value?.photos?.length > 0 && selectedPhotos.value.length === albumDetail.value.photos.length
   },
   set(value) {
     if (value) {

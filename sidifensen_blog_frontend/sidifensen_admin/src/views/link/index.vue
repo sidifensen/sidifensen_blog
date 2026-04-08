@@ -9,17 +9,11 @@
     @search="fetchLinks"
     @time-change="handleTimeChange"
   >
-    <!-- 筛选条件（放在标题下方） -->
-    <template #second-filters>
+    <!-- 筛选条件 -->
+    <template #filters>
       <ExamineStatusSelect v-model="searchExamineStatus" width="140px" />
       <UserSearchSelect v-model="searchUserId" width="180px" />
-      <KeywordSearch
-        v-model="searchKeyword"
-        show-label
-        label="关键词"
-        placeholder="搜索友链名称或描述"
-        auto-width
-      />
+      <KeywordSearch v-model="searchKeyword" show-label label="关键词" placeholder="搜索友链名称或描述" auto-width />
       <SearchButtons @search="handleSearch" @reset="handleReset" />
     </template>
 
@@ -30,9 +24,6 @@
         :show-batch-audit="true"
         :show-batch-reject="true"
         :show-batch-delete="true"
-        :batch-audit-loading="batchAuditLoading"
-        :batch-reject-loading="batchRejectLoading"
-        :batch-delete-loading="batchDeleteLoading"
         @batch-audit="handleBatchAudit"
         @batch-reject="handleBatchReject"
         @batch-delete="handleBatchDelete"
@@ -132,12 +123,7 @@
         <el-input v-model="editLinkForm.coverUrl" placeholder="请输入封面图片URL" />
       </el-form-item>
       <el-form-item label="网站描述" prop="description">
-        <el-input
-          v-model="editLinkForm.description"
-          type="textarea"
-          :rows="3"
-          placeholder="请输入网站描述"
-        />
+        <el-input v-model="editLinkForm.description" type="textarea" :rows="3" placeholder="请输入网站描述" />
       </el-form-item>
       <el-form-item label="联系邮箱" prop="email">
         <el-input v-model="editLinkForm.email" placeholder="请输入联系邮箱" />
@@ -145,25 +131,15 @@
     </el-form>
     <template #footer>
       <el-button @click="editDialogVisible = false">取消</el-button>
-      <el-button type="primary" :loading="editLinkLoading" @click="submitEditLink">
-        确定
-      </el-button>
+      <el-button type="primary" :loading="editLinkLoading" @click="submitEditLink"> 确定 </el-button>
     </template>
   </el-dialog>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useUserSearch } from '@/hooks/useUserSearch'
-import {
-  adminGetLinkList,
-  adminSearchLink,
-  adminExamineLink,
-  adminBatchExamineLink,
-  adminDeleteLink,
-  adminBatchDeleteLink,
-  adminUpdateLink,
-} from '@/api/link'
+import { adminGetLinkList, adminSearchLink, adminExamineLink, adminBatchExamineLink, adminDeleteLink, adminBatchDeleteLink, adminUpdateLink } from '@/api/link'
 
 // 组件
 import ManagementCard from '@/components/management/ManagementCard.vue'
@@ -175,6 +151,9 @@ import UserSearchSelect from '@/components/search/UserSearchSelect.vue'
 import KeywordSearch from '@/components/search/KeywordSearch.vue'
 import SearchButtons from '@/components/search/SearchButtons.vue'
 
+// 用户搜索（预留扩展）
+useUserSearch()
+
 // 友链列表数据
 const linkList = ref([])
 const paginatedLinkList = ref([])
@@ -182,9 +161,6 @@ const loading = ref(false)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
-
-// 用户搜索
-const { filteredUserList, userLoading, searchUsers } = useUserSearch()
 
 // 搜索条件
 const searchExamineStatus = ref('')
@@ -195,11 +171,6 @@ const searchUserId = ref('')
 
 // 选中的友链
 const selectedLinks = ref([])
-
-// 批量操作加载状态
-const batchAuditLoading = ref(false)
-const batchRejectLoading = ref(false)
-const batchDeleteLoading = ref(false)
 
 // 编辑对话框
 const editDialogVisible = ref(false)
@@ -219,21 +190,17 @@ const editFormRules = {
   name: [{ required: true, message: '请输入网站名称', trigger: 'blur' }],
   url: [{ required: true, message: '请输入网站地址', trigger: 'blur' }],
   description: [{ required: true, message: '请输入网站描述', trigger: 'blur' }],
-  email: [{ required: true, message: '请输入联系邮箱', trigger: 'blur' }],
+  email: [
+    { required: true, message: '请输入联系邮箱', trigger: 'blur' },
+    { type: 'email', message: '邮箱格式不正确', trigger: 'blur' },
+  ],
 }
 
-// 搜索条件判断
-const hasSearchConditions = () =>
-  !!(
-    searchExamineStatus.value ||
-    searchKeyword.value ||
-    searchStartTime.value ||
-    searchEndTime.value ||
-    searchUserId.value
-  )
+// 搜索条件是否为空
+const hasSearchConditions = computed(() => !!(searchExamineStatus.value || searchKeyword.value || searchStartTime.value || searchEndTime.value || searchUserId.value))
 
 // 构建搜索参数
-const buildSearchPayload = () => ({
+const buildSearchPayload = computed(() => ({
   pageNum: currentPage.value,
   pageSize: pageSize.value,
   userId: searchUserId.value || undefined,
@@ -241,7 +208,7 @@ const buildSearchPayload = () => ({
   keyword: searchKeyword.value || undefined,
   createTimeStart: searchStartTime.value || undefined,
   createTimeEnd: searchEndTime.value || undefined,
-})
+}))
 
 // 应用分页数据
 const applyPageData = (pageData) => {
@@ -256,8 +223,8 @@ const fetchLinks = async () => {
   loading.value = true
   try {
     let pageData = null
-    if (hasSearchConditions()) {
-      const res = await adminSearchLink(buildSearchPayload())
+    if (hasSearchConditions.value) {
+      const res = await adminSearchLink(buildSearchPayload.value)
       pageData = res.data
     } else {
       const res = await adminGetLinkList({
@@ -267,8 +234,8 @@ const fetchLinks = async () => {
       pageData = res.data
     }
     applyPageData(pageData)
-  } catch (error) {
-    ElMessage.error(hasSearchConditions() ? '搜索友链失败' : '获取友链列表失败')
+  } catch {
+    ElMessage.error(hasSearchConditions.value ? '搜索友链失败' : '获取友链列表失败')
   } finally {
     loading.value = false
   }
@@ -335,105 +302,70 @@ const handleEditLink = (link) => {
 const submitEditLink = async () => {
   if (!editFormRef.value) return
 
-  await editFormRef.value.validate(async (valid) => {
-    if (valid) {
-      editLinkLoading.value = true
-      try {
-        await adminUpdateLink(editLinkForm.value)
-        ElMessage.success('编辑成功')
-        editDialogVisible.value = false
-        await refreshLinkList()
-      } catch (error) {
-        ElMessage.error('编辑失败')
-      } finally {
-        editLinkLoading.value = false
-      }
-    }
-  })
-}
-
-// 智能刷新列表
-const refreshLinkList = async () => {
-  await fetchLinks()
-}
-
-// 处理单个友链审核
-const handleAuditLink = async (link) => {
   try {
-    await adminExamineLink(link.id, 1)
-    ElMessage.success('审核成功')
-    await refreshLinkList()
-  } catch (error) {
-    ElMessage.error('审核失败')
+    await editFormRef.value.validate()
+    editLinkLoading.value = true
+    await adminUpdateLink(editLinkForm.value)
+    ElMessage.success('编辑成功')
+    editDialogVisible.value = false
+    await fetchLinks()
+  } catch {
+    ElMessage.error('编辑失败')
+  } finally {
+    editLinkLoading.value = false
   }
 }
 
-// 处理批量审核
-const handleBatchAudit = () => {
+// 批量操作通用处理
+const handleBatchOperation = (operation, apiFn, successMsg, errorMsg) => {
   if (selectedLinks.value.length === 0) return
 
-  ElMessageBox.confirm(`确定要审核通过选中的 ${selectedLinks.value.length} 个友链吗？`, '确认', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'info',
-  })
-    .then(async () => {
-      batchAuditLoading.value = true
-      try {
-        const linkIds = selectedLinks.value.map((link) => link.id)
-        await adminBatchExamineLink(linkIds, 1)
-        ElMessage.success('批量审核成功')
-        await refreshLinkList()
-      } catch (error) {
-        ElMessage.error('批量审核失败')
-      } finally {
-        batchAuditLoading.value = false
-      }
-    })
-    .catch(() => {
-      ElMessage.info('审核已取消')
-    })
-}
-
-// 处理单个友链拒绝
-const handleRejectLink = async (link) => {
-  try {
-    await adminExamineLink(link.id, 2)
-    ElMessage.success('拒绝成功')
-    await refreshLinkList()
-  } catch (error) {
-    ElMessage.error('拒绝失败')
-  }
-}
-
-// 处理批量拒绝
-const handleBatchReject = () => {
-  if (selectedLinks.value.length === 0) return
-
-  ElMessageBox.confirm(`确定要拒绝选中的 ${selectedLinks.value.length} 个友链吗？`, '确认', {
+  ElMessageBox.confirm(`确定要${operation}选中的 ${selectedLinks.value.length} 个友链吗？`, '确认', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
   })
     .then(async () => {
-      batchRejectLoading.value = true
       try {
         const linkIds = selectedLinks.value.map((link) => link.id)
-        await adminBatchExamineLink(linkIds, 2)
-        ElMessage.success('批量拒绝成功')
-        await refreshLinkList()
-      } catch (error) {
-        ElMessage.error('批量拒绝失败')
-      } finally {
-        batchRejectLoading.value = false
+        await apiFn(linkIds)
+        ElMessage.success(successMsg)
+        await fetchLinks()
+      } catch {
+        ElMessage.error(errorMsg)
       }
     })
     .catch(() => {
-      ElMessage.info('拒绝已取消')
+      ElMessage.info('操作已取消')
     })
 }
 
-// 处理删除单个友链
+// 单个友链操作通用处理
+const handleSingleOperation = (apiFn, successMsg, errorMsg) => {
+  return async (link) => {
+    try {
+      await apiFn(link.id)
+      ElMessage.success(successMsg)
+      await fetchLinks()
+    } catch {
+      ElMessage.error(errorMsg)
+    }
+  }
+}
+
+// 审核单个友链
+const handleAuditLink = handleSingleOperation((id) => adminExamineLink(id, 1), '审核成功', '审核失败')
+
+// 拒绝单个友链
+const handleRejectLink = handleSingleOperation((id) => adminExamineLink(id, 2), '拒绝成功', '拒绝失败')
+
+// 批量审核
+const handleBatchAudit = () => handleBatchOperation('审核通过', (ids) => adminBatchExamineLink(ids, 1), '批量审核成功', '批量审核失败')
+
+// 批量拒绝
+const handleBatchReject = () => handleBatchOperation('拒绝', (ids) => adminBatchExamineLink(ids, 2), '批量拒绝成功', '批量拒绝失败')
+
+// 删除单个友链
 const handleDeleteLink = (link) => {
   ElMessageBox.confirm('确定要删除该友链吗？', '警告', {
     confirmButtonText: '确定',
@@ -444,8 +376,8 @@ const handleDeleteLink = (link) => {
       try {
         await adminDeleteLink(link.id)
         ElMessage.success('删除成功')
-        await refreshLinkList()
-      } catch (error) {
+        await fetchLinks()
+      } catch {
         ElMessage.error('删除失败')
       }
     })
@@ -454,32 +386,8 @@ const handleDeleteLink = (link) => {
     })
 }
 
-// 处理批量删除
-const handleBatchDelete = () => {
-  if (selectedLinks.value.length === 0) return
-
-  ElMessageBox.confirm(`确定要删除选中的 ${selectedLinks.value.length} 个友链吗？`, '警告', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  })
-    .then(async () => {
-      batchDeleteLoading.value = true
-      try {
-        const linkIds = selectedLinks.value.map((link) => link.id)
-        await adminBatchDeleteLink(linkIds)
-        ElMessage.success('批量删除成功')
-        await refreshLinkList()
-      } catch (error) {
-        ElMessage.error('批量删除失败')
-      } finally {
-        batchDeleteLoading.value = false
-      }
-    })
-    .catch(() => {
-      ElMessage.info('删除已取消')
-    })
-}
+// 批量删除
+const handleBatchDelete = () => handleBatchOperation('删除', adminBatchDeleteLink, '批量删除成功', '批量删除失败')
 
 // 初始化
 onMounted(() => {
@@ -490,7 +398,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 // 链接样式
 .link-url {
-  color: #409eff;
+  color: var(--el-color-primary);
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -510,9 +418,10 @@ onMounted(() => {
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
+  color: var(--text-regular);
 
   &:hover {
-    color: #409eff;
+    color: var(--el-color-primary);
   }
 }
 
@@ -521,7 +430,7 @@ onMounted(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 12px;
-  color: #666;
+  color: var(--text-muted);
 }
 
 // 响应式

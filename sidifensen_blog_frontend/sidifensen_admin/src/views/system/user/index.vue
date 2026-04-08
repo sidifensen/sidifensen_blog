@@ -4,31 +4,9 @@
       <div class="card-header">
         <h2 class="card-title">用户管理</h2>
         <div class="card-actions">
-          <el-input
-            v-model="searchUsername"
-            placeholder="搜索用户名称"
-            :prefix-icon="Search"
-            size="small"
-            class="search-input"
-            clearable
-          />
-          <el-input
-            v-model="searchEmail"
-            placeholder="搜索用户邮箱"
-            :prefix-icon="Search"
-            size="small"
-            class="search-input"
-            clearable
-          />
-          <el-select
-            v-model="searchStatus"
-            placeholder="用户状态"
-            filterable
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
+          <el-input v-model="searchUsername" placeholder="搜索用户名称" :prefix-icon="Search" size="small" class="search-input" clearable />
+          <el-input v-model="searchEmail" placeholder="搜索用户邮箱" :prefix-icon="Search" size="small" class="search-input" clearable />
+          <el-select v-model="searchStatus" placeholder="用户状态" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="正常" value="0" />
             <el-option label="禁用" value="1" />
           </el-select>
@@ -69,13 +47,7 @@
           <el-table-column prop="avatar" label="用户头像">
             <template #default="{ row }">
               <div style="display: flex; align-items: center">
-                <el-image
-                  preview-teleported
-                  :src="row.avatar"
-                  style="width: 40px; height: 40px"
-                  :preview-src-list="[row.avatar]"
-                  fit="fill"
-                />
+                <el-image preview-teleported :src="row.avatar" style="width: 40px; height: 40px" :preview-src-list="[row.avatar]" fit="fill" />
               </div>
             </template>
           </el-table-column>
@@ -102,17 +74,7 @@
           <el-table-column prop="loginType" label="登录方式" width="110">
             <template #default="{ row }">
               <el-tag>
-                {{
-                  row.loginType === 0
-                    ? '用户名/邮箱'
-                    : row.loginType === 1
-                      ? 'gitee'
-                      : row.loginType === 2
-                        ? 'github'
-                        : row.loginType === 3
-                          ? 'QQ'
-                          : '未知登录方式'
-                }}
+                {{ row.loginType === 0 ? '用户名/邮箱' : row.loginType === 1 ? 'gitee' : row.loginType === 2 ? 'github' : row.loginType === 3 ? 'QQ' : '未知登录方式' }}
               </el-tag>
             </template>
           </el-table-column>
@@ -123,41 +85,10 @@
           <el-table-column label="操作" width="330">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button
-                  type="info"
-                  size="small"
-                  @click="handleDetailUser(row.id)"
-                  :icon="InfoFilled"
-                  class="detail-button"
-                  >详情</el-button
-                >
-                <el-button
-                  type="primary"
-                  size="small"
-                  @click="handleEditUser(row)"
-                  :icon="Edit"
-                  class="edit-button"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  type="danger"
-                  size="small"
-                  @click="handleDeleteUser(row.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                >
-                  删除
-                </el-button>
-                <el-button
-                  size="small"
-                  type="warning"
-                  @click="handleAuthorizeRole(row)"
-                  :icon="Avatar"
-                  class="role-button"
-                >
-                  添加角色
-                </el-button>
+                <el-button type="info" size="small" @click="handleDetailUser(row.id)" :icon="InfoFilled" class="detail-button">详情</el-button>
+                <el-button type="primary" size="small" @click="handleEditUser(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
+                <el-button type="danger" size="small" @click="handleDeleteUser(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
+                <el-button size="small" type="warning" @click="handleAuthorizeRole(row)" :icon="Avatar" class="role-button"> 添加角色 </el-button>
               </div>
             </template>
           </el-table-column>
@@ -208,17 +139,7 @@
                 <div class="info-row">
                   <span class="label">登录方式:</span>
                   <el-tag size="small">
-                    {{
-                      user.loginType === 0
-                        ? '用户名/邮箱'
-                        : user.loginType === 1
-                          ? 'gitee'
-                          : user.loginType === 2
-                            ? 'github'
-                            : user.loginType === 3
-                              ? 'QQ'
-                              : '未知'
-                    }}
+                    {{ user.loginType === 0 ? '用户名/邮箱' : user.loginType === 1 ? 'gitee' : user.loginType === 2 ? 'github' : user.loginType === 3 ? 'QQ' : '未知' }}
                   </el-tag>
                 </div>
                 <div class="info-row">
@@ -237,38 +158,10 @@
 
               <!-- 操作按钮 -->
               <div class="user-actions">
-                <el-button
-                  type="info"
-                  size="small"
-                  @click="handleDetailUser(user.id)"
-                  :icon="InfoFilled"
-                  class="detail-button"
-                  >详情</el-button
-                >
-                <el-button
-                  type="primary"
-                  size="small"
-                  @click="handleEditUser(user)"
-                  :icon="Edit"
-                  class="edit-button"
-                  >编辑</el-button
-                >
-                <el-button
-                  type="danger"
-                  size="small"
-                  @click="handleDeleteUser(user.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  >删除</el-button
-                >
-                <el-button
-                  size="small"
-                  type="warning"
-                  @click="handleAuthorizeRole(user)"
-                  :icon="Avatar"
-                  class="role-button"
-                  >添加角色</el-button
-                >
+                <el-button type="info" size="small" @click="handleDetailUser(user.id)" :icon="InfoFilled" class="detail-button">详情</el-button>
+                <el-button type="primary" size="small" @click="handleEditUser(user)" :icon="Edit" class="edit-button">编辑</el-button>
+                <el-button type="danger" size="small" @click="handleDeleteUser(user.id)" :icon="Delete" class="delete-button">删除</el-button>
+                <el-button size="small" type="warning" @click="handleAuthorizeRole(user)" :icon="Avatar" class="role-button">添加角色</el-button>
               </div>
             </div>
           </el-card>
@@ -276,13 +169,7 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 新增/编辑权限对话框 -->
@@ -295,12 +182,7 @@
           <el-input v-model="userForm.email" placeholder="请输入用户邮箱" />
         </el-form-item>
         <el-form-item prop="nickname" label="用户昵称">
-          <el-input
-            v-model="userForm.nickname"
-            placeholder="请输入用户昵称"
-            maxlength="20"
-            show-word-limit
-          />
+          <el-input v-model="userForm.nickname" placeholder="请输入用户昵称" maxlength="20" show-word-limit />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -312,21 +194,14 @@
     </el-dialog>
 
     <!-- 添加角色弹窗对话框 -->
-    <el-dialog
-      v-model="authorizeDialogVisible"
-      title="用户添加角色"
-      :before-close="handleAuthorizeDialogClose"
-      class="authorize-dialog"
-    >
+    <el-dialog v-model="authorizeDialogVisible" title="用户添加角色" :before-close="handleAuthorizeDialogClose" class="authorize-dialog">
       <div v-loading="authorizeLoading" class="authorize-dialog-content">
         <p class="role-name">当前用户: {{ currentUser?.username }}</p>
         <template v-if="!authorizeLoading">
           <el-form ref="authorizeFormRef" class="authorize-form">
             <el-form-item label="选择角色">
               <el-checkbox-group v-model="selectedRole" class="role-checkbox-group">
-                <el-checkbox v-for="role in allRole" :key="role.id" :label="role.id">{{
-                  role.role
-                }}</el-checkbox>
+                <el-checkbox v-for="role in allRole" :key="role.id" :label="role.id">{{ role.role }}</el-checkbox>
               </el-checkbox-group>
             </el-form-item>
           </el-form>
@@ -359,16 +234,12 @@
           </div>
           <div class="info-item">
             <span class="label">性别:</span>
-            <span class="value">{{
-              userDetail.sex === 0 ? '男' : userDetail.sex === 1 ? '女' : '未知'
-            }}</span>
+            <span class="value">{{ userDetail.sex === 0 ? '男' : userDetail.sex === 1 ? '女' : '未知' }}</span>
           </div>
           <div class="info-item">
             <span class="label">状态:</span>
             <span class="value">
-              <el-tag :type="userDetail.status === 0 ? 'success' : 'danger'">{{
-                userDetail.status === 0 ? '启用' : '禁用'
-              }}</el-tag>
+              <el-tag :type="userDetail.status === 0 ? 'success' : 'danger'">{{ userDetail.status === 0 ? '启用' : '禁用' }}</el-tag>
             </span>
           </div>
           <div class="info-item">
@@ -383,15 +254,7 @@
           <div class="info-item">
             <span class="label">登录类型:</span>
             <span class="value">{{
-              userDetail.loginType === 0
-                ? '用户名/邮箱'
-                : userDetail.loginType === 1
-                  ? 'gitee'
-                  : userDetail.loginType === 2
-                    ? 'github'
-                    : userDetail.loginType === 3
-                      ? 'QQ'
-                      : '未知登录方式'
+              userDetail.loginType === 0 ? '用户名/邮箱' : userDetail.loginType === 1 ? 'gitee' : userDetail.loginType === 2 ? 'github' : userDetail.loginType === 3 ? 'QQ' : '未知登录方式'
             }}</span>
           </div>
           <div class="info-item">
@@ -414,15 +277,7 @@
           <div class="info-item">
             <span class="label">注册类型:</span>
             <span class="value">{{
-              userDetail.registerType === 0
-                ? '用户名/邮箱'
-                : userDetail.registerType === 1
-                  ? 'gitee'
-                  : userDetail.registerType === 2
-                    ? 'github'
-                    : userDetail.registerType === 3
-                      ? 'QQ'
-                      : '未知注册方式'
+              userDetail.registerType === 0 ? '用户名/邮箱' : userDetail.registerType === 1 ? 'gitee' : userDetail.registerType === 2 ? 'github' : userDetail.registerType === 3 ? 'QQ' : '未知注册方式'
             }}</span>
           </div>
           <div class="info-item">
@@ -446,23 +301,13 @@
         <!-- 角色信息 -->
         <h3>角色信息</h3>
         <div v-if="userDetail.sysRoles && userDetail.sysRoles.length > 0" class="role-list">
-          <el-tag
-            v-for="role in userDetail.sysRoles"
-            :key="role.id"
-            type="primary"
-            style="margin-right: 10px; margin-bottom: 10px"
-          >
-            {{ role.name }} ({{ role.role }})
-          </el-tag>
+          <el-tag v-for="role in userDetail.sysRoles" :key="role.id" type="primary" style="margin-right: 10px; margin-bottom: 10px"> {{ role.name }} ({{ role.role }}) </el-tag>
         </div>
         <div v-else class="no-data">暂无角色信息</div>
 
         <!-- 权限信息 -->
         <h3>权限信息</h3>
-        <div
-          v-if="userDetail.sysPermissions && userDetail.sysPermissions.length > 0"
-          class="permission-container"
-        >
+        <div v-if="userDetail.sysPermissions && userDetail.sysPermissions.length > 0" class="permission-container">
           <el-table :data="userDetail.sysPermissions" size="small" class="permission-table">
             <el-table-column prop="id" label="权限ID" width="80" />
             <el-table-column prop="description" label="权限描述" width="180" />
@@ -476,17 +321,8 @@
 
         <!-- 菜单信息 -->
         <h3>菜单信息</h3>
-        <div
-          v-if="userDetail.sysMenus && userDetail.sysMenus.length > 0"
-          class="permission-container"
-        >
-          <el-table
-            :data="userDetail.sysMenus"
-            size="small"
-            row-key="id"
-            default-expand-all
-            class="permission-table"
-          >
+        <div v-if="userDetail.sysMenus && userDetail.sysMenus.length > 0" class="permission-container">
+          <el-table :data="userDetail.sysMenus" size="small" row-key="id" default-expand-all class="permission-table">
             <el-table-column prop="id" label="菜单ID" width="100" />
             <el-table-column prop="parentId" label="父菜单ID" width="100" />
             <el-table-column prop="name" label="菜单名称" width="180" />
@@ -506,9 +342,7 @@
             </el-table-column>
             <el-table-column prop="status" label="状态" width="80">
               <template #default="{ row }">
-                <el-tag :type="row.status === 0 ? 'success' : 'danger'">{{
-                  row.status === 0 ? '启用' : '禁用'
-                }}</el-tag>
+                <el-tag :type="row.status === 0 ? 'success' : 'danger'">{{ row.status === 0 ? '启用' : '禁用' }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column prop="createTime" label="创建时间" width="180" />
@@ -526,14 +360,7 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { Search, InfoFilled, Edit, Delete, Avatar, Calendar } from '@element-plus/icons-vue'
 import { getRoleList } from '@/api/role'
-import {
-  getUserList,
-  getUserPage,
-  updateUser,
-  deleteUser,
-  queryUserPage,
-  getUserDetail,
-} from '@/api/user'
+import { getUserList, getUserPage, updateUser, deleteUser, queryUserPage, getUserDetail } from '@/api/user'
 import { getRolesByUser, addRole } from '@/api/user-role'
 import { formatMenu } from '@/utils/Menu'
 import Pagination from '@/components/data/Pagination.vue'
@@ -630,14 +457,7 @@ const searchCreateTimeStart = ref(null)
 // 搜索创建时间结束
 const searchCreateTimeEnd = ref(null)
 
-const hasSearchConditions = () =>
-  !!(
-    searchUsername.value ||
-    searchEmail.value ||
-    searchStatus.value !== '' ||
-    searchCreateTimeStart.value ||
-    searchCreateTimeEnd.value
-  )
+const hasSearchConditions = () => !!(searchUsername.value || searchEmail.value || searchStatus.value !== '' || searchCreateTimeStart.value || searchCreateTimeEnd.value)
 
 const buildSearchPayload = () => ({
   pageNum: currentPage.value,
@@ -1441,9 +1261,7 @@ const handleResize = () => {
 
       .table {
         margin-top: 0;
-        max-height: calc(
-          100vh - 180px
-        ); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
+        max-height: calc(100vh - 180px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
       }
     }
   }

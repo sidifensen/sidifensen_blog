@@ -5,14 +5,7 @@
       <div class="card-header">
         <h2 class="card-title">用户文章管理</h2>
         <div class="card-actions">
-          <el-input
-            v-model="searchUserKeyword"
-            placeholder="搜索用户名"
-            class="search-input"
-            size="small"
-            clearable
-            @input="handleUserSearch"
-          >
+          <el-input v-model="searchUserKeyword" placeholder="搜索用户名" class="search-input" size="small" clearable @input="handleUserSearch">
             <template #prefix>
               <el-icon><Search /></el-icon>
             </template>
@@ -48,15 +41,7 @@
                   </div>
                 </div>
                 <div class="user-actions">
-                  <el-button
-                    type="primary"
-                    size="default"
-                    @click="handleViewUserArticles(user)"
-                    :icon="Document"
-                    class="view-articles-btn"
-                  >
-                    查看文章
-                  </el-button>
+                  <el-button type="primary" size="default" @click="handleViewUserArticles(user)" :icon="Document" class="view-articles-btn"> 查看文章 </el-button>
                 </div>
               </div>
             </div>
@@ -70,18 +55,8 @@
       <div class="card-header">
         <h2 class="card-title">{{ currentUser?.nickname || currentUser?.username }}的文章</h2>
         <div class="card-actions">
-          <el-button @click="handleBackToUsers" :icon="ArrowLeft" size="small"
-            >返回用户列表</el-button
-          >
-          <el-select
-            v-model="searchExamineStatus"
-            placeholder="审核状态"
-            filterable
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
+          <el-button @click="handleBackToUsers" :icon="ArrowLeft" size="small">返回用户列表</el-button>
+          <el-select v-model="searchExamineStatus" placeholder="审核状态" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="待审核" value="0" />
             <el-option label="审核通过" value="1" />
             <el-option label="审核不通过" value="2" />
@@ -118,60 +93,19 @@
       </div>
 
       <div class="card-third">
-        <el-button
-          type="primary"
-          plain
-          round
-          @click="handleBatchAudit"
-          :disabled="selectedArticles.length === 0"
-          :loading="batchAuditLoading"
-        >
-          批量审核
-        </el-button>
-        <el-button
-          type="warning"
-          plain
-          round
-          @click="handleBatchReject"
-          :disabled="selectedArticles.length === 0"
-          :loading="batchRejectLoading"
-        >
-          批量拒绝
-        </el-button>
-        <el-button
-          type="danger"
-          plain
-          round
-          @click="handleBatchDelete"
-          :disabled="selectedArticles.length === 0"
-          :loading="batchDeleteLoading"
-        >
-          批量删除
-        </el-button>
+        <el-button type="primary" plain round @click="handleBatchAudit" :disabled="selectedArticles.length === 0" :loading="batchAuditLoading"> 批量审核 </el-button>
+        <el-button type="warning" plain round @click="handleBatchReject" :disabled="selectedArticles.length === 0" :loading="batchRejectLoading"> 批量拒绝 </el-button>
+        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedArticles.length === 0" :loading="batchDeleteLoading"> 批量删除 </el-button>
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table
-          v-loading="loading"
-          :data="paginatedArticleList"
-          class="table"
-          @selection-change="handleSelectionChange"
-          :row-style="{ height: 'auto' }"
-          :cell-style="{ padding: '8px 0' }"
-        >
+        <el-table v-loading="loading" :data="paginatedArticleList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
           <el-table-column type="selection" width="30" />
           <el-table-column prop="coverUrl" label="封面" width="120">
             <template #default="{ row }">
               <div class="article-cover-container">
-                <el-image
-                  v-if="row.coverUrl"
-                  :src="row.coverUrl"
-                  class="article-cover"
-                  :preview-src-list="[row.coverUrl]"
-                  fit="cover"
-                  preview-teleported
-                />
+                <el-image v-if="row.coverUrl" :src="row.coverUrl" class="article-cover" :preview-src-list="[row.coverUrl]" fit="cover" preview-teleported />
                 <div v-else class="no-cover">暂无封面</div>
               </div>
             </template>
@@ -215,19 +149,8 @@
           </el-table-column>
           <el-table-column prop="examineStatus" label="审核状态" width="80">
             <template #default="{ row }">
-              <div
-                class="article-status"
-                :class="
-                  row.examineStatus === 0
-                    ? 'status-unaudited'
-                    : row.examineStatus === 1
-                      ? 'status-audited'
-                      : 'status-rejected'
-                "
-              >
-                {{
-                  row.examineStatus === 0 ? '待审核' : row.examineStatus === 1 ? '已审核' : '未通过'
-                }}
+              <div class="article-status" :class="row.examineStatus === 0 ? 'status-unaudited' : row.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
+                {{ row.examineStatus === 0 ? '待审核' : row.examineStatus === 1 ? '已审核' : '未通过' }}
               </div>
             </template>
           </el-table-column>
@@ -240,46 +163,11 @@
           <el-table-column label="操作" width="390">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button
-                  type="info"
-                  @click="handleViewArticle(row.id)"
-                  :icon="View"
-                  class="view-button"
-                  size="small"
-                  >查看</el-button
-                >
-                <el-button
-                  type="success"
-                  @click="handleEditArticle(row)"
-                  :icon="Edit"
-                  class="edit-button"
-                  size="small"
-                  >修改</el-button
-                >
-                <el-button
-                  type="primary"
-                  @click="handleAuditArticle(row.id)"
-                  :icon="Check"
-                  class="examine-button"
-                  size="small"
-                  >审核</el-button
-                >
-                <el-button
-                  type="warning"
-                  @click="handleRejectArticle(row.id)"
-                  :icon="Close"
-                  class="reject-button"
-                  size="small"
-                  >拒绝</el-button
-                >
-                <el-button
-                  type="danger"
-                  @click="handleDeleteArticle(row.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  size="small"
-                  >删除</el-button
-                >
+                <el-button type="info" @click="handleViewArticle(row.id)" :icon="View" class="view-button" size="small">查看</el-button>
+                <el-button type="success" @click="handleEditArticle(row)" :icon="Edit" class="edit-button" size="small">修改</el-button>
+                <el-button type="primary" @click="handleAuditArticle(row.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
+                <el-button type="warning" @click="handleRejectArticle(row.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
+                <el-button type="danger" @click="handleDeleteArticle(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </template>
           </el-table-column>
@@ -289,50 +177,19 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="article-cards">
-          <el-card
-            v-for="article in paginatedArticleList"
-            :key="article.id"
-            class="article-card"
-            :class="{ 'is-selected': isArticleSelected(article.id) }"
-          >
+          <el-card v-for="article in paginatedArticleList" :key="article.id" class="article-card" :class="{ 'is-selected': isArticleSelected(article.id) }">
             <div class="article-card-content">
               <div class="article-header-section">
                 <div class="article-cover-mobile">
-                  <el-checkbox
-                    :model-value="isArticleSelected(article.id)"
-                    @change="handleMobileSelect(article)"
-                    class="mobile-checkbox"
-                  />
-                  <el-image
-                    v-if="article.coverUrl"
-                    :src="article.coverUrl"
-                    class="article-cover-img"
-                    :preview-src-list="[article.coverUrl]"
-                    fit="cover"
-                    preview-teleported
-                  />
+                  <el-checkbox :model-value="isArticleSelected(article.id)" @change="handleMobileSelect(article)" class="mobile-checkbox" />
+                  <el-image v-if="article.coverUrl" :src="article.coverUrl" class="article-cover-img" :preview-src-list="[article.coverUrl]" fit="cover" preview-teleported />
                   <div v-else class="no-cover-mobile">暂无封面</div>
                 </div>
                 <div class="article-info">
                   <div class="article-header">
                     <div class="article-id">#{{ article.id }}</div>
-                    <div
-                      class="article-status"
-                      :class="
-                        article.examineStatus === 0
-                          ? 'status-unaudited'
-                          : article.examineStatus === 1
-                            ? 'status-audited'
-                            : 'status-rejected'
-                      "
-                    >
-                      {{
-                        article.examineStatus === 0
-                          ? '待审核'
-                          : article.examineStatus === 1
-                            ? '已审核'
-                            : '未通过'
-                      }}
+                    <div class="article-status" :class="article.examineStatus === 0 ? 'status-unaudited' : article.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
+                      {{ article.examineStatus === 0 ? '待审核' : article.examineStatus === 1 ? '已审核' : '未通过' }}
                     </div>
                   </div>
                   <div class="article-title-mobile">{{ article.title }}</div>
@@ -391,46 +248,11 @@
                 </div>
               </div>
               <div class="article-actions">
-                <el-button
-                  type="info"
-                  @click="handleViewArticle(article.id)"
-                  :icon="View"
-                  class="view-button"
-                  size="small"
-                  >查看</el-button
-                >
-                <el-button
-                  type="success"
-                  @click="handleEditArticle(article)"
-                  :icon="Edit"
-                  class="edit-button"
-                  size="small"
-                  >修改</el-button
-                >
-                <el-button
-                  type="primary"
-                  @click="handleAuditArticle(article.id)"
-                  :icon="Check"
-                  class="examine-button"
-                  size="small"
-                  >审核</el-button
-                >
-                <el-button
-                  type="warning"
-                  @click="handleRejectArticle(article.id)"
-                  :icon="Close"
-                  class="reject-button"
-                  size="small"
-                  >拒绝</el-button
-                >
-                <el-button
-                  type="danger"
-                  @click="handleDeleteArticle(article.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  size="small"
-                  >删除</el-button
-                >
+                <el-button type="info" @click="handleViewArticle(article.id)" :icon="View" class="view-button" size="small">查看</el-button>
+                <el-button type="success" @click="handleEditArticle(article)" :icon="Edit" class="edit-button" size="small">修改</el-button>
+                <el-button type="primary" @click="handleAuditArticle(article.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
+                <el-button type="warning" @click="handleRejectArticle(article.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
+                <el-button type="danger" @click="handleDeleteArticle(article.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </div>
           </el-card>
@@ -438,13 +260,7 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 文章详情对话框 -->
@@ -472,17 +288,10 @@
 
               <div class="article-author-section">
                 <el-icon class="author-icon"><User /></el-icon>
-                <span class="author-name-detail">{{
-                  currentUser?.nickname || currentUser?.username || '未知作者'
-                }}</span>
+                <span class="author-name-detail">{{ currentUser?.nickname || currentUser?.username || '未知作者' }}</span>
               </div>
 
-              <div
-                class="article-description-detail"
-                v-if="
-                  currentArticle && currentArticle.description && currentArticle.description.trim()
-                "
-              >
+              <div class="article-description-detail" v-if="currentArticle && currentArticle.description && currentArticle.description.trim()">
                 <el-icon class="desc-icon"><Document /></el-icon>
                 <span>{{ currentArticle.description }}</span>
               </div>
@@ -495,26 +304,14 @@
               <div class="article-badges-detail">
                 <div class="badge-group">
                   <span class="badge-label">文章标签:</span>
-                  <el-tag v-if="currentArticle && currentArticle.tag" type="info" size="small">{{
-                    currentArticle.tag
-                  }}</el-tag>
+                  <el-tag v-if="currentArticle && currentArticle.tag" type="info" size="small">{{ currentArticle.tag }}</el-tag>
                   <span v-else class="no-data">无标签</span>
                 </div>
 
                 <div class="badge-group">
                   <span class="badge-label">所属专栏:</span>
-                  <template
-                    v-if="
-                      currentArticle && currentArticle.columns && currentArticle.columns.length > 0
-                    "
-                  >
-                    <el-tag
-                      v-for="column in currentArticle.columns"
-                      :key="column.id"
-                      type="primary"
-                      size="small"
-                      class="column-tag"
-                    >
+                  <template v-if="currentArticle && currentArticle.columns && currentArticle.columns.length > 0">
+                    <el-tag v-for="column in currentArticle.columns" :key="column.id" type="primary" size="small" class="column-tag">
                       {{ column.name }}
                     </el-tag>
                   </template>
@@ -523,16 +320,10 @@
 
                 <div class="badge-group">
                   <span class="badge-label">文章状态:</span>
-                  <el-tag
-                    :type="(currentArticle?.reprintType || 0) === 0 ? 'success' : 'warning'"
-                    size="small"
-                  >
+                  <el-tag :type="(currentArticle?.reprintType || 0) === 0 ? 'success' : 'warning'" size="small">
                     {{ (currentArticle?.reprintType || 0) === 0 ? '原创' : '转载' }}
                   </el-tag>
-                  <el-tag
-                    :type="getVisibleRangeType(currentArticle?.visibleRange || 0)"
-                    size="small"
-                  >
+                  <el-tag :type="getVisibleRangeType(currentArticle?.visibleRange || 0)" size="small">
                     {{ getVisibleRangeText(currentArticle?.visibleRange || 0) }}
                   </el-tag>
                   <el-tag :type="getEditStatusType(currentArticle?.editStatus || 0)" size="small">
@@ -541,17 +332,9 @@
                 </div>
 
                 <!-- 转载链接 -->
-                <div
-                  v-if="(currentArticle?.reprintType || 0) === 1 && currentArticle?.reprintUrl"
-                  class="badge-group reprint-url-group"
-                >
+                <div v-if="(currentArticle?.reprintType || 0) === 1 && currentArticle?.reprintUrl" class="badge-group reprint-url-group">
                   <span class="badge-label">转载链接:</span>
-                  <a
-                    :href="currentArticle.reprintUrl"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="reprint-url-link"
-                  >
+                  <a :href="currentArticle.reprintUrl" target="_blank" rel="noopener noreferrer" class="reprint-url-link">
                     {{ currentArticle.reprintUrl }}
                     <el-icon class="external-link-icon"><Top /></el-icon>
                   </a>
@@ -561,21 +344,9 @@
                   <span class="badge-label">审核状态:</span>
                   <div
                     class="article-status"
-                    :class="
-                      (currentArticle?.examineStatus || 0) === 0
-                        ? 'status-unaudited'
-                        : (currentArticle?.examineStatus || 0) === 1
-                          ? 'status-audited'
-                          : 'status-rejected'
-                    "
+                    :class="(currentArticle?.examineStatus || 0) === 0 ? 'status-unaudited' : (currentArticle?.examineStatus || 0) === 1 ? 'status-audited' : 'status-rejected'"
                   >
-                    {{
-                      (currentArticle?.examineStatus || 0) === 0
-                        ? '待审核'
-                        : (currentArticle?.examineStatus || 0) === 1
-                          ? '已审核'
-                          : '未通过'
-                    }}
+                    {{ (currentArticle?.examineStatus || 0) === 0 ? '待审核' : (currentArticle?.examineStatus || 0) === 1 ? '已审核' : '未通过' }}
                   </div>
                 </div>
               </div>
@@ -653,73 +424,25 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="dialogVisible = false" :icon="Close">关闭</el-button>
-          <el-button
-            type="primary"
-            @click="handleAuditArticle(currentArticle?.id)"
-            :icon="Check"
-            :disabled="!currentArticle || (currentArticle?.examineStatus || 0) === 1"
-          >
-            审核通过
-          </el-button>
-          <el-button
-            type="warning"
-            @click="handleRejectArticle(currentArticle?.id)"
-            :icon="Close"
-            :disabled="!currentArticle || (currentArticle?.examineStatus || 0) === 2"
-          >
-            审核拒绝
-          </el-button>
+          <el-button type="primary" @click="handleAuditArticle(currentArticle?.id)" :icon="Check" :disabled="!currentArticle || (currentArticle?.examineStatus || 0) === 1"> 审核通过 </el-button>
+          <el-button type="warning" @click="handleRejectArticle(currentArticle?.id)" :icon="Close" :disabled="!currentArticle || (currentArticle?.examineStatus || 0) === 2"> 审核拒绝 </el-button>
         </div>
       </template>
     </el-dialog>
 
     <!-- 修改文章对话框 -->
-    <el-dialog
-      v-model="editDialogVisible"
-      title="修改文章"
-      width="600px"
-      class="edit-article-dialog"
-      :close-on-click-modal="false"
-      :close-on-press-escape="true"
-      @close="handleEditDialogClose"
-    >
-      <el-form
-        ref="editFormRef"
-        :model="editForm"
-        :rules="editRules"
-        label-width="100px"
-        v-loading="editLoading"
-      >
+    <el-dialog v-model="editDialogVisible" title="修改文章" width="600px" class="edit-article-dialog" :close-on-click-modal="false" :close-on-press-escape="true" @close="handleEditDialogClose">
+      <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-width="100px" v-loading="editLoading">
         <el-form-item label="文章标题" prop="title">
-          <el-input
-            v-model="editForm.title"
-            placeholder="请输入文章标题"
-            maxlength="50"
-            show-word-limit
-            clearable
-          />
+          <el-input v-model="editForm.title" placeholder="请输入文章标题" maxlength="50" show-word-limit clearable />
         </el-form-item>
 
         <el-form-item label="文章描述" prop="description">
-          <el-input
-            v-model="editForm.description"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入文章描述"
-            maxlength="255"
-            show-word-limit
-            clearable
-          />
+          <el-input v-model="editForm.description" type="textarea" :rows="3" placeholder="请输入文章描述" maxlength="255" show-word-limit clearable />
         </el-form-item>
 
         <el-form-item label="文章标签" prop="tag">
-          <el-input
-            v-model="editForm.tag"
-            placeholder="请输入文章标签"
-            clearable
-            maxlength="255"
-            show-word-limit
-          />
+          <el-input v-model="editForm.tag" placeholder="请输入文章标签" clearable maxlength="255" show-word-limit />
         </el-form-item>
 
         <el-form-item label="文章类型" prop="reprintType">
@@ -743,11 +466,7 @@
         </el-form-item>
 
         <el-form-item label="可见范围" prop="visibleRange">
-          <el-select
-            v-model="editForm.visibleRange"
-            placeholder="请选择可见范围"
-            style="width: 100%"
-          >
+          <el-select v-model="editForm.visibleRange" placeholder="请选择可见范围" style="width: 100%">
             <el-option label="全部可见" :value="0" />
             <el-option label="仅我可见" :value="1" />
             <el-option label="粉丝可见" :value="2" />
@@ -767,14 +486,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="editDialogVisible = false" :icon="Close">取消</el-button>
-          <el-button
-            type="primary"
-            @click="handleUpdateArticle"
-            :loading="editLoading"
-            :icon="Check"
-          >
-            确认修改
-          </el-button>
+          <el-button type="primary" @click="handleUpdateArticle" :loading="editLoading" :icon="Check"> 确认修改 </el-button>
         </div>
       </template>
     </el-dialog>
@@ -783,25 +495,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import {
-  Delete,
-  Close,
-  Check,
-  View,
-  Calendar,
-  Picture,
-  User,
-  Document,
-  Star,
-  ChatDotRound,
-  Collection,
-  Clock,
-  Refresh,
-  Search,
-  ArrowLeft,
-  Top,
-  Edit,
-} from '@element-plus/icons-vue'
+import { Delete, Close, Check, View, Calendar, Picture, User, Document, Star, ChatDotRound, Collection, Clock, Refresh, Search, ArrowLeft, Top, Edit } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getUserList, getUserListWithArticleCount } from '@/api/user'
 import {
@@ -829,11 +523,7 @@ const searchUserKeyword = ref('')
 const filteredUserList = computed(() => {
   if (!searchUserKeyword.value) return userList.value
   const keyword = searchUserKeyword.value.toLowerCase()
-  return userList.value.filter(
-    (user) =>
-      user.username.toLowerCase().includes(keyword) ||
-      user.nickname?.toLowerCase().includes(keyword),
-  )
+  return userList.value.filter((user) => user.username.toLowerCase().includes(keyword) || user.nickname?.toLowerCase().includes(keyword))
 })
 
 // 文章列表数据
@@ -940,8 +630,7 @@ const getUserArticles = async (userId) => {
   await fetchUserArticles(userId)
 }
 
-const hasSearchConditions = () =>
-  !!(searchExamineStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value)
+const hasSearchConditions = () => !!(searchExamineStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value)
 
 const buildSearchPayload = () => ({
   pageNum: currentPage.value,
@@ -1529,11 +1218,7 @@ onUnmounted(() => {
                 }
 
                 .article-count-value {
-                  background: linear-gradient(
-                    45deg,
-                    var(--admin-primary),
-                    var(--admin-primary-dark)
-                  );
+                  background: linear-gradient(45deg, var(--admin-primary), var(--admin-primary-dark));
                   color: white;
                   padding: 2px 8px;
                   border-radius: 12px;

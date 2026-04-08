@@ -47,7 +47,7 @@ request.interceptors.request.use(
 // 配置响应拦截器
 request.interceptors.response.use(
   (response) => {
-    let { code, msg, data } = response.data
+    let { code, msg } = response.data
     if (code == 200) {
       if (msg) {
         ElMessage.success(msg)

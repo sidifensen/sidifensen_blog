@@ -1,14 +1,6 @@
 <template>
   <div class="data-table">
-    <el-table
-      v-loading="loading"
-      :data="data"
-      class="table"
-      v-bind="$attrs"
-      :row-style="{ height: 'auto' }"
-      :cell-style="{ padding: '8px 0' }"
-      @selection-change="handleSelectionChange"
-    >
+    <el-table v-loading="loading" :data="data" class="table" v-bind="$attrs" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }" @selection-change="handleSelectionChange">
       <!-- 多选列 -->
       <el-table-column v-if="showSelection" type="selection" width="30" />
 
@@ -16,14 +8,7 @@
       <el-table-column v-if="showCover" prop="coverUrl" label="封面" :width="coverWidth">
         <template #default="{ row }">
           <div class="cover-container">
-            <el-image
-              v-if="row.coverUrl"
-              :src="row.coverUrl"
-              class="cover-image"
-              :preview-src-list="[row.coverUrl]"
-              fit="cover"
-              preview-teleported
-            />
+            <el-image v-if="row.coverUrl" :src="row.coverUrl" class="cover-image" :preview-src-list="[row.coverUrl]" fit="cover" preview-teleported />
             <div v-else class="no-cover">暂无封面</div>
           </div>
         </template>
@@ -61,34 +46,17 @@
       </el-table-column>
 
       <!-- 审核状态列 -->
-      <el-table-column
-        v-if="showExamineStatus"
-        prop="examineStatus"
-        label="审核状态"
-        :width="examineStatusWidth"
-      >
+      <el-table-column v-if="showExamineStatus" prop="examineStatus" label="审核状态" :width="examineStatusWidth">
         <template #default="{ row }">
           <StatusBadge :value="row.examineStatus" type="examine" />
         </template>
       </el-table-column>
 
       <!-- 创建时间列 -->
-      <el-table-column
-        v-if="showCreateTime"
-        prop="createTime"
-        label="创建时间"
-        :width="createTimeWidth"
-        sortable
-      />
+      <el-table-column v-if="showCreateTime" prop="createTime" label="创建时间" :width="createTimeWidth" sortable />
 
       <!-- 更新时间列 -->
-      <el-table-column
-        v-if="showUpdateTime"
-        prop="updateTime"
-        label="更新时间"
-        :width="updateTimeWidth"
-        sortable
-      />
+      <el-table-column v-if="showUpdateTime" prop="updateTime" label="更新时间" :width="updateTimeWidth" sortable />
 
       <!-- 操作列 -->
       <el-table-column v-if="showActions" :label="actionsLabel" :width="actionsWidth" fixed="right">

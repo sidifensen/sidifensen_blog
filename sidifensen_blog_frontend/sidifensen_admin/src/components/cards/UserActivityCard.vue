@@ -1,10 +1,6 @@
 <template>
   <DetailCard title="用户活跃度" :icon="DataAnalysis">
-    <UserActivityChart
-      :active-user-count="activeUserCount"
-      :total-user-count="totalUserCount"
-      :loading="loading"
-    />
+    <UserActivityChart :active-user-count="activeUserCount" :total-user-count="totalUserCount" :loading="loading" />
   </DetailCard>
 </template>
 

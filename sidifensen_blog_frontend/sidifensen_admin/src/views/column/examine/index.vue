@@ -4,15 +4,7 @@
       <div class="card-header">
         <h2 class="card-title">专栏审核</h2>
         <div class="card-actions">
-          <el-select
-            v-model="searchExamineStatus"
-            placeholder="审核状态"
-            filterable
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
+          <el-select v-model="searchExamineStatus" placeholder="审核状态" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="全部" value="" />
             <el-option label="待审核" value="0" />
             <el-option label="审核通过" value="1" />
@@ -31,12 +23,7 @@
             class="search-input"
             @change="handleSearch"
           >
-            <el-option
-              v-for="user in filteredUserList"
-              :key="user.id"
-              :label="user.nickname || user.username"
-              :value="user.id"
-            />
+            <el-option v-for="user in filteredUserList" :key="user.id" :label="user.nickname || user.username" :value="user.id" />
           </el-select>
         </div>
       </div>
@@ -70,14 +57,7 @@
       </div>
 
       <div class="card-second">
-        <el-input
-          v-model="searchKeyword"
-          placeholder="搜索专栏名称或描述"
-          class="search-input"
-          size="small"
-          clearable
-          @input="handleSearch"
-        >
+        <el-input v-model="searchKeyword" placeholder="搜索专栏名称或描述" class="search-input" size="small" clearable @input="handleSearch">
           <template #prefix>
             <el-icon><Search /></el-icon>
           </template>
@@ -85,60 +65,19 @@
       </div>
 
       <div class="card-third">
-        <el-button
-          type="primary"
-          plain
-          round
-          @click="handleBatchAudit"
-          :disabled="selectedColumns.length === 0"
-          :loading="batchAuditLoading"
-        >
-          批量审核
-        </el-button>
-        <el-button
-          type="warning"
-          plain
-          round
-          @click="handleBatchReject"
-          :disabled="selectedColumns.length === 0"
-          :loading="batchRejectLoading"
-        >
-          批量拒绝
-        </el-button>
-        <el-button
-          type="danger"
-          plain
-          round
-          @click="handleBatchDelete"
-          :disabled="selectedColumns.length === 0"
-          :loading="batchDeleteLoading"
-        >
-          批量删除
-        </el-button>
+        <el-button type="primary" plain round @click="handleBatchAudit" :disabled="selectedColumns.length === 0" :loading="batchAuditLoading"> 批量审核 </el-button>
+        <el-button type="warning" plain round @click="handleBatchReject" :disabled="selectedColumns.length === 0" :loading="batchRejectLoading"> 批量拒绝 </el-button>
+        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedColumns.length === 0" :loading="batchDeleteLoading"> 批量删除 </el-button>
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table
-          v-loading="loading"
-          :data="paginatedColumnList"
-          class="table"
-          @selection-change="handleSelectionChange"
-          :row-style="{ height: 'auto' }"
-          :cell-style="{ padding: '8px 0' }"
-        >
+        <el-table v-loading="loading" :data="paginatedColumnList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
           <el-table-column type="selection" width="30" />
           <el-table-column prop="coverUrl" label="封面" width="120">
             <template #default="{ row }">
               <div class="column-cover-container">
-                <el-image
-                  v-if="row.coverUrl"
-                  :src="row.coverUrl"
-                  class="column-cover"
-                  :preview-src-list="[row.coverUrl]"
-                  fit="cover"
-                  preview-teleported
-                />
+                <el-image v-if="row.coverUrl" :src="row.coverUrl" class="column-cover" :preview-src-list="[row.coverUrl]" fit="cover" preview-teleported />
                 <div v-else class="no-cover">暂无封面</div>
               </div>
             </template>
@@ -146,22 +85,14 @@
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="name" label="专栏名称" min-width="200">
             <template #default="{ row }">
-              <el-tooltip
-                :content="row.name"
-                placement="top-start"
-                :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"
-              >
+              <el-tooltip :content="row.name" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
                 <div class="column-name">{{ row.name }}</div>
               </el-tooltip>
             </template>
           </el-table-column>
           <el-table-column prop="description" label="专栏描述" min-width="300">
             <template #default="{ row }">
-              <el-tooltip
-                :content="row.description"
-                placement="top-start"
-                :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"
-              >
+              <el-tooltip :content="row.description" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
                 <div class="column-description">{{ row.description || '暂无描述' }}</div>
               </el-tooltip>
             </template>
@@ -169,29 +100,15 @@
           <el-table-column prop="nickname" label="作者昵称" width="120" />
           <el-table-column prop="showStatus" label="展示状态" width="80">
             <template #default="{ row }">
-              <div
-                class="column-status"
-                :class="row.showStatus === 0 ? 'status-public' : 'status-private'"
-              >
+              <div class="column-status" :class="row.showStatus === 0 ? 'status-public' : 'status-private'">
                 {{ row.showStatus === 0 ? '公开' : '私密' }}
               </div>
             </template>
           </el-table-column>
           <el-table-column prop="examineStatus" label="审核状态" width="80">
             <template #default="{ row }">
-              <div
-                class="column-status"
-                :class="
-                  row.examineStatus === 0
-                    ? 'status-unaudited'
-                    : row.examineStatus === 1
-                      ? 'status-audited'
-                      : 'status-rejected'
-                "
-              >
-                {{
-                  row.examineStatus === 0 ? '待审核' : row.examineStatus === 1 ? '已审核' : '未通过'
-                }}
+              <div class="column-status" :class="row.examineStatus === 0 ? 'status-unaudited' : row.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
+                {{ row.examineStatus === 0 ? '待审核' : row.examineStatus === 1 ? '已审核' : '未通过' }}
               </div>
             </template>
           </el-table-column>
@@ -201,46 +118,11 @@
           <el-table-column label="操作" width="400">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button
-                  type="info"
-                  @click="handleViewColumn(row)"
-                  :icon="View"
-                  class="view-button"
-                  size="small"
-                  >查看</el-button
-                >
-                <el-button
-                  type="success"
-                  @click="handleEditColumn(row)"
-                  :icon="Edit"
-                  class="edit-button"
-                  size="small"
-                  >修改</el-button
-                >
-                <el-button
-                  type="primary"
-                  @click="handleAuditColumn(row.id)"
-                  :icon="Check"
-                  class="examine-button"
-                  size="small"
-                  >审核</el-button
-                >
-                <el-button
-                  type="warning"
-                  @click="handleRejectColumn(row.id)"
-                  :icon="Close"
-                  class="reject-button"
-                  size="small"
-                  >拒绝</el-button
-                >
-                <el-button
-                  type="danger"
-                  @click="handleDeleteColumn(row.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  size="small"
-                  >删除</el-button
-                >
+                <el-button type="info" @click="handleViewColumn(row)" :icon="View" class="view-button" size="small">查看</el-button>
+                <el-button type="success" @click="handleEditColumn(row)" :icon="Edit" class="edit-button" size="small">修改</el-button>
+                <el-button type="primary" @click="handleAuditColumn(row.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
+                <el-button type="warning" @click="handleRejectColumn(row.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
+                <el-button type="danger" @click="handleDeleteColumn(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </template>
           </el-table-column>
@@ -250,50 +132,19 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="column-cards">
-          <el-card
-            v-for="column in paginatedColumnList"
-            :key="column.id"
-            class="column-card"
-            :class="{ 'is-selected': isColumnSelected(column.id) }"
-          >
+          <el-card v-for="column in paginatedColumnList" :key="column.id" class="column-card" :class="{ 'is-selected': isColumnSelected(column.id) }">
             <div class="column-card-content">
               <div class="column-header-section">
                 <div class="column-cover-mobile">
-                  <el-checkbox
-                    :model-value="isColumnSelected(column.id)"
-                    @change="handleMobileSelect(column)"
-                    class="mobile-checkbox"
-                  />
-                  <el-image
-                    v-if="column.coverUrl"
-                    :src="column.coverUrl"
-                    class="column-cover-img"
-                    :preview-src-list="[column.coverUrl]"
-                    fit="cover"
-                    preview-teleported
-                  />
+                  <el-checkbox :model-value="isColumnSelected(column.id)" @change="handleMobileSelect(column)" class="mobile-checkbox" />
+                  <el-image v-if="column.coverUrl" :src="column.coverUrl" class="column-cover-img" :preview-src-list="[column.coverUrl]" fit="cover" preview-teleported />
                   <div v-else class="no-cover-mobile">暂无封面</div>
                 </div>
                 <div class="column-info">
                   <div class="column-header">
                     <div class="column-id">#{{ column.id }}</div>
-                    <div
-                      class="column-status"
-                      :class="
-                        column.examineStatus === 0
-                          ? 'status-unaudited'
-                          : column.examineStatus === 1
-                            ? 'status-audited'
-                            : 'status-rejected'
-                      "
-                    >
-                      {{
-                        column.examineStatus === 0
-                          ? '待审核'
-                          : column.examineStatus === 1
-                            ? '已审核'
-                            : '未通过'
-                      }}
+                    <div class="column-status" :class="column.examineStatus === 0 ? 'status-unaudited' : column.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
+                      {{ column.examineStatus === 0 ? '待审核' : column.examineStatus === 1 ? '已审核' : '未通过' }}
                     </div>
                   </div>
                   <div class="column-name-mobile">{{ column.name }}</div>
@@ -340,46 +191,11 @@
                 </div>
               </div>
               <div class="column-actions">
-                <el-button
-                  type="info"
-                  @click="handleViewColumn(column)"
-                  :icon="View"
-                  class="view-button"
-                  size="small"
-                  >查看</el-button
-                >
-                <el-button
-                  type="success"
-                  @click="handleEditColumn(column)"
-                  :icon="Edit"
-                  class="edit-button"
-                  size="small"
-                  >修改</el-button
-                >
-                <el-button
-                  type="primary"
-                  @click="handleAuditColumn(column.id)"
-                  :icon="Check"
-                  class="examine-button"
-                  size="small"
-                  >审核</el-button
-                >
-                <el-button
-                  type="warning"
-                  @click="handleRejectColumn(column.id)"
-                  :icon="Close"
-                  class="reject-button"
-                  size="small"
-                  >拒绝</el-button
-                >
-                <el-button
-                  type="danger"
-                  @click="handleDeleteColumn(column.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  size="small"
-                  >删除</el-button
-                >
+                <el-button type="info" @click="handleViewColumn(column)" :icon="View" class="view-button" size="small">查看</el-button>
+                <el-button type="success" @click="handleEditColumn(column)" :icon="Edit" class="edit-button" size="small">修改</el-button>
+                <el-button type="primary" @click="handleAuditColumn(column.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
+                <el-button type="warning" @click="handleRejectColumn(column.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
+                <el-button type="danger" @click="handleDeleteColumn(column.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </div>
           </el-card>
@@ -387,13 +203,7 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 专栏详情对话框 -->
@@ -447,34 +257,14 @@
               <div class="column-badges-detail">
                 <div class="badge-group">
                   <span class="badge-label">展示状态:</span>
-                  <div
-                    class="column-status"
-                    :class="
-                      (currentColumn?.showStatus || 0) === 0 ? 'status-public' : 'status-private'
-                    "
-                  >
+                  <div class="column-status" :class="(currentColumn?.showStatus || 0) === 0 ? 'status-public' : 'status-private'">
                     {{ (currentColumn?.showStatus || 0) === 0 ? '公开' : '私密' }}
                   </div>
                 </div>
                 <div class="badge-group">
                   <span class="badge-label">审核状态:</span>
-                  <div
-                    class="column-status"
-                    :class="
-                      (currentColumn?.examineStatus || 0) === 0
-                        ? 'status-unaudited'
-                        : (currentColumn?.examineStatus || 0) === 1
-                          ? 'status-audited'
-                          : 'status-rejected'
-                    "
-                  >
-                    {{
-                      (currentColumn?.examineStatus || 0) === 0
-                        ? '待审核'
-                        : (currentColumn?.examineStatus || 0) === 1
-                          ? '已审核'
-                          : '未通过'
-                    }}
+                  <div class="column-status" :class="(currentColumn?.examineStatus || 0) === 0 ? 'status-unaudited' : (currentColumn?.examineStatus || 0) === 1 ? 'status-audited' : 'status-rejected'">
+                    {{ (currentColumn?.examineStatus || 0) === 0 ? '待审核' : (currentColumn?.examineStatus || 0) === 1 ? '已审核' : '未通过' }}
                   </div>
                 </div>
               </div>
@@ -504,20 +294,13 @@
         </div>
 
         <!-- 专栏文章列表 -->
-        <div
-          class="column-articles-section"
-          v-if="currentColumn?.articles && currentColumn.articles.length > 0"
-        >
+        <div class="column-articles-section" v-if="currentColumn?.articles && currentColumn.articles.length > 0">
           <h3 class="articles-title">
             <el-icon class="title-icon"><Document /></el-icon>
             专栏文章列表 ({{ currentColumn.articles.length }} 篇)
           </h3>
           <div class="articles-list">
-            <div
-              v-for="(article, index) in currentColumn.articles"
-              :key="article.id"
-              class="article-item"
-            >
+            <div v-for="(article, index) in currentColumn.articles" :key="article.id" class="article-item">
               <div class="article-index">{{ index + 1 }}</div>
               <div class="article-cover-mini" v-if="article.coverUrl">
                 <el-image :src="article.coverUrl" class="cover-img" fit="cover">
@@ -561,23 +344,8 @@
                     <span>{{ article.createTime }}</span>
                   </div>
                   <div class="meta-item">
-                    <span
-                      class="article-status"
-                      :class="
-                        article.examineStatus === 0
-                          ? 'status-unaudited'
-                          : article.examineStatus === 1
-                            ? 'status-audited'
-                            : 'status-rejected'
-                      "
-                    >
-                      {{
-                        article.examineStatus === 0
-                          ? '待审核'
-                          : article.examineStatus === 1
-                            ? '已审核'
-                            : '未通过'
-                      }}
+                    <span class="article-status" :class="article.examineStatus === 0 ? 'status-unaudited' : article.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
+                      {{ article.examineStatus === 0 ? '待审核' : article.examineStatus === 1 ? '已审核' : '未通过' }}
                     </span>
                   </div>
                 </div>
@@ -587,14 +355,7 @@
         </div>
 
         <!-- 无文章提示 -->
-        <div
-          v-else-if="
-            currentColumn &&
-            Array.isArray(currentColumn.articles) &&
-            currentColumn.articles.length === 0
-          "
-          class="no-articles"
-        >
+        <div v-else-if="currentColumn && Array.isArray(currentColumn.articles) && currentColumn.articles.length === 0" class="no-articles">
           <el-empty description="该专栏暂无文章" />
         </div>
 
@@ -612,22 +373,8 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="dialogVisible = false" :icon="Close">关闭</el-button>
-          <el-button
-            type="primary"
-            @click="handleAuditColumn(currentColumn?.id)"
-            :icon="Check"
-            :disabled="!currentColumn || (currentColumn?.examineStatus || 0) === 1"
-          >
-            审核通过
-          </el-button>
-          <el-button
-            type="warning"
-            @click="handleRejectColumn(currentColumn?.id)"
-            :icon="Close"
-            :disabled="!currentColumn || (currentColumn?.examineStatus || 0) === 2"
-          >
-            审核拒绝
-          </el-button>
+          <el-button type="primary" @click="handleAuditColumn(currentColumn?.id)" :icon="Check" :disabled="!currentColumn || (currentColumn?.examineStatus || 0) === 1"> 审核通过 </el-button>
+          <el-button type="warning" @click="handleRejectColumn(currentColumn?.id)" :icon="Close" :disabled="!currentColumn || (currentColumn?.examineStatus || 0) === 2"> 审核拒绝 </el-button>
         </div>
       </template>
     </el-dialog>
@@ -646,23 +393,10 @@
     >
       <el-form :model="editForm" label-width="80px" class="edit-form">
         <el-form-item label="专栏名称" required>
-          <el-input
-            v-model="editForm.name"
-            placeholder="请输入专栏名称"
-            maxlength="30"
-            show-word-limit
-            clearable
-          />
+          <el-input v-model="editForm.name" placeholder="请输入专栏名称" maxlength="30" show-word-limit clearable />
         </el-form-item>
         <el-form-item label="专栏描述">
-          <el-input
-            v-model="editForm.description"
-            type="textarea"
-            placeholder="请输入专栏描述"
-            :rows="4"
-            maxlength="200"
-            show-word-limit
-          />
+          <el-input v-model="editForm.description" type="textarea" placeholder="请输入专栏描述" :rows="4" maxlength="200" show-word-limit />
         </el-form-item>
         <el-form-item label="展示状态">
           <el-radio-group v-model="editForm.showStatus">
@@ -684,31 +418,9 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import {
-  Delete,
-  Close,
-  Check,
-  View,
-  Search,
-  Picture,
-  User,
-  Star,
-  Clock,
-  Document,
-  Edit,
-  ChatDotRound,
-} from '@element-plus/icons-vue'
+import { Delete, Close, Check, View, Search, Picture, User, Star, Clock, Document, Edit, ChatDotRound } from '@element-plus/icons-vue'
 import { useUserSearch } from '@/utils/userSearch'
-import {
-  adminGetColumnList,
-  adminSearchColumn,
-  adminExamineColumn,
-  adminBatchExamineColumn,
-  adminDeleteColumn,
-  adminBatchDeleteColumn,
-  adminUpdateColumn,
-  adminGetColumnDetail,
-} from '@/api/column'
+import { adminGetColumnList, adminSearchColumn, adminExamineColumn, adminBatchExamineColumn, adminDeleteColumn, adminBatchDeleteColumn, adminUpdateColumn, adminGetColumnDetail } from '@/api/column'
 import Pagination from '@/components/data/Pagination.vue'
 
 // 专栏列表数据
@@ -765,14 +477,7 @@ const getColumns = async () => {
   await fetchColumns()
 }
 
-const hasSearchConditions = () =>
-  !!(
-    searchExamineStatus.value ||
-    searchKeyword.value ||
-    searchStartTime.value ||
-    searchEndTime.value ||
-    searchUserId.value
-  )
+const hasSearchConditions = () => !!(searchExamineStatus.value || searchKeyword.value || searchStartTime.value || searchEndTime.value || searchUserId.value)
 
 const buildSearchPayload = () => ({
   pageNum: currentPage.value,

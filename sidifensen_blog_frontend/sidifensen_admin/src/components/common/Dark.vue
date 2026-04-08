@@ -1,11 +1,6 @@
 <template>
   <div class="dark-box">
-    <el-button
-      text
-      class="switch"
-      :class="{ 'is-dark': !isDark, 'ripple-active': rippleActive }"
-      @click="handleToggle"
-    >
+    <el-button text class="switch" :class="{ 'is-dark': !isDark, 'ripple-active': rippleActive }" @click="handleToggle">
       <div class="icon-wrapper">
         <el-icon v-if="!isDark" class="sun-icon">
           <svg viewBox="0 0 24 24">
@@ -104,11 +99,7 @@ const handleToggle = () => {
       position: absolute;
       width: 32px;
       height: 32px;
-      background: radial-gradient(
-        circle,
-        rgba(60, 60, 60, 0.8) 0%,
-        rgba(255, 255, 255, 0) 70%
-      ); /* 深黑色光晕 */
+      background: radial-gradient(circle, rgba(60, 60, 60, 0.8) 0%, rgba(255, 255, 255, 0) 70%); /* 深黑色光晕 */
       border-radius: 50%;
       z-index: -1;
       opacity: 0;
@@ -146,12 +137,7 @@ const handleToggle = () => {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(60, 60, 60, 0.3) 50%,
-      rgba(255, 255, 255, 0) 100%
-    ); /* 深黑色光泽 */
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(60, 60, 60, 0.3) 50%, rgba(255, 255, 255, 0) 100%); /* 深黑色光泽 */
     transform: translateX(-100%);
     transition: transform 0.6s ease-in-out;
     z-index: 1;
@@ -216,12 +202,7 @@ const handleToggle = () => {
     }
 
     .bg-shine {
-      background: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.5) 50%,
-        rgba(255, 255, 255, 0) 100%
-      );
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0) 100%);
     }
 
     .ripple-effect {

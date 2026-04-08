@@ -5,43 +5,19 @@
       <div class="card-header">
         <h2 class="card-title">登录日志管理</h2>
         <div class="card-actions">
-          <el-select
-            v-model="searchForm.loginType"
-            placeholder="登录方式"
-            filterable
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
+          <el-select v-model="searchForm.loginType" placeholder="登录方式" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="全部" value="" />
             <el-option label="用户名/邮箱" :value="0" />
             <el-option label="Gitee" :value="1" />
             <el-option label="GitHub" :value="2" />
             <el-option label="QQ" :value="3" />
           </el-select>
-          <el-select
-            v-model="searchForm.status"
-            placeholder="登录状态"
-            filterable
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
+          <el-select v-model="searchForm.status" placeholder="登录状态" filterable clearable size="small" class="search-input" @change="handleSearch">
             <el-option label="全部" value="" />
             <el-option label="成功" :value="0" />
             <el-option label="失败" :value="1" />
           </el-select>
-          <el-input
-            v-model.number="searchForm.userId"
-            placeholder="用户ID"
-            :prefix-icon="Search"
-            size="small"
-            class="search-input"
-            clearable
-            @input="handleSearch"
-          />
+          <el-input v-model.number="searchForm.userId" placeholder="用户ID" :prefix-icon="Search" size="small" class="search-input" clearable @input="handleSearch" />
         </div>
       </div>
 
@@ -75,27 +51,12 @@
 
       <!-- 批量操作按钮区域 -->
       <div class="card-third">
-        <el-button
-          type="danger"
-          plain
-          round
-          @click="handleBatchDelete"
-          :disabled="selectedLogs.length === 0"
-          :loading="batchDeleteLoading"
-          >批量删除</el-button
-        >
+        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedLogs.length === 0" :loading="batchDeleteLoading">批量删除</el-button>
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table
-          v-loading="loading"
-          :data="logList"
-          class="table"
-          @selection-change="handleSelectionChange"
-          :row-style="{ height: 'auto' }"
-          :cell-style="{ padding: '8px 0' }"
-        >
+        <el-table v-loading="loading" :data="logList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
           <el-table-column type="selection" width="30" />
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="userId" label="用户ID" width="80">
@@ -128,12 +89,7 @@
           </el-table-column>
           <el-table-column prop="loginAddress" label="登录地址" min-width="150">
             <template #default="{ row }">
-              <el-tooltip
-                v-if="row.loginAddress"
-                :content="row.loginAddress"
-                placement="top-start"
-                :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }"
-              >
+              <el-tooltip v-if="row.loginAddress" :content="row.loginAddress" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
                 <div class="log-address">{{ row.loginAddress }}</div>
               </el-tooltip>
               <span v-else>-</span>
@@ -141,10 +97,7 @@
           </el-table-column>
           <el-table-column prop="status" label="状态" width="80">
             <template #default="{ row }">
-              <div
-                class="log-status"
-                :class="row.status === 0 ? 'status-success' : 'status-failed'"
-              >
+              <div class="log-status" :class="row.status === 0 ? 'status-success' : 'status-failed'">
                 {{ row.statusDesc }}
               </div>
             </template>
@@ -153,14 +106,7 @@
           <el-table-column label="操作" width="100">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button
-                  type="danger"
-                  @click="handleDelete(row.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  size="small"
-                  >删除</el-button
-                >
+                <el-button type="danger" @click="handleDelete(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </template>
           </el-table-column>
@@ -170,29 +116,17 @@
       <!-- 移动端卡片视图 -->
       <div v-else class="mobile-view">
         <div class="log-cards">
-          <el-card
-            v-for="log in logList"
-            :key="log.id"
-            class="log-card"
-            :class="{ 'is-selected': isLogSelected(log.id) }"
-          >
+          <el-card v-for="log in logList" :key="log.id" class="log-card" :class="{ 'is-selected': isLogSelected(log.id) }">
             <div class="log-card-content">
               <div class="log-header-section">
                 <div class="log-info">
                   <div class="log-header">
-                    <el-checkbox
-                      :model-value="isLogSelected(log.id)"
-                      @change="handleMobileSelect(log)"
-                      class="mobile-checkbox"
-                    />
+                    <el-checkbox :model-value="isLogSelected(log.id)" @change="handleMobileSelect(log)" class="mobile-checkbox" />
                     <div class="log-id">#{{ log.id }}</div>
                     <div class="login-type" :class="getLoginTypeClass(log.loginType)">
                       {{ log.loginTypeDesc }}
                     </div>
-                    <div
-                      class="log-status"
-                      :class="log.status === 0 ? 'status-success' : 'status-failed'"
-                    >
+                    <div class="log-status" :class="log.status === 0 ? 'status-success' : 'status-failed'">
                       {{ log.statusDesc }}
                     </div>
                   </div>
@@ -200,9 +134,7 @@
                   <!-- 用户信息 -->
                   <div class="log-user-mobile">
                     <span class="user-label">用户:</span>
-                    <span class="user-value"
-                      >{{ log.username || '未知' }} (ID: {{ log.userId || '-' }})</span
-                    >
+                    <span class="user-value">{{ log.username || '未知' }} (ID: {{ log.userId || '-' }})</span>
                   </div>
 
                   <!-- IP地址 -->
@@ -229,14 +161,7 @@
                 </div>
               </div>
               <div class="log-actions">
-                <el-button
-                  type="danger"
-                  @click="handleDelete(log.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                  size="small"
-                  >删除</el-button
-                >
+                <el-button type="danger" @click="handleDelete(log.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
               </div>
             </div>
           </el-card>
@@ -244,13 +169,7 @@
       </div>
 
       <!-- 分页 -->
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
   </div>
 </template>
@@ -332,13 +251,7 @@ const getLoginLogs = async () => {
 
 // 判断是否存在搜索条件
 const hasSearchConditions = () => {
-  return !!(
-    searchForm.userId ||
-    searchForm.loginType !== '' ||
-    searchForm.status !== '' ||
-    searchForm.loginTimeStart ||
-    searchForm.loginTimeEnd
-  )
+  return !!(searchForm.userId || searchForm.loginType !== '' || searchForm.status !== '' || searchForm.loginTimeStart || searchForm.loginTimeEnd)
 }
 
 // 构建搜索参数
@@ -351,11 +264,7 @@ const buildSearchPayload = () => {
   if (searchForm.userId) {
     searchData.userId = Number(searchForm.userId)
   }
-  if (
-    searchForm.loginType !== '' &&
-    searchForm.loginType !== null &&
-    searchForm.loginType !== undefined
-  ) {
+  if (searchForm.loginType !== '' && searchForm.loginType !== null && searchForm.loginType !== undefined) {
     searchData.loginType = searchForm.loginType
   }
   if (searchForm.status !== '' && searchForm.status !== null && searchForm.status !== undefined) {

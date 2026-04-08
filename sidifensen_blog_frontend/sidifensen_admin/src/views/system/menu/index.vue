@@ -4,29 +4,14 @@
       <div class="card-header">
         <h2 class="card-title">菜单管理</h2>
         <div class="card-actions">
-          <el-input
-            v-model="searchQuery"
-            placeholder="搜索菜单名称"
-            :prefix-icon="Search"
-            size="small"
-            class="search-input"
-          />
-          <el-button type="primary" size="small" @click="handleAddMenu" :icon="Plus" class="add">
-            新增菜单
-          </el-button>
+          <el-input v-model="searchQuery" placeholder="搜索菜单名称" :prefix-icon="Search" size="small" class="search-input" />
+          <el-button type="primary" size="small" @click="handleAddMenu" :icon="Plus" class="add"> 新增菜单 </el-button>
         </div>
       </div>
 
       <!-- 桌面端表格视图 -->
       <div v-if="!isMobileView" class="desktop-view">
-        <el-table
-          v-loading="loading"
-          :data="paginatedMenuList"
-          row-key="id"
-          default-expand-all
-          class="menu-table"
-          style="height: 100%"
-        >
+        <el-table v-loading="loading" :data="paginatedMenuList" row-key="id" default-expand-all class="menu-table" style="height: 100%">
           <el-table-column prop="id" label="菜单id" width="120" />
           <el-table-column prop="parentId" label="父菜单id" />
           <el-table-column prop="name" label="菜单名称" />
@@ -61,43 +46,10 @@
           <el-table-column label="操作" width="330">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button
-                  size="small"
-                  type="success"
-                  @click="handleAddMenu(row)"
-                  :icon="Plus"
-                  v-if="row.children || row.parentId == 0"
-                  class="add-button"
-                >
-                  新增
-                </el-button>
-                <el-button
-                  size="small"
-                  type="primary"
-                  @click="handleEditMenu(row)"
-                  :icon="Edit"
-                  class="edit-button"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  size="small"
-                  type="danger"
-                  @click="handleDeleteMenu(row.id)"
-                  :icon="Delete"
-                  class="delete-button"
-                >
-                  删除
-                </el-button>
-                <el-button
-                  size="small"
-                  type="warning"
-                  @click="handleAuthorizeRole(row)"
-                  :icon="Avatar"
-                  class="role-button"
-                >
-                  分配角色
-                </el-button>
+                <el-button size="small" type="success" @click="handleAddMenu(row)" :icon="Plus" v-if="row.children || row.parentId == 0" class="add-button"> 新增 </el-button>
+                <el-button size="small" type="primary" @click="handleEditMenu(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
+                <el-button size="small" type="danger" @click="handleDeleteMenu(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
+                <el-button size="small" type="warning" @click="handleAuthorizeRole(row)" :icon="Avatar" class="role-button"> 分配角色 </el-button>
               </div>
             </template>
           </el-table-column>
@@ -108,12 +60,7 @@
       <div v-else class="mobile-view">
         <div class="menu-cards" v-loading="loading">
           <!-- 展平的菜单列表，用缩进显示层级 -->
-          <div
-            v-for="menu in flatMenuList"
-            :key="menu.id"
-            class="menu-card"
-            :style="{ marginLeft: menu.level * 16 + 'px' }"
-          >
+          <div v-for="menu in flatMenuList" :key="menu.id" class="menu-card" :style="{ marginLeft: menu.level * 16 + 'px' }">
             <div class="menu-card-header">
               <!-- 展开/收起按钮 -->
               <div v-if="menu.hasChildren" class="expand-button" @click="toggleMenuExpand(menu.id)">
@@ -183,56 +130,17 @@
 
             <!-- 操作按钮 -->
             <div class="menu-actions">
-              <el-button
-                v-if="menu.hasChildren || menu.parentId == 0"
-                text
-                bg
-                type="success"
-                size="small"
-                :icon="Plus"
-                @click="handleAddMenu(menu)"
-                >新增</el-button
-              >
-              <el-button
-                text
-                bg
-                type="primary"
-                size="small"
-                :icon="Edit"
-                @click="handleEditMenu(menu)"
-                >编辑</el-button
-              >
-              <el-button
-                text
-                bg
-                type="danger"
-                size="small"
-                :icon="Delete"
-                @click="handleDeleteMenu(menu.id)"
-                >删除</el-button
-              >
-              <el-button
-                text
-                bg
-                type="warning"
-                size="small"
-                :icon="Avatar"
-                @click="handleAuthorizeRole(menu)"
-                >角色</el-button
-              >
+              <el-button v-if="menu.hasChildren || menu.parentId == 0" text bg type="success" size="small" :icon="Plus" @click="handleAddMenu(menu)">新增</el-button>
+              <el-button text bg type="primary" size="small" :icon="Edit" @click="handleEditMenu(menu)">编辑</el-button>
+              <el-button text bg type="danger" size="small" :icon="Delete" @click="handleDeleteMenu(menu.id)">删除</el-button>
+              <el-button text bg type="warning" size="small" :icon="Avatar" @click="handleAuthorizeRole(menu)">角色</el-button>
             </div>
           </div>
         </div>
       </div>
 
       <!-- 分页 -->
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
     <!-- 新增/编辑菜单对话框 -->
@@ -270,22 +178,10 @@
         <el-form-item prop="parentId" label="父菜单">
           <el-select v-model="menuForm.parentId" placeholder="请选择父菜单">
             <el-option :value="0" label="无父菜单" />
-            <el-option
-              v-for="menu in allMenus"
-              :key="menu.id"
-              :label="menu.name"
-              :value="menu.id"
-            />
+            <el-option v-for="menu in allMenus" :key="menu.id" :label="menu.name" :value="menu.id" />
           </el-select>
         </el-form-item>
-        <el-form-item prop="sort">
-          排序号 &nbsp<el-input-number
-            v-model="menuForm.sort"
-            :min="0"
-            :max="999"
-            placeholder="请输入排序号"
-          />
-        </el-form-item>
+        <el-form-item prop="sort"> 排序号 &nbsp<el-input-number v-model="menuForm.sort" :min="0" :max="999" placeholder="请输入排序号" /> </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
@@ -296,21 +192,14 @@
     </el-dialog>
 
     <!-- 分配角色对话框 -->
-    <el-dialog
-      v-model="authorizeDialogVisible"
-      title="菜单分配角色"
-      :before-close="handleAuthorizeDialogClose"
-      class="authorize-dialog"
-    >
+    <el-dialog v-model="authorizeDialogVisible" title="菜单分配角色" :before-close="handleAuthorizeDialogClose" class="authorize-dialog">
       <div v-loading="authorizeLoading" class="authorize-dialog-content">
         <p class="menu-name">当前菜单: {{ currentMenu?.name }}</p>
         <template v-if="!authorizeLoading">
           <el-form ref="authorizeFormRef" class="authorize-form">
             <el-form-item label="选择角色">
               <el-checkbox-group v-model="selectedRoles" class="role-checkbox-group">
-                <el-checkbox v-for="role in allRoles" :key="role.id" :label="role.id">{{
-                  role.name
-                }}</el-checkbox>
+                <el-checkbox v-for="role in allRoles" :key="role.id" :label="role.id">{{ role.name }}</el-checkbox>
               </el-checkbox-group>
             </el-form-item>
           </el-form>
@@ -329,14 +218,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { Search, Plus, Edit, Delete, Avatar, Document, ArrowRight } from '@element-plus/icons-vue'
-import {
-  getAllMenuList,
-  getMenuPage,
-  addMenu,
-  updateMenu,
-  deleteMenu,
-  queryMenuPage,
-} from '@/api/menu'
+import { getAllMenuList, getMenuPage, addMenu, updateMenu, deleteMenu, queryMenuPage } from '@/api/menu'
 import { addRoleMenu, getRolesByMenu } from '@/api/role-menu'
 import { getRoleList } from '@/api/role'
 import { icons } from '@/utils/Icon'
@@ -805,20 +687,12 @@ const flatMenuList = computed(() => {
 
         .add {
           border-radius: 8px;
-          background: linear-gradient(
-            135deg,
-            var(--admin-primary) 0%,
-            var(--admin-primary-dark) 100%
-          );
+          background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
           border: none;
           transition: all 0.3s ease;
 
           &:hover {
-            background: linear-gradient(
-              135deg,
-              var(--admin-primary-dark) 0%,
-              var(--admin-primary-active) 100%
-            );
+            background: linear-gradient(135deg, var(--admin-primary-dark) 0%, var(--admin-primary-active) 100%);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px var(--admin-primary-light);
           }
@@ -1034,11 +908,7 @@ const flatMenuList = computed(() => {
             width: 48px;
             height: 48px;
             border-radius: 12px;
-            background: linear-gradient(
-              135deg,
-              var(--admin-primary) 0%,
-              var(--admin-primary-dark) 100%
-            );
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
             box-shadow: 0 4px 12px var(--admin-primary-light);
 
             .menu-icon {
@@ -1272,9 +1142,7 @@ const flatMenuList = computed(() => {
       }
 
       .menu-table {
-        max-height: calc(
-          100vh - 200px
-        ); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
+        max-height: calc(100vh - 200px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
       }
     }
   }

@@ -2,24 +2,9 @@
   <DetailCard title="访问趋势" :icon="TrendCharts">
     <template #actions>
       <div class="trend-days">
-        <button
-          :class="['trend-days__btn', days === 7 ? 'is-active' : '']"
-          @click="handleDaysChange(7)"
-        >
-          7 天
-        </button>
-        <button
-          :class="['trend-days__btn', days === 14 ? 'is-active' : '']"
-          @click="handleDaysChange(14)"
-        >
-          14 天
-        </button>
-        <button
-          :class="['trend-days__btn', days === 30 ? 'is-active' : '']"
-          @click="handleDaysChange(30)"
-        >
-          30 天
-        </button>
+        <button :class="['trend-days__btn', days === 7 ? 'is-active' : '']" @click="handleDaysChange(7)">7 天</button>
+        <button :class="['trend-days__btn', days === 14 ? 'is-active' : '']" @click="handleDaysChange(14)">14 天</button>
+        <button :class="['trend-days__btn', days === 30 ? 'is-active' : '']" @click="handleDaysChange(30)">30 天</button>
       </div>
     </template>
     <div class="trend-chart-container">

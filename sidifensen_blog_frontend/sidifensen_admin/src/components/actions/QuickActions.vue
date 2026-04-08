@@ -2,12 +2,7 @@
   <div class="quick-actions">
     <DetailCard title="快速操作" :icon="Operation">
       <div class="action-grid">
-        <div
-          v-for="item in actions"
-          :key="item.path"
-          class="action-item"
-          @click="navigateTo(item.path)"
-        >
+        <div v-for="item in actions" :key="item.path" class="action-item" @click="navigateTo(item.path)">
           <div class="action-item__icon" :class="[`action-item__icon--${item.type}`]">
             <el-icon><component :is="item.icon" /></el-icon>
           </div>
@@ -29,14 +24,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import {
-  Document,
-  ChatLineRound,
-  User,
-  Picture,
-  ArrowRight,
-  Operation,
-} from '@element-plus/icons-vue'
+import { Document, ChatLineRound, User, Picture, ArrowRight, Operation } from '@element-plus/icons-vue'
 import DetailCard from '@/components/cards/DetailCard.vue'
 
 /**

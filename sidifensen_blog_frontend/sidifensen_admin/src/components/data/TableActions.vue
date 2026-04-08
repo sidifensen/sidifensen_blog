@@ -1,62 +1,27 @@
 <template>
   <div class="table-actions">
     <!-- 查看按钮 -->
-    <el-button
-      v-if="showView"
-      type="info"
-      size="small"
-      :icon="View"
-      class="action-btn view-btn"
-      @click="handleAction('view')"
-    >
+    <el-button v-if="showView" type="info" size="small" :icon="View" class="action-btn view-btn" @click="handleAction('view')">
       {{ viewText }}
     </el-button>
 
     <!-- 编辑按钮 -->
-    <el-button
-      v-if="showEdit"
-      type="primary"
-      size="small"
-      :icon="Edit"
-      class="action-btn edit-btn"
-      @click="handleAction('edit')"
-    >
+    <el-button v-if="showEdit" type="primary" size="small" :icon="Edit" class="action-btn edit-btn" @click="handleAction('edit')">
       {{ editText }}
     </el-button>
 
     <!-- 审核按钮 -->
-    <el-button
-      v-if="showAudit"
-      type="primary"
-      size="small"
-      :icon="Check"
-      class="action-btn audit-btn"
-      @click="handleAction('audit')"
-    >
+    <el-button v-if="showAudit" type="primary" size="small" :icon="Check" class="action-btn audit-btn" @click="handleAction('audit')">
       {{ auditText }}
     </el-button>
 
     <!-- 拒绝按钮 -->
-    <el-button
-      v-if="showReject"
-      type="warning"
-      size="small"
-      :icon="Close"
-      class="action-btn reject-btn"
-      @click="handleAction('reject')"
-    >
+    <el-button v-if="showReject" type="warning" size="small" :icon="Close" class="action-btn reject-btn" @click="handleAction('reject')">
       {{ rejectText }}
     </el-button>
 
     <!-- 删除按钮 -->
-    <el-button
-      v-if="showDelete"
-      type="danger"
-      size="small"
-      :icon="Delete"
-      class="action-btn delete-btn"
-      @click="handleAction('delete')"
-    >
+    <el-button v-if="showDelete" type="danger" size="small" :icon="Delete" class="action-btn delete-btn" @click="handleAction('delete')">
       {{ deleteText }}
     </el-button>
 

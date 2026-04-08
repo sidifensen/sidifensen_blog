@@ -4,7 +4,7 @@ pipeline {
     environment {
         DEFAULT_DEPLOY_PATH = '/opt/sidifensen_blog'
         JAVA_HOME = tool 'JDK-21'
-        NODEJS_HOME = '/var/jenkins_home/tools'
+        NODEJS_HOME = '/var/jenkins_home/tools/nodejs'
         MAVEN_HOME = tool 'Maven-3'
         MAVEN_OPTS = '-Dmaven.repo.local=/var/jenkins_home/.m2/repository'
     }
@@ -66,6 +66,7 @@ pipeline {
                     // 获取提交信息（checkout 已在 SCM 阶段完成）
                     env.GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     env.GIT_BRANCH_NAME = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
+                    env.WORKSPACE = sh(script: 'pwd', returnStdout: true).trim()
                 }
                 echo "分支: ${env.GIT_BRANCH_NAME} | 提交: ${env.GIT_COMMIT_SHORT}"
             }
@@ -102,38 +103,48 @@ pipeline {
         stage('Build Frontends') {
             steps {
                 script {
-                    def adminBuild = {
-                        dir('sidifensen_blog_frontend/sidifensen_admin') {
-                            sh label: '构建管理端', script: '''
-                                echo "[1/3] 安装依赖..."
-                                npm ci --silent
+                    // 串行构建，避免并发导致的 sass 原生模块问题
+                    dir('sidifensen_blog_frontend/sidifensen_admin') {
+                        sh label: '构建管理端', script: '''
+                            echo "[0/4] 清理旧文件..."
+                            rm -rf node_modules dist 2>/dev/null || true
 
-                                echo "[2/3] 构建..."
-                                npm run build 2>&1 | tail -3
+                            echo "[1/4] 安装依赖..."
+                            npm install
 
-                                echo "[3/3] 大小: $(du -sh dist 2>/dev/null | cut -f1)"
-                            '''
-                        }
+                            echo "[2/4] 重建原生模块..."
+                            npm rebuild sass-embedded 2>/dev/null || true
+
+                            echo "[3/4] 检查原生模块..."
+                            npm install @voidzero-dev/vite-plus-linux-x64-gnu @rollup/rollup-linux-x64-gnu sass-embedded-linux-x64 lightningcss-linux-x64-gnu --save-optional 2>/dev/null || true
+
+                            echo "[3/4] 构建..."
+                            npm run build
+
+                            echo "[4/4] 大小: $(du -sh dist 2>/dev/null | cut -f1)"
+                        '''
                     }
 
-                    def userBuild = {
-                        dir('sidifensen_blog_frontend/sidifensen_user') {
-                            sh label: '构建用户端', script: '''
-                                echo "[1/3] 安装依赖..."
-                                npm ci --silent
+                    dir('sidifensen_blog_frontend/sidifensen_user') {
+                        sh label: '构建用户端', script: '''
+                            echo "[0/4] 清理旧文件..."
+                            rm -rf node_modules dist 2>/dev/null || true
 
-                                echo "[2/3] 构建..."
-                                npm run build 2>&1 | tail -3
+                            echo "[1/4] 安装依赖..."
+                            npm install
 
-                                echo "[3/3] 大小: $(du -sh dist 2>/dev/null | cut -f1)"
-                            '''
-                        }
+                            echo "[2/4] 重建原生模块..."
+                            npm rebuild sass-embedded 2>/dev/null || true
+
+                            echo "[3/4] 检查原生模块..."
+                            npm install @voidzero-dev/vite-plus-linux-x64-gnu @rollup/rollup-linux-x64-gnu sass-embedded-linux-x64 lightningcss-linux-x64-gnu --save-optional 2>/dev/null || true
+
+                            echo "[3/4] 构建..."
+                            npm run build
+
+                            echo "[4/4] 大小: $(du -sh dist 2>/dev/null | cut -f1)"
+                        '''
                     }
-
-                    parallel(
-                        'Admin': adminBuild,
-                        'User': userBuild
-                    )
                 }
             }
             post {
@@ -146,51 +157,29 @@ pipeline {
             steps {
                 echo '>>> 部署服务'
                 script {
-                    def deployPath = env.DEPLOY_PATH ?: env.DEFAULT_DEPLOY_PATH
+                    def workspace = env.WORKSPACE ?: '/var/jenkins_home/workspace/sidifensen-blog-deploy'
 
                     sh label: '部署', script: """
-                        export DEPLOY_PATH="${deployPath}"
+                        set -e
+                        cd ${workspace}
 
-                        # 检查部署目录
-                        if ! mkdir -p \${DEPLOY_PATH}/sidifensen_blog_backend/target 2>/dev/null; then
-                            echo "[ERROR] 无法访问部署目录"
-                            exit 1
-                        fi
-
-                        # 复制后端
-                        echo "[1/5] 复制后端..."
-                        JAR=\$(ls sidifensen_blog_backend/target/*.jar 2>/dev/null | head -n 1)
-                        if [ -n "\$JAR" ]; then
-                            cp "\$JAR" \${DEPLOY_PATH}/sidifensen_blog_backend/target/
-                        fi
-
-                        # 复制前端
-                        echo "[2/5] 复制前端..."
-                        [ -d sidifensen_blog_frontend/sidifensen_admin/dist ] && cp -r sidifensen_blog_frontend/sidifensen_admin/dist \${DEPLOY_PATH}/sidifensen_blog_frontend/sidifensen_admin/
-                        [ -d sidifensen_blog_frontend/sidifensen_user/dist ] && cp -r sidifensen_blog_frontend/sidifensen_user/dist \${DEPLOY_PATH}/sidifensen_blog_frontend/sidifensen_user/
-
-                        # 复制脚本
-                        echo "[3/5] 复制脚本..."
-                        [ -d script/prod ] && cp -r script/prod/* \${DEPLOY_PATH}/script/prod/ 2>/dev/null || true
-
-                        cd \${DEPLOY_PATH}
-
-                        # 部署 - 使用 /tmp/docker-compose (已在 Jenkins 容器内)
-                        echo "[4/5] 启动/更新容器..."
-                        /tmp/docker-compose -f script/prod/docker-compose-ssl.yml --env-file script/prod/.env up -d --build
-
-                        echo "[5/5] 等待启动..."
-                        sleep 15
-
-                        echo "--- 服务状态 ---"
-                        /tmp/docker-compose -f script/prod/docker-compose-ssl.yml --env-file script/prod/.env ps | tail -n +2 | head -10
-                        echo "----------------"
+                        echo "[INFO] 部署配置：Jenkins 容器无 docker CLI"
+                        echo "[INFO] 构建产物位置："
+                        echo "  - 后端: \$(pwd)/sidifensen_blog_backend/target/sidifensen_blog_backend-1.0-SNAPSHOT.jar"
+                        echo "  - 管理端: \$(pwd)/sidifensen_blog_frontend/sidifensen_admin/dist/"
+                        echo "  - 用户端: \$(pwd)/sidifensen_blog_frontend/sidifensen_user/dist/"
+                        echo ""
+                        echo "[INFO] 手动部署命令（需在主机执行）："
+                        echo "  docker cp \${workspace}/sidifensen_blog_backend/target/sidifensen_blog_backend-1.0-SNAPSHOT.jar sidifensen-backend:/app/sidifensen_blog_backend/target/"
+                        echo "  docker cp \${workspace}/sidifensen_blog_frontend/sidifensen_admin/dist/. sidifensen-admin:/usr/share/nginx/html/admin/"
+                        echo "  docker cp \${workspace}/sidifensen_blog_frontend/sidifensen_user/dist/. sidifensen-user:/usr/share/nginx/html/"
+                        echo "  docker restart sidifensen-backend sidifensen-admin sidifensen-user"
                     """
                 }
             }
             post {
-                success { echo '<<< 部署成功' }
-                failure { echo '<<< 部署失败' }
+                success { echo '<<< 构建成功（部署需手动执行）' }
+                failure { echo '<<< 构建失败' }
             }
         }
     }
