@@ -28,7 +28,11 @@ import SvgIcon from '@/components/SvgIcon.vue'
 import 'virtual:svg-icons-register'
 app.component('svg-icon', SvgIcon)
 
-// 注册加载动画组件
+// 注册页面加载动画组件
+import PageLoading from '@/components/PageLoading.vue'
+app.component('PageLoading', PageLoading)
+
+// 注册加载动画组件（部分页面使用）
 import LoadingAnimation from '@/components/LoadingAnimation.vue'
 app.component('LoadingAnimation', LoadingAnimation)
 

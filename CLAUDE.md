@@ -16,6 +16,7 @@
 |------|------|------|
 | MySQL MCP | `@berthojoris/mcp-mysql-server` | 新增表/字段、调试业务逻辑 |
 | SSH MCP | `@fangjunjie/ssh-mcp-server` | 服务器远程连接、命令执行、文件传输 |
+| Chrome DevTools MCP | `@anthropics-ai/chrome-devtools-mcp` | 网页调试、性能分析、自动化浏览器操作 |
 
 ## 后端规范
 
@@ -49,6 +50,13 @@ cd sidifensen_blog_backend && mvn clean compile -DskipTests
 - [ ] 无拼写/注解错误
 - [ ] 已补充中文注释
 - [ ] 管理端 Controller 已添加 `@LogOperation`
+
+### 测试命令
+```bash
+cd sidifensen_blog_backend && mvn test
+cd sidifensen_blog_frontend/sidifensen_user && npx vite-plugin-checker check
+cd sidifensen_blog_frontend/sidifensen_admin && npx vite-plugin-checker check
+```
 
 > 注意：调试代码时不要自动重启后端服务
 
@@ -103,6 +111,11 @@ cd sidifensen_blog_backend && mvn clean compile -DskipTests
 - **必须先在全局定义再使用**：所有颜色必须定义在 `base.scss` 或对应模块的全局变量文件中，使用 CSS 变量引用
 - **优先使用已定义颜色**：新增颜色前先检查现有变量，避免重复定义
 - **禁止硬编码颜色**：组件内不允许直接写 `#xxx` 或 `rgb(x,x,x)`，必须用 `var(--xxx)` 引用全局变量
+
+### 前端 API 调用
+- 开发环境：前端通过 Vite proxy 转发到 `localhost:5000`
+- 生产环境：前端请求 `https://api.sidifensen.com`
+- API 路径规范：参考 `sidifensen_blog_backend/src/main/resources/config/application.yml`
 
 ### 修改后检查
 ```bash

@@ -10,23 +10,63 @@
 
   <!-- 智能客服对话窗口 -->
   <CustomerServiceChat ref="customerServiceChatRef" />
+
+  <!-- 页面加载动画（路由切换） -->
+  <PageLoading :visible="showPageLoading" />
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import CustomerServiceFloatButton from '@/components/CustomerServiceFloatButton.vue'
 import CustomerServiceChat from '@/components/CustomerServiceChat.vue'
+import PageLoading from '@/components/PageLoading.vue'
 import { useUserStore } from '@/stores/userStore'
 
 const router = useRouter()
 const userStore = useUserStore()
 const customerServiceChatRef = ref(null)
+const showPageLoading = ref(false)
+
+// 首屏加载动画：等 Vue Router 完成初始路由解析（包括所有懒加载 chunk 下载）后再移除
+router.isReady().then(() => {
+  // 给 Vue 一点时间开始渲染，再淡出加载动画，实现平滑衔接
+  setTimeout(() => {
+    const loadingEl = document.getElementById('app-loading')
+    if (loadingEl) {
+      loadingEl.style.opacity = '0'
+      // 等 CSS transition 完成后移除 DOM
+      setTimeout(() => loadingEl.remove(), 400)
+    }
+  }, 50)
+})
+
+// 路由切换：显示页面加载动画
+let isFirstNavigation = true
+router.beforeEach((to, from, next) => {
+  if (isFirstNavigation) {
+    // 首次导航（首屏），动画由 index.html CSS 处理
+    isFirstNavigation = false
+    next()
+    return
+  }
+  // 后续路由切换，显示加载动画
+  showPageLoading.value = true
+  next()
+})
+
+router.afterEach(() => {
+  if (!isFirstNavigation) {
+    // 路由完成后隐藏加载动画
+    nextTick(() => {
+      showPageLoading.value = false
+    })
+  }
+})
 
 // 处理客服按钮点击
 const handleCustomerServiceClick = () => {
-  // 检查是否已登录
   if (!userStore.isLoggedIn) {
     ElMessageBox.confirm('智能客服需要登录后才能使用，是否前往登录？', '提示', {
       confirmButtonText: '前往登录',
@@ -39,7 +79,6 @@ const handleCustomerServiceClick = () => {
       .catch(() => {})
     return
   }
-  // 已登录，打开聊天窗口
   customerServiceChatRef.value?.open()
 }
 </script>

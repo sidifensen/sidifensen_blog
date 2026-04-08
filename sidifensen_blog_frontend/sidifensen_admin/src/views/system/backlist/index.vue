@@ -1,254 +1,177 @@
 <template>
-  <div class="management-container">
-    <div class="card">
-      <!-- 卡片头部 -->
-      <div class="card-header">
-        <h2 class="card-title">黑名单管理</h2>
-        <div class="card-actions">
-          <el-select v-model="searchForm.type" placeholder="黑名单类型" filterable clearable size="small" class="search-input" @change="handleSearch">
-            <el-option label="全部" value="" />
-            <el-option label="用户" :value="0" />
-            <el-option label="IP地址" :value="1" />
-          </el-select>
-          <el-input v-model.number="searchForm.userId" placeholder="用户ID" :prefix-icon="Search" size="small" class="search-input" clearable @input="handleSearch" />
-        </div>
-      </div>
+  <ManagementCard
+    title="黑名单管理"
+    :showTimeFilter="true"
+    :showPagination="true"
+    :modelCurrentPage="currentPage"
+    :modelPageSize="pageSize"
+    :total="total"
+    @search="fetchBlacklists"
+    @timeChange="handleTimeChange"
+  >
+    <!-- 筛选器 -->
+    <template #filters>
+      <el-select v-model="searchForm.type" placeholder="黑名单类型" filterable clearable size="small" style="width: 140px" @change="handleSearch">
+        <el-option label="全部" value="" />
+        <el-option label="用户" :value="0" />
+        <el-option label="IP地址" :value="1" />
+      </el-select>
+      <el-input v-model.number="searchForm.userId" placeholder="用户ID" :prefix-icon="Search" size="small" style="width: 140px" clearable @input="handleSearch" />
+      <SearchButtons @search="handleSearch" @reset="handleReset" />
+      <el-button type="primary" @click="handleAdd" :icon="Plus">新增黑名单</el-button>
+    </template>
 
-      <!-- 时间筛选区域 -->
-      <div class="card-time-filters">
-        <div class="time-filter-group">
-          <el-date-picker
-            v-model="searchForm.banTimeStart"
-            type="datetime"
-            placeholder="拉黑开始时间"
-            size="small"
-            class="time-input"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            clearable
-            @change="handleSearch"
-          />
-          <el-date-picker
-            v-model="searchForm.banTimeEnd"
-            type="datetime"
-            placeholder="拉黑结束时间"
-            size="small"
-            class="time-input"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            clearable
-            @change="handleSearch"
-          />
-        </div>
-      </div>
+    <!-- 批量操作按钮 -->
+    <template #batch-actions>
+      <BatchActions :selectedCount="selectedBlacklists.length" :showBatchDelete="true" @batchDelete="handleBatchDelete" />
+    </template>
 
-      <div class="card-time-filters">
-        <div class="time-filter-group">
-          <el-date-picker
-            v-model="searchForm.expireTimeStart"
-            type="datetime"
-            placeholder="到期开始时间"
-            size="small"
-            class="time-input"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            clearable
-            @change="handleSearch"
-          />
-          <el-date-picker
-            v-model="searchForm.expireTimeEnd"
-            type="datetime"
-            placeholder="到期结束时间"
-            size="small"
-            class="time-input"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            clearable
-            @change="handleSearch"
-          />
-        </div>
-      </div>
-
-      <!-- 批量操作按钮区域 -->
-      <div class="card-third">
-        <el-button type="primary" plain round @click="handleAdd" :icon="Plus">新增黑名单</el-button>
-        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedBlacklists.length === 0" :loading="batchDeleteLoading">批量删除</el-button>
-      </div>
-
-      <!-- 桌面端表格视图 -->
-      <div v-if="!isMobileView" class="desktop-view">
-        <el-table v-loading="loading" :data="paginatedBlacklistList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
-          <el-table-column type="selection" width="30" />
-          <el-table-column prop="id" label="ID" width="60" />
-          <el-table-column prop="type" label="类型" width="100">
-            <template #default="{ row }">
-              <div class="blacklist-type" :class="row.type === 0 ? 'type-user' : 'type-ip'">
-                {{ row.type === 0 ? '用户' : 'IP地址' }}
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column prop="userId" label="用户ID" width="100">
-            <template #default="{ row }">
-              <span>{{ row.userId || '-' }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="ip" label="IP地址" width="150">
-            <template #default="{ row }">
-              <el-tooltip v-if="row.ip" :content="row.ip" placement="top-start">
-                <div class="blacklist-ip">{{ row.ip }}</div>
-              </el-tooltip>
-              <span v-else>-</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="reason" label="拉黑原因" min-width="200">
-            <template #default="{ row }">
-              <el-tooltip :content="row.reason" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
-                <div class="blacklist-reason">{{ row.reason }}</div>
-              </el-tooltip>
-            </template>
-          </el-table-column>
-          <el-table-column prop="banTime" label="拉黑时间" sortable width="110" />
-          <el-table-column prop="expireTime" label="到期时间" sortable width="110">
-            <template #default="{ row }">
-              <span :class="{ 'expired-time': isExpired(row.expireTime) }">
-                {{ row.expireTime }}
-              </span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="status" label="状态" width="80">
-            <template #default="{ row }">
-              <div class="blacklist-status" :class="isExpired(row.expireTime) ? 'status-expired' : 'status-active'">
-                {{ isExpired(row.expireTime) ? '已过期' : '生效中' }}
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="200">
-            <template #default="{ row }">
-              <div class="table-actions">
-                <el-button type="primary" @click="handleEdit(row)" :icon="Edit" class="edit-button" size="small">编辑</el-button>
-                <el-button type="danger" @click="handleDelete(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-
-      <!-- 移动端卡片视图 -->
-      <div v-else class="mobile-view">
-        <div class="blacklist-cards">
-          <el-card v-for="blacklist in paginatedBlacklistList" :key="blacklist.id" class="blacklist-card" :class="{ 'is-selected': isBlacklistSelected(blacklist.id) }">
-            <div class="blacklist-card-content">
-              <div class="blacklist-header-section">
-                <div class="blacklist-info">
-                  <div class="blacklist-header">
-                    <el-checkbox :model-value="isBlacklistSelected(blacklist.id)" @change="handleMobileSelect(blacklist)" class="mobile-checkbox" />
-                    <div class="blacklist-id">#{{ blacklist.id }}</div>
-                    <div class="blacklist-type" :class="blacklist.type === 0 ? 'type-user' : 'type-ip'">
-                      {{ blacklist.type === 0 ? '用户' : 'IP地址' }}
-                    </div>
-                    <div class="blacklist-status" :class="isExpired(blacklist.expireTime) ? 'status-expired' : 'status-active'">
-                      {{ isExpired(blacklist.expireTime) ? '已过期' : '生效中' }}
-                    </div>
-                  </div>
-
-                  <!-- 用户ID -->
-                  <div v-if="blacklist.userId" class="blacklist-user-mobile">
-                    <span class="user-label">用户ID:</span>
-                    <span class="user-value">{{ blacklist.userId }}</span>
-                  </div>
-
-                  <!-- IP地址 -->
-                  <div v-if="blacklist.ip" class="blacklist-ip-mobile">
-                    <span class="ip-label">IP地址:</span>
-                    <span class="ip-value">{{ blacklist.ip }}</span>
-                  </div>
-
-                  <!-- 拉黑原因 -->
-                  <div class="blacklist-reason-mobile">
-                    <span class="reason-label">拉黑原因:</span>
-                    <span class="reason-content">{{ blacklist.reason }}</span>
-                  </div>
-
-                  <!-- 时间信息 -->
-                  <div class="blacklist-meta">
-                    <div class="time-row">
-                      <div class="meta-item time-item">
-                        <span class="label">拉黑:</span>
-                        <span>{{ blacklist.banTime }}</span>
-                      </div>
-                      <div class="meta-item time-item" :class="{ 'expired-time': isExpired(blacklist.expireTime) }">
-                        <span class="label">到期:</span>
-                        <span>{{ blacklist.expireTime }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="blacklist-actions">
-                <el-button type="primary" @click="handleEdit(blacklist)" :icon="Edit" class="edit-button" size="small">编辑</el-button>
-                <el-button type="danger" @click="handleDelete(blacklist.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
-              </div>
+    <!-- 桌面端表格视图 -->
+    <template #table-view>
+      <el-table v-loading="loading" :data="paginatedBlacklistList" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
+        <el-table-column type="selection" width="30" />
+        <el-table-column prop="id" label="ID" width="60" />
+        <el-table-column prop="type" label="类型" width="100">
+          <template #default="{ row }">
+            <div class="blacklist-type" :class="row.type === 0 ? 'type-user' : 'type-ip'">
+              {{ row.type === 0 ? '用户' : 'IP地址' }}
             </div>
-          </el-card>
-        </div>
-      </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="userId" label="用户ID" width="100">
+          <template #default="{ row }">
+            <span>{{ row.userId || '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="ip" label="IP地址" width="150">
+          <template #default="{ row }">
+            <el-tooltip v-if="row.ip" :content="row.ip" placement="top-start">
+              <div class="blacklist-ip">{{ row.ip }}</div>
+            </el-tooltip>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="reason" label="拉黑原因" min-width="200">
+          <template #default="{ row }">
+            <el-tooltip :content="row.reason" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
+              <div class="blacklist-reason">{{ row.reason }}</div>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column prop="banTime" label="拉黑时间" sortable width="110" />
+        <el-table-column prop="expireTime" label="到期时间" sortable width="110">
+          <template #default="{ row }">
+            <span :class="{ 'expired-time': isExpired(row.expireTime) }">
+              {{ row.expireTime }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="状态" width="80">
+          <template #default="{ row }">
+            <div class="blacklist-status" :class="isExpired(row.expireTime) ? 'status-expired' : 'status-active'">
+              {{ isExpired(row.expireTime) ? '已过期' : '生效中' }}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="200">
+          <template #default="{ row }">
+            <div class="table-actions">
+              <el-button type="primary" @click="handleEdit(row)" :icon="Edit" class="edit-button" size="small">编辑</el-button>
+              <el-button type="danger" @click="handleDelete(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
+    </template>
 
-      <!-- 分页 -->
-      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-    </div>
+    <!-- 移动端卡片视图 -->
+    <template #card-view>
+      <MobileCardList
+        :data="paginatedBlacklistList"
+        :selectedItems="selectedBlacklists"
+        showSelection
+        showMeta
+        :hasEditAction="true"
+        :hasDeleteAction="true"
+        @select="handleMobileSelect"
+        @edit="handleEdit"
+        @delete="handleDelete"
+      >
+        <!-- 自定义卡片内容 -->
+        <template #custom="{ item }">
+          <div class="mobile-meta">
+            <span class="meta-item">
+              <span class="label">类型:</span>
+              <span class="value">{{ item.type === 0 ? '用户' : 'IP地址' }}</span>
+            </span>
+            <span class="blacklist-status" :class="isExpired(item.expireTime) ? 'status-expired' : 'status-active'">
+              {{ isExpired(item.expireTime) ? '已过期' : '生效中' }}
+            </span>
+          </div>
+          <div class="mobile-ip" v-if="item.userId">用户ID: {{ item.userId }}</div>
+          <div class="mobile-ip" v-if="item.ip">IP: {{ item.ip }}</div>
+          <div class="mobile-reason">原因: {{ item.reason }}</div>
+        </template>
+      </MobileCardList>
+    </template>
+  </ManagementCard>
 
-    <!-- 新增/编辑黑名单对话框 -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" :before-close="handleDialogClose" width="600px" class="blacklist-dialog">
-      <el-form ref="blacklistFormRef" :model="blacklistForm" :rules="rules" label-width="90px">
-        <el-form-item v-if="!isEdit" prop="userIds" label="用户ID">
-          <el-input v-model="blacklistForm.userIds" placeholder="请输入用户ID，多个用逗号分隔，如：3,4,5" />
-          <div class="form-tip">支持批量添加，多个用户ID用逗号分隔，如：3,4,5</div>
-        </el-form-item>
+  <!-- 新增/编辑黑名单对话框 -->
+  <el-dialog v-model="dialogVisible" :title="dialogTitle" :before-close="handleDialogClose" width="600px" class="blacklist-dialog" destroy-on-close>
+    <el-form ref="blacklistFormRef" :model="blacklistForm" :rules="rules" label-width="90px">
+      <el-form-item v-if="!isEdit" prop="userIds" label="用户ID">
+        <el-input v-model="blacklistForm.userIds" placeholder="请输入用户ID，多个用逗号分隔，如：3,4,5" />
+        <div class="form-tip">支持批量添加，多个用户ID用逗号分隔，如：3,4,5</div>
+      </el-form-item>
 
-        <el-form-item prop="reason" label="拉黑原因">
-          <el-input v-model="blacklistForm.reason" type="textarea" :rows="3" placeholder="请输入拉黑原因" maxlength="500" show-word-limit />
-        </el-form-item>
+      <el-form-item prop="reason" label="拉黑原因">
+        <el-input v-model="blacklistForm.reason" type="textarea" :rows="3" placeholder="请输入拉黑原因" maxlength="500" show-word-limit />
+      </el-form-item>
 
-        <el-form-item prop="expireTime" label="到期时间">
-          <el-date-picker
-            v-model="blacklistForm.expireTime"
-            type="datetime"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            placeholder="选择到期时间"
-            style="width: 100%"
-            :disabled-date="disabledDate"
-          />
-          <div class="form-tip">选择黑名单到期时间，过期后自动失效</div>
-        </el-form-item>
+      <el-form-item prop="expireTime" label="到期时间">
+        <el-date-picker
+          v-model="blacklistForm.expireTime"
+          type="datetime"
+          format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          placeholder="选择到期时间"
+          style="width: 100%"
+          :disabled-date="disabledDate"
+        />
+        <div class="form-tip">选择黑名单到期时间，过期后自动失效</div>
+      </el-form-item>
 
-        <el-form-item label="快捷设置">
-          <el-button-group>
-            <el-button size="small" @click="setExpireTime(1)">1小时</el-button>
-            <el-button size="small" @click="setExpireTime(6)">6小时</el-button>
-            <el-button size="small" @click="setExpireTime(24)">1天</el-button>
-            <el-button size="small" @click="setExpireTime(24 * 7)">7天</el-button>
-            <el-button size="small" @click="setExpireTime(24 * 30)">30天</el-button>
-            <el-button size="small" @click="setExpireTime(24 * 365)">永久</el-button>
-          </el-button-group>
-        </el-form-item>
-      </el-form>
+      <el-form-item label="快捷设置">
+        <el-button-group>
+          <el-button size="small" @click="setExpireTime(1)">1小时</el-button>
+          <el-button size="small" @click="setExpireTime(6)">6小时</el-button>
+          <el-button size="small" @click="setExpireTime(24)">1天</el-button>
+          <el-button size="small" @click="setExpireTime(24 * 7)">7天</el-button>
+          <el-button size="small" @click="setExpireTime(24 * 30)">30天</el-button>
+          <el-button size="small" @click="setExpireTime(24 * 365)">永久</el-button>
+        </el-button-group>
+      </el-form-item>
+    </el-form>
 
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="handleDialogClose">取消</el-button>
-          <el-button type="primary" @click="handleSubmit" :loading="submitLoading">确认</el-button>
-        </span>
-      </template>
-    </el-dialog>
-  </div>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="handleDialogClose">取消</el-button>
+        <el-button type="primary" @click="handleSubmit" :loading="submitLoading">确认</el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { Search, Plus, Delete, Edit } from '@element-plus/icons-vue'
 import { getBlacklistList, addBlacklist, searchBlacklist, updateBlacklist, deleteBlacklist } from '@/api/blacklist'
-import Pagination from '@/components/data/Pagination.vue'
+
+// 组件
+import ManagementCard from '@/components/management/ManagementCard.vue'
+import MobileCardList from '@/components/data/MobileCardList.vue'
+import BatchActions from '@/components/actions/BatchActions.vue'
+import SearchButtons from '@/components/search/SearchButtons.vue'
 
 // 黑名单列表数据
 const blacklistList = ref([])
@@ -289,19 +212,11 @@ const selectedBlacklists = ref([])
 // 批量操作加载状态
 const batchDeleteLoading = ref(false)
 
-// 移动端检测
-const isMobileView = ref(false)
-
 // 表单验证规则
 const rules = {
   userIds: [{ required: true, message: '请输入用户ID', trigger: 'change' }],
   reason: [{ required: true, message: '请输入拉黑原因', trigger: 'blur' }],
   expireTime: [{ required: true, message: '请选择到期时间', trigger: 'change' }],
-}
-
-// 监听窗口大小变化
-const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768
 }
 
 // 判断是否过期
@@ -328,14 +243,10 @@ const setExpireTime = (hours) => {
   blacklistForm.expireTime = `${year}-${month}-${day} ${hour}:${minute}:${second}`
 }
 
-// 获取黑名单列表
-const getBlacklists = async () => {
-  currentPage.value = 1
-  await fetchBlacklists()
-}
-
+// 是否有搜索条件
 const hasSearchConditions = () => searchForm.type !== '' || searchForm.userId || searchForm.banTimeStart || searchForm.banTimeEnd || searchForm.expireTimeStart || searchForm.expireTimeEnd
 
+// 构建搜索参数
 const buildSearchPayload = () => {
   const searchData = {
     pageNum: currentPage.value,
@@ -362,6 +273,7 @@ const buildSearchPayload = () => {
   return searchData
 }
 
+// 应用分页数据
 const applyPageData = (pageData) => {
   blacklistList.value = pageData?.data || []
   paginatedBlacklistList.value = blacklistList.value
@@ -369,6 +281,7 @@ const applyPageData = (pageData) => {
   selectedBlacklists.value = []
 }
 
+// 获取黑名单列表
 const fetchBlacklists = async () => {
   loading.value = true
   try {
@@ -391,22 +304,10 @@ const fetchBlacklists = async () => {
   }
 }
 
-// 更新分页数据
-const updatePaginatedBlacklistList = () => {
-  paginatedBlacklistList.value = blacklistList.value
-}
-
-// 处理分页大小变化
-const handleSizeChange = async (size) => {
-  pageSize.value = size
-  currentPage.value = 1
-  await fetchBlacklists()
-}
-
-// 处理当前页码变化
-const handleCurrentChange = async (current) => {
-  currentPage.value = current
-  await fetchBlacklists()
+// 时间筛选变化
+const handleTimeChange = ({ startTime, endTime }) => {
+  searchForm.banTimeStart = startTime
+  searchForm.banTimeEnd = endTime
 }
 
 // 处理搜索
@@ -415,12 +316,15 @@ const handleSearch = async () => {
   await fetchBlacklists()
 }
 
-// 智能刷新列表
-const refreshBlacklistList = async (deletedCount = 0) => {
-  if (deletedCount > 0 && currentPage.value > 1 && blacklistList.value.length <= deletedCount) {
-    currentPage.value -= 1
-  }
-  await fetchBlacklists()
+// 重置处理
+const handleReset = () => {
+  searchForm.type = ''
+  searchForm.userId = null
+  searchForm.banTimeStart = null
+  searchForm.banTimeEnd = null
+  searchForm.expireTimeStart = null
+  searchForm.expireTimeEnd = null
+  handleSearch()
 }
 
 // 表格多选
@@ -428,21 +332,22 @@ const handleSelectionChange = (blacklists) => {
   selectedBlacklists.value = blacklists
 }
 
-// 检查黑名单是否被选中
-const isBlacklistSelected = (blacklistId) => {
-  return selectedBlacklists.value.some((blacklist) => blacklist.id === blacklistId)
-}
-
 // 移动端选择处理
 const handleMobileSelect = (blacklist) => {
   const index = selectedBlacklists.value.findIndex((item) => item.id === blacklist.id)
   if (index > -1) {
-    // 已选中，取消选中
     selectedBlacklists.value.splice(index, 1)
   } else {
-    // 未选中，添加到选中列表
     selectedBlacklists.value.push(blacklist)
   }
+}
+
+// 智能刷新列表
+const refreshBlacklistList = async (deletedCount = 0) => {
+  if (deletedCount > 0 && currentPage.value > 1 && blacklistList.value.length <= deletedCount) {
+    currentPage.value -= 1
+  }
+  await fetchBlacklists()
 }
 
 // 新增黑名单
@@ -474,7 +379,6 @@ const handleSubmit = async () => {
     submitLoading.value = true
 
     if (isEdit.value) {
-      // 编辑黑名单
       const updateData = {
         id: blacklistForm.id,
         reason: blacklistForm.reason,
@@ -483,7 +387,6 @@ const handleSubmit = async () => {
       await updateBlacklist(updateData)
       ElMessage.success('修改成功')
     } else {
-      // 批量新增黑名单
       const userIdsArray = blacklistForm.userIds
         .split(',')
         .map((id) => id.trim())
@@ -504,7 +407,6 @@ const handleSubmit = async () => {
   } catch (error) {
     if (error !== false) {
       ElMessage.error(isEdit.value ? '修改失败' : '添加失败')
-      console.error('操作失败:', error)
     }
   } finally {
     submitLoading.value = false
@@ -523,9 +425,8 @@ const handleDelete = (id) => {
         await deleteBlacklist([id])
         ElMessage.success('删除成功')
         await refreshBlacklistList()
-      } catch (error) {
+      } catch {
         ElMessage.error('删除失败')
-        console.error('删除失败:', error)
       }
     })
     .catch(() => {
@@ -547,9 +448,8 @@ const handleBatchDelete = () => {
         await deleteBlacklist(blacklistIds)
         ElMessage.success('批量删除成功')
         await refreshBlacklistList()
-      } catch (error) {
+      } catch {
         ElMessage.error('批量删除失败')
-        console.error('批量删除失败:', error)
       } finally {
         batchDeleteLoading.value = false
       }
@@ -567,549 +467,141 @@ const handleDialogClose = () => {
 
 // 初始化
 onMounted(() => {
-  getBlacklists()
-  handleResize()
-  window.addEventListener('resize', handleResize)
-})
-
-// 组件卸载时移除监听
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
+  fetchBlacklists()
 })
 </script>
 
 <style lang="scss" scoped>
-// 黑名单管理页面主容器
-.management-container {
-  height: 100%;
-  box-sizing: border-box;
-  position: relative;
+// 黑名单类型样式
+.blacklist-type {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
 
-  // 主卡片容器 - 包含所有内容
-  .card {
-    height: 100%;
-    padding: 20px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
+  &.type-user {
+    background-color: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
+  }
+
+  &.type-ip {
+    background-color: var(--el-color-warning-light-9);
+    color: var(--el-color-warning);
+  }
+}
+
+// IP地址样式
+.blacklist-ip {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-regular);
+
+  &:hover {
+    color: var(--el-color-primary);
+  }
+}
+
+// 拉黑原因样式
+.blacklist-reason {
+  overflow: hidden;
+  cursor: pointer;
+  display: -webkit-box;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  color: var(--text-regular);
+
+  &:hover {
+    color: var(--el-color-primary);
+  }
+}
+
+// 过期时间样式
+.expired-time {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+// 状态样式
+.blacklist-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+
+  &.status-active {
+    background-color: var(--el-color-danger-light-9);
+    color: var(--el-color-danger);
+  }
+
+  &.status-expired {
+    background-color: var(--el-fill-color);
+    color: var(--text-muted);
+  }
+}
+
+// 表格操作按钮组
+.table-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+
+  .edit-button {
+    border-radius: 6px;
+    background-color: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
+    border-color: var(--el-color-primary-light-9);
 
     &:hover {
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-    }
-
-    // 卡片头部 - 标题和搜索区域
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 10px 0 10px;
-
-      .card-title {
-        font-size: 20px;
-        font-weight: 600;
-        margin: 0;
-        display: flex;
-        align-items: center;
-
-        &::before {
-          content: '';
-          display: inline-block;
-          width: 4px;
-          height: 20px;
-          background-color: #409eff;
-          border-radius: 2px;
-          margin-right: 10px;
-        }
-      }
-
-      .card-actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-
-        .search-input {
-          width: 200px;
-          border-radius: 8px;
-
-          :deep(.el-input__wrapper) {
-            border-radius: 8px;
-            transition: all 0.3s ease;
-
-            &:focus-within {
-              box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.2);
-              border-color: #409eff;
-            }
-          }
-
-          :deep(.el-select__wrapper) {
-            border-radius: 8px;
-            transition: all 0.3s ease;
-
-            &:focus-within {
-              box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.2);
-              border-color: #409eff;
-            }
-          }
-        }
-      }
-    }
-
-    // 时间筛选区域
-    .card-time-filters {
-      display: flex;
-      justify-content: flex-end;
-      padding: 10px 10px 0 10px;
-
-      .time-filter-group {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-
-        .time-input {
-          width: 160px;
-          border-radius: 8px;
-
-          :deep(.el-date-editor.el-input) {
-            .el-input__wrapper {
-              border-radius: 8px;
-              transition: all 0.3s ease;
-
-              &:focus-within {
-                box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.2);
-                border-color: #409eff;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // 批量操作按钮区域
-    .card-third {
-      display: flex;
-      justify-content: flex-end;
-      padding: 10px;
-      border-bottom: 1px solid var(--el-border-color);
+      background-color: var(--el-color-primary-light-8);
+      border-color: var(--el-color-primary-light-8);
     }
   }
 
-  // 桌面端表格视图
-  .desktop-view {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding-bottom: 60px;
+  .delete-button {
+    border-radius: 6px;
+    background-color: var(--el-color-danger-light-9);
+    color: var(--el-color-danger);
+    border-color: var(--el-color-danger-light-9);
 
-    // 黑名单表格
-    .table {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      margin-top: 16px;
-      max-height: calc(100vh - 300px);
-
-      // 表格头部样式
-      :deep(.el-table__header-wrapper) {
-        background-color: var(--el-bg-color);
-        th {
-          font-weight: 600;
-          color: #475569;
-        }
-      }
-
-      // 表格主体样式
-      :deep(.el-table__body-wrapper) {
-        tr td {
-          color: #64748b;
-          padding: 12px 0;
-          vertical-align: middle;
-
-          .cell {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 40px;
-          }
-        }
-      }
-
-      // 黑名单类型样式
-      .blacklist-type {
-        display: inline-block;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 500;
-
-        &.type-user {
-          background-color: #e0f2fe;
-          color: #0284c7;
-        }
-
-        &.type-ip {
-          background-color: #fef3c7;
-          color: #d97706;
-        }
-      }
-
-      // IP地址样式
-      .blacklist-ip {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        cursor: pointer;
-        font-size: 12px;
-        color: #666;
-
-        &:hover {
-          color: #409eff;
-        }
-      }
-
-      // 拉黑原因样式
-      .blacklist-reason {
-        overflow: hidden;
-        cursor: pointer;
-        display: -webkit-box;
-        text-overflow: ellipsis;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-        -webkit-box-orient: vertical;
-
-        &:hover {
-          color: #409eff;
-        }
-      }
-
-      // 过期时间样式
-      .expired-time {
-        color: #999;
-        text-decoration: line-through;
-      }
-
-      // 状态样式
-      .blacklist-status {
-        display: inline-block;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 500;
-
-        &.status-active {
-          background-color: #fee2e2;
-          color: #ef4444;
-        }
-
-        &.status-expired {
-          background-color: #f0f0f0;
-          color: #999;
-        }
-      }
-
-      // 表格操作按钮组
-      .table-actions {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-wrap: wrap;
-        height: 100%;
-        min-height: 60px;
-        gap: 5px;
-
-        :deep(.el-button) {
-          margin-left: 0;
-        }
-
-        // 通用按钮样式
-        .edit-button,
-        .delete-button {
-          border-radius: 6px;
-          transition: all 0.3s ease;
-
-          &:hover {
-            transform: translateY(-2px);
-          }
-        }
-
-        // 编辑按钮
-        .edit-button {
-          background-color: #e0f2fe;
-          color: #0284c7;
-          border-color: #e0f2fe;
-
-          &:hover {
-            background-color: #bae6fd;
-            border-color: #bae6fd;
-            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
-          }
-        }
-
-        // 删除按钮
-        .delete-button {
-          background-color: #fee2e2;
-          color: #ef4444;
-          border-color: #fee2e2;
-
-          &:hover {
-            background-color: #fecaca;
-            border-color: #fecaca;
-            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-          }
-        }
-      }
+    &:hover {
+      background-color: var(--el-color-danger-light-8);
+      border-color: var(--el-color-danger-light-8);
     }
   }
+}
 
-  // 移动端卡片视图
-  .mobile-view {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-top: 16px;
-    padding-bottom: 60px;
-    overflow-y: auto;
+// 移动端元信息
+.mobile-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 4px 0;
+}
 
-    // 黑名单卡片列表容器
-    .blacklist-cards {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding: 10px;
+.mobile-ip {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
 
-      // 单个黑名单卡片
-      .blacklist-card {
-        transition: all 0.3s ease;
-        border-radius: 8px;
-        margin-bottom: 12px;
-
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        // 选中状态样式
-        &.is-selected {
-          border: 2px solid #409eff;
-          box-shadow: 0 0 12px rgba(64, 158, 255, 0.3);
-        }
-
-        // 黑名单卡片内容容器
-        .blacklist-card-content {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-
-          // 黑名单头部区域
-          .blacklist-header-section {
-            display: flex;
-            flex-direction: column;
-
-            // 黑名单信息区域
-            .blacklist-info {
-              width: 100%;
-              display: flex;
-              flex-direction: column;
-
-              // 黑名单头部 - ID、类型和状态
-              .blacklist-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 8px;
-                margin-bottom: 5px;
-
-                // 移动端复选框样式
-                .mobile-checkbox {
-                  flex-shrink: 0;
-
-                  :deep(.el-checkbox__inner) {
-                    width: 18px;
-                    height: 18px;
-                  }
-                }
-
-                .blacklist-id {
-                  font-size: 12px;
-                  color: #666;
-                  background-color: #f5f5f5;
-                  padding: 2px 6px;
-                  border-radius: 4px;
-                }
-
-                .blacklist-type {
-                  display: inline-block;
-                  padding: 2px 8px;
-                  border-radius: 12px;
-                  font-size: 12px;
-                  font-weight: 500;
-
-                  &.type-user {
-                    background-color: #e0f2fe;
-                    color: #0284c7;
-                  }
-
-                  &.type-ip {
-                    background-color: #fef3c7;
-                    color: #d97706;
-                  }
-                }
-
-                .blacklist-status {
-                  display: inline-block;
-                  padding: 2px 8px;
-                  border-radius: 12px;
-                  font-size: 12px;
-                  font-weight: 500;
-
-                  &.status-active {
-                    background-color: #fee2e2;
-                    color: #ef4444;
-                  }
-
-                  &.status-expired {
-                    background-color: #f0f0f0;
-                    color: #999;
-                  }
-                }
-              }
-
-              // 移动端用户ID样式
-              .blacklist-user-mobile {
-                font-size: 13px;
-                color: #666;
-                margin-bottom: 8px;
-                display: flex;
-                align-items: center;
-
-                .user-label {
-                  font-weight: 500;
-                  color: #888;
-                  margin-right: 4px;
-                }
-
-                .user-value {
-                  color: #555;
-                  font-weight: 500;
-                }
-              }
-
-              // 移动端IP地址样式
-              .blacklist-ip-mobile {
-                font-size: 13px;
-                color: #666;
-                margin-bottom: 8px;
-                display: flex;
-                align-items: center;
-
-                .ip-label {
-                  font-weight: 500;
-                  color: #888;
-                  margin-right: 4px;
-                }
-
-                .ip-value {
-                  color: #555;
-                  font-weight: 400;
-                  word-break: break-all;
-                }
-              }
-
-              // 移动端拉黑原因
-              .blacklist-reason-mobile {
-                font-size: 13px;
-                color: #666;
-                margin-bottom: 8px;
-                display: flex;
-                align-items: flex-start;
-
-                .reason-label {
-                  font-weight: 500;
-                  color: #888;
-                  margin-right: 4px;
-                  flex-shrink: 0;
-                }
-
-                .reason-content {
-                  color: #555;
-                  font-weight: 400;
-                  flex: 1;
-                  word-break: break-all;
-                  display: -webkit-box;
-                  -webkit-line-clamp: 2;
-                  line-clamp: 2;
-                  -webkit-box-orient: vertical;
-                  overflow: hidden;
-                }
-              }
-
-              // 黑名单元信息
-              .blacklist-meta {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-
-                .meta-item {
-                  font-size: 12px;
-                  color: #666;
-                  display: flex;
-                  align-items: center;
-
-                  .label {
-                    font-weight: 500;
-                    margin-right: 4px;
-                  }
-
-                  &.expired-time {
-                    color: #999;
-                    text-decoration: line-through;
-                  }
-                }
-
-                // 时间信息行
-                .time-row {
-                  display: flex;
-                  flex-wrap: wrap;
-                  gap: 8px;
-                  margin-top: 4px;
-
-                  .time-item {
-                    font-size: 11px;
-                    color: #888;
-
-                    .label {
-                      color: #999;
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          // 黑名单操作按钮
-          .blacklist-actions {
-            display: flex;
-            gap: 6px;
-            justify-content: center;
-            padding-top: 8px;
-            border-top: 1px solid #f0f0f0;
-
-            .el-button {
-              margin-left: 0;
-              font-size: 12px;
-              padding: 6px 10px;
-              height: auto;
-              border-radius: 4px;
-              flex: 1;
-            }
-          }
-        }
-      }
-    }
-  }
+.mobile-reason {
+  font-size: 12px;
+  color: var(--text-regular);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 // 表单提示
@@ -1118,100 +610,5 @@ onUnmounted(() => {
   color: var(--el-text-color-secondary);
   margin-top: 4px;
   line-height: 1.4;
-}
-
-// 响应式设计
-@media screen and (max-width: 1400px) {
-  .management-container .card .card-header .card-actions .search-input {
-    width: 140px;
-  }
-}
-
-@media screen and (max-width: 1220px) {
-  .management-container .card .card-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-
-    .card-actions {
-      width: 100%;
-      justify-content: space-between;
-
-      .search-input {
-        width: 100%;
-      }
-    }
-  }
-
-  .management-container .card .card-time-filters {
-    .time-filter-group {
-      .time-input {
-        width: 140px;
-      }
-    }
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .management-container .card {
-    padding: 2px;
-
-    .card-header {
-      padding: 6px;
-
-      .card-title {
-        font-size: 16px;
-      }
-    }
-
-    .card-time-filters {
-      padding: 8px;
-
-      .time-filter-group {
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
-        width: 100%;
-
-        .time-input {
-          flex: 1;
-          width: auto !important;
-        }
-      }
-    }
-
-    .table {
-      margin-top: 0;
-      max-height: calc(100vh - 240px);
-    }
-  }
-
-  // 移动端对话框样式调整
-  :deep(.blacklist-dialog) {
-    width: 90% !important;
-    max-width: 500px;
-    margin: 0 auto;
-    top: 50% !important;
-    transform: translateY(-50%);
-
-    .el-dialog__header {
-      padding: 15px;
-    }
-
-    .el-dialog__body {
-      padding: 15px;
-    }
-
-    .el-form {
-      .el-form-item__label {
-        font-size: 14px;
-      }
-
-      .el-input,
-      .el-textarea {
-        font-size: 14px;
-      }
-    }
-  }
 }
 </style>

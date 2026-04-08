@@ -416,19 +416,7 @@ cd script/dev && ./start.bat    # Windows
 
 ### 🤖 自动化部署 (推荐)
 
-项目支持 **Jenkins + Gitea** CI/CD 自动化部署。
-
-```bash
-# 部署 Gitea
-cd script/prod/jenkins
-docker-compose -f docker-compose-gitea.yml up -d
-
-# 安装 Jenkins
-chmod +x jenkins-setup.sh && sudo ./jenkins-setup.sh
-
-# 推送代码自动部署
-git push gitea main
-```
+项目支持 **Jenkins + GitHub** CI/CD 自动化部署。
 
 ### 💻 生产环境部署
 

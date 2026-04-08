@@ -1,271 +1,230 @@
 <template>
-  <div class="management-container">
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">相册管理</h2>
-        <div class="card-actions">
-          <el-input v-model="searchAlbumName" placeholder="搜索相册名称" :prefix-icon="Search" size="small" class="search-input" clearable />
-          <el-select v-model="searchStatus" placeholder="相册状态" filterable clearable size="small" class="search-input" @change="handleSearch">
-            <el-option label="正常" value="0" />
-            <el-option label="禁用" value="1" />
-          </el-select>
-          <el-select
-            v-model="searchUserId"
-            placeholder="输入用户名搜索"
-            filterable
-            remote
-            reserve-keyword
-            :remote-method="searchUsers"
-            :loading="userLoading"
-            clearable
-            size="small"
-            class="search-input"
-            @change="handleSearch"
-          >
-            <el-option v-for="user in filteredUserList" :key="user.id" :label="user.username" :value="user.id" />
-          </el-select>
-        </div>
-      </div>
-      <div class="card-second">
-        <el-date-picker
-          v-model="searchCreateTimeStart"
-          type="datetime"
-          format="YYYY-MM-DD HH:mm:ss"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          placeholder="创建时间开始"
-          :prefix-icon="Calendar"
-          size="small"
-          class="search-input"
-          clearable
-          @change="handleSearch"
-        />
-        <el-date-picker
-          v-model="searchCreateTimeEnd"
-          type="datetime"
-          format="YYYY-MM-DD HH:mm:ss"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          placeholder="创建时间结束"
-          :prefix-icon="Calendar"
-          size="small"
-          class="search-input"
-          clearable
-          @change="handleSearch"
-        />
-      </div>
+  <ManagementCard
+    title="相册管理"
+    :showTimeFilter="true"
+    :showPagination="true"
+    :modelCurrentPage="currentPage"
+    :modelPageSize="pageSize"
+    :total="total"
+    @search="fetchAlbums"
+    @timeChange="handleTimeChange"
+  >
+    <!-- 筛选器 -->
+    <template #filters>
+      <el-input v-model="searchAlbumName" placeholder="搜索相册名称" :prefix-icon="Search" size="small" style="width: 140px" clearable @input="handleSearch" />
+      <el-select v-model="searchStatus" placeholder="相册状态" filterable clearable size="small" style="width: 140px" @change="handleSearch">
+        <el-option label="正常" value="0" />
+        <el-option label="禁用" value="1" />
+      </el-select>
+      <UserSearchSelect v-model="searchUserId" @change="handleSearch" />
+      <SearchButtons @search="handleSearch" @reset="handleReset" />
+    </template>
 
-      <!-- 桌面端表格视图 -->
-      <div v-if="!isMobileView" class="desktop-view">
-        <el-table v-loading="loading" :data="paginatedAlbumList" class="table" style="height: 100%">
-          <el-table-column prop="id" label="相册id" width="70" />
-          <el-table-column prop="coverUrl" label="相册封面" width="200">
-            <template #default="{ row }">
-              <div style="display: flex; align-items: center">
-                <el-image preview-teleported :src="row.coverUrl" style="width: 200px; height: 100px" :preview-src-list="[row.coverUrl]" fit="cover" />
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column prop="name" label="相册名称" />
-          <el-table-column prop="userName" label="用户名" />
-          <el-table-column prop="showStatus" label="状态">
-            <template #default="{ row }">
-              <el-switch
-                v-model="row.showStatus"
-                size="large"
-                active-color="var(--admin-primary)"
-                inactive-color="#cccccc"
-                active-text="正常"
-                inactive-text="禁用"
-                :active-value="0"
-                :inactive-value="1"
-                inline-prompt
-                :loading="switchLoading"
-                :before-change="() => handleStatusChange(row.id, row.showStatus === 0 ? 1 : 0)"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column prop="createTime" label="创建时间" sortable width="120" />
-          <el-table-column prop="updateTime" label="更新时间" sortable width="120" />
-          <el-table-column label="操作" width="230">
-            <template #default="{ row }">
-              <div class="table-actions">
-                <el-button type="info" size="small" @click="handleAlbumDetail(row.id)" :icon="InfoFilled" class="detail-button">详情</el-button>
-                <el-button type="primary" size="small" @click="handleEditAlbum(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
-                <el-button type="danger" size="small" @click="handleDeleteAlbum(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
+    <!-- 批量操作按钮 -->
+    <template #batch-actions>
+      <BatchActions :selectedCount="selectedAlbums.length" :showBatchDelete="true" @batchDelete="handleBatchDelete" />
+    </template>
 
-      <!-- 移动端卡片视图 -->
-      <div v-else class="mobile-view">
-        <div class="album-cards" v-loading="loading">
-          <div v-for="album in paginatedAlbumList" :key="album.id" class="album-card animate-fade-in">
-            <div class="album-cover-section">
-              <el-image preview-teleported :src="album.coverUrl" :preview-src-list="[album.coverUrl]" fit="cover" class="album-cover" lazy loading="lazy" />
+    <!-- 桌面端表格视图 -->
+    <template #table-view>
+      <el-table v-loading="loading" :data="paginatedAlbumList" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
+        <el-table-column type="selection" width="40" />
+        <el-table-column prop="id" label="ID" min-width="60" />
+        <el-table-column prop="coverUrl" label="封面" min-width="100">
+          <template #default="{ row }">
+            <el-image v-if="row.coverUrl" :src="row.coverUrl" style="width: 80px; height: 50px; border-radius: 4px" :preview-src-list="[row.coverUrl]" fit="cover" preview-teleported />
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="name" label="相册名称" min-width="150">
+          <template #default="{ row }">
+            <el-tooltip :content="row.name" placement="top-start">
+              <div class="album-name">{{ row.name }}</div>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column prop="userName" label="用户名" min-width="100" />
+        <el-table-column prop="showStatus" label="状态" min-width="120">
+          <template #default="{ row }">
+            <el-switch
+              v-model="row.showStatus"
+              size="small"
+              active-color="var(--el-color-primary)"
+              inactive-color="#cccccc"
+              active-text="正常"
+              inactive-text="禁用"
+              :active-value="0"
+              :inactive-value="1"
+              inline-prompt
+              :loading="switchLoading"
+              :before-change="() => handleStatusChange(row.id, row.showStatus === 0 ? 1 : 0)"
+            />
+          </template>
+        </el-table-column>
+        <el-table-column prop="createTime" label="创建时间" sortable min-width="110" />
+        <el-table-column label="操作" width="200" fixed="right">
+          <template #default="{ row }">
+            <div class="table-actions">
+              <el-button type="info" @click="handleAlbumDetail(row.id)" :icon="InfoFilled" class="detail-button" size="small">详情</el-button>
+              <el-button type="primary" @click="handleEditAlbum(row)" :icon="Edit" class="edit-button" size="small">编辑</el-button>
+              <el-button type="danger" @click="handleDeleteAlbum(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
             </div>
-            <div class="album-info">
-              <div class="album-header">
-                <div class="album-id">ID: {{ album.id }}</div>
-                <div class="album-name">{{ album.name }}</div>
-                <div class="album-username">{{ album.userName }}</div>
-              </div>
-              <div class="album-meta">
-                <div class="meta-item">
-                  <span class="label">创建时间:</span>
-                  <span>{{ album.createTime }}</span>
-                </div>
-                <div class="meta-item">
-                  <span class="label">更新时间:</span>
-                  <span>{{ album.updateTime }}</span>
-                </div>
-              </div>
-              <div class="album-status-section">
-                <el-switch
-                  v-model="album.showStatus"
-                  active-color="var(--admin-primary)"
-                  inactive-color="#cccccc"
-                  active-text="正常"
-                  inactive-text="禁用"
-                  :active-value="0"
-                  :inactive-value="1"
-                  inline-prompt
-                  :loading="switchLoading"
-                  :before-change="() => handleStatusChange(album.id, album.showStatus === 0 ? 1 : 0)"
-                />
-              </div>
-              <div class="album-actions">
-                <el-button text bg type="info" size="small" @click="handleAlbumDetail(album.id)" :icon="InfoFilled">详情</el-button>
-                <el-button text bg type="primary" size="small" @click="handleEditAlbum(album)" :icon="Edit">编辑</el-button>
-                <el-button text bg type="danger" size="small" @click="handleDeleteAlbum(album.id)" :icon="Delete">删除</el-button>
-              </div>
+          </template>
+        </el-table-column>
+      </el-table>
+    </template>
+
+    <!-- 移动端卡片视图 -->
+    <template #card-view>
+      <MobileCardList
+        :data="paginatedAlbumList"
+        :selectedItems="selectedAlbums"
+        showSelection
+        showMeta
+        :hasDetailAction="true"
+        :hasEditAction="true"
+        :hasDeleteAction="true"
+        @select="handleMobileSelect"
+        @detail="handleAlbumDetail"
+        @edit="handleEditAlbum"
+        @delete="handleDeleteAlbum"
+      >
+        <!-- 自定义卡片内容 -->
+        <template #custom="{ item }">
+          <div class="mobile-meta">
+            <span class="meta-item">
+              <span class="label">用户:</span>
+              <span class="value">{{ item.userName }}</span>
+            </span>
+            <el-switch
+              v-model="item.showStatus"
+              size="small"
+              active-color="var(--el-color-primary)"
+              inactive-color="#cccccc"
+              :active-value="0"
+              :inactive-value="1"
+              inline-prompt
+              :loading="switchLoading"
+              :before-change="() => handleStatusChange(item.id, item.showStatus === 0 ? 1 : 0)"
+            />
+          </div>
+          <div class="mobile-time">创建: {{ item.createTime }}</div>
+        </template>
+      </MobileCardList>
+    </template>
+  </ManagementCard>
+
+  <!-- 编辑相册对话框 -->
+  <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px" class="album-dialog" destroy-on-close>
+    <el-form ref="albumFormRef" :model="albumForm" :rules="rules" label-width="80px">
+      <el-form-item prop="name" label="相册名称">
+        <el-input v-model="albumForm.name" placeholder="请输入相册名称" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="handleDialogClose">取消</el-button>
+        <el-button type="primary" @click="handleSubmit">确认</el-button>
+      </span>
+    </template>
+  </el-dialog>
+
+  <!-- 相册详情对话框 -->
+  <el-dialog v-model="albumDetailDialogVisible" title="相册详情" class="album-detail-dialog" width="80%" destroy-on-close>
+    <div v-if="albumDetail" class="album-detail-content">
+      <div class="album-detail-header">
+        <el-image :src="albumDetail.coverUrl" fit="cover" class="detail-cover" />
+        <div class="detail-info">
+          <h3 class="detail-title">{{ albumDetail.name }}</h3>
+          <div class="detail-meta">
+            <div class="meta-item"><span class="label">相册ID：</span>{{ albumDetail.id }}</div>
+            <div class="meta-item"><span class="label">创建者：</span>{{ albumDetail.userName }}</div>
+            <div class="meta-item"><span class="label">创建时间：</span>{{ albumDetail.createTime }}</div>
+            <div class="meta-item"><span class="label">更新时间：</span>{{ albumDetail.updateTime }}</div>
+            <div class="meta-item">
+              <span class="label">状态：</span>
+              <span :class="albumDetail.showStatus === 0 ? 'status-normal' : 'status-disabled'">{{ albumDetail.showStatus === 0 ? '正常' : '禁用' }}</span>
             </div>
+            <div class="meta-item"><span class="label">图片数量：</span>{{ albumDetail.photos?.length || 0 }}</div>
           </div>
         </div>
       </div>
 
-      <!-- 分页 -->
-      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <!-- 操作按钮栏 -->
+      <div v-if="albumDetail.photos && albumDetail.photos.length > 0" class="action-bar">
+        <div class="action-left">
+          <el-checkbox v-model="selectAll" @change="handleSelectAll">全选</el-checkbox>
+          <span class="selected-count">{{ selectedPhotos.length }} 已选择</span>
+        </div>
+        <div class="action-right">
+          <el-button type="primary" plain round @click="handleBatchAudit" :disabled="selectedPhotos.length === 0" :loading="batchAuditLoading">批量审核</el-button>
+          <el-button type="warning" plain round @click="handleBatchReject" :disabled="selectedPhotos.length === 0" :loading="batchRejectLoading">批量拒绝</el-button>
+          <el-button type="danger" plain round @click="handlePhotoBatchDelete" :disabled="selectedPhotos.length === 0" :loading="photoBatchDeleteLoading">批量删除</el-button>
+        </div>
+      </div>
+
+      <!-- 相册图片网格 -->
+      <div v-if="albumDetail.photos && albumDetail.photos.length > 0" class="photos-grid">
+        <div v-for="photo in albumDetail.photos" :key="photo.id" class="photo-item" :class="{ 'photo-item-selected': isPhotoSelected(photo.id) }">
+          <div class="photo-selector">
+            <el-checkbox v-model="selectedPhotos" :value="photo.id" @change="handlePhotoSelect(photo.id, $event)" />
+          </div>
+          <el-image
+            preview-teleported
+            :src="photo.url"
+            :preview-src-list="albumDetail.photos.map((p) => p.url)"
+            fit="cover"
+            class="photo-image"
+            :class="{ 'photo-image-unaudited': photo.examineStatus === 0 }"
+            lazy
+          />
+          <div class="photo-info">
+            <div class="photo-id">ID: {{ photo.id }}</div>
+            <div class="photo-status" :class="photo.examineStatus === 0 ? 'status-unaudited' : photo.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
+              {{ photo.examineStatus === 0 ? '未审核' : photo.examineStatus === 1 ? '已审核' : '未通过' }}
+            </div>
+            <div class="photo-time">{{ photo.createTime }}</div>
+            <div class="photo-actions">
+              <el-button text bg type="primary" size="small" @click="handleAuditPhoto(photo.id)" v-if="photo.examineStatus === 0">审核</el-button>
+              <el-button text bg type="warning" size="small" @click="handleRejectPhoto(photo.id)" v-if="photo.examineStatus === 0">拒绝</el-button>
+              <el-button text bg type="danger" size="small" @click="handleDeletePhoto(photo.id)">删除</el-button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-else class="no-photos">该相册暂无图片</div>
     </div>
-
-    <!-- 编辑相册对话框 -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" :before-close="handleDialogClose">
-      <el-form ref="albumFormRef" :model="albumForm" :rules="rules" class="editForm">
-        <el-form-item prop="name" label="相册名称">
-          <el-input v-model="albumForm.name" placeholder="请输入相册名称" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleSubmit">确认</el-button>
-        </span>
-      </template>
-    </el-dialog>
-
-    <!-- 相册详情 -->
-    <el-dialog v-model="albumDetailDialogVisible" title="相册详情" class="album-detail" :before-close="handleDetailDialogClose" width="80%" :close-on-click-modal="false">
-      <el-card v-if="albumDetail" class="album-detail-card animate-fade-in">
-        <div class="album-detail-header">
-          <div class="album-cover-container">
-            <el-image :src="albumDetail.coverUrl" fit="cover" style="width: 100%; height: 180px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1)" />
-          </div>
-          <div class="album-info">
-            <h3 class="album-title">{{ albumDetail.name }}</h3>
-            <div class="album-meta">
-              <div class="meta-item"><span class="label">相册ID：</span>{{ albumDetail.id }}</div>
-              <div class="meta-item"><span class="label">创建者：</span>{{ albumDetail.userName }}</div>
-              <div class="meta-item"><span class="label">创建时间：</span>{{ albumDetail.createTime }}</div>
-              <div class="meta-item"><span class="label">更新时间：</span>{{ albumDetail.updateTime }}</div>
-              <div class="meta-item">
-                <span class="label">状态：</span><span :class="albumDetail.showStatus === 0 ? 'status-normal' : 'status-disabled'">{{ albumDetail.showStatus === 0 ? '正常' : '禁用' }}</span>
-              </div>
-              <div class="meta-item"><span class="label">图片数量：</span>{{ albumDetail.photos?.length || 0 }}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 操作按钮栏 -->
-        <div class="action-bar" v-if="albumDetail.photos && albumDetail.photos.length > 0">
-          <div class="action-left">
-            <el-checkbox v-model="selectAll" @change="handleSelectAll">全选</el-checkbox>
-            <span class="selected-count">{{ selectedPhotos.length }} 已选择</span>
-          </div>
-          <div class="action-right">
-            <el-button type="primary" size="small" @click="handleBatchAudit" :disabled="selectedPhotos.length === 0" :loading="batchAuditLoading"> 批量审核 </el-button>
-            <el-button type="warning" size="small" @click="handleBatchReject" :disabled="selectedPhotos.length === 0" :loading="batchRejectLoading"> 批量拒绝 </el-button>
-            <el-button type="danger" size="small" @click="handleBatchDelete" :disabled="selectedPhotos.length === 0" :loading="batchDeleteLoading"> 批量删除 </el-button>
-          </div>
-        </div>
-
-        <div class="album-photos-container" v-if="albumDetail.photos && albumDetail.photos.length > 0">
-          <h4 class="photos-title">相册图片</h4>
-          <div class="photos-grid">
-            <div v-for="photo in albumDetail.photos" :key="photo.id" class="photo-item animate-fade-in" :class="{ 'photo-item-selected': isPhotoSelected(photo.id) }">
-              <div class="photo-selector">
-                <el-checkbox v-model="selectedPhotos" :value="photo.id" @change="handlePhotoSelect(photo.id, $event)" />
-              </div>
-              <el-image
-                preview-teleported
-                :src="photo.url"
-                :preview-src-list="albumDetail.photos.map((p) => p.url)"
-                fit="cover"
-                class="photo-image"
-                :class="{ 'photo-image-unaudited': photo.examineStatus === 0 }"
-                lazy
-                loading="lazy"
-              />
-              <div class="photo-info">
-                <div class="photo-id">ID: {{ photo.id }}</div>
-                <div class="photo-status" :class="photo.examineStatus === 0 ? 'status-unaudited' : photo.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-                  {{ photo.examineStatus === 0 ? '未审核' : photo.examineStatus === 1 ? '已审核' : '未通过' }}
-                </div>
-                <div class="photo-time">{{ photo.createTime }}</div>
-                <div class="photo-actions">
-                  <el-button text bg type="primary" size="small" @click="handleAuditPhoto(photo.id)" v-if="photo.examineStatus === 0">审核</el-button>
-                  <el-button text bg type="warning" size="small" @click="handleRejectPhoto(photo.id)" v-if="photo.examineStatus === 0">拒绝</el-button>
-                  <el-button text bg type="danger" size="small" @click="handleDeletePhoto(photo.id)">删除</el-button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div v-else class="no-photos">该相册暂无图片</div>
-      </el-card>
-      <div v-else class="loading-container"><el-loading v-loading="true" />加载中...</div>
-    </el-dialog>
-  </div>
+    <div v-else class="loading-container">
+      <el-loading v-loading="true" />
+    </div>
+  </el-dialog>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { Search, Plus, InfoFilled, Edit, Delete, Avatar } from '@element-plus/icons-vue'
 import { adminList, adminUpdateAlbum, adminDeleteAlbum, adminSearchAlbum, adminGetAlbumDetail } from '@/api/album'
-import { useUserSearch } from '@/utils/userSearch'
 import { adminDeletePhoto, adminDeleteBatchPhoto, adminAuditPhoto, adminAuditBatchPhoto } from '@/api/photo'
 import Pagination from '@/components/data/Pagination.vue'
+import ManagementCard from '@/components/management/ManagementCard.vue'
+import MobileCardList from '@/components/data/MobileCardList.vue'
+import BatchActions from '@/components/actions/BatchActions.vue'
+import SearchButtons from '@/components/search/SearchButtons.vue'
+import UserSearchSelect from '@/components/search/UserSearchSelect.vue'
 
 // 相册列表数据
 const albumList = ref([])
-// 分页后的相册列表
 const paginatedAlbumList = ref([])
-// 加载状态
 const loading = ref(false)
-// 当前页码
 const currentPage = ref(1)
-// 每页条数
 const pageSize = ref(10)
-// 总条数
 const total = ref(0)
-// 对话框可见性
-const dialogVisible = ref(false)
-// 对话框标题
-const dialogTitle = ref('编辑相册')
 
-// 表单引用
+// 对话框
+const dialogVisible = ref(false)
+const dialogTitle = ref('编辑相册')
 const albumFormRef = ref(null)
-// 表单数据
-const albumForm = ref({
+const albumForm = reactive({
   id: null,
   name: '',
   coverUrl: '',
@@ -277,90 +236,76 @@ const rules = {
   name: [{ required: true, message: '请输入相册名称', trigger: 'blur' }],
 }
 
-// 用户搜索
-const { filteredUserList, userLoading, searchUsers } = useUserSearch()
-
-// 移动端检测
-const isMobileView = ref(false)
-
-// 监听窗口大小变化
-const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768
-}
-
-// 获取相册列表
-const getAlbums = async () => {
-  currentPage.value = 1
-  await fetchAlbums()
-}
-
-// 初始化
-onMounted(() => {
-  getAlbums()
-  handleResize()
-  window.addEventListener('resize', handleResize)
-})
-
-// 组件卸载时移除监听
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
-})
-
-const switchLoading = ref(false)
-// 处理状态变更
-const handleStatusChange = async (id, status) => {
-  return new Promise((resolve, reject) => {
-    switchLoading.value = true
-    adminUpdateAlbum({ id, showStatus: status })
-      .then(() => {
-        ElMessage.success('状态更新成功')
-        // 手动更新本地数据状态
-        const album = albumList.value.find((item) => item.id === id)
-        if (album) {
-          album.showStatus = status
-        }
-        resolve()
-      })
-      .catch((error) => {
-        ElMessage.error('状态更新失败')
-        reject(error)
-      })
-      .finally(() => {
-        switchLoading.value = false
-      })
-  })
-}
-
-// 搜索相册名称
+// 搜索条件
 const searchAlbumName = ref('')
-// 搜索用户名称
 const searchUserId = ref('')
-// 搜索相册状态
 const searchStatus = ref('')
-
-// 搜索创建时间开始
 const searchCreateTimeStart = ref(null)
-// 搜索创建时间结束
 const searchCreateTimeEnd = ref(null)
 
+// 选中的相册
+const selectedAlbums = ref([])
+
+// 批量操作加载状态
+const batchDeleteLoading = ref(false)
+const switchLoading = ref(false)
+
+// 详情对话框
+const albumDetailDialogVisible = ref(false)
+const albumDetail = ref(null)
+const selectedPhotos = ref([])
+const selectAll = computed({
+  get() {
+    return albumDetail.value?.photos?.length > 0 && selectedPhotos.value.length === albumDetail.value.photos.length
+  },
+  set(value) {
+    if (value) {
+      selectedPhotos.value = albumDetail.value.photos.map((photo) => photo.id)
+    } else {
+      selectedPhotos.value = []
+    }
+  },
+})
+const batchAuditLoading = ref(false)
+const batchRejectLoading = ref(false)
+const photoBatchDeleteLoading = ref(false)
+
+// 判断是否有搜索条件
 const hasSearchConditions = () => !!(searchAlbumName.value || searchUserId.value || searchStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value)
 
-const buildSearchPayload = () => ({
-  pageNum: currentPage.value,
-  pageSize: pageSize.value,
-  name: searchAlbumName.value || undefined,
-  userId: searchUserId.value || undefined,
-  showStatus: searchStatus.value || undefined,
-  createTimeStart: searchCreateTimeStart.value || undefined,
-  createTimeEnd: searchCreateTimeEnd.value || undefined,
-})
+// 构建搜索参数
+const buildSearchPayload = () => {
+  const searchData = {
+    pageNum: currentPage.value,
+    pageSize: pageSize.value,
+  }
+  if (searchAlbumName.value) {
+    searchData.name = searchAlbumName.value
+  }
+  if (searchUserId.value) {
+    searchData.userId = searchUserId.value
+  }
+  if (searchStatus.value) {
+    searchData.showStatus = searchStatus.value
+  }
+  if (searchCreateTimeStart.value) {
+    searchData.createTimeStart = searchCreateTimeStart.value
+  }
+  if (searchCreateTimeEnd.value) {
+    searchData.createTimeEnd = searchCreateTimeEnd.value
+  }
+  return searchData
+}
 
+// 应用分页数据
 const applyPageData = (pageData) => {
   albumList.value = pageData?.data || []
   paginatedAlbumList.value = albumList.value
   total.value = Number(pageData?.total || 0)
+  selectedAlbums.value = []
 }
 
+// 获取相册列表
 const fetchAlbums = async () => {
   loading.value = true
   try {
@@ -383,54 +328,68 @@ const fetchAlbums = async () => {
   }
 }
 
-// 更新分页数据
-const updatePaginatedAlbumList = () => {
-  paginatedAlbumList.value = albumList.value
-}
-
-// 处理分页大小变化
-const handleSizeChange = async (size) => {
-  pageSize.value = size
-  currentPage.value = 1
-  await fetchAlbums()
-}
-
-// 处理当前页码变化
-const handleCurrentChange = async (current) => {
-  currentPage.value = current
-  await fetchAlbums()
+// 时间筛选变化
+const handleTimeChange = ({ startTime, endTime }) => {
+  searchCreateTimeStart.value = startTime
+  searchCreateTimeEnd.value = endTime
 }
 
 // 处理搜索
-const handleSearch = async () => {
+const handleSearch = () => {
   currentPage.value = 1
-  await fetchAlbums()
+  fetchAlbums()
 }
 
-// 监听搜索输入变化 - 统一防抖处理
-const searchTimeout = ref(null)
-const debounceSearch = () => {
-  if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value)
+// 重置处理
+const handleReset = () => {
+  searchAlbumName.value = ''
+  searchUserId.value = ''
+  searchStatus.value = ''
+  searchCreateTimeStart.value = null
+  searchCreateTimeEnd.value = null
+  handleSearch()
+}
+
+// 表格多选
+const handleSelectionChange = (albums) => {
+  selectedAlbums.value = albums
+}
+
+// 移动端选择处理
+const handleMobileSelect = (album) => {
+  const index = selectedAlbums.value.findIndex((item) => item.id === album.id)
+  if (index > -1) {
+    selectedAlbums.value.splice(index, 1)
+  } else {
+    selectedAlbums.value.push(album)
   }
-  searchTimeout.value = setTimeout(() => {
-    handleSearch()
-  }, 500)
 }
-watch(searchAlbumName, debounceSearch)
-// watch(searchStatus, debounceSearch);
-// watch(searchCreateTimeStart, debounceSearch);
-// watch(searchCreateTimeEnd, debounceSearch);
 
-// 处理编辑相册
+// 处理状态变更
+const handleStatusChange = async (id, status) => {
+  try {
+    await adminUpdateAlbum({ id, showStatus: status })
+    ElMessage.success('状态更新成功')
+    const album = albumList.value.find((item) => item.id === id)
+    if (album) {
+      album.showStatus = status
+    }
+  } catch (error) {
+    ElMessage.error('状态更新失败')
+  }
+}
+
+// 编辑相册
 const handleEditAlbum = (row) => {
   dialogTitle.value = '编辑相册'
-  // 深拷贝行数据
-  albumForm.value = { ...row }
+  albumForm.id = row.id
+  albumForm.name = row.name
+  albumForm.coverUrl = row.coverUrl
+  albumForm.showStatus = row.showStatus
   dialogVisible.value = true
 }
 
-// 处理删除相册
+// 删除相册
 const handleDeleteAlbum = (id) => {
   ElMessageBox.confirm('确定要删除该相册吗？', '警告', {
     confirmButtonText: '确定',
@@ -438,81 +397,97 @@ const handleDeleteAlbum = (id) => {
     type: 'warning',
   })
     .then(async () => {
-      loading.value = true
       try {
         await adminDeleteAlbum(id)
         ElMessage.success('删除成功')
-        getAlbums()
-      } catch (error) {
+        await refreshAlbumList()
+      } catch {
         ElMessage.error('删除失败')
-      } finally {
-        loading.value = false
       }
     })
     .catch(() => {
-      // 取消删除
       ElMessage.info('删除已取消')
     })
 }
 
-// 处理表单提交
+// 批量删除
+const handleBatchDelete = () => {
+  ElMessageBox.confirm(`确定要删除选中的 ${selectedAlbums.value.length} 个相册吗？`, '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(async () => {
+      batchDeleteLoading.value = true
+      try {
+        const albumIds = selectedAlbums.value.map((album) => album.id)
+        await adminDeleteAlbum(albumIds)
+        ElMessage.success('批量删除成功')
+        await refreshAlbumList()
+      } catch {
+        ElMessage.error('批量删除失败')
+      } finally {
+        batchDeleteLoading.value = false
+      }
+    })
+    .catch(() => {
+      ElMessage.info('删除已取消')
+    })
+}
+
+// 提交表单
 const handleSubmit = () => {
   albumFormRef.value.validate(async (valid) => {
-    if (!valid) {
-      return
-    }
+    if (!valid) return
     try {
-      // 编辑相册
-      await adminUpdateAlbum(albumForm.value)
+      await adminUpdateAlbum({
+        id: albumForm.id,
+        name: albumForm.name,
+      })
       ElMessage.success('编辑相册成功')
       dialogVisible.value = false
-      getAlbums()
+      await refreshAlbumList()
     } catch (error) {
       ElMessage.error('编辑相册失败')
-      handleDialogClose()
     }
   })
 }
 
-// 处理对话框关闭
+// 关闭对话框
 const handleDialogClose = () => {
-  albumFormRef.value.resetFields()
+  albumFormRef.value?.resetFields()
   dialogVisible.value = false
 }
 
-// 详情弹窗
-const albumDetailDialogVisible = ref(false)
-// 相册详情
-const albumDetail = ref(null)
-// 选中的图片ID集合
-const selectedPhotos = ref([])
-// 全选状态
-const selectAll = computed({
-  get() {
-    return albumDetail.value?.photos?.length > 0 && selectedPhotos.value.length === albumDetail.value.photos.length
-  },
-  set(value) {
-    if (value) {
-      selectedPhotos.value = albumDetail.value.photos.map((photo) => photo.id)
-    } else {
-      selectedPhotos.value = []
-    }
-  },
-})
+// 智能刷新列表
+const refreshAlbumList = async (deletedCount = 0) => {
+  if (deletedCount > 0 && currentPage.value > 1 && albumList.value.length <= deletedCount) {
+    currentPage.value -= 1
+  }
+  await fetchAlbums()
+}
 
-// 批量删除加载状态
-const batchDeleteLoading = ref(false)
-// 批量审核加载状态
-const batchAuditLoading = ref(false)
-// 批量拒绝加载状态
-const batchRejectLoading = ref(false)
+// 相册详情
+const handleAlbumDetail = async (id) => {
+  loading.value = true
+  try {
+    const res = await adminGetAlbumDetail(id)
+    albumDetail.value = res.data
+    albumDetailDialogVisible.value = true
+    selectedPhotos.value = []
+  } catch (error) {
+    ElMessage.error('获取相册详情失败')
+  } finally {
+    loading.value = false
+  }
+}
 
 // 检查图片是否被选中
 const isPhotoSelected = (photoId) => {
   return selectedPhotos.value.includes(photoId)
 }
 
-// 处理单个图片选择
+// 处理图片选择
 const handlePhotoSelect = (photoId, selected) => {
   if (selected) {
     if (!selectedPhotos.value.includes(photoId)) {
@@ -528,23 +503,7 @@ const handleSelectAll = (value) => {
   selectAll.value = value
 }
 
-// 相册详情
-const handleAlbumDetail = async (id) => {
-  loading.value = true
-  try {
-    const res = await adminGetAlbumDetail(id)
-    albumDetail.value = res.data
-    albumDetailDialogVisible.value = true
-    // 重置选中状态
-    selectedPhotos.value = []
-  } catch (error) {
-    ElMessage.error('获取相册详情失败')
-  } finally {
-    loading.value = false
-  }
-}
-
-// 处理单个图片审核
+// 审核单张图片
 const handleAuditPhoto = (photoId) => {
   ElMessageBox.confirm('确定要审核通过该图片吗？', '确认', {
     confirmButtonText: '确定',
@@ -555,14 +514,13 @@ const handleAuditPhoto = (photoId) => {
       try {
         await adminAuditPhoto({ photoId: photoId, examineStatus: 1 })
         ElMessage.success('审核成功')
-        // 更新本地数据
         if (albumDetail.value) {
-          const photo = albumDetail.value.photos.find((photo) => photo.id === photoId)
+          const photo = albumDetail.value.photos.find((p) => p.id === photoId)
           if (photo) {
             photo.examineStatus = 1
           }
         }
-      } catch (error) {
+      } catch {
         ElMessage.error('审核失败')
       }
     })
@@ -571,7 +529,7 @@ const handleAuditPhoto = (photoId) => {
     })
 }
 
-// 处理批量审核
+// 批量审核
 const handleBatchAudit = () => {
   ElMessageBox.confirm(`确定要审核通过选中的 ${selectedPhotos.value.length} 张图片吗？`, '确认', {
     confirmButtonText: '确定',
@@ -587,7 +545,6 @@ const handleBatchAudit = () => {
         }))
         await adminAuditBatchPhoto(data)
         ElMessage.success('批量审核成功')
-        // 更新本地数据
         if (albumDetail.value) {
           albumDetail.value.photos.forEach((photo) => {
             if (selectedPhotos.value.includes(photo.id)) {
@@ -596,7 +553,7 @@ const handleBatchAudit = () => {
           })
           selectedPhotos.value = []
         }
-      } catch (error) {
+      } catch {
         ElMessage.error('批量审核失败')
       } finally {
         batchAuditLoading.value = false
@@ -607,7 +564,7 @@ const handleBatchAudit = () => {
     })
 }
 
-// 处理单个图片拒绝
+// 拒绝单张图片
 const handleRejectPhoto = (photoId) => {
   ElMessageBox.confirm('确定要拒绝该图片吗？', '确认', {
     confirmButtonText: '确定',
@@ -619,7 +576,7 @@ const handleRejectPhoto = (photoId) => {
         await adminAuditPhoto({ photoId: photoId, examineStatus: 2 })
         ElMessage.success('拒绝成功')
         handleAlbumDetail(albumDetail.value.id)
-      } catch (error) {
+      } catch {
         ElMessage.error('拒绝失败')
       }
     })
@@ -628,7 +585,7 @@ const handleRejectPhoto = (photoId) => {
     })
 }
 
-// 处理批量拒绝
+// 批量拒绝
 const handleBatchReject = () => {
   ElMessageBox.confirm(`确定要拒绝选中的 ${selectedPhotos.value.length} 张图片吗？`, '确认', {
     confirmButtonText: '确定',
@@ -638,7 +595,6 @@ const handleBatchReject = () => {
     .then(async () => {
       batchRejectLoading.value = true
       try {
-        // 构造符合后端接口要求的数组格式
         const data = selectedPhotos.value.map((id) => ({
           photoId: id,
           examineStatus: 2,
@@ -646,7 +602,7 @@ const handleBatchReject = () => {
         await adminAuditBatchPhoto(data)
         ElMessage.success('批量拒绝成功')
         handleAlbumDetail(albumDetail.value.id)
-      } catch (error) {
+      } catch {
         ElMessage.error('批量拒绝失败')
       } finally {
         batchRejectLoading.value = false
@@ -657,7 +613,7 @@ const handleBatchReject = () => {
     })
 }
 
-// 处理删除单个图片
+// 删除单张图片
 const handleDeletePhoto = (photoId) => {
   ElMessageBox.confirm('确定要删除该图片吗？', '警告', {
     confirmButtonText: '确定',
@@ -669,7 +625,7 @@ const handleDeletePhoto = (photoId) => {
         await adminDeletePhoto(photoId)
         ElMessage.success('删除成功')
         handleAlbumDetail(albumDetail.value.id)
-      } catch (error) {
+      } catch {
         ElMessage.error('删除失败')
       }
     })
@@ -678,23 +634,23 @@ const handleDeletePhoto = (photoId) => {
     })
 }
 
-// 处理批量删除
-const handleBatchDelete = () => {
+// 批量删除图片
+const handlePhotoBatchDelete = () => {
   ElMessageBox.confirm(`确定要删除选中的 ${selectedPhotos.value.length} 张图片吗？`, '警告', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
   })
     .then(async () => {
-      batchDeleteLoading.value = true
+      photoBatchDeleteLoading.value = true
       try {
         await adminDeleteBatchPhoto(selectedPhotos.value)
         ElMessage.success('批量删除成功')
         handleAlbumDetail(albumDetail.value.id)
-      } catch (error) {
+      } catch {
         ElMessage.error('批量删除失败')
       } finally {
-        batchDeleteLoading.value = false
+        photoBatchDeleteLoading.value = false
       }
     })
     .catch(() => {
@@ -702,373 +658,127 @@ const handleBatchDelete = () => {
     })
 }
 
-// 处理详情对话框关闭
+// 关闭详情对话框
 const handleDetailDialogClose = () => {
   albumDetailDialogVisible.value = false
   albumDetail.value = null
   selectedPhotos.value = []
 }
+
+// 初始化
+onMounted(() => {
+  fetchAlbums()
+})
 </script>
 
 <style lang="scss" scoped>
-.management-container {
-  height: 100%;
-  box-sizing: border-box;
-  position: relative;
+// 相册名称样式
+.album-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
 
-  .card {
-    height: 100%;
+  &:hover {
+    color: var(--el-color-primary);
+  }
+}
+
+// 表格操作按钮组
+.table-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+
+  .detail-button {
+    border-radius: 6px;
+    background-color: var(--el-color-info-light-9);
+    color: var(--el-color-info);
+    border-color: var(--el-color-info-light-9);
+  }
+
+  .edit-button {
+    border-radius: 6px;
+    background-color: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
+    border-color: var(--el-color-primary-light-9);
+  }
+
+  .delete-button {
+    border-radius: 6px;
+    background-color: var(--el-color-danger-light-9);
+    color: var(--el-color-danger);
+    border-color: var(--el-color-danger-light-9);
+  }
+}
+
+// 移动端元信息
+.mobile-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 4px 0;
+}
+
+.mobile-time {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+// 相册详情对话框
+:deep(.album-detail-dialog) {
+  .el-dialog__body {
     padding: 20px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
+  }
+}
 
-    &:hover {
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+.album-detail-content {
+  .album-detail-header {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+
+    .detail-cover {
+      width: 200px;
+      height: 150px;
+      border-radius: 8px;
+      flex-shrink: 0;
     }
 
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 10px 0 10px;
-      .card-title {
+    .detail-info {
+      flex: 1;
+
+      .detail-title {
         font-size: 20px;
         font-weight: 600;
-        margin: 0;
+        margin: 0 0 12px 0;
+      }
+
+      .detail-meta {
         display: flex;
-        align-items: center;
-
-        &::before {
-          content: '';
-          display: inline-block;
-          width: 4px;
-          height: 20px;
-          background-color: var(--admin-primary);
-          border-radius: 2px;
-          margin-right: 10px;
-        }
-      }
-
-      .card-actions {
-        display: flex;
-        align-items: center;
-
-        .search-input {
-          width: 240px;
-          border-radius: 8px;
-          margin-left: 10px;
-
-          :deep(.el-input__wrapper) {
-            border-radius: 8px;
-            transition: all 0.3s ease;
-
-            &:focus-within {
-              box-shadow: 0 0 0 3px var(--admin-primary-light);
-              border-color: var(--admin-primary);
-            }
-          }
-          :deep(.el-select__wrapper) {
-            border-radius: 8px;
-            transition: all 0.3s ease;
-
-            &:focus-within {
-              box-shadow: 0 0 0 3px var(--admin-primary-light);
-              border-color: var(--admin-primary);
-            }
-          }
-        }
-      }
-    }
-    .card-second {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      padding: 10px;
-      border-bottom: 1px solid var(--el-border-color);
-      :deep(.el-input__wrapper) {
-        border-radius: 8px;
-        &:focus-within {
-          box-shadow: 0 0 0 3px var(--admin-primary-light);
-          border-color: var(--admin-primary);
-        }
-      }
-    }
-  }
-
-  // 桌面端表格视图
-  .desktop-view {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-
-    .table {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      margin-top: 16px;
-      max-height: calc(100vh - 240px);
-
-      :deep(.el-tag__content) {
-        display: flex;
-        align-items: center;
-      }
-
-      :deep(.el-table__header-wrapper) {
-        background-color: var(--el-bg-color);
-        th {
-          font-weight: 600;
-          color: #475569;
-        }
-      }
-
-      :deep(.el-table__body-wrapper) {
-        tr {
-          td {
-            color: #64748b;
-            padding: 12px 0;
-          }
-        }
-      }
-
-      :deep(.el-table__fixed-right) {
-        box-shadow: -3px 0 10px rgba(0, 0, 0, 0.05);
-      }
-
-      .table-actions {
-        height: 30px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        @media screen and (max-width: 480px) {
-          gap: 4px;
-        }
-        .detail-button {
-          background-color: #f5f5f5;
-          color: #606266;
-          border-color: #dcdfe6;
-          border-radius: 6px;
-          transition: all 0.3s ease;
-          &:hover {
-            background-color: #e9e9e9;
-            border-color: #c0c4cc;
-            transform: translateY(-2px);
-          }
-        }
-        .edit-button {
-          margin-left: 0;
-          background-color: #e0f2fe;
-          color: #0284c7;
-          border-color: #e0f2fe;
-          border-radius: 6px;
-          transition: all 0.3s ease;
-
-          &:hover {
-            background-color: #bae6fd;
-            border-color: #bae6fd;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
-          }
-        }
-        .delete-button {
-          margin-left: 0 !important;
-          background-color: #fee2e2;
-          color: #ef4444;
-          border-color: #fee2e2;
-          border-radius: 6px;
-          transition: all 0.3s ease;
-
-          &:hover {
-            background-color: #fecaca;
-            border-color: #fecaca;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-          }
-        }
-      }
-    }
-  }
-
-  // 移动端卡片视图
-  .mobile-view {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-top: 16px;
-    overflow-y: auto;
-    // 为分页容器预留空间，避免遮挡
-    padding-bottom: 30px;
-
-    .album-cards {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-      padding: 10px;
-
-      @media screen and (max-width: 480px) {
-        grid-template-columns: 1fr;
-        gap: 12px;
-      }
-
-      .album-card {
-        position: relative;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-        background: var(--el-bg-color);
-
-        &:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-        }
-
-        .album-cover-section {
-          position: relative;
-
-          .album-cover {
-            width: 100%;
-            height: 140px;
-            border-radius: 8px 8px 0 0;
-          }
-        }
-
-        .album-info {
-          padding: 12px;
-          background-color: var(--el-bg-color);
-          border-radius: 0 0 8px 8px;
-
-          .album-header {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 8px;
-
-            .album-id {
-              font-size: 11px;
-              color: #999;
-            }
-
-            .album-name {
-              font-size: 14px;
-              font-weight: 600;
-              color: #333;
-              line-height: 1.4;
-              display: -webkit-box;
-              -webkit-line-clamp: 2;
-              line-clamp: 2;
-              -webkit-box-orient: vertical;
-              overflow: hidden;
-            }
-
-            .album-username {
-              font-size: 12px;
-              color: #666;
-            }
-          }
-
-          .album-meta {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            margin-bottom: 8px;
-
-            .meta-item {
-              font-size: 10px;
-              color: #666;
-
-              .label {
-                font-weight: 500;
-                margin-right: 4px;
-              }
-            }
-          }
-
-          .album-status-section {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 8px;
-            border-top: 1px solid var(--el-border-color-lighter);
-            border-bottom: 1px solid var(--el-border-color-lighter);
-          }
-
-          .album-actions {
-            display: flex;
-            gap: 6px;
-            justify-content: space-between;
-
-            .el-button {
-              font-size: 10px;
-              padding: 4px 8px;
-              height: auto;
-              border-radius: 4px;
-              flex: 1;
-              min-width: 0;
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-:deep(.el-dialog) {
-  border-radius: 16px;
-  width: 500px;
-
-  @media screen and (max-width: 767px) {
-    width: 90%;
-  }
-}
-
-// 新增/编辑菜单对话框
-.editForm {
-  :deep(.el-form-item) {
-    margin-bottom: 20px;
-  }
-  :deep(.el-input-number),
-  :deep(.el-input__wrapper),
-  :deep(.el-select__wrapper) {
-    border-radius: 16px;
-    transition: all 0.3s ease;
-    &:focus-within {
-      box-shadow: 0 0 0 3px var(--admin-primary-light);
-      border-color: var(--admin-primary);
-    }
-  }
-}
-
-// 响应式设计
-@media screen and (max-width: 1400px) {
-  .management-container {
-    .card {
-      .card-header {
-        .card-actions {
-          .search-input {
-            width: 180px;
-          }
-        }
-      }
-    }
-  }
-}
-
-@media screen and (max-width: 1220px) {
-  .management-container {
-    .card {
-      .card-header {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-        .card-actions {
-          width: 100%;
-          justify-content: space-between;
-          .search-input {
-            width: 100%;
+        gap: 8px;
+
+        .meta-item {
+          font-size: 14px;
+          color: var(--text-regular);
+
+          .label {
+            color: var(--text-muted);
+            margin-right: 8px;
+          }
+
+          .status-normal {
+            color: var(--el-color-primary);
+          }
+
+          .status-disabled {
+            color: var(--el-color-danger);
           }
         }
       }
@@ -1076,295 +786,146 @@ const handleDetailDialogClose = () => {
   }
 }
 
-@media screen and (max-width: 768px) {
-  .management-container {
-    .card {
-      padding: 2px;
-      .card-header {
-        padding: 6px;
-        .card-title {
-          font-size: 16px;
-        }
-        .card-actions {
-          .search-input {
-            width: 100%;
-          }
-        }
-      }
-
-      .table {
-        margin-top: 0;
-        max-height: calc(100vh - 240px);
-      }
-    }
-  }
-
-  .editForm {
-    :deep(.el-form-item) {
-      margin-bottom: 15px;
-    }
-
-    :deep(.el-input),
-    :deep(.el-select),
-    :deep(.el-input-number) {
-      width: 100% !important;
-    }
-  }
-
-  .dialog-footer {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-
-    :deep(.el-button) {
-      flex: 1;
-      max-width: 120px;
-    }
-  }
-}
-
-@media screen and (max-width: 480px) {
-  .card-header {
-    flex-direction: column;
-    align-items: flex-start;
-
-    .card-actions {
-      width: 100%;
-      justify-content: space-between;
-
-      .search-input {
-        width: 100%;
-      }
-    }
-  }
-}
-
-// 相册详情样式
-:deep(.album-detail) {
-  width: 1200px !important;
-  @media screen and (max-width: 768px) {
-    width: 90% !important;
-  }
-}
-
-.album-detail-card {
-  @media screen and (max-width: 768px) {
-    :deep(.el-card__body) {
-      padding: 10px;
-    }
-  }
-}
-.album-detail-header {
-  display: flex;
-  border-bottom: 1px solid var(--el-bg-color);
-  margin-bottom: 20px;
-  .album-cover-container {
-    margin-right: 20px;
-  }
-  .album-info {
-    flex: 1;
-    .album-title {
-      font-size: 24px;
-      margin-bottom: 16px;
-      font-weight: 600;
-    }
-    .album-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px 32px;
-      .meta-item {
-        display: flex;
-        align-items: center;
-        font-size: 14px;
-        color: #666;
-        .label {
-          color: #999;
-          margin-right: 8px;
-          font-weight: 500;
-        }
-        .status-normal {
-          color: var(--admin-primary);
-          font-weight: 500;
-        }
-        .status-disabled {
-          color: #f56c6c;
-          font-weight: 500;
-        }
-      }
-    }
-  }
-}
-
-// 操作按钮栏样式
+// 操作按钮栏
 .action-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
   margin-bottom: 16px;
-  border-bottom: 1px solid var(--el-bg-color);
+  border-bottom: 1px solid var(--el-border-color-lighter);
+
   .action-left {
     display: flex;
     align-items: center;
     gap: 16px;
   }
+
   .action-right {
     display: flex;
-    .photo-actions {
-      display: flex;
-      gap: 12px;
-      margin-top: 8px;
-    }
+    gap: 8px;
   }
+
   .selected-count {
-    color: #666;
+    color: var(--text-regular);
     font-size: 14px;
   }
 }
 
-// 相册图片容器样式
-.album-photos-container {
-  padding: 10px 0;
-  .photos-title {
-    font-size: 18px;
-    margin-bottom: 16px;
-    font-weight: 600;
-  }
-  // 图片网格布局 - 桌面端一行四个
-  .photos-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    margin-bottom: 20px;
-  }
-  // 无图片状态样式
-  .no-photos {
-    text-align: center;
-    padding: 40px 0;
-    color: #999;
-    font-size: 16px;
-  }
-}
+// 图片网格
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
 
-// 图片项样式
-.photo-item {
-  position: relative;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-  }
-
-  &.photo-item-selected {
-    box-shadow:
-      0 0 0 2px var(--admin-primary),
-      0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-
-  .photo-selector {
-    position: absolute;
-    top: 5px;
-    left: 8px;
-    z-index: 10;
-    :deep(.el-checkbox__inner) {
-      height: 25px;
-      width: 25px;
-      border-radius: 4px;
-    }
-  }
-
-  .photo-image {
-    width: 100%;
-    height: 180px;
-    border-radius: 8px 8px 0 0;
-  }
-
-  .photo-image-unaudited {
+  .photo-item {
     position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--el-bg-color-page);
+    transition: all 0.3s ease;
 
-    &::after {
-      content: '未审核';
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    &.photo-item-selected {
+      box-shadow: 0 0 0 2px var(--el-color-primary);
+    }
+
+    .photo-selector {
       position: absolute;
-      top: 0;
-      left: 0;
+      top: 8px;
+      left: 8px;
+      z-index: 10;
+    }
+
+    .photo-image {
       width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 16px;
-      pointer-events: none; /* 允许鼠标事件穿透到下方的el-image */
-    }
-  }
+      height: 140px;
+      display: block;
 
-  .photo-info {
-    padding: 12px;
-    background-color: var(--el-bg-color);
-    border-radius: 0 0 8px 8px;
-
-    .photo-id {
-      font-size: 12px;
-      color: #999;
-      margin-bottom: 6px;
-    }
-
-    .photo-status {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-      margin-bottom: 6px;
-
-      &.status-unaudited {
-        background-color: #fff1f0;
-        color: #f56c6c;
-      }
-
-      &.status-audited {
-        background-color: #f0f9eb;
-        color: #67c23a;
-      }
-
-      &.status-rejected {
-        background-color: #fdf6ec;
-        color: #e6a23c;
+      &.photo-image-unaudited {
+        opacity: 0.7;
       }
     }
 
-    .photo-time {
-      font-size: 12px;
-      color: #999;
-      margin-bottom: 8px;
-    }
+    .photo-info {
+      padding: 8px;
 
-    .photo-actions {
-      display: flex;
-      // justify-content: space-between;
+      .photo-id {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+      }
+
+      .photo-status {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 8px;
+        font-size: 11px;
+        margin-bottom: 4px;
+
+        &.status-unaudited {
+          background-color: var(--el-color-danger-light-9);
+          color: var(--el-color-danger);
+        }
+
+        &.status-audited {
+          background-color: var(--el-color-success-light-9);
+          color: var(--el-color-success);
+        }
+
+        &.status-rejected {
+          background-color: var(--el-color-warning-light-9);
+          color: var(--el-color-warning);
+        }
+      }
+
+      .photo-time {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+      }
+
+      .photo-actions {
+        display: flex;
+        gap: 4px;
+
+        .el-button {
+          font-size: 10px;
+          padding: 2px 6px;
+        }
+      }
     }
   }
 }
-// }
 
-// 响应式布局 - 手机端一行一个
+// 无图片状态
+.no-photos {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+// 响应式 - 移动端一行一个
 @media screen and (max-width: 768px) {
-  .album-detail-header {
-    flex-direction: column;
+  .album-detail-content {
+    .album-detail-header {
+      flex-direction: column;
 
-    .album-cover-container {
-      margin-right: 0;
-      margin-bottom: 16px;
-    }
-
-    .album-info {
-      .album-meta {
-        flex-direction: column;
-        gap: 8px;
+      .detail-cover {
+        width: 100%;
+        height: 150px;
       }
     }
   }
@@ -1372,35 +933,11 @@ const handleDetailDialogClose = () => {
   .action-bar {
     flex-direction: column;
     gap: 12px;
-
-    .action-left,
-    .action-right {
-      width: 100%;
-      justify-content: center;
-    }
   }
 
-  .album-photos-container {
-    .photos-grid {
-      grid-template-columns: 1fr;
-      gap: 16px;
-    }
-  }
-}
-
-// 动画效果
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .photos-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 }
 </style>

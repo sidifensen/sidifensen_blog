@@ -2,6 +2,15 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
+    <!-- 同步设置主题 class，避免加载动画闪烁 -->
+    <script>
+      (function() {
+        var stored = localStorage.getItem('darkMode');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var isDark = stored !== null ? JSON.parse(stored) : prefersDark;
+        document.documentElement.classList.add(isDark ? 'dark' : 'light');
+      })();
+    </script>
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="referrer" content="no-referrer" />
@@ -40,5 +49,53 @@
   <body>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
+    <style>
+      #app-loading {
+        position: fixed; inset: 0; z-index: 9999;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 20px;
+        background: #000000;
+        transition: opacity 400ms ease-out;
+      }
+      #app-loading .brand {
+        font-size: 28px; font-weight: 700; color: #f1f5f9;
+        letter-spacing: -0.5px;
+        animation: breathe 2s ease-in-out infinite;
+      }
+      #app-loading .bar {
+        width: 120px; height: 3px; background: #334155;
+        border-radius: 2px; overflow: hidden;
+      }
+      #app-loading .bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #409eff, #79b8ff);
+        border-radius: 2px;
+        animation: load 1.2s ease-in-out infinite alternate;
+      }
+      #app-loading .text {
+        color: #64748b; font-size: 13px;
+      }
+      @keyframes breathe {
+        0%,100% { transform: scale(1); opacity: 0.7; }
+        50% { transform: scale(1.04); opacity: 1; }
+      }
+      @keyframes load {
+        from { width: 0; margin-left: 0; }
+        to { width: 100%; margin-left: 0; }
+      }
+      html:not(.dark) #app-loading { background: #f8fafc; }
+      html:not(.dark) #app-loading .brand { color: #1e293b; }
+      html:not(.dark) #app-loading .bar { background: #e2e8f0; }
+      html:not(.dark) #app-loading .bar-fill {
+        background: linear-gradient(90deg, #409eff, #1d4ed8);
+      }
+      html:not(.dark) #app-loading .text { color: #94a3b8; }
+      /* JS 控制淡出，CSS 只负责显示 */
+    </style>
+    <div id="app-loading">
+      <span class="brand">sidifensen</span>
+      <div class="bar"><div class="bar-fill"></div></div>
+      <span class="text">Loading...</span>
+    </div>
   </body>
 </html>

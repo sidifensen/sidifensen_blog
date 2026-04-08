@@ -116,7 +116,7 @@ sudo ./jenkins-setup.sh
 - **SSH Pipeline Steps** - SSH 连接插件
 - **Pipeline** - Pipeline 支持
 - **Git** - Git 支持
-- **Gitea** - Gitea 集成（如果使用 Gitea）
+- **GitHub** - GitHub 集成（用于 GitHub Webhook 触发）
 - **NodeJS** - Node.js 工具自动安装支持
 - **Eclipse Temurin Installer** - 提供 OpenJDK/Temurin 自动安装
 - **Docker Pipeline** - Docker 支持（可选）
@@ -239,27 +239,6 @@ sudo ./jenkins-setup.sh
 - `SERVER_HOST`: `your-server-ip`（如果未使用凭据）
 - `SERVER_USER`: `root`（如果未使用凭据）
 
-### 5. 配置 Gitea 服务器（如果使用 Gitea）
-
-1. 进入 `Manage Jenkins` → `System Configuration` → `System`，
-2. 找到 **Gitea Servers** 部分
-3. 点击 **"Add Gitea Server"**
-4. 配置：
-   - **Display Name**: `Gitea Server`
-   - **Server URL**: `http://your-server-ip:3000`
-   - **Manage hooks**: 视需求勾选；如勾选，可在右侧 `Add` 按钮中直接新增凭据
-
-**准备 Gitea 凭据**：
-
-1. 登录 Gitea → **设置** → **应用** → **生成新令牌**
-2. 令牌名称：`Jenkins`
-3. 权限：勾选 `read:repository`, `read:user`, `write:repository`, `admin:repo_hook`
-4. 在 `Gitea Servers` 的 `Credentials` 下拉右侧点击 `Add` → `Jenkins` → **`Username with password`**，填写：
-   - **Username**（必须填写具有 webhook 管理权限的 Gitea 账号，通常是管理员账号）
-   - **Password**（直接粘贴刚生成的 Gitea Token，或该账号密码）
-   - **ID**: `gitea-hook-credential`
-5. 在 Jenkins Pipeline 或 Freestyle Job 的 Git 配置中，通过 `credentialsId` 引用该凭据（如 `gitea-hook-credential`）
-
 ---
 
 ## 📦 项目配置
@@ -279,7 +258,7 @@ sudo ./jenkins-setup.sh
 
 - **Definition**: `Pipeline script from SCM`
 - **SCM**: `Git`
-- **Repository URL**: 你的 Git 仓库地址（Gitea 或 GitHub）
+- **Repository URL**: 你的 GitHub 仓库地址
 - **Credentials**: 选择 Git 凭据（如果需要）
 - **Branches to build**: `*/main`（或你的主分支）
 - **Script Path**: `Jenkinsfile`
@@ -287,7 +266,6 @@ sudo ./jenkins-setup.sh
 #### 构建触发器
 
 - **Poll SCM**: `H/5 * * * *`（每 5 分钟检查一次）
-- 或配置 **Gitea webhook trigger**（如果使用 Gitea）
 - 或配置 **GitHub hook trigger**（如果使用 GitHub）
 
 ### 3. 配置构建参数（可选）
@@ -305,13 +283,14 @@ sudo ./jenkins-setup.sh
 
 ---
 
-### 4. 配置 Gitea Webhook 触发 Jenkins（使用 Gitea 时必须执行）
+### 4. 配置 GitHub Webhook 触发 Jenkins
 
-1. 登录 Gitea 仓库 → `设置` → `Web 钩子`，点击右上角 `添加 Web 钩子`。
-2. 选择 `Gitea` 类型（推荐），在 **Payload URL** 中填写 Jenkins 的 webhook 地址，通常为 `http(s)://<jenkins域名或IP>/gitea-webhook/post`。
-3. 如启用了 Jenkins Gitea 插件，请在 Jenkins 任务的 “构建触发器” 中勾选 `Build when a change is pushed to Gitea`，并记下页面提示的 webhook URL；若需要 Secret，请保持与 Jenkins 端一致。
-4. 在 Gitea 中至少勾选 `推送` 事件（如需 PR 触发可额外勾选 `Pull Request`），保存后点击 `测试传送`，确认返回状态码为 `200`。
-5. 若测试失败，请检查 Jenkins 是否对外可访问、防火墙/反向代理是否放行，以及 Jenkins 中的构建触发器和凭据配置是否正确。
+1. 在 GitHub 仓库 → `Settings` → `Webhooks` → `Add webhook`
+2. 配置：
+   - **Payload URL**: `http(s)://<jenkins域名或IP>/github-webhook/`
+   - **Content type**: `application/json`
+   - **Events**: 勾选 `Just the push event`
+3. 点击 `Add webhook` 保存
 
 ---
 
@@ -508,7 +487,7 @@ node: error while loading shared libraries: libatomic.so.1: cannot open shared o
 
 **检查**:
 
-1. Gitea/GitHub Webhook 配置是否正确
+1. GitHub Webhook 配置是否正确
 2. Jenkins 插件是否安装
 3. Jenkins 任务是否配置了触发器
 4. 查看 Webhook 日志

@@ -367,7 +367,6 @@ docker-compose exec nginx-gateway tail -f /var/log/nginx/error.log
 | 文档 | 路径 |
 |------|------|
 | Jenkins 详细配置 | `jenkins/Jenkins 部署指南.md` |
-| Gitea 配置指南 | `jenkins/Gitea 配置指南.md` |
 | SSL 证书管理 | `ssl/get_ssl_cert.sh` |
 | 环境变量示例 | `.env.example` |
 
