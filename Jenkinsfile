@@ -14,6 +14,8 @@ pipeline {
     }
 
     options {
+        // 禁用默认的 SCM checkout，由 stage('Checkout') 手动控制以便添加重试
+        skipDefaultCheckout()
         // 保留最近 10 次构建
         buildDiscarder(logRotator(numToKeepStr: '10'))
         // 首次构建需要下载依赖，整体超时时间放宽
@@ -97,17 +99,18 @@ pipeline {
                         env.DEPLOY_PATH = env.DEFAULT_DEPLOY_PATH
                     }
 
-                    // GitHub 连接不稳定，添加重试机制（最多 3 次）
-                    retry(3) {
+                    // GitHub 连接不稳定，添加重试机制（最多 5 次）
+                    retry(5) {
                         checkout scm: [
                             $class: 'GitSCM',
                             userRemoteConfigs: [[
-                                url: env.GIT_URL ?: 'https://github.com/sidifensen/sidifensen_blog.git'
+                                url: env.GIT_URL ?: 'https://github.com/sidifensen/sidifensen_blog.git',
+                                credentialsId: 'github-token'
                             ]],
                             branches: [[name: '*/main']],
                             extensions: [
                                 [$class: 'CloneOption', depth: 1, noTags: true, shallow: true],
-                                [$class: 'CheckoutOption', timeout: 15]
+                                [$class: 'CheckoutOption', timeout: 30]
                             ]
                         ], poll: false
                     }

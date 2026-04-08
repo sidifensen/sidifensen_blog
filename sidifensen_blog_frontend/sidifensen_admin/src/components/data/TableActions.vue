@@ -5,6 +5,11 @@
       {{ viewText }}
     </el-button>
 
+    <!-- 详情按钮 -->
+    <el-button v-if="showDetail" type="default" size="small" :icon="InfoFilled" class="action-btn detail-btn" @click="handleAction('detail')">
+      {{ detailText }}
+    </el-button>
+
     <!-- 编辑按钮 -->
     <el-button v-if="showEdit" type="primary" size="small" :icon="Edit" class="action-btn edit-btn" @click="handleAction('edit')">
       {{ editText }}
@@ -31,12 +36,31 @@
 </template>
 
 <script setup>
-import { View, Edit, Check, Close, Delete } from '@element-plus/icons-vue'
+/**
+ * TableActions 表格操作按钮组件
+ *
+ * 功能说明：
+ * - 展示表格行操作按钮（查看、详情、编辑、审核、拒绝、删除）
+ * - 通过 props 控制各按钮的显示/隐藏
+ * - 支持自定义按钮文本
+ * - 支持禁用状态
+ *
+ * 使用方式：
+ * ```vue
+ * <TableActions :show-edit="true" :show-delete="true" @edit="handleEdit" @delete="handleDelete" />
+ * ```
+ */
+
+import { View, Edit, Check, Close, Delete, InfoFilled } from '@element-plus/icons-vue'
 
 // Props
 const props = defineProps({
   // 按钮显示控制
   showView: {
+    type: Boolean,
+    default: false,
+  },
+  showDetail: {
     type: Boolean,
     default: false,
   },
@@ -60,6 +84,10 @@ const props = defineProps({
   viewText: {
     type: String,
     default: '查看',
+  },
+  detailText: {
+    type: String,
+    default: '详情',
   },
   editText: {
     type: String,
@@ -85,7 +113,7 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['view', 'edit', 'audit', 'reject', 'delete', 'action'])
+const emit = defineEmits(['view', 'detail', 'edit', 'audit', 'reject', 'delete', 'action'])
 
 // 处理按钮点击
 const handleAction = (action) => {
@@ -125,6 +153,19 @@ const handleAction = (action) => {
       background-color: #dbeafe;
       border-color: #dbeafe;
       box-shadow: 0 2px 8px rgba(3, 105, 161, 0.3);
+    }
+  }
+
+  // 详情按钮
+  .detail-btn {
+    background-color: var(--el-fill-color-light);
+    color: var(--el-text-color-regular);
+    border-color: var(--el-border-color);
+
+    &:hover:not(:disabled) {
+      background-color: var(--el-fill-color);
+      border-color: var(--el-color-primary);
+      color: var(--el-color-primary);
     }
   }
 

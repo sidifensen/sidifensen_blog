@@ -1,6 +1,15 @@
 <template>
   <div class="data-table">
-    <el-table v-loading="loading" :data="data" class="table" v-bind="$attrs" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }" @selection-change="handleSelectionChange">
+    <el-table
+      v-loading="loading"
+      :data="data"
+      class="table"
+      style="width: 100%"
+      v-bind="$attrs"
+      :row-style="{ height: 'auto' }"
+      :cell-style="{ padding: '8px 0' }"
+      @selection-change="handleSelectionChange"
+    >
       <!-- 多选列 -->
       <el-table-column v-if="showSelection" type="selection" width="30" />
 
@@ -83,6 +92,22 @@
 </template>
 
 <script setup>
+/**
+ * DataTable 通用数据表格组件
+ *
+ * 功能说明：
+ * - 通用的数据表格组件，支持多选、封面、ID、名称、标题、用户、状态、审核状态、创建/更新时间等列
+ * - 支持通过 props 控制各列的显示/隐藏
+ * - 支持操作按钮（查看、编辑、删除、审核、拒绝）
+ * - 支持响应式布局（移动端友好）
+ * - 集成 StatusBadge 和 TableActions 组件
+ *
+ * 使用方式：
+ * ```vue
+ * <DataTable :data="tableData" :showCover="true" :showActions="true" @edit="handleEdit" @delete="handleDelete" />
+ * ```
+ */
+
 import StatusBadge from '@/components/common/StatusBadge.vue'
 import TableActions from '@/components/data/TableActions.vue'
 

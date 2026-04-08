@@ -14,6 +14,21 @@
 </template>
 
 <script setup>
+/**
+ * Pagination 分页组件
+ *
+ * 功能说明：
+ * - 基于 el-pagination 的分页控件
+ * - 支持 v-model:currentPage 和 v-model:pageSize 双向绑定
+ * - 支持自定义每页条数选项（默认 [10, 20, 50, 100]）
+ * - 支持响应式：移动端自动减少页码按钮数量
+ *
+ * 使用方式：
+ * ```vue
+ * <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="100" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+ * ```
+ */
+
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 
 // Props 定义

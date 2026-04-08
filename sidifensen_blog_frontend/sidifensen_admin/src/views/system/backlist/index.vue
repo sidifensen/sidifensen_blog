@@ -28,9 +28,23 @@
 
     <!-- 桌面端表格视图 -->
     <template #table-view>
-      <el-table v-loading="loading" :data="paginatedBlacklistList" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
-        <el-table-column type="selection" width="30" />
-        <el-table-column prop="id" label="ID" width="60" />
+      <DataTable
+        v-loading="loading"
+        :data="paginatedBlacklistList"
+        :show-selection="true"
+        :show-id="true"
+        :show-status="false"
+        :show-create-time="false"
+        :show-actions="true"
+        :has-view-action="false"
+        :has-edit-action="true"
+        :has-delete-action="true"
+        :actions-width="150"
+        @selection-change="handleSelectionChange"
+        @edit="handleEdit"
+        @delete="handleDelete"
+      >
+        <!-- 类型列 -->
         <el-table-column prop="type" label="类型" width="100">
           <template #default="{ row }">
             <div class="blacklist-type" :class="row.type === 0 ? 'type-user' : 'type-ip'">
@@ -38,11 +52,13 @@
             </div>
           </template>
         </el-table-column>
+        <!-- 用户ID列 -->
         <el-table-column prop="userId" label="用户ID" width="100">
           <template #default="{ row }">
             <span>{{ row.userId || '-' }}</span>
           </template>
         </el-table-column>
+        <!-- IP地址列 -->
         <el-table-column prop="ip" label="IP地址" width="150">
           <template #default="{ row }">
             <el-tooltip v-if="row.ip" :content="row.ip" placement="top-start">
@@ -51,6 +67,7 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
+        <!-- 拉黑原因列 -->
         <el-table-column prop="reason" label="拉黑原因" min-width="200">
           <template #default="{ row }">
             <el-tooltip :content="row.reason" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
@@ -58,7 +75,9 @@
             </el-tooltip>
           </template>
         </el-table-column>
+        <!-- 拉黑时间列 -->
         <el-table-column prop="banTime" label="拉黑时间" sortable width="110" />
+        <!-- 到期时间列 -->
         <el-table-column prop="expireTime" label="到期时间" sortable width="110">
           <template #default="{ row }">
             <span :class="{ 'expired-time': isExpired(row.expireTime) }">
@@ -66,6 +85,7 @@
             </span>
           </template>
         </el-table-column>
+        <!-- 状态列 -->
         <el-table-column prop="status" label="状态" width="80">
           <template #default="{ row }">
             <div class="blacklist-status" :class="isExpired(row.expireTime) ? 'status-expired' : 'status-active'">
@@ -73,15 +93,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200">
-          <template #default="{ row }">
-            <div class="table-actions">
-              <el-button type="primary" @click="handleEdit(row)" :icon="Edit" class="edit-button" size="small">编辑</el-button>
-              <el-button type="danger" @click="handleDelete(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
+      </DataTable>
     </template>
 
     <!-- 移动端卡片视图 -->
@@ -169,6 +181,7 @@ import { getBlacklistList, addBlacklist, searchBlacklist, updateBlacklist, delet
 
 // 组件
 import ManagementCard from '@/components/management/ManagementCard.vue'
+import DataTable from '@/components/data/DataTable.vue'
 import MobileCardList from '@/components/data/MobileCardList.vue'
 import BatchActions from '@/components/actions/BatchActions.vue'
 import SearchButtons from '@/components/search/SearchButtons.vue'

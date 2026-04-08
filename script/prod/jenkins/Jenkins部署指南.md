@@ -492,6 +492,58 @@ node: error while loading shared libraries: libatomic.so.1: cannot open shared o
 3. Jenkins 任务是否配置了触发器
 4. 查看 Webhook 日志
 
+### 问题 8: GitHub 访问失败 (DNS 污染/连接超时)
+
+**错误信息**:
+
+```
+fatal: unable to access 'https://github.com/xxx/xxx.git/': Empty reply from server
+# 或
+GnuTLS recv error (-110): The TLS connection was non-properly terminated.
+# 或
+Connection timed out
+```
+
+**原因**: 国内服务器访问 GitHub 受 DNS 污染或间歇性网络封锁影响。
+
+**解决方案**: 修改 hosts 文件绑定 GitHub IP
+
+1. **查询 GitHub 真实 IP**：
+   - 访问 https://www.ipaddress.com 查询 `github.com` 和 `raw.githubusercontent.com` 的 IP
+   - 或在有正常网络的机器上执行 `ping github.com` 获取 IP
+
+2. **在宿主机添加 hosts**：
+
+   ```bash
+   # 编辑 hosts 文件
+   vim /etc/hosts
+
+   # 添加以下内容（IP 地址为示例，请替换为实际查询到的 IP）
+   140.82.112.4 github.com
+   185.199.108.133 raw.githubusercontent.com
+   ```
+
+3. **在 Jenkins 容器内也添加 hosts**：
+
+   ```bash
+   docker exec -u root jenkins bash -c "echo '140.82.112.4 github.com' >> /etc/hosts"
+   docker exec -u root jenkins bash -c "echo '185.199.108.133 raw.githubusercontent.com' >> /etc/hosts"
+   ```
+
+4. **验证连接**：
+
+   ```bash
+   # 在宿主机测试
+   curl -I https://github.com
+
+   # 在容器内测试
+   docker exec jenkins bash -c "curl -I https://github.com"
+   ```
+
+5. **如果 hosts 修改后仍然无法访问**，可能是 IP 已变更：
+   - 重新查询最新 IP
+   - 或尝试使用 GitHub 代理镜像（如 ghproxy.com）
+
 ---
 
 ## 🔒 安全建议

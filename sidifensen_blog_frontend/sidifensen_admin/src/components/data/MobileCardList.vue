@@ -71,6 +71,21 @@
 </template>
 
 <script setup>
+/**
+ * MobileCardList 移动端卡片列表组件
+ *
+ * 功能说明：
+ * - 移动端视图下的卡片列表展示，与 DataTable 对应
+ * - 支持多选、封面、名称/标题、描述、用户、状态、审核状态等展示
+ * - 支持操作按钮（查看、编辑、审核、拒绝、删除）
+ * - 选中状态有视觉反馈（边框高亮）
+ *
+ * 使用方式：
+ * ```vue
+ * <MobileCardList :data="tableData" :showCover="true" :showActions="true" @edit="handleEdit" />
+ * ```
+ */
+
 import StatusBadge from '@/components/common/StatusBadge.vue'
 
 // Props

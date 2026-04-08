@@ -28,6 +28,21 @@
 </template>
 
 <script setup>
+/**
+ * StatusBadge 状态标签组件
+ *
+ * 功能说明：
+ * - 展示各种状态标签：审核状态（待审核/已审核/未通过）、通用状态（正常/禁用）、转载类型（原创/转载）
+ * - 通过 type 参数区分类型：custom | examine | status | reprint
+ * - 支持自定义文本、类名、样式
+ *
+ * 使用方式：
+ * ```vue
+ * <StatusBadge :value="1" type="examine" />  <!-- 显示"已审核" -->
+ * <StatusBadge :value="0" type="status" />   <!-- 显示"正常" -->
+ * ```
+ */
+
 import { computed } from 'vue'
 
 // Props

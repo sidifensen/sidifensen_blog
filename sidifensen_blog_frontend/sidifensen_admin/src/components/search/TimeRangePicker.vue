@@ -32,6 +32,21 @@
 </template>
 
 <script setup>
+/**
+ * TimeRangePicker 时间范围选择器组件
+ *
+ * 功能说明：
+ * - 开始时间和结束时间的日期时间选择器组合
+ * - 支持 v-model:startTime 和 v-model:endTime 双向绑定
+ * - 支持标签显示控制
+ * - 响应式布局：移动端变为网格布局
+ *
+ * 使用方式：
+ * ```vue
+ * <TimeRangePicker v-model:startTime="startTime" v-model:endTime="endTime" @change="handleChange" />
+ * ```
+ */
+
 import { ref, watch } from 'vue'
 
 const props = defineProps({

@@ -52,14 +52,27 @@
 
     <!-- 桌面端表格视图 -->
     <template #table-view>
-      <el-table v-loading="loading" :data="logList" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
-        <el-table-column type="selection" width="30" />
-        <el-table-column prop="id" label="ID" width="55" />
+      <DataTable
+        v-loading="loading"
+        :data="logList"
+        :show-selection="true"
+        :show-id="true"
+        :show-create-time="false"
+        :show-actions="true"
+        :has-view-action="false"
+        :has-edit-action="false"
+        :has-delete-action="true"
+        :actions-width="150"
+        @selection-change="handleSelectionChange"
+        @delete="handleDelete"
+      >
+        <!-- 操作人员列 -->
         <el-table-column prop="operatorName" label="操作人员" width="120">
           <template #default="{ row }">
             <span>{{ row.operatorName || '-' }}</span>
           </template>
         </el-table-column>
+        <!-- 角色列 -->
         <el-table-column prop="operatorRole" label="角色" width="80">
           <template #default="{ row }">
             <div class="role-type" :class="getRoleTypeClass(row.operatorRole)">
@@ -67,6 +80,7 @@
             </div>
           </template>
         </el-table-column>
+        <!-- 功能模块列 -->
         <el-table-column prop="module" label="功能模块" min-width="100">
           <template #default="{ row }">
             <el-tooltip v-if="row.module" :content="row.module" placement="top-start">
@@ -75,6 +89,7 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
+        <!-- 操作描述列 -->
         <el-table-column prop="description" label="操作描述" min-width="150">
           <template #default="{ row }">
             <el-tooltip v-if="row.description" :content="row.description" placement="top-start">
@@ -83,6 +98,7 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
+        <!-- 操作类型列 -->
         <el-table-column prop="operation" label="操作类型" width="80">
           <template #default="{ row }">
             <div class="operation-type" :class="getOperationTypeClass(row.operation)">
@@ -90,11 +106,13 @@
             </div>
           </template>
         </el-table-column>
+        <!-- 请求方式列 -->
         <el-table-column prop="requestMethod" label="请求方式" width="80">
           <template #default="{ row }">
             <span class="request-method">{{ row.requestMethod || '-' }}</span>
           </template>
         </el-table-column>
+        <!-- 请求URL列 -->
         <el-table-column prop="requestUrl" label="请求 URL" min-width="150">
           <template #default="{ row }">
             <el-tooltip v-if="row.requestUrl" :content="row.requestUrl" placement="top-start">
@@ -103,11 +121,13 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
+        <!-- 操作IP列 -->
         <el-table-column prop="ip" label="操作 IP" width="110">
           <template #default="{ row }">
             <span>{{ row.ip || '-' }}</span>
           </template>
         </el-table-column>
+        <!-- 操作地址列 -->
         <el-table-column prop="address" label="操作地址" min-width="100">
           <template #default="{ row }">
             <el-tooltip v-if="row.address" :content="row.address" placement="top-start">
@@ -116,6 +136,7 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
+        <!-- 状态列 -->
         <el-table-column prop="status" label="状态" width="75">
           <template #default="{ row }">
             <div class="log-status" :class="getStatusClass(row.status)">
@@ -123,21 +144,21 @@
             </div>
           </template>
         </el-table-column>
+        <!-- 耗时列 -->
         <el-table-column prop="time" label="耗时(ms)" width="107" sortable>
           <template #default="{ row }">
             <span :class="getTimeClass(row.time)">{{ row.time }}</span>
           </template>
         </el-table-column>
+        <!-- 操作时间列 -->
         <el-table-column prop="createTime" label="操作时间" sortable width="110" />
-        <el-table-column label="操作" width="170">
+        <!-- 详情按钮 -->
+        <el-table-column label="详情" width="80" fixed="right">
           <template #default="{ row }">
-            <div class="table-actions">
-              <el-button type="info" size="small" @click="handleViewDetail(row.id)" :icon="InfoFilled" class="detail-button">详情</el-button>
-              <el-button type="danger" size="small" @click="handleDelete(row.id)" :icon="Delete" class="delete-button">删除</el-button>
-            </div>
+            <el-button type="info" size="small" text bg @click="handleViewDetail(row.id)">详情</el-button>
           </template>
         </el-table-column>
-      </el-table>
+      </DataTable>
     </template>
 
     <!-- 移动端卡片视图 -->
@@ -224,6 +245,7 @@ import { getOperationLogList, searchOperationLog, deleteOperationLogs, getOperat
 
 // 组件
 import ManagementCard from '@/components/management/ManagementCard.vue'
+import DataTable from '@/components/data/DataTable.vue'
 import MobileCardList from '@/components/data/MobileCardList.vue'
 import BatchActions from '@/components/actions/BatchActions.vue'
 import SearchButtons from '@/components/search/SearchButtons.vue'

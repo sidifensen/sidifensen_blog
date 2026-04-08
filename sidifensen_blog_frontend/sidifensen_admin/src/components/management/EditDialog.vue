@@ -16,6 +16,23 @@
 </template>
 
 <script setup>
+/**
+ * EditDialog 编辑对话框组件
+ *
+ * 功能说明：
+ * - 通用的编辑表单对话框
+ * - 支持自定义标题、宽度、标签宽度
+ * - 内置表单验证、重置字段、提交/取消按钮
+ * - 提交时自动触发 validate 验证
+ *
+ * 使用方式：
+ * ```vue
+ * <EditDialog v-model="visible" title="编辑用户" :formData="formData" :rules="rules" @submit="handleSubmit">
+ *   <el-form-item label="用户名" prop="username">...</el-form-item>
+ * </EditDialog>
+ * ```
+ */
+
 import { ref, watch } from 'vue'
 
 // Props

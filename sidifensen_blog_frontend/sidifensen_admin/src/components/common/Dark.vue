@@ -25,6 +25,20 @@
   </div>
 </template>
 <script setup>
+/**
+ * Dark 主题切换组件
+ *
+ * 功能说明：
+ * - 白天/黑夜模式切换开关
+ * - 集成 Pinia darkStore 状态管理
+ * - 带动画效果和波纹反馈
+ *
+ * 使用方式：
+ * ```vue
+ * <Dark />
+ * ```
+ */
+
 import { useDarkStore } from '@/stores/darkStore'
 import { storeToRefs } from 'pinia'
 import { ref } from 'vue'

@@ -28,22 +28,22 @@
 
     <!-- 桌面端表格视图 -->
     <template #table-view>
-      <el-table v-loading="loading" :data="paginatedLogList" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
-        <el-table-column type="selection" width="30" />
-        <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="userId" label="用户ID" width="80">
-          <template #default="{ row }">
-            <span>{{ row.userId || '-' }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="username" label="用户名" width="170">
-          <template #default="{ row }">
-            <el-tooltip v-if="row.username" :content="row.username" placement="top-start">
-              <div class="log-username">{{ row.username }}</div>
-            </el-tooltip>
-            <span v-else class="visitor-guest">游客</span>
-          </template>
-        </el-table-column>
+      <DataTable
+        v-loading="loading"
+        :data="paginatedLogList"
+        :show-selection="true"
+        :show-id="true"
+        :show-user="true"
+        :show-create-time="false"
+        :show-actions="true"
+        :has-view-action="false"
+        :has-edit-action="false"
+        :has-delete-action="true"
+        :actions-width="80"
+        @selection-change="handleSelectionChange"
+        @delete="handleDelete"
+      >
+        <!-- 访客IP列 -->
         <el-table-column prop="ip" label="访客IP" width="150">
           <template #default="{ row }">
             <el-tooltip v-if="row.ip" :content="row.ip" placement="top-start">
@@ -52,6 +52,7 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
+        <!-- 地理位置列 -->
         <el-table-column prop="address" label="地理位置" min-width="150">
           <template #default="{ row }">
             <el-tooltip v-if="row.address" :content="row.address" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
@@ -60,6 +61,7 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
+        <!-- 设备类型列 -->
         <el-table-column prop="device" label="设备类型" width="100">
           <template #default="{ row }">
             <div class="device-type" :class="getDeviceTypeClass(row.device)">
@@ -67,15 +69,9 @@
             </div>
           </template>
         </el-table-column>
+        <!-- 访问时间列 -->
         <el-table-column prop="visitTime" label="访问时间" sortable width="180" />
-        <el-table-column label="操作" width="100">
-          <template #default="{ row }">
-            <div class="table-actions">
-              <el-button type="danger" @click="handleDelete(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
+      </DataTable>
     </template>
 
     <!-- 移动端卡片视图 -->
@@ -104,6 +100,7 @@ import { getVisitorLogList, searchVisitorLog, deleteVisitorLogs } from '@/api/vi
 
 // 组件
 import ManagementCard from '@/components/management/ManagementCard.vue'
+import DataTable from '@/components/data/DataTable.vue'
 import MobileCardList from '@/components/data/MobileCardList.vue'
 import BatchActions from '@/components/actions/BatchActions.vue'
 import SearchButtons from '@/components/search/SearchButtons.vue'

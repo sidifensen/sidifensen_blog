@@ -31,9 +31,27 @@
 
     <!-- 桌面端表格视图 -->
     <template #table-view>
-      <el-table v-loading="loading" :data="paginatedCommentList" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
-        <el-table-column type="selection" width="30" />
-        <el-table-column prop="id" label="ID" width="60" />
+      <DataTable
+        v-loading="loading"
+        :data="paginatedCommentList"
+        :show-selection="true"
+        :show-id="true"
+        :show-examine-status="true"
+        :show-create-time="true"
+        :show-actions="true"
+        :has-view-action="true"
+        :has-edit-action="false"
+        :has-delete-action="true"
+        :has-audit-action="true"
+        :has-reject-action="true"
+        :actions-width="280"
+        @selection-change="handleSelectionChange"
+        @view="handleViewComment"
+        @audit="handleAuditComment"
+        @reject="handleRejectComment"
+        @delete="handleDeleteComment"
+      >
+        <!-- 评论内容列 -->
         <el-table-column prop="content" label="评论内容" min-width="200">
           <template #default="{ row }">
             <el-tooltip :content="row.content" placement="top-start" :popper-style="{ maxWidth: '300px', wordWrap: 'break-word', whiteSpace: 'normal' }">
@@ -41,7 +59,9 @@
             </el-tooltip>
           </template>
         </el-table-column>
+        <!-- 评论用户列 -->
         <el-table-column prop="nickname" label="评论用户" width="100" />
+        <!-- 所属文章列 -->
         <el-table-column prop="articleTitle" label="所属文章" min-width="170">
           <template #default="{ row }">
             <el-tooltip :content="row.articleTitle" placement="top-start">
@@ -49,40 +69,27 @@
             </el-tooltip>
           </template>
         </el-table-column>
+        <!-- 文章ID列 -->
         <el-table-column prop="articleId" label="文章ID" width="80" />
+        <!-- 父评论ID列 -->
         <el-table-column prop="parentId" label="父评论ID" width="100">
           <template #default="{ row }">
             <span v-if="row.parentId">{{ row.parentId }}</span>
             <span v-else class="no-parent">主评论</span>
           </template>
         </el-table-column>
+        <!-- 回复用户列 -->
         <el-table-column prop="replyUserNickname" label="回复用户" width="100">
           <template #default="{ row }">
             <span v-if="row.replyUserNickname">{{ row.replyUserNickname }}</span>
             <span v-else class="no-reply">无回复</span>
           </template>
         </el-table-column>
-        <el-table-column prop="examineStatus" label="审核状态" width="80">
-          <template #default="{ row }">
-            <div class="comment-status" :class="row.examineStatus === 0 ? 'status-unaudited' : row.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-              {{ row.examineStatus === 0 ? '待审核' : row.examineStatus === 1 ? '已审核' : '未通过' }}
-            </div>
-          </template>
-        </el-table-column>
+        <!-- 点赞量列 -->
         <el-table-column prop="likeCount" label="点赞量" width="80" />
+        <!-- 回复数列 -->
         <el-table-column prop="replyCount" label="回复数" width="80" />
-        <el-table-column prop="createTime" label="创建时间" sortable width="110" />
-        <el-table-column label="操作" width="320">
-          <template #default="{ row }">
-            <div class="table-actions">
-              <el-button type="info" @click="handleViewComment(row)" :icon="View" class="view-button" size="small">查看</el-button>
-              <el-button type="primary" @click="handleAuditComment(row.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
-              <el-button type="warning" @click="handleRejectComment(row.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
-              <el-button type="danger" @click="handleDeleteComment(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
+      </DataTable>
     </template>
 
     <!-- 移动端卡片视图 -->
@@ -236,6 +243,7 @@ import { adminGetCommentList, adminDeleteComment, adminDeleteBatchComment, admin
 
 // 组件
 import ManagementCard from '@/components/management/ManagementCard.vue'
+import DataTable from '@/components/data/DataTable.vue'
 import MobileCardList from '@/components/data/MobileCardList.vue'
 import BatchActions from '@/components/actions/BatchActions.vue'
 import ExamineStatusSelect from '@/components/search/ExamineStatusSelect.vue'

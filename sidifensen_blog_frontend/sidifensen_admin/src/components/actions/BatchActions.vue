@@ -21,6 +21,21 @@
 </template>
 
 <script setup>
+/**
+ * BatchActions 批量操作按钮组件
+ *
+ * 功能说明：
+ * - 批量操作按钮组：批量审核、批量拒绝、批量删除
+ * - 支持显示选中数量
+ * - 支持加载状态显示
+ * - 选中数量为 0 时自动禁用按钮
+ *
+ * 使用方式：
+ * ```vue
+ * <BatchActions :selectedCount="selectedRows.length" :showBatchAudit="true" @batch-audit="handleBatchAudit" />
+ * ```
+ */
+
 import { Check, Close, Delete } from '@element-plus/icons-vue'
 
 // Props

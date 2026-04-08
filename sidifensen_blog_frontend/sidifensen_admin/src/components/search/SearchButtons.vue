@@ -6,6 +6,20 @@
 </template>
 
 <script setup>
+/**
+ * SearchButtons 搜索操作按钮组组件
+ *
+ * 功能说明：
+ * - 包含搜索、重置两个操作按钮
+ * - 搜索按钮触发 search 事件，重置按钮触发 reset 事件
+ * - 按钮样式采用蓝灰色调，与整体风格统一
+ *
+ * 使用方式：
+ * ```vue
+ * <SearchButtons @search="handleSearch" @reset="handleReset" />
+ * ```
+ */
+
 import { Search, Refresh } from '@element-plus/icons-vue'
 
 const emit = defineEmits(['search', 'reset'])

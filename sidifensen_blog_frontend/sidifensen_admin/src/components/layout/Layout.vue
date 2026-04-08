@@ -146,6 +146,24 @@
 </template>
 
 <script setup>
+/**
+ * Layout 后台整体布局组件
+ *
+ * 功能说明：
+ * - 后台管理系统的整体布局框架
+ * - 包含左侧导航菜单（支持 PC 端和移动端）、顶部导航栏
+ * - 顶部导航栏包含：移动端菜单按钮、主题切换、消息通知、用户信息下拉
+ * - 消息通知支持：未读数量显示、下拉列表、标记已读、删除
+ * - 响应式设计：移动端菜单以 overlay 形式展示
+ *
+ * 使用方式：
+ * ```vue
+ * <Layout>
+ *   <RouterView />
+ * </Layout>
+ * ```
+ */
+
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'

@@ -142,14 +142,20 @@
           <el-table-column prop="likeCount" label="点赞量" width="80" />
           <el-table-column prop="replyCount" label="回复数" width="80" />
           <el-table-column prop="createTime" label="创建时间" sortable width="110" />
-          <el-table-column label="操作" width="320">
+          <el-table-column label="操作" width="280">
             <template #default="{ row }">
-              <div class="table-actions">
-                <el-button type="info" @click="handleViewComment(row)" :icon="View" class="view-button" size="small">查看</el-button>
-                <el-button type="primary" @click="handleAuditComment(row.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
-                <el-button type="warning" @click="handleRejectComment(row.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
-                <el-button type="danger" @click="handleDeleteComment(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
-              </div>
+              <TableActions
+                :showView="true"
+                :showDetail="true"
+                :showAudit="true"
+                :showReject="true"
+                :showDelete="true"
+                @view="handleViewComment(row)"
+                @detail="handleViewComment(row)"
+                @audit="handleAuditComment(row.id)"
+                @reject="handleRejectComment(row.id)"
+                @delete="handleDeleteComment(row.id)"
+              />
             </template>
           </el-table-column>
         </el-table>
@@ -343,6 +349,7 @@ import { Delete, Close, Check, View, Search, ArrowLeft, User, ChatDotRound, Star
 import { getUserListWithCommentCount } from '@/api/comment'
 import { adminGetCommentsByUserId, adminSearchComment, adminExamineComment, adminExamineBatchComment, adminDeleteComment, adminDeleteBatchComment } from '@/api/comment'
 import Pagination from '@/components/data/Pagination.vue'
+import TableActions from '@/components/data/TableActions.vue'
 
 // 视图状态
 const showComments = ref(false)

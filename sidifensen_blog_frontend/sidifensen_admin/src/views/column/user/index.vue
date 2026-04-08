@@ -151,15 +151,22 @@
           <el-table-column prop="focusCount" label="关注数" width="80" />
           <el-table-column prop="articleCount" label="文章数" width="80" />
           <el-table-column prop="createTime" label="创建时间" sortable width="110" />
-          <el-table-column label="操作" width="400">
+          <el-table-column label="操作" width="320">
             <template #default="{ row }">
-              <div class="table-actions">
-                <el-button type="info" @click="handleViewColumn(row)" :icon="View" class="view-button" size="small">查看</el-button>
-                <el-button type="success" @click="handleEditColumn(row)" :icon="Edit" class="edit-button" size="small">修改</el-button>
-                <el-button type="primary" @click="handleAuditColumn(row.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
-                <el-button type="warning" @click="handleRejectColumn(row.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
-                <el-button type="danger" @click="handleDeleteColumn(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
-              </div>
+              <TableActions
+                :showView="true"
+                :showDetail="true"
+                :showEdit="true"
+                :showAudit="true"
+                :showReject="true"
+                :showDelete="true"
+                @view="handleViewColumn(row)"
+                @detail="handleViewColumn(row)"
+                @edit="handleEditColumn(row)"
+                @audit="handleAuditColumn(row.id)"
+                @reject="handleRejectColumn(row.id)"
+                @delete="handleDeleteColumn(row.id)"
+              />
             </template>
           </el-table-column>
         </el-table>
@@ -462,6 +469,7 @@ import {
   adminGetColumnDetail,
 } from '@/api/column'
 import Pagination from '@/components/data/Pagination.vue'
+import TableActions from '@/components/data/TableActions.vue'
 
 // 视图状态
 const showColumns = ref(false)

@@ -160,15 +160,22 @@
           <el-table-column prop="collectCount" label="收藏量" width="80" />
           <el-table-column prop="createTime" label="创建时间" sortable width="110" />
           <el-table-column prop="updateTime" label="更新时间" sortable width="110" />
-          <el-table-column label="操作" width="390">
+          <el-table-column label="操作" width="320">
             <template #default="{ row }">
-              <div class="table-actions">
-                <el-button type="info" @click="handleViewArticle(row.id)" :icon="View" class="view-button" size="small">查看</el-button>
-                <el-button type="success" @click="handleEditArticle(row)" :icon="Edit" class="edit-button" size="small">修改</el-button>
-                <el-button type="primary" @click="handleAuditArticle(row.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
-                <el-button type="warning" @click="handleRejectArticle(row.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
-                <el-button type="danger" @click="handleDeleteArticle(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
-              </div>
+              <TableActions
+                :showView="true"
+                :showDetail="true"
+                :showEdit="true"
+                :showAudit="true"
+                :showReject="true"
+                :showDelete="true"
+                @view="handleViewArticle(row.id)"
+                @detail="handleViewArticle(row.id)"
+                @edit="handleEditArticle(row)"
+                @audit="handleAuditArticle(row.id)"
+                @reject="handleRejectArticle(row.id)"
+                @delete="handleDeleteArticle(row.id)"
+              />
             </template>
           </el-table-column>
         </el-table>
@@ -509,6 +516,7 @@ import {
   adminUpdateArticle,
 } from '@/api/article'
 import Pagination from '@/components/data/Pagination.vue'
+import TableActions from '@/components/data/TableActions.vue'
 
 // 视图状态
 const showArticles = ref(false)

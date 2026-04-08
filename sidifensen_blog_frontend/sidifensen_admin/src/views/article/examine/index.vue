@@ -31,25 +31,31 @@
 
     <!-- 桌面端表格视图 -->
     <template #table-view>
-      <el-table v-loading="loading" :data="paginatedArticleList" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
-        <el-table-column type="selection" width="30" />
-        <el-table-column prop="coverUrl" label="封面" width="120">
-          <template #default="{ row }">
-            <div class="article-cover-container">
-              <el-image v-if="row.coverUrl" :src="row.coverUrl" class="article-cover" :preview-src-list="[row.coverUrl]" fit="cover" preview-teleported />
-              <div v-else class="no-cover">暂无封面</div>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="title" label="文章标题" min-width="180">
-          <template #default="{ row }">
-            <el-tooltip :content="row.title" placement="top-start">
-              <div class="article-title">{{ row.title }}</div>
-            </el-tooltip>
-          </template>
-        </el-table-column>
-        <el-table-column prop="nickname" label="作者昵称" width="120" />
+      <DataTable
+        v-loading="loading"
+        :data="paginatedArticleList"
+        :show-selection="true"
+        :show-cover="true"
+        :show-id="true"
+        :show-title="true"
+        :show-user="true"
+        :show-examine-status="true"
+        :show-create-time="true"
+        :show-update-time="true"
+        :show-actions="true"
+        :has-view-action="true"
+        :has-edit-action="false"
+        :has-delete-action="true"
+        :has-audit-action="true"
+        :has-reject-action="true"
+        :actions-width="280"
+        @selection-change="handleSelectionChange"
+        @view="handleViewArticle"
+        @audit="handleAuditArticle"
+        @reject="handleRejectArticle"
+        @delete="handleDeleteArticle"
+      >
+        <!-- 标签列 -->
         <el-table-column prop="tag" label="标签" width="150">
           <template #default="{ row }">
             <el-tag v-if="row.tag" size="small" type="info" class="tag-wrap">
@@ -58,6 +64,7 @@
             <span v-else class="no-tag">无标签</span>
           </template>
         </el-table-column>
+        <!-- 类型列 -->
         <el-table-column prop="reprintType" label="类型" width="60">
           <template #default="{ row }">
             <el-tag :type="row.reprintType === 0 ? 'success' : 'warning'" size="small">
@@ -65,6 +72,7 @@
             </el-tag>
           </template>
         </el-table-column>
+        <!-- 可见范围列 -->
         <el-table-column prop="visibleRange" label="可见范围" width="80">
           <template #default="{ row }">
             <el-tag :type="getVisibleRangeType(row.visibleRange)" size="small">
@@ -72,6 +80,7 @@
             </el-tag>
           </template>
         </el-table-column>
+        <!-- 编辑状态列 -->
         <el-table-column prop="editStatus" label="编辑状态" width="80">
           <template #default="{ row }">
             <el-tag :type="getEditStatusType(row.editStatus)" size="small">
@@ -79,30 +88,15 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="examineStatus" label="审核状态" width="80">
-          <template #default="{ row }">
-            <div class="article-status" :class="row.examineStatus === 0 ? 'status-unaudited' : row.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-              {{ row.examineStatus === 0 ? '待审核' : row.examineStatus === 1 ? '已审核' : '未通过' }}
-            </div>
-          </template>
-        </el-table-column>
+        <!-- 阅读量列 -->
         <el-table-column prop="readCount" label="阅读量" width="80" />
+        <!-- 点赞量列 -->
         <el-table-column prop="likeCount" label="点赞量" width="80" />
+        <!-- 评论数列 -->
         <el-table-column prop="commentCount" label="评论数" width="80" />
+        <!-- 收藏量列 -->
         <el-table-column prop="collectCount" label="收藏量" width="80" />
-        <el-table-column prop="createTime" label="创建时间" sortable width="110" />
-        <el-table-column prop="updateTime" label="更新时间" sortable width="110" />
-        <el-table-column label="操作" width="320">
-          <template #default="{ row }">
-            <div class="table-actions">
-              <el-button type="info" @click="handleViewArticle(row.id)" :icon="View" class="view-button" size="small">查看</el-button>
-              <el-button type="primary" @click="handleAuditArticle(row.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
-              <el-button type="warning" @click="handleRejectArticle(row.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
-              <el-button type="danger" @click="handleDeleteArticle(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
+      </DataTable>
     </template>
 
     <!-- 移动端卡片视图 -->
@@ -314,6 +308,7 @@ import { adminGetArticleList, adminDeleteArticle, adminDeleteBatchArticle, admin
 
 // 组件
 import ManagementCard from '@/components/management/ManagementCard.vue'
+import DataTable from '@/components/data/DataTable.vue'
 import MobileCardList from '@/components/data/MobileCardList.vue'
 import BatchActions from '@/components/actions/BatchActions.vue'
 import ExamineStatusSelect from '@/components/search/ExamineStatusSelect.vue'

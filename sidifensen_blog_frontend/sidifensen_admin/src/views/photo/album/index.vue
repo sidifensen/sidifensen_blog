@@ -27,15 +27,22 @@
 
     <!-- 桌面端表格视图 -->
     <template #table-view>
-      <el-table v-loading="loading" :data="paginatedAlbumList" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
-        <el-table-column type="selection" width="40" />
-        <el-table-column prop="id" label="ID" min-width="60" />
-        <el-table-column prop="coverUrl" label="封面" min-width="100">
-          <template #default="{ row }">
-            <el-image v-if="row.coverUrl" :src="row.coverUrl" style="width: 80px; height: 50px; border-radius: 4px" :preview-src-list="[row.coverUrl]" fit="cover" preview-teleported />
-            <span v-else>-</span>
-          </template>
-        </el-table-column>
+      <DataTable
+        v-loading="loading"
+        :data="paginatedAlbumList"
+        :show-selection="true"
+        :show-cover="true"
+        :show-id="true"
+        :show-actions="true"
+        :has-view-action="false"
+        :has-edit-action="true"
+        :has-delete-action="true"
+        :actions-width="180"
+        @selection-change="handleSelectionChange"
+        @edit="handleEditAlbum"
+        @delete="handleDeleteAlbum"
+      >
+        <!-- 相册名称列 -->
         <el-table-column prop="name" label="相册名称" min-width="150">
           <template #default="{ row }">
             <el-tooltip :content="row.name" placement="top-start">
@@ -43,7 +50,9 @@
             </el-tooltip>
           </template>
         </el-table-column>
+        <!-- 用户名列 -->
         <el-table-column prop="userName" label="用户名" min-width="100" />
+        <!-- 状态列 -->
         <el-table-column prop="showStatus" label="状态" min-width="120">
           <template #default="{ row }">
             <el-switch
@@ -61,17 +70,15 @@
             />
           </template>
         </el-table-column>
+        <!-- 创建时间列 -->
         <el-table-column prop="createTime" label="创建时间" sortable min-width="110" />
-        <el-table-column label="操作" width="200" fixed="right">
+        <!-- 详情按钮 -->
+        <el-table-column label="详情" width="80" fixed="right">
           <template #default="{ row }">
-            <div class="table-actions">
-              <el-button type="info" @click="handleAlbumDetail(row.id)" :icon="InfoFilled" class="detail-button" size="small">详情</el-button>
-              <el-button type="primary" @click="handleEditAlbum(row)" :icon="Edit" class="edit-button" size="small">编辑</el-button>
-              <el-button type="danger" @click="handleDeleteAlbum(row.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
-            </div>
+            <el-button type="info" size="small" text bg @click="handleAlbumDetail(row.id)">详情</el-button>
           </template>
         </el-table-column>
-      </el-table>
+      </DataTable>
     </template>
 
     <!-- 移动端卡片视图 -->
@@ -205,8 +212,8 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { Search, Plus, InfoFilled, Edit, Delete, Avatar } from '@element-plus/icons-vue'
 import { adminList, adminUpdateAlbum, adminDeleteAlbum, adminSearchAlbum, adminGetAlbumDetail } from '@/api/album'
 import { adminDeletePhoto, adminDeleteBatchPhoto, adminAuditPhoto, adminAuditBatchPhoto } from '@/api/photo'
-import Pagination from '@/components/data/Pagination.vue'
 import ManagementCard from '@/components/management/ManagementCard.vue'
+import DataTable from '@/components/data/DataTable.vue'
 import MobileCardList from '@/components/data/MobileCardList.vue'
 import BatchActions from '@/components/actions/BatchActions.vue'
 import SearchButtons from '@/components/search/SearchButtons.vue'

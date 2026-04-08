@@ -45,20 +45,20 @@
         @delete="handleDeletePhoto"
       >
         <!-- 图片列 -->
-        <el-table-column prop="url" label="图片" width="360">
+        <el-table-column prop="url" label="图片" min-width="280">
           <template #default="{ row }">
-            <el-image preview-teleported :src="row.url" style="width: 320px; height: 180px" :preview-src-list="[row.url]" fit="cover" />
+            <el-image preview-teleported :src="row.url" style="width: 240px; height: 140px; border-radius: 4px" :preview-src-list="[row.url]" fit="cover" />
           </template>
         </el-table-column>
 
         <!-- ID列 -->
-        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="id" label="ID" min-width="60" />
 
         <!-- 用户名列 -->
-        <el-table-column prop="username" label="用户名" width="120" />
+        <el-table-column prop="username" label="用户名" min-width="100" />
 
         <!-- 状态列 -->
-        <el-table-column prop="examineStatus" label="状态" width="100">
+        <el-table-column prop="examineStatus" label="状态" min-width="80">
           <template #default="{ row }">
             <div class="photo-status" :class="row.examineStatus === 0 ? 'status-unaudited' : row.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
               {{ row.examineStatus === 0 ? '待审核' : row.examineStatus === 1 ? '已审核' : '未通过' }}
@@ -67,10 +67,10 @@
         </el-table-column>
 
         <!-- 创建时间列 -->
-        <el-table-column prop="createTime" label="创建时间" sortable width="160" />
+        <el-table-column prop="createTime" label="创建时间" sortable min-width="110" />
 
         <!-- 更新时间列 -->
-        <el-table-column prop="updateTime" label="更新时间" sortable width="160" />
+        <el-table-column prop="updateTime" label="更新时间" sortable min-width="110" />
       </DataTable>
     </template>
 
