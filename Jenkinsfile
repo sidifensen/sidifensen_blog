@@ -322,12 +322,12 @@ pipeline {
                         export PROJECT_ROOT=\${DEPLOY_PATH}
 
                         # 检测可用的 docker-compose 命令
-                        if docker compose version >/dev/null 2>&1; then
-                            DOCKER_COMPOSE_CMD="docker compose"
-                            echo "✅ 使用 Docker Compose V2 (docker compose)"
-                        elif docker-compose version >/dev/null 2>&1; then
+                        if docker-compose version >/dev/null 2>&1; then
                             DOCKER_COMPOSE_CMD="docker-compose"
                             echo "✅ 使用 Docker Compose V1 (docker-compose)"
+                        elif docker compose version >/dev/null 2>&1; then
+                            DOCKER_COMPOSE_CMD="docker compose"
+                            echo "✅ 使用 Docker Compose V2 (docker compose)"
                         else
                             echo "❌ 错误: 未找到 docker-compose 或 docker compose 命令"
                             echo ""
@@ -337,16 +337,10 @@ pipeline {
                             echo "  # 进入 Jenkins 容器"
                             echo "  docker exec -it -u root jenkins bash"
                             echo ""
-                            echo "  # 安装 Docker Compose V2（推荐，如果 Docker 版本 >= 20.10）"
-                            echo "  # Docker Compose V2 通常已包含在 Docker 中，检查: docker compose version"
-                            echo ""
-                            echo "  # 或者安装 Docker Compose V1（使用国内镜像）"
+                            echo "  # 安装 Docker Compose V1（使用国内镜像）"
                             echo "  ARCH=\$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"
                             echo "  OS=\$(uname -s | tr '[:upper:]' '[:lower:]')"
-                            echo "  # 方法1: 使用 gitee 镜像（推荐）"
                             echo "  curl -L \"https://gitee.com/mirrors/docker-compose/releases/download/v2.24.5/docker-compose-\${OS}-\${ARCH}\" -o /usr/local/bin/docker-compose"
-                            echo "  # 方法2: 使用 daocloud 镜像"
-                            echo "  # curl -L \"https://get.daocloud.io/docker/compose/releases/download/v2.24.5/docker-compose-\${OS}-\${ARCH}\" -o /usr/local/bin/docker-compose"
                             echo "  chmod +x /usr/local/bin/docker-compose"
                             echo ""
                             exit 1
