@@ -64,14 +64,14 @@ const handleReset = () => {
 
   // 重置按钮 - 蓝绿色调
   .btn-reset {
-    background-color: #f0fdfa;
-    border-color: #ccfbf1;
-    color: #0d9488;
+    background-color: var(--btn-reset-bg);
+    border-color: var(--btn-reset-border);
+    color: var(--btn-reset-color);
 
     &:hover {
-      background-color: #ccfbf1;
-      border-color: #99f6e4;
-      color: #0f766e;
+      background-color: var(--btn-reset-hover-bg);
+      border-color: var(--btn-reset-hover-border);
+      color: var(--btn-reset-hover-color);
     }
   }
 }

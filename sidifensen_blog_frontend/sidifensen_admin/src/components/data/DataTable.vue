@@ -273,14 +273,14 @@ const handleSelectionChange = (selection) => {
 
       th {
         font-weight: 600;
-        color: #475569;
+        color: var(--text-regular);
       }
     }
 
     :deep(.el-table__body-wrapper) {
       tr {
         td {
-          color: #64748b;
+          color: var(--text-muted);
           padding: 12px 0;
           vertical-align: middle;
 
@@ -334,14 +334,14 @@ const handleSelectionChange = (selection) => {
       .no-cover {
         width: 100px;
         height: 60px;
-        background-color: #f5f5f5;
-        border: 1px dashed #ddd;
+        background-color: var(--bg-page);
+        border: 1px dashed var(--border);
         border-radius: 6px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 12px;
-        color: #999;
+        color: var(--text-placeholder);
       }
     }
   }

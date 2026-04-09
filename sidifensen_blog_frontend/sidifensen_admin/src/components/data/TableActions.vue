@@ -146,13 +146,13 @@ const handleAction = (action) => {
 
   // 查看按钮
   .view-btn {
-    background-color: #f0fdfa;
-    color: #0d9488;
-    border-color: #99f6e4;
+    background-color: var(--action-view-bg);
+    color: var(--action-view-color);
+    border-color: var(--action-view-border);
 
     &:hover:not(:disabled) {
-      background-color: #ccfbf1;
-      border-color: #5eead4;
+      background-color: var(--action-view-hover-bg);
+      border-color: var(--action-view-hover-border);
     }
   }
 
@@ -184,40 +184,40 @@ const handleAction = (action) => {
 
   // 审核按钮
   .audit-btn {
-    background-color: #e0f2fe;
-    color: #0284c7;
-    border-color: #e0f2fe;
+    background-color: var(--action-audit-bg);
+    color: var(--action-audit-color);
+    border-color: var(--action-audit-border);
 
     &:hover:not(:disabled) {
-      background-color: #bae6fd;
-      border-color: #bae6fd;
-      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+      background-color: var(--action-audit-hover-bg);
+      border-color: var(--action-audit-hover-border);
+      box-shadow: 0 2px 8px var(--action-audit-shadow);
     }
   }
 
   // 拒绝按钮
   .reject-btn {
-    background-color: #fef3c7;
-    color: #d97706;
-    border-color: #fef3c7;
+    background-color: var(--action-reject-bg);
+    color: var(--action-reject-color);
+    border-color: var(--action-reject-border);
 
     &:hover:not(:disabled) {
-      background-color: #fde68a;
-      border-color: #fde68a;
-      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
+      background-color: var(--action-reject-hover-bg);
+      border-color: var(--action-reject-hover-border);
+      box-shadow: 0 2px 8px var(--action-reject-shadow);
     }
   }
 
   // 删除按钮
   .delete-btn {
-    background-color: #fee2e2;
-    color: #ef4444;
-    border-color: #fee2e2;
+    background-color: var(--action-delete-bg);
+    color: var(--action-delete-color);
+    border-color: var(--action-delete-border);
 
     &:hover:not(:disabled) {
-      background-color: #fecaca;
-      border-color: #fecaca;
-      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+      background-color: var(--action-delete-hover-bg);
+      border-color: var(--action-delete-hover-border);
+      box-shadow: 0 2px 8px var(--action-delete-shadow);
     }
   }
 }
@@ -240,6 +240,88 @@ const handleAction = (action) => {
     .action-btn {
       font-size: 11px;
       padding: 4px 6px;
+    }
+  }
+}
+
+// 深色模式适配
+html.dark {
+  .table-actions {
+    // 查看按钮
+    .view-btn {
+      background-color: var(--action-view-bg-dark);
+      color: var(--action-view-color-dark);
+      border-color: var(--action-view-border-dark);
+
+      &:hover:not(:disabled) {
+        background-color: var(--action-view-hover-bg-dark);
+        border-color: var(--action-view-hover-border-dark);
+      }
+    }
+
+    // 详情按钮
+    .detail-btn {
+      background-color: var(--el-fill-color-dark);
+      color: var(--el-text-color-regular);
+      border-color: var(--el-border-color-dark);
+
+      &:hover:not(:disabled) {
+        background-color: var(--el-fill-color);
+        border-color: var(--el-color-primary);
+        color: var(--el-color-primary);
+      }
+    }
+
+    // 编辑按钮
+    .edit-btn {
+      background-color: var(--el-fill-color-dark);
+      color: var(--text-regular);
+      border-color: var(--el-border-color-dark);
+
+      &:hover:not(:disabled) {
+        background-color: var(--el-fill-color);
+        border-color: var(--text-muted);
+        color: var(--text-primary);
+      }
+    }
+
+    // 审核按钮
+    .audit-btn {
+      background-color: var(--action-audit-bg-dark);
+      color: var(--action-audit-color-dark);
+      border-color: var(--action-audit-border-dark);
+
+      &:hover:not(:disabled) {
+        background-color: var(--action-audit-hover-bg-dark);
+        border-color: var(--action-audit-hover-border-dark);
+        box-shadow: 0 2px 8px var(--action-audit-shadow-dark);
+      }
+    }
+
+    // 拒绝按钮
+    .reject-btn {
+      background-color: var(--action-reject-bg-dark);
+      color: var(--action-reject-color-dark);
+      border-color: var(--action-reject-border-dark);
+
+      &:hover:not(:disabled) {
+        background-color: var(--action-reject-hover-bg-dark);
+        border-color: var(--action-reject-hover-border-dark);
+        box-shadow: 0 2px 8px var(--action-reject-shadow-dark);
+      }
+    }
+
+    // 删除按钮
+    .delete-btn {
+      background-color: var(--action-delete-bg-dark);
+      color: var(--action-delete-color-dark);
+      border-color: var(--action-delete-border-dark);
+
+      &:hover:not(:disabled) {
+        background-color: var(--action-delete-hover-bg-dark);
+        border-color: var(--action-delete-hover-border-dark);
+        box-shadow: 0 2px 8px var(--action-delete-shadow-dark);
+      }
     }
   }
 }

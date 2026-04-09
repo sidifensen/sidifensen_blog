@@ -35,6 +35,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,13 +115,17 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     public String login(LoginDto loginDto) {
         try {
-            // 校验验证码（忽略大小写）
+            // 校验验证码（时间安全比较，忽略大小写）
             String storedCheckCode = redisComponent.getCheckCode(loginDto.getCheckCodeKey());
-            if (storedCheckCode == null || !loginDto.getCheckCode().equalsIgnoreCase(storedCheckCode)) {
+            String inputCodeLower = loginDto.getCheckCode().toLowerCase();
+            String storedCodeLower = storedCheckCode != null ? storedCheckCode.toLowerCase() : null;
+            if (storedCodeLower == null || !MessageDigest.isEqual(
+                    inputCodeLower.getBytes(), storedCodeLower.getBytes())) {
                 throw new BlogException(BlogConstants.CheckCodeError); // 验证码错误
             }
+            // 去除用户名首尾空格后再认证
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    loginDto.getUsername(), loginDto.getPassword());
+                    loginDto.getUsername().trim(), loginDto.getPassword());
             // 调用loadUserByUsername方法
             Authentication authenticate = authenticationManager.authenticate(authentication);
             // 获取用户信息，返回的就是UserDetails
@@ -152,9 +157,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             throw new BlogException(BlogConstants.CheckCodeError);
         }
 
-        // 校验验证码是否正确
-        if (!registerDto.getEmailCheckCode()
-            .equals(redisComponent.getEmailCheckCode(registerDto.getEmail(), MailEnum.REGISTER.getType()))) {
+        // 校验验证码是否正确（使用时间安全比较防止时序攻击）
+        String storedEmailCode = redisComponent.getEmailCheckCode(registerDto.getEmail(), MailEnum.REGISTER.getType());
+        if (!MessageDigest.isEqual(
+                registerDto.getEmailCheckCode().getBytes(),
+                storedEmailCode != null ? storedEmailCode.getBytes() : new byte[0])) {
             throw new BlogException(BlogConstants.CheckCodeError);
         }
 
@@ -449,17 +456,21 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     // 管理员登录
     @Override
     public String adminLogin(AdminLoginDto adminLoginDto) {
-        // 验证图形验证码
+        // 验证图形验证码（时间安全比较，忽略大小写）
         String cachedCode = redisComponent.getCheckCode(adminLoginDto.getCheckCodeKey());
-        if (cachedCode == null || !cachedCode.equalsIgnoreCase(adminLoginDto.getCheckCode())) {
+        String inputCodeLower = adminLoginDto.getCheckCode().toLowerCase();
+        String cachedCodeLower = cachedCode != null ? cachedCode.toLowerCase() : null;
+        if (cachedCodeLower == null || !MessageDigest.isEqual(
+                inputCodeLower.getBytes(), cachedCodeLower.getBytes())) {
             throw new BlogException(BlogConstants.CheckCodeError); // 验证码错误
         }
         // 验证成功后清除验证码
         redisComponent.cleanCheckCode(adminLoginDto.getCheckCodeKey());
 
         try {
+            // 去除用户名首尾空格后再认证
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    adminLoginDto.getUsername(), adminLoginDto.getPassword());
+                    adminLoginDto.getUsername().trim(), adminLoginDto.getPassword());
             // 调用loadUserByUsername方法
             Authentication authenticate = authenticationManager.authenticate(authentication);
             // 获取用户信息

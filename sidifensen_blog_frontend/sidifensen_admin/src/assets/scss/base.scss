@@ -40,6 +40,20 @@ body {
 
   // 文字颜色
   --text-placeholder: #94a3b8; // 占位符-更浅的灰色
+  --text-primary: #1e293b; // 主要文字
+  --text-regular: #475569; // 常规文字
+  --text-muted: #64748b; // 次要文字
+
+  // 背景颜色
+  --bg-page: #f8fafc; // 页面背景
+  --bg-card: #ffffff; // 卡片背景
+
+  // 边框颜色
+  --border: #e2e8f0; // 边框
+
+  // 卡片阴影
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
 
   // 输入框背景色
   --bg-input: #f5f5f5; // 输入框灰色背景
@@ -52,13 +66,66 @@ body {
   --btn-search-hover-border: #818cf8;
   --btn-search-hover-color: #4f46e5;
 
-  // 重置按钮
-  --btn-reset-bg: transparent;
-  --btn-reset-border: #f1f5f9;
-  --btn-reset-color: #94a3b8;
-  --btn-reset-hover-bg: #f8fafc;
-  --btn-reset-hover-border: #e2e8f0;
-  --btn-reset-hover-color: #64748b;
+  // 重置按钮 - 蓝绿色调
+  --btn-reset-bg: #f0fdfa;
+  --btn-reset-border: #ccfbf1;
+  --btn-reset-color: #0d9488;
+  --btn-reset-hover-bg: #ccfbf1;
+  --btn-reset-hover-border: #99f6e4;
+  --btn-reset-hover-color: #0f766e;
+
+  // 状态标签颜色 - 待审核
+  --badge-unaudited-bg: #fff1f0;
+  --badge-unaudited-color: #f56c6c;
+
+  // 状态标签颜色 - 成功/正常
+  --badge-success-bg: #f0f9eb;
+  --badge-success-color: #67c23a;
+
+  // 状态标签颜色 - 警告/未通过
+  --badge-warning-bg: #fdf6ec;
+  --badge-warning-color: #e6a23c;
+
+  // 状态标签颜色 - 默认
+  --badge-default-bg: #f4f4f5;
+  --badge-default-color: #909399;
+
+  // 操作按钮颜色 - 查看
+  --action-view-bg: #f0fdfa;
+  --action-view-color: #0d9488;
+  --action-view-border: #99f6e4;
+  --action-view-hover-bg: #ccfbf1;
+  --action-view-hover-border: #5eead4;
+
+  // 操作按钮颜色 - 审核
+  --action-audit-bg: #e0f2fe;
+  --action-audit-color: #0284c7;
+  --action-audit-border: #e0f2fe;
+  --action-audit-hover-bg: #bae6fd;
+  --action-audit-hover-border: #bae6fd;
+  --action-audit-shadow: rgba(2, 132, 199, 0.3);
+
+  // 操作按钮颜色 - 拒绝
+  --action-reject-bg: #fef3c7;
+  --action-reject-color: #d97706;
+  --action-reject-border: #fef3c7;
+  --action-reject-hover-bg: #fde68a;
+  --action-reject-hover-border: #fde68a;
+  --action-reject-shadow: rgba(217, 119, 6, 0.3);
+
+  // 操作按钮颜色 - 删除
+  --action-delete-bg: #fee2e2;
+  --action-delete-color: #ef4444;
+  --action-delete-border: #fee2e2;
+  --action-delete-hover-bg: #fecaca;
+  --action-delete-hover-border: #fecaca;
+  --action-delete-shadow: rgba(239, 68, 68, 0.3);
+
+  // 统计卡片渐变色
+  --stat-card-user: linear-gradient(90deg, #64748b, #94a3b8);
+  --stat-card-article: linear-gradient(90deg, #f093fb, #f5576c);
+  --stat-card-visits: linear-gradient(90deg, #475569, #64748b);
+  --stat-card-today: linear-gradient(90deg, #43e97b, #38f9d7);
 }
 
 // 深色模式主题色
@@ -82,6 +149,20 @@ html.dark {
 
   // 文字颜色
   --text-placeholder: #64748b; // 占位符-浅灰色
+  --text-primary: #f1f5f9; // 主要文字
+  --text-regular: #cbd5e1; // 常规文字
+  --text-muted: #94a3b8; // 次要文字
+
+  // 背景颜色
+  --bg-page: #0f172a; // 页面背景
+  --bg-card: #1e293b; // 卡片背景
+
+  // 边框颜色
+  --border: #334155; // 边框
+
+  // 卡片阴影
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.4);
 
   // 输入框背景色
   --bg-input: #334155; // 深色模式下输入框灰色背景
@@ -94,13 +175,66 @@ html.dark {
   --btn-search-hover-border: #6366f1;
   --btn-search-hover-color: #e0e7ff;
 
-  // 重置按钮
-  --btn-reset-bg: #ffffff;
-  --btn-reset-border: #e2e8f0;
-  --btn-reset-color: #1e293b;
-  --btn-reset-hover-bg: #f1f5f9;
-  --btn-reset-hover-border: #cbd5e1;
-  --btn-reset-hover-color: #475569;
+  // 重置按钮 - 蓝绿色调（深色模式）
+  --btn-reset-bg: rgba(13, 148, 136, 0.15);
+  --btn-reset-border: rgba(13, 148, 136, 0.3);
+  --btn-reset-color: #5eead4;
+  --btn-reset-hover-bg: rgba(13, 148, 136, 0.25);
+  --btn-reset-hover-border: rgba(13, 148, 136, 0.5);
+  --btn-reset-hover-color: #99f6e4;
+
+  // 状态标签颜色 - 待审核（深色模式）
+  --badge-unaudited-bg-dark: rgba(239, 68, 68, 0.15);
+  --badge-unaudited-color-dark: #f87171;
+
+  // 状态标签颜色 - 成功/正常（深色模式）
+  --badge-success-bg-dark: rgba(74, 222, 128, 0.15);
+  --badge-success-color-dark: #4ade80;
+
+  // 状态标签颜色 - 警告/未通过（深色模式）
+  --badge-warning-bg-dark: rgba(251, 191, 36, 0.15);
+  --badge-warning-color-dark: #fbbf24;
+
+  // 状态标签颜色 - 默认（深色模式）
+  --badge-default-bg-dark: rgba(148, 163, 184, 0.15);
+  --badge-default-color-dark: #94a3b8;
+
+  // 操作按钮颜色 - 查看（深色模式）
+  --action-view-bg-dark: rgba(13, 148, 136, 0.15);
+  --action-view-color-dark: #5eead4;
+  --action-view-border-dark: rgba(13, 148, 136, 0.3);
+  --action-view-hover-bg-dark: rgba(13, 148, 136, 0.25);
+  --action-view-hover-border-dark: rgba(13, 148, 136, 0.5);
+
+  // 操作按钮颜色 - 审核（深色模式）
+  --action-audit-bg-dark: rgba(2, 132, 199, 0.15);
+  --action-audit-color-dark: #38bdf8;
+  --action-audit-border-dark: rgba(2, 132, 199, 0.3);
+  --action-audit-hover-bg-dark: rgba(2, 132, 199, 0.25);
+  --action-audit-hover-border-dark: rgba(2, 132, 199, 0.5);
+  --action-audit-shadow-dark: rgba(2, 132, 199, 0.3);
+
+  // 操作按钮颜色 - 拒绝（深色模式）
+  --action-reject-bg-dark: rgba(217, 119, 6, 0.15);
+  --action-reject-color-dark: #fbbf24;
+  --action-reject-border-dark: rgba(217, 119, 6, 0.3);
+  --action-reject-hover-bg-dark: rgba(217, 119, 6, 0.25);
+  --action-reject-hover-border-dark: rgba(217, 119, 6, 0.5);
+  --action-reject-shadow-dark: rgba(217, 119, 6, 0.3);
+
+  // 操作按钮颜色 - 删除（深色模式）
+  --action-delete-bg-dark: rgba(239, 68, 68, 0.15);
+  --action-delete-color-dark: #f87171;
+  --action-delete-border-dark: rgba(239, 68, 68, 0.3);
+  --action-delete-hover-bg-dark: rgba(239, 68, 68, 0.25);
+  --action-delete-hover-border-dark: rgba(239, 68, 68, 0.5);
+  --action-delete-shadow-dark: rgba(239, 68, 68, 0.3);
+
+  // 统计卡片渐变色（深色模式）
+  --stat-card-user-dark: linear-gradient(90deg, #475569, #64748b);
+  --stat-card-article-dark: linear-gradient(90deg, #c084fc, #f472b6);
+  --stat-card-visits-dark: linear-gradient(90deg, #334155, #475569);
+  --stat-card-today-dark: linear-gradient(90deg, #22c55e, #2dd4bf);
 }
 
 // 防止 Element Plus 对话框打开时页面抖动

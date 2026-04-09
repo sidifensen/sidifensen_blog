@@ -138,29 +138,61 @@ const reprintText = computed(() => {
 
   // 待审核
   .status-unaudited {
-    background-color: #fff1f0;
-    color: #f56c6c;
+    background-color: var(--badge-unaudited-bg);
+    color: var(--badge-unaudited-color);
   }
 
   // 已审核/正常
   .status-audited,
   .status-normal {
-    background-color: #f0f9eb;
-    color: #67c23a;
+    background-color: var(--badge-success-bg);
+    color: var(--badge-success-color);
   }
 
   // 未通过/禁用
   .status-rejected,
   .status-disabled {
-    background-color: #fdf6ec;
-    color: #e6a23c;
+    background-color: var(--badge-warning-bg);
+    color: var(--badge-warning-color);
   }
 
   // 默认
   .status-default,
   .default-badge {
-    background-color: #f4f4f5;
-    color: #909399;
+    background-color: var(--badge-default-bg);
+    color: var(--badge-default-color);
+  }
+}
+
+// 深色模式适配
+html.dark {
+  .status-badge {
+    // 待审核 - 深色模式
+    .status-unaudited {
+      background-color: var(--badge-unaudited-bg-dark);
+      color: var(--badge-unaudited-color-dark);
+    }
+
+    // 已审核/正常 - 深色模式
+    .status-audited,
+    .status-normal {
+      background-color: var(--badge-success-bg-dark);
+      color: var(--badge-success-color-dark);
+    }
+
+    // 未通过/禁用 - 深色模式
+    .status-rejected,
+    .status-disabled {
+      background-color: var(--badge-warning-bg-dark);
+      color: var(--badge-warning-color-dark);
+    }
+
+    // 默认 - 深色模式
+    .status-default,
+    .default-badge {
+      background-color: var(--badge-default-bg-dark);
+      color: var(--badge-default-color-dark);
+    }
   }
 }
 </style>

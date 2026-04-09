@@ -236,6 +236,9 @@ function sendEmailBtn() {
 function registerBtn() {
   formDataRef.value.validate((valid) => {
     if (valid) {
+      // 去除首尾空格
+      formData.value.username = formData.value.username.trim()
+      formData.value.email = formData.value.email.trim()
       // 去掉repeatPassword字段，后端不需要
       const RegisterDto = { ...formData.value }
       delete RegisterDto.repeatPassword

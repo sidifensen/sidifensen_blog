@@ -213,7 +213,7 @@ const handleSelect = (item) => {
 
       &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-hover);
       }
 
       &.is-selected {
@@ -244,21 +244,21 @@ const handleSelect = (item) => {
 
             &:hover {
               transform: scale(1.02);
-              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+              box-shadow: var(--shadow-hover);
             }
           }
 
           .no-cover {
             width: 100%;
             height: 120px;
-            background-color: #f5f5f5;
-            border: 1px dashed #ddd;
+            background-color: var(--bg-page);
+            border: 1px dashed var(--border);
             border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 12px;
-            color: #999;
+            color: var(--text-placeholder);
           }
         }
 
@@ -275,8 +275,8 @@ const handleSelect = (item) => {
 
             .item-id {
               font-size: 12px;
-              color: #666;
-              background-color: #f5f5f5;
+              color: var(--text-muted);
+              background-color: var(--bg-page);
               padding: 2px 6px;
               border-radius: 4px;
             }
@@ -286,7 +286,7 @@ const handleSelect = (item) => {
           .card-title {
             font-size: 16px;
             font-weight: 600;
-            color: #333;
+            color: var(--text-primary);
             line-height: 1.4;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -297,7 +297,7 @@ const handleSelect = (item) => {
 
           .card-description {
             font-size: 13px;
-            color: #666;
+            color: var(--text-muted);
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
@@ -308,18 +308,18 @@ const handleSelect = (item) => {
           .card-user,
           .card-meta {
             font-size: 13px;
-            color: #666;
+            color: var(--text-muted);
             display: flex;
             align-items: center;
             gap: 4px;
 
             .label {
               font-weight: 500;
-              color: #888;
+              color: var(--text-regular);
             }
 
             .value {
-              color: #555;
+              color: var(--text-primary);
             }
           }
 
@@ -349,6 +349,30 @@ const handleSelect = (item) => {
   .empty-state {
     padding: 60px 0;
     text-align: center;
+  }
+}
+
+// 深色模式适配
+html.dark {
+  .mobile-card-list {
+    .selection-hint {
+      background-color: var(--el-fill-color-dark);
+    }
+
+    .item-card {
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      }
+    }
+
+    .no-cover {
+      background-color: var(--bg-page);
+      border-color: var(--border);
+    }
+
+    .item-id {
+      background-color: var(--bg-page) !important;
+    }
   }
 }
 </style>

@@ -108,8 +108,16 @@ const getCheckCode = async () => {
   }
 }
 
-// 刷新验证码
+// 刷新验证码（3秒间隔限制）
+const canRefreshCode = ref(true)
 const refreshCheckCode = async () => {
+  if (!canRefreshCode.value) {
+    return
+  }
+  canRefreshCode.value = false
+  setTimeout(() => {
+    canRefreshCode.value = true
+  }, 3000)
   await getCheckCode()
 }
 
@@ -141,6 +149,9 @@ const handleLogin = async () => {
   loading.value = true
 
   try {
+    // 去除用户名和验证码首尾空格
+    loginForm.value.username = loginForm.value.username.trim()
+    loginForm.value.checkCode = loginForm.value.checkCode.trim()
     const res = await login(loginForm.value)
     // 登录成功后先持久化 token，再并行加载用户信息和菜单数据
     SetJwt(res.data)

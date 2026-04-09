@@ -7,6 +7,10 @@
     "ssh": {
       "command": "cmd",
       "args": ["/c", "npx", "-y", "@fangjunjie/ssh-mcp-server", "--config-file", "C:\\Users\\x\\ssh-config.json"]
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest", "--autoConnect"]
     }
   }
 }

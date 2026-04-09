@@ -204,6 +204,9 @@ const loginBtn = async () => {
   }
 
   try {
+    // 去除用户名和验证码首尾空格
+    formData.value.username = formData.value.username.trim()
+    formData.value.checkCode = formData.value.checkCode.trim()
     const res = await login(formData.value)
     ElMessage.success('登录成功')
     // 将 jwt 存储到 localStorage
@@ -221,8 +224,16 @@ const loginBtn = async () => {
 }
 
 const checkCodeInfo = ref({})
-// 刷新验证码
+const canRefreshCode = ref(true)
+// 刷新验证码（3秒间隔限制）
 const changeCheckCode = async () => {
+  if (!canRefreshCode.value) {
+    return
+  }
+  canRefreshCode.value = false
+  setTimeout(() => {
+    canRefreshCode.value = true
+  }, 3000)
   await checkCode().then((res) => {
     checkCodeInfo.value = res.data
     formData.value.checkCodeKey = res.data.checkCodeKey

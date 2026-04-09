@@ -124,23 +124,23 @@ const trendIcon = computed(() => {
   }
 
   &.stat-card--user {
-    --card-accent: linear-gradient(90deg, #64748b, #94a3b8);
+    --card-accent: var(--stat-card-user);
   }
 
   &.stat-card--article {
-    --card-accent: linear-gradient(90deg, #f093fb, #f5576c);
+    --card-accent: var(--stat-card-article);
   }
 
   &.stat-card--visits {
-    --card-accent: linear-gradient(90deg, #475569, #64748b);
+    --card-accent: var(--stat-card-visits);
   }
 
   &.stat-card--today {
-    --card-accent: linear-gradient(90deg, #43e97b, #38f9d7);
+    --card-accent: var(--stat-card-today);
   }
 
   &.stat-card--default {
-    --card-accent: linear-gradient(90deg, #64748b, #94a3b8);
+    --card-accent: var(--stat-card-user);
   }
 
   .stat-card__header {
@@ -204,6 +204,31 @@ const trendIcon = computed(() => {
         color: var(--text-muted);
         background: var(--trend-neutral-bg);
       }
+    }
+  }
+}
+
+// 深色模式适配
+html.dark {
+  .stat-card {
+    &.stat-card--user {
+      --card-accent: var(--stat-card-user-dark);
+    }
+
+    &.stat-card--article {
+      --card-accent: var(--stat-card-article-dark);
+    }
+
+    &.stat-card--visits {
+      --card-accent: var(--stat-card-visits-dark);
+    }
+
+    &.stat-card--today {
+      --card-accent: var(--stat-card-today-dark);
+    }
+
+    &.stat-card--default {
+      --card-accent: var(--stat-card-user-dark);
     }
   }
 }
