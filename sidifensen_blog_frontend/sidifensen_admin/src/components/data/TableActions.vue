@@ -136,6 +136,7 @@ const handleAction = (action) => {
   .action-btn {
     margin-left: 0 !important;
     border-radius: 6px;
+    font-weight: 600;
     transition: all 0.3s ease;
 
     &:hover:not(:disabled) {
@@ -145,14 +146,13 @@ const handleAction = (action) => {
 
   // 查看按钮
   .view-btn {
-    background-color: #f0f9ff;
-    color: #0369a1;
-    border-color: #f0f9ff;
+    background-color: #f0fdfa;
+    color: #0d9488;
+    border-color: #99f6e4;
 
     &:hover:not(:disabled) {
-      background-color: #dbeafe;
-      border-color: #dbeafe;
-      box-shadow: 0 2px 8px rgba(3, 105, 161, 0.3);
+      background-color: #ccfbf1;
+      border-color: #5eead4;
     }
   }
 
@@ -171,14 +171,14 @@ const handleAction = (action) => {
 
   // 编辑按钮
   .edit-btn {
-    background-color: #e0f2fe;
-    color: #0284c7;
-    border-color: #e0f2fe;
+    background-color: var(--el-fill-color-light);
+    color: var(--text-regular);
+    border-color: var(--el-border-color);
 
     &:hover:not(:disabled) {
-      background-color: #bae6fd;
-      border-color: #bae6fd;
-      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+      background-color: var(--el-fill-color);
+      border-color: var(--text-muted);
+      color: var(--text-primary);
     }
   }
 

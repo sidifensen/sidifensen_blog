@@ -53,6 +53,7 @@
             <!-- 操作按钮 -->
             <div v-if="showActions" class="card-actions">
               <el-button v-if="hasViewAction" type="info" size="small" @click="$emit('view', item)"> 查看 </el-button>
+              <el-button v-if="hasDetailAction" type="info" size="small" @click="$emit('detail', item)"> 详情 </el-button>
               <el-button v-if="hasEditAction" type="primary" size="small" @click="$emit('edit', item)"> 编辑 </el-button>
               <el-button v-if="hasAuditAction" type="primary" size="small" @click="$emit('audit', item)"> 审核 </el-button>
               <el-button v-if="hasRejectAction" type="warning" size="small" @click="$emit('reject', item)"> 拒绝 </el-button>
@@ -146,6 +147,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  hasDetailAction: {
+    type: Boolean,
+    default: false,
+  },
   hasEditAction: {
     type: Boolean,
     default: false,
@@ -165,7 +170,7 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['select', 'view', 'edit', 'delete', 'audit', 'reject'])
+const emit = defineEmits(['select', 'view', 'detail', 'edit', 'delete', 'audit', 'reject'])
 
 // 选中数量
 const selectedCount = props.selectedItems.length

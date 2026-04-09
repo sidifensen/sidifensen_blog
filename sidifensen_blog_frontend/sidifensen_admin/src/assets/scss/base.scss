@@ -43,6 +43,22 @@ body {
 
   // 输入框背景色
   --bg-input: #f5f5f5; // 输入框灰色背景
+
+  // 搜索按钮
+  --btn-search-bg: #f1f5f9;
+  --btn-search-border: #e2e8f0;
+  --btn-search-color: #475569;
+  --btn-search-hover-bg: #e0e7ff;
+  --btn-search-hover-border: #818cf8;
+  --btn-search-hover-color: #4f46e5;
+
+  // 重置按钮
+  --btn-reset-bg: transparent;
+  --btn-reset-border: #f1f5f9;
+  --btn-reset-color: #94a3b8;
+  --btn-reset-hover-bg: #f8fafc;
+  --btn-reset-hover-border: #e2e8f0;
+  --btn-reset-hover-color: #64748b;
 }
 
 // 深色模式主题色
@@ -69,6 +85,22 @@ html.dark {
 
   // 输入框背景色
   --bg-input: #334155; // 深色模式下输入框灰色背景
+
+  // 搜索按钮
+  --btn-search-bg: #334155;
+  --btn-search-border: #475569;
+  --btn-search-color: #e2e8f0;
+  --btn-search-hover-bg: #4338ca;
+  --btn-search-hover-border: #6366f1;
+  --btn-search-hover-color: #e0e7ff;
+
+  // 重置按钮
+  --btn-reset-bg: #ffffff;
+  --btn-reset-border: #e2e8f0;
+  --btn-reset-color: #1e293b;
+  --btn-reset-hover-bg: #f1f5f9;
+  --btn-reset-hover-border: #cbd5e1;
+  --btn-reset-hover-color: #475569;
 }
 
 // 防止 Element Plus 对话框打开时页面抖动

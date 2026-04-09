@@ -131,16 +131,20 @@ const handleAvatarClick = () => {
         color: var(--text-on-accent);
         border-radius: 18px 18px 4px 18px;
         box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+        max-width: 70vw; // 气泡最大宽度
+        width: max-content; // 气泡宽度自适应内容
 
         // 图片消息不需要蓝色背景
         &:has(.image-bubble) {
           background: transparent;
           box-shadow: none;
+          max-width: 240px; // 图片消息单独限制
         }
 
         .text-bubble {
           word-break: break-word;
           line-height: 1.5;
+          max-width: 100%; // 文字气泡最大占满父元素
         }
       }
 
@@ -164,6 +168,7 @@ const handleAvatarClick = () => {
     cursor: pointer;
     transition: transform 0.2s ease;
     border-radius: 12px;
+    margin-top: 10px;
 
     &:hover {
       transform: scale(1.08);
@@ -174,7 +179,7 @@ const handleAvatarClick = () => {
     display: flex;
     flex-direction: column;
     margin-left: 12px;
-    max-width: 65%;
+    min-width: 0; // 防止flex子项溢出
 
     .bubble-header {
       display: flex;
@@ -183,24 +188,29 @@ const handleAvatarClick = () => {
       margin-bottom: 6px;
 
       .bubble-nickname {
-        font-size: 13px;
+        font-size: 11px;
         font-weight: 600;
         color: var(--text-secondary);
+        flex-shrink: 0; // 防止昵称被压缩
       }
 
       .bubble-time {
         font-size: 11px;
         color: var(--text-muted);
         font-weight: 500;
+        white-space: nowrap; // 时间不换行
+        flex-shrink: 0; // 时间不压缩
       }
     }
 
     .bubble-body {
-      padding: 12px 16px;
+      padding: 10px 14px;
       border-radius: 18px 18px 18px 4px;
       background: var(--bg-message-received);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
       transition: all 0.2s ease;
+      max-width: 70vw; // 气泡最大宽度
+      width: max-content; // 气泡宽度自适应内容
 
       &:hover {
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
@@ -211,12 +221,14 @@ const handleAvatarClick = () => {
         padding: 0;
         background: transparent;
         box-shadow: none;
+        max-width: 240px; // 图片消息单独限制
       }
 
       .text-bubble {
         word-break: break-word;
         font-size: 14px;
         line-height: 1.6;
+        max-width: 100%; // 文字气泡最大占满父元素
       }
 
       .image-bubble {
@@ -268,8 +280,8 @@ const handleAvatarClick = () => {
 
     // 已读/未读状态
     .read-status {
-      margin-top: 6px;
-      font-size: 11px;
+      margin-top: 4px;
+      font-size: 10px;
       font-weight: 500;
     }
   }

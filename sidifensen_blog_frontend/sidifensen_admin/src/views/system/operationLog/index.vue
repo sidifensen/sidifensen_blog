@@ -11,37 +11,11 @@
   >
     <!-- 筛选器 -->
     <template #filters>
-      <el-select v-model="searchForm.operatorRole" placeholder="操作角色" filterable clearable size="small" style="width: 140px" @change="handleSearch">
-        <el-option label="全部" value="" />
-        <el-option label="管理员" value="admin" />
-        <el-option label="查看者" value="viewer" />
-      </el-select>
-      <el-select v-model="searchForm.status" placeholder="操作状态" filterable clearable size="small" style="width: 120px" @change="handleSearch">
-        <el-option label="全部" value="" />
-        <el-option label="成功" :value="0" />
-        <el-option label="失败" :value="1" />
-        <el-option label="异常" :value="2" />
-      </el-select>
-      <el-select v-model="searchForm.operation" placeholder="操作类型" filterable clearable size="small" style="width: 120px" @change="handleSearch">
-        <el-option label="全部" value="" />
-        <el-option label="获取" value="获取" />
-        <el-option label="新增" value="新增" />
-        <el-option label="修改" value="修改" />
-        <el-option label="删除" value="删除" />
-        <el-option label="查询" value="查询" />
-        <el-option label="搜索" value="搜索" />
-        <el-option label="审核" value="审核" />
-        <el-option label="分配" value="分配" />
-        <el-option label="其他" value="其他" />
-      </el-select>
-      <el-select v-model="searchForm.requestMethod" placeholder="请求方式" filterable clearable size="small" style="width: 120px" @change="handleSearch">
-        <el-option label="全部" value="" />
-        <el-option label="GET" value="GET" />
-        <el-option label="POST" value="POST" />
-        <el-option label="PUT" value="PUT" />
-        <el-option label="DELETE" value="DELETE" />
-      </el-select>
-      <el-input v-model.number="searchForm.operatorId" placeholder="操作人员 ID" :prefix-icon="Search" size="small" style="width: 140px" clearable @input="handleSearch" />
+      <CommonSelect v-model="searchForm.operatorRole" :options="operatorRoleOptions" label="操作角色" placeholder="操作角色" width="140px" size="small" @change="handleSearch" />
+      <CommonSelect v-model="searchForm.status" :options="operationStatusOptions" label="操作状态" placeholder="操作状态" width="120px" size="small" @change="handleSearch" />
+      <CommonSelect v-model="searchForm.operation" :options="operationTypeOptions" label="操作类型" placeholder="操作类型" width="120px" size="small" @change="handleSearch" />
+      <CommonSelect v-model="searchForm.requestMethod" :options="requestMethodOptions" label="请求方式" placeholder="请求方式" width="120px" size="small" @change="handleSearch" />
+      <KeywordSearch v-model.number="searchForm.operatorId" placeholder="操作人员 ID" :debounce="0" @search="handleSearch" />
       <SearchButtons @search="handleSearch" @reset="handleReset" />
     </template>
 
@@ -59,10 +33,10 @@
         :show-id="true"
         :show-create-time="false"
         :show-actions="true"
-        :has-view-action="false"
-        :has-edit-action="false"
+        :has-detail-action="true"
         :has-delete-action="true"
-        :actions-width="150"
+        :actions-width="180"
+        @detail="handleViewDetail"
         @selection-change="handleSelectionChange"
         @delete="handleDelete"
       >
@@ -152,12 +126,6 @@
         </el-table-column>
         <!-- 操作时间列 -->
         <el-table-column prop="createTime" label="操作时间" sortable width="110" />
-        <!-- 详情按钮 -->
-        <el-table-column label="详情" width="80" fixed="right">
-          <template #default="{ row }">
-            <el-button type="info" size="small" text bg @click="handleViewDetail(row.id)">详情</el-button>
-          </template>
-        </el-table-column>
       </DataTable>
     </template>
 
@@ -240,7 +208,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Search, Delete, InfoFilled } from '@element-plus/icons-vue'
+import { Delete } from '@element-plus/icons-vue'
 import { getOperationLogList, searchOperationLog, deleteOperationLogs, getOperationLogDetail } from '@/api/operationLog'
 
 // 组件
@@ -248,7 +216,9 @@ import ManagementCard from '@/components/management/ManagementCard.vue'
 import DataTable from '@/components/data/DataTable.vue'
 import MobileCardList from '@/components/data/MobileCardList.vue'
 import BatchActions from '@/components/actions/BatchActions.vue'
+import KeywordSearch from '@/components/search/KeywordSearch.vue'
 import SearchButtons from '@/components/search/SearchButtons.vue'
+import CommonSelect from '@/components/search/CommonSelect.vue'
 
 // 操作日志列表数据
 const logList = ref([])
@@ -267,6 +237,40 @@ const searchForm = reactive({
   createTimeStart: null,
   createTimeEnd: null,
 })
+
+// 操作角色选项
+const operatorRoleOptions = [
+  { label: '管理员', value: 'admin' },
+  { label: '查看者', value: 'viewer' },
+]
+
+// 操作状态选项
+const operationStatusOptions = [
+  { label: '成功', value: 0 },
+  { label: '失败', value: 1 },
+  { label: '异常', value: 2 },
+]
+
+// 操作类型选项
+const operationTypeOptions = [
+  { label: '获取', value: '获取' },
+  { label: '新增', value: '新增' },
+  { label: '修改', value: '修改' },
+  { label: '删除', value: '删除' },
+  { label: '查询', value: '查询' },
+  { label: '搜索', value: '搜索' },
+  { label: '审核', value: '审核' },
+  { label: '分配', value: '分配' },
+  { label: '其他', value: '其他' },
+]
+
+// 请求方式选项
+const requestMethodOptions = [
+  { label: 'GET', value: 'GET' },
+  { label: 'POST', value: 'POST' },
+  { label: 'PUT', value: 'PUT' },
+  { label: 'DELETE', value: 'DELETE' },
+]
 
 // 选中的日志
 const selectedLogs = ref([])
@@ -461,9 +465,9 @@ const refreshLogList = async (deletedCount = 0) => {
 }
 
 // 查看详情
-const handleViewDetail = async (id) => {
+const handleViewDetail = async (row) => {
   try {
-    const res = await getOperationLogDetail(id)
+    const res = await getOperationLogDetail(row.id)
     detailData.value = res.data
     detailDialogVisible.value = true
   } catch {
@@ -637,39 +641,6 @@ onMounted(() => {
 .time-slow {
   color: var(--el-color-danger);
   font-weight: 600;
-}
-
-// 表格操作按钮组
-.table-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 5px;
-
-  .detail-button {
-    border-radius: 6px;
-    background-color: var(--el-fill-color);
-    color: var(--text-regular);
-    border-color: var(--el-border-color);
-
-    &:hover {
-      background-color: var(--el-fill-color-dark);
-      border-color: var(--el-border-color-dark);
-    }
-  }
-
-  .delete-button {
-    border-radius: 6px;
-    background-color: var(--el-color-danger-light-9);
-    color: var(--el-color-danger);
-    border-color: var(--el-color-danger-light-9);
-
-    &:hover {
-      background-color: var(--el-color-danger-light-8);
-      border-color: var(--el-color-danger-light-8);
-    }
-  }
 }
 
 // 移动端元信息

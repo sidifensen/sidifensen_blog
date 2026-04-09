@@ -1,50 +1,40 @@
 <template>
   <div class="home-container">
     <!-- Hero 区域 -->
-    <section class="hero" ref="heroRef" @mousemove="handleMouseMove" @mouseleave="handleMouseLeave">
-      <!-- 粒子背景层 -->
-      <div class="hero-particles">
-        <div v-for="(style, i) in particleStyles" :key="i" class="particle" :style="style"></div>
-      </div>
-      <!-- 星星闪烁层 -->
-      <div class="hero-stars">
-        <div v-for="(star, i) in stars" :key="i" class="star" :style="star.style"></div>
-      </div>
-      <!-- 网格背景 -->
-      <div class="hero-grid"></div>
-
-      <!-- 鼠标跟随光效 -->
-      <div class="hero-glow" ref="heroGlow"></div>
+    <section class="hero">
+      <!-- 简洁渐变背景 -->
+      <div class="hero-bg"></div>
 
       <div class="hero-content">
         <div class="hero-badge">
           <span class="dot"></span>
-          <span>欢迎来到斯蒂芬森社区</span>
+          <span>sidifensen_blog</span>
         </div>
 
-        <h1 class="hero-title">
-          <span
-            class="title-line"
-            @mouseenter="onTitleHover(true)"
-            @mouseleave="onTitleHover(false)"
-          >
-            探索技术的<br />
-            <span class="underline-wrap">
-              <span class="gradient">无限可能</span>
-              <span class="underline"></span>
-            </span>
-          </span>
-        </h1>
+        <h1 class="hero-title">斯蒂芬森社区</h1>
 
         <div class="hero-subtitle">
-          <div class="hero-typewriter">
-            <span class="hero-typewriter-text">{{ typedSubtitle }}</span>
-            <span class="hero-typewriter-cursor"></span>
-          </div>
+          <span class="hero-typewriter-text">{{ typedSubtitle }}</span>
+          <span class="hero-typewriter-cursor"></span>
         </div>
 
-        <div class="hero-cta">
-          <button class="btn btn-primary btn-lg" @click="navigateTo('/article')">开始探索</button>
+        <div class="hero-actions">
+          <button class="explore-btn" @click="navigateTo('/article')">
+            <span>开始探索</span>
+            <svg
+              class="explore-btn-arrow"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
 
         <div class="hero-nav">
@@ -59,6 +49,9 @@
           </div>
         </div>
       </div>
+
+      <!-- 右侧装饰 - 代码片段 -->
+      <HeroCodeSnippet />
     </section>
 
     <!-- 主内容区 -->
@@ -275,6 +268,7 @@ import StatsCard from '@/components/StatsCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import SkeletonLoader from '@/components/SkeletonLoader.vue'
 import { useSeoMeta } from '@/plugins/seo'
+import HeroCodeSnippet from '@/components/hero/HeroCodeSnippet.vue'
 
 // SEO - 首页
 useSeoMeta({
@@ -294,8 +288,6 @@ const currentYear = ref(new Date().getFullYear())
 const contentSection = ref(null)
 const articlesSectionRef = ref(null)
 const hotTags = ref([]) // 热门标签
-const heroRef = ref(null)
-const heroGlow = ref(null)
 
 // 社区统计数据
 const stats = ref({
@@ -313,119 +305,19 @@ const statsList = ref([
   { value: 0, label: '活跃作者' },
 ])
 
-// 动画显示的数字（用于本地显示）
-const animatedStats = ref({
-  articleCount: 0,
-  userCount: 0,
-  viewCount: 0,
-  authorCount: 0,
-})
-
 // 打字机效果
 const typedSubtitle = ref('')
 let subtitleIndex = 0
 let charIndex = 0
 let isDeleting = false
 
-// 快速导航项
-const quickNavItems = ref([
-  { title: '技术文章', path: '/article', icon: '📚' },
-  { title: '相册空间', path: '/album', icon: '📷' },
-  { title: '友情链接', path: '/link', icon: '🔗' },
-])
+const subtitles = ['分享技术、经验和见解', '探索代码的无限可能', '与开发者共同成长']
 
-// 粒子样式 - 响应式引用，mounted 时生成一次真正的随机值
-const particleStyles = ref([])
-
-// 星星数据 - 每个星星有独立的状态、位置和定时器
-const stars = ref([])
-let starTimers = []
-
-const generateParticleStyles = () => {
-  particleStyles.value = Array.from({ length: 30 }, () => ({
-    left: `${Math.random() * 100}%`,
-    animationDelay: `${Math.random() * 15}s`,
-    animationDuration: `${15 + Math.random() * 10}s`,
-    width: `${2 + Math.random() * 3}px`,
-    height: `${2 + Math.random() * 3}px`,
-  }))
-
-  // 生成星星 - JS 控制闪烁和位置切换
-  const createStar = () => ({
-    style: {
-      left: `${Math.random() * 100}%`,
-      top: `${12 + Math.random() * 16}%`,
-      width: `${1 + Math.random() * 2}px`,
-      height: `${1 + Math.random() * 2}px`,
-      opacity: 0,
-    },
-  })
-
-  stars.value = Array.from({ length: 12 }, createStar)
-
-  // 启动星星闪烁定时器
-  starTimers.forEach(clearInterval)
-  starTimers = []
-
-  stars.value.forEach((star, index) => {
-    const flashStar = () => {
-      // 随机闪烁次数（1-4次）
-      const flashCount = 1 + Math.floor(Math.random() * 4)
-      let currentFlash = 0
-
-      const doFlash = () => {
-        currentFlash++
-        // 亮起 - 每次亮度都随机
-        star.style.opacity = 0.5 + Math.random() * 0.5
-        star.style.transform = 'scale(1)'
-
-        // 亮持续时间（2-4秒）
-        const lightDuration = 2000 + Math.random() * 2000
-        setTimeout(() => {
-          // 熄灭
-          star.style.opacity = 0
-          star.style.transform = 'scale(0.8)'
-
-          // 如果还没到次数，等待后再次亮起
-          if (currentFlash < flashCount) {
-            const offDuration = 1500 + Math.random() * 2000
-            starTimers[index] = setTimeout(doFlash, offDuration)
-          } else {
-            // 次数用完了，消失并换位置重新生成
-            starTimers[index] = setTimeout(
-              () => {
-                star.style.left = `${Math.random() * 100}%`
-                star.style.top = `${12 + Math.random() * 16}%`
-                flashStar() // 重新开始
-              },
-              10000 + Math.random() * 10000,
-            ) // 10-20秒后再出现
-          }
-        }, lightDuration)
-      }
-
-      doFlash()
-    }
-
-    // 初始延迟启动
-    starTimers[index] = setTimeout(flashStar, Math.random() * 5000)
-  })
-}
-
-const subtitles = [
-  '在这里，发现知识 · 分享经验 · 连接开发者',
-  '探索代码的无限可能',
-  '与开发者共同成长',
-  '记录技术旅程的点点滴滴',
-]
-
-// 打字机速度
-const TYPE_SPEED = 100
-const DELETE_SPEED = 50
+const TYPE_SPEED = 80
+const DELETE_SPEED = 40
 const PAUSE_AFTER_TYPE = 2000
 const PAUSE_AFTER_DELETE = 500
 
-// 打字机逻辑
 const typeSubtitle = () => {
   const current = subtitles[subtitleIndex]
   if (!isDeleting) {
@@ -451,27 +343,12 @@ const typeSubtitle = () => {
   }
 }
 
-// 鼠标跟随光效
-const handleMouseMove = (e) => {
-  if (!heroRef.value || !heroGlow.value) return
-
-  const rect = heroRef.value.getBoundingClientRect()
-  const x = e.clientX - rect.left
-  const y = e.clientY - rect.top
-
-  heroGlow.value.style.background = `radial-gradient(
-    300px circle at ${x}px ${y}px,
-    rgba(0, 102, 255, 0.12),
-    transparent 40%
-  )`
-  heroGlow.value.style.opacity = '1'
-}
-
-const handleMouseLeave = () => {
-  if (heroGlow.value) {
-    heroGlow.value.style.opacity = '0'
-  }
-}
+// 快速导航项
+const quickNavItems = ref([
+  { title: '技术文章', path: '/article', icon: '📚' },
+  { title: '相册空间', path: '/album', icon: '📷' },
+  { title: '友情链接', path: '/link', icon: '🔗' },
+])
 
 // 滚动入场动画
 const observeElements = () => {
@@ -629,13 +506,12 @@ const animateNumber = (key, target) => {
 }
 
 onMounted(async () => {
-  generateParticleStyles()
+  setTimeout(typeSubtitle, 500)
   await Promise.all([fetchArticleList(), loadHotTags(), loadCommunityStats()])
   // 数据加载完成后，等待 DOM 更新再观察元素
   setTimeout(() => {
     observeElements()
   }, 100)
-  setTimeout(typeSubtitle, 1000)
 })
 </script>
 
@@ -676,162 +552,85 @@ html.dark {
   }
 }
 
-// ===== 按钮 =====
-.btn {
-  padding: 8px 20px;
+// ===== 探索按钮 =====
+.explore-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: none;
 
-  &.btn-ghost {
-    background: transparent;
-    color: var(--text-secondary);
+  html.dark & {
+    background: #ededed;
+    color: #1a1a1a;
+  }
 
-    &:hover {
-      background: var(--bg-subtle);
+  &:hover {
+    background: #333;
+
+    html.dark & {
+      background: #d0d0d0;
+    }
+
+    .explore-btn-arrow {
+      transform: translateX(3px);
     }
   }
 
-  &.btn-primary {
-    background: var(--accent);
-    color: #fff;
-    position: relative;
-    overflow: hidden;
-
-    &::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.2) 0%,
-        transparent 50%,
-        rgba(255, 255, 255, 0.1) 100%
-      );
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    &:hover {
-      background: #0052cc;
-      transform: translateY(-2px);
-      box-shadow:
-        0 4px 12px rgba(0, 102, 255, 0.4),
-        0 0 20px rgba(0, 102, 255, 0.3);
-
-      &::before {
-        opacity: 1;
-      }
-    }
-
-    &:active {
-      transform: translateY(0);
-    }
+  &:active {
+    transform: scale(0.98);
   }
 
-  &.btn-lg {
-    padding: 14px 40px;
-    font-size: 1rem;
+  .explore-btn-arrow {
+    transition: transform 0.2s ease;
   }
 }
 
 // ===== Hero 区域 =====
 .hero {
   position: relative;
-  min-height: calc(100vh - 48px);
-  padding-top: 20px;
+  min-height: 85vh;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   background: var(--bg-page);
   overflow: hidden;
 
-  // 粒子层 - 从下往上缓缓升起
-  .hero-particles {
+  // 简洁渐变背景
+  .hero-bg {
     position: absolute;
     inset: 0;
-    pointer-events: none;
-    overflow: hidden;
-  }
-
-  .particle {
-    position: absolute;
-    bottom: -10px;
-    border-radius: 50%;
-    background: rgba(0, 102, 255, 0.5);
-    animation: particleRise linear infinite;
-    box-shadow: 0 0 4px rgba(0, 102, 255, 0.3);
-    opacity: 0.5; // 统一透明度
-
-    html.dark & {
-      background: rgba(100, 180, 255, 0.4);
-      box-shadow: 0 0 6px rgba(100, 180, 255, 0.3);
-    }
-  }
-
-  // 星星闪烁层
-  .hero-stars {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .star {
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 1);
-    box-shadow:
-      0 0 6px 2px rgba(255, 255, 255, 0.8),
-      0 0 12px 4px rgba(200, 220, 255, 0.4);
-    transition:
-      opacity 0.3s ease,
-      transform 0.3s ease;
-
-    html.dark & {
-      background: rgba(220, 235, 255, 1);
-      box-shadow:
-        0 0 8px 2px rgba(200, 220, 255, 0.9),
-        0 0 16px 6px rgba(150, 180, 255, 0.5);
-    }
-  }
-
-  // 网格背景
-  .hero-grid {
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
+    background: linear-gradient(
+      135deg,
+      rgba(0, 102, 255, 0.04) 0%,
+      transparent 40%,
+      rgba(0, 194, 255, 0.03) 100%
+    );
     pointer-events: none;
 
     html.dark & {
-      background-image:
-        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background: linear-gradient(
+        135deg,
+        rgba(100, 180, 255, 0.06) 0%,
+        transparent 40%,
+        rgba(0, 102, 255, 0.04) 100%
+      );
     }
-  }
-
-  // 鼠标跟随光效
-  .hero-glow {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 1;
   }
 
   .hero-content {
     position: relative;
     z-index: 2;
-    text-align: center;
-    max-width: 900px;
+    text-align: left;
+    max-width: 1200px;
+    width: 100%;
     padding: 0 24px;
   }
 
@@ -840,15 +639,13 @@ html.dark {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 16px;
+    padding: 8px 16px;
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 9999px;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     color: var(--text-secondary);
-    margin-bottom: 40px;
-    animation: fadeInUp 0.6s ease-out both;
-    transform: translateY(-8px);
+    margin-bottom: 24px;
 
     .dot {
       width: 6px;
@@ -861,153 +658,74 @@ html.dark {
 
   // 标题
   .hero-title {
-    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-size: 3.5rem;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: -3px;
     line-height: 1.1;
-    margin-bottom: 32px;
-    animation: fadeInUp 0.6s ease-out 0.15s both;
+    margin-bottom: 24px;
     color: var(--text-primary);
-
-    .title-line {
-      display: inline-block;
-      position: relative;
-      cursor: default;
-    }
-
-    .underline-wrap {
-      position: relative;
-      display: inline-block;
-
-      .underline {
-        position: absolute;
-        bottom: -4px;
-        left: 0;
-        width: 0;
-        height: 3px;
-        background: var(--accent-gradient);
-        border-radius: 2px;
-        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-
-      &:hover .underline {
-        width: 100%;
-      }
-    }
-
-    .gradient {
-      background: var(--accent-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      display: inline-block;
-      transition: transform 0.3s ease;
-
-      &:hover {
-        transform: translateY(-2px);
-      }
-    }
 
     @media (max-width: 768px) {
       font-size: 2.5rem;
+      letter-spacing: -2px;
     }
   }
 
-  // 副标题
+  // 副标题（打字机）
   .hero-subtitle {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     color: var(--text-secondary);
-    max-width: 600px;
-    margin: 0 auto 48px;
-    animation: fadeInUp 0.6s ease-out 0.3s both;
+    margin-bottom: 48px;
+    min-height: 2em;
+    display: flex;
+    align-items: center;
+    gap: 2px;
 
-    .hero-typewriter {
-      min-height: 1.6em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
+    .hero-typewriter-text {
+      font-weight: 500;
+    }
 
-      &-text {
-        font-weight: 500;
-        position: relative;
-        transition: color 0.3s ease;
-
-        &::after {
-          content: '';
-          position: absolute;
-          bottom: -2px;
-          left: 0;
-          width: 0;
-          height: 2px;
-          background: var(--accent);
-          transition: width 0.3s ease;
-        }
-
-        &:hover {
-          color: var(--accent);
-
-          &::after {
-            width: 100%;
-          }
-        }
-      }
-
-      &-cursor {
-        width: 2px;
-        height: 1.2em;
-        background: var(--accent);
-        animation: cursorBlink 1s step-end infinite;
-      }
+    .hero-typewriter-cursor {
+      width: 2px;
+      height: 1.4em;
+      background: var(--accent);
+      animation: cursorBlink 1s step-end infinite;
     }
   }
 
   // CTA 按钮
-  .hero-cta {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    margin-top: 56px;
-    animation: fadeInUp 0.6s ease-out 0.45s both;
+  .hero-actions {
+    margin-bottom: 48px;
   }
 
   // 快速导航
   .hero-nav {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 14px;
-    margin-top: 64px;
-    animation: fadeInUp 0.6s ease-out 0.6s both;
+    gap: 16px;
 
     &-item {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 10px 20px;
+      gap: 8px;
+      padding: 12px 24px;
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 9999px;
-      font-size: 0.875rem;
+      font-size: 0.9rem;
       color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
       .icon {
         font-size: 1rem;
-        transition: transform 0.25s ease;
       }
 
       &:hover {
         background: var(--bg-subtle);
         border-color: var(--accent);
         color: var(--accent);
-        transform: translateY(-3px);
-        box-shadow: 0 4px 12px rgba(0, 102, 255, 0.15);
-
-        .icon {
-          transform: scale(1.2);
-        }
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 102, 255, 0.1);
       }
     }
   }
@@ -1644,35 +1362,7 @@ html.dark {
 }
 
 // ===== 动画 =====
-// 粒子从下往上缓缓升起
-@keyframes particleRise {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 0;
-  }
-  5% {
-    opacity: 0.7;
-  }
-  90% {
-    opacity: 0.7;
-  }
-  100% {
-    transform: translateY(-100vh) scale(0.5);
-    opacity: 0;
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+// 徽章呼吸灯动画
 @keyframes pulse {
   0%,
   100% {
@@ -1680,11 +1370,12 @@ html.dark {
     transform: scale(1);
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.6;
     transform: scale(1.2);
   }
 }
 
+// 打字机光标闪烁
 @keyframes cursorBlink {
   0%,
   100% {
@@ -1695,21 +1386,15 @@ html.dark {
   }
 }
 
-@keyframes scrollDrop {
-  0% {
-    transform: scaleY(0);
-    transform-origin: top;
+// 淡入上浮动画（保留供其他组件使用）
+@keyframes fadeInUp {
+  from {
     opacity: 0;
+    transform: translateY(20px);
   }
-  40% {
-    transform: scaleY(1);
-    transform-origin: top;
+  to {
     opacity: 1;
-  }
-  100% {
-    transform: scaleY(1);
-    transform-origin: top;
-    opacity: 0;
+    transform: translateY(0);
   }
 }
 

@@ -1,7 +1,7 @@
 <template>
   <div class="search-buttons">
     <el-button class="btn-search" :icon="Search" @click="handleSearch"> 搜索 </el-button>
-    <el-button class="btn-reset" :icon="Refresh" @click="handleReset"> 重置 </el-button>
+    <el-button class="btn-search btn-reset" :icon="Refresh" @click="handleReset"> 重置 </el-button>
   </div>
 </template>
 
@@ -51,27 +51,27 @@ const handleReset = () => {
 
   // 搜索按钮 - 蓝灰色调
   .btn-search {
-    background-color: #f1f5f9;
-    border-color: #e2e8f0;
-    color: #475569;
+    background-color: var(--btn-search-bg);
+    border-color: var(--btn-search-border);
+    color: var(--btn-search-color);
 
     &:hover {
-      background-color: #e0e7ff;
-      border-color: #818cf8;
-      color: #4f46e5;
+      background-color: var(--btn-search-hover-bg);
+      border-color: var(--btn-search-hover-border);
+      color: var(--btn-search-hover-color);
     }
   }
 
-  // 重置按钮 - 轻盈透明
+  // 重置按钮 - 蓝绿色调
   .btn-reset {
-    background-color: transparent;
-    border-color: #f1f5f9;
-    color: #94a3b8;
+    background-color: #f0fdfa;
+    border-color: #ccfbf1;
+    color: #0d9488;
 
     &:hover {
-      background-color: #f8fafc;
-      border-color: #e2e8f0;
-      color: #64748b;
+      background-color: #ccfbf1;
+      border-color: #99f6e4;
+      color: #0f766e;
     }
   }
 }

@@ -1,6 +1,6 @@
 <template>
   <div class="time-range-picker">
-    <span v-if="showLabel" class="filter-label">时间</span>
+    <span class="filter-label">时间</span>
     <div class="time-row">
       <el-date-picker
         v-model="localStartTime"
@@ -38,7 +38,6 @@
  * 功能说明：
  * - 开始时间和结束时间的日期时间选择器组合
  * - 支持 v-model:startTime 和 v-model:endTime 双向绑定
- * - 支持标签显示控制
  * - 响应式布局：移动端变为网格布局
  *
  * 使用方式：
@@ -57,10 +56,6 @@ const props = defineProps({
   endTime: {
     type: String,
     default: '',
-  },
-  showLabel: {
-    type: Boolean,
-    default: true,
   },
 })
 
@@ -122,7 +117,6 @@ defineExpose({
       border-radius: 8px;
       min-height: 32px;
       font-size: 14px;
-      background-color: var(--bg-input);
 
       &:focus-within {
         box-shadow: 0 0 0 3px var(--admin-primary-light);

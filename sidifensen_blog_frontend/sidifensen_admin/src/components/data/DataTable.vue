@@ -72,11 +72,14 @@
         <template #default="{ row }">
           <TableActions
             :show-view="hasViewAction"
+            :show-detail="hasDetailAction"
             :show-edit="hasEditAction"
             :show-delete="hasDeleteAction"
             :show-audit="hasAuditAction"
             :show-reject="hasRejectAction"
+            :detail-text="detailText"
             @view="$emit('view', row)"
+            @detail="$emit('detail', row)"
             @edit="$emit('edit', row)"
             @delete="$emit('delete', row)"
             @audit="$emit('audit', row)"
@@ -218,6 +221,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  hasDetailAction: {
+    type: Boolean,
+    default: false,
+  },
   hasEditAction: {
     type: Boolean,
     default: false,
@@ -234,10 +241,14 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  detailText: {
+    type: String,
+    default: '详情',
+  },
 })
 
 // Emits
-const emit = defineEmits(['selection-change', 'view', 'edit', 'delete', 'audit', 'reject'])
+const emit = defineEmits(['selection-change', 'view', 'detail', 'edit', 'delete', 'audit', 'reject'])
 
 // 选择变化
 const handleSelectionChange = (selection) => {

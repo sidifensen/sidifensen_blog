@@ -51,193 +51,117 @@
     </div>
 
     <!-- 用户评论列表视图 -->
-    <div v-else class="card">
-      <div class="card-header">
-        <h2 class="card-title">{{ currentUser?.nickname || currentUser?.username }}的评论</h2>
-        <div class="card-actions">
-          <el-button @click="handleBackToUsers" :icon="ArrowLeft" size="small">返回用户列表</el-button>
-          <el-select v-model="searchExamineStatus" placeholder="审核状态" filterable clearable size="small" class="search-input" @change="handleSearch">
-            <el-option label="待审核" value="0" />
-            <el-option label="审核通过" value="1" />
-            <el-option label="审核不通过" value="2" />
-            <el-option label="全部" value="" />
-          </el-select>
-        </div>
-      </div>
+    <ManagementCard
+      v-else
+      :title="(currentUser?.nickname || currentUser?.username) + '的评论'"
+      :showTimeFilter="true"
+      :showPagination="true"
+      :modelCurrentPage="currentPage"
+      :modelPageSize="pageSize"
+      :total="total"
+      @search="fetchUserCommentsData"
+      @timeChange="handleTimeChange"
+    >
+      <!-- 筛选器 -->
+      <template #filters>
+        <el-button @click="handleBackToUsers" :icon="ArrowLeft" size="small" plain>返回用户列表</el-button>
+        <ExamineStatusSelect v-model="searchExamineStatus" @change="handleSearch" />
+        <KeywordSearch v-model="searchKeyword" placeholder="搜索评论内容" label="" width="160px" :debounce="0" :prefixIcon="Search" @search="handleSearch" />
+        <SearchButtons @search="handleSearch" @reset="handleReset" />
+      </template>
 
-      <!-- 时间筛选区域 -->
-      <div class="card-time-filters">
-        <div class="time-filter-group">
-          <el-date-picker
-            v-model="searchStartTime"
-            type="datetime"
-            placeholder="开始时间"
-            size="small"
-            class="time-input"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            clearable
-            @change="handleSearch"
-          />
-          <el-date-picker
-            v-model="searchEndTime"
-            type="datetime"
-            placeholder="结束时间"
-            size="small"
-            class="time-input"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            clearable
-            @change="handleSearch"
-          />
-        </div>
-      </div>
-
-      <div class="card-second">
-        <el-input v-model="searchKeyword" placeholder="搜索评论内容" class="search-input" size="small" clearable @input="handleSearch">
-          <template #prefix>
-            <el-icon><Search /></el-icon>
-          </template>
-        </el-input>
-      </div>
-
-      <div class="card-third">
-        <el-button type="primary" plain round @click="handleBatchAudit" :disabled="selectedComments.length === 0" :loading="batchAuditLoading"> 批量审核 </el-button>
-        <el-button type="warning" plain round @click="handleBatchReject" :disabled="selectedComments.length === 0" :loading="batchRejectLoading"> 批量拒绝 </el-button>
-        <el-button type="danger" plain round @click="handleBatchDelete" :disabled="selectedComments.length === 0" :loading="batchDeleteLoading"> 批量删除 </el-button>
-      </div>
+      <!-- 批量操作按钮 -->
+      <template #batch-actions>
+        <BatchActions :selectedCount="selectedComments.length" :showBatchDelete="true" @batchDelete="handleBatchDelete" />
+      </template>
 
       <!-- 桌面端表格视图 -->
-      <div v-if="!isMobileView" class="desktop-view">
-        <el-table v-loading="loading" :data="paginatedCommentList" class="table" @selection-change="handleSelectionChange" :row-style="{ height: 'auto' }" :cell-style="{ padding: '8px 0' }">
-          <el-table-column type="selection" width="30" />
-          <el-table-column prop="id" label="ID" width="60" />
-          <el-table-column prop="content" label="评论内容" min-width="300">
+      <template #table-view>
+        <DataTable
+          v-loading="loading"
+          :data="paginatedCommentList"
+          :show-selection="true"
+          :show-id="true"
+          :show-actions="true"
+          :has-detail-action="true"
+          :has-delete-action="true"
+          :actions-width="200"
+          @selection-change="handleSelectionChange"
+          @detail="handleViewComment"
+          @delete="handleDeleteComment"
+        >
+          <!-- 评论内容列 -->
+          <el-table-column prop="content" label="评论内容" min-width="250">
             <template #default="{ row }">
-              <el-tooltip :content="row.content" placement="top-start" :popper-style="{ maxWidth: '400px', wordWrap: 'break-word', whiteSpace: 'normal' }">
+              <el-tooltip :content="row.content" placement="top-start">
                 <div class="comment-content">{{ row.content }}</div>
               </el-tooltip>
             </template>
           </el-table-column>
-          <el-table-column prop="articleTitle" label="所属文章" min-width="170">
+          <!-- 所属文章列 -->
+          <el-table-column prop="articleTitle" label="所属文章" min-width="150">
             <template #default="{ row }">
-              <el-tooltip :content="row.articleTitle" placement="top-start" :popper-style="{ maxWidth: '300px', wordWrap: 'break-word', whiteSpace: 'normal' }">
-                <div class="article-title">{{ row.articleTitle }}</div>
+              <el-tooltip :content="row.articleTitle" placement="top-start">
+                <div class="article-title">{{ row.articleTitle || '未知文章' }}</div>
               </el-tooltip>
             </template>
           </el-table-column>
-          <el-table-column prop="replyUserNickname" label="回复对象" width="120">
+          <!-- 回复对象列 -->
+          <el-table-column prop="replyUserNickname" label="回复对象" width="100">
             <template #default="{ row }">
               <span v-if="row.replyUserNickname">{{ row.replyUserNickname }}</span>
               <span v-else class="no-reply">无</span>
             </template>
           </el-table-column>
+          <!-- 审核状态列 -->
           <el-table-column prop="examineStatus" label="审核状态" width="80">
             <template #default="{ row }">
-              <div class="comment-status" :class="row.examineStatus === 0 ? 'status-unaudited' : row.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-                {{ row.examineStatus === 0 ? '待审核' : row.examineStatus === 1 ? '已审核' : '未通过' }}
-              </div>
+              <StatusBadge :status="row.examineStatus" :statusMap="examineStatusMap" />
             </template>
           </el-table-column>
-          <el-table-column prop="likeCount" label="点赞量" width="80" />
-          <el-table-column prop="replyCount" label="回复数" width="80" />
+          <!-- 点赞量列 -->
+          <el-table-column prop="likeCount" label="点赞量" width="70" />
+          <!-- 回复数列 -->
+          <el-table-column prop="replyCount" label="回复数" width="70" />
+          <!-- 创建时间列 -->
           <el-table-column prop="createTime" label="创建时间" sortable width="110" />
-          <el-table-column label="操作" width="280">
-            <template #default="{ row }">
-              <TableActions
-                :showView="true"
-                :showDetail="true"
-                :showAudit="true"
-                :showReject="true"
-                :showDelete="true"
-                @view="handleViewComment(row)"
-                @detail="handleViewComment(row)"
-                @audit="handleAuditComment(row.id)"
-                @reject="handleRejectComment(row.id)"
-                @delete="handleDeleteComment(row.id)"
-              />
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
+        </DataTable>
+      </template>
 
       <!-- 移动端卡片视图 -->
-      <div v-else class="mobile-view">
-        <div class="comment-cards">
-          <el-card v-for="comment in paginatedCommentList" :key="comment.id" class="comment-card" :class="{ 'is-selected': isCommentSelected(comment.id) }">
-            <div class="comment-card-content">
-              <div class="comment-header-section">
-                <div class="comment-info">
-                  <div class="comment-header">
-                    <el-checkbox :model-value="isCommentSelected(comment.id)" @change="handleMobileSelect(comment)" class="mobile-checkbox" />
-                    <div class="comment-id">#{{ comment.id }}</div>
-                    <div class="comment-status" :class="comment.examineStatus === 0 ? 'status-unaudited' : comment.examineStatus === 1 ? 'status-audited' : 'status-rejected'">
-                      {{ comment.examineStatus === 0 ? '待审核' : comment.examineStatus === 1 ? '已审核' : '未通过' }}
-                    </div>
-                  </div>
-                  <div class="comment-content-mobile">{{ comment.content }}</div>
-
-                  <!-- 评论用户信息 -->
-                  <div class="comment-author-mobile" v-if="comment.nickname">
-                    <span class="author-label">评论用户:</span>
-                    <span class="author-name">{{ comment.nickname }}</span>
-                  </div>
-
-                  <!-- 文章信息 -->
-                  <div class="comment-article-mobile" v-if="comment.articleTitle">
-                    <span class="article-label">文章:</span>
-                    <span class="article-name">{{ comment.articleTitle }}</span>
-                  </div>
-
-                  <!-- 其他元信息 -->
-                  <div class="comment-meta-mobile">
-                    <div class="meta-item" v-if="comment.articleId">
-                      <span class="label">文章ID:</span>
-                      <span>{{ comment.articleId }}</span>
-                    </div>
-                    <div class="meta-item" v-if="comment.parentId">
-                      <span class="label">父评论:</span>
-                      <span>#{{ comment.parentId }}</span>
-                    </div>
-                    <div class="meta-item" v-if="comment.replyUserNickname">
-                      <span class="label">回复用户:</span>
-                      <span>{{ comment.replyUserNickname }}</span>
-                    </div>
-                  </div>
-                  <div class="comment-meta">
-                    <div class="stats-row">
-                      <div class="meta-item stat-item">
-                        <span class="label">点赞:</span>
-                        <span>{{ comment.likeCount || 0 }}</span>
-                      </div>
-                      <div class="meta-item stat-item">
-                        <span class="label">回复:</span>
-                        <span>{{ comment.replyCount || 0 }}</span>
-                      </div>
-                    </div>
-                    <div class="time-row">
-                      <div class="meta-item time-item">
-                        <span class="label">创建:</span>
-                        <span>{{ comment.createTime }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="comment-actions">
-                <el-button type="info" @click="handleViewComment(comment)" :icon="View" class="view-button" size="small">查看</el-button>
-                <el-button type="primary" @click="handleAuditComment(comment.id)" :icon="Check" class="examine-button" size="small">审核</el-button>
-                <el-button type="warning" @click="handleRejectComment(comment.id)" :icon="Close" class="reject-button" size="small">拒绝</el-button>
-                <el-button type="danger" @click="handleDeleteComment(comment.id)" :icon="Delete" class="delete-button" size="small">删除</el-button>
-              </div>
+      <template #card-view>
+        <MobileCardList
+          :data="paginatedCommentList"
+          :selectedItems="selectedComments"
+          showSelection
+          showMeta
+          :hasDetailAction="true"
+          :hasDeleteAction="true"
+          @select="handleMobileSelect"
+          @detail="handleViewComment"
+          @delete="handleDeleteComment"
+        >
+          <!-- 自定义卡片内容 -->
+          <template #custom="{ item }">
+            <div class="mobile-meta">
+              <span class="article-label">文章:</span>
+              <span class="article-name">{{ item.articleTitle || '未知文章' }}</span>
             </div>
-          </el-card>
-        </div>
-      </div>
-
-      <!-- 分页 -->
-      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-    </div>
+            <div class="mobile-meta">
+              <StatusBadge :status="item.examineStatus" :statusMap="examineStatusMap" />
+              <span v-if="item.replyUserNickname" class="reply-to">回复: {{ item.replyUserNickname }}</span>
+            </div>
+            <div class="mobile-stats">
+              <span><svg-icon name="like" width="12px" height="12px" /> {{ item.likeCount || 0 }}</span>
+              <span
+                ><el-icon><ChatDotRound /></el-icon> {{ item.replyCount || 0 }}</span
+              >
+            </div>
+            <div class="mobile-time">创建: {{ item.createTime }}</div>
+          </template>
+        </MobileCardList>
+      </template>
+    </ManagementCard>
 
     <!-- 评论详情对话框 -->
     <el-dialog
@@ -293,12 +217,7 @@
               <div class="comment-badges-detail">
                 <div class="badge-group">
                   <span class="badge-label">审核状态:</span>
-                  <div
-                    class="comment-status"
-                    :class="(currentComment?.examineStatus || 0) === 0 ? 'status-unaudited' : (currentComment?.examineStatus || 0) === 1 ? 'status-audited' : 'status-rejected'"
-                  >
-                    {{ (currentComment?.examineStatus || 0) === 0 ? '待审核' : (currentComment?.examineStatus || 0) === 1 ? '已审核' : '未通过' }}
-                  </div>
+                  <StatusBadge :status="currentComment?.examineStatus || 0" :statusMap="examineStatusMap" />
                 </div>
               </div>
             </div>
@@ -308,7 +227,7 @@
           <div class="comment-stats-detail">
             <div class="stats-group">
               <div class="stat-item">
-                <el-icon class="stat-icon"><Star /></el-icon>
+                <svg-icon name="like" width="16px" height="16px" color="#6c757d" />
                 <span class="stat-label">点赞</span>
                 <span class="stat-value">{{ currentComment?.likeCount || 0 }}</span>
               </div>
@@ -344,12 +263,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { Delete, Close, Check, View, Search, ArrowLeft, User, ChatDotRound, Star, Clock } from '@element-plus/icons-vue'
 import { getUserListWithCommentCount } from '@/api/comment'
 import { adminGetCommentsByUserId, adminSearchComment, adminExamineComment, adminExamineBatchComment, adminDeleteComment, adminDeleteBatchComment } from '@/api/comment'
-import Pagination from '@/components/data/Pagination.vue'
-import TableActions from '@/components/data/TableActions.vue'
+import ManagementCard from '@/components/management/ManagementCard.vue'
+import DataTable from '@/components/data/DataTable.vue'
+import MobileCardList from '@/components/data/MobileCardList.vue'
+import BatchActions from '@/components/actions/BatchActions.vue'
+import SearchButtons from '@/components/search/SearchButtons.vue'
+import ExamineStatusSelect from '@/components/search/ExamineStatusSelect.vue'
+import KeywordSearch from '@/components/search/KeywordSearch.vue'
+import StatusBadge from '@/components/common/StatusBadge.vue'
 
 // 视图状态
 const showComments = ref(false)
@@ -366,6 +291,13 @@ const filteredUserList = computed(() => {
   const keyword = searchUserKeyword.value.toLowerCase()
   return userList.value.filter((user) => user.username.toLowerCase().includes(keyword) || user.nickname?.toLowerCase().includes(keyword))
 })
+
+// 审核状态映射
+const examineStatusMap = {
+  0: { text: '待审核', type: 'danger' },
+  1: { text: '已审核', type: 'success' },
+  2: { text: '未通过', type: 'warning' },
+}
 
 // 评论列表数据
 const commentList = ref([])
@@ -393,14 +325,6 @@ const batchAuditLoading = ref(false)
 const batchRejectLoading = ref(false)
 const batchDeleteLoading = ref(false)
 
-// 移动端检测
-const isMobileView = ref(false)
-
-// 监听窗口大小变化
-const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768
-}
-
 // 获取用户列表
 const getUsers = async () => {
   userLoading.value = true
@@ -423,7 +347,8 @@ const handleUserSearch = () => {
 const handleViewUserComments = async (user) => {
   currentUser.value = user
   showComments.value = true
-  await getUserComments(user.id)
+  currentPage.value = 1
+  await fetchUserCommentsData()
 }
 
 // 返回用户列表
@@ -442,10 +367,10 @@ const handleBackToUsers = () => {
   selectedComments.value = []
 }
 
-// 获取用户评论列表
-const getUserComments = async (userId) => {
-  currentPage.value = 1
-  await fetchUserComments(userId)
+// 时间筛选变化
+const handleTimeChange = ({ startTime, endTime }) => {
+  searchStartTime.value = startTime
+  searchEndTime.value = endTime
 }
 
 const hasSearchConditions = () => !!(searchExamineStatus.value || searchKeyword.value || searchStartTime.value || searchEndTime.value)
@@ -454,7 +379,7 @@ const buildSearchPayload = () => ({
   pageNum: currentPage.value,
   pageSize: pageSize.value,
   userId: currentUser.value?.id,
-  examineStatus: searchExamineStatus.value || undefined,
+  examineStatus: searchExamineStatus.value ? parseInt(searchExamineStatus.value, 10) : undefined,
   keyword: searchKeyword.value || undefined,
   createTimeStart: searchStartTime.value || undefined,
   createTimeEnd: searchEndTime.value || undefined,
@@ -467,8 +392,8 @@ const applyPageData = (pageData) => {
   selectedComments.value = []
 }
 
-const fetchUserComments = async (userId = currentUser.value?.id) => {
-  if (!userId) return
+const fetchUserCommentsData = async () => {
+  if (!currentUser.value) return
   loading.value = true
   try {
     let pageData = null
@@ -476,7 +401,7 @@ const fetchUserComments = async (userId = currentUser.value?.id) => {
       const res = await adminSearchComment(buildSearchPayload())
       pageData = res.data
     } else {
-      const res = await adminGetCommentsByUserId(userId, {
+      const res = await adminGetCommentsByUserId(currentUser.value.id, {
         pageNum: currentPage.value,
         pageSize: pageSize.value,
       })
@@ -490,29 +415,19 @@ const fetchUserComments = async (userId = currentUser.value?.id) => {
   }
 }
 
-// 更新分页数据
-const updatePaginatedCommentList = () => {
-  paginatedCommentList.value = commentList.value
-}
-
-// 处理分页大小变化
-const handleSizeChange = async (size) => {
-  pageSize.value = size
-  currentPage.value = 1
-  await fetchUserComments()
-}
-
-// 处理当前页码变化
-const handleCurrentChange = async (current) => {
-  currentPage.value = current
-  await fetchUserComments()
-}
-
 // 处理搜索
-const handleSearch = async () => {
-  if (!currentUser.value) return
+const handleSearch = () => {
   currentPage.value = 1
-  await fetchUserComments()
+  fetchUserCommentsData()
+}
+
+// 重置处理
+const handleReset = () => {
+  searchExamineStatus.value = ''
+  searchKeyword.value = ''
+  searchStartTime.value = ''
+  searchEndTime.value = ''
+  handleSearch()
 }
 
 // 智能刷新列表
@@ -521,7 +436,7 @@ const refreshCommentList = async (deletedCount = 0) => {
   if (deletedCount > 0 && currentPage.value > 1 && commentList.value.length <= deletedCount) {
     currentPage.value -= 1
   }
-  await fetchUserComments()
+  await fetchUserCommentsData()
 }
 
 // 表格多选
@@ -538,10 +453,8 @@ const isCommentSelected = (commentId) => {
 const handleMobileSelect = (comment) => {
   const index = selectedComments.value.findIndex((item) => item.id === comment.id)
   if (index > -1) {
-    // 已选中，取消选中
     selectedComments.value.splice(index, 1)
   } else {
-    // 未选中，添加到选中列表
     selectedComments.value.push(comment)
   }
 }
@@ -695,24 +608,16 @@ const handleBatchDelete = () => {
 // 初始化
 onMounted(() => {
   getUsers()
-  handleResize()
-  window.addEventListener('resize', handleResize)
-})
-
-// 组件卸载时移除监听
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
 })
 </script>
 
 <style lang="scss" scoped>
-// 用户评论管理主容器
+// 用户列表视图 - 保留原有样式
 .management-container {
   height: 100%;
   box-sizing: border-box;
   position: relative;
 
-  // 主卡片容器 - 包含所有内容
   .card {
     height: 100%;
     padding: 20px;
@@ -727,7 +632,6 @@ onUnmounted(() => {
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     }
 
-    // 卡片头部 - 标题和搜索区域
     .card-header {
       display: flex;
       justify-content: space-between;
@@ -760,102 +664,22 @@ onUnmounted(() => {
         .search-input {
           width: 200px;
           border-radius: 8px;
-
-          :deep(.el-input__wrapper) {
-            border-radius: 8px;
-            transition: all 0.3s ease;
-
-            &:focus-within {
-              box-shadow: 0 0 0 3px rgba(230, 162, 60, 0.2);
-              border-color: #e6a23c;
-            }
-          }
-
-          :deep(.el-select__wrapper) {
-            border-radius: 8px;
-            transition: all 0.3s ease;
-
-            &:focus-within {
-              box-shadow: 0 0 0 3px rgba(230, 162, 60, 0.2);
-              border-color: #e6a23c;
-            }
-          }
         }
       }
-    }
-
-    // 时间筛选区域
-    .card-time-filters {
-      display: flex;
-      justify-content: flex-end;
-      padding: 10px 10px 0 10px;
-
-      .time-filter-group {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-
-        .time-input {
-          width: 160px;
-          border-radius: 8px;
-
-          :deep(.el-date-editor.el-input) {
-            .el-input__wrapper {
-              border-radius: 8px;
-              transition: all 0.3s ease;
-
-              &:focus-within {
-                box-shadow: 0 0 0 3px rgba(230, 162, 60, 0.2);
-                border-color: #e6a23c;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // 卡片第二行 - 关键词搜索区域
-    .card-second {
-      display: flex;
-      justify-content: flex-end;
-      padding: 5px 5px 0 5px;
-      gap: 10px;
-
-      .search-input {
-        width: 240px; // 设置固定宽度
-      }
-
-      :deep(.el-input__wrapper) {
-        border-radius: 8px;
-        &:focus-within {
-          box-shadow: 0 0 0 3px rgba(230, 162, 60, 0.2);
-          border-color: #e6a23c;
-        }
-      }
-    }
-
-    // 卡片第三行 - 批量操作按钮区域
-    .card-third {
-      display: flex;
-      justify-content: flex-end;
-      padding: 10px;
-      border-bottom: 1px solid var(--el-border-color);
     }
   }
 
-  // 用户列表视图 - 当 showComments = false 时显示
+  // 用户列表
   .user-list-container {
     flex: 1;
     margin-top: 16px;
     overflow-y: auto;
 
-    // 空状态容器
     .empty-container {
       padding: 60px 20px;
       text-align: center;
     }
 
-    // 用户卡片网格容器
     .user-cards {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -866,7 +690,6 @@ onUnmounted(() => {
         padding: 0;
       }
 
-      // 单个用户卡片
       .user-card {
         transition: all 0.3s ease;
         border-radius: 12px;
@@ -876,20 +699,17 @@ onUnmounted(() => {
           box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
         }
 
-        // 用户卡片内容容器
         .user-card-content {
           display: flex;
           gap: 16px;
           padding: 16px;
           min-height: 80px;
 
-          // 用户头像区域
           .user-avatar {
             flex-shrink: 0;
             align-self: center;
           }
 
-          // 用户信息和操作区域
           .user-right-content {
             flex: 1;
             display: flex;
@@ -897,7 +717,6 @@ onUnmounted(() => {
             justify-content: space-between;
             min-height: 60px;
 
-            // 用户基本信息
             .user-info {
               .user-id {
                 font-size: 12px;
@@ -952,7 +771,6 @@ onUnmounted(() => {
               }
             }
 
-            // 用户操作按钮
             .user-actions {
               align-self: center;
               margin-top: 8px;
@@ -977,416 +795,81 @@ onUnmounted(() => {
       }
     }
   }
+}
 
-  // 桌面端表格视图 - 当 isMobileView = false 时显示
-  .desktop-view {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding-bottom: 60px; // 为分页容器预留空间
+// 评论内容样式
+.comment-content {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
 
-    // 评论表格
-    .table {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      margin-top: 16px;
-      max-height: calc(100vh - 280px);
-
-      // 表格头部样式
-      :deep(.el-table__header-wrapper) {
-        background-color: var(--el-bg-color);
-        th {
-          font-weight: 600;
-          color: #475569;
-        }
-      }
-
-      // 表格主体样式
-      :deep(.el-table__body-wrapper) {
-        tr td {
-          color: #64748b;
-          padding: 12px 0;
-          vertical-align: middle;
-
-          .cell {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 40px;
-          }
-        }
-      }
-
-      // 评论内容样式
-      .comment-content {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        cursor: pointer;
-
-        &:hover {
-          color: #e6a23c;
-        }
-      }
-
-      // 文章标题样式
-      .article-title {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        cursor: pointer;
-
-        &:hover {
-          color: #e6a23c;
-        }
-      }
-
-      // 无回复提示
-      .no-reply {
-        color: #999;
-        font-size: 12px;
-      }
-
-      // 表格操作按钮组
-      .table-actions {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-wrap: wrap;
-        height: 100%;
-        min-height: 60px;
-
-        // 通用按钮样式
-        .view-button,
-        .examine-button,
-        .reject-button,
-        .delete-button {
-          border-radius: 6px;
-          transition: all 0.3s ease;
-
-          &:hover {
-            transform: translateY(-2px);
-          }
-        }
-
-        // 查看按钮
-        .view-button {
-          background-color: #f0f9ff;
-          color: #0369a1;
-          border-color: #f0f9ff;
-
-          &:hover {
-            background-color: #dbeafe;
-            border-color: #dbeafe;
-            box-shadow: 0 2px 8px rgba(3, 105, 161, 0.3);
-          }
-        }
-
-        // 审核按钮
-        .examine-button {
-          background-color: #e0f2fe;
-          color: #0284c7;
-          border-color: #e0f2fe;
-
-          &:hover {
-            background-color: #bae6fd;
-            border-color: #bae6fd;
-            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
-          }
-        }
-
-        // 拒绝按钮
-        .reject-button {
-          background-color: #fef3c7;
-          color: #d97706;
-          border-color: #fef3c7;
-
-          &:hover {
-            background-color: #fde68a;
-            border-color: #fde68a;
-            box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
-          }
-        }
-
-        // 删除按钮
-        .delete-button {
-          background-color: #fee2e2;
-          color: #ef4444;
-          border-color: #fee2e2;
-
-          &:hover {
-            background-color: #fecaca;
-            border-color: #fecaca;
-            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-          }
-        }
-      }
-    }
-  }
-
-  // 移动端卡片视图 - 当 isMobileView = true 时显示
-  .mobile-view {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-top: 16px;
-    padding-bottom: 60px;
-    overflow-y: auto;
-
-    // 评论卡片列表容器
-    .comment-cards {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding: 10px;
-
-      // 单个评论卡片
-      .comment-card {
-        transition: all 0.3s ease;
-        border-radius: 8px;
-        margin-bottom: 12px;
-
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        // 选中状态样式
-        &.is-selected {
-          border: 2px solid #e6a23c;
-          box-shadow: 0 0 12px rgba(230, 162, 60, 0.3);
-        }
-
-        // 评论卡片内容容器
-        .comment-card-content {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-
-          // 评论头部区域
-          .comment-header-section {
-            display: flex;
-            flex-direction: column;
-
-            // 评论信息区域
-            .comment-info {
-              width: 100%;
-              display: flex;
-              flex-direction: column;
-
-              // 评论头部 - ID和状态
-              .comment-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 8px;
-                margin-bottom: 5px;
-
-                // 移动端复选框样式
-                .mobile-checkbox {
-                  flex-shrink: 0;
-
-                  :deep(.el-checkbox__inner) {
-                    width: 18px;
-                    height: 18px;
-                  }
-                }
-
-                .comment-id {
-                  font-size: 12px;
-                  color: #666;
-                  background-color: #f5f5f5;
-                  padding: 2px 6px;
-                  border-radius: 4px;
-                }
-              }
-
-              // 移动端评论内容
-              .comment-content-mobile {
-                font-size: 14px;
-                font-weight: 500;
-                color: #333;
-                line-height: 1.4;
-                margin-bottom: 8px;
-                display: -webkit-box;
-                -webkit-line-clamp: 3;
-                line-clamp: 3;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-              }
-
-              // 移动端评论用户信息
-              .comment-author-mobile {
-                font-size: 13px;
-                color: #666;
-                margin-bottom: 8px;
-                display: flex;
-                align-items: center;
-
-                .author-label {
-                  font-weight: 500;
-                  color: #888;
-                  margin-right: 4px;
-                }
-
-                .author-name {
-                  color: #555;
-                  font-weight: 500;
-                  flex: 1;
-                }
-              }
-
-              // 移动端文章信息
-              .comment-article-mobile {
-                font-size: 13px;
-                color: #666;
-                margin-bottom: 6px;
-                display: flex;
-                align-items: center;
-
-                .article-label {
-                  font-weight: 500;
-                  color: #888;
-                  margin-right: 4px;
-                }
-
-                .article-name {
-                  color: #555;
-                  font-weight: 500;
-                  flex: 1;
-                  word-break: break-all; // 强制断词
-                }
-              }
-
-              // 移动端评论元信息
-              .comment-meta-mobile {
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-                margin-bottom: 8px;
-
-                .meta-item {
-                  font-size: 12px;
-                  color: #666;
-                  display: flex;
-                  align-items: center;
-
-                  .label {
-                    font-weight: 500;
-                    margin-right: 4px;
-                    color: #888;
-                  }
-                }
-              }
-
-              // 评论元信息
-              .comment-meta {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-
-                .meta-item {
-                  font-size: 12px;
-                  color: #666;
-                  display: flex;
-                  align-items: center;
-
-                  .label {
-                    font-weight: 500;
-                    margin-right: 4px;
-                  }
-                }
-
-                // 统计数据行
-                .stats-row {
-                  display: flex;
-                  flex-wrap: wrap;
-                  gap: 6px 8px;
-
-                  .stat-item {
-                    background-color: #f8f9fa;
-                    padding: 3px 8px;
-                    border-radius: 12px;
-                    font-size: 11px;
-                    color: #555;
-                    border: 1px solid #e9ecef;
-                    white-space: nowrap;
-
-                    .label {
-                      color: #666;
-                      margin-right: 2px;
-                    }
-                  }
-                }
-
-                // 时间信息行
-                .time-row {
-                  display: flex;
-                  flex-wrap: wrap;
-                  gap: 8px;
-                  margin-top: 4px;
-
-                  .time-item {
-                    font-size: 11px;
-                    color: #888;
-
-                    .label {
-                      color: #999;
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          // 评论操作按钮
-          .comment-actions {
-            display: flex;
-            gap: 4px;
-            justify-content: center;
-            padding-top: 8px;
-            border-top: 1px solid #f0f0f0;
-
-            .el-button {
-              font-size: 12px;
-              padding: 6px 10px;
-              height: auto;
-              border-radius: 4px;
-              flex: 1;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // 通用的评论状态样式
-  .comment-status {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-
-    &.status-unaudited {
-      background-color: #fff1f0;
-      color: #f56c6c;
-    }
-
-    &.status-audited {
-      background-color: #f0f9eb;
-      color: #67c23a;
-    }
-
-    &.status-rejected {
-      background-color: #fdf6ec;
-      color: #e6a23c;
-    }
+  &:hover {
+    color: var(--el-color-primary);
   }
 }
 
-// 评论详情对话框样式
+.article-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--el-color-primary);
+  }
+}
+
+.no-reply {
+  color: #999;
+  font-size: 12px;
+}
+
+// 移动端元信息
+.mobile-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 4px 0;
+
+  .article-label {
+    font-weight: 500;
+    color: var(--text-regular);
+  }
+
+  .article-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+
+  .reply-to {
+    color: var(--text-muted);
+  }
+}
+
+.mobile-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+}
+
+.mobile-time {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+// 评论详情对话框
 :deep(.comment-detail-dialog) {
   border-radius: 16px;
 
@@ -1395,41 +878,10 @@ onUnmounted(() => {
     color: white;
     border-radius: 16px 16px 0 0;
     padding: 20px 24px;
-    position: relative;
 
     .el-dialog__title {
       font-size: 18px;
       font-weight: 600;
-    }
-
-    .el-dialog__headerbtn {
-      position: absolute;
-      top: 50%;
-      right: 20px;
-      transform: translateY(-50%);
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background-color: rgba(255, 255, 255, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-
-      &:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-        transform: translateY(-50%) scale(1.1);
-      }
-
-      .el-dialog__close {
-        color: white;
-        font-size: 18px;
-        font-weight: bold;
-
-        &:hover {
-          color: #ff6b6b;
-        }
-      }
     }
   }
 
@@ -1438,17 +890,8 @@ onUnmounted(() => {
     max-height: 80vh;
     overflow-y: auto;
   }
-
-  @media screen and (max-width: 767px) {
-    width: 95% !important;
-
-    .el-dialog__body {
-      padding: 16px;
-    }
-  }
 }
 
-// 评论详情容器
 .comment-detail {
   .comment-info-section {
     margin-bottom: 24px;
@@ -1698,83 +1141,7 @@ onUnmounted(() => {
   }
 }
 
-// Tooltip 样式优化
-:deep(.comment-tooltip) {
-  max-width: 400px !important;
-  word-wrap: break-word !important;
-  white-space: normal !important;
-  line-height: 1.4 !important;
-
-  @media screen and (max-width: 768px) {
-    max-width: 80vw !important;
-  }
-
-  @media screen and (max-width: 480px) {
-    max-width: 90vw !important;
-  }
-}
-
-:deep(.article-tooltip) {
-  max-width: 300px !important;
-  word-wrap: break-word !important;
-  white-space: normal !important;
-  line-height: 1.4 !important;
-
-  @media screen and (max-width: 768px) {
-    max-width: 70vw !important;
-  }
-
-  @media screen and (max-width: 480px) {
-    max-width: 80vw !important;
-  }
-}
-
-// 响应式设计
-@media screen and (max-width: 1400px) {
-  .management-container .card .card-header .card-actions .search-input {
-    width: 140px;
-  }
-}
-
-@media screen and (max-width: 1220px) {
-  .management-container .card .card-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-
-    .card-actions {
-      width: 100%;
-      justify-content: space-between;
-
-      .search-input {
-        width: 100%;
-      }
-    }
-  }
-
-  // 时间筛选区域响应式
-  .management-container .card .card-time-filters {
-    .time-filter-group {
-      .time-input {
-        width: 140px;
-      }
-    }
-  }
-
-  // 在中屏幕上也保持搜索框的合理宽度
-  .management-container .card .card-second {
-    .search-input {
-      width: 280px; // 中屏幕稍微增加宽度
-    }
-  }
-
-  .user-list-container .user-cards {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 14px;
-    padding: 14px;
-  }
-}
-
+// 响应式
 @media screen and (max-width: 768px) {
   .management-container .card {
     padding: 2px;
@@ -1785,35 +1152,10 @@ onUnmounted(() => {
       .card-title {
         font-size: 16px;
       }
-    }
 
-    // 移动端时间筛选器
-    .card-time-filters {
-      padding: 8px;
-
-      .time-filter-group {
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
-        width: 100%;
-
-        .time-input {
-          flex: 1;
-          width: auto !important;
-        }
+      .card-actions .search-input {
+        width: 140px;
       }
-    }
-
-    // 移动端搜索框撑满宽度
-    .card-second {
-      .search-input {
-        width: 100% !important;
-      }
-    }
-
-    .table {
-      margin-top: 0;
-      max-height: calc(100vh - 240px);
     }
   }
 
@@ -1823,77 +1165,6 @@ onUnmounted(() => {
     padding: 10px;
     max-width: 400px;
     margin: 0 auto;
-
-    .user-card {
-      :deep(.el-card__body) {
-        padding: 0;
-      }
-
-      .user-card-content {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 12px;
-        padding: 16px;
-
-        .user-avatar :deep(.el-avatar) {
-          width: 64px !important;
-          height: 64px !important;
-          font-size: 32px;
-        }
-
-        .user-right-content {
-          width: 100%;
-          align-items: center;
-
-          .user-info {
-            .user-name {
-              .username {
-                display: block;
-                margin-bottom: 4px;
-                font-size: 16px;
-              }
-
-              .nickname {
-                display: block;
-                font-size: 14px;
-              }
-            }
-
-            .comment-count {
-              justify-content: center;
-              margin-top: 8px;
-            }
-          }
-
-          .user-actions {
-            width: 100%;
-            margin-top: 12px;
-
-            .view-comments-btn {
-              width: 100%;
-              font-size: 14px;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  .comment-detail .comment-info-section {
-    .comment-detail-header {
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .comment-stats-detail .stats-group {
-      flex-direction: column;
-
-      .stat-item {
-        min-width: auto;
-        max-width: none;
-      }
-    }
   }
 }
 </style>

@@ -11,11 +11,8 @@
   >
     <!-- 筛选器 -->
     <template #filters>
-      <el-input v-model="searchAlbumName" placeholder="搜索相册名称" :prefix-icon="Search" size="small" style="width: 140px" clearable @input="handleSearch" />
-      <el-select v-model="searchStatus" placeholder="相册状态" filterable clearable size="small" style="width: 140px" @change="handleSearch">
-        <el-option label="正常" value="0" />
-        <el-option label="禁用" value="1" />
-      </el-select>
+      <KeywordSearch v-model="searchAlbumName" placeholder="搜索相册名称" label="相册" :prefixIcon="Search" width="140px" :debounce="0" @search="handleSearch" />
+      <ExamineStatusSelect v-model="searchStatus" :options="statusOptions" width="140px" labelText="状态" />
       <UserSearchSelect v-model="searchUserId" @change="handleSearch" />
       <SearchButtons @search="handleSearch" @reset="handleReset" />
     </template>
@@ -34,11 +31,12 @@
         :show-cover="true"
         :show-id="true"
         :show-actions="true"
-        :has-view-action="false"
+        :has-detail-action="true"
         :has-edit-action="true"
         :has-delete-action="true"
-        :actions-width="180"
+        :actions-width="240"
         @selection-change="handleSelectionChange"
+        @detail="handleAlbumDetail"
         @edit="handleEditAlbum"
         @delete="handleDeleteAlbum"
       >
@@ -72,12 +70,6 @@
         </el-table-column>
         <!-- 创建时间列 -->
         <el-table-column prop="createTime" label="创建时间" sortable min-width="110" />
-        <!-- 详情按钮 -->
-        <el-table-column label="详情" width="80" fixed="right">
-          <template #default="{ row }">
-            <el-button type="info" size="small" text bg @click="handleAlbumDetail(row.id)">详情</el-button>
-          </template>
-        </el-table-column>
       </DataTable>
     </template>
 
@@ -209,7 +201,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
-import { Search, Plus, InfoFilled, Edit, Delete, Avatar } from '@element-plus/icons-vue'
+import { Search, Plus } from '@element-plus/icons-vue'
 import { adminList, adminUpdateAlbum, adminDeleteAlbum, adminSearchAlbum, adminGetAlbumDetail } from '@/api/album'
 import { adminDeletePhoto, adminDeleteBatchPhoto, adminAuditPhoto, adminAuditBatchPhoto } from '@/api/photo'
 import ManagementCard from '@/components/management/ManagementCard.vue'
@@ -218,6 +210,8 @@ import MobileCardList from '@/components/data/MobileCardList.vue'
 import BatchActions from '@/components/actions/BatchActions.vue'
 import SearchButtons from '@/components/search/SearchButtons.vue'
 import UserSearchSelect from '@/components/search/UserSearchSelect.vue'
+import KeywordSearch from '@/components/search/KeywordSearch.vue'
+import ExamineStatusSelect from '@/components/search/ExamineStatusSelect.vue'
 
 // 相册列表数据
 const albumList = ref([])
@@ -250,6 +244,12 @@ const searchStatus = ref('')
 const searchCreateTimeStart = ref(null)
 const searchCreateTimeEnd = ref(null)
 
+// 状态选项
+const statusOptions = [
+  { label: '正常', value: 0 },
+  { label: '禁用', value: 1 },
+]
+
 // 选中的相册
 const selectedAlbums = ref([])
 
@@ -278,7 +278,7 @@ const batchRejectLoading = ref(false)
 const photoBatchDeleteLoading = ref(false)
 
 // 判断是否有搜索条件
-const hasSearchConditions = () => !!(searchAlbumName.value || searchUserId.value || searchStatus.value || searchCreateTimeStart.value || searchCreateTimeEnd.value)
+const hasSearchConditions = () => !!(searchAlbumName.value || searchUserId.value || searchStatus.value !== '' || searchCreateTimeStart.value || searchCreateTimeEnd.value)
 
 // 构建搜索参数
 const buildSearchPayload = () => {
@@ -292,7 +292,7 @@ const buildSearchPayload = () => {
   if (searchUserId.value) {
     searchData.userId = searchUserId.value
   }
-  if (searchStatus.value) {
+  if (searchStatus.value !== '') {
     searchData.showStatus = searchStatus.value
   }
   if (searchCreateTimeStart.value) {
@@ -475,7 +475,8 @@ const refreshAlbumList = async (deletedCount = 0) => {
 }
 
 // 相册详情
-const handleAlbumDetail = async (id) => {
+const handleAlbumDetail = async (rowOrId) => {
+  const id = typeof rowOrId === 'object' ? rowOrId.id : rowOrId
   loading.value = true
   try {
     const res = await adminGetAlbumDetail(id)
@@ -688,36 +689,6 @@ onMounted(() => {
 
   &:hover {
     color: var(--el-color-primary);
-  }
-}
-
-// 表格操作按钮组
-.table-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 5px;
-
-  .detail-button {
-    border-radius: 6px;
-    background-color: var(--el-color-info-light-9);
-    color: var(--el-color-info);
-    border-color: var(--el-color-info-light-9);
-  }
-
-  .edit-button {
-    border-radius: 6px;
-    background-color: var(--el-color-primary-light-9);
-    color: var(--el-color-primary);
-    border-color: var(--el-color-primary-light-9);
-  }
-
-  .delete-button {
-    border-radius: 6px;
-    background-color: var(--el-color-danger-light-9);
-    color: var(--el-color-danger);
-    border-color: var(--el-color-danger-light-9);
   }
 }
 

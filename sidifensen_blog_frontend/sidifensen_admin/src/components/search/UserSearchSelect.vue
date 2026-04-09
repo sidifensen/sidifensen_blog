@@ -1,6 +1,6 @@
 <template>
   <div class="user-search-select">
-    <span v-if="showLabel" class="filter-label">{{ label }}</span>
+    <span class="filter-label">{{ label }}</span>
     <el-select
       :model-value="modelValue"
       :placeholder="placeholder"
@@ -29,11 +29,12 @@
  * - 提供用户远程搜索下拉选择
  * - 支持 v-model 绑定
  * - 支持黑夜模式
+ * - 标签固定显示在左侧
  *
  * 使用方式：
  * ```vue
- * <UserSearchSelect v-model="userId" />
- * <UserSearchSelect v-model="userId" width="160px" show-label placeholder="选择用户" />
+ * <UserSearchSelect v-model="userId" label="用户" />
+ * <UserSearchSelect v-model="userId" label="创建者" width="160px" />
  * ```
  */
 
@@ -51,11 +52,6 @@ const props = defineProps({
   width: {
     type: String,
     default: '180px',
-  },
-  // 是否显示标签
-  showLabel: {
-    type: Boolean,
-    default: true,
   },
   // 标签文本
   label: {
@@ -119,7 +115,6 @@ const handleChange = (val) => {
     transition: all 0.3s ease;
     min-height: 32px;
     font-size: 14px;
-    background-color: var(--bg-input);
 
     &:focus-within {
       box-shadow: 0 0 0 3px var(--admin-primary-light) !important;
@@ -128,7 +123,7 @@ const handleChange = (val) => {
   }
 
   :deep(.el-select__placeholder) {
-    color: var(--text-placeholder, #94a3b8);
+    color: var(--text-placeholder);
   }
 }
 

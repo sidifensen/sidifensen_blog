@@ -11,19 +11,9 @@
   >
     <!-- 筛选器 -->
     <template #filters>
-      <el-select v-model="searchForm.loginType" placeholder="登录方式" filterable clearable size="small" style="width: 140px" @change="handleSearch">
-        <el-option label="全部" value="" />
-        <el-option label="用户名/邮箱" :value="0" />
-        <el-option label="Gitee" :value="1" />
-        <el-option label="GitHub" :value="2" />
-        <el-option label="QQ" :value="3" />
-      </el-select>
-      <el-select v-model="searchForm.status" placeholder="登录状态" filterable clearable size="small" style="width: 140px" @change="handleSearch">
-        <el-option label="全部" value="" />
-        <el-option label="成功" :value="0" />
-        <el-option label="失败" :value="1" />
-      </el-select>
-      <el-input v-model.number="searchForm.userId" placeholder="用户ID" :prefix-icon="Search" size="small" style="width: 140px" clearable @input="handleSearch" />
+      <CommonSelect v-model="searchForm.loginType" :options="loginTypeOptions" label="登录方式" placeholder="登录方式" width="140px" size="small" @change="handleSearch" />
+      <CommonSelect v-model="searchForm.status" :options="loginStatusOptions" label="登录状态" placeholder="登录状态" width="140px" size="small" @change="handleSearch" />
+      <KeywordSearch v-model.number="searchForm.userId" placeholder="用户ID" :debounce="0" @search="handleSearch" />
       <SearchButtons @search="handleSearch" @reset="handleReset" />
     </template>
 
@@ -115,7 +105,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Search, Delete } from '@element-plus/icons-vue'
+import { Delete } from '@element-plus/icons-vue'
 import { getLoginLogList, searchLoginLog, deleteLoginLogs } from '@/api/loginLog'
 
 // 组件
@@ -123,7 +113,9 @@ import ManagementCard from '@/components/management/ManagementCard.vue'
 import DataTable from '@/components/data/DataTable.vue'
 import MobileCardList from '@/components/data/MobileCardList.vue'
 import BatchActions from '@/components/actions/BatchActions.vue'
+import KeywordSearch from '@/components/search/KeywordSearch.vue'
 import SearchButtons from '@/components/search/SearchButtons.vue'
+import CommonSelect from '@/components/search/CommonSelect.vue'
 
 // 登录日志列表数据
 const logList = ref([])
@@ -240,6 +232,20 @@ const handleReset = () => {
   searchForm.loginTimeEnd = null
   handleSearch()
 }
+
+// 登录方式选项
+const loginTypeOptions = [
+  { label: '用户名/邮箱', value: 0 },
+  { label: 'Gitee', value: 1 },
+  { label: 'GitHub', value: 2 },
+  { label: 'QQ', value: 3 },
+]
+
+// 登录状态选项
+const loginStatusOptions = [
+  { label: '成功', value: 0 },
+  { label: '失败', value: 1 },
+]
 
 // 表格多选
 const handleSelectionChange = (logs) => {

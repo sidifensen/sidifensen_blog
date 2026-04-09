@@ -1,38 +1,28 @@
 <template>
-  <div class="management-container">
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">权限管理</h2>
-        <div class="card-actions">
-          <div class="search">
-            <el-input v-model="searchDescription" placeholder="搜索权限描述" :prefix-icon="Search" size="small" class="search-input" clearable />
-            <el-input v-model="searchPermission" placeholder="搜索权限标识" :prefix-icon="Search" size="small" class="search-input" clearable />
-          </div>
-          <div>
-            <el-select v-model="searchMenuId" placeholder="请选择菜单名称" filterable clearable size="small" class="search-input" @change="handleSearch">
-              <el-option v-for="menu in menuList" :key="menu.id" :label="menu.name" :value="menu.id" />
-            </el-select>
-            <el-button size="small" type="warning" :disabled="currentPermissionList.length === 0" @click="handleAuthorizeBatchRole" :icon="Avatar" class="authorize-button"> 批量授权角色 </el-button>
-          </div>
-          <div>
-            <el-button type="primary" size="small" @click="exportPermission" :icon="Download" class="export-button">导出</el-button>
-            <el-button type="primary" size="small" @click="handleAddPermission" :icon="Plus" class="add-button"> 新增权限 </el-button>
-          </div>
-        </div>
-      </div>
+  <ManagementCard title="权限管理" :showTimeFilter="false" :showPagination="true" :modelCurrentPage="currentPage" :modelPageSize="pageSize" :total="total" @search="fetchPermissions">
+    <!-- 筛选器 -->
+    <template #filters>
+      <KeywordSearch v-model="searchDescription" placeholder="搜索权限描述" :debounce="500" @search="handleSearch" />
+      <KeywordSearch v-model="searchPermission" placeholder="搜索权限标识" :debounce="0" @search="handleSearch" />
+      <CommonSelect v-model="searchMenuId" :options="menuList" option-label="name" option-value="id" label="菜单名称" placeholder="请选择菜单" width="160px" @change="handleSearch" />
+      <el-button size="small" type="warning" :disabled="currentPermissionList.length === 0" @click="handleAuthorizeBatchRole" :icon="Avatar" class="authorize-button">批量授权</el-button>
+      <el-button type="primary" size="small" @click="exportPermission" :icon="Download" class="export-button">导出</el-button>
+      <el-button type="primary" size="small" @click="handleAddPermission" :icon="Plus" class="add-button">新增权限</el-button>
+    </template>
 
-      <!-- 桌面端表格视图 -->
-      <div v-if="!isMobileView" class="desktop-view">
-        <el-table id="my-table" v-loading="loading" :data="paginatedPermissionList" class="table" style="height: 100%" @selection-change="handleSelectionChange">
+    <!-- 桌面端表格视图 -->
+    <template #table-view>
+      <div v-loading="loading" class="permission-table-wrapper">
+        <el-table :data="paginatedPermissionList" class="table" style="height: 100%" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="55" />
           <el-table-column prop="id" label="权限id" width="70" />
           <el-table-column prop="description" label="权限描述" />
           <el-table-column prop="permission" label="权限标识" />
           <el-table-column prop="menuName" label="菜单名称">
-            <template v-slot="scope">
+            <template #default="{ row }">
               <el-tag>
-                <el-icon><component :is="scope.row.icon" /></el-icon>
-                {{ scope.row.menuName }}
+                <el-icon><component :is="row.icon" /></el-icon>
+                {{ row.menuName }}
               </el-tag>
             </template>
           </el-table-column>
@@ -41,141 +31,139 @@
           <el-table-column label="操作" width="260">
             <template #default="{ row }">
               <div class="table-actions">
-                <el-button type="primary" size="small" @click="handleEditPermission(row)" :icon="Edit" class="edit-button"> 编辑 </el-button>
-                <el-button type="danger" size="small" @click="handleDeletePermission(row.id)" :icon="Delete" class="delete-button"> 删除 </el-button>
-                <el-button size="small" type="warning" @click="handleAuthorizeRole(row)" :icon="Avatar" class="role-button"> 授权角色 </el-button>
+                <el-button type="primary" size="small" @click="handleEditPermission(row)" :icon="Edit" class="edit-button">编辑</el-button>
+                <el-button type="danger" size="small" @click="handleDeletePermission(row.id)" :icon="Delete" class="delete-button">删除</el-button>
+                <el-button size="small" type="warning" @click="handleAuthorizeRole(row)" :icon="Avatar" class="role-button">授权角色</el-button>
               </div>
             </template>
           </el-table-column>
         </el-table>
       </div>
+    </template>
 
-      <!-- 移动端卡片视图 -->
-      <div v-else class="mobile-view">
-        <div v-loading="loading" class="permission-cards">
-          <el-card v-for="permission in paginatedPermissionList" :key="permission.id" class="permission-card" :class="{ 'is-selected': isPermissionSelected(permission.id) }">
-            <div class="permission-card-content">
-              <!-- 卡片头部 -->
-              <div class="permission-header">
-                <div class="header-left">
-                  <el-checkbox :model-value="isPermissionSelected(permission.id)" @change="handleMobileSelect(permission)" class="mobile-checkbox" />
-                  <div class="permission-id">#{{ permission.id }}</div>
-                </div>
-                <el-tag>
-                  <el-icon><component :is="permission.icon" /></el-icon>
-                  {{ permission.menuName }}
-                </el-tag>
+    <!-- 移动端卡片视图 -->
+    <template #card-view>
+      <div v-loading="loading" class="permission-cards">
+        <el-card v-for="permission in paginatedPermissionList" :key="permission.id" class="permission-card" :class="{ 'is-selected': isPermissionSelected(permission.id) }">
+          <div class="permission-card-content">
+            <!-- 卡片头部 -->
+            <div class="permission-header">
+              <div class="header-left">
+                <el-checkbox :model-value="isPermissionSelected(permission.id)" @change="handleMobileSelect(permission)" class="mobile-checkbox" />
+                <div class="permission-id">#{{ permission.id }}</div>
               </div>
+              <el-tag>
+                <el-icon><component :is="permission.icon" /></el-icon>
+                {{ permission.menuName }}
+              </el-tag>
+            </div>
 
-              <!-- 权限信息 -->
-              <div class="permission-info">
-                <div class="info-row">
-                  <span class="label">权限描述:</span>
-                  <span class="value">{{ permission.description }}</span>
-                </div>
-                <div class="info-row">
-                  <span class="label">权限标识:</span>
-                  <span class="value permission-text">{{ permission.permission }}</span>
-                </div>
-                <div class="info-row">
-                  <span class="label">创建时间:</span>
-                  <span class="value time-text">{{ permission.createTime }}</span>
-                </div>
-                <div class="info-row">
-                  <span class="label">更新时间:</span>
-                  <span class="value time-text">{{ permission.updateTime }}</span>
-                </div>
+            <!-- 权限信息 -->
+            <div class="permission-info">
+              <div class="info-row">
+                <span class="label">权限描述:</span>
+                <span class="value">{{ permission.description }}</span>
               </div>
-
-              <!-- 操作按钮 -->
-              <div class="permission-actions">
-                <el-button type="primary" size="small" @click="handleEditPermission(permission)" :icon="Edit" class="edit-button">编辑</el-button>
-                <el-button type="danger" size="small" @click="handleDeletePermission(permission.id)" :icon="Delete" class="delete-button">删除</el-button>
-                <el-button size="small" type="warning" @click="handleAuthorizeRole(permission)" :icon="Avatar" class="role-button">授权角色</el-button>
+              <div class="info-row">
+                <span class="label">权限标识:</span>
+                <span class="value permission-text">{{ permission.permission }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">创建时间:</span>
+                <span class="value time-text">{{ permission.createTime }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">更新时间:</span>
+                <span class="value time-text">{{ permission.updateTime }}</span>
               </div>
             </div>
-          </el-card>
-        </div>
+
+            <!-- 操作按钮 -->
+            <div class="permission-actions">
+              <el-button type="primary" size="small" @click="handleEditPermission(permission)" :icon="Edit" class="edit-button">编辑</el-button>
+              <el-button type="danger" size="small" @click="handleDeletePermission(permission.id)" :icon="Delete" class="delete-button">删除</el-button>
+              <el-button size="small" type="warning" @click="handleAuthorizeRole(permission)" :icon="Avatar" class="role-button">授权角色</el-button>
+            </div>
+          </div>
+        </el-card>
       </div>
+    </template>
+  </ManagementCard>
 
-      <!-- 分页 -->
-      <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-    </div>
-    <!-- 新增/编辑权限对话框 -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" :before-close="handleDialogClose">
-      <el-form ref="permissionFormRef" :model="permissionForm" :rules="rules" class="editForm">
-        <el-form-item prop="description" label="权限描述">
-          <el-input v-model="permissionForm.description" placeholder="请输入权限描述" />
-        </el-form-item>
-        <el-form-item prop="permission" label="权限标识">
-          <el-input v-model="permissionForm.permission" placeholder="请输入权限标识" />
-        </el-form-item>
-        <el-form-item prop="menuId" label="对应菜单">
-          <el-select v-model="permissionForm.menuId" placeholder="请选择菜单名称">
-            <el-option v-for="menu in menuList" :key="menu.id" :label="menu.name" :value="menu.id" />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleSubmit">确认</el-button>
-        </span>
-      </template>
-    </el-dialog>
+  <!-- 新增/编辑权限对话框 -->
+  <el-dialog v-model="dialogVisible" :title="dialogTitle" :before-close="handleDialogClose">
+    <el-form ref="permissionFormRef" :model="permissionForm" :rules="rules" class="editForm">
+      <el-form-item prop="description" label="权限描述">
+        <el-input v-model="permissionForm.description" placeholder="请输入权限描述" />
+      </el-form-item>
+      <el-form-item prop="permission" label="权限标识">
+        <el-input v-model="permissionForm.permission" placeholder="请输入权限标识" />
+      </el-form-item>
+      <CommonSelect v-model="permissionForm.menuId" :options="menuList" option-label="name" option-value="id" label="对应菜单" placeholder="请选择菜单名称" width="100%" />
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmit">确认</el-button>
+      </span>
+    </template>
+  </el-dialog>
 
-    <!-- 授权角色弹窗对话框 -->
-    <el-dialog v-model="authorizeDialogVisible" title="权限授权角色" :before-close="handleAuthorizeDialogClose" class="authorize-dialog">
-      <div v-loading="authorizeLoading" class="authorize-dialog-content">
-        <p class="role-name">当前权限: {{ currentPermission?.description }}</p>
-        <template v-if="!authorizeLoading">
-          <el-form ref="authorizeFormRef" class="authorize-form">
-            <el-form-item label="选择角色">
-              <el-checkbox-group v-model="selectedRole" class="role-checkbox-group">
-                <el-checkbox v-for="role in allRole" :key="role.id" :label="role.id">{{ role.role }}</el-checkbox>
-              </el-checkbox-group>
-            </el-form-item>
-          </el-form>
-        </template>
-      </div>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="handleAuthorizeDialogClose">取消</el-button>
-          <el-button type="primary" @click="handleAuthorizeSubmit">确认分配</el-button>
-        </span>
-      </template>
-    </el-dialog>
-
-    <!-- 批量授权角色弹窗对话框 -->
-    <el-dialog v-model="authorizeBatchDialogVisible" title="权限批量授权角色" :before-close="handleAuthorizeBatchDialogClose" width="500px">
-      <div class="authorize-dialog-content">
-        <p class="role-name">当前权限: {{ currentPermissionList.map((item) => item.description).join(', ') }}</p>
-        <el-form ref="authorizeBatchFormRef" class="authorize-form">
+  <!-- 授权角色弹窗对话框 -->
+  <el-dialog v-model="authorizeDialogVisible" title="权限授权角色" :before-close="handleAuthorizeDialogClose" class="authorize-dialog">
+    <div v-loading="authorizeLoading" class="authorize-dialog-content">
+      <p class="role-name">当前权限: {{ currentPermission?.description }}</p>
+      <template v-if="!authorizeLoading">
+        <el-form ref="authorizeFormRef" class="authorize-form">
           <el-form-item label="选择角色">
-            <el-checkbox-group v-model="selectedRole" class="role-checkbox-group" :disabled="authorizeBatchLoading">
+            <el-checkbox-group v-model="selectedRole" class="role-checkbox-group">
               <el-checkbox v-for="role in allRole" :key="role.id" :label="role.id">{{ role.role }}</el-checkbox>
             </el-checkbox-group>
           </el-form-item>
         </el-form>
-      </div>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="handleAuthorizeBatchDialogClose">取消</el-button>
-          <el-button type="primary" @click="handleAuthorizeBatchSubmit" :disabled="authorizeBatchLoading">确认分配</el-button>
-        </span>
       </template>
-    </el-dialog>
-  </div>
+    </div>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="handleAuthorizeDialogClose">取消</el-button>
+        <el-button type="primary" @click="handleAuthorizeSubmit">确认分配</el-button>
+      </span>
+    </template>
+  </el-dialog>
+
+  <!-- 批量授权角色弹窗对话框 -->
+  <el-dialog v-model="authorizeBatchDialogVisible" title="权限批量授权角色" :before-close="handleAuthorizeBatchDialogClose" width="500px">
+    <div class="authorize-dialog-content">
+      <p class="role-name">当前权限: {{ currentPermissionList.map((item) => item.description).join(', ') }}</p>
+      <el-form ref="authorizeBatchFormRef" class="authorize-form">
+        <el-form-item label="选择角色">
+          <el-checkbox-group v-model="selectedRole" class="role-checkbox-group" :disabled="authorizeBatchLoading">
+            <el-checkbox v-for="role in allRole" :key="role.id" :label="role.id">{{ role.role }}</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+      </el-form>
+    </div>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="handleAuthorizeBatchDialogClose">取消</el-button>
+        <el-button type="primary" @click="handleAuthorizeBatchSubmit" :disabled="authorizeBatchLoading">确认分配</el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Search, Plus, Edit, Delete, Avatar, Download } from '@element-plus/icons-vue'
 import { getPermissionList, getPermissionPage, addPermission, updatePermission, deletePermission, queryPermissionPage } from '@/api/permission'
 import { getRoleList } from '@/api/role'
 import { addBatchRolePermission, addRolePermission, getRolesByPermission } from '@/api/role-permission'
 import { getAllMenuList } from '@/api/menu'
-import Pagination from '@/components/data/Pagination.vue'
+
+// 组件
+import ManagementCard from '@/components/management/ManagementCard.vue'
+import KeywordSearch from '@/components/search/KeywordSearch.vue'
+import CommonSelect from '@/components/search/CommonSelect.vue'
 
 import FileSaver from 'file-saver'
 import * as XLSX from 'xlsx'
@@ -249,13 +237,6 @@ const getPermissions = async () => {
 onMounted(() => {
   getPermissions()
   getMenuList()
-  handleResize()
-  window.addEventListener('resize', handleResize)
-})
-
-// 组件卸载时移除监听
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
 })
 
 // 菜单列表
@@ -289,6 +270,12 @@ const buildSearchPayload = () => ({
   menuId: searchMenuId.value || undefined,
 })
 
+// 处理搜索
+const handleSearch = async () => {
+  currentPage.value = 1
+  await fetchPermissions()
+}
+
 const applyPageData = (pageData) => {
   permissionList.value = pageData?.data || []
   paginatedPermissionList.value = permissionList.value
@@ -321,47 +308,6 @@ const fetchPermissions = async () => {
 const updatePaginatedPermissionList = () => {
   paginatedPermissionList.value = permissionList.value
 }
-
-// 处理分页大小变化
-const handleSizeChange = async (size) => {
-  pageSize.value = size
-  currentPage.value = 1
-  await fetchPermissions()
-}
-
-// 处理当前页码变化
-const handleCurrentChange = async (current) => {
-  currentPage.value = current
-  await fetchPermissions()
-}
-
-// 处理搜索
-const handleSearch = async () => {
-  currentPage.value = 1
-  await fetchPermissions()
-}
-
-// 监听搜索输入变化
-const searchTimeout = ref(null)
-watch(searchDescription, (newVal) => {
-  // 防抖处理
-  if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value)
-  }
-  searchTimeout.value = setTimeout(() => {
-    handleSearch()
-  }, 500)
-})
-
-watch(searchPermission, (newVal) => {
-  // 防抖处理
-  if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value)
-  }
-  searchTimeout.value = setTimeout(() => {
-    handleSearch()
-  }, 500)
-})
 
 // 处理添加权限
 const handleAddPermission = () => {
@@ -506,14 +452,6 @@ const handleAuthorizeDialogClose = () => {
   selectedRole.value = []
 }
 
-// 移动端检测
-const isMobileView = ref(false)
-
-// 监听窗口大小变化
-const handleResize = () => {
-  isMobileView.value = window.innerWidth <= 768
-}
-
 // 表格多选
 const handleSelectionChange = async (permission) => {
   currentPermissionList.value = permission
@@ -588,390 +526,253 @@ const handleAuthorizeBatchDialogClose = () => {
 </script>
 
 <style lang="scss" scoped>
-.management-container {
-  height: 100%;
-  box-sizing: border-box;
-  position: relative;
+// 表格包装器
+.permission-table-wrapper {
+  flex: 1;
+  overflow: auto;
+}
 
-  .card {
-    height: 100%;
-    padding: 20px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+// 搜索输入框
+.search-input {
+  width: 160px;
+  border-radius: 8px;
+
+  :deep(.el-input__wrapper) {
+    border-radius: 8px;
     transition: all 0.3s ease;
 
+    &:focus-within {
+      box-shadow: 0 0 0 3px var(--admin-primary-light);
+      border-color: var(--admin-primary);
+    }
+  }
+}
+
+// 搜索选择框
+.search-select {
+  width: 160px;
+  border-radius: 8px;
+
+  :deep(.el-select__wrapper) {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:focus-within {
+      box-shadow: 0 0 0 3px var(--admin-primary-light);
+      border-color: var(--admin-primary);
+    }
+  }
+}
+
+// 表格
+.table {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 220px);
+
+  :deep(.el-tag__content) {
+    display: flex;
+    align-items: center;
+  }
+
+  :deep(.el-table__header-wrapper) th {
+    font-weight: 600;
+    color: #475569;
+  }
+
+  :deep(.el-table__body-wrapper) tr td {
+    color: #64748b;
+    padding: 12px 0;
+  }
+
+  :deep(.el-table__fixed-right) {
+    box-shadow: -3px 0 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .table-actions {
+    height: 30px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .edit-button {
+      background-color: #e0f2fe;
+      color: #0284c7;
+      border-color: #e0f2fe;
+      border-radius: 6px;
+
+      &:hover {
+        background-color: #bae6fd;
+        border-color: #bae6fd;
+      }
+    }
+
+    .delete-button {
+      background-color: #fee2e2;
+      color: #ef4444;
+      border-color: #fee2e2;
+      border-radius: 6px;
+
+      &:hover {
+        background-color: #fecaca;
+        border-color: #fecaca;
+      }
+    }
+
+    .role-button {
+      background-color: #fef3c7;
+      color: #d97706;
+      border-color: #fef3c7;
+      border-radius: 6px;
+
+      &:hover {
+        background-color: #fde68a;
+        border-color: #fde68a;
+      }
+    }
+  }
+}
+
+// 移动端卡片视图
+.permission-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px;
+
+  .permission-card {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+
     &:hover {
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-      border-bottom: 1px solid var(--el-border-color);
-
-      .card-title {
-        font-size: 20px;
-        font-weight: 600;
-        margin: 0;
-        display: flex;
-        align-items: center;
-
-        &::before {
-          content: '';
-          display: inline-block;
-          width: 4px;
-          height: 20px;
-          background-color: var(--admin-primary);
-          border-radius: 2px;
-          margin-right: 10px;
-        }
-      }
-
-      .card-actions {
-        display: flex;
-        align-items: center;
-        // gap: 12px;
-
-        .search-input {
-          width: 240px;
-          border-radius: 8px;
-          margin-left: 10px;
-
-          :deep(.el-input__wrapper) {
-            border-radius: 8px;
-            transition: all 0.3s ease;
-
-            &:focus-within {
-              box-shadow: 0 0 0 3px var(--admin-primary-light);
-              border-color: var(--admin-primary);
-            }
-          }
-          :deep(.el-select__wrapper) {
-            border-radius: 8px;
-            transition: all 0.3s ease;
-
-            &:focus-within {
-              box-shadow: 0 0 0 3px var(--admin-primary-light);
-              border-color: var(--admin-primary);
-            }
-          }
-        }
-        .authorize-button {
-          margin-left: 10px;
-          background-color: #fef3c7;
-          color: #d97706;
-          border-color: #fef3c7;
-          border-radius: 6px;
-          transition: all 0.3s ease;
-          &:hover {
-            background-color: #fde68a;
-            border-color: #fde68a;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
-          }
-
-          &.is-disabled {
-            background-color: #f5f5f5;
-            border-color: #d9d9d9;
-            color: #bfbfbf;
-            cursor: not-allowed;
-            opacity: 0.6;
-          }
-        }
-      }
-
-      .export-button {
-        margin-left: 10px;
-        background-color: #e0f2fe;
-        color: #0284c7;
-        border-color: #e0f2fe;
-        border-radius: 6px;
-        transition: all 0.3s ease;
-
-        &:hover {
-          background-color: #bae6fd;
-          border-color: #bae6fd;
-          transform: translateY(-2px);
-          box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
-        }
-      }
-
-      .add-button {
-        margin-left: 10px;
-        border-radius: 8px;
-        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
-        border: none;
-        transition: all 0.3s ease;
-
-        &:hover {
-          background: linear-gradient(135deg, var(--admin-primary-dark) 0%, var(--admin-primary-active) 100%);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px var(--admin-primary-light);
-        }
-      }
-    }
-  }
-
-  // 桌面端表格视图
-  .desktop-view {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding-bottom: 60px;
-  }
-
-  //表格
-  .table {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-top: 16px;
-    max-height: calc(100vh - 250px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
-
-    :deep(.el-tag__content) {
-      display: flex;
-      align-items: center;
+    &.is-selected {
+      border: 2px solid var(--admin-primary);
+      box-shadow: 0 0 12px var(--admin-primary-light);
     }
 
-    :deep(.el-table__header-wrapper) {
-      background-color: var(--el-bg-color);
-      th {
-        font-weight: 600;
-        color: #475569;
-      }
-    }
-
-    :deep(.el-table__body-wrapper) {
-      tr {
-        td {
-          color: #64748b;
-          padding: 12px 0;
-        }
-      }
-    }
-
-    :deep(.el-table__fixed-right) {
-      box-shadow: -3px 0 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .table-actions {
-      height: 30px;
-      display: flex;
-      align-items: center;
-      gap: 8px; // 设置按钮之间的间距
-      // flex-wrap: wrap; // 允许按钮在空间不足时换行
-      @media screen and (max-width: 480px) {
-        gap: 4px;
-      }
-      .edit-button {
-        background-color: #e0f2fe;
-        color: #0284c7;
-        border-color: #e0f2fe;
-        border-radius: 6px;
-        transition: all 0.3s ease;
-
-        &:hover {
-          background-color: #bae6fd;
-          border-color: #bae6fd;
-          transform: translateY(-2px);
-          box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
-        }
-      }
-      .delete-button {
-        margin-left: 0 !important; // 覆盖可能的默认边距
-        background-color: #fee2e2;
-        color: #ef4444;
-        border-color: #fee2e2;
-        border-radius: 6px;
-        transition: all 0.3s ease;
-
-        &:hover {
-          background-color: #fecaca;
-          border-color: #fecaca;
-          transform: translateY(-2px);
-          box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-        }
-      }
-      .role-button {
-        margin-left: 0;
-        background-color: #fef3c7;
-        color: #d97706;
-        border-color: #fef3c7;
-        border-radius: 6px;
-        transition: all 0.3s ease;
-
-        &:hover {
-          background-color: #fde68a;
-          border-color: #fde68a;
-          transform: translateY(-2px);
-          box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
-        }
-      }
-    }
-  }
-
-  // 移动端卡片视图
-  .mobile-view {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-top: 16px;
-    padding-bottom: 60px;
-    overflow-y: auto;
-
-    // 权限卡片列表容器
-    .permission-cards {
+    .permission-card-content {
       display: flex;
       flex-direction: column;
       gap: 12px;
-      padding: 10px;
 
-      // 单个权限卡片
-      .permission-card {
-        transition: all 0.3s ease;
-        border-radius: 8px;
+      .permission-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--el-border-color-lighter);
 
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        // 选中状态样式
-        &.is-selected {
-          border: 2px solid var(--admin-primary);
-          box-shadow: 0 0 12px var(--admin-primary-light);
-        }
-
-        // 权限卡片内容容器
-        .permission-card-content {
+        .header-left {
           display: flex;
-          flex-direction: column;
-          gap: 12px;
+          align-items: center;
+          gap: 8px;
 
-          // 卡片头部
-          .permission-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--el-border-color-lighter);
-
-            .header-left {
-              display: flex;
-              align-items: center;
-              gap: 8px;
-
-              .mobile-checkbox {
-                :deep(.el-checkbox__inner) {
-                  width: 18px;
-                  height: 18px;
-                }
-              }
-
-              .permission-id {
-                font-size: 12px;
-                color: #666;
-                background-color: #f5f5f5;
-                padding: 2px 6px;
-                border-radius: 4px;
-              }
-            }
-
-            :deep(.el-tag) {
-              display: flex;
-              align-items: center;
-              gap: 4px;
+          .mobile-checkbox {
+            :deep(.el-checkbox__inner) {
+              width: 18px;
+              height: 18px;
             }
           }
 
-          // 权限信息区域
-          .permission-info {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+          .permission-id {
+            font-size: 12px;
+            color: #666;
+            background-color: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+          }
+        }
 
-            .info-row {
-              display: flex;
-              font-size: 14px;
+        :deep(.el-tag) {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+      }
 
-              .label {
-                font-weight: 500;
-                color: #888;
-                margin-right: 8px;
-                flex-shrink: 0;
-              }
+      .permission-info {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
 
-              .value {
-                color: #555;
-                flex: 1;
-                word-break: break-all;
-              }
+        .info-row {
+          display: flex;
+          font-size: 14px;
 
-              .permission-text {
-                color: #409eff;
-                font-family: 'Courier New', monospace;
-              }
-
-              .time-text {
-                font-size: 12px;
-                color: #999;
-              }
-            }
+          .label {
+            font-weight: 500;
+            color: #888;
+            margin-right: 8px;
+            flex-shrink: 0;
           }
 
-          // 操作按钮区域
-          .permission-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            padding-top: 12px;
-            border-top: 1px solid var(--el-border-color-lighter);
-            flex-wrap: wrap;
+          .value {
+            color: #555;
+            flex: 1;
+            word-break: break-all;
+          }
 
-            .el-button {
-              margin-left: 0;
-              flex: 1;
-              min-width: 70px;
-            }
+          .permission-text {
+            color: var(--admin-primary);
+            font-family: 'Courier New', monospace;
+          }
 
-            .edit-button {
-              background-color: #e0f2fe;
-              color: #0284c7;
-              border-color: #e0f2fe;
+          .time-text {
+            font-size: 12px;
+            color: #999;
+          }
+        }
+      }
 
-              &:hover {
-                background-color: #bae6fd;
-                border-color: #bae6fd;
-              }
-            }
+      .permission-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        padding-top: 12px;
+        border-top: 1px solid var(--el-border-color-lighter);
+        flex-wrap: wrap;
 
-            .delete-button {
-              background-color: #fee2e2;
-              color: #ef4444;
-              border-color: #fee2e2;
+        .el-button {
+          margin-left: 0;
+          flex: 1;
+          min-width: 70px;
+        }
 
-              &:hover {
-                background-color: #fecaca;
-                border-color: #fecaca;
-              }
-            }
+        .edit-button {
+          background-color: #e0f2fe;
+          color: #0284c7;
+          border-color: #e0f2fe;
 
-            .role-button {
-              background-color: #fef3c7;
-              color: #d97706;
-              border-color: #fef3c7;
+          &:hover {
+            background-color: #bae6fd;
+            border-color: #bae6fd;
+          }
+        }
 
-              &:hover {
-                background-color: #fde68a;
-                border-color: #fde68a;
-              }
-            }
+        .delete-button {
+          background-color: #fee2e2;
+          color: #ef4444;
+          border-color: #fee2e2;
+
+          &:hover {
+            background-color: #fecaca;
+            border-color: #fecaca;
+          }
+        }
+
+        .role-button {
+          background-color: #fef3c7;
+          color: #d97706;
+          border-color: #fef3c7;
+
+          &:hover {
+            background-color: #fde68a;
+            border-color: #fde68a;
           }
         }
       }
@@ -979,15 +780,11 @@ const handleAuthorizeBatchDialogClose = () => {
   }
 }
 
+// 对话框样式
 :deep(.el-dialog) {
   border-radius: 16px;
-  // 默认宽度
   width: 500px;
-
-  // 屏幕宽度小于768px时的宽度
-  @media screen and (max-width: 767px) {
-    width: 90%;
-  }
+  max-width: 90%;
 }
 
 // 新增/编辑菜单对话框
@@ -995,11 +792,11 @@ const handleAuthorizeBatchDialogClose = () => {
   :deep(.el-form-item) {
     margin-bottom: 20px;
   }
-  :deep(.el-input-number),
+
   :deep(.el-input__wrapper),
   :deep(.el-select__wrapper) {
     border-radius: 16px;
-    transition: all 0.3s ease;
+
     &:focus-within {
       box-shadow: 0 0 0 3px var(--admin-primary-light);
       border-color: var(--admin-primary);
@@ -1023,7 +820,7 @@ const handleAuthorizeBatchDialogClose = () => {
       margin-bottom: 20px;
     }
 
-    .user-checkbox-group {
+    .role-checkbox-group {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
@@ -1043,136 +840,55 @@ const handleAuthorizeBatchDialogClose = () => {
   }
 }
 
-// 响应式设计
-@media screen and (max-width: 1400px) {
-  .management-container {
-    .card {
-      .card-header {
-        .card-actions {
-          .search-input {
-            width: 180px;
-          }
-        }
-      }
-    }
+// 按钮样式
+.authorize-button {
+  background-color: #fef3c7;
+  color: #d97706;
+  border-color: #fef3c7;
+  border-radius: 6px;
+
+  &:hover {
+    background-color: #fde68a;
+    border-color: #fde68a;
+  }
+
+  &.is-disabled {
+    background-color: #f5f5f5;
+    border-color: #d9d9d9;
+    color: #bfbfbf;
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 }
 
-@media screen and (max-width: 1220px) {
-  .management-container {
-    .card {
-      .card-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
+.export-button {
+  background-color: #e0f2fe;
+  color: #0284c7;
+  border-color: #e0f2fe;
+  border-radius: 6px;
 
-        .card-actions {
-          width: 100%;
-          justify-content: space-between;
-
-          .search-input {
-            width: 100%;
-          }
-        }
-      }
-    }
+  &:hover {
+    background-color: #bae6fd;
+    border-color: #bae6fd;
   }
 }
 
+.add-button {
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+  border: none;
+
+  &:hover {
+    background: linear-gradient(135deg, var(--admin-primary-dark) 0%, var(--admin-primary-active) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--admin-primary-light);
+  }
+}
+
+// 响应式
 @media screen and (max-width: 768px) {
-  .management-container {
-    .card {
-      padding: 2px;
-      .card-header {
-        padding: 6px;
-
-        .card-title {
-          font-size: 16px;
-        }
-
-        .card-actions {
-          // flex-direction: column;
-          gap: 8px;
-
-          .search-input {
-            width: 100%;
-          }
-
-          .add-button {
-            width: 100%;
-          }
-        }
-      }
-
-      .table {
-        margin-top: 0;
-        max-height: calc(100vh - 200px); /* 调整为视口高度减去固定值，确保有足够空间不被分页器遮挡 */
-        :deep(.el-table) {
-          display: block;
-          width: 100%;
-          overflow-x: auto;
-        }
-      }
-    }
-  }
-}
-
-// 响应式样式
-@media screen and (max-width: 768px) {
-  .editForm {
-    :deep(.el-form-item) {
-      margin-bottom: 15px;
-    }
-
-    :deep(.el-input),
-    :deep(.el-select),
-    :deep(.el-input-number) {
-      width: 100% !important;
-    }
-  }
-
-  .dialog-footer {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-
-    :deep(.el-button) {
-      flex: 1;
-      max-width: 120px;
-    }
-  }
-}
-
-@media screen and (max-width: 480px) {
-  .card-header {
-    flex-direction: column;
-    align-items: flex-start;
-
-    .card-actions {
-      width: 100%;
-      gap: 10px;
-      height: 50px;
-      justify-content: center;
-      // flex-direction: column;
-
-      .search {
-        width: 600px;
-      }
-
-      .search-input {
-        margin-left: 0;
-        padding-bottom: 10px;
-      }
-      .authorize-button {
-        margin-bottom: 10px;
-      }
-      .export-button {
-        margin-bottom: 10px;
-      }
-      .add-button {
-        margin-bottom: 10px;
-      }
-    }
+  .permission-table-wrapper {
+    max-height: calc(100vh - 180px);
   }
 }
 </style>

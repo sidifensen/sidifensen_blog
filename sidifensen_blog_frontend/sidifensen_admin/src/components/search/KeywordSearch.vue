@@ -1,9 +1,10 @@
 <template>
   <div class="keyword-search">
-    <span v-if="showLabel" class="filter-label">{{ label }}</span>
+    <span class="filter-label">{{ label }}</span>
     <el-input v-model="value" :placeholder="placeholder" size="small" :clearable="clearable" :class="['search-input', inputClass]" :style="inputStyle" @input="handleInput" @keyup.enter="handleEnter">
-      <template v-if="$slots.prefix" #prefix>
-        <slot name="prefix" />
+      <template v-if="prefixIcon || $slots.prefix" #prefix>
+        <component v-if="prefixIcon" :is="prefixIcon" class="prefix-icon" />
+        <slot v-else name="prefix" />
       </template>
     </el-input>
   </div>
@@ -18,11 +19,12 @@
  * - 支持防抖搜索（默认 300ms）
  * - 支持 v-model 绑定
  * - 支持黑夜模式
+ * - 标签固定显示在左侧
  *
  * 使用方式：
  * ```vue
- * <KeywordSearch v-model="keyword" />
- * <KeywordSearch v-model="kw" width="240px" :debounce="500" @search="onSearch" />
+ * <KeywordSearch v-model="keyword" label="关键词" />
+ * <KeywordSearch v-model="kw" label="用户名" width="240px" :debounce="500" @search="onSearch" />
  * ```
  */
 
@@ -39,11 +41,6 @@ const props = defineProps({
   width: {
     type: String,
     default: '200px',
-  },
-  // 是否显示标签
-  showLabel: {
-    type: Boolean,
-    default: false,
   },
   // 标签文本
   label: {
@@ -69,6 +66,11 @@ const props = defineProps({
   debounce: {
     type: Number,
     default: 300,
+  },
+  // 前置图标
+  prefixIcon: {
+    type: Object,
+    default: null,
   },
   // 自定义类名
   inputClass: {
@@ -148,7 +150,6 @@ const handleEnter = (val) => {
     transition: all 0.3s ease;
     min-height: 32px;
     font-size: 14px;
-    background-color: var(--bg-input);
 
     &:focus-within {
       box-shadow: 0 0 0 3px var(--admin-primary-light) !important;
@@ -158,12 +159,17 @@ const handleEnter = (val) => {
 
   :deep(.el-input__inner) {
     &::placeholder {
-      color: var(--text-placeholder, #94a3b8);
+      color: var(--text-placeholder);
     }
   }
 
   :deep(.el-input__prefix) {
     color: var(--text-muted);
+
+    .prefix-icon {
+      width: 14px;
+      height: 14px;
+    }
   }
 }
 

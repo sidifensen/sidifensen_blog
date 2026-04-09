@@ -1210,6 +1210,7 @@ onUnmounted(() => {
         resize: none;
         font-size: 14px;
         line-height: 1.5;
+        border-radius: 12px;
 
         &::placeholder {
           color: var(--text-muted);

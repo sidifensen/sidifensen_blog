@@ -11,13 +11,9 @@
   >
     <!-- 筛选器 -->
     <template #filters>
-      <el-select v-model="searchForm.device" placeholder="设备类型" filterable clearable size="small" style="width: 140px" @change="handleSearch">
-        <el-option label="全部" value="" />
-        <el-option label="PC" value="PC" />
-        <el-option label="Mobile" value="Mobile" />
-      </el-select>
-      <el-input v-model.number="searchForm.userId" placeholder="用户ID" :prefix-icon="Search" size="small" style="width: 160px" clearable @input="handleSearch" />
-      <el-input v-model="searchForm.ip" placeholder="访客IP地址" :prefix-icon="Search" size="small" style="width: 160px" clearable @input="handleSearch" />
+      <CommonSelect v-model="searchForm.device" :options="deviceTypeOptions" label="设备类型" placeholder="设备类型" width="140px" size="small" @change="handleSearch" />
+      <KeywordSearch v-model.number="searchForm.userId" placeholder="用户ID" :debounce="0" @search="handleSearch" />
+      <KeywordSearch v-model="searchForm.ip" placeholder="访客IP地址" :debounce="0" @search="handleSearch" />
       <SearchButtons @search="handleSearch" @reset="handleReset" />
     </template>
 
@@ -95,7 +91,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Search, Delete } from '@element-plus/icons-vue'
+import { Delete } from '@element-plus/icons-vue'
 import { getVisitorLogList, searchVisitorLog, deleteVisitorLogs } from '@/api/visitorLog'
 
 // 组件
@@ -103,7 +99,9 @@ import ManagementCard from '@/components/management/ManagementCard.vue'
 import DataTable from '@/components/data/DataTable.vue'
 import MobileCardList from '@/components/data/MobileCardList.vue'
 import BatchActions from '@/components/actions/BatchActions.vue'
+import KeywordSearch from '@/components/search/KeywordSearch.vue'
 import SearchButtons from '@/components/search/SearchButtons.vue'
+import CommonSelect from '@/components/search/CommonSelect.vue'
 
 // 访客日志列表数据
 const logList = ref([])
@@ -121,6 +119,12 @@ const searchForm = reactive({
   visitTimeStart: null,
   visitTimeEnd: null,
 })
+
+// 设备类型选项
+const deviceTypeOptions = [
+  { label: 'PC', value: 'PC' },
+  { label: 'Mobile', value: 'Mobile' },
+]
 
 // 选中的日志
 const selectedLogs = ref([])

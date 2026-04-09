@@ -11,14 +11,10 @@
   >
     <!-- 筛选器 -->
     <template #filters>
-      <el-select v-model="searchForm.type" placeholder="黑名单类型" filterable clearable size="small" style="width: 140px" @change="handleSearch">
-        <el-option label="全部" value="" />
-        <el-option label="用户" :value="0" />
-        <el-option label="IP地址" :value="1" />
-      </el-select>
-      <el-input v-model.number="searchForm.userId" placeholder="用户ID" :prefix-icon="Search" size="small" style="width: 140px" clearable @input="handleSearch" />
+      <CommonSelect v-model="searchForm.type" :options="blacklistTypeOptions" label="黑名单类型" placeholder="黑名单类型" width="140px" size="small" @change="handleSearch" />
+      <KeywordSearch v-model.number="searchForm.userId" placeholder="用户ID" :debounce="0" @search="handleSearch" />
       <SearchButtons @search="handleSearch" @reset="handleReset" />
-      <el-button type="primary" @click="handleAdd" :icon="Plus">新增黑名单</el-button>
+      <el-button type="primary" size="small" @click="handleAdd" :icon="Plus" class="add-button">新增黑名单</el-button>
     </template>
 
     <!-- 批量操作按钮 -->
@@ -176,7 +172,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Search, Plus, Delete, Edit } from '@element-plus/icons-vue'
+import { Plus, Delete, Edit } from '@element-plus/icons-vue'
 import { getBlacklistList, addBlacklist, searchBlacklist, updateBlacklist, deleteBlacklist } from '@/api/blacklist'
 
 // 组件
@@ -184,7 +180,9 @@ import ManagementCard from '@/components/management/ManagementCard.vue'
 import DataTable from '@/components/data/DataTable.vue'
 import MobileCardList from '@/components/data/MobileCardList.vue'
 import BatchActions from '@/components/actions/BatchActions.vue'
+import KeywordSearch from '@/components/search/KeywordSearch.vue'
 import SearchButtons from '@/components/search/SearchButtons.vue'
+import CommonSelect from '@/components/search/CommonSelect.vue'
 
 // 黑名单列表数据
 const blacklistList = ref([])
@@ -218,6 +216,12 @@ const blacklistForm = reactive({
   reason: '',
   expireTime: '',
 })
+
+// 黑名单类型选项
+const blacklistTypeOptions = [
+  { label: '用户', value: 0 },
+  { label: 'IP地址', value: 1 },
+]
 
 // 选中的黑名单
 const selectedBlacklists = ref([])
@@ -623,5 +627,17 @@ onMounted(() => {
   color: var(--el-text-color-secondary);
   margin-top: 4px;
   line-height: 1.4;
+}
+
+// 新增按钮
+.add-button {
+  border-radius: 6px;
+  background-color: var(--admin-primary);
+  border-color: var(--admin-primary);
+
+  &:hover {
+    background-color: var(--admin-primary-dark);
+    border-color: var(--admin-primary-dark);
+  }
 }
 </style>

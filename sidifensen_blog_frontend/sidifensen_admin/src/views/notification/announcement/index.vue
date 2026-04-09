@@ -2,26 +2,17 @@
   <ManagementCard title="公告管理" :showTimeFilter="false" :showPagination="true" :modelCurrentPage="currentPage" :modelPageSize="pageSize" :total="total" @search="fetchAnnouncements">
     <!-- 筛选器 -->
     <template #filters>
-      <el-select v-model="searchForm.status" placeholder="状态筛选" filterable clearable size="small" style="width: 160px" @change="handleSearch">
-        <el-option label="全部" value="" />
-        <el-option label="待发送" :value="0" />
-        <el-option label="发送中" :value="1" />
-        <el-option label="已发送" :value="2" />
-        <el-option label="发送失败" :value="3" />
-      </el-select>
+      <ExamineStatusSelect v-model="searchForm.status" :options="statusOptions" width="140px" placeholder="状态筛选" labelText="状态" />
       <SearchButtons @search="handleSearch" @reset="handleReset" />
-      <el-button type="primary" @click="handleSend" class="send-btn">
-        <svg class="send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12L6 12M18 12L22 12M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke-linecap="round" />
-          <circle cx="12" cy="12" r="4" />
-        </svg>
+      <el-button @click="handleSend" class="send-btn">
+        <Plus />
         发送公告
       </el-button>
     </template>
 
     <!-- 桌面端表格视图 -->
     <template #table-view>
-      <DataTable :data="paginatedList" :loading="loading" showId :hasEditAction="true" :hasDeleteAction="true" @edit="handleEdit" @delete="handleDelete">
+      <DataTable :data="paginatedList" :loading="loading" showId :showActions="false" @edit="handleEdit" @delete="handleDelete">
         <!-- 标题列 -->
         <el-table-column prop="title" label="标题" min-width="200">
           <template #default="{ row }">
@@ -74,13 +65,11 @@
         <el-table-column prop="createTime" label="创建时间" sortable width="160" />
 
         <!-- 操作列 -->
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <div class="table-actions">
-              <el-button type="primary" link size="small" @click="handleEdit(row)">编辑</el-button>
+            <TableActions :show-edit="true" :show-delete="true" edit-text="编辑" delete-text="删除" @edit="handleEdit(row)" @delete="handleDelete(row)">
               <el-button v-if="row.status === 0" type="warning" link size="small" @click="handleCancel(row)">取消</el-button>
-              <el-button type="danger" link size="small" @click="handleDelete(row.id)">删除</el-button>
-            </div>
+            </TableActions>
           </template>
         </el-table-column>
       </DataTable>
@@ -88,7 +77,7 @@
 
     <!-- 移动端卡片视图 -->
     <template #card-view>
-      <MobileCardList :data="paginatedList" :selectedItems="[]" showId :hasEditAction="true" :hasDeleteAction="true" @edit="handleEdit" @delete="handleDelete">
+      <MobileCardList :data="paginatedList" :selectedItems="[]" showId :hasEditAction="false" :hasDeleteAction="false" @edit="handleEdit" @delete="handleDelete">
         <!-- 自定义卡片内容 -->
         <template #custom="{ item }">
           <div class="card-title-row">{{ item.title }}</div>
@@ -164,14 +153,17 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { Plus } from '@element-plus/icons-vue'
 import { getAnnouncementPage, createAnnouncement, updateAnnouncement, cancelAnnouncement, deleteAnnouncement } from '@/api/announcement'
 import { getUserList } from '@/api/user'
 
 // 组件
 import ManagementCard from '@/components/management/ManagementCard.vue'
 import DataTable from '@/components/data/DataTable.vue'
+import TableActions from '@/components/data/TableActions.vue'
 import MobileCardList from '@/components/data/MobileCardList.vue'
 import SearchButtons from '@/components/search/SearchButtons.vue'
+import ExamineStatusSelect from '@/components/search/ExamineStatusSelect.vue'
 
 // 列表数据
 const list = ref([])
@@ -192,6 +184,14 @@ const editingId = ref(null)
 const searchForm = reactive({
   status: '',
 })
+
+// 状态选项
+const statusOptions = [
+  { label: '待发送', value: '0' },
+  { label: '发送中', value: '1' },
+  { label: '已发送', value: '2' },
+  { label: '发送失败', value: '3' },
+]
 
 // 公告表单
 const announcementForm = reactive({
@@ -383,15 +383,15 @@ const handleCancel = (row) => {
 }
 
 // 删除公告
-const handleDelete = (id) => {
-  ElMessageBox.confirm('确定要删除该公告吗？', '警告', {
+const handleDelete = (row) => {
+  ElMessageBox.confirm(`确定要删除公告【${row.title}】吗？`, '警告', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
   })
     .then(async () => {
       try {
-        await deleteAnnouncement(id)
+        await deleteAnnouncement(row.id)
         ElMessage.success('删除成功')
         await fetchAnnouncements()
       } catch {
@@ -519,16 +519,15 @@ onMounted(() => {
   margin-bottom: 8px;
 }
 
-// 发送按钮样式
+// 发送按钮
 .send-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   margin-left: auto;
+  border-radius: 6px;
+  font-weight: 500;
 
-  .send-icon {
-    width: 16px;
-    height: 16px;
+  :deep(svg) {
+    width: 14px;
+    height: 14px;
   }
 }
 

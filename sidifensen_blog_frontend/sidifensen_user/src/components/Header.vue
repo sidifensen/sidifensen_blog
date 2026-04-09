@@ -12,9 +12,10 @@
     <div class="mobile-menu-button" @click="toggleMobileMenu">
       <svg-icon name="menu" width="40px" height="40px" />
     </div>
-    <router-link class="logo" to="/"
-      ><el-text size="large" class="logo-text">sidifensen</el-text></router-link
-    >
+    <router-link class="logo" to="/">
+      <img class="logo-img" src="/favicon.ico" alt="logo" />
+      <el-text size="large" class="logo-text">sidifensen</el-text>
+    </router-link>
     <el-menu-item index="/" class="menu-item">
       <el-icon><House /></el-icon>
       <span class="menu-text">首页</span>
@@ -41,7 +42,7 @@
     </el-menu-item>
     <div class="right">
       <div class="search" @click="handleSearch">
-        <el-icon size="29px" color="var(--el-text-color-primary)"><Search /></el-icon>
+        <el-icon size="29px" color="var(--el-color-info)"><Search /></el-icon>
       </div>
       <div class="message-icon" @click="goToMessage" v-if="user">
         <el-badge
@@ -49,7 +50,7 @@
           :max="99"
           :hidden="messageStore.totalUnreadCount === 0"
         >
-          <el-icon size="32px" color="var(--el-text-color-primary)"><ChatDotRound /></el-icon>
+          <el-icon size="32px" color="var(--el-color-primary)"><ChatLineSquare /></el-icon>
         </el-badge>
       </div>
       <div class="notification-icon" @click="goToNotification" v-if="user">
@@ -58,7 +59,7 @@
           :max="99"
           :hidden="notificationUnreadCount === 0"
         >
-          <el-icon size="31px" color="var(--el-text-color-primary)"><Bell /></el-icon>
+          <el-icon size="31px" color="var(--el-color-warning)"><BellFilled /></el-icon>
         </el-badge>
       </div>
       <Dark />
@@ -175,8 +176,9 @@ import {
   User,
   Setting,
   SwitchButton,
-  ChatDotRound,
-  Bell,
+  ChatLineSquare,
+  BellFilled,
+  Search,
   Star,
   Collection,
 } from '@element-plus/icons-vue'
@@ -469,8 +471,13 @@ onBeforeUnmount(() => {
   border-bottom: 1px solid var(--el-border-color);
 
   /* 毛玻璃效果 */
-  background: rgba(var(--el-bg-color), 0.85);
-  backdrop-filter: blur(12px);
+  background: rgba(var(--el-bg-color), 0.88);
+  backdrop-filter: blur(16px);
+
+  /* 整体悬浮投影 */
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 4px 12px rgba(0, 0, 0, 0.03);
 
   --el-menu-bg-color: transparent;
   --el-menu-hover-bg-color: var(--el-fill-color-light);
@@ -484,6 +491,24 @@ onBeforeUnmount(() => {
     font-weight: bold;
     white-space: nowrap;
     text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    /* Logo图标 - 真实项目图标 */
+    .logo-img {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      object-fit: cover;
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+
+      &:hover {
+        transform: scale(1.08);
+      }
+    }
 
     /* Logo文字 - 简洁设计 */
     .logo-text {
@@ -501,12 +526,45 @@ onBeforeUnmount(() => {
 
   .menu-item {
     padding: 0 12px !important;
-    transition: color 0.2s ease;
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease;
+    border-radius: 8px;
+    margin: 0 2px;
+    /* 关闭 ElementPlus 默认的激活边框 */
+    border-bottom: none !important;
+
+    /* 选中态：文字下方下划线 */
+    &.is-active {
+      background-color: transparent;
+
+      .menu-text {
+        color: var(--el-color-primary);
+        font-weight: 600;
+      }
+
+      /* 底部下划线 */
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 24px);
+        height: 2px;
+        background: var(--el-color-primary);
+        border-radius: 1px;
+      }
+    }
 
     .menu-text {
       font-size: 15px;
       margin-left: 6px;
       font-weight: 500;
+    }
+
+    &:not(.is-active):hover {
+      background-color: var(--el-fill-color-light);
     }
   }
 
@@ -518,44 +576,9 @@ onBeforeUnmount(() => {
     align-items: center;
     gap: 4px;
 
-    .search {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-
-      &:hover {
-        background-color: var(--el-fill-color-light);
-      }
-    }
-
-    .message-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-
-      &:hover {
-        background-color: var(--el-fill-color-light);
-      }
-
-      // 调整徽章大小和位置
-      ::v-deep(.el-badge__content) {
-        font-size: 11px;
-        top: 4px;
-        right: 6px;
-        border: none;
-      }
-    }
-
+    /* 右侧图标 - 无背景，hover 浮现效果 */
+    .search,
+    .message-icon,
     .notification-icon {
       display: flex;
       align-items: center;
@@ -564,13 +587,38 @@ onBeforeUnmount(() => {
       height: 36px;
       border-radius: 8px;
       cursor: pointer;
-      transition: background-color 0.2s ease;
+      transition:
+        background-color 0.18s ease,
+        transform 0.15s ease;
+      /* 默认无背景 */
+      background-color: transparent;
+      line-height: 1;
 
       &:hover {
         background-color: var(--el-fill-color-light);
       }
 
-      // 调整徽章大小和位置
+      /* 确保 el-icon 垂直居中 */
+      ::v-deep(.el-icon) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        transition: transform 0.15s ease;
+      }
+
+      &:hover ::v-deep(.el-icon) {
+        transform: scale(1.08);
+      }
+    }
+
+    .search {
+      margin-left: 8px;
+    }
+
+    // 徽章样式
+    .message-icon,
+    .notification-icon {
       ::v-deep(.el-badge__content) {
         font-size: 11px;
         top: 4px;

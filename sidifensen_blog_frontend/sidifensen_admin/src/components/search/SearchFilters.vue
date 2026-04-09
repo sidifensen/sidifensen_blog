@@ -156,25 +156,25 @@ onMounted(() => {
 
   .search-input {
     border-radius: 8px;
+  }
 
-    :deep(.el-input__wrapper) {
-      border-radius: 8px;
-      transition: all 0.3s ease;
+  :deep(.el-input__wrapper) {
+    border-radius: 8px;
+    transition: all 0.3s ease;
 
-      &:focus-within {
-        box-shadow: 0 0 0 3px var(--admin-primary-light);
-        border-color: var(--admin-primary);
-      }
+    &:focus-within {
+      box-shadow: 0 0 0 3px var(--admin-primary-light);
+      border-color: var(--admin-primary);
     }
+  }
 
-    :deep(.el-select__wrapper) {
-      border-radius: 8px;
-      transition: all 0.3s ease;
+  :deep(.el-select__wrapper) {
+    border-radius: 8px;
+    transition: all 0.3s ease;
 
-      &:focus-within {
-        box-shadow: 0 0 0 3px var(--admin-primary-light);
-        border-color: var(--admin-primary);
-      }
+    &:focus-within {
+      box-shadow: 0 0 0 3px var(--admin-primary-light);
+      border-color: var(--admin-primary);
     }
   }
 

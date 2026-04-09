@@ -1,38 +1,44 @@
 <template>
   <div class="examine-status-select">
-    <span v-if="showLabel" class="filter-label">审核状态</span>
+    <span class="filter-label">{{ labelText }}</span>
     <el-select v-model="value" :placeholder="placeholder" filterable clearable size="small" :class="['search-select', selectClass]" :style="{ width: width }" @change="handleChange">
       <el-option label="全部" value="" />
-      <el-option label="待审核" value="0" />
-      <el-option label="审核通过" value="1" />
-      <el-option label="审核不通过" value="2" />
+      <el-option v-for="opt in displayOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
     </el-select>
   </div>
 </template>
 
 <script setup>
 /**
- * 审核状态选择器组件
+ * 状态选择器组件
  *
  * 功能说明：
- * - 提供审核状态的快速选择：全部、待审核、审核通过、审核不通过
+ * - 提供状态的快速选择：全部、待审核、审核通过、审核不通过
  * - 支持 v-model 绑定
  * - 支持黑夜模式
+ * - 标签固定显示在左侧
  *
  * 使用方式：
  * ```vue
  * <ExamineStatusSelect v-model="examineStatus" />
- * <ExamineStatusSelect v-model="status" width="160px" show-label placeholder="选择状态" />
+ * <ExamineStatusSelect v-model="status" labelText="状态" width="160px" />
  * ```
  */
 
 import { computed } from 'vue'
 
+// 默认审核状态选项
+const defaultOptions = [
+  { label: '待审核', value: '0' },
+  { label: '审核通过', value: '1' },
+  { label: '审核不通过', value: '2' },
+]
+
 // Props
 const props = defineProps({
   // v-model 绑定值
   modelValue: {
-    type: String,
+    type: [String, Number],
     default: '',
   },
   // 选择框宽度
@@ -40,20 +46,25 @@ const props = defineProps({
     type: String,
     default: '140px',
   },
-  // 是否显示标签
-  showLabel: {
-    type: Boolean,
-    default: true,
+  // 标签文本
+  labelText: {
+    type: String,
+    default: '审核状态',
   },
   // 占位符
   placeholder: {
     type: String,
-    default: '请选择审核状态',
+    default: '请选择状态',
   },
   // 自定义类名
   selectClass: {
     type: String,
     default: '',
+  },
+  // 自定义选项列表
+  options: {
+    type: Array,
+    default: null,
   },
 })
 
@@ -64,6 +75,14 @@ const emit = defineEmits(['update:modelValue', 'change'])
 const value = computed({
   get: () => props.modelValue,
   set: (val) => emit('update:modelValue', val),
+})
+
+// 显示的选项
+const displayOptions = computed(() => {
+  if (props.options && props.options.length > 0) {
+    return props.options
+  }
+  return defaultOptions
 })
 
 // 变化处理
@@ -94,7 +113,6 @@ const handleChange = (val) => {
     transition: all 0.3s ease;
     min-height: 32px;
     font-size: 14px;
-    background-color: var(--bg-input);
 
     &:focus-within {
       box-shadow: 0 0 0 3px var(--admin-primary-light) !important;
@@ -103,7 +121,7 @@ const handleChange = (val) => {
   }
 
   :deep(.el-select__placeholder) {
-    color: var(--text-placeholder, #94a3b8);
+    color: var(--text-placeholder);
   }
 }
 

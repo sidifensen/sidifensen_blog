@@ -11,7 +11,7 @@
   >
     <!-- 筛选器 -->
     <template #filters>
-      <ExamineStatusSelect v-model="searchIsRead" :examineOptions="isReadOptions" width="140px" />
+      <ExamineStatusSelect v-model="searchIsRead" :options="isReadOptions" width="140px" labelText="已读状态" />
       <SearchButtons @search="handleSearch" @reset="handleReset" />
     </template>
 

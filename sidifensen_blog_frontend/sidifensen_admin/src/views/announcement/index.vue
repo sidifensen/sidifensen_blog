@@ -30,10 +30,11 @@
         showTitle
         showStatus
         showCreateTime
+        :showActions="false"
         :statusTypeMap="{ 0: 'warning', 1: 'info', 2: 'success' }"
         :statusTextMap="{ 0: '待发送', 1: '已取消', 2: '已发布' }"
-        :hasEditAction="true"
-        :hasDeleteAction="true"
+        :hasEditAction="false"
+        :hasDeleteAction="false"
         @selectionChange="handleSelectionChange"
         @edit="handleEdit"
         @delete="handleDelete"
@@ -68,8 +69,8 @@
         showSelection
         showTitle
         showMeta
-        :hasEditAction="true"
-        :hasDeleteAction="true"
+        :hasEditAction="false"
+        :hasDeleteAction="false"
         @select="handleMobileSelect"
         @edit="handleEdit"
         @delete="handleDelete"
