@@ -124,7 +124,10 @@
           </template>
         </el-dropdown>
       </div>
-      <div class="login" v-else @click="handleLoginClick">登录</div>
+      <div class="login-btn" v-else @click="handleLoginClick">
+        <el-icon size="14px"><User /></el-icon>
+        <span>登录</span>
+      </div>
     </div>
   </el-menu>
 
@@ -671,26 +674,34 @@ onBeforeUnmount(() => {
       }
     }
 
-    .login {
+    .login-btn {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 32px;
-      padding: 0 16px;
+      gap: 6px;
+      height: 34px;
+      padding: 0 14px;
       margin-left: 8px;
-      background-color: var(--el-color-primary);
-      color: #fff;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
-      border-radius: 16px;
+      color: var(--el-color-primary);
+      background-color: transparent;
+      border: 1.5px solid var(--el-color-primary-light-5);
+      border-radius: 8px;
       cursor: pointer;
       transition:
-        background-color 0.2s ease,
-        transform 0.2s ease;
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease;
+
+      .el-icon {
+        flex-shrink: 0;
+      }
 
       &:hover {
-        background-color: var(--el-color-primary-light-3);
-        transform: translateY(-1px);
+        background-color: #3667d4 !important;
+        border-color: #3667d4 !important;
+        color: #fff !important;
       }
     }
   }

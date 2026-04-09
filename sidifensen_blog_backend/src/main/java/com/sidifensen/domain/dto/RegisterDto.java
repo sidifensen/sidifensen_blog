@@ -19,7 +19,7 @@ public class RegisterDto {
     private String username;
 
     // 密码
-    @Pattern(regexp = "^[a-zA-Z0-9]+$", message = "密码只能包含英文和数字")
+    @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*._-]+$", message = "密码只能包含英文、数字和特殊字符(!@#$%^&*._-)")
     @Length(min = 6, max = 20, message = "密码长度必须在6-20位之间")
     private String password;
 

@@ -151,8 +151,8 @@ const validateUsername = (rule, value, callback) => {
 const validatePasswordCharacters = (rule, value, callback) => {
   if (value === '') {
     callback(new Error('请输入密码'))
-  } else if (!/^[a-zA-Z0-9@]+$/.test(value)) {
-    callback(new Error('密码只能包含英文、数字和@符号'))
+  } else if (!/^[a-zA-Z0-9!@#$%^&*._-]+$/.test(value)) {
+    callback(new Error('密码只能包含英文、数字和特殊字符(!@#$%^&*._-)'))
   } else if (value.length < 6 || value.length > 20) {
     callback(new Error('密码的长度必须在 6-20 个字符之间'))
   } else {

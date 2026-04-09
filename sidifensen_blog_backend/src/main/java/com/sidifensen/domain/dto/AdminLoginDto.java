@@ -15,7 +15,7 @@ public class AdminLoginDto {
     //密码
     @NotEmpty(message = "密码不能为空")
     @Size(min = 6, max = 20, message = "密码长度必须在6-20位之间")
-    @Pattern(regexp = "^[a-zA-Z0-9]+$", message = "密码只能包含英文和数字")
+    @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*._-]+$", message = "密码只能包含英文、数字和特殊字符(!@#$%^&*._-)")
     private String password;
     //记住我
     @NotNull(message = "记住我不能为空")
