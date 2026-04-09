@@ -735,6 +735,11 @@ html.dark {
   .hero-nav {
     display: flex;
     gap: 16px;
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      gap: 10px;
+    }
 
     &-item {
       display: inline-flex;
@@ -759,6 +764,16 @@ html.dark {
         color: var(--accent);
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 102, 255, 0.1);
+      }
+
+      @media (max-width: 768px) {
+        padding: 12px 18px;
+        font-size: 0.85rem;
+        gap: 6px;
+
+        .icon {
+          font-size: 1rem;
+        }
       }
     }
   }
