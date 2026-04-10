@@ -1,7 +1,7 @@
 import '@/assets/scss/base.scss'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
-// 引入 ElementPlus 样式
-// import "element-plus/dist/index.css";
+// 引入 ElementPlus 样式 - 异步加载避免阻塞渲染
+import 'element-plus/theme-chalk/dark/css-vars.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'

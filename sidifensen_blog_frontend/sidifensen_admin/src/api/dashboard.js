@@ -93,3 +93,16 @@ export function getInteractionTrend() {
     method: 'get',
   })
 }
+
+/**
+ * 获取管理端首页完整数据（聚合接口）
+ * 一次性获取所有 Dashboard 数据，减少请求次数
+ * @param {Number} trendDays 访客趋势天数，默认 7 天
+ */
+export function getDashboardAll(trendDays = 7) {
+  return request({
+    url: '/dashboard/all',
+    method: 'get',
+    params: { trendDays },
+  })
+}

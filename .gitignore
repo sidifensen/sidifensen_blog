@@ -43,3 +43,5 @@ node_modules/
 /.golutra/
 .gstack/
 /sidifensen_blog_backend/src/test/
+/sidifensen_blog_frontend/sidifensen_user/test-results/
+/sidifensen_blog_frontend/sidifensen_user/tests/

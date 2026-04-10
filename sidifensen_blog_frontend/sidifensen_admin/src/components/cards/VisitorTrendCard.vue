@@ -14,9 +14,12 @@
 </template>
 
 <script setup>
+import { defineAsyncComponent } from 'vue'
 import { TrendCharts } from '@element-plus/icons-vue'
 import DetailCard from '@/components/cards/DetailCard.vue'
-import VisitorTrendChart from '@/components/charts/VisitorTrendChart.vue'
+
+// 图表组件懒加载
+const VisitorTrendChart = defineAsyncComponent(() => import('@/components/charts/VisitorTrendChart.vue'))
 
 const props = defineProps({
   data: {

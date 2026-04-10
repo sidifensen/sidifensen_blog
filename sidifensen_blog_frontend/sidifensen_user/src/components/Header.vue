@@ -276,6 +276,21 @@ const fetchNotificationUnreadCount = async () => {
   }
 }
 
+// 合并获取未读消息和通知数量，并行请求
+const fetchAllUnreadCounts = async () => {
+  if (!user.value) return
+  try {
+    const [unreadRes, notificationRes] = await Promise.all([
+      getUnreadCount(),
+      getUnreadNotificationCount(),
+    ])
+    messageStore.totalUnreadCount = unreadRes.data || 0
+    notificationUnreadCount.value = notificationRes.data?.total || 0
+  } catch (error) {
+    // 静默处理
+  }
+}
+
 // 新消息处理器（定义在组件级别，便于移除）
 const handleNewMessage = (data) => {
   messageStore.updateConversation(
@@ -406,9 +421,8 @@ watch(
   () => user.value,
   (newUser) => {
     if (newUser) {
-      // 用户已登录，立即初始化 WebSocket
-      fetchUnreadCount()
-      fetchNotificationUnreadCount()
+      // 用户已登录，立即初始化 WebSocket，使用合并的请求
+      fetchAllUnreadCounts()
       initWebSocket()
     } else {
       // 用户已登出，关闭 WebSocket

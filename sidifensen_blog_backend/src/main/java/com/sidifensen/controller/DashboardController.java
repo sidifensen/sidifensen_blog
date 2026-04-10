@@ -5,6 +5,7 @@ import com.sidifensen.aspect.RateLimit;
 import com.sidifensen.domain.enums.OperationTypeEnum;
 import com.sidifensen.domain.result.Result;
 import com.sidifensen.domain.vo.ContentActivityVo;
+import com.sidifensen.domain.vo.DashboardAllVo;
 import com.sidifensen.domain.vo.DashboardStatisticsVo;
 import com.sidifensen.domain.vo.ExamineCountVo;
 import com.sidifensen.domain.vo.InteractionTrendVo;
@@ -174,6 +175,25 @@ public class DashboardController {
     public Result<List<InteractionTrendVo>> getInteractionTrend() {
         List<InteractionTrendVo> trend = dashboardService.getInteractionTrend();
         return Result.success(trend);
+    }
+
+    /**
+     * 获取管理端首页完整数据（聚合接口）
+     * 一次性返回所有 Dashboard 数据，减少前端请求次数
+     * 仅管理员可访问
+     *
+     * @param trendDays 访客趋势天数，默认 7 天（可选：7/14/30）
+     * @return 完整的 Dashboard 数据
+     */
+    @OperationLog(module = "Dashboard", type = OperationTypeEnum.GET, description = "管理员获取首页完整数据")
+    @PreAuthorize("hasAuthority('system:dashboard:list')")
+    @GetMapping("/all")
+    public Result<DashboardAllVo> getDashboardAll(
+            @RequestParam(defaultValue = "7") @NotNull(message = "趋势天数不能为空")
+            @Min(value = 1, message = "趋势天数不能小于 1")
+            @Max(value = 365, message = "趋势天数不能超过 365") Integer trendDays) {
+        DashboardAllVo allData = dashboardService.getDashboardAll(trendDays);
+        return Result.success(allData);
     }
 
 }

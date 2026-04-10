@@ -5,9 +5,12 @@
 </template>
 
 <script setup>
+import { defineAsyncComponent } from 'vue'
 import { DataAnalysis } from '@element-plus/icons-vue'
 import DetailCard from '@/components/cards/DetailCard.vue'
-import VipStatisticsChart from '@/components/charts/VipStatisticsChart.vue'
+
+// 图表组件懒加载，减少首屏加载时间
+const VipStatisticsChart = defineAsyncComponent(() => import('@/components/charts/VipStatisticsChart.vue'))
 
 defineProps({
   data: {

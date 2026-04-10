@@ -1,6 +1,7 @@
 package com.sidifensen.service;
 
 import com.sidifensen.domain.vo.ContentActivityVo;
+import com.sidifensen.domain.vo.DashboardAllVo;
 import com.sidifensen.domain.vo.DashboardStatisticsVo;
 import com.sidifensen.domain.vo.ExamineCountVo;
 import com.sidifensen.domain.vo.InteractionTrendVo;
@@ -89,5 +90,15 @@ public interface DashboardService {
      * @return 互动趋势数据列表
      */
     List<InteractionTrendVo> getInteractionTrend();
+
+    /**
+     * 获取管理端首页完整数据（聚合接口）
+     * 一次性返回所有 Dashboard 数据，减少前端请求次数
+     * 内部使用 CompletableFuture 并行查询各数据源
+     *
+     * @param trendDays 访客趋势天数（默认7天）
+     * @return 完整的 Dashboard 数据
+     */
+    DashboardAllVo getDashboardAll(Integer trendDays);
 
 }

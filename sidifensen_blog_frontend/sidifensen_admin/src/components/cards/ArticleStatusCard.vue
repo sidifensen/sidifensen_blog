@@ -7,9 +7,12 @@
 </template>
 
 <script setup>
+import { defineAsyncComponent } from 'vue'
 import { Document } from '@element-plus/icons-vue'
 import DetailCard from '@/components/cards/DetailCard.vue'
-import ArticleDonutChart from '@/components/charts/ArticleDonutChart.vue'
+
+// 图表组件懒加载
+const ArticleDonutChart = defineAsyncComponent(() => import('@/components/charts/ArticleDonutChart.vue'))
 
 defineProps({
   data: {

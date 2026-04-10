@@ -40,7 +40,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { User, Document, ChatLineRound, View, Monitor, Picture, Refresh } from '@element-plus/icons-vue'
-import { getDashboardStatistics, getExamineCount, getVipStatistics, getWeeklyTrend, getInteractionTrend, getVisitorTrend } from '@/api/dashboard'
+import { getDashboardAll, getVisitorTrend } from '@/api/dashboard'
 
 // 公共组件
 import PageHeader from '@/components/management/PageHeader.vue'
@@ -120,28 +120,48 @@ const weeklyTrendLoading = ref(false)
 const interactionTrend = ref([])
 const interactionTrendLoading = ref(false)
 
-// 获取所有统计数据
-const fetchAllStatistics = async () => {
+// 使用聚合接口获取所有数据，大幅减少请求次数
+const fetchAllData = async () => {
   try {
     statisticsLoading.value = true
-    const res = await getDashboardStatistics(7)
+    vipStatisticsLoading.value = true
+    weeklyTrendLoading.value = true
+    interactionTrendLoading.value = true
+
+    const res = await getDashboardAll(7)
     const data = res.data
 
-    userCount.value = data.userTotalCount || 0
-    todayActiveUserCount.value = data.todayActiveUserCount || 0
-    articleStatistics.value = data.articleStatistics || null
-    totalVisits.value = data.totalVisits || 0
-    todayVisits.value = data.todayVisits || 0
-    visitorTrend.value = data.visitorTrend || []
+    // 基础统计
+    userCount.value = data.statistics?.userTotalCount || 0
+    todayActiveUserCount.value = data.statistics?.todayActiveUserCount || 0
+    articleStatistics.value = data.statistics?.articleStatistics || null
+    totalVisits.value = data.statistics?.totalVisits || 0
+    todayVisits.value = data.statistics?.todayVisits || 0
+    visitorTrend.value = data.statistics?.visitorTrend || []
+
+    // 待审核数量
+    examineCountData.value = data.examineCount || { articleCount: 0, commentCount: 0, photoCount: 0 }
+
+    // VIP 统计
+    vipStatisticsData.value = data.vipStatistics || { totalVipCount: 0, newVipCount: 0 }
+
+    // 周趋势
+    weeklyTrend.value = data.weeklyTrend || []
+
+    // 互动趋势
+    interactionTrend.value = data.interactionTrend || []
   } catch (error) {
     ElMessage.error('获取统计数据失败')
     console.error('获取统计数据失败:', error)
   } finally {
     statisticsLoading.value = false
+    vipStatisticsLoading.value = false
+    weeklyTrendLoading.value = false
+    interactionTrendLoading.value = false
   }
 }
 
-// 获取访客趋势数据
+// 获取访客趋势数据（按天数查询）
 const fetchVisitorTrend = async () => {
   try {
     trendLoading.value = true
@@ -155,55 +175,6 @@ const fetchVisitorTrend = async () => {
   }
 }
 
-// 获取待审核数量
-const fetchExamineCount = async () => {
-  try {
-    const res = await getExamineCount()
-    examineCountData.value = res.data || { articleCount: 0, commentCount: 0, photoCount: 0 }
-  } catch (error) {
-    console.error('获取待审核数量失败:', error)
-  }
-}
-
-// 获取互动趋势数据
-const fetchInteractionTrend = async () => {
-  try {
-    interactionTrendLoading.value = true
-    const res = await getInteractionTrend()
-    interactionTrend.value = res.data || []
-  } catch (error) {
-    console.error('获取互动趋势数据失败:', error)
-  } finally {
-    interactionTrendLoading.value = false
-  }
-}
-
-// 获取周趋势数据
-const fetchWeeklyTrend = async () => {
-  try {
-    weeklyTrendLoading.value = true
-    const res = await getWeeklyTrend()
-    weeklyTrend.value = res.data || []
-  } catch (error) {
-    console.error('获取周趋势数据失败:', error)
-  } finally {
-    weeklyTrendLoading.value = false
-  }
-}
-
-// 获取 VIP 统计数据
-const fetchVipStatistics = async () => {
-  try {
-    vipStatisticsLoading.value = true
-    const res = await getVipStatistics()
-    vipStatisticsData.value = res.data || { totalVipCount: 0, newVipCount: 0 }
-  } catch (error) {
-    console.error('获取VIP统计数据失败:', error)
-  } finally {
-    vipStatisticsLoading.value = false
-  }
-}
-
 // 切换天数
 const handleDaysChange = () => {
   fetchVisitorTrend()
@@ -212,7 +183,7 @@ const handleDaysChange = () => {
 // 刷新数据
 const refreshData = () => {
   loading.value = true
-  fetchAllStatistics().finally(() => {
+  fetchAllData().finally(() => {
     loading.value = false
     ElMessage.success('数据已刷新')
   })
@@ -220,11 +191,8 @@ const refreshData = () => {
 
 // 生命周期
 onMounted(async () => {
-  await fetchAllStatistics()
-  await fetchExamineCount()
-  await fetchInteractionTrend()
-  await fetchWeeklyTrend()
-  await fetchVipStatistics()
+  // 使用聚合接口一次获取所有数据
+  await fetchAllData()
 })
 </script>
 

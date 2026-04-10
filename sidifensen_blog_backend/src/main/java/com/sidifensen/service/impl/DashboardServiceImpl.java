@@ -15,6 +15,7 @@ import com.sidifensen.domain.entity.SysUser;
 import com.sidifensen.domain.entity.SysUserRole;
 import com.sidifensen.domain.entity.VipMember;
 import com.sidifensen.domain.vo.ContentActivityVo;
+import com.sidifensen.domain.vo.DashboardAllVo;
 import com.sidifensen.domain.vo.DashboardStatisticsVo;
 import com.sidifensen.domain.vo.ExamineCountVo;
 import com.sidifensen.domain.vo.InteractionTrendVo;
@@ -46,6 +47,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 管理端首页 Dashboard 统计服务实现
@@ -151,31 +153,51 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public List<WeeklyTrendVo> getWeeklyTrend() {
-        List<WeeklyTrendVo> result = new ArrayList<>();
-        for (int i = 6; i >= 0; i--) {
-            LocalDate date = LocalDate.now().minusDays(i);
-            String dateStr = date.toString();
+        // 使用 CompletableFuture 并行查询文章和用户数据，减少串行等待时间
+        CompletableFuture<List<Integer>> articleFuture = CompletableFuture.supplyAsync(() -> {
+            List<Integer> articleCounts = new ArrayList<>();
+            for (int i = 6; i >= 0; i--) {
+                LocalDate date = LocalDate.now().minusDays(i);
+                LambdaQueryWrapper<Article> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(Article::getExamineStatus, 1)
+                      .ge(Article::getCreateTime, date.atStartOfDay())
+                      .lt(Article::getCreateTime, date.plusDays(1).atStartOfDay());
+                articleCounts.add(Math.toIntExact(articleMapper.selectCount(wrapper)));
+            }
+            return articleCounts;
+        });
 
-            // 统计当日新增文章数（已发布且创建时间在当日）
-            LambdaQueryWrapper<Article> articleWrapper = new LambdaQueryWrapper<>();
-            articleWrapper.eq(Article::getExamineStatus, 1)
-                          .ge(Article::getCreateTime, date.atStartOfDay())
-                          .lt(Article::getCreateTime, date.plusDays(1).atStartOfDay());
-            int articleCount = Math.toIntExact(articleMapper.selectCount(articleWrapper));
-
-            // 统计当日新增用户数
-            LambdaQueryWrapper<SysUser> userWrapper = new LambdaQueryWrapper<>();
-            userWrapper.ge(SysUser::getCreateTime, date.atStartOfDay())
+        CompletableFuture<List<Integer>> userFuture = CompletableFuture.supplyAsync(() -> {
+            List<Integer> userCounts = new ArrayList<>();
+            for (int i = 6; i >= 0; i--) {
+                LocalDate date = LocalDate.now().minusDays(i);
+                LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
+                wrapper.ge(SysUser::getCreateTime, date.atStartOfDay())
                       .lt(SysUser::getCreateTime, date.plusDays(1).atStartOfDay());
-            int userCount = Math.toIntExact(sysUserMapper.selectCount(userWrapper));
+                userCounts.add(Math.toIntExact(sysUserMapper.selectCount(wrapper)));
+            }
+            return userCounts;
+        });
 
-            WeeklyTrendVo vo = new WeeklyTrendVo()
-                .setDate(dateStr)
-                .setArticleCount(articleCount)
-                .setUserCount(userCount);
-            result.add(vo);
+        // 等待所有查询完成并组装结果
+        try {
+            CompletableFuture.allOf(articleFuture, userFuture).join();
+            List<Integer> articleCounts = articleFuture.get();
+            List<Integer> userCounts = userFuture.get();
+
+            List<WeeklyTrendVo> result = new ArrayList<>();
+            for (int i = 0; i < 7; i++) {
+                LocalDate date = LocalDate.now().minusDays(6 - i);
+                result.add(new WeeklyTrendVo()
+                    .setDate(date.toString())
+                    .setArticleCount(articleCounts.get(i))
+                    .setUserCount(userCounts.get(i)));
+            }
+            return result;
+        } catch (Exception e) {
+            log.error("获取周趋势数据失败", e);
+            return new ArrayList<>();
         }
-        return result;
     }
 
     @Override
@@ -358,40 +380,114 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public List<InteractionTrendVo> getInteractionTrend() {
-        List<InteractionTrendVo> result = new ArrayList<>();
+        // 使用 CompletableFuture 并行查询评论、点赞、收藏数据
+        CompletableFuture<List<Integer>> commentFuture = CompletableFuture.supplyAsync(() -> {
+            List<Integer> counts = new ArrayList<>();
+            for (int i = 6; i >= 0; i--) {
+                LocalDate date = LocalDate.now().minusDays(i);
+                LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
+                wrapper.ge(Comment::getCreateTime, date.atStartOfDay())
+                     .lt(Comment::getCreateTime, date.plusDays(1).atStartOfDay());
+                counts.add(Math.toIntExact(commentMapper.selectCount(wrapper)));
+            }
+            return counts;
+        });
 
-        for (int i = 6; i >= 0; i--) {
-            LocalDate date = LocalDate.now().minusDays(i);
-            String dateStr = date.toString();
-
-            // 统计当日评论数
-            LambdaQueryWrapper<Comment> commentWrapper = new LambdaQueryWrapper<>();
-            commentWrapper.ge(Comment::getCreateTime, date.atStartOfDay())
-                         .lt(Comment::getCreateTime, date.plusDays(1).atStartOfDay());
-            int commentCount = Math.toIntExact(commentMapper.selectCount(commentWrapper));
-
-            // 统计当日文章点赞数（type = 0 表示文章点赞）
-            LambdaQueryWrapper<Like> likeWrapper = new LambdaQueryWrapper<>();
-            likeWrapper.ge(Like::getCreateTime, date.atStartOfDay())
+        CompletableFuture<List<Integer>> likeFuture = CompletableFuture.supplyAsync(() -> {
+            List<Integer> counts = new ArrayList<>();
+            for (int i = 6; i >= 0; i--) {
+                LocalDate date = LocalDate.now().minusDays(i);
+                LambdaQueryWrapper<Like> wrapper = new LambdaQueryWrapper<>();
+                wrapper.ge(Like::getCreateTime, date.atStartOfDay())
                       .lt(Like::getCreateTime, date.plusDays(1).atStartOfDay())
                       .eq(Like::getType, 0);
-            int likeCount = Math.toIntExact(likeMapper.selectCount(likeWrapper));
+                counts.add(Math.toIntExact(likeMapper.selectCount(wrapper)));
+            }
+            return counts;
+        });
 
-            // 收藏数：当日新增文章收藏记录数
-            LambdaQueryWrapper<ArticleFavorite> favoriteWrapper = new LambdaQueryWrapper<>();
-            favoriteWrapper.ge(ArticleFavorite::getCreateTime, date.atStartOfDay())
-                         .lt(ArticleFavorite::getCreateTime, date.plusDays(1).atStartOfDay());
-            int favoriteCount = Math.toIntExact(articleFavoriteMapper.selectCount(favoriteWrapper));
+        CompletableFuture<List<Integer>> favoriteFuture = CompletableFuture.supplyAsync(() -> {
+            List<Integer> counts = new ArrayList<>();
+            for (int i = 6; i >= 0; i--) {
+                LocalDate date = LocalDate.now().minusDays(i);
+                LambdaQueryWrapper<ArticleFavorite> wrapper = new LambdaQueryWrapper<>();
+                wrapper.ge(ArticleFavorite::getCreateTime, date.atStartOfDay())
+                     .lt(ArticleFavorite::getCreateTime, date.plusDays(1).atStartOfDay());
+                counts.add(Math.toIntExact(articleFavoriteMapper.selectCount(wrapper)));
+            }
+            return counts;
+        });
 
-            InteractionTrendVo vo = new InteractionTrendVo()
-                .setDate(dateStr)
-                .setCommentCount(commentCount)
-                .setLikeCount(likeCount)
-                .setFavoriteCount(favoriteCount);
-            result.add(vo);
+        // 等待所有查询完成并组装结果
+        try {
+            CompletableFuture.allOf(commentFuture, likeFuture, favoriteFuture).join();
+            List<Integer> commentCounts = commentFuture.get();
+            List<Integer> likeCounts = likeFuture.get();
+            List<Integer> favoriteCounts = favoriteFuture.get();
+
+            List<InteractionTrendVo> result = new ArrayList<>();
+            for (int i = 0; i < 7; i++) {
+                LocalDate date = LocalDate.now().minusDays(6 - i);
+                result.add(new InteractionTrendVo()
+                    .setDate(date.toString())
+                    .setCommentCount(commentCounts.get(i))
+                    .setLikeCount(likeCounts.get(i))
+                    .setFavoriteCount(favoriteCounts.get(i)));
+            }
+            return result;
+        } catch (Exception e) {
+            log.error("获取互动趋势数据失败", e);
+            return new ArrayList<>();
         }
+    }
 
-        return result;
+    @Override
+    public DashboardAllVo getDashboardAll(Integer trendDays) {
+        final int days = (trendDays == null) ? 7 : trendDays;
+
+        // 使用 CompletableFuture 并行获取所有数据
+        CompletableFuture<DashboardStatisticsVo> statisticsFuture = CompletableFuture.supplyAsync(() ->
+            getDashboardStatistics(days)
+        );
+
+        CompletableFuture<ExamineCountVo> examineCountFuture = CompletableFuture.supplyAsync(() ->
+            getExamineCount()
+        );
+
+        CompletableFuture<VipStatisticsVo> vipStatisticsFuture = CompletableFuture.supplyAsync(() ->
+            getVipStatistics()
+        );
+
+        CompletableFuture<List<WeeklyTrendVo>> weeklyTrendFuture = CompletableFuture.supplyAsync(() ->
+            getWeeklyTrend()
+        );
+
+        CompletableFuture<List<InteractionTrendVo>> interactionTrendFuture = CompletableFuture.supplyAsync(() ->
+            getInteractionTrend()
+        );
+
+        // 等待所有查询完成
+        try {
+            CompletableFuture.allOf(
+                statisticsFuture,
+                examineCountFuture,
+                vipStatisticsFuture,
+                weeklyTrendFuture,
+                interactionTrendFuture
+            ).join();
+
+            // 组装结果
+            DashboardAllVo result = new DashboardAllVo();
+            result.setStatistics(statisticsFuture.get());
+            result.setExamineCount(examineCountFuture.get());
+            result.setVipStatistics(vipStatisticsFuture.get());
+            result.setWeeklyTrend(weeklyTrendFuture.get());
+            result.setInteractionTrend(interactionTrendFuture.get());
+            return result;
+        } catch (Exception e) {
+            log.error("获取完整 Dashboard 数据失败", e);
+            return new DashboardAllVo();
+        }
     }
 
 }

@@ -1,82 +1,88 @@
 <template>
-  <div v-if="visible" class="vip-payment-result-modal-mask">
-    <div class="vip-payment-result-modal">
-      <!-- 支付结果卡片 -->
-      <div class="result-card">
-        <!-- 结果图标 -->
-        <div class="result-icon" :class="iconClass">
-          <svg v-if="orderStatus === 'PAID'" viewBox="0 0 24 24" width="48" height="48">
-            <path
-              fill="currentColor"
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-            />
-          </svg>
-          <svg
-            v-else-if="orderStatus === 'CLOSED' || orderStatus === 'FAILED'"
-            viewBox="0 0 24 24"
-            width="48"
-            height="48"
-          >
-            <path
-              fill="currentColor"
-              d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"
-            />
-          </svg>
-          <svg v-else viewBox="0 0 24 24" width="48" height="48">
-            <path
-              fill="currentColor"
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-            />
-          </svg>
-        </div>
-
-        <!-- 结果标题 -->
-        <h2 class="result-title">{{ titleText }}</h2>
-
-        <!-- 结果描述 -->
-        <p class="result-description">{{ descriptionText }}</p>
-
-        <!-- 倒计时提示 -->
-        <div v-if="orderStatus === 'PAYING'" class="result-countdown">
-          <span class="countdown-label">请在</span>
-          <span class="countdown-time">{{ countdownText }}</span>
-          <span class="countdown-label">内完成支付</span>
-        </div>
-
-        <!-- 支付成功关闭倒计时 -->
-        <div v-if="orderStatus === 'PAID'" class="result-close-countdown">
-          <span class="close-countdown-text">{{ closeCountdownText }}</span>
-        </div>
-
-        <!-- 订单号信息 -->
-        <div class="result-order">
-          <span class="order-label">订单号</span>
-          <span class="order-value">{{ orderNo || '--' }}</span>
-          <button v-if="orderNo" class="copy-button" @click="copyOrderNo">
-            <svg viewBox="0 0 24 24" width="16" height="16">
+  <Teleport to="body">
+    <div v-if="visible" class="vip-payment-result-modal-mask">
+      <div class="vip-payment-result-modal">
+        <!-- 支付结果卡片 -->
+        <div class="result-card">
+          <!-- 结果图标 -->
+          <div class="result-icon" :class="iconClass">
+            <svg v-if="orderStatus === 'PAID'" viewBox="0 0 24 24" width="48" height="48">
               <path
                 fill="currentColor"
-                d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
               />
             </svg>
-          </button>
-        </div>
+            <svg
+              v-else-if="orderStatus === 'CLOSED' || orderStatus === 'FAILED'"
+              viewBox="0 0 24 24"
+              width="48"
+              height="48"
+            >
+              <path
+                fill="currentColor"
+                d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"
+              />
+            </svg>
+            <svg v-else viewBox="0 0 24 24" width="48" height="48">
+              <path
+                fill="currentColor"
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+              />
+            </svg>
+          </div>
 
-        <!-- 操作按钮 -->
-        <div class="result-actions">
-          <button v-if="orderStatus === 'PAYING'" class="cancel-button" @click="handleCancelOrder">
-            取消订单
-          </button>
-          <button v-if="orderStatus === 'PAYING'" class="primary-button" @click="handleRefresh">
-            刷新状态
-          </button>
-          <button class="secondary-button" @click="handleClose">
-            {{ orderStatus === 'PAID' ? '返回会员中心' : '返回' }}
-          </button>
+          <!-- 结果标题 -->
+          <h2 class="result-title">{{ titleText }}</h2>
+
+          <!-- 结果描述 -->
+          <p class="result-description">{{ descriptionText }}</p>
+
+          <!-- 倒计时提示 -->
+          <div v-if="orderStatus === 'PAYING'" class="result-countdown">
+            <span class="countdown-label">请在</span>
+            <span class="countdown-time">{{ countdownText }}</span>
+            <span class="countdown-label">内完成支付</span>
+          </div>
+
+          <!-- 支付成功关闭倒计时 -->
+          <div v-if="orderStatus === 'PAID'" class="result-close-countdown">
+            <span class="close-countdown-text">{{ closeCountdownText }}</span>
+          </div>
+
+          <!-- 订单号信息 -->
+          <div class="result-order">
+            <span class="order-label">订单号</span>
+            <span class="order-value">{{ orderNo || '--' }}</span>
+            <button v-if="orderNo" class="copy-button" @click="copyOrderNo">
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path
+                  fill="currentColor"
+                  d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <!-- 操作按钮 -->
+          <div class="result-actions">
+            <button
+              v-if="orderStatus === 'PAYING'"
+              class="cancel-button"
+              @click="handleCancelOrder"
+            >
+              取消订单
+            </button>
+            <button v-if="orderStatus === 'PAYING'" class="primary-button" @click="handleRefresh">
+              刷新状态
+            </button>
+            <button class="secondary-button" @click="handleClose">
+              {{ orderStatus === 'PAID' ? '返回会员中心' : '返回' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </Teleport>
 
   <!-- 取消订单弹窗 -->
   <CancelOrderDialog
@@ -364,14 +370,16 @@ onBeforeUnmount(() => {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
   animation: fadeIn 0.2s ease;
+  // 确保 fixed 定位不受父级 transform 影响
+  transform: translateZ(0);
 
   .vip-payment-result-modal {
     position: relative;

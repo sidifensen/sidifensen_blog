@@ -39,9 +39,15 @@
       content="斯蒂芬森社区是一个分享技术文章、生活感悟和创意作品的多元化社区平台"
     />
     <!-- PWA meta 标签 -->
+    <!-- 预加载关键资源，减少 LCP 延迟 -->
+    <link rel="preload" as="style" href="/src/assets/scss/base.scss" />
+    <link rel="preload" as="style" href="/src/main.js" />
     <meta name="theme-color" content="#ffffff" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!-- 预连接后端 API，减少连接建立时间 -->
+    <link rel="preconnect" href="http://localhost:5000" crossorigin />
+    <link rel="dns-prefetch" href="http://localhost:5000" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="manifest" href="/icons/site.webmanifest" />
     <title>斯蒂芬森社区</title>

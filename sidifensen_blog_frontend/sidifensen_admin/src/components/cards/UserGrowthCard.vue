@@ -7,9 +7,12 @@
 </template>
 
 <script setup>
+import { defineAsyncComponent } from 'vue'
 import { User } from '@element-plus/icons-vue'
 import DetailCard from '@/components/cards/DetailCard.vue'
-import UserGrowthChart from '@/components/charts/UserGrowthChart.vue'
+
+// 图表组件懒加载
+const UserGrowthChart = defineAsyncComponent(() => import('@/components/charts/UserGrowthChart.vue'))
 
 defineProps({
   data: {

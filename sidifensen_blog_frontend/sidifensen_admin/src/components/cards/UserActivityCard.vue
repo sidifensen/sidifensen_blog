@@ -5,9 +5,12 @@
 </template>
 
 <script setup>
+import { defineAsyncComponent } from 'vue'
 import { DataAnalysis } from '@element-plus/icons-vue'
 import DetailCard from '@/components/cards/DetailCard.vue'
-import UserActivityChart from '@/components/charts/UserActivityChart.vue'
+
+// 图表组件懒加载
+const UserActivityChart = defineAsyncComponent(() => import('@/components/charts/UserActivityChart.vue'))
 
 defineProps({
   activeUserCount: {

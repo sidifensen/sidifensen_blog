@@ -7,9 +7,12 @@
 </template>
 
 <script setup>
+import { defineAsyncComponent } from 'vue'
 import { ChatLineRound } from '@element-plus/icons-vue'
 import DetailCard from '@/components/cards/DetailCard.vue'
-import InteractionTrendChart from '@/components/charts/InteractionTrendChart.vue'
+
+// 图表组件懒加载
+const InteractionTrendChart = defineAsyncComponent(() => import('@/components/charts/InteractionTrendChart.vue'))
 
 defineProps({
   data: {

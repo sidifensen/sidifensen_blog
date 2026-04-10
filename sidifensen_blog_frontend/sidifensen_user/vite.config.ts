@@ -42,10 +42,23 @@ export default defineConfig({
   },
   build: {
     chunkSizeWarningLimit: 2000,
+    // 合并 CSS 文件，减少请求数量
+    cssCodeSplit: false,
     rollupOptions: {
       output: {
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
+        // 手动分包策略
+        manualChunks: (id) => {
+          // 将 Element Plus 相关的 CSS 和 JS 合并到一个 chunk
+          if (id.includes('element-plus')) {
+            return 'element-plus'
+          }
+          // 将 Vue 相关的合并到一个 chunk
+          if (id.includes('vue') || id.includes('@vue')) {
+            return 'vue-vendor'
+          }
+        },
       },
     },
   },

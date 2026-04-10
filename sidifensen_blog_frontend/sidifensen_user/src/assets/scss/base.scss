@@ -108,7 +108,8 @@ a {
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    // 使用无值的 transform 清除动画产生的 transform，避免影响子元素的 fixed 定位
+    transform: none;
   }
 }
 
