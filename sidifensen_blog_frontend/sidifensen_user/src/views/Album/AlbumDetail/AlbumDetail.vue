@@ -249,7 +249,7 @@ import {
 import { getAlbum, updateAlbum, deleteAlbum, changeShowStatus, changeCover } from '@/api/album'
 import { uploadAlbumPhoto, batchDeletePhoto } from '@/api/photo'
 import { compressImage } from '@/utils/PhotoUtils'
-import LoadingAnimation from '@/components/LoadingAnimation.vue'
+import LoadingAnimation from '@/components/Loading/LoadingAnimation.vue'
 
 const route = useRoute()
 const router = useRouter()

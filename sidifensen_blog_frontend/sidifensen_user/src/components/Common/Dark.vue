@@ -70,13 +70,13 @@ const { toggleDark } = darkStore
   }
 
   .sun-icon {
-    color: #000;
+    color: var(--text-primary);
     opacity: 0;
     transform: rotate(90deg) scale(0.5);
   }
 
   .moon-icon {
-    color: #fff;
+    color: var(--bg-card);
     opacity: 1;
     transform: rotate(0deg) scale(1);
   }

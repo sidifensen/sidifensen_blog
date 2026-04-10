@@ -287,7 +287,7 @@
                     <span>{{ article.readCount || 0 }} 阅读</span>
                   </div>
                   <div class="meta-item">
-                    <svg-icon name="like" width="14px" height="14px" color="#909399" />
+                    <svg-icon name="like" width="14px" height="14px" color="var(--text-muted)" />
                     <span>{{ article.likeCount || 0 }} 点赞</span>
                   </div>
                   <div class="meta-item">
@@ -825,7 +825,7 @@ onMounted(() => {
           display: inline-block;
           width: 4px;
           height: 20px;
-          background-color: #e6a23c;
+          background-color: var(--admin-warning);
           border-radius: 2px;
           margin-right: 10px;
         }
@@ -895,27 +895,27 @@ onMounted(() => {
             .user-info {
               .user-id {
                 font-size: 12px;
-                color: #909399;
+                color: var(--text-muted);
                 margin-bottom: 4px;
               }
 
               .user-name {
                 font-size: 16px;
                 font-weight: 500;
-                color: #303133;
+                color: var(--text-dark);
                 word-break: break-all;
                 line-height: 1.4;
                 margin-bottom: 6px;
 
                 .username {
-                  color: #409eff;
+                  color: var(--text-link);
                   font-weight: 600;
                   display: block;
                   margin-bottom: 2px;
                 }
 
                 .nickname {
-                  color: #909399;
+                  color: var(--text-muted);
                   font-weight: 400;
                   font-size: 14px;
                   display: block;
@@ -929,12 +929,12 @@ onMounted(() => {
                 font-size: 13px;
 
                 .column-count-label {
-                  color: #606266;
+                  color: var(--text-light);
                   font-weight: 500;
                 }
 
                 .column-count-value {
-                  background: linear-gradient(45deg, #e6a23c, #d19d00);
+                  background: var(--admin-warning);
                   color: white;
                   padding: 2px 8px;
                   border-radius: 12px;
@@ -1027,7 +1027,7 @@ onMounted(() => {
   border-radius: 16px;
 
   .el-dialog__header {
-    background: linear-gradient(135deg, #e6a23c 0%, #d19d00 100%);
+    background: var(--admin-warning);
     color: white;
     border-radius: 16px 16px 0 0;
     padding: 20px 24px;
@@ -1067,13 +1067,13 @@ onMounted(() => {
             margin: 0;
             font-size: 20px;
             font-weight: 700;
-            color: #2c3e50;
+            color: var(--text-primary);
             line-height: 1.3;
             flex: 1;
           }
 
           .column-id-detail {
-            background: linear-gradient(45deg, #e6a23c, #d19d00);
+            background: var(--admin-warning);
             color: white;
             padding: 4px 12px;
             border-radius: 20px;
@@ -1126,7 +1126,7 @@ onMounted(() => {
             margin: 0 0 8px 0;
             font-size: 14px;
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--text-primary);
           }
 
           .name-text {
@@ -1135,7 +1135,7 @@ onMounted(() => {
             border-radius: 8px;
             line-height: 1.6;
             color: var(--el-text-color-primary);
-            border-left: 4px solid #e6a23c;
+            border-left: 4px solid var(--admin-warning);
             font-weight: 600;
             font-size: 16px;
           }
@@ -1148,7 +1148,7 @@ onMounted(() => {
             margin: 0 0 8px 0;
             font-size: 14px;
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--text-primary);
           }
 
           .description-text {
@@ -1157,7 +1157,7 @@ onMounted(() => {
             border-radius: 8px;
             line-height: 1.6;
             color: var(--el-text-color-primary);
-            border-left: 4px solid #e6a23c;
+            border-left: 4px solid var(--admin-warning);
           }
         }
 
@@ -1176,7 +1176,7 @@ onMounted(() => {
             .badge-label {
               font-size: 13px;
               font-weight: 600;
-              color: #495057;
+              color: var(--text-primary);
               min-width: 80px;
             }
           }
@@ -1185,7 +1185,7 @@ onMounted(() => {
     }
 
     .column-stats-detail {
-      border-top: 1px solid #e9ecef;
+      border-top: 1px solid var(--border);
       padding-top: 20px;
       margin-top: 20px;
 
@@ -1200,9 +1200,9 @@ onMounted(() => {
           align-items: center;
           gap: 8px;
           padding: 10px 16px;
-          background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+          background: var(--bg-card);
           border-radius: 12px;
-          border: 1px solid #dee2e6;
+          border: 1px solid var(--border);
           transition: all 0.3s ease;
           flex: 1;
           min-width: 180px;
@@ -1215,12 +1215,12 @@ onMounted(() => {
 
           .stat-icon {
             font-size: 16px;
-            color: #6c757d;
+            color: var(--text-muted);
           }
 
           .stat-label {
             font-size: 12px;
-            color: #6c757d;
+            color: var(--text-muted);
             font-weight: 500;
           }
 
@@ -1228,25 +1228,25 @@ onMounted(() => {
             flex: 1;
             font-size: 14px;
             font-weight: 700;
-            color: #495057;
+            color: var(--text-primary);
             margin-left: auto;
           }
 
           &.time-stat-item {
-            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-            border-color: #f39c12;
+            background: var(--badge-warning-bg);
+            border-color: var(--admin-warning);
 
             .stat-icon {
-              color: #e67e22;
+              color: var(--admin-warning);
             }
 
             .stat-label {
-              color: #e67e22;
+              color: var(--admin-warning);
               font-weight: 600;
             }
 
             .stat-value {
-              color: #d68910;
+              color: var(--admin-warning);
               font-size: 12px;
               font-weight: 600;
             }
@@ -1261,7 +1261,7 @@ onMounted(() => {
 .column-articles-section {
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid var(--border-lighter);
 
   .articles-title {
     display: flex;
@@ -1269,13 +1269,13 @@ onMounted(() => {
     gap: 8px;
     font-size: 16px;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     margin: 0 0 16px 0;
     padding-bottom: 8px;
-    border-bottom: 2px solid #e6a23c;
+    border-bottom: 2px solid var(--admin-warning);
 
     .title-icon {
-      color: #e6a23c;
+      color: var(--admin-warning);
       font-size: 18px;
     }
   }
@@ -1289,14 +1289,14 @@ onMounted(() => {
     padding: 0;
     background: var(--el-bg-color);
     border-radius: 8px;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--border);
 
     .article-item {
       display: flex;
       gap: 16px;
       padding: 16px 20px;
       background-color: var(--el-bg-color);
-      border-bottom: 1px solid #f0f0f0;
+      border-bottom: 1px solid var(--border);
       transition: all 0.3s ease;
       position: relative;
 
@@ -1314,7 +1314,7 @@ onMounted(() => {
         justify-content: center;
         width: 28px;
         height: 28px;
-        background: linear-gradient(135deg, #e6a23c, #d19d00);
+        background: var(--admin-warning);
         color: white;
         border-radius: 50%;
         font-size: 13px;
@@ -1331,7 +1331,7 @@ onMounted(() => {
           width: 48px;
           height: 36px;
           border-radius: 6px;
-          border: 2px solid #f0f0f0;
+          border: 2px solid var(--border);
           object-fit: cover;
         }
       }
@@ -1342,14 +1342,14 @@ onMounted(() => {
         justify-content: center;
         width: 48px;
         height: 36px;
-        background: linear-gradient(135deg, #f1f3f4, #e8eaed);
-        border: 2px dashed #d0d7de;
+        background: var(--bg-card);
+        border: 2px dashed var(--border);
         border-radius: 6px;
         flex-shrink: 0;
 
         .el-icon {
           font-size: 16px;
-          color: #8c959f;
+          color: var(--text-muted);
         }
       }
 
@@ -1372,7 +1372,7 @@ onMounted(() => {
 
         .article-description-detail {
           font-size: 12px;
-          color: #718096;
+          color: var(--text-muted);
           line-height: 1.4;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -1390,11 +1390,11 @@ onMounted(() => {
             align-items: center;
             gap: 4px;
             font-size: 11px;
-            color: #a0aec0;
+            color: var(--text-muted);
 
             .meta-icon {
               font-size: 12px;
-              color: #cbd5e0;
+              color: var(--text-muted);
             }
           }
         }
@@ -1446,7 +1446,7 @@ onMounted(() => {
   border-radius: 16px;
 
   .el-dialog__header {
-    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    background: var(--admin-success);
     color: white;
     border-radius: 16px 16px 0 0;
     padding: 20px 24px;
@@ -1465,7 +1465,7 @@ onMounted(() => {
 .edit-form {
   .el-form-item__label {
     font-weight: 600;
-    color: #374151;
+    color: var(--text-regular);
   }
 }
 

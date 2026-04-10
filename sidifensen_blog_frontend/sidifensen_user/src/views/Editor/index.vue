@@ -418,7 +418,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import EditorHeader from '@/components/EditorHeader.vue'
+import EditorHeader from '@/components/Creation/EditorHeader.vue'
 import { AiEditor } from 'aieditor'
 import 'aieditor/dist/style.css'
 import { useDarkStore } from '@/stores/darkStore'

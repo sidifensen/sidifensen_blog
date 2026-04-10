@@ -24,12 +24,12 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 
 // 注册svg全局组件
-import SvgIcon from '@/components/SvgIcon.vue'
+import SvgIcon from '@/components/Common/SvgIcon.vue'
 import 'virtual:svg-icons-register'
 app.component('svg-icon', SvgIcon)
 
 // 注册加载动画组件（部分页面使用）
-import LoadingAnimation from '@/components/LoadingAnimation.vue'
+import LoadingAnimation from '@/components/Loading/LoadingAnimation.vue'
 app.component('LoadingAnimation', LoadingAnimation)
 
 app.use(pinia)

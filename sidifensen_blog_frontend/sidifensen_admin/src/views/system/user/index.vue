@@ -694,30 +694,30 @@ const handleAuthorizeDialogClose = () => {
 
   :deep(.el-table__header-wrapper) th {
     font-weight: 600;
-    color: #475569;
+    color: var(--text-regular);
   }
 
   :deep(.el-table__body-wrapper) tr td {
-    color: #64748b;
+    color: var(--text-muted);
     padding: 12px 0;
   }
 
   :deep(.el-table__fixed-right) {
-    box-shadow: -3px 0 10px rgba(0, 0, 0, 0.05);
+    box-shadow: -3px 0 10px var(--shadow-card);
   }
 }
 
 // 角色按钮
 .role-btn {
-  background-color: #fef3c7;
-  color: #d97706;
-  border-color: #fef3c7;
+  background-color: var(--action-user-bg);
+  color: var(--action-user-color);
+  border-color: var(--action-user-border);
   border-radius: 6px;
   margin-left: 0 !important;
 
   &:hover {
-    background-color: #fde68a;
-    border-color: #fde68a;
+    background-color: var(--action-user-hover-bg);
+    border-color: var(--action-user-hover-border);
   }
 }
 
@@ -770,15 +770,15 @@ const handleAuthorizeDialogClose = () => {
             .user-name {
               font-size: 16px;
               font-weight: 600;
-              color: #333;
+              color: var(--text-primary);
               word-break: break-all;
               line-height: 1.3;
             }
 
             .user-id {
               font-size: 12px;
-              color: #666;
-              background-color: #f5f5f5;
+              color: var(--text-muted);
+              background-color: var(--bg-input);
               padding: 2px 6px;
               border-radius: 4px;
               display: inline-block;
@@ -807,20 +807,20 @@ const handleAuthorizeDialogClose = () => {
 
           .label {
             font-weight: 500;
-            color: #888;
+            color: var(--text-muted);
             margin-right: 8px;
             flex-shrink: 0;
           }
 
           .value {
-            color: #555;
+            color: var(--text-regular);
             flex: 1;
             word-break: break-all;
           }
 
           .time-text {
             font-size: 12px;
-            color: #999;
+            color: var(--text-muted);
           }
         }
       }
@@ -840,46 +840,46 @@ const handleAuthorizeDialogClose = () => {
         }
 
         .detail-button {
-          background-color: #f5f5f5;
-          color: #606266;
-          border-color: #dcdfe6;
+          background-color: var(--bg-input);
+          color: var(--text-light);
+          border-color: var(--border);
 
           &:hover {
-            background-color: #e9e9e9;
-            border-color: #c0c4cc;
+            background-color: var(--border-light);
+            border-color: var(--border-light);
           }
         }
 
         .edit-button {
-          background-color: #e0f2fe;
-          color: #0284c7;
-          border-color: #e0f2fe;
+          background-color: var(--action-audit-bg);
+          color: var(--action-audit-color);
+          border-color: var(--action-audit-border);
 
           &:hover {
-            background-color: #bae6fd;
-            border-color: #bae6fd;
+            background-color: var(--action-audit-hover-bg);
+            border-color: var(--action-audit-hover-border);
           }
         }
 
         .delete-button {
-          background-color: #fee2e2;
-          color: #ef4444;
-          border-color: #fee2e2;
+          background-color: var(--action-delete-bg);
+          color: var(--action-delete-color);
+          border-color: var(--action-delete-border);
 
           &:hover {
-            background-color: #fecaca;
-            border-color: #fecaca;
+            background-color: var(--action-delete-hover-bg);
+            border-color: var(--action-delete-hover-border);
           }
         }
 
         .role-button {
-          background-color: #fef3c7;
-          color: #d97706;
-          border-color: #fef3c7;
+          background-color: var(--action-user-bg);
+          color: var(--action-user-color);
+          border-color: var(--action-user-border);
 
           &:hover {
-            background-color: #fde68a;
-            border-color: #fde68a;
+            background-color: var(--action-user-hover-bg);
+            border-color: var(--action-user-hover-border);
           }
         }
       }
@@ -919,7 +919,7 @@ const handleAuthorizeDialogClose = () => {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 16px;
-    color: #1e293b;
+    color: var(--text-primary);
   }
 
   .authorize-form {
@@ -974,7 +974,7 @@ const handleAuthorizeDialogClose = () => {
 
     .no-data {
       padding: 10px;
-      color: #999;
+      color: var(--text-muted);
       text-align: center;
     }
   }

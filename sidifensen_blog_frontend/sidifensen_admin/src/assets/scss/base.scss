@@ -50,6 +50,8 @@ body {
 
   // 边框颜色
   --border: #e2e8f0; // 边框
+  --border-light: #dee2e6; // 浅色边框
+  --border-lighter: #e9ecef; // 更浅的边框
 
   // 卡片阴影
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -57,6 +59,20 @@ body {
 
   // 输入框背景色
   --bg-input: #f5f5f5; // 输入框灰色背景
+
+  // 滚动条颜色
+  --scrollbar-thumb: #c0c4cc; // 滚动条滑块颜色
+  --scrollbar-thumb-hover: #909399; // 滚动条滑块悬停颜色
+
+  // 侧边栏菜单颜色（浅色模式下保持深色主题）
+  --sidebar-bg: #1e293b; // 菜单背景
+  --sidebar-text: #cbd5e1; // 菜单文字
+  --sidebar-menu-hover: #334155; // 菜单悬停
+  --sidebar-active-bg: rgba(74, 222, 128, 0.15); // 菜单激活背景
+  --sidebar-active-text: #4ade80; // 菜单激活文字
+  --sidebar-logo-ring: white; // logo 圆环颜色
+  --sidebar-logo-text: #f8fafc; // logo 文字颜色
+  --sidebar-divider: rgba(255, 255, 255, 0.1); // 分隔线颜色
 
   // 搜索按钮
   --btn-search-bg: #f1f5f9;
@@ -85,6 +101,13 @@ body {
   // 状态标签颜色 - 警告/未通过
   --badge-warning-bg: #fdf6ec;
   --badge-warning-color: #e6a23c;
+
+  // 时间统计卡片颜色
+  --time-stat-bg: #fff3cd;
+  --time-stat-border: #f39c12;
+  --time-stat-icon: #e67e22;
+  --time-stat-label: #e67e22;
+  --time-stat-value: #d68910;
 
   // 状态标签颜色 - 默认
   --badge-default-bg: #f4f4f5;
@@ -121,6 +144,20 @@ body {
   --action-delete-hover-border: #fecaca;
   --action-delete-shadow: rgba(239, 68, 68, 0.3);
 
+  // 操作按钮颜色 - 用户/菜单
+  --action-user-bg: #fef3c7;
+  --action-user-color: #d97706;
+  --action-user-border: #fef3c7;
+  --action-user-hover-bg: #fde68a;
+  --action-user-hover-border: #fde68a;
+
+  // 操作按钮颜色 - 编辑/配置
+  --action-edit-bg: #d1fae5;
+  --action-edit-color: #059669;
+  --action-edit-border: #d1fae5;
+  --action-edit-hover-bg: #a7f3d0;
+  --action-edit-hover-border: #a7f3d0;
+
   // 统计卡片渐变色
   --stat-card-user: linear-gradient(90deg, #64748b, #94a3b8);
   --stat-card-article: linear-gradient(90deg, #f093fb, #f5576c);
@@ -128,8 +165,29 @@ body {
   --stat-card-today: linear-gradient(90deg, #43e97b, #38f9d7);
 }
 
-// 深色模式主题色
+// 深色模式适配
 html.dark {
+  // 主题切换按钮颜色（深色模式）
+  --dark-switch-bg: #1e293b;
+  --dark-switch-bg-end: #0f172a;
+  --dark-switch-light-bg: #334155;
+  --dark-switch-light-bg-end: #1e293b;
+  --dark-switch-sun-color: #fbbf24;
+  --dark-switch-moon-color: #f8fafc;
+  --dark-switch-icon-wrapper-bg: #475569;
+  --dark-switch-icon-wrapper-light-bg: #64748b;
+  --dark-switch-border: #1e293b;
+  --shadow-light: rgba(148, 163, 184, 0.3);
+  --shadow-dark: rgba(0, 0, 0, 0.3);
+  --dark-glow: rgba(148, 163, 184, 0.4);
+  --dark-glow-light: rgba(148, 163, 184, 0.6);
+
+  // 侧边栏颜色（深色模式）
+  --sidebar-bg: #020617;
+  --sidebar-text: #94a3b8;
+  --sidebar-logo-ring: #64748b;
+  --sidebar-logo-text: #f1f5f9;
+  --sidebar-menu-hover: #1e293b;
   // 主色系 - 深色模式下保持一致的绿色调
   --admin-primary: #4ade80; // 主色-亮绿（深色模式下更醒目）
   --admin-primary-dark: #42b983; // 主色-标准绿
@@ -159,6 +217,8 @@ html.dark {
 
   // 边框颜色
   --border: #334155; // 边框
+  --border-light: #475569; // 浅色边框
+  --border-lighter: #475569; // 更浅的边框
 
   // 卡片阴影
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -166,6 +226,10 @@ html.dark {
 
   // 输入框背景色
   --bg-input: #334155; // 深色模式下输入框灰色背景
+
+  // 滚动条颜色（深色模式）
+  --scrollbar-thumb: #475569; // 滚动条滑块颜色（深色模式）
+  --scrollbar-thumb-hover: #64748b; // 滚动条滑块悬停颜色（深色模式）
 
   // 搜索按钮
   --btn-search-bg: #334155;
@@ -194,6 +258,13 @@ html.dark {
   // 状态标签颜色 - 警告/未通过（深色模式）
   --badge-warning-bg-dark: rgba(251, 191, 36, 0.15);
   --badge-warning-color-dark: #fbbf24;
+
+  // 时间统计卡片颜色（深色模式）
+  --time-stat-bg-dark: rgba(251, 191, 36, 0.15);
+  --time-stat-border-dark: rgba(251, 191, 36, 0.4);
+  --time-stat-icon-dark: #fbbf24;
+  --time-stat-label-dark: #fbbf24;
+  --time-stat-value-dark: #fbbf24;
 
   // 状态标签颜色 - 默认（深色模式）
   --badge-default-bg-dark: rgba(148, 163, 184, 0.15);
@@ -230,11 +301,66 @@ html.dark {
   --action-delete-hover-border-dark: rgba(239, 68, 68, 0.5);
   --action-delete-shadow-dark: rgba(239, 68, 68, 0.3);
 
+  // 操作按钮颜色 - 用户/菜单（深色模式）
+  --action-user-bg-dark: rgba(217, 119, 6, 0.15);
+  --action-user-color-dark: #fbbf24;
+  --action-user-border-dark: rgba(217, 119, 6, 0.3);
+  --action-user-hover-bg-dark: rgba(217, 119, 6, 0.25);
+  --action-user-hover-border-dark: rgba(217, 119, 6, 0.5);
+
+  // 操作按钮颜色 - 编辑/配置（深色模式）
+  --action-edit-bg-dark: rgba(5, 150, 105, 0.15);
+  --action-edit-color-dark: #34d399;
+  --action-edit-border-dark: rgba(5, 150, 105, 0.3);
+  --action-edit-hover-bg-dark: rgba(5, 150, 105, 0.25);
+  --action-edit-hover-border-dark: rgba(5, 150, 105, 0.5);
+
   // 统计卡片渐变色（深色模式）
   --stat-card-user-dark: linear-gradient(90deg, #475569, #64748b);
   --stat-card-article-dark: linear-gradient(90deg, #c084fc, #f472b6);
   --stat-card-visits-dark: linear-gradient(90deg, #334155, #475569);
   --stat-card-today-dark: linear-gradient(90deg, #22c55e, #2dd4bf);
+
+  // 主题切换按钮颜色
+  --dark-switch-bg: #333333;
+  --dark-switch-bg-end: #111111;
+  --dark-switch-light-bg: #e2e8f0;
+  --dark-switch-light-bg-end: #cbd5e1;
+  --dark-switch-sun-color: #ff9800;
+  --dark-switch-moon-color: #000000;
+  --dark-switch-icon-wrapper-bg: #ffffff;
+  --dark-switch-icon-wrapper-light-bg: #ffffff;
+  --dark-switch-border: #333333;
+  --shadow-light: rgba(255, 255, 255, 0.8);
+  --shadow-dark: rgba(0, 0, 0, 0.1);
+  --dark-glow: rgba(60, 60, 60, 0.8);
+  --dark-glow-light: rgba(0, 0, 0, 0.8);
+
+  // 侧边栏颜色（与菜单背景一致）
+  --sidebar-bg: #1e293b;
+  --sidebar-text: #e2e8f0;
+  --sidebar-logo-ring: white;
+  --sidebar-logo-text: #f8fafc;
+  --sidebar-menu-hover: #1e293b;
+  --sidebar-active-bg: rgba(74, 222, 128, 0.1);
+  --sidebar-scrollbar: rgba(203, 213, 225, 0.4);
+  --sidebar-scrollbar-hover: rgba(203, 213, 225, 0.6);
+  --sidebar-divider: rgba(0, 0, 0, 0.3); // 分隔线颜色
+
+  // 消息相关颜色
+  --message-badge-hover: #f0f9ff;
+  --badge-text-inverse: #ffffff;
+  --message-title-color: #1e293b;
+  --message-desc-color: #64748b;
+  --user-info-hover: #f1f5f9;
+  --user-info-icon-color: #64748b;
+  --mobile-overlay-bg: rgba(0, 0, 0, 0);
+  --mobile-overlay-active-bg: rgba(0, 0, 0, 0.3);
+
+  // 浅色背景色（深色模式）
+  --bg-purple-light-dark: rgba(139, 92, 246, 0.15);
+  --bg-blue-light-dark: rgba(59, 130, 246, 0.15);
+  --bg-content-dark: #1e293b;
 }
 
 // 防止 Element Plus 对话框打开时页面抖动
@@ -246,7 +372,7 @@ body.el-popup-parent--hidden {
 //超链接去掉下划线
 a {
   text-decoration: none;
-  color: #333;
+  color: var(--text-regular);
 }
 
 // el-dropdown 去掉黑框
@@ -271,11 +397,11 @@ a {
 
 /* 设置滚动条滑块样式 */
 ::-webkit-scrollbar-thumb {
-  background-color: #c0c4cc;
+  background-color: var(--scrollbar-thumb);
   border-radius: 2px;
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: #909399;
+    background-color: var(--scrollbar-thumb-hover);
   }
 }

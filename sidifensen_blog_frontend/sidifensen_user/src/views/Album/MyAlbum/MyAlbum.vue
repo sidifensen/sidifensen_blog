@@ -105,7 +105,7 @@ import { storeToRefs } from 'pinia'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Picture, Loading, ZoomIn, Delete, ArrowLeft } from '@element-plus/icons-vue'
 import { listAlbum, createAlbum, updateAlbum, deleteAlbum } from '@/api/album'
-import LoadingAnimation from '@/components/LoadingAnimation.vue'
+import LoadingAnimation from '@/components/Loading/LoadingAnimation.vue'
 
 const router = useRouter()
 const userStore = useUserStore()

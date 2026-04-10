@@ -63,66 +63,27 @@
         </el-badge>
       </div>
       <Dark />
+      <!-- 个人信息弹窗 -->
+      <UserProfilePopover v-model:visible="showUserPopover" :user="user" @logout="handleLogout" />
       <div v-if="user" class="user-info">
         <div class="user-name-group" @click="goToUserHomepage">
           <el-text size="large" class="nickname">{{ user.nickname }}</el-text>
           <VipBadge v-if="user.isVip" type="header" :glow="true" />
         </div>
-        <el-dropdown placement="bottom-end">
-          <el-avatar class="user-avatar" v-if="user.avatar" :size="40" :src="user.avatar" />
-          <el-avatar class="user-avatar" v-else :size="40" :icon="UserFilled" />
-          <template #dropdown>
-            <el-dropdown-menu class="user-dropdown-menu">
-              <!-- 用户信息卡片 -->
-              <div class="user-info-section">
-                <!-- 用户名 -->
-                <div class="user-name">
-                  <div class="name-row">
-                    <span class="nickname">{{ user.nickname }}</span>
-                    <VipBadge v-if="user.isVip" type="header" />
-                  </div>
-                </div>
-
-                <!-- 统计数据 -->
-                <div class="user-stats">
-                  <div class="stat-item">
-                    <span class="stat-number">{{ user.fansCount || 0 }}</span>
-                    <span class="stat-label">粉丝</span>
-                  </div>
-                  <div class="stat-item">
-                    <span class="stat-number">{{ user.followCount || 0 }}</span>
-                    <span class="stat-label">关注</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 分割线 -->
-              <el-divider style="margin: 12px 0" />
-
-              <!-- 操作按钮 -->
-              <el-dropdown-item @click="goToUserHomepage" class="action-item">
-                <el-icon><User /></el-icon>
-                <span>个人主页</span>
-              </el-dropdown-item>
-              <el-dropdown-item @click="goToSetting" class="action-item">
-                <el-icon><Setting /></el-icon>
-                <span>个人设置</span>
-              </el-dropdown-item>
-              <el-dropdown-item @click="goToVipCenter" class="action-item">
-                <el-icon><Star /></el-icon>
-                <span>会员中心</span>
-              </el-dropdown-item>
-              <el-dropdown-item @click="goToVipArticles" class="action-item">
-                <el-icon><Collection /></el-icon>
-                <span>会员专区</span>
-              </el-dropdown-item>
-              <el-dropdown-item @click="logout" class="action-item">
-                <el-icon><SwitchButton /></el-icon>
-                <span>退出登录</span>
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
+        <el-avatar
+          class="user-avatar"
+          @click="showUserPopover = true"
+          v-if="user.avatar"
+          :size="40"
+          :src="user.avatar"
+        />
+        <el-avatar
+          class="user-avatar"
+          @click="showUserPopover = true"
+          v-else
+          :size="40"
+          :icon="UserFilled"
+        />
       </div>
       <div class="login-btn" v-else @click="handleLoginClick">
         <el-icon size="14px"><User /></el-icon>
@@ -167,8 +128,9 @@
 </template>
 
 <script setup>
-import Dark from './Dark.vue'
-import VipBadge from './VipBadge.vue'
+import Dark from '@/components/Common/Dark.vue'
+import VipBadge from '@/components/User/VipBadge.vue'
+import UserProfilePopover from '@/components/User/UserProfilePopover.vue'
 import { useUserStore } from '@/stores/userStore.js'
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { storeToRefs } from 'pinia'
@@ -361,6 +323,7 @@ const getUserInfo = async () => {
 }
 
 const logout = () => {
+  showUserPopover.value = false
   userStore.clearUser()
 }
 
@@ -388,6 +351,14 @@ const goToVipArticles = () => {
 const isVisible = ref(true)
 // 上次滚动位置
 const lastScrollY = ref(0)
+
+// 个人信息弹窗显示状态
+const showUserPopover = ref(false)
+
+// 处理弹窗中的退出登录
+const handleLogout = () => {
+  logout()
+}
 
 const handleScroll = () => {
   const currentScrollY = window.scrollY
@@ -713,8 +684,8 @@ onBeforeUnmount(() => {
       }
 
       &:hover {
-        background-color: #3667d4 !important;
-        border-color: #3667d4 !important;
+        background-color: var(--accent) !important;
+        border-color: var(--accent) !important;
         color: #fff !important;
       }
     }
@@ -842,7 +813,7 @@ onBeforeUnmount(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: var(--mask);
   z-index: 999;
   display: flex;
 

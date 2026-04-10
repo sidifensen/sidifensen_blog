@@ -101,9 +101,9 @@ const handleClick = () => {
 // 头部样式（用于导航栏用户名称旁）
 .vip-badge--header {
   position: relative;
-  background: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  color: #d97706;
+  background: rgba(var(--warning-rgb, 217, 119, 6), 0.12);
+  border: 1px solid rgba(var(--warning-rgb, 217, 119, 6), 0.4);
+  color: var(--warning);
   overflow: hidden;
 
   &::after {
@@ -130,14 +130,14 @@ const handleClick = () => {
 @keyframes vip-glow {
   0%,
   100% {
-    border-color: rgba(245, 158, 11, 0.3);
-    background: rgba(245, 158, 11, 0.08);
-    box-shadow: 0 0 4px rgba(245, 158, 11, 0.2);
+    border-color: rgba(var(--warning-rgb, 217, 119, 6), 0.3);
+    background: rgba(var(--warning-rgb, 217, 119, 6), 0.08);
+    box-shadow: 0 0 4px rgba(var(--warning-rgb, 217, 119, 6), 0.2);
   }
   50% {
-    border-color: rgba(245, 158, 11, 0.8);
-    background: rgba(245, 158, 11, 0.18);
-    box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+    border-color: rgba(var(--warning-rgb, 217, 119, 6), 0.8);
+    background: rgba(var(--warning-rgb, 217, 119, 6), 0.18);
+    box-shadow: 0 0 12px rgba(var(--warning-rgb, 217, 119, 6), 0.5);
   }
 }
 </style>
@@ -146,9 +146,9 @@ const handleClick = () => {
 // 非 scoped 全局样式，处理 dark 模式
 .vip-badge--header {
   html.dark & {
-    background: rgba(245, 158, 11, 0.15);
-    border-color: rgba(245, 158, 11, 0.5);
-    color: #fbbf24;
+    background: rgba(var(--warning-rgb, 217, 119, 6), 0.15);
+    border-color: rgba(var(--warning-rgb, 217, 119, 6), 0.5);
+    color: var(--warning);
   }
 }
 </style>

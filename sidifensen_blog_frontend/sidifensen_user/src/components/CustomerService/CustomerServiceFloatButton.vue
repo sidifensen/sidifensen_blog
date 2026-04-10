@@ -152,7 +152,7 @@ defineExpose({
     cursor: grabbing;
 
     .service-btn {
-      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+      box-shadow: 0 8px 24px var(--shadow);
       transform: scale(1.1);
     }
   }
@@ -166,7 +166,7 @@ defineExpose({
   // 悬停效果
   &:hover {
     .service-btn {
-      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
+      box-shadow: 0 8px 24px var(--shadow);
       transform: translateY(-2px);
     }
   }
@@ -177,12 +177,12 @@ defineExpose({
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 16px var(--shadow);
   transition: all 0.3s;
 
   .service-icon {

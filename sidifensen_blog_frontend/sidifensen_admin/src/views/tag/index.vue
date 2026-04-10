@@ -472,7 +472,7 @@ onUnmounted(() => {
           display: inline-block;
           width: 4px;
           height: 20px;
-          background-color: #409eff;
+          background-color: var(--text-link);
           border-radius: 2px;
           margin-right: 10px;
         }
@@ -497,7 +497,7 @@ onUnmounted(() => {
 
             &:focus-within {
               box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.2);
-              border-color: #409eff;
+              border-color: var(--text-link);
             }
           }
         }

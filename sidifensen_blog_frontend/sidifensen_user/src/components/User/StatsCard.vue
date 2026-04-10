@@ -13,7 +13,7 @@
 </template>
 
 <script setup>
-import CountTo from '@/components/CountTo.vue'
+import CountTo from '@/components/Common/CountTo.vue'
 
 // 定义 props
 const props = defineProps({

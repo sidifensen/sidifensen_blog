@@ -138,7 +138,7 @@ import { useUserStore } from '@/stores/userStore'
 import WebSocketClient from '@/utils/WebSocketClient'
 import { getFriendlyTime } from '@/utils/formatTime'
 import { emojiList } from '@/utils/emoji'
-import MessageBubble from '@/components/MessageBubble.vue'
+import MessageBubble from '@/components/CustomerService/MessageBubble.vue'
 
 const route = useRoute()
 const router = useRouter()

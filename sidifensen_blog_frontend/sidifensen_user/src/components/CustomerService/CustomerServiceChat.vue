@@ -485,7 +485,7 @@ watch(dialogVisible, (newVal) => {
       width: 40px;
       height: 40px;
       border-radius: 12px;
-      background: #3b82f6;
+      background: var(--accent);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -611,12 +611,12 @@ watch(dialogVisible, (newVal) => {
         width: 80px;
         height: 80px;
         border-radius: 50%;
-        background: #3b82f6;
+        background: var(--accent);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        box-shadow: 0 4px 12px var(--shadow);
 
         svg {
           width: 40px;
@@ -653,21 +653,21 @@ watch(dialogVisible, (newVal) => {
       flex-shrink: 0;
 
       .user-avatar {
-        border: 2px solid white;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border: 2px solid var(--bg-card);
+        box-shadow: 0 2px 8px var(--shadow);
       }
 
       .ai-avatar {
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: #3b82f6;
+        background: var(--accent);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         flex-shrink: 0;
-        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+        box-shadow: 0 2px 8px var(--shadow);
       }
     }
 
@@ -699,7 +699,7 @@ watch(dialogVisible, (newVal) => {
         max-width: 100%;
         box-sizing: border-box;
         overflow: hidden;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 1px 2px var(--shadow-light);
 
         .bubble-text {
           color: var(--el-text-color-primary);
@@ -727,7 +727,7 @@ watch(dialogVisible, (newVal) => {
       }
 
       .message-bubble {
-        background: #3b82f6;
+        background: var(--accent);
 
         .bubble-text {
           color: white;
@@ -757,13 +757,13 @@ watch(dialogVisible, (newVal) => {
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      background: #3b82f6;
+      background: var(--accent);
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
       flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+      box-shadow: 0 2px 8px var(--shadow);
 
       svg {
         width: 18px;
@@ -778,13 +778,13 @@ watch(dialogVisible, (newVal) => {
       background: var(--el-bg-color);
       border: 1px solid var(--el-border-color-light, rgba(0, 0, 0, 0.1));
       border-radius: 16px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 1px 3px var(--shadow-light);
 
       .typing-dot {
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background: #3b82f6;
+        background: var(--accent);
         animation: typing 1.4s infinite;
 
         &:nth-child(2) {
@@ -812,12 +812,12 @@ watch(dialogVisible, (newVal) => {
       background: var(--el-fill-color-light);
       border-radius: 16px;
       padding: 8px;
-      border: 1px solid rgba(59, 130, 246, 0.15);
+      border: 1px solid var(--accent);
       transition: all 0.3s;
 
       &:focus-within {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--shadow-light);
         background: var(--el-bg-color);
       }
 
@@ -876,7 +876,7 @@ watch(dialogVisible, (newVal) => {
 
       .send-button {
         flex-shrink: 0;
-        background: #3b82f6;
+        background: var(--accent);
         border: none;
         border-radius: 12px;
         padding: 10px 20px;
@@ -890,8 +890,8 @@ watch(dialogVisible, (newVal) => {
         white-space: nowrap;
 
         &:hover:not(:disabled) {
-          background: #2563eb;
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+          background: var(--accent-hover);
+          box-shadow: 0 4px 12px var(--shadow);
         }
 
         &:active:not(:disabled) {
@@ -930,7 +930,7 @@ watch(dialogVisible, (newVal) => {
       flex-shrink: 0;
 
       svg {
-        color: #3b82f6;
+        color: var(--accent);
         flex-shrink: 0;
       }
     }
@@ -947,7 +947,7 @@ watch(dialogVisible, (newVal) => {
       }
 
       &::-webkit-scrollbar-thumb {
-        background: #c0c4cc;
+        background: var(--text-muted);
         border-radius: 2px;
       }
 
@@ -964,7 +964,7 @@ watch(dialogVisible, (newVal) => {
         flex-shrink: 0;
 
         &:hover {
-          background: #3b82f6;
+          background: var(--accent);
           color: white;
         }
 
@@ -1026,7 +1026,7 @@ watch(dialogVisible, (newVal) => {
 ::v-deep(.customer-service-dialog) {
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 60px var(--shadow);
 
   .el-dialog__header {
     padding: 16px 20px;

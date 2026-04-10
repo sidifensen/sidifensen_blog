@@ -629,28 +629,28 @@ onMounted(() => {
   font-weight: 500;
 
   &.status-unaudited {
-    background-color: #fff1f0;
-    color: #f56c6c;
+    background-color: var(--badge-unaudited-bg);
+    color: var(--badge-unaudited-color);
   }
 
   &.status-audited {
-    background-color: #f0f9eb;
-    color: #67c23a;
+    background-color: var(--badge-success-bg);
+    color: var(--badge-success-color);
   }
 
   &.status-rejected {
-    background-color: #fdf6ec;
-    color: #e6a23c;
+    background-color: var(--badge-warning-bg);
+    color: var(--badge-warning-color);
   }
 
   &.status-public {
-    background-color: #f0f9eb;
-    color: #67c23a;
+    background-color: var(--badge-success-bg);
+    color: var(--badge-success-color);
   }
 
   &.status-private {
-    background-color: #fdf6ec;
-    color: #e6a23c;
+    background-color: var(--badge-warning-bg);
+    color: var(--badge-warning-color);
   }
 }
 
@@ -681,7 +681,7 @@ onMounted(() => {
   border-radius: 16px;
 
   .el-dialog__header {
-    background: linear-gradient(135deg, #e6a23c 0%, #d19d00 100%);
+    background: var(--admin-warning);
     color: white;
     border-radius: 16px 16px 0 0;
     padding: 20px 24px;
@@ -717,7 +717,7 @@ onMounted(() => {
       }
 
       .column-id-detail {
-        background: linear-gradient(45deg, #e6a23c, #d19d00);
+        background: var(--admin-warning);
         color: white;
         padding: 4px 12px;
         border-radius: 20px;
@@ -758,7 +758,7 @@ onMounted(() => {
       }
 
       .name-text {
-        border-left: 4px solid #e6a23c;
+        border-left: 4px solid var(--admin-warning);
         font-weight: 600;
         font-size: 16px;
       }
@@ -823,19 +823,19 @@ onMounted(() => {
         }
 
         &.time-stat-item {
-          background: #fff3cd;
-          border-color: #f39c12;
+          background: var(--time-stat-bg);
+          border-color: var(--time-stat-border);
 
           .stat-icon {
-            color: #e67e22;
+            color: var(--time-stat-icon);
           }
 
           .stat-label {
-            color: #e67e22;
+            color: var(--time-stat-label);
           }
 
           .stat-value {
-            color: #d68910;
+            color: var(--time-stat-value);
           }
         }
       }
@@ -859,7 +859,7 @@ onMounted(() => {
     margin: 0 0 16px 0;
 
     .title-icon {
-      color: #e6a23c;
+      color: var(--admin-warning);
     }
   }
 
@@ -880,7 +880,7 @@ onMounted(() => {
       .article-index {
         width: 24px;
         height: 24px;
-        background: linear-gradient(135deg, #e6a23c, #d19d00);
+        background: var(--admin-warning);
         color: white;
         border-radius: 50%;
         display: flex;
@@ -963,7 +963,7 @@ onMounted(() => {
   border-radius: 16px;
 
   .el-dialog__header {
-    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    background: var(--admin-success);
     color: white;
     border-radius: 16px 16px 0 0;
     padding: 20px 24px;

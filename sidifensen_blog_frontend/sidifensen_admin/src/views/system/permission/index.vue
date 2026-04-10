@@ -578,16 +578,16 @@ const handleAuthorizeBatchDialogClose = () => {
 
   :deep(.el-table__header-wrapper) th {
     font-weight: 600;
-    color: #475569;
+    color: var(--text-regular);
   }
 
   :deep(.el-table__body-wrapper) tr td {
-    color: #64748b;
+    color: var(--text-muted);
     padding: 12px 0;
   }
 
   :deep(.el-table__fixed-right) {
-    box-shadow: -3px 0 10px rgba(0, 0, 0, 0.05);
+    box-shadow: -3px 0 10px var(--shadow-card);
   }
 
   .table-actions {
@@ -597,38 +597,38 @@ const handleAuthorizeBatchDialogClose = () => {
     gap: 8px;
 
     .edit-button {
-      background-color: #e0f2fe;
-      color: #0284c7;
-      border-color: #e0f2fe;
+      background-color: var(--action-audit-bg);
+      color: var(--action-audit-color);
+      border-color: var(--action-audit-border);
       border-radius: 6px;
 
       &:hover {
-        background-color: #bae6fd;
-        border-color: #bae6fd;
+        background-color: var(--action-audit-hover-bg);
+        border-color: var(--action-audit-hover-border);
       }
     }
 
     .delete-button {
-      background-color: #fee2e2;
-      color: #ef4444;
-      border-color: #fee2e2;
+      background-color: var(--action-delete-bg);
+      color: var(--action-delete-color);
+      border-color: var(--action-delete-border);
       border-radius: 6px;
 
       &:hover {
-        background-color: #fecaca;
-        border-color: #fecaca;
+        background-color: var(--action-delete-hover-bg);
+        border-color: var(--action-delete-hover-border);
       }
     }
 
     .role-button {
-      background-color: #fef3c7;
-      color: #d97706;
-      border-color: #fef3c7;
+      background-color: var(--action-user-bg);
+      color: var(--action-user-color);
+      border-color: var(--action-user-border);
       border-radius: 6px;
 
       &:hover {
-        background-color: #fde68a;
-        border-color: #fde68a;
+        background-color: var(--action-user-hover-bg);
+        border-color: var(--action-user-hover-border);
       }
     }
   }
@@ -647,7 +647,7 @@ const handleAuthorizeBatchDialogClose = () => {
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px var(--shadow-hover);
     }
 
     &.is-selected {
@@ -681,8 +681,8 @@ const handleAuthorizeBatchDialogClose = () => {
 
           .permission-id {
             font-size: 12px;
-            color: #666;
-            background-color: #f5f5f5;
+            color: var(--text-muted);
+            background-color: var(--bg-input);
             padding: 2px 6px;
             border-radius: 4px;
           }
@@ -706,13 +706,13 @@ const handleAuthorizeBatchDialogClose = () => {
 
           .label {
             font-weight: 500;
-            color: #888;
+            color: var(--text-muted);
             margin-right: 8px;
             flex-shrink: 0;
           }
 
           .value {
-            color: #555;
+            color: var(--text-regular);
             flex: 1;
             word-break: break-all;
           }
@@ -724,7 +724,7 @@ const handleAuthorizeBatchDialogClose = () => {
 
           .time-text {
             font-size: 12px;
-            color: #999;
+            color: var(--text-muted);
           }
         }
       }
@@ -744,35 +744,35 @@ const handleAuthorizeBatchDialogClose = () => {
         }
 
         .edit-button {
-          background-color: #e0f2fe;
-          color: #0284c7;
-          border-color: #e0f2fe;
+          background-color: var(--action-audit-bg);
+          color: var(--action-audit-color);
+          border-color: var(--action-audit-border);
 
           &:hover {
-            background-color: #bae6fd;
-            border-color: #bae6fd;
+            background-color: var(--action-audit-hover-bg);
+            border-color: var(--action-audit-hover-border);
           }
         }
 
         .delete-button {
-          background-color: #fee2e2;
-          color: #ef4444;
-          border-color: #fee2e2;
+          background-color: var(--action-delete-bg);
+          color: var(--action-delete-color);
+          border-color: var(--action-delete-border);
 
           &:hover {
-            background-color: #fecaca;
-            border-color: #fecaca;
+            background-color: var(--action-delete-hover-bg);
+            border-color: var(--action-delete-hover-border);
           }
         }
 
         .role-button {
-          background-color: #fef3c7;
-          color: #d97706;
-          border-color: #fef3c7;
+          background-color: var(--action-user-bg);
+          color: var(--action-user-color);
+          border-color: var(--action-user-border);
 
           &:hover {
-            background-color: #fde68a;
-            border-color: #fde68a;
+            background-color: var(--action-user-hover-bg);
+            border-color: var(--action-user-hover-border);
           }
         }
       }
@@ -812,7 +812,7 @@ const handleAuthorizeBatchDialogClose = () => {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 16px;
-    color: #1e293b;
+    color: var(--text-primary);
   }
 
   .authorize-form {
@@ -842,34 +842,34 @@ const handleAuthorizeBatchDialogClose = () => {
 
 // 按钮样式
 .authorize-button {
-  background-color: #fef3c7;
-  color: #d97706;
-  border-color: #fef3c7;
+  background-color: var(--action-user-bg);
+  color: var(--action-user-color);
+  border-color: var(--action-user-border);
   border-radius: 6px;
 
   &:hover {
-    background-color: #fde68a;
-    border-color: #fde68a;
+    background-color: var(--action-user-hover-bg);
+    border-color: var(--action-user-hover-border);
   }
 
   &.is-disabled {
-    background-color: #f5f5f5;
-    border-color: #d9d9d9;
-    color: #bfbfbf;
+    background-color: var(--bg-input);
+    border-color: var(--border);
+    color: var(--text-placeholder);
     cursor: not-allowed;
     opacity: 0.6;
   }
 }
 
 .export-button {
-  background-color: #e0f2fe;
-  color: #0284c7;
-  border-color: #e0f2fe;
+  background-color: var(--action-audit-bg);
+  color: var(--action-audit-color);
+  border-color: var(--action-audit-border);
   border-radius: 6px;
 
   &:hover {
-    background-color: #bae6fd;
-    border-color: #bae6fd;
+    background-color: var(--action-audit-hover-bg);
+    border-color: var(--action-audit-hover-border);
   }
 }
 

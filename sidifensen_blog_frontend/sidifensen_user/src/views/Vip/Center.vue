@@ -169,8 +169,8 @@ import { info } from '@/api/user'
 import { createVipOrder, getVipMe, getVipOrderList, getVipPlans, repayVipOrder } from '@/api/vip'
 import { useUserStore } from '@/stores/userStore'
 import { GetJwt } from '@/utils/Auth'
-import VipPaymentResultModal from '@/components/VipPaymentResultModal.vue'
-import CancelOrderDialog from '@/components/CancelOrderDialog.vue'
+import VipPaymentResultModal from '@/components/Payment/VipPaymentResultModal.vue'
+import CancelOrderDialog from '@/components/Payment/CancelOrderDialog.vue'
 import { formatVipExpireDate, formatDate } from '@/utils/formatTime'
 
 // 路由与全局状态

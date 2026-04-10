@@ -39,8 +39,8 @@
 
 /* 卡片样式 */
 @mixin card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: var(--u-bg-white);
+  border: 1px solid var(--u-border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
 }

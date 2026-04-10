@@ -188,7 +188,7 @@ import {
   User,
 } from '@element-plus/icons-vue'
 import { formatCompactNumber } from '@/utils/formatNumber'
-import SvgIcon from '@/components/SvgIcon.vue'
+import SvgIcon from '@/components/Common/SvgIcon.vue'
 
 // Props 定义
 const props = defineProps({
@@ -322,7 +322,7 @@ const handleClick = () => {
       &:hover {
         transform: translateY(-4px);
         box-shadow: var(--shadow-md);
-        border-color: rgba(0, 102, 255, 0.2);
+        border-color: rgba(var(--accent-rgb, 59, 130, 246), 0.2);
       }
     }
 
@@ -373,12 +373,12 @@ const handleClick = () => {
         font-weight: 500;
 
         &.tag-hot {
-          background: rgba(239, 68, 68, 0.1);
-          color: #dc2626;
+          background: rgba(var(--error-rgb, 220, 38, 38), 0.1);
+          color: var(--error);
         }
 
         &.tag-new {
-          background: rgba(0, 102, 255, 0.1);
+          background: rgba(var(--accent-rgb, 59, 130, 246), 0.1);
           color: var(--accent);
         }
       }
@@ -662,15 +662,15 @@ const handleClick = () => {
       font-weight: 500;
 
       &.status-0 {
-        background-color: #fff7ed;
-        color: #ea580c;
-        border: 1px solid #fed7aa;
+        background-color: var(--warning-bg, #fff7ed);
+        color: var(--warning);
+        border: 1px solid var(--warning-border, #fed7aa);
       }
 
       &.status-2 {
-        background-color: #fef2f2;
-        color: #dc2626;
-        border: 1px solid #fecaca;
+        background-color: var(--error-bg, #fef2f2);
+        color: var(--error);
+        border: 1px solid var(--error-border, #fecaca);
       }
     }
 
@@ -725,7 +725,7 @@ const handleClick = () => {
       left: 0;
       right: 0;
       height: 1px;
-      background: linear-gradient(90deg, rgba(0, 102, 255, 0.5), transparent);
+      background: linear-gradient(90deg, rgba(var(--accent-rgb, 59, 130, 246), 0.5), transparent);
       opacity: 0;
       transition: opacity 0.25s ease;
     }
@@ -800,7 +800,7 @@ const handleClick = () => {
           height: 22px;
           border-radius: 50%;
           overflow: hidden;
-          background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+          background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-page) 100%);
           border: 1px solid rgba(0, 0, 0, 0.1);
 
           .avatar-placeholder {
@@ -935,13 +935,13 @@ html.dark {
   .article-card {
     &.mode-grid {
       .article-tags .tag.tag-hot {
-        background: rgba(239, 68, 68, 0.15);
-        color: #fca5a5;
+        background: rgba(var(--error-rgb, 220, 38, 38), 0.15);
+        color: var(--error);
       }
 
       .article-tags .tag.tag-new {
-        background: rgba(0, 212, 255, 0.15);
-        color: #00d4ff;
+        background: rgba(var(--accent-rgb, 59, 130, 246), 0.15);
+        color: var(--accent);
       }
     }
 
@@ -957,15 +957,15 @@ html.dark {
 
       .article-examine-status {
         &.status-0 {
-          background-color: rgba(234, 88, 12, 0.15);
-          color: #fdba74;
-          border-color: rgba(234, 88, 12, 0.3);
+          background-color: rgba(var(--warning-rgb, 217, 119, 6), 0.15);
+          color: var(--warning);
+          border-color: rgba(var(--warning-rgb, 217, 119, 6), 0.3);
         }
 
         &.status-2 {
-          background-color: rgba(220, 38, 38, 0.15);
-          color: #fca5a5;
-          border-color: rgba(220, 38, 38, 0.3);
+          background-color: rgba(var(--error-rgb, 220, 38, 38), 0.15);
+          color: var(--error);
+          border-color: rgba(var(--error-rgb, 220, 38, 38), 0.3);
         }
       }
     }

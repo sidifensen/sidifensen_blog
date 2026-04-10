@@ -119,7 +119,7 @@ import { useUserStore } from '@/stores/userStore'
 import { formatTime } from '@/utils/formatTime'
 import { formatCompactNumber } from '@/utils/formatNumber'
 import CommentForm from '@/views/User/Article/components/CommentForm.vue'
-import SvgIcon from '@/components/SvgIcon.vue'
+import SvgIcon from '@/components/Common/SvgIcon.vue'
 
 // Props
 const props = defineProps({

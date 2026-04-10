@@ -22,15 +22,6 @@ const goToHome = () => {
 </script>
 
 <style lang="scss" scoped>
-// 颜色变量定义
-$bg-color: #f5f5f5;
-$card-bg: #ffffff;
-$text-primary: #333333;
-$text-secondary: #555555;
-$text-tertiary: #777777;
-$button-color: #42b983;
-$button-hover-color: #3aa876;
-
 // 尺寸变量定义
 $card-padding: 40px;
 $border-radius: 10px;
@@ -43,15 +34,15 @@ $button-padding: 10px 20px;
   height: 100vh;
   width: 100%;
   overflow: hidden; // 防止出现滚动条
-  background-color: $bg-color;
+  background-color: var(--bg-page);
 }
 
 .not-found-content {
   text-align: center;
   padding: $card-padding;
-  background-color: $card-bg;
+  background-color: var(--bg-card);
   border-radius: $border-radius;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--shadow);
   max-width: 500px;
   width: 100%;
   @media screen and (max-width: 768px) {
@@ -62,25 +53,25 @@ $button-padding: 10px 20px;
     font-size: 100px;
     font-weight: bold;
     margin: 0;
-    color: $text-primary;
+    color: var(--text-primary);
   }
 
   .error-message {
     font-size: 24px;
-    color: $text-secondary;
+    color: var(--text-regular);
     margin-top: 10px;
   }
 
   .suggestion {
     font-size: 16px;
-    color: $text-tertiary;
+    color: var(--text-muted);
     margin-top: 10px;
     margin-bottom: 30px;
   }
 
   .back-home {
     padding: $button-padding;
-    background-color: $button-color;
+    background-color: var(--accent);
     color: white;
     border: none;
     border-radius: 4px;
@@ -89,7 +80,7 @@ $button-padding: 10px 20px;
     transition: background-color 0.3s;
 
     &:hover {
-      background-color: $button-hover-color;
+      background-color: var(--accent-hover);
     }
   }
 }

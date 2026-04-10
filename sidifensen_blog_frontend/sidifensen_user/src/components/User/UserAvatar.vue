@@ -15,7 +15,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import VipBadge from '@/components/VipBadge.vue'
+import VipBadge from '@/components/User/VipBadge.vue'
 
 // 用户头像组件
 // props:
@@ -106,8 +106,8 @@ const handleClick = () => {
     bottom: 0;
     width: 10px;
     height: 10px;
-    background: #22c55e;
-    border: 2px solid #fff;
+    background: var(--online-indicator);
+    border: 2px solid var(--bg-card);
     border-radius: 50%;
     transform: translate(20%, 20%);
   }

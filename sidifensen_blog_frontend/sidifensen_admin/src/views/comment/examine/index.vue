@@ -202,7 +202,7 @@
         <div class="comment-stats-detail">
           <div class="stats-group">
             <div class="stat-item">
-              <svg-icon name="like" width="16px" height="16px" color="#909399" />
+              <svg-icon name="like" width="16px" height="16px" color="var(--text-muted)" />
               <span class="stat-label">点赞</span>
               <span class="stat-value">{{ currentComment?.likeCount || 0 }}</span>
             </div>
@@ -678,8 +678,8 @@ onMounted(() => {
   border-radius: 16px;
 
   .el-dialog__header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: var(--admin-primary);
+    color: var(--badge-text-inverse);
     border-radius: 16px 16px 0 0;
     padding: 20px 24px;
     position: relative;
@@ -696,7 +696,7 @@ onMounted(() => {
       transform: translateY(-50%);
 
       .el-dialog__close {
-        color: white;
+        color: var(--badge-text-inverse);
       }
     }
   }
@@ -737,8 +737,8 @@ onMounted(() => {
           }
 
           .comment-id-detail {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
+            background: var(--admin-primary);
+            color: var(--badge-text-inverse);
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 12px;

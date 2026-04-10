@@ -520,16 +520,16 @@ onUnmounted(() => {
 
   :deep(.el-table__header-wrapper) th {
     font-weight: 600;
-    color: #475569;
+    color: var(--text-regular);
   }
 
   :deep(.el-table__body-wrapper) tr td {
-    color: #64748b;
+    color: var(--text-muted);
     padding: 12px 0;
   }
 
   :deep(.el-table__fixed-right) {
-    box-shadow: -3px 0 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-card);
   }
 
   .table-actions {
@@ -539,50 +539,50 @@ onUnmounted(() => {
     gap: 8px;
 
     .add-button {
-      background-color: #d1fae5;
-      color: #059669;
-      border-color: #d1fae5;
+      background-color: var(--action-edit-bg);
+      color: var(--action-edit-color);
+      border-color: var(--action-edit-border);
       border-radius: 6px;
 
       &:hover {
-        background-color: #a7f3d0;
-        border-color: #a7f3d0;
+        background-color: var(--action-edit-hover-bg);
+        border-color: var(--action-edit-hover-border);
       }
     }
 
     .edit-button {
-      background-color: #e0f2fe;
-      color: #0284c7;
-      border-color: #e0f2fe;
+      background-color: var(--action-audit-bg);
+      color: var(--action-audit-color);
+      border-color: var(--action-audit-border);
       border-radius: 6px;
 
       &:hover {
-        background-color: #bae6fd;
-        border-color: #bae6fd;
+        background-color: var(--action-audit-hover-bg);
+        border-color: var(--action-audit-hover-border);
       }
     }
 
     .delete-button {
-      background-color: #fee2e2;
-      color: #ef4444;
-      border-color: #fee2e2;
+      background-color: var(--action-delete-bg);
+      color: var(--action-delete-color);
+      border-color: var(--action-delete-border);
       border-radius: 6px;
 
       &:hover {
-        background-color: #fecaca;
-        border-color: #fecaca;
+        background-color: var(--action-delete-hover-bg);
+        border-color: var(--action-delete-hover-border);
       }
     }
 
     .role-button {
-      background-color: #fef3c7;
-      color: #d97706;
-      border-color: #fef3c7;
+      background-color: var(--action-user-bg);
+      color: var(--action-user-color);
+      border-color: var(--action-user-border);
       border-radius: 6px;
 
       &:hover {
-        background-color: #fde68a;
-        border-color: #fde68a;
+        background-color: var(--action-user-hover-bg);
+        border-color: var(--action-user-hover-border);
       }
     }
   }
@@ -600,13 +600,13 @@ onUnmounted(() => {
     border-radius: 8px;
     border: 1px solid var(--el-border-color-lighter);
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-card);
     transition: all 0.3s ease;
     margin-bottom: 8px;
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      box-shadow: var(--shadow-hover);
     }
 
     .menu-card-header {
@@ -625,7 +625,7 @@ onUnmounted(() => {
         width: 32px;
         height: 32px;
         border-radius: 6px;
-        background-color: rgba(255, 255, 255, 0.8);
+        background-color: var(--el-fill-color-light);
         flex-shrink: 0;
 
         &:hover {
@@ -634,7 +634,7 @@ onUnmounted(() => {
 
         .expand-icon {
           font-size: 18px;
-          color: #606266;
+          color: var(--text-light);
           transition: transform 0.3s ease;
 
           &.expanded {
@@ -669,8 +669,8 @@ onUnmounted(() => {
         .menu-id-badge {
           display: inline-block;
           padding: 2px 8px;
-          background-color: #e3f2fd;
-          color: #1976d2;
+          background-color: var(--bg-blue-light);
+          color: var(--text-article-link);
           border-radius: 12px;
           font-size: 10px;
           font-weight: 600;
@@ -775,7 +775,7 @@ onUnmounted(() => {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 16px;
-    color: #1e293b;
+    color: var(--text-primary);
   }
 
   .role-checkbox-group {

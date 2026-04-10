@@ -1,37 +1,39 @@
 <template>
-  <div v-if="visible" class="cancel-order-dialog-mask" @click.self="handleClose">
-    <div class="cancel-order-dialog">
-      <button class="dialog-close" @click="handleClose">
-        <svg viewBox="0 0 24 24" width="18" height="18">
-          <path
-            fill="currentColor"
-            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
-          />
-        </svg>
-      </button>
-
-      <div class="dialog-content">
-        <div class="dialog-icon">
-          <svg viewBox="0 0 24 24" width="32" height="32">
+  <Teleport to="body">
+    <div v-if="visible" class="cancel-order-dialog-mask" @click.self="handleClose">
+      <div class="cancel-order-dialog">
+        <button class="dialog-close" @click="handleClose">
+          <svg viewBox="0 0 24 24" width="18" height="18">
             <path
               fill="currentColor"
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+              d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
             />
           </svg>
-        </div>
+        </button>
 
-        <h3 class="dialog-title">{{ title }}</h3>
-        <p class="dialog-message">{{ message }}</p>
+        <div class="dialog-content">
+          <div class="dialog-icon">
+            <svg viewBox="0 0 24 24" width="32" height="32">
+              <path
+                fill="currentColor"
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+              />
+            </svg>
+          </div>
 
-        <div class="dialog-actions">
-          <button class="btn-cancel" @click="handleClose">取消</button>
-          <button class="btn-confirm" @click="handleConfirm" :disabled="confirming">
-            {{ confirming ? '取消中...' : '确定' }}
-          </button>
+          <h3 class="dialog-title">{{ title }}</h3>
+          <p class="dialog-message">{{ message }}</p>
+
+          <div class="dialog-actions">
+            <button class="btn-cancel" @click="handleClose">取消</button>
+            <button class="btn-confirm" @click="handleConfirm" :disabled="confirming">
+              {{ confirming ? '取消中...' : '确定' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -93,7 +95,7 @@ const handleConfirm = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 10000;
   animation: fadeIn 0.2s ease;
 
   .cancel-order-dialog {

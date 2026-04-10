@@ -295,7 +295,7 @@ const handleSelectionChange = (selection) => {
     }
 
     :deep(.el-table__fixed-right) {
-      box-shadow: -3px 0 10px rgba(0, 0, 0, 0.05);
+      box-shadow: -3px 0 10px var(--shadow-card);
     }
 
     // 名称文本
@@ -327,7 +327,7 @@ const handleSelectionChange = (selection) => {
 
         &:hover {
           transform: scale(1.05);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          box-shadow: var(--shadow-hover);
         }
       }
 

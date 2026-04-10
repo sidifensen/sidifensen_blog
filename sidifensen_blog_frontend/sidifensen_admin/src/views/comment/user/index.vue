@@ -227,7 +227,7 @@
           <div class="comment-stats-detail">
             <div class="stats-group">
               <div class="stat-item">
-                <svg-icon name="like" width="16px" height="16px" color="#6c757d" />
+                <svg-icon name="like" width="16px" height="16px" color="var(--text-muted)" />
                 <span class="stat-label">点赞</span>
                 <span class="stat-value">{{ currentComment?.likeCount || 0 }}</span>
               </div>
@@ -625,11 +625,11 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 20px var(--shadow-card);
     transition: all 0.3s ease;
 
     &:hover {
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 8px 30px var(--shadow-hover);
     }
 
     .card-header {
@@ -650,7 +650,7 @@ onMounted(() => {
           display: inline-block;
           width: 4px;
           height: 20px;
-          background-color: #e6a23c;
+          background-color: var(--admin-warning);
           border-radius: 2px;
           margin-right: 10px;
         }
@@ -696,7 +696,7 @@ onMounted(() => {
 
         &:hover {
           transform: translateY(-4px);
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+          box-shadow: 0 8px 25px var(--shadow-hover);
         }
 
         .user-card-content {
@@ -720,27 +720,27 @@ onMounted(() => {
             .user-info {
               .user-id {
                 font-size: 12px;
-                color: #909399;
+                color: var(--text-secondary);
                 margin-bottom: 4px;
               }
 
               .user-name {
                 font-size: 16px;
                 font-weight: 500;
-                color: #303133;
+                color: var(--text-dark);
                 word-break: break-all;
                 line-height: 1.4;
                 margin-bottom: 6px;
 
                 .username {
-                  color: #409eff;
+                  color: var(--text-link);
                   font-weight: 600;
                   display: block;
                   margin-bottom: 2px;
                 }
 
                 .nickname {
-                  color: #909399;
+                  color: var(--text-secondary);
                   font-weight: 400;
                   font-size: 14px;
                   display: block;
@@ -754,12 +754,12 @@ onMounted(() => {
                 font-size: 13px;
 
                 .comment-count-label {
-                  color: #606266;
+                  color: var(--text-light);
                   font-weight: 500;
                 }
 
                 .comment-count-value {
-                  background: linear-gradient(45deg, #e6a23c, #d19d00);
+                  background: var(--admin-warning);
                   color: white;
                   padding: 2px 8px;
                   border-radius: 12px;
@@ -820,7 +820,7 @@ onMounted(() => {
 }
 
 .no-reply {
-  color: #999;
+  color: var(--text-muted);
   font-size: 12px;
 }
 
@@ -874,7 +874,7 @@ onMounted(() => {
   border-radius: 16px;
 
   .el-dialog__header {
-    background: linear-gradient(135deg, #e6a23c 0%, #d19d00 100%);
+    background: var(--admin-warning);
     color: white;
     border-radius: 16px 16px 0 0;
     padding: 20px 24px;
@@ -914,13 +914,13 @@ onMounted(() => {
             margin: 0;
             font-size: 20px;
             font-weight: 700;
-            color: #2c3e50;
+            color: var(--text-primary);
             line-height: 1.3;
             flex: 1;
           }
 
           .comment-id-detail {
-            background: linear-gradient(45deg, #e6a23c, #d19d00);
+            background: var(--admin-warning);
             color: white;
             padding: 4px 12px;
             border-radius: 20px;
@@ -964,16 +964,16 @@ onMounted(() => {
             margin: 0 0 8px 0;
             font-size: 14px;
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--text-primary);
           }
 
           .content-text {
             padding: 12px;
-            background-color: #f8f9fa;
+            background-color: var(--bg-content);
             border-radius: 8px;
             line-height: 1.6;
-            color: #333;
-            border-left: 4px solid #e6a23c;
+            color: var(--text-regular);
+            border-left: 4px solid var(--admin-warning);
           }
         }
 
@@ -984,14 +984,14 @@ onMounted(() => {
             margin: 0 0 8px 0;
             font-size: 14px;
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--text-primary);
           }
 
           .article-info {
             padding: 8px 12px;
-            background-color: #e3f2fd;
+            background-color: var(--bg-blue-light);
             border-radius: 6px;
-            color: #1976d2;
+            color: var(--text-article-link);
             font-weight: 500;
           }
         }
@@ -1003,14 +1003,14 @@ onMounted(() => {
             margin: 0 0 8px 0;
             font-size: 14px;
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--text-primary);
           }
 
           .reply-info {
             padding: 8px 12px;
-            background-color: #f3e5f5;
+            background-color: var(--bg-purple-light);
             border-radius: 6px;
-            color: #7b1fa2;
+            color: var(--text-reply);
             font-weight: 500;
           }
         }
@@ -1030,7 +1030,7 @@ onMounted(() => {
             .badge-label {
               font-size: 13px;
               font-weight: 600;
-              color: #495057;
+              color: var(--text-badge);
               min-width: 80px;
             }
           }
@@ -1039,7 +1039,7 @@ onMounted(() => {
     }
 
     .comment-stats-detail {
-      border-top: 1px solid #e9ecef;
+      border-top: 1px solid var(--border-lighter);
       padding-top: 20px;
       margin-top: 20px;
 
@@ -1054,9 +1054,9 @@ onMounted(() => {
           align-items: center;
           gap: 8px;
           padding: 10px 16px;
-          background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+          background: var(--bg-card);
           border-radius: 12px;
-          border: 1px solid #dee2e6;
+          border: 1px solid var(--border-light);
           transition: all 0.3s ease;
           flex: 1;
           min-width: 160px;
@@ -1064,42 +1064,42 @@ onMounted(() => {
 
           &:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px var(--shadow-card);
           }
 
           .stat-icon {
             font-size: 16px;
-            color: #6c757d;
+            color: var(--text-muted);
           }
 
           .stat-label {
             font-size: 12px;
-            color: #6c757d;
+            color: var(--text-muted);
             font-weight: 500;
           }
 
           .stat-value {
             font-size: 14px;
             font-weight: 700;
-            color: #495057;
+            color: var(--text-primary);
             margin-left: auto;
           }
 
           &.time-stat-item {
-            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-            border-color: #f39c12;
+            background: var(--badge-warning-bg);
+            border-color: var(--admin-warning);
 
             .stat-icon {
-              color: #e67e22;
+              color: var(--admin-warning);
             }
 
             .stat-label {
-              color: #e67e22;
+              color: var(--admin-warning);
               font-weight: 600;
             }
 
             .stat-value {
-              color: #d68910;
+              color: var(--admin-warning);
               font-size: 12px;
               font-weight: 600;
             }
@@ -1136,7 +1136,7 @@ onMounted(() => {
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 12px var(--shadow-hover);
     }
   }
 }

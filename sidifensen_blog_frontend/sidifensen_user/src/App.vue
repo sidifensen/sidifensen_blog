@@ -16,8 +16,8 @@
 import { ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
-import CustomerServiceFloatButton from '@/components/CustomerServiceFloatButton.vue'
-import CustomerServiceChat from '@/components/CustomerServiceChat.vue'
+import CustomerServiceFloatButton from '@/components/CustomerService/CustomerServiceFloatButton.vue'
+import CustomerServiceChat from '@/components/CustomerService/CustomerServiceChat.vue'
 import { useUserStore } from '@/stores/userStore'
 
 const router = useRouter()

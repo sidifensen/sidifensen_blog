@@ -80,7 +80,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Picture, Loading, ZoomIn, ArrowRight } from '@element-plus/icons-vue'
 import { listAllAlbum } from '@/api/album'
-import LoadingAnimation from '@/components/LoadingAnimation.vue'
+import LoadingAnimation from '@/components/Loading/LoadingAnimation.vue'
 import { useSeoMeta } from '@/plugins/seo'
 
 // SEO - 相册广场

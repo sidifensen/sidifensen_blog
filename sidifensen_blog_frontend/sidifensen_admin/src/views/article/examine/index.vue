@@ -248,7 +248,7 @@
               <span class="stat-value">{{ currentArticle?.readCount || 0 }}</span>
             </div>
             <div class="stat-item">
-              <svg-icon name="like" width="16px" height="16px" color="#909399" />
+              <svg-icon name="like" width="16px" height="16px" color="var(--text-muted)" />
               <span class="stat-label">点赞</span>
               <span class="stat-value">{{ currentArticle?.likeCount || 0 }}</span>
             </div>
@@ -839,8 +839,8 @@ onMounted(() => {
   border-radius: 16px;
 
   .el-dialog__header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: var(--admin-primary);
+    color: var(--dialog-header-text);
     border-radius: 16px 16px 0 0;
     padding: 20px 24px;
     position: relative;
@@ -858,13 +858,13 @@ onMounted(() => {
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      background-color: rgba(255, 255, 255, 0.1);
+      background-color: var(--dialog-headerbtn-bg);
       display: flex;
       align-items: center;
       justify-content: center;
 
       .el-dialog__close {
-        color: white;
+        color: var(--dialog-header-text);
       }
     }
   }
@@ -905,8 +905,8 @@ onMounted(() => {
           }
 
           .article-id-detail {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
+            background: var(--article-id-badge-bg);
+            color: var(--dialog-header-text);
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 12px;
@@ -1116,7 +1116,7 @@ onMounted(() => {
           content: '';
           width: 4px;
           height: 20px;
-          background: linear-gradient(135deg, #667eea, #764ba2);
+          background: var(--admin-primary);
           border-radius: 2px;
         }
       }
@@ -1137,7 +1137,7 @@ onMounted(() => {
         width: 100%;
         height: auto;
         border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-card);
         margin: 8px 0;
       }
 

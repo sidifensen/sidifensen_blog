@@ -102,8 +102,8 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { Plus, Message, ArrowDown, ArrowUp, Location, Calendar } from '@element-plus/icons-vue'
-import CountTo from '@/components/CountTo.vue'
-import VipBadge from '@/components/VipBadge.vue'
+import CountTo from '@/components/Common/CountTo.vue'
+import VipBadge from '@/components/User/VipBadge.vue'
 
 // 定义 props
 const props = defineProps({

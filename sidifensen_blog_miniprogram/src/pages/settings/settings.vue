@@ -1,18 +1,20 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useTheme } from 'uview-pro'
 import { useUserStore } from '@/store/user'
 
 const userStore = useUserStore()
+const { toggleDarkMode, isInDarkMode } = useTheme()
 
 // 图标大小
 const iconSize = '18px'
 
 // 深色模式（响应式）
-const isDark = ref(false)
+const isDark = ref(isInDarkMode())
 
 // 更新深色模式状态
-function updateDarkState(theme) {
-  isDark.value = theme === 'dark'
+function updateDarkState() {
+  isDark.value = isInDarkMode()
 }
 
 // 页面加载时获取初始状态
@@ -28,13 +30,17 @@ onUnmounted(() => {
   uni.$off('themeChange', updateDarkState)
 })
 
-// 深色模式开关 - 微信小程序只能跟随系统，暂不支持主动切换
+// 深色模式开关切换
 function onDarkModeChange(e) {
   // #ifdef MP-WEIXIN
   uni.showToast({
     title: '请在系统设置中切换深色模式',
     icon: 'none'
   })
+  // #endif
+  // #ifndef MP-WEIXIN
+  toggleDarkMode()
+  isDark.value = !isDark.value
   // #endif
 }
 

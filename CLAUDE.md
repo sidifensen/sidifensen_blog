@@ -12,11 +12,13 @@
 
 ## 工具配置
 
-| 工具 | 包名 | 用途 |
-|------|------|------|
-| MySQL MCP | `@berthojoris/mcp-mysql-server` | 新增表/字段、调试业务逻辑 |
-| SSH MCP | `@fangjunjie/ssh-mcp-server` | 服务器远程连接、命令执行、文件传输 |
-| Chrome DevTools MCP | `@anthropics-ai/chrome-devtools-mcp` | 网页调试、性能分析、自动化浏览器操作 |
+| 工具 | 何时使用 | 用途 |
+|------|---------|------|
+| MySQL MCP | 需要新增表/字段、调试 SQL | 执行 DDL/DML、查看数据、调试业务逻辑 |
+| SSH MCP | 服务器部署、查看日志、修改配置 | 远程连接生产服务器、文件传输 |
+| Chrome DevTools MCP | 前端页面调试、性能分析 | 自动化浏览器操作、Network 分析 |
+
+> **使用场景**: 小程序/前端问题 → Chrome DevTools；后端/SQL 问题 → MySQL MCP；服务器操作 → SSH MCP
 
 ## 后端规范
 
@@ -62,29 +64,28 @@ cd sidifensen_blog_frontend/sidifensen_admin && npx vite-plugin-checker check
 
 ## 前端规范
 
-### 三大铁律
-
-**规则 1：所有页面必须适配黑夜模式 + 移动端响应式**
-- 必须使用 CSS 变量 + `html.dark` 覆盖
-- 禁止硬编码颜色值、只写浅色模式
-- ⚠️ 移动端常见问题：首页模块未固定，需用 `min-height` 或固定定位
-
-**规则 2：SCSS 层次必须匹配 DOM 结构**
-- 嵌套层次 100% 匹配 template DOM 结构
-- 不允许跳过中间层级
-- 每个样式模块必须有中文注释
-
-**规则 3：禁止假数据，所有功能必须真实实现**
-- 必须 API 调用获取真实数据
-- 按钮点击必须实现真实业务功能
-- 表单提交必须调用真实 API 持久化
-
-### 组件规范
+### 代码规范
 - 语法：`<script setup>` + Composition API
 - 命名：PascalCase（`Home.vue`, `ArticleDetail.vue`）
 - 表格：`el-table-column` 使用 `min-width` + `show-overflow-tooltip`
 - SVG 图标：`<svg-icon name="github" width="20px" height="20px" color="#999" />`
 - 注释：新增/修改代码必须补充中文注释
+
+### 样式规范
+1. 所有页面必须适配黑夜模式 + 移动端响应式
+   - 使用 CSS 变量 + `html.dark` 覆盖
+   - 禁止硬编码颜色值、只写浅色模式
+   - ⚠️ 移动端常见问题：首页模块未固定，需用 `min-height` 或固定定位
+
+2. SCSS 层次必须匹配 DOM 结构
+   - 嵌套层次 100% 匹配 template DOM 结构
+   - 不允许跳过中间层级
+   - 每个样式模块必须有中文注释
+
+3. 禁止假数据，所有功能必须真实实现
+   - 必须 API 调用获取真实数据
+   - 按钮点击必须实现真实业务功能
+   - 表单提交必须调用真实 API 持久化
 
 ### 设计规范（去 AI 味）
 
@@ -138,25 +139,23 @@ cd sidifensen_blog_frontend/sidifensen_admin && npm run build
 - 引入项目外 UI 库
 - 忽略黑夜模式适配
 
-## 设计参考资料
 
-**优先沿用项目现有设计，无对应参考时再从以下资源选取风格。**
+## 设计参考
 
-项目内置了 58 个真实产品的设计系统文档（来源：[awesome-design-md](https://github.com/VoltAgent/awesome-design-md)），位于 `docs/awesome-design-md/`。
+优先沿用项目现有设计。`docs/awesome-design-md/` 目录下有 58 个真实产品的设计系统文档，查找方法：
 
-添加新功能时：
-1. 先参考 `docs/awesome-design-md/` 中最接近目标风格的设计文档（如要做类似 Linear 的界面 → 读 `linear.app/DESIGN.md`）
-2. 将选定设计系统的配色、字体、间距、组件规范应用到代码中
-3. 确保仍然符合项目的「三大铁律」和「去 AI 味」规范
+| 需求风格 | 查找关键词 |
+|---------|-----------|
+| 简洁工具感 | linear, todoist, raycast |
+| 文艺清新 | notion, superhuman, bear |
+| 科技感强 | claude, vercel, supabase |
+| 视觉冲击 | figma, framer, spotify |
+| 企业级 | stripe, airbnb, apple |
 
-常用参考：
-- **简洁工具感** → `linear.app/`
-- **文艺清新** → `notion/`, `superhuman/`
-- **科技感强** → `claude/`, `vercel/`, `supabase/`
-- **视觉冲击** → `figma/`, `framer/`, `spotify/`
-- **企业级** → `stripe/`, `airbnb/`, `apple/`
-
-> 注意：参考设计规范时，需适配项目现有的 CSS 变量体系，不要直接复制十六进制颜色值。
+常用网站直接访问：
+- `linear.app/` - 简洁工具感
+- `notion.so/` - 文艺清新
+- `claude.ai/` - 科技感强
 
 ## 文档规范
 

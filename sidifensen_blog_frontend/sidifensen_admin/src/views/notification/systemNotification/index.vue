@@ -329,13 +329,13 @@ onMounted(() => {
   font-weight: 500;
 
   &.status-unread {
-    background-color: #fef3c7;
-    color: #d97706;
+    background-color: var(--action-user-bg);
+    color: var(--action-user-color);
   }
 
   &.status-read {
-    background-color: #f0f0f0;
-    color: #999;
+    background-color: var(--badge-default-bg);
+    color: var(--badge-default-color);
   }
 }
 

@@ -3,6 +3,9 @@
  * 自定义底部导航栏组件
  */
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useTheme } from 'uview-pro'
+
+const { isInDarkMode } = useTheme()
 
 // 导航项配置
 const tabList = [
@@ -33,7 +36,7 @@ const currentIndex = ref(0)
 const safeAreaBottom = ref(0)
 
 // 深色模式
-const isDark = ref(false)
+const isDark = ref(isInDarkMode())
 
 // 根据当前页面路径更新选中状态
 function updateCurrentIndex() {
@@ -51,8 +54,8 @@ function updateCurrentIndex() {
 // 获取当前主题状态
 function updateThemeState() {
   // 监听 themeChange 事件
-  uni.$on('themeChange', (theme) => {
-    isDark.value = theme === 'dark'
+  uni.$on('themeChange', () => {
+    isDark.value = isInDarkMode()
   })
 }
 

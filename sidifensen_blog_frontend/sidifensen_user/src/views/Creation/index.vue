@@ -45,7 +45,7 @@
   </el-container>
 </template>
 <script setup>
-import CreationHeader from '@/components/CreationHeader.vue'
+import CreationHeader from '@/components/Creation/CreationHeader.vue'
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Plus, House, Files, HomeFilled } from '@element-plus/icons-vue'

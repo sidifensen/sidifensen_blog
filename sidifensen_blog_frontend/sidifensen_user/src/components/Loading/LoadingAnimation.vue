@@ -48,7 +48,7 @@ const props = defineProps({
     // 根据size属性设置不同的大小
     width: v-bind('size === "small" ? "30px" : size === "medium" ? "50px" : "70px"');
     height: v-bind('size === "small" ? "30px" : size === "medium" ? "50px" : "70px"');
-    border: 5px solid #f3f3f3;
+    border: 5px solid var(--border);
     border-top: 5px solid v-bind('color');
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -58,7 +58,7 @@ const props = defineProps({
   // 加载文本
   .loading-text {
     font-size: v-bind('size === "small" ? "14px" : size === "medium" ? "18px" : "22px"');
-    color: #606266;
+    color: var(--text-muted);
   }
 
   // 旋转动画定义

@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import Dark from './Dark.vue'
+import Dark from '@/components/Common/Dark.vue'
 import { useUserStore } from '@/stores/userStore.js'
 import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
@@ -103,8 +103,8 @@ onMounted(() => {
     .logo-text {
       margin-right: 4px;
       font-size: 26px;
-      color: #3d92eb;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      color: var(--accent);
+      text-shadow: 2px 2px 4px var(--shadow);
       letter-spacing: 1px;
       position: relative;
       transition: all 0.3s ease;
@@ -115,15 +115,15 @@ onMounted(() => {
         left: 0;
         width: 100%;
         height: 3px;
-        background: linear-gradient(90deg, #3d92eb, #6f42c1);
+        background: linear-gradient(90deg, var(--accent), var(--accent-hover));
         border-radius: 3px;
         transform: scaleX(0);
         transform-origin: right;
         transition: transform 0.3s ease;
       }
       &:hover {
-        color: #6f42c1;
-        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+        color: var(--accent-hover);
+        text-shadow: 2px 2px 8px var(--shadow);
 
         &::after {
           transform: scaleX(1);

@@ -185,7 +185,7 @@ const router = createRouter({
     {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
-      component: () => import('@/components/404.vue'),
+      component: () => import('@/components/Common/404.vue'),
       meta: { title: '页面不存在' },
     },
   ],

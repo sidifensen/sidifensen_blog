@@ -219,8 +219,8 @@ html:not(.dark) {
   .skeleton-card,
   .skeleton-list,
   .skeleton-profile {
-    background: #ffffff;
-    border-color: #e2e8f0;
+    background: var(--bg-card);
+    border-color: var(--border);
   }
 }
 
@@ -230,8 +230,8 @@ html.dark {
   .skeleton-card,
   .skeleton-list,
   .skeleton-profile {
-    background: #1e293b;
-    border-color: #334155;
+    background: var(--bg-card);
+    border-color: var(--border);
   }
 }
 </style>

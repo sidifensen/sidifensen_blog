@@ -52,7 +52,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { toggleFollow, isFollowing } from '@/api/follow'
 import { useUserStore } from '@/stores/userStore'
-import VipBadge from '@/components/VipBadge.vue'
+import VipBadge from '@/components/User/VipBadge.vue'
 
 // 路由和状态管理
 const router = useRouter()

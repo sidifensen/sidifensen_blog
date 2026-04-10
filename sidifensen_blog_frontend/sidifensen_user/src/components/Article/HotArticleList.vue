@@ -91,14 +91,14 @@ const handleArticleClick = (article) => {
   // ===== CSS 变量定义 - 浅色模式 =====
   --bg-subtle: rgba(0, 0, 0, 0.02);
   --border-light: rgba(0, 0, 0, 0.05);
-  --text-muted: #64748b;
-  --rank-1-bg: rgba(0, 102, 255, 0.1);
-  --rank-1-color: #0066ff;
+  --text-muted: var(--text-muted);
+  --rank-1-bg: rgba(var(--accent-rgb, 59, 130, 246), 0.1);
+  --rank-1-color: var(--accent);
   --rank-2-bg: rgba(124, 58, 237, 0.1);
   --rank-2-color: #7c3aed;
   --rank-3-bg: rgba(16, 185, 129, 0.1);
-  --rank-3-color: #10b981;
-  --fire-color: #ff4757;
+  --rank-3-color: var(--success);
+  --fire-color: var(--error);
 
   // ===== 骨架屏加载状态 =====
   .hot-articles-loading {
@@ -137,7 +137,7 @@ const handleArticleClick = (article) => {
         border-color: rgba(0, 0, 0, 0.1);
 
         .hot-article-title {
-          color: #0a0a0a;
+          color: var(--text-primary);
         }
       }
 
@@ -180,7 +180,7 @@ const handleArticleClick = (article) => {
         .hot-article-title {
           font-size: 13px;
           font-weight: 500;
-          color: #666;
+          color: var(--text-regular);
           line-height: 1.4;
           display: -webkit-box;
           -webkit-line-clamp: 2;
@@ -189,7 +189,7 @@ const handleArticleClick = (article) => {
           transition: color 0.2s ease;
 
           &:hover {
-            color: #0a0a0a;
+            color: var(--text-primary);
           }
         }
 
@@ -218,14 +218,14 @@ const handleArticleClick = (article) => {
   html.dark & {
     --bg-subtle: rgba(255, 255, 255, 0.02);
     --border-light: rgba(255, 255, 255, 0.05);
-    --text-muted: #94a3b8;
-    --rank-1-bg: rgba(0, 212, 255, 0.1);
-    --rank-1-color: #00d4ff;
+    --text-muted: var(--text-muted);
+    --rank-1-bg: rgba(var(--accent-rgb, 59, 130, 246), 0.1);
+    --rank-1-color: var(--accent);
     --rank-2-bg: rgba(124, 58, 237, 0.1);
     --rank-2-color: #7c3aed;
     --rank-3-bg: rgba(16, 185, 129, 0.1);
-    --rank-3-color: #10b981;
-    --fire-color: #ff4757;
+    --rank-3-color: var(--success);
+    --fire-color: var(--error);
 
     .hot-articles {
       .hot-article-item {
@@ -235,15 +235,15 @@ const handleArticleClick = (article) => {
           background: rgba(255, 255, 255, 0.04);
 
           .hot-article-title {
-            color: #ffffff;
+            color: var(--text-primary);
           }
         }
 
         .hot-article-title {
-          color: #aaa;
+          color: var(--text-muted);
 
           &:hover {
-            color: #ffffff;
+            color: var(--text-primary);
           }
         }
       }

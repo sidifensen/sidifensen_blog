@@ -1,6 +1,7 @@
 /**
  * 深色模式主题管理
  * 微信小程序通过 wx.getWindowInfo().colorScheme 获取系统主题
+ * H5 环境通过 matchMedia 检测系统主题
  */
 
 // 更新导航栏颜色（原生导航栏才有效）
@@ -26,8 +27,25 @@ function getCurrentDarkMode() {
   }
   // #endif
   // #ifndef MP-WEIXIN
+  // H5 环境：检测系统主题
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
   return false
   // #endif
+}
+
+// 监听 H5 环境系统主题变化
+function listenH5ThemeChange(callback) {
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', (e) => callback(e.matches))
+    } else if (mediaQuery.addListener) {
+      // 旧版 Safari
+      mediaQuery.addListener((e) => callback(e.matches))
+    }
+  }
 }
 
 // 初始化主题监听
@@ -37,10 +55,20 @@ export function initThemeListener() {
   updateNavigationBarColor(isDark)
   uni.$emit('themeChange', isDark ? 'dark' : 'light')
 
-  // 监听系统主题变化
+  // 监听微信小程序系统主题变化
+  // #ifdef MP-WEIXIN
   uni.onThemeChange((res) => {
     const themeIsDark = res.theme === 'dark'
     updateNavigationBarColor(themeIsDark)
     uni.$emit('themeChange', themeIsDark ? 'dark' : 'light')
   })
+  // #endif
+
+  // #ifndef MP-WEIXIN
+  // H5 环境监听系统主题变化
+  listenH5ThemeChange((isDark) => {
+    updateNavigationBarColor(isDark)
+    uni.$emit('themeChange', isDark ? 'dark' : 'light')
+  })
+  // #endif
 }

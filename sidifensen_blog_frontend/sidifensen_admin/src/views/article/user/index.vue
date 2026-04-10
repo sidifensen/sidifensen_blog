@@ -297,7 +297,7 @@
                 <span class="stat-value">{{ currentArticle?.readCount || 0 }}</span>
               </div>
               <div class="stat-item">
-                <svg-icon name="like" width="16px" height="16px" color="#909399" />
+                <svg-icon name="like" width="16px" height="16px" color="var(--text-muted)" />
                 <span class="stat-label">点赞</span>
                 <span class="stat-value">{{ currentArticle?.likeCount || 0 }}</span>
               </div>
@@ -918,11 +918,11 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 20px var(--shadow-card);
     transition: all 0.3s ease;
 
     &:hover {
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 8px 30px var(--shadow-hover);
     }
 
     .card-header {
@@ -989,7 +989,7 @@ onMounted(() => {
 
         &:hover {
           transform: translateY(-4px);
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+          box-shadow: 0 8px 25px var(--shadow-hover);
         }
 
         .user-card-content {
@@ -1013,27 +1013,27 @@ onMounted(() => {
             .user-info {
               .user-id {
                 font-size: 12px;
-                color: #909399;
+                color: var(--text-muted);
                 margin-bottom: 4px;
               }
 
               .user-name {
                 font-size: 16px;
                 font-weight: 500;
-                color: #303133;
+                color: var(--text-regular);
                 word-break: break-all;
                 line-height: 1.4;
                 margin-bottom: 6px;
 
                 .username {
-                  color: #409eff;
+                  color: var(--admin-info);
                   font-weight: 600;
                   display: block;
                   margin-bottom: 2px;
                 }
 
                 .nickname {
-                  color: #909399;
+                  color: var(--text-muted);
                   font-weight: 400;
                   font-size: 14px;
                   display: block;
@@ -1047,12 +1047,12 @@ onMounted(() => {
                 font-size: 13px;
 
                 .article-count-label {
-                  color: #606266;
+                  color: var(--text-regular);
                   font-weight: 500;
                 }
 
                 .article-count-value {
-                  background: linear-gradient(45deg, var(--admin-primary), var(--admin-primary-dark));
+                  background: var(--admin-warning);
                   color: white;
                   padding: 2px 8px;
                   border-radius: 12px;
@@ -1079,7 +1079,7 @@ onMounted(() => {
 
                 &:hover {
                   transform: scale(1.05);
-                  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+                  box-shadow: 0 4px 12px var(--shadow-hover);
                 }
               }
             }
@@ -1103,7 +1103,7 @@ onMounted(() => {
 }
 
 .no-tag {
-  color: #999;
+  color: var(--text-muted);
   font-size: 12px;
 }
 
@@ -1139,7 +1139,7 @@ onMounted(() => {
   border-radius: 16px;
 
   .el-dialog__header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--admin-primary);
     color: white;
     border-radius: 16px 16px 0 0;
     padding: 20px 24px;
@@ -1179,13 +1179,13 @@ onMounted(() => {
             margin: 0;
             font-size: 24px;
             font-weight: 700;
-            color: #2c3e50;
+            color: var(--text-primary);
             line-height: 1.3;
             flex: 1;
           }
 
           .article-id-detail {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: var(--admin-primary);
             color: white;
             padding: 4px 12px;
             border-radius: 20px;
@@ -1220,16 +1220,16 @@ onMounted(() => {
           align-items: flex-start;
           gap: 8px;
           font-size: 14px;
-          color: #6c757d;
+          color: var(--text-muted);
           line-height: 1.6;
           margin-bottom: 16px;
           padding: 12px;
-          background-color: #e3f2fd;
+          background-color: var(--admin-info);
           border-radius: 8px;
-          border-left: 4px solid #2196f3;
+          border-left: 4px solid var(--admin-info);
 
           .desc-icon {
-            color: #2196f3;
+            color: var(--admin-info);
             font-size: 16px;
             margin-top: 2px;
             flex-shrink: 0;
@@ -1240,15 +1240,15 @@ onMounted(() => {
           }
 
           &.no-description {
-            background-color: #f8f9fa;
-            border-left-color: #adb5bd;
+            background-color: var(--bg-card);
+            border-left-color: var(--border);
 
             .desc-icon {
-              color: #adb5bd;
+              color: var(--border);
             }
 
             span {
-              color: #6c757d;
+              color: var(--text-muted);
               font-style: italic;
             }
           }
@@ -1269,13 +1269,13 @@ onMounted(() => {
             .badge-label {
               font-size: 13px;
               font-weight: 600;
-              color: #495057;
+              color: var(--text-primary);
               min-width: 80px;
             }
 
             .no-data {
               font-size: 12px;
-              color: #adb5bd;
+              color: var(--border);
               font-style: italic;
             }
 
@@ -1292,7 +1292,7 @@ onMounted(() => {
 
             &.reprint-url-group {
               .reprint-url-link {
-                color: #409eff;
+                color: var(--admin-info);
                 text-decoration: none;
                 display: flex;
                 align-items: center;
@@ -1309,7 +1309,7 @@ onMounted(() => {
 
                 .external-link-icon {
                   font-size: 12px;
-                  color: #409eff;
+                  color: var(--admin-info);
                 }
               }
             }
@@ -1331,39 +1331,39 @@ onMounted(() => {
           border-radius: 16px;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 6px 20px var(--shadow-card);
           object-fit: cover;
 
           &:hover {
             transform: scale(1.05);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 12px 32px var(--shadow-hover);
           }
         }
 
         .no-cover-detail {
           width: 100%;
           height: 100%;
-          background: linear-gradient(45deg, #f8f9fa, #e9ecef);
-          border: 2px dashed #dee2e6;
+          background: var(--bg-card);
+          border: 2px dashed var(--border);
           border-radius: 16px;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           font-size: 16px;
-          color: #6c757d;
+          color: var(--text-muted);
           gap: 12px;
 
           .cover-icon {
             font-size: 32px;
-            color: #adb5bd;
+            color: var(--border);
           }
         }
       }
     }
 
     .article-stats-detail {
-      border-top: 1px solid #e9ecef;
+      border-top: 1px solid var(--border);
       padding-top: 20px;
       margin-top: 20px;
 
@@ -1378,9 +1378,9 @@ onMounted(() => {
           align-items: center;
           gap: 8px;
           padding: 10px 16px;
-          background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+          background: var(--bg-card);
           border-radius: 12px;
-          border: 1px solid #dee2e6;
+          border: 1px solid var(--border);
           transition: all 0.3s ease;
           flex: 1;
           min-width: 160px;
@@ -1388,42 +1388,42 @@ onMounted(() => {
 
           &:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px var(--shadow-card);
           }
 
           .stat-icon {
             font-size: 16px;
-            color: #6c757d;
+            color: var(--text-muted);
           }
 
           .stat-label {
             font-size: 12px;
-            color: #6c757d;
+            color: var(--text-muted);
             font-weight: 500;
           }
 
           .stat-value {
             font-size: 14px;
             font-weight: 700;
-            color: #495057;
+            color: var(--text-primary);
             margin-left: auto;
           }
 
           &.time-stat-item {
-            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-            border-color: #90caf9;
+            background: var(--admin-info);
+            border-color: var(--admin-info);
 
             .stat-icon {
-              color: #1976d2;
+              color: var(--admin-primary);
             }
 
             .stat-label {
-              color: #1976d2;
+              color: var(--admin-primary);
               font-weight: 600;
             }
 
             .stat-value {
-              color: #0d47a1;
+              color: var(--admin-primary);
               font-size: 12px;
               font-weight: 600;
             }
@@ -1442,7 +1442,7 @@ onMounted(() => {
       margin: 0;
       font-size: 18px;
       font-weight: 600;
-      color: #2c3e50;
+      color: var(--text-primary);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -1451,7 +1451,7 @@ onMounted(() => {
         content: '';
         width: 4px;
         height: 20px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: var(--admin-primary);
         border-radius: 2px;
       }
     }
@@ -1461,49 +1461,49 @@ onMounted(() => {
     max-height: 69vh;
     overflow-y: auto;
     padding: 20px;
-    background-color: #ffffff;
-    border: 1px solid #e9ecef;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
     border-radius: 12px;
     line-height: 1.8;
     font-size: 15px;
-    color: #333;
+    color: var(--text-primary);
 
     :deep(img) {
       width: 100%;
       height: auto;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 8px var(--shadow-card);
       margin: 8px 0;
     }
 
     :deep(pre) {
-      background-color: #f8f9fa;
+      background-color: var(--bg-page);
       padding: 16px;
       border-radius: 8px;
       overflow-x: auto;
-      border-left: 4px solid #007bff;
+      border-left: 4px solid var(--admin-primary);
       margin: 12px 0;
     }
 
     :deep(code) {
-      background-color: #f8f9fa;
+      background-color: var(--bg-page);
       padding: 2px 6px;
       border-radius: 4px;
       font-size: 14px;
-      color: #e83e8c;
+      color: var(--admin-warning);
     }
 
     :deep(blockquote) {
-      border-left: 4px solid #007bff;
+      border-left: 4px solid var(--admin-primary);
       padding-left: 16px;
       margin: 16px 0;
-      color: #6c757d;
+      color: var(--text-muted);
       font-style: italic;
     }
 
     :deep(h1, h2, h3, h4, h5, h6) {
       margin: 20px 0 12px 0;
-      color: #2c3e50;
+      color: var(--text-primary);
     }
 
     :deep(p) {
@@ -1543,7 +1543,7 @@ onMounted(() => {
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 12px var(--shadow-hover);
     }
   }
 }
@@ -1553,7 +1553,7 @@ onMounted(() => {
   border-radius: 16px;
 
   .el-dialog__header {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: var(--admin-success);
     color: white;
     border-radius: 16px 16px 0 0;
     padding: 20px 24px;
@@ -1572,7 +1572,7 @@ onMounted(() => {
 .edit-form {
   .el-form-item__label {
     font-weight: 600;
-    color: #374151;
+    color: var(--text-primary);
   }
 }
 

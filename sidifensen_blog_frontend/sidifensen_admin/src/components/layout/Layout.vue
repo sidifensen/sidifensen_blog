@@ -6,8 +6,9 @@
         <div class="logo-icon"></div>
         <h3 class="logo-text">管理员后台</h3>
       </div>
+      <div class="sidebar-divider"></div>
       <!-- pc端菜单 -->
-      <el-menu :default-active="activeMenu" class="el-menu-pc" background-color="#1e293b" text-color="#cbd5e1" active-text-color="#4ade80" :router="true">
+      <el-menu :default-active="activeMenu" class="el-menu-pc" :background-color="sidebarBg" :text-color="sidebarText" :active-text-color="sidebarActiveText" :router="true">
         <template v-for="menu in menus" :key="menu.id">
           <el-sub-menu v-if="menu.children && menu.children.length > 0" :index="menu.path">
             <template #title>
@@ -44,7 +45,16 @@
     <!-- 移动端菜单 -->
     <transition name="slide-fade">
       <div v-show="isMobileMenuVisible" class="mobile-menu-overlay" @click="closeMobileMenu">
-        <el-menu :default-active="activeMenu" class="el-menu-mobile" background-color="#1e293b" text-color="#cbd5e1" active-text-color="#4ade80" :router="true" @click.stop @select="closeMobileMenu">
+        <el-menu
+          :default-active="activeMenu"
+          class="el-menu-mobile"
+          :background-color="sidebarBg"
+          :text-color="sidebarText"
+          :active-text-color="sidebarActiveText"
+          :router="true"
+          @click.stop
+          @select="closeMobileMenu"
+        >
           <template v-for="menu in menus" :key="menu.id">
             <el-sub-menu v-if="menu.children && menu.children.length > 0" :index="menu.path">
               <template #title>
@@ -351,6 +361,11 @@ const activeMenu = computed(() => {
   return router.currentRoute.value.path
 })
 
+// 侧边栏菜单颜色（支持亮暗模式）
+const sidebarBg = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--sidebar-bg').trim() || '#1e293b')
+const sidebarText = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--sidebar-text').trim() || '#cbd5e1')
+const sidebarActiveText = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--sidebar-active-text').trim() || '#4ade80')
+
 // 用户信息
 const user = computed(() => {
   return userStore.user
@@ -374,10 +389,10 @@ const handleLogout = () => {
   .sidebar {
     width: 240px !important;
     height: 100%;
-    background-color: #0f172a;
-    color: #e2e8f0;
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
     transition: width 0.3s ease;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 2px 0 10px var(--shadow-dark);
     z-index: 999;
     flex-shrink: 0;
 
@@ -386,6 +401,7 @@ const handleLogout = () => {
       align-items: center;
       padding: 16px;
       height: 48px;
+      background-color: var(--sidebar-bg);
 
       .logo-icon {
         width: 40px;
@@ -405,7 +421,7 @@ const handleLogout = () => {
           transform: translate(-50%, -50%);
           width: 20px;
           height: 20px;
-          border: 2px solid white;
+          border: 2px solid var(--sidebar-logo-ring);
           border-radius: 50%;
         }
       }
@@ -413,14 +429,21 @@ const handleLogout = () => {
       .logo-text {
         font-size: 18px;
         font-weight: 600;
-        color: #f8fafc;
+        color: var(--sidebar-logo-text);
       }
+    }
+
+    // logo 区域与菜单的分隔线
+    .sidebar-divider {
+      height: 1px;
+      background-color: var(--sidebar-divider);
+      margin: 0 12px;
     }
 
     // 菜单样式
     .el-menu-pc {
       border-right: none;
-      height: calc(100% - 48px);
+      height: calc(100% - 49px); // 48px logo + 1px divider
       overflow-y: auto;
       overflow-x: hidden;
       scrollbar-gutter: stable; // 始终为滚动条预留空间，避免布局抖动
@@ -436,13 +459,13 @@ const handleLogout = () => {
       }
 
       &::-webkit-scrollbar-thumb {
-        background-color: rgba(203, 213, 225, 0.4);
+        background-color: var(--sidebar-scrollbar);
         border-radius: 4px;
         border: 2px solid transparent;
         background-clip: content-box;
 
         &:hover {
-          background-color: rgba(203, 213, 225, 0.6);
+          background-color: var(--sidebar-scrollbar-hover);
         }
       }
 
@@ -453,11 +476,11 @@ const handleLogout = () => {
         transition: all 0.2s ease;
 
         &:hover {
-          background-color: #1e293b;
+          background-color: var(--sidebar-menu-hover);
         }
 
         &.is-active {
-          background-color: rgba(74, 222, 128, 0.1);
+          background-color: var(--sidebar-active-bg);
         }
       }
 
@@ -469,7 +492,7 @@ const handleLogout = () => {
           transition: all 0.2s ease;
 
           &:hover {
-            background-color: #1e293b;
+            background-color: var(--sidebar-menu-hover);
           }
         }
 
@@ -531,7 +554,7 @@ const handleLogout = () => {
             transition: all 0.3s ease;
             display: inline-flex;
             &:hover {
-              background-color: #f0f9ff;
+              background-color: var(--message-badge-hover);
               transform: scale(1.05);
             }
             .message-icon {
@@ -542,7 +565,7 @@ const handleLogout = () => {
             .el-badge__content {
               top: 10px;
               right: 20px;
-              color: #fff;
+              color: var(--badge-text-inverse);
               background: var(--admin-primary-dark);
             }
           }
@@ -614,11 +637,11 @@ const handleLogout = () => {
                 align-items: center;
                 justify-content: center;
                 padding: 40px 0;
-                color: #94a3b8;
+                color: var(--text-muted);
                 .el-icon {
                   font-size: 48px;
                   margin-bottom: 16px;
-                  color: #cbd5e1;
+                  color: var(--text-regular);
                 }
                 span {
                   font-size: 14px;
@@ -660,7 +683,7 @@ const handleLogout = () => {
                   .message-title {
                     font-size: 14px;
                     font-weight: 600;
-                    color: #1e293b;
+                    color: var(--message-title-color);
                     margin-bottom: 4px;
                     white-space: nowrap;
                     overflow: hidden;
@@ -669,7 +692,7 @@ const handleLogout = () => {
                   // content内容
                   .message-desc {
                     font-size: 13px;
-                    color: #64748b;
+                    color: var(--message-desc-color);
                     margin-bottom: 6px;
                     display: -webkit-box;
                     -webkit-line-clamp: 2; // 显示行数
@@ -678,7 +701,7 @@ const handleLogout = () => {
                   }
                   .message-time {
                     font-size: 12px;
-                    color: #94a3b8;
+                    color: var(--text-muted);
                   }
                 }
                 // 消息操作按钮
@@ -707,11 +730,11 @@ const handleLogout = () => {
                     }
                   }
                   .delete-button {
-                    color: #ef4444;
-                    border-color: #ef4444;
+                    color: var(--admin-danger);
+                    border-color: var(--admin-danger);
                     margin-left: 0;
                     &:hover {
-                      background-color: rgba(239, 68, 68, 0.1);
+                      background-color: var(--action-delete-hover-bg);
                     }
                   }
                 }
@@ -727,11 +750,11 @@ const handleLogout = () => {
           border-radius: 8px;
           transition: background-color 0.2s ease;
           &:hover {
-            background-color: #f1f5f9;
+            background-color: var(--user-info-hover);
           }
           .el-icon {
             margin-right: 8px;
-            color: #64748b;
+            color: var(--user-info-icon-color);
           }
         }
       }
@@ -764,7 +787,7 @@ const handleLogout = () => {
         position: absolute;
         border: 0;
         top: 50px;
-        background-color: #0f172a;
+        background-color: var(--sidebar-bg);
         height: 100vh;
         display: flex;
         flex-direction: column;
@@ -784,13 +807,13 @@ const handleLogout = () => {
         }
 
         &::-webkit-scrollbar-thumb {
-          background-color: rgba(203, 213, 225, 0.4);
+          background-color: var(--sidebar-scrollbar);
           border-radius: 4px;
           border: 2px solid transparent;
           background-clip: content-box;
 
           &:hover {
-            background-color: rgba(203, 213, 225, 0.6);
+            background-color: var(--sidebar-scrollbar-hover);
           }
         }
 
@@ -842,7 +865,7 @@ const handleLogout = () => {
   // 进入前和离开后的状态（初始和结束状态）
   .slide-fade-enter-from,
   .slide-fade-leave-to {
-    background-color: rgba(0, 0, 0, 0);
+    background-color: var(--mobile-overlay-bg);
     .el-menu-mobile {
       transform: translateX(-100%); // 菜单在左侧，向右滑入
       opacity: 0;
@@ -861,7 +884,7 @@ const handleLogout = () => {
   // 进入后和离开前的状态（目标和初始状态）
   .slide-fade-enter-to,
   .slide-fade-leave-from {
-    background-color: rgba(0, 0, 0, 0.3); // 半透明背景
+    background-color: var(--mobile-overlay-active-bg); // 半透明背景
     .el-menu-mobile {
       transform: translateX(0); // 菜单在原位
       opacity: 1;
