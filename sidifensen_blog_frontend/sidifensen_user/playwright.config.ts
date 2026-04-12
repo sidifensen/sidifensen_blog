@@ -10,12 +10,6 @@ export default defineConfig({
     timeout: 10000,
   },
 
-  // 失败重试次数
-  retries: 0,
-
-  // 并发数
-  workers: 1,
-
   // 测试目录
   testDir: './tests',
 

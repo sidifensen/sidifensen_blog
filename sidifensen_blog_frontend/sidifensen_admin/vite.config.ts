@@ -54,8 +54,30 @@ export default defineConfig({
   // VitePlus 扩展配置
   // ================================================
 
-  // 格式化配置 (Oxfmt)
-  // 控制代码风格、缩进、引号等格式规则
+  // 代码检查配置 (Oxlint) 控制 ESLint 规则和检查行为
+  lint: {
+    // 忽略检查的文件/目录
+    ignorePatterns: [
+      'dist/**', // 构建输出目录
+      'node_modules/**', // 第三方依赖
+    ],
+
+    // 是否将警告视为错误（默认 false）
+    // warningsAsErrors: false,
+
+    // 规则覆盖，针对特定文件或目录定制规则
+    // ruleOverrides: [
+    //   // 对测试文件放宽某些规则
+    //   {
+    //     files: ['**/*.spec.js', '**/*.test.js'],
+    //     rules: {
+    //       'no-unused-vars': 'off',
+    //     },
+    //   },
+    // ],
+  },
+
+  // 格式化配置 (Oxfmt) 控制代码风格、缩进、引号等格式规则
   fmt: {
     // 忽略检查的文件/目录（通常为构建产物或第三方代码）
     ignorePatterns: [
@@ -88,30 +110,6 @@ export default defineConfig({
     proseWrap: 'preserve',
     // 行尾符：'lf' | 'crlf' | 'auto'（默认 'lf'，Unix 风格）
     endOfLine: 'lf',
-  },
-
-  // 代码检查配置 (Oxlint)
-  // 控制 ESLint 规则和检查行为
-  lint: {
-    // 忽略检查的文件/目录
-    ignorePatterns: [
-      'dist/**', // 构建输出目录
-      'node_modules/**', // 第三方依赖
-    ],
-
-    // 是否将警告视为错误（默认 false）
-    // warningsAsErrors: false,
-
-    // 规则覆盖，针对特定文件或目录定制规则
-    // ruleOverrides: [
-    //   // 对测试文件放宽某些规则
-    //   {
-    //     files: ['**/*.spec.js', '**/*.test.js'],
-    //     rules: {
-    //       'no-unused-vars': 'off',
-    //     },
-    //   },
-    // ],
   },
 
   // 测试配置 (Vitest)

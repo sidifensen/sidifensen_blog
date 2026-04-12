@@ -1,148 +1,154 @@
 <template>
-  <div class="vip-center">
-    <div class="vip-shell">
-      <!-- 顶部会员状态区 -->
-      <section class="vip-hero">
+  <div class="vip-square-body">
+    <div class="vip-container">
+      <!-- 页面头部 -->
+      <div class="page-hero">
         <div class="hero-content">
-          <div class="hero-copy">
-            <p class="hero-kicker">会员中心</p>
-            <h1 class="hero-title">开通 VIP，解锁会员文章与更高 AI 配额</h1>
-            <p class="hero-description">
-              VIP 用户可以查看会员文章，可用 AI 配额提升到 {{ vipInfo.aiDailyQuota || 100 }} 次/天。
-            </p>
-          </div>
-          <div class="hero-status">
+          <div class="hero-kicker">VIP Center</div>
+          <h1>会员中心</h1>
+          <p>解锁专属权益，提升创作体验</p>
+        </div>
+      </div>
+
+      <!-- 内容布局 -->
+      <div class="content-layout">
+        <!-- 主内容区 -->
+        <div class="main-content">
+          <!-- 会员状态卡片 -->
+          <div class="status-cards">
             <div class="status-card">
-              <span class="status-label">当前状态</span>
-              <strong class="status-value">{{ statusText }}</strong>
-              <span class="status-meta">{{ expireText }}</span>
+              <span class="card-label">会员状态</span>
+              <strong class="card-value" :class="{ active: vipInfo.isVip }">{{
+                statusText
+              }}</strong>
+              <span class="card-meta">{{ expireText }}</span>
             </div>
             <div class="status-card">
-              <span class="status-label">AI 配额</span>
-              <strong class="status-value"
-                >{{ vipInfo.aiRemainingQuota ?? 0 }}/{{ vipInfo.aiDailyQuota ?? 0 }}</strong
+              <span class="card-label">AI 配额</span>
+              <strong class="card-value"
+                >{{ vipInfo.aiRemainingQuota ?? 0 }} / {{ vipInfo.aiDailyQuota || 100 }}</strong
               >
-              <span class="status-meta">今日剩余 / 每日总量</span>
+              <span class="card-meta">今日剩余 / 总量</span>
             </div>
           </div>
-        </div>
-      </section>
 
-      <!-- 套餐与订单内容区 -->
-      <section class="vip-content">
-        <div class="content-grid">
-          <div class="main-panel">
-            <div class="section-card">
-              <div class="section-head">
-                <div class="head-copy">
-                  <h2>选择套餐</h2>
-                  <p>首版支持月卡、季卡、年卡，支付成功后立即生效。</p>
-                  <p>支付宝沙箱账号kmawrv8806@sandbox.com</p>
-                  <p>支付宝沙箱登录和支付密码111111</p>
+          <!-- 套餐选择 -->
+          <div class="section-card">
+            <div class="section-title">
+              <span class="title-text">选择套餐</span>
+              <span class="title-hint">支付成功后立即生效</span>
+            </div>
+
+            <!-- 测试提示 -->
+            <div class="test-hint">
+              <span>测试账号：kmawrv8806@sandbox.com / 111111</span>
+            </div>
+
+            <!-- 会员专区入口 -->
+            <div class="vip-entry" @click="goToVipArticles">
+              <div class="entry-info">
+                <span class="entry-icon">⭐</span>
+                <div class="entry-text">
+                  <strong>会员专区</strong>
+                  <span>开通后直接进入会员专区查看 VIP 文章</span>
                 </div>
               </div>
+              <div class="entry-arrow">→</div>
+            </div>
 
-              <div class="vip-entry">
-                <div class="entry-copy">
-                  <span class="entry-kicker">会员专区</span>
-                  <strong class="entry-title">开通后直接进入会员专区查看 VIP 文章</strong>
-                  <p class="entry-description">
-                    这里是会员文章的专属入口，集中查看所有范围为 VIP 可见的内容。
-                  </p>
+            <!-- 套餐列表 -->
+            <div class="plans-list">
+              <div
+                v-for="plan in plans"
+                :key="plan.code"
+                class="plan-item"
+                :class="{ selected: selectedPlanCode === plan.code }"
+                @click="selectedPlanCode = plan.code"
+              >
+                <div class="plan-info">
+                  <span class="plan-name">{{ plan.name }}</span>
+                  <span class="plan-days">{{ plan.days }} 天</span>
                 </div>
-                <button class="entry-button" @click="goToVipArticles">前往会员专区</button>
-              </div>
-
-              <div class="plan-grid">
-                <article
-                  v-for="plan in plans"
-                  :key="plan.code"
-                  class="plan-card"
-                  :class="{ active: selectedPlanCode === plan.code }"
-                  @click="selectedPlanCode = plan.code"
+                <div class="plan-price">
+                  <span class="price-unit">¥</span>
+                  <span class="price-value">{{ plan.priceYuan }}</span>
+                </div>
+                <p class="plan-desc">{{ plan.description || '适合稳定阅读和持续创作使用' }}</p>
+                <button
+                  class="plan-btn"
+                  :disabled="submitting && selectedPlanCode === plan.code"
+                  @click.stop="handleCreateOrder(plan)"
                 >
-                  <div class="plan-card-top">
-                    <span class="plan-name">{{ plan.name }}</span>
-                    <span class="plan-days">{{ plan.days }} 天</span>
-                  </div>
-                  <div class="plan-price">
-                    <span class="price-unit">¥</span>
-                    <span class="price-value">{{ plan.priceYuan }}</span>
-                  </div>
-                  <p class="plan-description">
-                    {{ plan.description || '适合稳定阅读和持续创作使用。' }}
-                  </p>
-                  <button
-                    class="plan-button"
-                    :disabled="submitting && selectedPlanCode === plan.code"
-                    @click.stop="handleCreateOrder(plan)"
-                  >
-                    {{ submitting && selectedPlanCode === plan.code ? '跳转中...' : '立即开通' }}
-                  </button>
-                </article>
+                  {{ submitting && selectedPlanCode === plan.code ? '跳转中...' : '开通' }}
+                </button>
               </div>
-            </div>
-
-            <div class="section-card">
-              <div class="section-head">
-                <div class="head-copy">
-                  <h2>订单记录</h2>
-                  <p>支付成功后会员资格只以异步回调发放，支付页返回后可在这里查看状态。</p>
-                </div>
-              </div>
-
-              <div v-if="orders.length" class="order-list">
-                <article v-for="order in orders" :key="order.orderNo" class="order-item">
-                  <div class="order-main">
-                    <strong class="order-name">{{ order.planName }}</strong>
-                    <span class="order-no">{{ order.orderNo }}</span>
-                    <span class="order-time">下单时间 {{ formatDate(order.createTime) }}</span>
-                  </div>
-                  <div class="order-side">
-                    <span class="order-price">¥{{ order.priceYuan }}</span>
-                    <span
-                      class="order-status"
-                      :class="`status-${(order.status || '').toLowerCase()}`"
-                      >{{ orderStatusText(order.status) }}</span
-                    >
-                    <div v-if="order.status === 'PAYING'" class="order-actions">
-                      <button class="order-cancel-btn" @click="handleCancelOrder(order)">
-                        取消订单
-                      </button>
-                      <button class="order-pay-btn" @click="handleRepayOrder(order)">去支付</button>
-                    </div>
-                  </div>
-                </article>
-              </div>
-              <div v-else class="empty-state">暂无订单记录</div>
             </div>
           </div>
 
-          <aside class="side-panel">
-            <div class="section-card">
-              <div class="benefit-head">
-                <h2>VIP 权益</h2>
-                <p>开通会员后立即解锁以下内容与站内能力。</p>
-              </div>
+          <!-- 订单记录 -->
+          <div class="section-card">
+            <div class="section-title">
+              <span class="title-text">订单记录</span>
+              <span class="title-hint">支付页返回后可在这里查看状态</span>
+            </div>
 
-              <div class="benefit-list">
-                <div class="benefit-item">
-                  <span class="benefit-title">VIP 文章可见</span>
-                  <span class="benefit-text">查看文章范围为vip可见的文章内容。</span>
+            <div v-if="orders.length" class="orders-list">
+              <div v-for="order in orders" :key="order.orderNo" class="order-item">
+                <div class="order-info">
+                  <strong class="order-name">{{ order.planName }}</strong>
+                  <span class="order-meta"
+                    >{{ order.orderNo }} · {{ formatDate(order.createTime) }}</span
+                  >
                 </div>
-                <div class="benefit-item">
-                  <span class="benefit-title">AI 配额翻倍</span>
-                  <span class="benefit-text">从 50 次/天提升到 100 次/天。</span>
-                </div>
-                <div class="benefit-item">
-                  <span class="benefit-title">会员标识</span>
-                  <span class="benefit-text">主页、文章侧栏、站点头部展示 VIP 身份。</span>
+                <div class="order-right">
+                  <span class="order-price">¥{{ order.priceYuan }}</span>
+                  <span class="order-status" :class="order.status?.toLowerCase()">
+                    {{ orderStatusText(order.status) }}
+                  </span>
+                  <div v-if="order.status === 'PAYING'" class="order-actions">
+                    <button class="btn-cancel" @click="handleCancelOrder(order)">取消</button>
+                    <button class="btn-pay" @click="handleRepayOrder(order)">去支付</button>
+                  </div>
                 </div>
               </div>
             </div>
-          </aside>
+            <div v-else class="empty-state">
+              <span>暂无订单记录</span>
+            </div>
+          </div>
         </div>
-      </section>
+
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+          <!-- VIP 权益 -->
+          <div class="sidebar-card">
+            <div class="card-title">VIP 权益</div>
+            <div class="benefit-list">
+              <div class="benefit-item">
+                <span class="benefit-icon">📖</span>
+                <div class="benefit-text">
+                  <strong>VIP 文章可见</strong>
+                  <span>查看范围为 VIP 可见的文章</span>
+                </div>
+              </div>
+              <div class="benefit-item">
+                <span class="benefit-icon">🤖</span>
+                <div class="benefit-text">
+                  <strong>AI 配额翻倍</strong>
+                  <span>从 50 次/天提升到 100 次/天</span>
+                </div>
+              </div>
+              <div class="benefit-item">
+                <span class="benefit-icon">✨</span>
+                <div class="benefit-text">
+                  <strong>会员标识</strong>
+                  <span>展示 VIP 身份标识</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
 
     <!-- 支付结果弹窗 -->
@@ -163,815 +169,586 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { info } from '@/api/user'
-import { createVipOrder, getVipMe, getVipOrderList, getVipPlans, repayVipOrder } from '@/api/vip'
-import { useUserStore } from '@/stores/userStore'
-import { GetJwt } from '@/utils/Auth'
+import { onMounted } from 'vue'
 import VipPaymentResultModal from '@/components/Payment/VipPaymentResultModal.vue'
 import CancelOrderDialog from '@/components/Payment/CancelOrderDialog.vue'
-import { formatVipExpireDate, formatDate } from '@/utils/formatTime'
+import { useVipCenter } from '@/composables/useVipCenter'
 
-// 路由与全局状态
-const router = useRouter()
-const route = useRoute()
-const userStore = useUserStore()
+const {
+  plans,
+  orders,
+  vipInfo,
+  submitting,
+  selectedPlanCode,
+  paymentResultVisible,
+  currentOrderNo,
+  cancelDialogVisible,
+  cancelOrderNo,
+  statusText,
+  expireText,
+  handleCreateOrder,
+  handlePaymentSuccess,
+  closePaymentResultModal,
+  goToVipArticles,
+  orderStatusText,
+  handleRepayOrder,
+  handleCancelOrder,
+  handleCancelConfirmed,
+  init,
+  formatDate,
+} = useVipCenter()
 
-// 页面核心状态
-const plans = ref([])
-const orders = ref([])
-const vipInfo = ref({})
-const submitting = ref(false)
-const selectedPlanCode = ref('')
-
-// 支付结果弹窗控制
-const paymentResultVisible = ref(false)
-const currentOrderNo = ref('')
-
-// 取消订单弹窗控制
-const cancelDialogVisible = ref(false)
-const cancelOrderNo = ref('')
-
-// 会员状态展示文案
-const statusText = computed(() => {
-  if (vipInfo.value?.isVip) {
-    return '有效会员'
-  }
-  if (vipInfo.value?.vipStatus === 'EXPIRED') {
-    return '已过期'
-  }
-  return '未开通'
+onMounted(() => {
+  init()
 })
-
-// 会员到期时间展示文案
-const expireText = computed(() => {
-  if (!vipInfo.value?.vipExpireTime) {
-    return '开通后立即生效'
-  }
-  return `到期时间 ${formatVipExpireDate(vipInfo.value.vipExpireTime)}`
-})
-
-// 根据 UA 粗略区分 PC 和 H5 支付入口
-const detectClientType = () => {
-  return /Android|iPhone|iPad|Mobile/i.test(window.navigator.userAgent) ? 'H5' : 'PC'
-}
-
-// 支付宝 PC 场景返回表单时，前端需要主动插入并提交
-const submitPaymentForm = (formHtml, targetName) => {
-  // 1. 创建隐藏的容器元素，用于承载支付表单
-  const wrapper = document.createElement('div')
-  wrapper.style.display = 'none'
-  // 2. 将后端返回的表单 HTML 插入容器
-  wrapper.innerHTML = formHtml
-  // 3. 将容器添加到页面 DOM 中
-  document.body.appendChild(wrapper)
-  // 4. 从容器中查找 form 元素
-  const form = wrapper.querySelector('form')
-  // 5. 表单不存在则提示错误
-  if (!form) {
-    ElMessage.error('支付跳转失败，请稍后重试')
-    return
-  }
-  // 6. 设置表单提交目标为新标签页
-  form.setAttribute('target', targetName)
-  // 7. 自动提交表单，跳转到支付宝支付页面
-  form.submit()
-
-  // 8. 清理临时 DOM
-  setTimeout(() => {
-    document.body.removeChild(wrapper)
-  }, 1000)
-}
-
-// 支付成功后刷新站点用户态，保证 VIP 标识和额度即时生效
-const refreshUserInfo = async () => {
-  const response = await info()
-  userStore.user = response.data
-}
-
-// 刷新订单列表
-const refreshOrderList = async () => {
-  const response = await getVipOrderList(1, 10)
-  orders.value = response.data?.data || []
-}
-
-// 关闭支付结果弹窗
-const closePaymentResultModal = () => {
-  paymentResultVisible.value = false
-  // 使用 String() 确保类型正确
-  currentOrderNo.value = ''
-  // 关闭后刷新订单列表
-  refreshOrderList()
-}
-
-// 支付成功后的回调
-const handlePaymentSuccess = async () => {
-  await refreshUserInfo()
-  await refreshOrderList()
-}
-
-// 会员中心初始化时并行拉取套餐、会员信息和订单记录
-const fetchVipData = async () => {
-  const [plansRes, vipRes, orderRes] = await Promise.all([
-    getVipPlans(),
-    getVipMe(),
-    getVipOrderList(1, 10),
-  ])
-  plans.value = plansRes.data || []
-  vipInfo.value = vipRes.data || {}
-  orders.value = orderRes.data.data || []
-  if (!selectedPlanCode.value && plans.value.length) {
-    selectedPlanCode.value = plans.value[0].code
-  }
-}
-
-// 创建订单后按后端返回的 formHtml / payUrl 决定跳转方式
-const handleCreateOrder = async (plan) => {
-  // 1. 检测客户端类型（PC/移动端）
-  const clientType = detectClientType()
-  try {
-    // 2. 设置提交状态，防止重复点击
-    submitting.value = true
-    // 3. 记录当前选择的套餐编码
-    selectedPlanCode.value = plan.code
-    // 4. 调用后端 API 创建订单
-    const response = await createVipOrder({
-      planCode: plan.code,
-      clientType,
-    })
-    const payload = response.data
-    // 5. 创建订单成功后，先打开结果弹窗（无论 PC 还是 H5）
-    currentOrderNo.value = payload.orderNo
-    paymentResultVisible.value = true
-
-    // 6. 情况 1: 返回表单 HTML，自动提交支付（PC 端支付宝）
-    if (payload.formHtml) {
-      // 生成唯一的窗口名称
-      const targetName = `alipay_${Date.now()}`
-      // 先打开一个空白标签页（用于接收表单提交）
-      const paymentWindow = window.open('about:blank', targetName)
-      if (!paymentWindow) {
-        ElMessage.error('浏览器拦截了支付窗口，请允许弹窗后重试')
-        return
-      }
-      // 将表单提交到新打开的标签页
-      submitPaymentForm(payload.formHtml, targetName)
-      return
-    }
-    // 7. 情况 2: 返回支付链接，直接跳转（微信支付/移动端）
-    if (payload.payUrl) {
-      // 移动端在新标签页打开支付
-      window.open(payload.payUrl, '_blank')
-      return
-    }
-    // 8. 异常情况：既无表单也无支付链接
-    ElMessage.error('支付参数异常，请稍后重试')
-  } catch (error) {
-    // 9. 异常处理：关闭弹窗，提示错误信息
-    closePaymentResultModal()
-    ElMessage.error(error?.msg || '创建订单失败')
-  } finally {
-    // 10. 无论成功失败，都重置提交状态
-    submitting.value = false
-  }
-}
-
-const goToVipArticles = () => {
-  router.push('/vip/articles')
-}
-
-// 未登录用户先跳登录，登录后再回到会员中心
-onMounted(async () => {
-  // 优先检查 localStorage 中是否有 jwt token
-  const jwt = GetJwt()
-  if (!userStore.user?.id) {
-    // 如果有 jwt 但 userStore.user 为空（可能是新标签页 Pinia 尚未恢复数据）
-    // 先尝试获取用户信息，而不是直接跳转登录
-    if (jwt) {
-      try {
-        const response = await info()
-        userStore.user = response.data
-      } catch (error) {
-        // 获取用户信息失败（401 等），说明 token 已过期或无效，跳转登录
-        router.push(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
-        return
-      }
-    } else {
-      // 没有 jwt token，直接跳转登录
-      router.push(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
-      return
-    }
-  }
-  try {
-    await fetchVipData()
-    await refreshUserInfo()
-
-    // 检查是否有支付宝回调的订单号参数，有则自动打开弹窗
-    const orderNoFromQuery = route.query.orderNo || route.query.out_trade_no
-    if (orderNoFromQuery) {
-      // 使用 String() 确保类型正确
-      currentOrderNo.value = String(orderNoFromQuery)
-      paymentResultVisible.value = true
-    }
-  } catch (error) {
-    ElMessage.error(error?.msg || '加载会员中心失败')
-  }
-})
-
-// 订单状态中文映射
-const orderStatusText = (status) => {
-  const map = { PAID: '已支付', PAYING: '待支付', CLOSED: '已关闭', FAILED: '失败' }
-  return map[status] || status || '未知'
-}
-
-// 处理待支付订单的再次支付
-const handleRepayOrder = async (order) => {
-  try {
-    const response = await repayVipOrder(order.orderNo)
-    const payload = response.data
-
-    // 打开支付结果弹窗
-    currentOrderNo.value = payload.orderNo
-    paymentResultVisible.value = true
-
-    // PC 端表单提交
-    if (payload.formHtml) {
-      const targetName = `alipay_${Date.now()}`
-      const paymentWindow = window.open('about:blank', targetName)
-      if (!paymentWindow) {
-        ElMessage.error('浏览器拦截了支付窗口，请允许弹窗后重试')
-        return
-      }
-      submitPaymentForm(payload.formHtml, targetName)
-      return
-    }
-    // H5 端直接跳转
-    if (payload.payUrl) {
-      window.open(payload.payUrl, '_blank')
-      return
-    }
-    ElMessage.error('支付参数异常，请稍后重试')
-  } catch (error) {
-    ElMessage.error(error?.msg || '支付失败')
-  }
-}
-
-// 处理待支付订单的取消
-const handleCancelOrder = (order) => {
-  cancelOrderNo.value = order.orderNo
-  cancelDialogVisible.value = true
-}
-
-// 取消订单确认后的回调
-const handleCancelConfirmed = async () => {
-  ElMessage.success('订单已取消')
-  // 刷新订单列表
-  await refreshOrderList()
-}
 </script>
 
 <style lang="scss" scoped>
-.vip-center {
-  --bg-page: #f6f7f3;
-  --bg-card: #fffdf7;
-  --bg-hero: #122217;
-  --text-primary: #142013;
-  --text-regular: #4d5c4a;
-  --text-light: #f7f6ef;
-  --border: #dde4d6;
-  --accent: #b98b2f;
-  --accent-strong: #8e6821;
-  --accent-soft: rgba(185, 139, 47, 0.12);
-  --accent-soft-strong: rgba(185, 139, 47, 0.18);
-  --shadow: rgba(17, 24, 39, 0.08);
+.vip-square-body {
+  width: 100%;
+  min-height: 100vh;
+  background: #f8fafc;
+
+  html.dark & {
+    background: #000000;
+  }
+}
+
+.vip-container {
+  // ===== CSS 变量 - 匹配文章广场 =====
+  --bg-page: #f8fafc;
+  --bg-card: rgba(0, 0, 0, 0.015);
+  --bg-subtle: rgba(0, 0, 0, 0.02);
+  --text-primary: #0a0a0a;
+  --text-secondary: #888888;
+  --text-regular: #666666;
+  --text-muted: #aaaaaa;
+  --border-light: rgba(0, 0, 0, 0.05);
+  --border-regular: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.15);
+  --accent-color: #0066ff;
+  --accent-soft: rgba(0, 102, 255, 0.04);
+  --accent-border: rgba(0, 102, 255, 0.15);
+  --accent-hover: rgba(0, 102, 255, 0.08);
+
+  // 深色模式
+  html.dark & {
+    --bg-page: #000000;
+    --bg-card: rgba(255, 255, 255, 0.02);
+    --bg-subtle: rgba(255, 255, 255, 0.02);
+    --text-primary: #ffffff;
+    --text-secondary: #888888;
+    --text-regular: #dddddd;
+    --text-muted: #666666;
+    --border-light: rgba(255, 255, 255, 0.05);
+    --border-regular: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(255, 255, 255, 0.15);
+    --accent-color: #00d4ff;
+    --accent-soft: rgba(0, 212, 255, 0.05);
+    --accent-border: rgba(0, 212, 255, 0.15);
+    --accent-hover: rgba(0, 212, 255, 0.08);
+  }
+
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
   min-height: 100vh;
   background: var(--bg-page);
 
-  .vip-shell {
-    max-width: 1240px;
-    margin: 0 auto;
-    padding: 84px 20px 48px;
+  // ===== 页面头部 =====
+  .page-hero {
+    padding: 60px 0 40px;
+    border-bottom: 1px solid var(--border-regular);
 
-    // 顶部会员状态区
-    .vip-hero {
-      background:
-        radial-gradient(circle at top right, rgba(185, 139, 47, 0.18), transparent 30%),
-        var(--bg-hero);
-      border-radius: 28px;
-      padding: 36px;
-      color: var(--text-light);
+    .hero-content {
+      .hero-kicker {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--accent-color);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
 
-      .hero-content {
-        display: grid;
-        grid-template-columns: minmax(0, 1.5fr) 320px;
-        gap: 24px;
+        &::before {
+          content: '';
+          width: 20px;
+          height: 1px;
+          background: linear-gradient(90deg, var(--accent-color), transparent);
+        }
+      }
 
-        .hero-copy {
-          .hero-kicker {
-            margin: 0 0 10px;
-            font-size: 13px;
-            letter-spacing: 0.24em;
-            text-transform: uppercase;
-            color: rgba(247, 246, 239, 0.72);
-          }
+      h1 {
+        font-size: 40px;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        margin-bottom: 12px;
+        color: var(--text-primary);
+      }
 
-          .hero-title {
-            margin: 0;
-            font-size: 36px;
-            line-height: 1.15;
-          }
+      p {
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.7;
+      }
+    }
+  }
 
-          .hero-description {
-            margin: 14px 0 0;
-            max-width: 620px;
-            font-size: 15px;
-            line-height: 1.8;
-            color: rgba(247, 246, 239, 0.82);
-          }
+  // ===== 内容布局 =====
+  .content-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 32px;
+    padding: 40px 0 60px;
+
+    @media (max-width: 992px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // ===== 主内容区 =====
+  .main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+  }
+
+  // ===== 状态卡片 =====
+  .status-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .status-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-regular);
+    border-radius: 6px;
+
+    .card-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    .card-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+
+      &.active {
+        color: var(--accent-color);
+      }
+    }
+
+    .card-meta {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+  }
+
+  // ===== 通用卡片 =====
+  .section-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-regular);
+    border-radius: 6px;
+    padding: 20px;
+
+    .section-title {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 12px;
+
+      .title-text {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .title-hint {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+    }
+
+    .test-hint {
+      padding: 10px 12px;
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-size: 12px;
+      color: #92400e;
+
+      html.dark & {
+        background: rgba(251, 191, 36, 0.08);
+        border-color: rgba(251, 191, 36, 0.15);
+        color: #fbbf24;
+      }
+    }
+  }
+
+  // ===== 会员专区入口 =====
+  .vip-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-border);
+    border-radius: 6px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--accent-hover);
+      border-color: var(--accent-color);
+    }
+
+    .entry-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .entry-icon {
+        font-size: 20px;
+      }
+
+      .entry-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        strong {
+          font-size: 14px;
+          color: var(--text-primary);
         }
 
-        .hero-status {
-          display: grid;
-          gap: 14px;
-
-          .status-card {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            padding: 18px;
-            border: 1px solid rgba(247, 246, 239, 0.14);
-            border-radius: 18px;
-            background: rgba(255, 255, 255, 0.04);
-
-            .status-label {
-              font-size: 12px;
-              color: rgba(247, 246, 239, 0.64);
-            }
-
-            .status-value {
-              font-size: 24px;
-            }
-
-            .status-meta {
-              font-size: 13px;
-              color: rgba(247, 246, 239, 0.72);
-            }
-          }
+        span {
+          font-size: 12px;
+          color: var(--text-secondary);
         }
       }
     }
 
-    // 套餐、订单与权益区
-    .vip-content {
-      margin-top: 24px;
+    .entry-arrow {
+      font-size: 18px;
+      color: var(--accent-color);
+    }
+  }
 
-      .content-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 300px;
-        gap: 24px;
+  // ===== 套餐列表 =====
+  .plans-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
 
-        .main-panel,
-        .side-panel {
-          display: grid;
-          gap: 24px;
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .plan-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    background: var(--bg-page);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: var(--border-hover);
+    }
+
+    &.selected {
+      border-color: var(--accent-color);
+      background: var(--accent-soft);
+
+      .plan-btn {
+        background: var(--accent-color);
+        color: #fff;
+        border-color: var(--accent-color);
+
+        &:hover:not(:disabled) {
+          background: #0052cc;
+          border-color: #0052cc;
+          color: #fff;
+        }
+      }
+    }
+
+    .plan-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+
+      .plan-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .plan-days {
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+    }
+
+    .plan-price {
+      display: flex;
+      align-items: baseline;
+
+      .price-unit {
+        font-size: 14px;
+        color: var(--accent-color);
+      }
+
+      .price-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--accent-color);
+        line-height: 1;
+      }
+    }
+
+    .plan-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin: 0;
+      min-height: 32px;
+      line-height: 1.5;
+    }
+
+    .plan-btn {
+      width: 100%;
+      padding: 10px;
+      background: var(--bg-page);
+      border: 1px solid var(--border-regular);
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        border-color: var(--accent-color);
+        color: var(--accent-color);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  // ===== 订单列表 =====
+  .orders-list {
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border-light);
+
+      &:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+    }
+
+    .order-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .order-name {
+        font-size: 14px;
+        color: var(--text-primary);
+      }
+
+      .order-meta {
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+    }
+
+    .order-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .order-price {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--accent-color);
+      }
+
+      .order-status {
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        background: var(--bg-subtle);
+        color: var(--text-secondary);
+
+        &.paid {
+          background: rgba(34, 197, 94, 0.1);
+          color: #22c55e;
         }
 
-        .section-card {
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          border-radius: 24px;
-          padding: 24px;
-          box-shadow: 0 10px 30px var(--shadow);
-
-          // 标题栏
-          .section-head {
-            display: flex;
-            justify-content: space-between;
-            gap: 16px;
-            align-items: center;
-            margin-bottom: 20px;
-
-            .head-copy {
-              h2 {
-                margin: 0;
-                font-size: 24px;
-                color: var(--text-primary);
-              }
-
-              p {
-                margin: 8px 0 0;
-                font-size: 14px;
-                line-height: 1.7;
-                color: var(--text-regular);
-              }
-            }
-          }
-
-          // 会员专区入口
-          .vip-entry {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            margin-bottom: 20px;
-            padding: 18px 20px;
-            border: 1px solid var(--accent-soft-strong);
-            border-radius: 20px;
-            background: linear-gradient(135deg, var(--accent-soft), transparent 85%);
-
-            .entry-copy {
-              display: grid;
-              gap: 6px;
-
-              .entry-kicker {
-                font-size: 12px;
-                letter-spacing: 0.16em;
-                text-transform: uppercase;
-                color: var(--accent-strong);
-              }
-
-              .entry-title {
-                font-size: 18px;
-                color: var(--text-primary);
-              }
-
-              .entry-description {
-                margin: 0;
-                font-size: 13px;
-                line-height: 1.7;
-                color: var(--text-regular);
-              }
-            }
-
-            .entry-button {
-              min-width: 144px;
-              height: 42px;
-              border: 0;
-              border-radius: 999px;
-              background: var(--accent);
-              color: var(--text-light);
-              cursor: pointer;
-              flex-shrink: 0;
-            }
-          }
-
-          // 套餐卡片列表
-          .plan-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 16px;
-
-            .plan-card {
-              display: flex;
-              flex-direction: column;
-              gap: 18px;
-              padding: 20px;
-              border: 1px solid var(--border);
-              border-radius: 18px;
-              cursor: pointer;
-              transition:
-                border-color 0.2s ease,
-                transform 0.2s ease,
-                box-shadow 0.2s ease;
-
-              &.active {
-                border-color: var(--accent);
-                box-shadow: 0 12px 24px rgba(185, 139, 47, 0.12);
-                transform: translateY(-2px);
-              }
-
-              .plan-card-top {
-                display: flex;
-                justify-content: space-between;
-                gap: 10px;
-
-                .plan-name {
-                  font-size: 18px;
-                  font-weight: 700;
-                  color: var(--text-primary);
-                }
-
-                .plan-days {
-                  font-size: 12px;
-                  color: var(--text-regular);
-                }
-              }
-
-              .plan-price {
-                display: flex;
-                align-items: baseline;
-                color: var(--accent-strong);
-
-                .price-unit {
-                  font-size: 18px;
-                }
-
-                .price-value {
-                  font-size: 38px;
-                  font-weight: 800;
-                  line-height: 1;
-                }
-              }
-
-              .plan-description {
-                min-height: 48px;
-                margin: 0;
-                font-size: 13px;
-                line-height: 1.7;
-                color: var(--text-regular);
-              }
-
-              .plan-button {
-                height: 42px;
-                border: 0;
-                border-radius: 999px;
-                background: var(--accent);
-                color: var(--text-light);
-                cursor: pointer;
-
-                &:disabled {
-                  cursor: not-allowed;
-                  opacity: 0.6;
-                }
-              }
-            }
-          }
-
-          // 订单记录列表
-          .order-list {
-            display: grid;
-            gap: 12px;
-
-            .order-item {
-              display: flex;
-              justify-content: space-between;
-              gap: 16px;
-              padding: 16px 0;
-              border-bottom: 1px solid var(--border);
-
-              &:last-child {
-                border-bottom: 0;
-                padding-bottom: 0;
-              }
-
-              .order-main {
-                display: grid;
-                gap: 6px;
-
-                .order-name {
-                  color: var(--text-primary);
-                }
-
-                .order-no {
-                  font-size: 12px;
-                  color: var(--text-regular);
-                }
-
-                .order-time {
-                  font-size: 12px;
-                  color: var(--text-regular);
-                }
-              }
-
-              .order-side {
-                display: grid;
-                gap: 6px;
-                justify-items: end;
-
-                .order-price {
-                  font-weight: 700;
-                  color: var(--accent-strong);
-                }
-
-                .order-status {
-                  font-size: 12px;
-                  color: var(--text-regular);
-
-                  &.status-paid {
-                    color: #2f7f41;
-                  }
-
-                  &.status-paying {
-                    color: #a36a07;
-                  }
-
-                  &.status-closed,
-                  &.status-failed {
-                    color: #b74d4d;
-                  }
-                }
-
-                .order-actions {
-                  display: flex;
-                  gap: 8px;
-
-                  .order-cancel-btn,
-                  .order-pay-btn {
-                    height: 28px;
-                    padding: 0 14px;
-                    border: 0;
-                    border-radius: 10px;
-                    font-size: 12px;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                  }
-
-                  .order-cancel-btn {
-                    background: #ef4444;
-                    color: #ffffff;
-
-                    &:hover {
-                      background: #dc2626;
-                    }
-
-                    &:active {
-                      transform: scale(0.95);
-                    }
-                  }
-
-                  .order-pay-btn {
-                    background: var(--accent);
-                    color: var(--text-light);
-
-                    &:hover {
-                      opacity: 0.85;
-                    }
-
-                    &:active {
-                      opacity: 0.7;
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          // 空状态
-          .empty-state {
-            padding: 24px 0 8px;
-            color: var(--text-regular);
-            text-align: center;
-          }
-
-          // 会员权益说明
-          .benefit-head {
-            display: grid;
-            gap: 8px;
-            margin-bottom: 18px;
-
-            h2 {
-              margin: 0;
-              font-size: 22px;
-              color: var(--text-primary);
-            }
-
-            p {
-              margin: 0;
-              font-size: 13px;
-              line-height: 1.7;
-              color: var(--text-regular);
-            }
-          }
-
-          .benefit-list {
-            display: grid;
-            gap: 14px;
-
-            .benefit-item {
-              display: grid;
-              gap: 6px;
-              padding: 16px;
-              border-radius: 18px;
-              background: rgba(185, 139, 47, 0.08);
-
-              .benefit-title {
-                font-size: 16px;
-                font-weight: 700;
-                color: var(--text-primary);
-              }
-
-              .benefit-text {
-                font-size: 13px;
-                line-height: 1.7;
-                color: var(--text-regular);
-              }
-            }
-          }
+        &.paying {
+          background: var(--accent-soft);
+          color: var(--accent-color);
         }
+
+        &.closed,
+        &.failed {
+          background: rgba(239, 68, 68, 0.1);
+          color: #dc2626;
+        }
+      }
+    }
+
+    .order-actions {
+      display: flex;
+      gap: 8px;
+
+      .btn-cancel,
+      .btn-pay {
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .btn-cancel {
+        background: rgba(239, 68, 68, 0.1);
+        border: none;
+        color: #dc2626;
+
+        &:hover {
+          background: rgba(239, 68, 68, 0.2);
+        }
+      }
+
+      .btn-pay {
+        background: var(--accent-color);
+        border: none;
+        color: #fff;
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+    }
+  }
+
+  .empty-state {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  // ===== 侧边栏 =====
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    @media (max-width: 992px) {
+      order: -1;
+    }
+  }
+
+  .sidebar-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 20px;
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+  }
+
+  .benefit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .benefit-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+
+    .benefit-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .benefit-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      strong {
+        font-size: 13px;
+        color: var(--text-primary);
+      }
+
+      span {
+        font-size: 11px;
+        color: var(--text-secondary);
       }
     }
   }
 }
 
-html.dark {
-  .vip-center {
-    --bg-page: #101712;
-    --bg-card: #172019;
-    --bg-hero: #0d120f;
-    --text-primary: #eff4eb;
-    --text-regular: #afbea9;
-    --text-light: #f5f7f2;
-    --border: #2a352b;
-    --accent: #c59a44;
-    --accent-strong: #e1ba6a;
-    --accent-soft: rgba(197, 154, 68, 0.12);
-    --accent-soft-strong: rgba(197, 154, 68, 0.18);
-    --shadow: rgba(0, 0, 0, 0.24);
-  }
-}
-
-html.dark {
-  .el-message-box.cancel-order-dialog {
-    background: #1e293b;
-    border-color: #334155;
-
-    .el-message-box__title {
-      color: #f1f5f9;
-    }
-
-    .el-message-box__message {
-      color: #cbd5e1;
-    }
-
-    .el-button--default {
-      background: #334155;
-      border-color: #334155;
-      color: #f1f5f9;
-
-      &:hover {
-        background: #475569;
-        border-color: #475569;
-      }
-    }
-
-    .el-button--primary {
-      background: #ef4444;
-      border-color: #ef4444;
-
-      &:hover {
-        background: #dc2626;
-        border-color: #dc2626;
-      }
-    }
-  }
-}
-
-@media (max-width: 1024px) {
-  .vip-center {
-    .vip-shell {
-      .vip-hero {
-        .hero-content {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      .vip-content {
-        .content-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-    }
-  }
-}
-
+// 响应式
 @media (max-width: 768px) {
-  .vip-center {
-    .vip-shell {
-      padding: 72px 14px 32px;
+  .vip-container {
+    padding: 0 20px;
 
-      .vip-hero {
-        padding: 24px;
+    .page-hero {
+      padding: 40px 0 25px;
 
-        .hero-content {
-          .hero-copy {
-            .hero-title {
-              font-size: 28px;
-            }
-          }
-        }
+      .hero-content h1 {
+        font-size: 28px;
       }
+    }
 
-      .vip-content {
-        .content-grid {
-          .section-card {
-            padding: 20px;
-
-            .vip-entry {
-              flex-direction: column;
-              align-items: flex-start;
-
-              .entry-button {
-                width: 100%;
-              }
-            }
-
-            .plan-grid {
-              grid-template-columns: 1fr;
-            }
-          }
-        }
-      }
+    .content-layout {
+      padding: 30px 0 50px;
+      gap: 24px;
     }
   }
 }

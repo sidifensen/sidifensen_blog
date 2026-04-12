@@ -98,15 +98,6 @@ cd sidifensen_blog_frontend/sidifensen_admin && npx vite-plugin-checker check
 | 毛玻璃滥用 | 到处 `backdrop-filter: blur()` | 仅模态框 |
 | 夸张悬停 | 位移+缩放+变色+阴影 | 只变阴影或颜色 |
 
-#### 标准色板
-```scss
---bg-page: #f8fafc;      // 浅色 / #0f172a 深色
---bg-card: #ffffff;      // 浅色 / #1e293b 深色
---text-primary: #1e293b;  // 浅色 / #f1f5f9 深色
---text-regular: #475569; // 浅色 / #cbd5e1 深色
---text-muted: #64748b;   // 浅色 / #94a3b8 深色
---border: #e2e8f0;       // 浅色 / #334155 深色
-```
 
 ### 颜色使用规范
 - **必须先在全局定义再使用**：所有颜色必须定义在 `base.scss` 或对应模块的全局变量文件中，使用 CSS 变量引用

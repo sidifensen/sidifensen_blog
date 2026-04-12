@@ -1,5 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import axios from 'axios'
+import { describe, it, expect, vi } from 'vitest'
 
 // Mock axios
 vi.mock('axios', () => ({
