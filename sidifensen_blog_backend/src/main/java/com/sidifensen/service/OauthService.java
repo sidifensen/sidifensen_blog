@@ -217,17 +217,20 @@ public class OauthService {
         }
 
         // 使用 openid 登录或注册
-        return wechatLogin(openid, RegisterOrLoginTypeEnum.WECHAT_MINIPROGRAM.getCode());
+        return wechatLogin(openid, RegisterOrLoginTypeEnum.WECHAT_MINIPROGRAM.getCode(),
+                loginDto.getNickname(), loginDto.getAvatar());
     }
 
     /**
      * 微信小程序登录
      *
-     * @param openid 微信 openid
-     * @param code   登录方式编码
+     * @param openid  微信 openid
+     * @param code    登录方式编码
+     * @param nickname 微信用户昵称（可选）
+     * @param avatar  微信用户头像（可选）
      * @return 一次性票据
      */
-    public String wechatLogin(String openid, Integer code) {
+    public String wechatLogin(String openid, Integer code, String nickname, String avatar) {
         String ip = ipUtils.getIp();
         String loginType = RegisterOrLoginTypeEnum.getType(code);
 
@@ -244,8 +247,10 @@ public class OauthService {
             SysUser sysUser = new SysUser();
             sysUser.setUsername(username);
             sysUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString().replace("-", "")));
-            sysUser.setNickname("微信用户");
-            sysUser.setAvatar("https://image.sidifensen.com/sidifensen-blog/user/avatar/default.png");
+            // 使用传入的昵称，若为空则使用默认昵称
+            sysUser.setNickname(ObjectUtil.isNotEmpty(nickname) ? nickname : "微信用户");
+            // 使用传入的头像，若为空则使用默认头像
+            sysUser.setAvatar(ObjectUtil.isNotEmpty(avatar) ? avatar : "https://image.sidifensen.com/sidifensen-blog/user/avatar/default.png");
             sysUser.setStatus(StatusEnum.NORMAL.getStatus());
             sysUser.setRegisterIp(ip);
             sysUser.setRegisterAddress(ipUtils.getAddress(ip));

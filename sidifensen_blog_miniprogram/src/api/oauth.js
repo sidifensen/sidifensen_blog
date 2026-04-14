@@ -6,9 +6,11 @@ import { post } from './index'
 /**
  * 微信登录
  * @param {string} code 微信登录凭证
+ * @param {string} nickname 微信用户昵称（可选）
+ * @param {string} avatar 微信用户头像URL（可选）
  */
-export function wxLogin(code) {
-  return post('/oauth/wechat/login', { code })
+export function wxLogin(code, nickname, avatar) {
+  return post('/oauth/wechat/login', { code, nickname, avatar })
 }
 
 /**

@@ -54,25 +54,45 @@ function refreshCheckCode() {
  */
 async function handleWxLogin() {
   try {
-    const code = await getWxLoginCode()
     loading.value = true
 
-    // 第一步：用 code 获取一次性票据
-    const ticketRes = await wxLogin(code)
+    // 第一步：获取微信登录凭证 code
+    const code = await getWxLoginCode()
+
+    // 第二步：获取微信用户信息（昵称和头像）
+    let nickname = ''
+    let avatar = ''
+    try {
+      const userProfile = await new Promise((resolve, reject) => {
+        uni.getUserProfile({
+          desc: '用于设置用户昵称和头像',
+          success: (res) => resolve(res),
+          fail: (err) => reject(err)
+        })
+      })
+      nickname = userProfile.userInfo?.nickName || ''
+      avatar = userProfile.userInfo?.avatarUrl || ''
+    } catch (profileErr) {
+      console.warn('获取微信用户信息失败，使用默认信息', profileErr)
+      // 用户拒绝授权或获取失败，继续使用默认昵称和头像
+    }
+
+    // 第三步：用 code 和用户信息获取一次性票据
+    const ticketRes = await wxLogin(code, nickname, avatar)
     const ticket = ticketRes.data
 
-    // 第二步：用票据兑换 JWT token
+    // 第四步：用票据兑换 JWT token
     const jwtRes = await exchangeTicket(ticket)
     const token = jwtRes.data
 
-    // 第三步：先保存 token，再获取用户信息（getMyInfo 需要带 token）
+    // 第五步：先保存 token，再获取用户信息（getMyInfo 需要带 token）
     userStore.setToken(token)
 
-    // 第四步：获取用户信息
+    // 第六步：获取用户信息
     const userInfoRes = await getMyInfo()
     const userInfo = userInfoRes.data
 
-    // 第五步：存储登录状态
+    // 第七步：存储登录状态
     userStore.login(token, userInfo)
 
     uni.showToast({ title: '登录成功', icon: 'success' })
