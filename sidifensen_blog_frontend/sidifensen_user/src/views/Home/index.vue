@@ -50,8 +50,8 @@
         </div>
       </div>
 
-      <!-- 右侧装饰 - 代码片段 -->
-      <HeroCodeSnippet />
+      <!-- 右侧装饰 - 宇宙星环 -->
+      <HeroCosmicRing />
     </section>
 
     <!-- 主内容区 -->
@@ -262,7 +262,7 @@ import StatsCard from '@/components/User/StatsCard.vue'
 import EmptyState from '@/components/Loading/EmptyState.vue'
 import SkeletonLoader from '@/components/Loading/SkeletonLoader.vue'
 import { useSeoMeta } from '@/plugins/seo'
-import HeroCodeSnippet from '@/components/hero/HeroCodeSnippet.vue'
+import HeroCosmicRing from '@/components/hero/HeroCosmicRing.vue'
 
 // SEO - 首页
 useSeoMeta({
