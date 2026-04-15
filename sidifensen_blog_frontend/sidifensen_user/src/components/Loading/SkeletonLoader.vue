@@ -1,260 +1,102 @@
 <template>
-  <div class="skeleton-loader" :class="{ 'skeleton-grid': type === 'article' }">
-    <div v-for="i in displayCount" :key="i" class="skeleton-item" :class="`skeleton-${type}`">
-      <!-- article 类型：图片 + 标题 + 描述 + 日期 -->
-      <template v-if="type === 'article'">
-        <el-skeleton-item variant="image" class="skeleton-image" />
-        <el-skeleton-item variant="h3" class="skeleton-title" />
-        <el-skeleton-item variant="text" class="skeleton-desc" />
-        <el-skeleton-item variant="text" class="skeleton-date" />
-      </template>
-
-      <!-- card 类型：卡片样式 -->
-      <template v-else-if="type === 'card'">
-        <el-skeleton-item variant="image" class="skeleton-card-image" />
-        <div class="skeleton-card-content">
-          <el-skeleton-item variant="h3" class="skeleton-card-title" />
-          <el-skeleton-item variant="text" class="skeleton-card-desc" />
-        </div>
-      </template>
-
-      <!-- list 类型：列表项样式 -->
-      <template v-else-if="type === 'list'">
-        <el-skeleton-item variant="circle" class="skeleton-list-avatar" />
-        <div class="skeleton-list-content">
-          <el-skeleton-item variant="text" class="skeleton-list-title" />
-          <el-skeleton-item variant="text" class="skeleton-list-subtitle" />
-        </div>
-      </template>
-
-      <!-- profile 类型：圆形头像 + 名称 + 描述 -->
-      <template v-else-if="type === 'profile'">
-        <el-skeleton-item variant="circle" class="skeleton-profile-avatar" />
-        <el-skeleton-item variant="text" class="skeleton-profile-name" />
-        <el-skeleton-item variant="text" class="skeleton-profile-desc" />
-      </template>
+  <div v-if="loading" class="skeleton-list">
+    <div v-for="i in displayCount" :key="i" class="skeleton-card">
+      <div class="skeleton-image"></div>
+      <div class="skeleton-body">
+        <div class="skeleton-line title"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-line date"></div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import { ElSkeleton, ElSkeletonItem } from 'element-plus'
 
-// 定义组件props
 const props = defineProps({
-  // 骨架屏类型：article-文章、card-卡片、list-列表项、profile-用户资料
-  type: {
-    type: String,
-    default: 'card',
-    validator: (value) => ['article', 'card', 'list', 'profile'].includes(value),
+  loading: {
+    type: Boolean,
+    default: true,
   },
-  // 骨架屏数量，默认为1
   count: {
     type: Number,
-    default: 1,
+    default: 3,
   },
 })
 
-// 计算显示数量，确保至少为1
 const displayCount = computed(() => Math.max(1, props.count))
 </script>
 
 <style lang="scss" scoped>
-// 骨架屏容器
-.skeleton-loader {
-  width: 100%;
+.skeleton-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
 
-  // article 类型使用 3 列网格（仅在非 grid 父容器时生效）
-  &.skeleton-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-
-    // 父容器已经是 grid 时，禁用内部 grid
-    .article-grid > & {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 24px;
-
-      > .skeleton-item {
-        flex: 1;
-        min-width: calc(33.333% - 16px);
-        max-width: calc(33.333% - 16px);
-
-        @media (max-width: 992px) {
-          min-width: calc(50% - 12px);
-          max-width: calc(50% - 12px);
-        }
-
-        @media (max-width: 768px) {
-          min-width: 100%;
-          max-width: 100%;
-        }
-      }
-    }
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  // 骨架屏项目通用样式
-  .skeleton-item {
-    margin-bottom: 20px;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-
-    // 网格布局下不需要 margin-bottom，由 gap 控制间距
-    .skeleton-grid & {
-      margin-bottom: 0;
-    }
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
   }
 }
 
-/* article 类型样式：图片 + 标题 + 描述 + 日期 */
-.skeleton-article {
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-
-  .skeleton-image {
-    width: 100%;
-    height: 200px;
-    margin-bottom: 16px;
-  }
-
-  .skeleton-title {
-    width: 70%;
-    height: 24px;
-    margin-bottom: 12px;
-  }
-
-  .skeleton-desc {
-    width: 100%;
-    height: 16px;
-    margin-bottom: 8px;
-  }
-
-  .skeleton-date {
-    width: 40%;
-    height: 14px;
-  }
-}
-
-/* card 类型样式：卡片样式 */
 .skeleton-card {
   display: flex;
   flex-direction: column;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-
-  .skeleton-card-image {
-    width: 100%;
-    height: 160px;
-  }
-
-  .skeleton-card-content {
-    padding: 16px;
-  }
-
-  .skeleton-card-title {
-    width: 60%;
-    height: 20px;
-    margin-bottom: 12px;
-  }
-
-  .skeleton-card-desc {
-    width: 100%;
-    height: 14px;
-  }
 }
 
-/* list 类型样式：列表项样式 */
-.skeleton-list {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+.skeleton-image {
+  width: 100%;
+  height: 140px;
+  background: var(--bg-subtle);
+  animation: pulse 1.5s ease-in-out infinite;
+}
 
-  .skeleton-list-avatar {
-    width: 48px;
-    height: 48px;
-    margin-right: 12px;
-    flex-shrink: 0;
-  }
+.skeleton-body {
+  padding: 16px;
+}
 
-  .skeleton-list-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
+.skeleton-line {
+  height: 14px;
+  background: var(--bg-subtle);
+  border-radius: 4px;
+  margin-bottom: 10px;
+  animation: pulse 1.5s ease-in-out infinite;
 
-  .skeleton-list-title {
-    width: 50%;
-    height: 16px;
-    margin-bottom: 8px;
-  }
-
-  .skeleton-list-subtitle {
+  &.title {
     width: 80%;
-    height: 14px;
-  }
-}
-
-/* profile 类型样式：圆形头像 + 名称 + 描述 */
-.skeleton-profile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 24px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-
-  .skeleton-profile-avatar {
-    width: 80px;
-    height: 80px;
-    margin-bottom: 16px;
-  }
-
-  .skeleton-profile-name {
-    width: 120px;
-    height: 20px;
+    height: 18px;
     margin-bottom: 12px;
   }
 
-  .skeleton-profile-desc {
-    width: 180px;
-    height: 14px;
+  &.short {
+    width: 60%;
+    margin-bottom: 12px;
+  }
+
+  &.date {
+    width: 40%;
+    height: 12px;
+    margin-bottom: 0;
+    margin-top: 12px;
   }
 }
 
-/* 浅色模式 */
-html:not(.dark) {
-  .skeleton-article,
-  .skeleton-card,
-  .skeleton-list,
-  .skeleton-profile {
-    background: var(--bg-card);
-    border-color: var(--border);
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
   }
-}
-
-/* 深色模式 */
-html.dark {
-  .skeleton-article,
-  .skeleton-card,
-  .skeleton-list,
-  .skeleton-profile {
-    background: var(--bg-card);
-    border-color: var(--border);
+  50% {
+    opacity: 0.5;
   }
 }
 </style>

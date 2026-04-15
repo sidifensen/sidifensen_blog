@@ -38,9 +38,7 @@
       </div>
 
       <!-- 空状态 -->
-      <div v-else-if="historyList.length === 0" class="empty-state">
-        <el-empty description="暂无浏览记录" />
-      </div>
+      <EmptyState v-else-if="historyList.length === 0" type="article" description="暂无浏览记录" />
 
       <!-- 历史记录列表 -->
       <div v-else class="history-list">
@@ -101,6 +99,7 @@ import { useRouter } from 'vue-router'
 import { Delete, Picture, Clock } from '@element-plus/icons-vue'
 import { getUserHistoryList, clearUserHistory } from '@/api/history'
 import { formatDate } from '@/utils/formatTime'
+import EmptyState from '@/components/Loading/EmptyState.vue'
 
 // 路由
 const router = useRouter()

@@ -21,9 +21,11 @@
             </div>
 
             <!-- 关注列表为空状态 -->
-            <div v-else-if="followingList.length === 0" class="empty-state">
-              <el-empty description="暂无关注的人" />
-            </div>
+            <EmptyState
+              v-else-if="followingList.length === 0"
+              type="search"
+              description="暂无关注的人"
+            />
 
             <!-- 关注列表内容 -->
             <div v-else class="follow-content">
@@ -90,9 +92,7 @@
             </div>
 
             <!-- 粉丝列表为空状态 -->
-            <div v-else-if="fansList.length === 0" class="empty-state">
-              <el-empty description="暂无粉丝" />
-            </div>
+            <EmptyState v-else-if="fansList.length === 0" type="search" description="暂无粉丝" />
 
             <!-- 粉丝列表内容 -->
             <div v-else class="follow-content">
@@ -153,6 +153,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { User } from '@element-plus/icons-vue'
 import { getFollowList, getFansList, toggleFollow, isFollowing } from '@/api/follow'
 import { useUserStore } from '@/stores/userStore'
+import EmptyState from '@/components/Loading/EmptyState.vue'
 
 // 路由和状态管理
 const route = useRoute()

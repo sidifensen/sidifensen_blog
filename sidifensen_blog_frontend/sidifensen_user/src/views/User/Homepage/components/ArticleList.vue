@@ -43,9 +43,7 @@
         </el-skeleton>
       </div>
 
-      <div v-else-if="articleList.length === 0" class="empty-state">
-        <el-empty description="暂无文章" />
-      </div>
+      <EmptyState v-else-if="articleList.length === 0" type="article" description="暂无文章" />
 
       <div v-else class="article-list">
         <div
@@ -134,6 +132,7 @@
 import { ref, watch } from 'vue'
 import { Picture, Clock, View, Star, Collection, ChatDotRound } from '@element-plus/icons-vue'
 import { formatCompactNumber } from '@/utils/formatNumber'
+import EmptyState from '@/components/Loading/EmptyState.vue'
 
 // 定义 props
 const props = defineProps({

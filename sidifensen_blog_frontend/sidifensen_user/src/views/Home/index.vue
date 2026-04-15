@@ -74,29 +74,23 @@
       </div>
 
       <div class="content-wrapper">
-        <div class="article-grid" ref="articlesSectionRef">
-          <!-- 加载状态 -->
-          <template v-if="articleLoading">
-            <SkeletonLoader type="article" :count="9" />
-          </template>
+        <!-- 加载状态 -->
+        <SkeletonLoader v-if="articleLoading" :loading="true" :count="9" />
 
-          <!-- 空状态 -->
-          <template v-else-if="articles.length === 0">
-            <div class="empty-state">
-              <EmptyState type="article" />
-            </div>
-          </template>
+        <!-- 空状态 -->
+        <div v-else-if="articles.length === 0" class="empty-state">
+          <EmptyState type="article" />
+        </div>
 
-          <!-- 文章列表 -->
-          <template v-else>
-            <ArticleCard
-              v-for="(article, index) in articles"
-              :key="article.id"
-              :article="article"
-              mode="grid"
-              @click="goToArticle(article)"
-            />
-          </template>
+        <!-- 文章列表 -->
+        <div v-else class="article-grid" ref="articlesSectionRef">
+          <ArticleCard
+            v-for="(article, index) in articles"
+            :key="article.id"
+            :article="article"
+            mode="grid"
+            @click="goToArticle(article)"
+          />
         </div>
 
         <!-- 右侧边栏 -->

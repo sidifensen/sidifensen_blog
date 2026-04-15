@@ -17,9 +17,7 @@
       </div>
 
       <!-- 收藏夹为空状态 -->
-      <div v-else-if="favoriteList.length === 0" class="empty-state">
-        <el-empty description="暂无收藏夹" />
-      </div>
+      <EmptyState v-else-if="favoriteList.length === 0" type="article" description="暂无收藏夹" />
 
       <!-- 收藏夹内容 -->
       <div v-else class="favorite-content">
@@ -86,12 +84,11 @@
                 </div>
 
                 <!-- 文章为空状态 -->
-                <div
+                <EmptyState
                   v-else-if="!favorite.articles || favorite.articles.length === 0"
-                  class="empty-articles"
-                >
-                  <el-empty description="收藏夹中暂无文章" :image-size="60" />
-                </div>
+                  type="article"
+                  description="收藏夹中暂无文章"
+                />
 
                 <!-- 文章列表 -->
                 <div v-else class="article-list">
@@ -203,6 +200,7 @@
 import { Star, Collection, ArrowDown, Picture, Setting } from '@element-plus/icons-vue'
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { formatCompactNumber } from '@/utils/formatNumber'
+import EmptyState from '@/components/Loading/EmptyState.vue'
 
 // 定义 props
 const props = defineProps({

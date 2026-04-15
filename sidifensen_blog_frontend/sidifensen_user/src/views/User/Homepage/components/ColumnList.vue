@@ -16,9 +16,7 @@
         </el-skeleton>
       </div>
 
-      <div v-else-if="columnList.length === 0" class="empty-state">
-        <el-empty description="暂无专栏" />
-      </div>
+      <EmptyState v-else-if="columnList.length === 0" type="article" description="暂无专栏" />
 
       <div v-else class="column-list">
         <div
@@ -79,6 +77,7 @@
 
 <script setup>
 import { Collection, Document, Star } from '@element-plus/icons-vue'
+import EmptyState from '@/components/Loading/EmptyState.vue'
 
 // 定义 props
 const props = defineProps({
