@@ -65,11 +65,34 @@ const displayCount = computed(() => Math.max(1, props.count))
 .skeleton-loader {
   width: 100%;
 
-  // article 类型使用 3 列网格
+  // article 类型使用 3 列网格（仅在非 grid 父容器时生效）
   &.skeleton-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 24px;
+
+    // 父容器已经是 grid 时，禁用内部 grid
+    .article-grid > & {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+
+      > .skeleton-item {
+        flex: 1;
+        min-width: calc(33.333% - 16px);
+        max-width: calc(33.333% - 16px);
+
+        @media (max-width: 992px) {
+          min-width: calc(50% - 12px);
+          max-width: calc(50% - 12px);
+        }
+
+        @media (max-width: 768px) {
+          min-width: 100%;
+          max-width: 100%;
+        }
+      }
+    }
   }
 
   // 骨架屏项目通用样式

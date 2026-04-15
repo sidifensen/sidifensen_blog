@@ -1,5 +1,32 @@
 # Sidifensen Blog 开发指南
 
+> **强制要求：开发前必须严格按照以下 superpowers-plus 流程执行，禁止跳过任何步骤**
+
+## superpowers-plus 标准流程
+
+1. **brainstorming** — 需求澄清（编写代码前激活）
+2. **using-git-worktrees** — 隔离工作区（设计批准后激活）
+3. **writing-plans** — 任务分解（设计批准后激活）
+4. **executing-plans** — 计划执行（含并行/串行子代理自动路由）
+5. **test-driven-development** — 测试驱动（RED-GREEN-REFACTOR）
+6. **requesting-code-review** — 代码评审（任务间隙激活）
+7. **finishing-a-development-branch** — 分支完成（任务完成后激活）
+
+### 分支场景
+- 遇到问题 → **systematic-debugging**（系统调试）
+- 接收评审反馈 → **receiving-code-review**（接收代码评审）
+- 多任务可并行 → **dispatching-parallel-agents**（并行代理分发）
+- 需要编写验收标准 → **writing-acceptance-criteria**（编写验收标准）
+- 验证完成后、合并前 → **acceptance-testing**（验收测试）
+
+### 核心原则
+
+- **Iron Law (TDD)** — 没有失败测试就不写生产代码；遵循 RED-GREEN-REFACTOR 节奏
+- **Iron Law (Debugging)** — 没有根因分析就不修 bug，禁止猜测修复
+- **流程优于猜测** — 先验证再断言，禁止跳过步骤
+- **提交** — 细粒度，每个 RED-GREEN-REFACTOR 循环后提交一次
+- **自我评估** — 使用内联检查表自检，而非发起子代理 review 循环
+
 ## 项目结构
 
 | 模块 | 路径 | 本地地址 | 生产地址 | 启动命令 |
