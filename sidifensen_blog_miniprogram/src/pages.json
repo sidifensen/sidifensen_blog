@@ -86,12 +86,6 @@
       }
     },
     {
-      "path": "pages/vip/vip",
-      "style": {
-        "navigationBarTitleText": "VIP会员"
-      }
-    },
-    {
       "path": "pages/login/login",
       "style": {
         "navigationBarTitleText": "登录",

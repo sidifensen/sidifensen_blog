@@ -9,8 +9,7 @@ export const useUserStore = defineStore('user', {
   }),
 
   getters: {
-    getUserInfo: (state) => state.userInfo,
-    isVip: (state) => state.userInfo?.vipEndTime ? new Date(state.userInfo.vipEndTime) > new Date() : false
+    getUserInfo: (state) => state.userInfo
   },
 
   actions: {

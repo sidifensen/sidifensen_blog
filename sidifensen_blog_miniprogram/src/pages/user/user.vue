@@ -4,8 +4,7 @@ import { onShow } from '@dcloudio/uni-app'
 import { useUserStore } from '@/store/user'
 import { getMyInfo } from '@/api/user'
 import { getUserArticleStatistics } from '@/api/article'
-import { getVipStatus } from '@/api/vip'
-import { formatCount, formatDate } from '@/utils/format'
+import { formatCount } from '@/utils/format'
 import TabBar from '@/components/TabBar/TabBar.vue'
 
 const userStore = useUserStore()
@@ -19,29 +18,6 @@ const userInfo = ref({
   followerCount: 0,
   followingCount: 0
 })
-
-// VIP状态
-const vipStatus = ref({
-  isVip: false,
-  expireTime: ''
-})
-
-/**
- * 获取VIP状态
- */
-async function fetchVipStatus() {
-  if (!userStore.isLoggedIn) return
-  try {
-    const res = await getVipStatus()
-    const data = res.data || res
-    vipStatus.value = {
-      isVip: data.isVip || false,
-      expireTime: data.vipExpireTime || ''
-    }
-  } catch (err) {
-    console.error('获取VIP状态失败', err)
-  }
-}
 
 /**
  * 更新用户信息显示
@@ -104,13 +80,6 @@ function goToMessage() {
 }
 
 /**
- * 跳转到 VIP 页
- */
-function goToVip() {
-  uni.navigateTo({ url: '/pages/vip/vip' })
-}
-
-/**
  * 跳转到设置页
  */
 function goToSettings() {
@@ -157,7 +126,6 @@ onMounted(() => {
 // 每次页面显示时都更新用户信息
 onShow(() => {
   updateUserInfo()
-  fetchVipStatus()
 })
 </script>
 
@@ -194,21 +162,6 @@ onShow(() => {
           <view class="stat-value">{{ formatCount(userInfo.followingCount) }}</view>
           <view class="stat-label">关注</view>
         </view>
-      </view>
-    </view>
-
-    <!-- VIP 卡片 -->
-    <view class="vip-card card" @click="goToVip">
-      <view class="vip-left">
-        <u-icon name="crown" color="#fbbf24" size="32px" />
-        <view class="vip-info">
-          <view class="vip-title">{{ vipStatus.isVip ? 'VIP 会员' : 'VIP 会员' }}</view>
-          <view class="vip-desc">{{ vipStatus.isVip ? 'VIP有效期至 ' + formatDate(vipStatus.expireTime, 'YYYY-MM-DD') : '开通享更多权益' }}</view>
-        </view>
-      </view>
-      <view class="vip-action">
-        <text class="vip-btn">{{ vipStatus.isVip ? '已开通' : '立即开通' }}</text>
-        <u-icon name="arrow-right" color="var(--u-type-primary)" size="16px" />
       </view>
     </view>
 
@@ -337,47 +290,6 @@ onShow(() => {
     .stat-divider {
       width: 1px;
       background: var(--u-border-color);
-    }
-  }
-}
-
-/* VIP 卡片 */
-.vip-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: linear-gradient(135deg, #0891b2, #0e7490);
-  color: #ffffff;
-  margin-top: var(--spacing-md);
-
-  .vip-left {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-
-    .vip-icon {
-      font-size: 32px;
-    }
-
-    .vip-title {
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .vip-desc {
-      font-size: 12px;
-      opacity: 0.8;
-    }
-  }
-
-  .vip-action {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-
-    .vip-btn {
-      font-size: 14px;
-      font-weight: 500;
     }
   }
 }
