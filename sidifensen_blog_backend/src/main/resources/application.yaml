@@ -173,6 +173,7 @@ sidifensen:
     - https://admin.sidifensen.com
     - https://api.sidifensen.com
     - https://localhost
+    - https://servicewechat.com
 logging:
   level:
     org.springframework.boot.autoconfigure: INFO
