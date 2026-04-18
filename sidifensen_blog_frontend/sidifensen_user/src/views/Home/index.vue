@@ -50,7 +50,7 @@
         </div>
       </div>
 
-      <!-- 右侧装饰 - 宇宙星环 -->
+      <!-- 右侧装饰 -->
       <HeroCosmicRing />
     </section>
 

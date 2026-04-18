@@ -6,8 +6,12 @@ import { getMyInfo } from '@/api/user'
 import { getUserArticleStatistics } from '@/api/article'
 import { formatCount } from '@/utils/format'
 import TabBar from '@/components/TabBar/TabBar.vue'
+import defaultAvatar from '@/static/default-avatar.svg'
 
 const userStore = useUserStore()
+
+// 头像加载失败状态
+const avatarError = ref(false)
 
 // 用户信息
 const userInfo = ref({
@@ -23,6 +27,7 @@ const userInfo = ref({
  * 更新用户信息显示
  */
 async function updateUserInfo() {
+  avatarError.value = false
   if (userStore.isLoggedIn) {
     try {
       // 并行调用用户信息和文章统计接口
@@ -135,15 +140,14 @@ onShow(() => {
     <view class="user-card card">
       <view class="user-info" @click="!userStore.isLoggedIn && goToLogin()">
         <view class="avatar-wrapper">
-          <image v-if="userInfo.avatar" class="avatar-img" :src="userInfo.avatar" mode="aspectFill" />
-          <view v-else class="avatar-placeholder">U</view>
+          <image v-if="userInfo.avatar && !avatarError" class="avatar-img" :src="userInfo.avatar" mode="aspectFill" @error="avatarError = true" />
+          <image v-else class="avatar-img" :src="defaultAvatar" mode="aspectFill" />
         </view>
         <view class="user-detail">
           <view class="nickname">{{ userInfo.nickname }}</view>
           <view v-if="userInfo.bio" class="bio">{{ userInfo.bio }}</view>
           <view v-else-if="!userStore.isLoggedIn" class="bio tip">点击登录</view>
         </view>
-        <u-icon name="arrow-right" color="var(--u-tips-color)" size="18px" />
       </view>
 
       <!-- 用户数据 -->
@@ -229,18 +233,6 @@ onShow(() => {
       .avatar-img {
         width: 100%;
         height: 100%;
-      }
-
-      .avatar-placeholder {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--u-type-primary);
-        color: #fff;
-        font-size: 18px;
-        font-weight: 500;
       }
     }
 

@@ -8,9 +8,19 @@
       "command": "cmd",
       "args": ["/c", "npx", "-y", "@fangjunjie/ssh-mcp-server", "--config-file", "C:\\Users\\x\\ssh-config.json"]
     },
+    "redis": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-redis",
+        "redis://default:redis@localhost:6379/0"
+      ]
+    },
     "chrome-devtools": {
-      "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest", "--autoConnect"]
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "chrome-devtools-mcp"]
     }
   }
 }
