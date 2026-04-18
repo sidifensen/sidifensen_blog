@@ -4,6 +4,9 @@
  * H5 环境通过 matchMedia 检测系统主题
  */
 
+// 微信小程序端当前固定亮色，避免系统深色模式导致页面背景发灰。
+const FORCE_LIGHT_THEME_IN_MP = true
+
 // 更新导航栏颜色（原生导航栏才有效）
 function updateNavigationBarColor(isDark) {
   const navStyle = isDark ? {
@@ -19,6 +22,9 @@ function updateNavigationBarColor(isDark) {
 // 获取当前深色模式状态
 function getCurrentDarkMode() {
   // #ifdef MP-WEIXIN
+  if (FORCE_LIGHT_THEME_IN_MP) {
+    return false
+  }
   try {
     const info = wx.getWindowInfo()
     return info.colorScheme === 'dark'
@@ -57,6 +63,9 @@ export function initThemeListener() {
 
   // 监听微信小程序系统主题变化
   // #ifdef MP-WEIXIN
+  if (FORCE_LIGHT_THEME_IN_MP) {
+    return
+  }
   uni.onThemeChange((res) => {
     const themeIsDark = res.theme === 'dark'
     updateNavigationBarColor(themeIsDark)

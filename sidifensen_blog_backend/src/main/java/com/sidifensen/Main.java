@@ -29,9 +29,6 @@ public class Main {
         System.setProperty("file.encoding", "UTF-8");
         System.setProperty("sun.jnu.encoding", "UTF-8");
 
-        // 加载 .env 文件到系统环境变量
-        loadDotenv();
-
         SpringApplication app = new SpringApplication(Main.class);
 
         // 设置自定义 Banner
@@ -51,32 +48,4 @@ public class Main {
         log.info("\u001B[32m" + "项目启动成功!" + "\u001B[0m"); // 绿色字体显示
     }
 
-    /**
-     * 加载项目根目录下的 .env 文件，将变量注入系统属性
-     * Spring Boot 的 @Value 或 ${} 占位符会优先读取系统属性
-     */
-    private static void loadDotenv() {
-        Path envFile = Path.of(".env");
-        if (!Files.exists(envFile)) {
-            log.warn(".env 文件不存在，跳过加载");
-            return;
-        }
-        try {
-            Files.lines(envFile)
-                    .filter(line -> !line.trim().isEmpty() && !line.trim().startsWith("#"))
-                    .map(line -> line.split("=", 2))
-                    .filter(parts -> parts.length == 2)
-                    .forEach(parts -> {
-                        String key = parts[0].trim();
-                        String value = parts[1].trim();
-                        // 仅当未设置时才注入，避免覆盖命令行参数
-                        if (System.getProperty(key) == null) {
-                            System.setProperty(key, value);
-                        }
-                    });
-            log.info(".env 文件已加载");
-        } catch (IOException e) {
-            log.error("加载 .env 文件失败", e);
-        }
-    }
 }
