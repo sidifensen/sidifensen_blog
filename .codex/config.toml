@@ -1,0 +1,39 @@
+[mcp_servers.chrome-devtools]
+args = [
+    "/c",
+    "npx",
+    "-y",
+    "chrome-devtools-mcp",
+]
+command = "cmd"
+
+[mcp_servers.mysql]
+args = [
+    "/c",
+    "npx",
+    "-y",
+    "@berthojoris/mcp-mysql-server",
+    "mysql://root:root@localhost:3306/sidifensen_blog",
+]
+command = "cmd"
+
+[mcp_servers.redis]
+args = [
+    "/c",
+    "npx",
+    "-y",
+    "@modelcontextprotocol/server-redis",
+    "redis://default:redis@localhost:6379/0",
+]
+command = "cmd"
+
+[mcp_servers.ssh]
+args = [
+    "/c",
+    "npx",
+    "-y",
+    "@fangjunjie/ssh-mcp-server",
+    "--config-file",
+    'C:\Users\x\ssh-config.json',
+]
+command = "cmd"
