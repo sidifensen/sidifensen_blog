@@ -111,6 +111,13 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     @Override
     public void uploadAlbum(MultipartFile file, Integer albumId) {
         Integer userId = SecurityUtils.getUserId();
+        Album album = albumMapper.selectById(albumId);
+        if (album == null) {
+            throw new BlogException(BlogConstants.NotFoundAlbum);
+        }
+        if (!ObjectUtil.equals(album.getUserId(), userId)) {
+            throw new BlogException(BlogConstants.CannotHandleOthersAlbum);
+        }
         // 相册ID存在数据库中，路径只保留业务分类
         String url = fileUploadUtils.upload(UploadEnum.ALBUM, file);
         auditAndUpdate(userId, url, albumId);

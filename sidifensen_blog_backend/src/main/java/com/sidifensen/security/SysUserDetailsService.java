@@ -4,14 +4,11 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sidifensen.domain.constants.BlogConstants;
 import com.sidifensen.domain.entity.*;
-import com.sidifensen.domain.enums.LoginStatusEnum;
 import com.sidifensen.domain.enums.RegisterOrLoginTypeEnum;
 import com.sidifensen.domain.enums.RoleEnum;
 import com.sidifensen.domain.enums.StatusEnum;
 import com.sidifensen.exception.BlogException;
 import com.sidifensen.mapper.*;
-import com.sidifensen.service.IpService;
-import com.sidifensen.utils.IpUtils;
 import com.sidifensen.utils.WebUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,7 +18,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,16 +44,7 @@ public class SysUserDetailsService implements UserDetailsService {
     private SysRolePermissionMapper sysRolePermissionMapper;
 
     @Resource
-    private IpUtils ipUtils;
-
-    @Resource
     private SysPermissionMapper sysPermissionMapper;
-
-    @Resource
-    private IpService ipService;
-
-    @Resource
-    private com.sidifensen.service.SysLoginLogService sysLoginLogService;
 
     /**
      * 根据用户名查询用户信息
@@ -75,26 +62,6 @@ public class SysUserDetailsService implements UserDetailsService {
             // 根据用户名或邮箱登录
             sysUser.setLoginType(RegisterOrLoginTypeEnum.EMAIL.getCode());
         }
-        sysUser.setLoginTime(new Date());
-        String ip = ipUtils.getIp();
-        sysUser.setLoginIp(ip);
-        String loginAddress = ipUtils.getAddress(ip);
-        sysUser.setLoginAddress(loginAddress);
-        int i = sysUserMapper.updateById(sysUser);
-        if (i == 0) {
-            throw new BlogException(BlogConstants.NotFoundUser);
-        }
-        ipService.setLoginIp(sysUser.getId(), ip);
-
-        // 异步记录登录成功日志
-        sysLoginLogService.recordLoginLog(
-                sysUser.getId(),
-                sysUser.getUsername(),
-                sysUser.getLoginType(),
-                ip,
-                LoginStatusEnum.SUCCESS.getCode()  // 0-成功
-        );
-
         return handleLogin(sysUser);
     }
 

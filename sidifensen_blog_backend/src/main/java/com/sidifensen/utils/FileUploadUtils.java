@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Slf4j
@@ -145,9 +146,10 @@ public class FileUploadUtils {
                 if (originalFilename != null) {
                     fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
                 }
+                String normalizedContentType = resolveSafeImageContentType(file, fileExtension);
                 PutObjectArgs args = PutObjectArgs.builder()
                         .bucket(bucketName)
-                        .headers(Map.of("Content-Type", Objects.requireNonNull(file.getContentType())))
+                        .headers(Map.of("Content-Type", normalizedContentType))
                         .object(uploadEnum.getDir() + name + "." + fileExtension)
                         .stream(stream, file.getSize(), -1)
                         .build();
@@ -201,13 +203,14 @@ public class FileUploadUtils {
                 if (originalFilename != null) {
                     fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
                 }
+                String normalizedContentType = resolveSafeImageContentType(file, fileExtension);
 
                 // 文件夹目录
                 String dir = uploadEnum.getDir() + dirName;
 
                 PutObjectArgs args = PutObjectArgs.builder()
                         .bucket(bucketName)
-                        .headers(Map.of("Content-Type", Objects.requireNonNull(file.getContentType())))
+                        .headers(Map.of("Content-Type", normalizedContentType))
                         .object(dir + "/" + name + "." + fileExtension)
                         .stream(stream, file.getSize(), -1)
                         .build();
@@ -347,12 +350,91 @@ public class FileUploadUtils {
      * @return 是否支持
      */
     public boolean isFormatFile(String fileName, List<String> format) {
+        if (fileName == null || fileName.isBlank()) {
+            return false;
+        }
+        String normalizedFileName = fileName.toLowerCase(Locale.ROOT);
         for (String s : format) {
-            if (fileName.endsWith(s)) {
+            if (normalizedFileName.endsWith("." + s.toLowerCase(Locale.ROOT))) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * 校验图片文件头并返回服务端归一化后的安全 MIME
+     *
+     * @param file          上传文件
+     * @param fileExtension 文件扩展名
+     * @return 归一化后的图片 MIME
+     */
+    private String resolveSafeImageContentType(MultipartFile file, String fileExtension) {
+        if (fileExtension == null || fileExtension.isBlank()) {
+            throw new FileUploadException("上传文件类型错误");
+        }
+        String normalizedExtension = fileExtension.toLowerCase(Locale.ROOT);
+        byte[] fileBytes;
+        try {
+            fileBytes = file.getBytes();
+        } catch (IOException e) {
+            throw new FileUploadException("上传文件类型错误");
+        }
+        if (matchesJpeg(fileBytes) && List.of("jpg", "jpeg").contains(normalizedExtension)) {
+            return "image/jpeg";
+        }
+        if (matchesPng(fileBytes) && "png".equals(normalizedExtension)) {
+            return "image/png";
+        }
+        if (matchesGif(fileBytes) && "gif".equals(normalizedExtension)) {
+            return "image/gif";
+        }
+        if (matchesWebp(fileBytes) && "webp".equals(normalizedExtension)) {
+            return "image/webp";
+        }
+        throw new FileUploadException("上传文件类型错误");
+    }
+
+    private boolean matchesJpeg(byte[] fileBytes) {
+        return fileBytes != null
+                && fileBytes.length >= 3
+                && (fileBytes[0] & 0xFF) == 0xFF
+                && (fileBytes[1] & 0xFF) == 0xD8
+                && (fileBytes[2] & 0xFF) == 0xFF;
+    }
+
+    private boolean matchesPng(byte[] fileBytes) {
+        return fileBytes != null
+                && fileBytes.length >= 8
+                && (fileBytes[0] & 0xFF) == 0x89
+                && fileBytes[1] == 0x50
+                && fileBytes[2] == 0x4E
+                && fileBytes[3] == 0x47
+                && fileBytes[4] == 0x0D
+                && fileBytes[5] == 0x0A
+                && fileBytes[6] == 0x1A
+                && fileBytes[7] == 0x0A;
+    }
+
+    private boolean matchesGif(byte[] fileBytes) {
+        if (fileBytes == null || fileBytes.length < 6) {
+            return false;
+        }
+        String header = new String(fileBytes, 0, 6, StandardCharsets.US_ASCII);
+        return "GIF87a".equals(header) || "GIF89a".equals(header);
+    }
+
+    private boolean matchesWebp(byte[] fileBytes) {
+        return fileBytes != null
+                && fileBytes.length >= 12
+                && fileBytes[0] == 0x52
+                && fileBytes[1] == 0x49
+                && fileBytes[2] == 0x46
+                && fileBytes[3] == 0x46
+                && fileBytes[8] == 0x57
+                && fileBytes[9] == 0x45
+                && fileBytes[10] == 0x42
+                && fileBytes[11] == 0x50;
     }
 
     /**

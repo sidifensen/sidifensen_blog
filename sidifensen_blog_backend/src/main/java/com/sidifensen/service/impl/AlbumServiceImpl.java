@@ -64,6 +64,11 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     public AlbumVo getAlbum(Integer albumId) {
         Album album = albumMapper.selectById(albumId);
         EntityCheckUtils.getOrThrowNotEmpty(album, BlogConstants.NotFoundAlbum);
+        Integer currentUserId = SecurityUtils.getUserId();
+        boolean isOwner = currentUserId != null && Objects.equals(album.getUserId(), currentUserId);
+        if (!isOwner && !Objects.equals(album.getShowStatus(), ShowStatusEnum.PUBLIC.getCode())) {
+            throw new BlogException(BlogConstants.NotFoundAlbum);
+        }
 
         AlbumVo albumVo = BeanUtil.copyProperties(album, AlbumVo.class);
         // 把album_id为albumId的全部照片查询出来
@@ -72,7 +77,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
         if (ObjectUtil.isNotEmpty(albumPhotos)) {
             LambdaQueryWrapper<Photo> queryWrapper = new LambdaQueryWrapper<Photo>()
                     .in(Photo::getId, albumPhotos.stream().map(AlbumPhoto::getPhotoId).toList())
-                    .eq(album.getUserId() != SecurityUtils.getUserId(), Photo::getExamineStatus, ExamineStatusEnum.PASS.getCode());// 如果相册不是当前用户的，只显示审核通过的照片
+                    .eq(!isOwner, Photo::getExamineStatus, ExamineStatusEnum.PASS.getCode());// 如果相册不是当前用户的，只显示审核通过的照片
             photos = photoMapper.selectList(queryWrapper);
         }
 
@@ -254,6 +259,7 @@ public class AlbumServiceImpl extends ServiceImpl<AlbumMapper, Album> implements
     public List<AlbumVo> searchAlbum(String keyword) {
         LambdaQueryWrapper<Album> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(ObjectUtil.isNotEmpty(keyword), Album::getName, keyword)
+                .eq(Album::getShowStatus, ShowStatusEnum.PUBLIC.getCode())
                 .orderByDesc(Album::getCreateTime);
 
         List<Album> albums = this.list(queryWrapper);

@@ -36,6 +36,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.MessageDigest;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -130,6 +131,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             Authentication authenticate = authenticationManager.authenticate(authentication);
             // 获取用户信息，返回的就是UserDetails
             LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
+            recordLoginSuccess(loginUser.getSysUser(), RegisterOrLoginTypeEnum.EMAIL.getCode());
             // 创建token,此处的token时由UUID编码而成JWT字符串
             String token = jwtUtils.createToken(loginUser.getSysUser().getId(), loginDto.getRememberMe());
             return token;
@@ -483,6 +485,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             if (sysRoles == null || sysRoles.stream().noneMatch(r -> r.getRole().equals("admin") || r.getRole().equals("viewer"))) {
                 throw new BlogException(BlogConstants.NotAdminAccount); // 不是管理后台账户
             }
+            recordLoginSuccess(loginUser.getSysUser(), RegisterOrLoginTypeEnum.EMAIL.getCode());
             // 创建token,此处的token时由UUID编码而成JWT字符串
             String token = jwtUtils.createToken(loginUser.getSysUser().getId(), adminLoginDto.getRememberMe());
             return token;
@@ -498,6 +501,38 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             );
             throw e; // 重新抛出异常，让全局异常处理器处理
         }
+    }
+
+    /**
+     * 登录成功后统一补齐最后登录信息和成功日志
+     *
+     * @param sysUser    登录用户
+     * @param loginType  登录方式
+     */
+    private void recordLoginSuccess(SysUser sysUser, Integer loginType) {
+        if (sysUser == null || sysUser.getId() == null) {
+            throw new BlogException(BlogConstants.NotFoundUser);
+        }
+        String ip = ipUtils.getIp();
+        String loginAddress = ipUtils.getAddress();
+        SysUser updateUser = new SysUser()
+                .setId(sysUser.getId())
+                .setLoginType(loginType)
+                .setLoginIp(ip)
+                .setLoginAddress(loginAddress)
+                .setLoginTime(new Date());
+        int result = sysUserMapper.updateById(updateUser);
+        if (result == 0) {
+            throw new BlogException(BlogConstants.NotFoundUser);
+        }
+        ipService.setLoginIp(sysUser.getId(), ip);
+        sysLoginLogService.recordLoginLog(
+                sysUser.getId(),
+                sysUser.getUsername(),
+                loginType,
+                ip,
+                LoginStatusEnum.SUCCESS.getCode()
+        );
     }
 
     // 管理端获取用户信息

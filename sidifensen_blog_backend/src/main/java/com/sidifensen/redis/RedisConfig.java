@@ -1,9 +1,6 @@
 package com.sidifensen.redis;
 
-
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import io.lettuce.core.ClientOptions;
 import org.springframework.boot.autoconfigure.data.redis.LettuceClientConfigurationBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -31,17 +28,8 @@ public class RedisConfig {
     public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory factory) {
         RedisTemplate<Object, Object> template = new RedisTemplate<>();
 
-        // 创建自定义ObjectMapper以更好地处理类型信息
+        // 使用普通 ObjectMapper，避免启用全局多态反序列化带来的安全风险
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.activateDefaultTyping(
-                LaissezFaireSubTypeValidator.instance,
-                ObjectMapper.DefaultTyping.NON_FINAL
-        );
-        objectMapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
-
-        // 为所有类型添加类型信息
-        objectMapper.addMixIn(Object.class, ObjectMixin.class);
-
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         template.setConnectionFactory(factory);
@@ -56,10 +44,5 @@ public class RedisConfig {
 
         template.afterPropertiesSet(); // 初始化RedisTemplate，确保所有的属性都被正确设置。
         return template;
-    }
-
-    // Mixin类用于为Object添加类型信息
-    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
-    static class ObjectMixin {
     }
 }
