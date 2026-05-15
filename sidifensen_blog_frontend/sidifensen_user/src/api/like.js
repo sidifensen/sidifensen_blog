@@ -10,7 +10,7 @@ export function toggleLike(type, typeId) {
   return request({
     url: '/like/toggle',
     method: 'post',
-    params: {
+    data: {
       type,
       typeId,
     },
